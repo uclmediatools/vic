@@ -827,8 +827,6 @@ struct rtp *rtp_init(char *addr, uint16_t rx_port, uint16_t tx_port, int ttl, do
 	assert(rx_port % 2 == 0);
 	assert(tx_port % 2 == 0);
 
-	srand48(time(NULL));
-
 	session 		= (struct rtp *) xmalloc(sizeof(struct rtp));
 	session->magic		= 0xfeedface;
 	session->opt		= (options *) xmalloc(sizeof(options));
