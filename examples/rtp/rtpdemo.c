@@ -23,7 +23,7 @@ usage()
 {
 	printf("Usage: rtpdemo [switches] address port\n");
 	printf("Valid switches are:\n");
-	printf("  -f\t\tFilter local packets out of receive stream.");
+	printf("  -f\t\tFilter local packets out of receive stream.\n");
 	printf("  -l\t\tListen and do not transmit data.\n");
 	exit(-1);
 }
@@ -173,7 +173,7 @@ main(int argc, const char *argv[])
 	int32_t		ac, filter_me = 0, send_enable = 1;
 
 	ac = 1;
-	while (argv[ac][0] == '-') {
+	while (ac < argc && argv[ac][0] == '-') {
 		switch(tolower(argv[ac][1])) {
 		case 'f':
 			filter_me = 1;
