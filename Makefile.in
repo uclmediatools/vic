@@ -85,7 +85,7 @@ SRC_GRABBER = $(OBJ_GRABBER:.o=.cpp)
 OBJ_XIL = @V_OBJ_XIL@
 OBJ_CRYPT = @V_OBJ_CRYPT@
 LIB = $(LIB_GRABBER) @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ \
-	codec/tmndec/libh263.a codec/tmn-x/libh263coder.a ../common/libcommon.a -lm
+	codec/tmndec/libh263.a codec/tmn-x/libh263coder.a ../common/libuclmmbase.a -lm
 INCLUDE = $(INCLUDE_MISC) $(INCLUDE_GRABBER) $(INCLUDE_TK) $(INCLUDE_TCL) \
 	$(INCLUDE_X11) $(MD_INC) -Icodec/jpeg -Icodec/p64 -I.
 DEFINE = @V_DEFINE@ -DED_YBITS=$(ED_YBITS) -DSIGRET=@V_SIGRET@ -DNLAYER=8
@@ -336,9 +336,9 @@ install: force
 	 chmod 555 @prefix@/bin/histtolut
 
 clean:
-	rm -f *.o codec/jpeg/*.o codec/p64/*.o core tcl2c++ mkbv bv.c \
+	rm -f *.o codec/jpeg/*.o codec/p64/*.o codec/h263/*.o \
+		huffcode.c win32/*.o core tcl2c++ mkbv bv.c \
 		codec/*.o render/*.o video/*.o net/*.o rtp/*.o mkhuff \
-		huffcode.c win32/*.o \
 		$(TCL_VIC_C) tk.tcl vic_tcl.c h261_play_tcl.c tmp.c \
 		vic vic.dyn vic.xil h261_play h261_dump jpeg_play cb_wish \
 		mkcube rgb-cube.ppm yuv-map.ppm cm0.c cm1.c ppmtolut \
