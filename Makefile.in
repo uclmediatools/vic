@@ -85,7 +85,7 @@ SRC_GRABBER = $(OBJ_GRABBER:.o=.cpp)
 OBJ_XIL = @V_OBJ_XIL@
 OBJ_CRYPT = @V_OBJ_CRYPT@
 LIB = $(LIB_GRABBER) @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ \
-	codec/tmndec/libh263.a codec/tmn-x/libh263coder.a -lm
+	codec/tmndec/libh263.a codec/tmn-x/libh263coder.a ../common/libcommon.a -lm
 INCLUDE = $(INCLUDE_MISC) $(INCLUDE_GRABBER) $(INCLUDE_TK) $(INCLUDE_TCL) \
 	$(INCLUDE_X11) $(MD_INC) -Icodec/jpeg -Icodec/p64 -I.
 DEFINE = @V_DEFINE@ -DED_YBITS=$(ED_YBITS) -DSIGRET=@V_SIGRET@
@@ -187,13 +187,13 @@ vic.dyn: $(OBJ) $(OBJ_GRABBER) $(JV_LIB)
 
 # XIL support 
 #
-vic.xil: tmndec/libh263.a tmn-x/libh263coder.a $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)  $(OBJ_XIL)
+vic.xil: codec/tmndec/libh263.a codec/tmn-x/libh263coder.a $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)  $(OBJ_XIL)
 	rm -f $@
 	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(OBJ_XIL) $(OBJ_CRYPT) $(LIB) $(STATIC) @V_LIB_XIL@
 
-histtolut: render/histtolut/histtolut.cpp convex_hull.o
+histtolut: render/histtolut/histtolut.cpp render/histtolut/convex_hull.o
 	rm -f $@
-	$(C++) -o $@ $(CFLAGS) histtolut.cpp convex_hull.o
+	$(C++) -o $@ $(CFLAGS) render/histtolut/histtolut.cpp render/histtolut/convex_hull.o
 
 vdd: $(OBJ_VDD)
 	rm -f $@
