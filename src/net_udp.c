@@ -308,13 +308,12 @@ static int udp_send4(socket_udp *s, char *buffer, int buflen)
 	return sendto(s->fd, buffer, buflen, 0, (struct sockaddr *) &s_in, sizeof(s_in));
 }
 
-static char *udp_host_addr4(void)
+static const char *udp_host_addr4(void)
 {
-	char	       		*hname;
+	static char    		 hname[MAXHOSTNAMELEN];
 	struct hostent 		*hent;
 	struct in_addr  	 iaddr;
 	
-	hname = (char *) xmalloc(MAXHOSTNAMELEN);
 	if (gethostname(hname, MAXHOSTNAMELEN) != 0) {
 		debug_msg("Cannot get hostname!");
 		abort();
@@ -323,7 +322,7 @@ static char *udp_host_addr4(void)
 	assert(hent->h_addrtype == AF_INET);
 	memcpy(&iaddr.s_addr, hent->h_addr, sizeof(iaddr.s_addr));
 	strncpy(hname, inet_ntoa(iaddr), MAXHOSTNAMELEN);
-	return hname;
+	return (const char*)hname;
 }
 
 /*****************************************************************************/
@@ -493,16 +492,14 @@ static int udp_send6(socket_udp *s, char *buffer, int buflen)
 #endif
 }
 
-static char *udp_host_addr6(socket_udp *s)
+static const char *udp_host_addr6(socket_udp *s)
 {
 #ifdef HAVE_IPv6
-	char	       		*hname;
+	static char		 hname[MAXHOSTNAMELEN];
 	int 			 gai_err;
 	struct addrinfo 	 hints, *ai;
 	struct sockaddr_in6 	 local;
 	int len = sizeof(local), result = 0;
-
-	hname = (char *) xmalloc(MAXHOSTNAMELEN);
 
 	memset((char *)&local, 0, len);
 	local.sin6_family = AF_INET6;
@@ -541,13 +538,13 @@ static char *udp_host_addr6(socket_udp *s)
 			abort();
 		}
 		freeaddrinfo(ai);
-		return hname;
+		return (const char*)hname;
 	}
 	if (inet_ntop(AF_INET6, &local.sin6_addr, hname, MAXHOSTNAMELEN) == NULL) {
 		debug_msg("inet_ntop: %s: \n", hname);
 		abort();
 	}
-	return hname;
+	return (const char*)hname;
 #else  /* HAVE_IPv6 */
 	UNUSED(s);
 	return "::";	/* The unspecified address... */
@@ -647,7 +644,7 @@ int udp_select(struct timeval *timeout)
 	return select(max_fd + 1, &rfd, NULL, NULL, timeout);
 }
 
-char *udp_host_addr(socket_udp *s)
+const char *udp_host_addr(socket_udp *s)
 {
 	switch (s->mode) {
 	case IPv4 : return udp_host_addr4();

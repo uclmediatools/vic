@@ -778,8 +778,8 @@ static double rtcp_interval(struct rtp *session)
 static char *get_cname(socket_udp *s)
 {
         /* Set the CNAME. This is "user@hostname" or just "hostname" if the username cannot be found. */
+        const char              *hname;
         char                    *uname;
-        char                    *hname;
         char                    *cname;
 #ifndef WIN32
         struct passwd           *pwent;
@@ -823,7 +823,6 @@ static char *get_cname(socket_udp *s)
         /* Now the hostname. Must be dotted-quad IP address. */
         hname = udp_host_addr(s);
         strncpy(cname + strlen(cname), hname, MAXCNAMELEN - strlen(cname));
-        xfree(hname);
         return cname;
 }
 
@@ -835,6 +834,19 @@ static void init_opt(struct rtp *session)
 	rtp_setopt(session, RTP_OPT_FILTER_MY_PACKETS, FALSE);
 }
 
+static void init_rng(const char *s)
+{
+        static uint32_t seed;
+        if (seed == 0) {
+                pid_t p = getpid();
+                while (*s) {
+                        seed += (uint32_t)*s++;
+                        seed = seed * 31 + 1;
+                }
+                seed = 1 + seed * 31 + (uint32_t)p;
+                srand48(seed);
+        }
+}
 
 struct rtp *rtp_init(char *addr, uint16_t rx_port, uint16_t tx_port, int ttl, double rtcp_bw, 
                      void (*callback)(struct rtp *session, rtp_event *e),
@@ -854,7 +866,6 @@ struct rtp *rtp_init_if(char *addr, char *iface, uint16_t rx_port, uint16_t tx_p
 	assert(ttl >= 0 && ttl < 128);
 	assert(rx_port % 2 == 0);
 	assert(tx_port % 2 == 0);
-
 	session 		= (struct rtp *) xmalloc(sizeof(struct rtp));
 	session->magic		= 0xfeedface;
 	session->opt		= (options *) xmalloc(sizeof(options));
@@ -872,6 +883,8 @@ struct rtp *rtp_init_if(char *addr, char *iface, uint16_t rx_port, uint16_t tx_p
 		xfree(session);
 		return NULL;
 	}
+
+        init_rng(udp_host_addr(session->rtp_socket));
 
 	session->my_ssrc            = (uint32_t) lrand48();
 	session->callback           = callback;

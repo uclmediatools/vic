@@ -52,7 +52,7 @@ int         udp_select(struct timeval *timeout);
 void        udp_fd_zero(void);
 void        udp_fd_set(socket_udp *s);
 int         udp_fd_isset(socket_udp *s);
-char       *udp_host_addr(socket_udp *s);
+const char *udp_host_addr(socket_udp *s);
 
 #if defined(__cplusplus)
 }
