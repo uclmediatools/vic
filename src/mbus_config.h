@@ -44,6 +44,8 @@ struct mbus_key {
 
 struct mbus_config;
 
+#define MBUS_CONFIG_VERSION	 1
+
 #define SCOPE_HOSTLOCAL       	 0
 #define SCOPE_HOSTLOCAL_NAME 	"HOSTLOCAL"
 #define SCOPE_LINKLOCAL       	 1

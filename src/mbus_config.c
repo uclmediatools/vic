@@ -154,15 +154,11 @@ static void rewrite_config(struct mbus_config *m)
 #else
 	char	*hashkey = mbus_new_hashkey();
 	char	*encrkey = mbus_new_encrkey();
-	char	*scope   = "HOSTLOCAL";
-	int	 len;
-	char	*buf;
+	char	 buf[1024];
 
-	len = strlen(hashkey) + strlen(encrkey) + strlen(scope) + 39;
-	buf = (char *) xmalloc(len);
-	sprintf(buf, "[MBUS]\nHASHKEY=%s\nENCRYPTIONKEY=%s\nSCOPE=%s\n", hashkey, encrkey, scope);
+	sprintf(buf, "[MBUS]\nCONFIG_VERSION=%d\nHASHKEY=%s\nENCRYPTIONKEY=%s\nSCOPE=%s\nADDRESS=%s\nPORT=%d\n", 
+		MBUS_CONFIG_VERSION, hashkey, encrkey, MBUS_DEFAULT_SCOPE_NAME, MBUS_DEFAULT_NET_ADDR, MBUS_DEFAULT_NET_PORT);
 	write(m->cfgfd, buf, strlen(buf));
-	xfree(buf);
 	free(hashkey);
 	xfree(encrkey);
 #endif
