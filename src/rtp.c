@@ -616,6 +616,7 @@ static void delete_source(struct rtp *session, uint32_t ssrc)
 	if (s->loc   != NULL) xfree(s->loc);
 	if (s->tool  != NULL) xfree(s->tool);
 	if (s->note  != NULL) xfree(s->note);
+	if (s->priv  != NULL) xfree(s->priv);
 	if (s->sr    != NULL) xfree(s->sr);
 
         remove_rr(session, ssrc); 

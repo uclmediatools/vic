@@ -335,7 +335,8 @@ v1.2.5	- More informative error message when the lock on the mbus configuration
 	- Fixed Win32 .{dsw,dsp} files for new directory structure.
 	- Documented net_udp.c.
 	- Move strfind to util.[ch] from mbus_addr.[ch].
-	- Fix CSRC advertisment (patch from Ivo Sedlacek <ivo.sedlacek@anfdata.cz>)
+	- Fix CSRC handling (patch from Ivo Sedlacek <ivo.sedlacek@anfdata.cz>)
+	- Fix uninitialized field in SDES PRIV handling (Robert Olson)
 
 
 Still to do...
