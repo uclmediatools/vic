@@ -7,6 +7,7 @@
 #include <string.h>
 #include <assert.h>
 #include <time.h>
+#include "defs.h"
 
 #include "h263.h"
  
