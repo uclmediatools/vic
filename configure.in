@@ -31,8 +31,6 @@ hpux*)
 	;;
 esac
 
-
-
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_RANLIB
@@ -80,7 +78,7 @@ dnl  __CHAR_UNSIGNED__ will be defined; hope this is OK.
 # GCC-specific warning flags
 if test "$GCC" = yes
 then
-        CFLAGS="$CFLAGS -W -Wall -Wbad-function-cast -Wmissing-prototypes"
+        CFLAGS="$CFLAGS -W -Wall -Wbad-function-cast -Wmissing-prototypes -Werror"
         if test -f .devel
         then
                 CFLAGS="$CFLAGS -Werror"
@@ -136,16 +134,56 @@ AC_ARG_ENABLE(profile,
 			AC_ERROR([Don't know how to enable profiling for $CC])
 		fi
 	fi])
+
 #  -bounds
 #       add -fbounds-checking to CFLAGS
 #       add -lcheck to LIBS
+AC_ARG_ENABLE(bounds,
+	[  --enable-bounds         enable bounds checking],
+	[if test $enableval = yes
+	then
+		if test "$GCC" = yes
+		then
+			CFLAGS="$CFLAGS -fbounds-checking"
+			LIBS="$LIBS -lcheck"
+		else
+			AC_ERROR([Don't know how to enable profiling for $CC])
+		fi
+	fi])
+
 #  others
 #       add as compile flag
 # also:
 # MBUS_ENCRYPT_BY_DEFAULT
+
+
+
 # -DDEBUG
 # -DDEBUG_MEM
 # -DNDEBUG
+AC_ARG_ENABLE(debug,
+	[  --enable-debug	   enable debug messages and code],
+	[if test $enableval = yes
+	then
+		if test "$GCC" = yes
+		then
+			CFLAGS="$CFLAGS -DDEBUG"
+		else
+			AC_ERROR([Don't know how to enable debugging for $CC])
+		fi
+	fi])
+AC_ARG_ENABLE(debug-mem,
+	[  --enable-debug-mem	   enable memory debugging code],
+	[if test $enableval = yes
+	then
+		if test "$GCC" = yes
+		then
+			CFLAGS="$CFLAGS -DDEBUG_MEM"
+		else
+			AC_ERROR([Don't know how to enable memory debugging for $CC])
+		fi
+	fi])
+
 
 AC_CONFIG_HEADER(config.h)
 
