@@ -616,7 +616,7 @@ udp_sendv6(socket_udp *s, struct iovec *vector, int count)
 	msg.msg_namelen    = sizeof(s_in);
 	msg.msg_iov        = vector;
 	msg.msg_iovlen     = count;
-#ifdef NDEF  
+#ifndef Solaris  
 	msg.msg_control    = 0;
 	msg.msg_controllen = 0;
 	msg.msg_flags      = 0;
