@@ -108,8 +108,8 @@ typedef struct _rtcp_rr_wrapper {
  */
 
 typedef struct _source {
-	struct _source	*l_link;	/* The l_link and r_link are used to  */
-	struct _source	*r_link;	/* construct the binary tree database */
+	struct _source	*next;
+	struct _source	*prev;
 	u_int32		 ssrc;
 	char		*cname;
 	char		*name;
@@ -123,6 +123,17 @@ typedef struct _source {
 	struct timeval	 last_active;
 } source;
 
+/* The size of the hash table used to hold the source database. */
+/* Should be large enough that we're unlikely to get collisions */
+/* when sources are added, but not too large that we waste too  */
+/* much memory. Sedgewick ("Algorithms", 2nd Ed, Addison-Wesley */
+/* 1988) suggests that this should be around 1/10th the number  */
+/* of entries that we expect to have in the database and should */
+/* be a prime number. Everything continues to work if this is   */
+/* too low, it just goes slower... for now we assume around 100 */
+/* participants is a sensible limit so we set this to 11.       */   
+#define RTP_DB_SIZE	11
+
 /*
  * The "struct rtp" defines an RTP session.
  */
@@ -131,12 +142,162 @@ struct rtp {
 	socket_udp	*rtp_socket;
 	socket_udp	*rtcp_socket;
 	u_int32		 my_ssrc;
-	source		*db;
+	source		*db[RTP_DB_SIZE];
 	int		 invalid_rtp_count;
 	int		 invalid_rtcp_count;
 	int		 ssrc_count;
 	void (*callback)(struct rtp *session, rtp_event *event);
 };
+
+static int ssrc_hash(u_int32 ssrc)
+{
+	/* Hash from an ssrc to a position in the source database.   */
+	/* Assumes that ssrc values are uniformly distributed, which */
+	/* should be true but probably isn't (Rosenberg has reported */
+	/* that many implementations generate ssrc values which are  */
+	/* not uniformly distributed over the space, and the H.323   */
+	/* spec requires that they are non-uniformly distributed).   */
+	/* This routine is written as a function rather than inline  */
+	/* code to allow it to be made smart in future: probably we  */
+	/* should run MD5 on the ssrc and derive a hash value from   */
+	/* that, to ensure it's more uniformly distributed?          */
+	return ssrc % RTP_DB_SIZE;
+}
+
+static void check_database(struct rtp *session)
+{
+#ifdef DEBUG
+	/* This routine performs a sanity check on the database. */
+	/* If the DEBUG symbol is not defined, it does nothing.  */
+	source *s;
+
+	/* Check that we have a database entry for our ssrc... */
+	/* We only do this check if ssrc_count > 0 since it is */
+	/* performed during initialisation whilst creating the */
+	/* source entry for my_ssrc.                           */
+	if (session->ssrc_count > 0) {
+		for (s = session->db[ssrc_hash(session->my_ssrc)]; s != NULL; s = s->next) {
+			if (s->ssrc == session->my_ssrc) {
+				break;
+			}
+		}
+		assert(s != NULL);
+	}
+	/* Check that the linked lists making up the chains in */
+	/* the hash table are correctly linked together...     */
+
+	/* Check that the number of entries in the hash table  */
+	/* matches session->ssrc_count                         */
+
+	/* Walk through all the reception reports to ensure    */
+	/* that the ssrcs they reference are in the database.  */
+#endif
+}
+
+static source *get_source(struct rtp *session, u_int32 ssrc)
+{
+	source *s;
+
+	check_database(session);
+	for (s = session->db[ssrc_hash(ssrc)]; s != NULL; s = s->next) {
+		if (s->ssrc == ssrc) {
+			return s;
+		}
+	}
+	return NULL;
+}
+
+static void create_source(struct rtp *session, u_int32 ssrc)
+{
+	/* Create a new source entry, and add it to the database.    */
+	/* The database is a hash table, using the separate chaining */
+	/* algorithm.                                                */
+	source	*s = get_source(session, ssrc);
+	int	 h;
+
+	if (s != NULL) {
+		/* Source is already in the database... Mark it as */
+		/* active and exit (this is the common case...)    */
+		gettimeofday(&(s->last_active), NULL);
+		return;
+	}
+	check_database(session);
+	/* This is a new source, we have to create it... */
+	h = ssrc_hash(ssrc);
+	s = (source *) xmalloc(sizeof(source));
+	s->next  = session->db[h];
+	s->prev  = NULL;
+	s->ssrc  = ssrc;
+	s->cname = NULL;
+	s->name  = NULL;
+	s->email = NULL;
+	s->phone = NULL;
+	s->loc   = NULL;
+	s->tool  = NULL;
+	s->note  = NULL;
+	s->sr    = NULL;
+	s->rr    = NULL;
+	gettimeofday(&(s->last_active), NULL);
+	/* Now, add it to the database... */
+	if (session->db[h] != NULL) {
+		session->db[h]->prev = s;
+	}
+	session->db[ssrc_hash(ssrc)] = s;
+	session->ssrc_count++;
+	debug_msg("Created database entry for ssrc 0x%08lx\n", ssrc);
+	check_database(session);
+}
+
+static void free_source(source *s)
+{
+	/* Free the memory allocated to a source... */
+	rtcp_rr_wrapper	*curr_rr;
+	rtcp_rr_wrapper *next_rr;
+
+	if (s->cname != NULL) xfree(s->cname);
+	if (s->name  != NULL) xfree(s->name);
+	if (s->email != NULL) xfree(s->email);
+	if (s->phone != NULL) xfree(s->phone);
+	if (s->loc   != NULL) xfree(s->loc);
+	if (s->tool  != NULL) xfree(s->tool);
+	if (s->note  != NULL) xfree(s->note);
+	if (s->sr    != NULL) xfree(s->sr);
+	curr_rr = s->rr;
+	while (curr_rr != NULL) {
+		next_rr = curr_rr->next;
+		xfree(curr_rr->rr);
+		xfree(curr_rr);
+		curr_rr = next_rr;
+	}
+}
+
+static void delete_source(struct rtp *session, u_int32 ssrc)
+{
+	/* Remove a source from the RTP database... */
+	source	*s = get_source(session, ssrc);
+	int	 h = ssrc_hash(ssrc);
+
+	assert(s != NULL);	/* Deleting a source which doesn't exist is an error... */
+
+	check_database(session);
+	if (session->db[h] == s) {
+		/* It's the first entry in this chain... */
+		session->db[h] = s->next;
+		if (s->next != NULL) {
+			s->next->prev = NULL;
+		}
+	} else {
+		assert(s->prev != NULL);	/* Else it would be the first in the chain... */
+		s->prev->next = s->next;
+		if (s->next != NULL) {
+			s->next->prev = s->prev;
+		}
+	}
+	free_source(s);
+	debug_msg("FIXME: should also free the rr entries pointing to this ssrc...\n");
+	session->ssrc_count--;
+	check_database(session);
+}
 
 static void insert_rr(source *s, rtcp_rr *rr)
 {
@@ -188,101 +349,26 @@ static void insert_rr(source *s, rtcp_rr *rr)
 	}
 }
 
-static source *get_source(struct rtp *session, u_int32 ssrc)
-{
-	source	*curr = session->db;
-
-	while (curr != NULL) {
-		if (curr->ssrc == ssrc) {
-			return curr;
-		} else if (curr->ssrc < ssrc) {
-			curr = curr->l_link;
-		} else if (curr->ssrc > ssrc) {
-			curr = curr->r_link;
-		}
-	}
-	return NULL;
-}
-
-static void create_source(struct rtp *session, u_int32 ssrc)
-{
-	source	*new_source = get_source(session, ssrc);
-	if (new_source != NULL) {
-		/* Source exists already... update the last_active time, but otherwise do nothing. */
-		gettimeofday(&(new_source->last_active), NULL);
-		return;
-	} else {
-		/* Source doesn't exist... create it. */
-		new_source = (source *) xmalloc(sizeof(source));
-		if (new_source == NULL) {
-			debug_msg("Unable to create source 0x%08x, insufficient memory\n", ssrc);
-			return;
-		}
-		debug_msg("Created source 0x%08x\n", ssrc);
-		new_source->l_link = NULL;
-		new_source->r_link = NULL;
-		new_source->ssrc   = ssrc;
-		new_source->cname  = NULL;
-		new_source->name   = NULL;
-		new_source->email  = NULL;
-		new_source->phone  = NULL;
-		new_source->loc    = NULL;
-		new_source->tool   = NULL;
-		new_source->note   = NULL;
-		new_source->sr     = NULL;
-		new_source->rr     = NULL;
-		gettimeofday(&(new_source->last_active), NULL);
-		/* Add the new_source to the database. We build up a binary tree of sources */
-		/* indexed by ssrc.  This is likely to work, on average, since ssrc values  */
-		/* are chosen at random, but has really bad worst case behaviour.           */
-		session->ssrc_count++;
-		if (session->db == NULL) {
-			session->db = new_source;
-			return;
-		} else {
-			source	*tmp = session->db;
-			while (1) {
-				if (tmp->ssrc < ssrc) {
-					if (tmp->l_link != NULL) {
-						tmp = tmp->l_link;
-					} else {
-						tmp->l_link = new_source;
-						return;
-					}
-				} else {
-					if (tmp->r_link != NULL) {
-						tmp = tmp->r_link;
-					} else {
-						tmp->r_link = new_source;
-						return;
-					}
-				}
-			}
-		}
-	}
-}
-
-static void delete_source(struct rtp *session, u_int32 ssrc)
-{
-	
-}
-
 struct rtp *rtp_init(char *addr, u_int16 port, int ttl, void (*callback)(struct rtp *session, rtp_event *e))
 {
 	struct rtp *session;
+	int         i;
 
 	assert(ttl >= 0 && ttl < 128);
 	assert(port % 2 == 0);
 
 	session = (struct rtp *) xmalloc(sizeof(struct rtp));
-	session->rtp_socket   = udp_init(addr, port, ttl);
-	session->rtcp_socket  = udp_init(addr, port+1, ttl);
-	session->my_ssrc      = (u_int32) lbl_random();
-	session->db           = NULL;
-	session->callback     = callback;
+	session->rtp_socket         = udp_init(addr, port, ttl);
+	session->rtcp_socket        = udp_init(addr, port+1, ttl);
+	session->my_ssrc            = (u_int32) lbl_random();
+	session->callback           = callback;
 	session->invalid_rtp_count  = 0;
 	session->invalid_rtcp_count = 0;
-	session->ssrc_count   = 1;
+	session->ssrc_count         = 0;
+	for (i = 0; i < RTP_DB_SIZE; i++) {
+		session->db[i] = NULL;
+	}
+	create_source(session, session->my_ssrc);
 	return session;
 }
 
@@ -618,7 +704,6 @@ static void process_rtcp_bye(struct rtp *session, rtcp_t *packet, struct timeval
 	int		 i;
 	u_int32		 ssrc;
 	rtp_event	 event;
-	source		*s;
 
 	for (i = 0; i < packet->common.count; i++) {
 		ssrc = ntohl(packet->r.bye.ssrc[i]);
