@@ -526,6 +526,7 @@ void mbus_get_net_addr(struct mbus_config *m, char *net_addr, uint16_t *net_port
 	
 	/* Read the key from the registry... */
 	buffer = (char *) xmalloc(MBUS_BUF_SIZE);
+        buflen = MBUS_BUF_SIZE;
 	status = RegQueryValueEx(m->cfgKey, "ADDRESS", 0, &type, buffer, &buflen);
 	if (status != ERROR_SUCCESS) {
 		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
@@ -535,10 +536,9 @@ void mbus_get_net_addr(struct mbus_config *m, char *net_addr, uint16_t *net_port
 		assert(type == REG_SZ);
 		assert(buflen > 0);
 		strncpy(net_addr, buffer, buflen);
-		xfree(buffer);
 	}
 
-	buflen = MBUS_BUF_SIZE;
+	buflen = sizeof(port);
 	status = RegQueryValueEx(m->cfgKey, "PORT", 0, &type, (uint8_t *) &port, &buflen);
 	if (status != ERROR_SUCCESS) {
 		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
@@ -550,7 +550,6 @@ void mbus_get_net_addr(struct mbus_config *m, char *net_addr, uint16_t *net_port
 		*net_port = (uint16_t) port;
 	}
 
-	buffer = (char *) xmalloc(MBUS_BUF_SIZE);
 	buflen = MBUS_BUF_SIZE;
 	status = RegQueryValueEx(m->cfgKey, "SCOPE", 0, &type, buffer, &buflen);
 	if (status != ERROR_SUCCESS) {
@@ -568,8 +567,8 @@ void mbus_get_net_addr(struct mbus_config *m, char *net_addr, uint16_t *net_port
 			debug_msg("Unrecognized scope: %s\n", buffer);
 			*net_scope = MBUS_DEFAULT_SCOPE;
 		}
-		xfree(buffer);
 	}
+        xfree(buffer);
 #else
 	struct stat	 s;
 	char		*buf;
@@ -674,6 +673,7 @@ int mbus_get_version(struct mbus_config *m)
 	assert(m->cfg_locked);
 	
 	/* Read the key from the registry... */
+        verl = sizeof(&cver);
 	status = RegQueryValueEx(m->cfgKey, "CONFIG_VERSION", 0, &type, (uint8_t *) &cver, &verl);
 	if (status != ERROR_SUCCESS) {
 		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
