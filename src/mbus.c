@@ -585,7 +585,7 @@ static void resend(struct mbus *m, struct mbus_msg *curr)
 	/* this message was first transmitted. If it was okay then, it's okay now.     */
 	int	 i;
 
-	tx_header(curr->seqnum, curr->ts.tv_sec, curr->reliable?'R':'U', m->addr[0], curr->dest, -1);
+	tx_header(curr->seqnum, curr->ts.tv_sec, (char)(curr->reliable?'R':'U'), m->addr[0], curr->dest, -1);
 	for (i = 0; i < curr->num_cmds; i++) {
 		tx_add_command(curr->cmd_list[i], curr->arg_list[i]);
 	}
@@ -747,7 +747,7 @@ void mbus_send(struct mbus *m)
 
 	while (curr != NULL) {
 		/* Create the message... */
-		tx_header(curr->seqnum, (int) curr->ts.tv_sec, curr->reliable?'R':'U', m->addr[0], curr->dest, -1);
+		tx_header(curr->seqnum, curr->ts.tv_sec, (char)(curr->reliable?'R':'U'), m->addr[0], curr->dest, -1);
 		for (i = 0; i < curr->num_cmds; i++) {
 			tx_add_command(curr->cmd_list[i], curr->arg_list[i]);
 		}
