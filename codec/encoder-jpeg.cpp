@@ -45,6 +45,7 @@ static const char rcsid[] =
 #include "vic_tcl.h"
 #include "crdef.h"
 #include "transmitter.h"
+#include "pktbuf-rtp.h"
 #include "module.h"
 
 #define HDRSIZE (sizeof(rtphdr) + 8)
@@ -134,7 +135,7 @@ class JpegEncoder : public TransmitterModule {
 
     int command(int argc, const char*const* argv);
 
-	int flush(Transmitter::pktbuf* pb, int nbit, Transmitter::pktbuf* npb);
+    int flush(pktbuf* pb, int nbit, pktbuf* npb);
     int encode(const VideoFrame*);
     void encode_blk(const short* blk, short* dcpred,
 		    struct JpegEncoder::huffentry* dcht,
@@ -424,8 +425,7 @@ JpegEncoder::consume(const VideoFrame *vf)
 }
 
 int
-JpegEncoder::flush(Transmitter::pktbuf* pb, int nbit,
-		       Transmitter::pktbuf* npb)
+JpegEncoder::flush(pktbuf* pb, int nbit, pktbuf* npb)
 {
     u_char* obc = bc_;
 
@@ -438,14 +438,13 @@ JpegEncoder::flush(Transmitter::pktbuf* pb, int nbit,
     if (cc == 0 && npb != 0)
 	abort();
 
- 	pb->iov[0].iov_len = HDRSIZE;
-	pb->iov[1].iov_len = cc;
-	rtphdr* rh = (rtphdr*)pb->iov[0].iov_base;
+    pb->len = cc + HDRSIZE;
+    rtphdr* rh = (rtphdr*)pb->data;
     if (npb == 0)
 	rh->rh_flags |= htons(RTP_M);
 
     if (npb != 0) {
-	u_char* nbs = (u_char*)npb->iov[1].iov_base;
+	u_char* nbs = &npb->data[HDRSIZE];
 	int extra = obc - (bs_ + (nbit >> 3));
 	if (extra > 0)
 	    memcpy(nbs, bs_ + (nbit >> 3), extra);
@@ -563,11 +562,12 @@ JpegEncoder::encode_mcu(u_int mcu, const u_char* frm)
 int
 JpegEncoder::encode(const VideoFrame* vf)
 {
-	Transmitter::pktbuf* pb = tx_->alloc(vf->ts_, RTP_PT_JPEG);
-	bs_ = (u_char*)pb->iov[1].iov_base;
-	bc_ = bs_;
-	u_int ec = (tx_->mtu() - HDRSIZE) << 3;
-	int fragsize = tx_->mtu() - HDRSIZE;
+    tx_->flush();
+	pktbuf* pb = pool_->alloc(vf->ts_, RTP_PT_JPEG);
+    bs_ = &pb->data[HDRSIZE];
+    bc_ = bs_;
+    int fragsize = tx_->mtu() - HDRSIZE;
+    u_int ec = fragsize << 3;
 
     bb_ = 0;
     nbb_ = 0;
@@ -577,7 +577,7 @@ JpegEncoder::encode(const VideoFrame* vf)
     cbpred_ = 0;
 
     /* RTP/JPEG header */
-    rtphdr* rh = (rtphdr*)pb->iov[0].iov_base;
+    rtphdr* rh = (rtphdr*)pb->data;
     u_int* h = (u_int*)(rh+1);
     h[0] = htonl(offset_);
     h[1] = htonl(quant_ << 16 | w_ << 8 | h_);
@@ -589,14 +589,13 @@ JpegEncoder::encode(const VideoFrame* vf)
 	encode_mcu(mcu, frm);
 	u_int cbits = (bc_ - bs_) << 3;
 	if (cbits > ec) {
-		Transmitter::pktbuf* npb;
-		npb = tx_->alloc(vf->ts_, RTP_PT_JPEG);
+	    pktbuf* npb = pool_->alloc(vf->ts_, RTP_PT_JPEG);
 	    cc += flush(pb, fragsize<<3, npb);
 	    offset_ += fragsize;
 	    pb = npb;
 
 	    /* RTP/JPEG header */
-	    rh = (rtphdr*)pb->iov[0].iov_base;
+	    rh = (rtphdr*)pb->data;
 	    u_int* h = (u_int*)(rh+1);
 	    h[0] = htonl(offset_);
 	    h[1] = htonl(quant_ << 16 | w_ << 8 | h_);

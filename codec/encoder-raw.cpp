@@ -38,6 +38,7 @@ static char rcsid[] =
 #endif
 
 #include "transmitter.h"
+#include "pktbuf-rtp.h"
 #include "module.h"
 
 class RawEncoder : public TransmitterModule {
@@ -65,8 +66,8 @@ RawEncoder::RawEncoder() : TransmitterModule(FT_RAW)
 
 RawEncoder::~RawEncoder()
 {
-	if (tx_ != 0)
-		tx_->flush();
+	//if (tx_ != 0)
+	//	tx_->flush();
 }
 
 #define HLEN (sizeof(jpeghdr) + sizeof(rtphdr))
@@ -83,9 +84,11 @@ int RawEncoder::consume(const VideoFrame* vf)
 	int off = 0;
 	int payload = tx_->mtu() - HLEN;
 	while (off < size) {
-		Transmitter::pktbuf* pb = tx_->alloch(p->ts_, RTP_PT_RAW);
+		//Transmitter::pktbuf* pb = tx_->alloch(p->ts_, RTP_PT_RAW);
+		pktbuf* pb = pool_->alloc(p->ts_, RTP_PT_RAW);
 		/* use a rtp/jpeg header */
-		rtphdr* rh = (rtphdr*)pb->hdr;
+		//rtphdr* rh = (rtphdr*)pb->hdr;
+		rtphdr* rh = (rtphdr*)pb->data;
 		jpeghdr* h = (jpeghdr*)(rh + 1);
 
 		h->width = p->width_ >> 3;
@@ -99,9 +102,11 @@ int RawEncoder::consume(const VideoFrame* vf)
 			rh->rh_flags |= htons(RTP_M);
 
 		h->off = htonl(off);
-		pb->iov[0].iov_len = HLEN;
-		pb->iov[1].iov_base = (caddr_t)p->bp_ + off;
-		pb->iov[1].iov_len = cc;
+		//pb->iov[0].iov_len = HLEN;
+		//pb->iov[1].iov_base = (caddr_t)p->bp_ + off;
+		memcpy(&pb->data[HLEN],(caddr_t)p->bp_ + off, cc);
+		//pb->iov[1].iov_len = cc;
+		pb->len = cc + HLEN;
 		/*XXX DEC C++ needs scope qualifier here */
 		tx_->send(pb);
 		tot += HLEN;

@@ -86,7 +86,7 @@ class NvEncoder : public TransmitterModule {
 	virtual int consume(const VideoFrame*);
  protected:
 	void size(int w, int h);
-	int flush(Transmitter::pktbuf*, int sync);
+	int flush(pktbuf*, int sync);
 	void putblock(const u_char* yp, const u_char* up, const u_char* vp,
 		      int x, int y, int loss, u_char*& runlen);
 	int endblock();
@@ -130,21 +130,22 @@ NvEncoder::~NvEncoder()
 {
 }
 
-int NvEncoder::flush(Transmitter::pktbuf* pb, int sync)
+#define HLEN (sizeof(rtphdr) + sizeof(nvhdr))
+
+int NvEncoder::flush(pktbuf* pb, int sync)
 {
-	int cc = pt_ - (u_char*)pb->iov[1].iov_base;
+	int cc = pt_ - (u_char*)&pb->data[HLEN];
 	/*
 	 * If there's no packet data to send and we don't need
 	 * to transmit a sync bit (to indicate a new frame),
 	 * then release the packet buffer and return.
 	 */
 	if (cc == 0 && !sync) {
-		tx_->release(pb);
+		pool_->release(pb);
 		return (0);
 	}
-	pb->iov[0].iov_len = sizeof(rtphdr) + sizeof(nvhdr);
-	pb->iov[1].iov_len = cc;
-	rtphdr* rh = (rtphdr*)pb->iov[0].iov_base;
+	pb->len = cc + HLEN;
+	rtphdr* rh = (rtphdr*)pb->data;
 	if (sync)
 		rh->rh_flags |= htons(RTP_M);
 
@@ -304,10 +305,9 @@ int NvEncoder::consume(const VideoFrame* vf)
 
 	tx_->flush();
 
-	Transmitter::pktbuf* pb = tx_->alloc(p->ts_, RTP_PT_NV);
-#define HDRSIZE (sizeof(rtphdr) + sizeof(nvhdr))
-	pt_ = (u_char*)pb->iov[1].iov_base;
-	ep_ = pt_ + tx_->mtu() - HDRSIZE;
+	pktbuf* pb = pool_->alloc(p->ts_, RTP_PT_NV);
+	pt_ = &pb->data[HLEN];
+	ep_ = pt_ + tx_->mtu() - HLEN;
 	
 	int cc = 0;
 	u_char* runlen;
@@ -325,9 +325,9 @@ int NvEncoder::consume(const VideoFrame* vf)
 			if (pt_ + MAXBLOCK >= ep_) {
 				cc += flush(pb, 0);
 				runlen = 0;
-				pb = tx_->alloc(p->ts_, RTP_PT_NV);
-				pt_ = (u_char*)pb->iov[1].iov_base;
-				ep_ = pt_ + tx_->mtu() - HDRSIZE;
+				pb = pool_->alloc(p->ts_, RTP_PT_NV);
+				pt_ = &pb->data[HLEN];
+				ep_ = pt_ + tx_->mtu() - HLEN;
 			}
 			int cr = *crvec;
 			if (cr & CR_SEND) {

@@ -62,6 +62,7 @@ static const char rcsid[] =
 #include "bsd-endian.h"
 #include "crdef.h"
 #include "transmitter.h"
+#include "pktbuf.h"
 #include "module.h"
 
 #define MAXSKIP		32
@@ -79,7 +80,7 @@ class CellbEncoder : public TransmitterModule {
  private:
 	void size(int w, int h);
 	int diff(const u_char blk1[4], const u_char blk2[4]) const;
-	void send(Transmitter::pktbuf* pb, int sync, int x, int y, int cc);
+	void send(pktbuf* pb, int sync, int x, int y, int cc);
 	u_int encode_cell(const u_char* lum, const u_char* chm, int stride);
 
 	int nw_;
@@ -102,12 +103,10 @@ public:
 	}
 } encoder_matcher_cellb;
 
-void CellbEncoder::send(Transmitter::pktbuf* pb, int sync,
-			int x, int y, int cc)
+void CellbEncoder::send(pktbuf* pb, int sync, int x, int y, int cc)
 {
-	pb->iov[0].iov_len = HLEN;
-	pb->iov[1].iov_len = cc;
-	rtphdr* rh = (rtphdr*)pb->hdr;
+	pb->len = cc + HLEN;
+	rtphdr* rh = (rtphdr*)pb->data;
 	if (sync)
 		rh->rh_flags |= htons(RTP_M);
 
@@ -283,8 +282,8 @@ int CellbEncoder::consume(const VideoFrame* vf)
 	YuvFrame* p = (YuvFrame*)vf;
 	tx_->flush();
 
-	Transmitter::pktbuf* pb = tx_->alloc(p->ts_, RTP_PT_CELLB);
-	u_char* op = (u_char*)pb->iov[1].iov_base;
+	pktbuf* pb = pool_->alloc(p->ts_, RTP_PT_CELLB);
+	u_char* op = &pb->data[HLEN];
 	u_char* ep = op + tx_->mtu() - HLEN;
 	int x0 = 0;
 	int y0 = 0;
@@ -316,14 +315,14 @@ int CellbEncoder::consume(const VideoFrame* vf)
 		for (int x = 0; x < w; ) {
 			if (op + 2*5 >= ep) {
 				/*XXX sanity*/
-				if (cc != op - (u_char*)pb->iov[1].iov_base)
-					abort();
+//				if (cc != op - (u_char*)pb->iov[1].iov_base)
+//					abort();
 
 				nb += cc + HLEN;
 				send(pb, 0, x0, y0, cc);
 				cc = 0;
-				pb = tx_->alloc(p->ts_, RTP_PT_CELLB);
-				op = (u_char*)pb->iov[1].iov_base;
+				pb = pool_->alloc(p->ts_, RTP_PT_CELLB);
+				op = &pb->data[HLEN];
 				ep = op + tx_->mtu() - HLEN;
 				x0 = x;
 				y0 = y;

@@ -47,6 +47,7 @@ static const char rcsid[] =
 #include "vic_tcl.h"
 #include "crdef.h"
 #include "transmitter.h"
+#include "pktbuf-rtp.h"
 #include "module.h"
 
 #define HDRSIZE (sizeof(rtphdr) + 4)
@@ -122,7 +123,7 @@ class H261Encoder : public TransmitterModule {
 	int encode(const VideoFrame*, const u_int8_t *crvec);
 	int command(int argc, const char*const* argv);
 	void encode_blk(const short* blk, const char* lm);
-	int flush(Transmitter::pktbuf* pb, int nbit, Transmitter::pktbuf* npb);
+	int flush(pktbuf* pb, int nbit, pktbuf* npb);
 	char* make_level_map(int q, u_int fthresh);
 	void setquantizers(int lq, int mq, int hq);
 
@@ -434,7 +435,7 @@ H261Encoder::make_level_map(int q, u_int fthresh)
 		lm[i] = l;
 		lm[-i & 0xfff] = -l;
 
-		if (l <= fthresh)
+		if ((u_int)l <= fthresh)
 			l = 0;
 		flm[i] = l;
 		flm[-i & 0xfff] = -l;
@@ -707,8 +708,7 @@ H261DCTEncoder::encode_mb(u_int mba, const u_char* frm,
 }
 
 int
-H261Encoder::flush(Transmitter::pktbuf* pb, int nbit,
-		       Transmitter::pktbuf* npb)
+H261Encoder::flush(pktbuf* pb, int nbit, pktbuf* npb)
 {
 	/* flush bit buffer */
 	STORE_BITS(bb_, bc_);
@@ -720,9 +720,8 @@ H261Encoder::flush(Transmitter::pktbuf* pb, int nbit,
 	if (cc == 0 && npb != 0)
 		abort();
 
-	pb->iov[0].iov_len = HDRSIZE;
-	pb->iov[1].iov_len = cc;
-	rtphdr* rh = (rtphdr*)pb->iov[0].iov_base;
+	pb->len = cc + HDRSIZE;
+	rtphdr* rh = (rtphdr*)pb->data;
 	if (npb == 0)
 		rh->rh_flags |= htons(RTP_M);
 
@@ -730,7 +729,7 @@ H261Encoder::flush(Transmitter::pktbuf* pb, int nbit,
 	*(u_int*)(rh + 1) = htonl(h);
 
 	if (npb != 0) {
-		u_char* nbs = (u_char*)npb->iov[1].iov_base;
+		u_char* nbs = &npb->data[HDRSIZE];
 		u_int bc = (bc_ - bs_) << 3;
 		int tbit = bc + nbb_;
 		int extra = ((tbit + 7) >> 3) - (nbit >> 3);
@@ -783,15 +782,15 @@ H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 {
 	tx_->flush();
 
-	Transmitter::pktbuf* pb = tx_->alloc(vf->ts_, RTP_PT_H261);
-	bs_ = (u_char*)pb->iov[1].iov_base;
+	pktbuf* pb = pool_->alloc(vf->ts_, RTP_PT_H261);
+	bs_ = &pb->data[HDRSIZE];
 	bc_ = bs_;
 	u_int ec = (tx_->mtu() - HDRSIZE) << 3;
 	bb_ = 0;
 	nbb_ = 0;
 	sbit_ = 0;
 	/* RTP/H.261 header */
-	rtphdr* rh = (rtphdr*)pb->iov[0].iov_base;
+	rtphdr* rh = (rtphdr*)pb->data;
 	*(u_int*)(rh + 1) = 1 << 25 | lq_ << 10;
 
 	/* PSC */
@@ -837,8 +836,8 @@ H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 				encode_mb(mba, frm, loff, coff, CR_STATE(s));
 				u_int cbits = ((bc_ - bs_) << 3) + nbb_;
 				if (cbits > ec) {
-					Transmitter::pktbuf* npb;
-					npb = tx_->alloc(vf->ts_, RTP_PT_H261);
+					pktbuf* npb;
+					npb = pool_->alloc(vf->ts_, RTP_PT_H261);
 					cc += flush(pb, nbit, npb);
 					cbits -= nbit;
 					pb = npb;
@@ -851,7 +850,7 @@ H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 					} else
 						g = 0;
 
-					rh = (rtphdr*)pb->iov[0].iov_base;
+					rh = (rtphdr*)pb->data;
 					*(u_int*)(rh + 1) =
 						1 << 25 |
 						m << 15 |
