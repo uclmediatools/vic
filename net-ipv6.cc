@@ -69,6 +69,10 @@ struct in6_addr const vic_in6addr_any = IN6ADDR_ANY_INIT;
 #define INET6_ADDRSTRLEN (46)
 #endif
 
+#ifndef IS_SAME_IN6_ADDR
+#define IS_SAME_IN6_ADDR(a1,a2) IN6_ARE_ADDR_EQUAL(a1,a2)
+#endif
+
 class IP6Address : public Address {
   public:
 	IP6Address() { text_ = new char[INET6_ADDRSTRLEN]; };
@@ -271,7 +275,11 @@ int IP6Network::localname(sockaddr_in6* p) {
     p->sin6_port = 0;
   }
 
+#ifdef DAS_IPV6
   if (IS_SAME_IN6_ADDR(p->sin6_addr, vic_in6addr_any)) {
+#else 
+  if (IN6_ARE_ADDR_EQUAL(&(p->sin6_addr), &vic_in6addr_any)) {
+#endif
     result = inet6_LookupLocalAddr(&p->sin6_addr);
   }
 
