@@ -19,5 +19,7 @@ Still to do...
 	- Mbus still uses old-style addressing scheme
 	- Mbus code doesn't support encryption
 	- Resolve issues with expiry of encryption keys in the mbus
-	- IPv6 code doesn't correctly set the TTL
+	- IPv6 code sometimes doesn't get the correct interface address,
+	  since it does a gethostbyname() and looks that up, yet that can
+	  return the IPv4 hostname only on some machines.
 
