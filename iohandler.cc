@@ -132,7 +132,7 @@ void IOHandler::link(int fd, int mask)
 	    
         }
 #else
-	Tk_CreateFileHandler((ClientData)fd, mask, callback, (ClientData)this);
+	Tk_CreateFileHandler(fd, mask, callback, (ClientData)this);
 #endif
 }
 
@@ -151,7 +151,7 @@ void IOHandler::unlink()
 	}
 #else
 	if (fd_ >= 0) {
-		Tk_DeleteFileHandler((ClientData)fd_);
+		Tk_DeleteFileHandler(fd_);
 		fd_ = -1;
 	}
 #endif

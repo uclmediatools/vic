@@ -32,6 +32,10 @@
  * SUCH DAMAGE.
  */
 
+#ifndef WIN32
+#define min(a,b) (a<b?a:b)
+#endif
+
 #ifndef lint
 static char rcsid[] =
     "@(#) $Header$ (LBL)";

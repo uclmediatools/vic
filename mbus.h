@@ -52,7 +52,9 @@
 #define MBUS_MAX_ADDR   10
 #define MBUS_MAX_PD     10
 
+#ifdef WIN32
 extern "C" int gettimeofday(struct timeval *, struct timezone *);
+#endif
 
 struct mbus_ack {
         struct mbus_ack *next;
