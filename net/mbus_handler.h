@@ -47,6 +47,7 @@
 
 #include "mbus_engine.h"
 
+#include "config_unix.h"
 #include "memory.h"
 #include "mbus_config.h"
 #include "mbus.h"
