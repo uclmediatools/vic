@@ -386,7 +386,7 @@ v1.2.5	- More informative error message when the lock on the mbus configuration
 	- Assorted performance tweaks (Colin Perkins)
 	- Add RTP_OPT_REUSE_PACKET_BUFS (Colin Perkins)
 	- Fix potential crash in init_rng (Bill May)
-
+	- Add rtp_send_data_iov() (Bill May)
 
 
 Still to do...

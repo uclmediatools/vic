@@ -212,6 +212,13 @@ int 		 rtp_send_data(struct rtp *session,
 			       int cc, uint32_t csrc[], 
                                char *data, int data_len, 
 			       char *extn, uint16_t extn_len, uint16_t extn_type);
+#ifndef WIN32
+int              rtp_send_data_iov(struct rtp *session, 
+				uint32_t rtp_ts, char pt, int m, 
+				int cc, uint32_t csrc[], 
+				struct iovec *iov, int iov_count, 
+				char *extn, uint16_t extn_len, uint16_t extn_type);
+#endif
 void 		 rtp_send_ctrl(struct rtp *session, uint32_t rtp_ts, 
 			       rtcp_app_callback appcallback);
 void 		 rtp_update(struct rtp *session);
