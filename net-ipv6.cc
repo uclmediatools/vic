@@ -189,7 +189,7 @@ int IP6Network::command(int argc, const char*const* argv)
 	} else if (argc == 3) {
 		if (strcmp(argv[1], "loopback") == 0) {
 			char c = atoi(argv[2]);
-			if (setsockopt(ssock_, IPPROTO_IPV6, 
+			if (setsockopt(ssock_, IPPROTO_IP, 
 				       IPV6_MULTICAST_LOOP, &c, 1) < 0) {
 				/*
 				 * If we cannot turn off loopback (Like on the
@@ -269,7 +269,7 @@ int IP6Network::localname(sockaddr_in6* p) {
     p->sin6_port = 0;
   }
 
-  if (p->sin6_addr.s6_addr == 0) {
+  if (IS_SAME_IN6_ADDR(p->sin6_addr, vic_in6addr_any)) {
     result = inet6_LookupLocalAddr(&p->sin6_addr);
   }
 
@@ -316,7 +316,7 @@ int IP6Network::openrsock(Address & addr, u_short port, Address & local)
 	sin.sin6_family = AF_INET6;
 	sin.sin6_addr = (IP6Address&)addr;
 	sin.sin6_port = port;
-#ifdef IP_ADD_MEMBERSHIP
+#ifdef IPV6_ADD_MEMBERSHIP
 	if (IN6_IS_ADDR_MULTICAST(&sin.sin6_addr)) {
 		/*
 		 * Try to bind the multicast address as the socket
@@ -349,16 +349,23 @@ int IP6Network::openrsock(Address & addr, u_short port, Address & local)
 
 /* __IPV6 memcopy address */
 #ifdef DAS_IPV6
-		mr.i6mr_interface = vic_in6addr_any;
+		mr.i6mr_interface = 1;
 		mr.i6mr_multiaddr = (IP6Address&)addr;
 #else
-		mr.ipv6mr_multiaddr = (IP6Address&)addr;
 		mr.ipv6mr_interface = 0;
+		mr.ipv6mr_multiaddr = (IP6Address&)addr;
 #endif
 
+
+#ifdef DAS_IPV6
+		if (setsockopt(fd, IPPROTO_IP, IPV6_ADD_MEMBERSHIP, 
+			       (char *)&mr, sizeof(mr)) < 0) {
+			perror("IPV6_ADD_MEMBERSHIP");
+#else
 		if (setsockopt(fd, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, 
 			       (char *)&mr, sizeof(mr)) < 0) {
 			perror("IPV6_ADD_MEMBERSHIP");
+#endif
 			exit(1);
 		}
 	} else
@@ -434,8 +441,8 @@ int IP6Network::openssock(Address & addr, u_short port, int ttl)
 	}
 
 	memset((char *)&sin, 0, sizeof(sin));
-/* __IPV6 memcopy address */
 	sin.sin6_family = AF_INET6;
+/* __IPV6 memcopy address */
 	sin.sin6_addr = (IP6Address&)addr;
 	sin.sin6_port = port;
 	if (connect(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
@@ -443,12 +450,16 @@ int IP6Network::openssock(Address & addr, u_short port, int ttl)
 		exit(1);
 	}
 	if (IN6_IS_ADDR_MULTICAST(&sin.sin6_addr)) {
-#ifdef IP_ADD_MEMBERSHIP
+#ifdef IPV6_ADD_MEMBERSHIP
 		char c;
 
 		/* turn off loopback */
 		c = 0;
+#ifdef DAS_IPV6
+		if (setsockopt(fd, IPPROTO_IP, IPV6_MULTICAST_LOOP, &c, 1) < 0) {
+#else
 		if (setsockopt(fd, IPPROTO_IPV6, IPV6_MULTICAST_LOOP, &c, 1) < 0) {
+#endif
 			/*
 			 * If we cannot turn off loopback (Like on the
 			 * Microsoft TCP/IP stack), then declare this
@@ -459,17 +470,22 @@ int IP6Network::openssock(Address & addr, u_short port, int ttl)
 				noloopback_broken_ = 1;
 		}
 		/* set the multicast TTL */
-#if defined(SOLARIS7_IPV6) || defined(WIN32) && !defined(DAS_IPV6)
+//#if defined(SOLARIS7_IPV6) || defined(WIN32) && !defined(DAS_IPV6)
 		u_int t;
-#else
-		u_char t;
-#endif
+//#else
+//		INT32_T t;
+//#endif
 		t = (ttl > 255) ? 255 : (ttl < 0) ? 0 : ttl;
+
+#ifdef DAS_IPV6
+		if (setsockopt(fd, IPPROTO_IP, IPV6_MULTICAST_HOPS,
+			       (const char*)&t, sizeof(t)) < 0) {
+#else
 		if (setsockopt(fd, IPPROTO_IPV6, IPV6_MULTICAST_HOPS,
 			       (const char*)&t, sizeof(t)) < 0) {
-			       //(char*)&t, sizeof(t)) < 0) {
+#endif
 			perror("IPV6_MULTICAST_HOPS");
-			//exit(1);
+			exit(1);
 		}
 #else
 		fprintf(stderr, "\
