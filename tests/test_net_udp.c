@@ -56,7 +56,18 @@ void test_net_udp(void)
 	socket_udp	*s1, *s2;
 	char		 buf1[BUFSIZE], buf2[BUFSIZE];
 	const char	*hname;
-	int		 rc, i, status_parent, status_child;
+	int		 rc, i;
+	
+#ifndef WIN32
+
+	/* "BSD" bug test that appears in this function uses fork and
+	 * exec, that are not present on WIN32.  Since the original
+	 * bug has not been seen on Win32 it's probably not worth
+	 * converting to use CreateProcess() */
+
+	int status_parent, status_child;
+
+#endif /* WIN32 */
 
 	srand48(time(NULL));
 
@@ -341,6 +352,10 @@ abort_multicast_ipv6:
 #endif
 
 	/**********************************************************************/
+
+#ifdef WIN32
+	printf("UDP/IP networking (FreeBSD bug)........ disabled\n");
+#else
 	printf("UDP/IP networking (FreeBSD bug)........ "); fflush(stdout);
 	status_parent = 0;
 	randomize(buf1, 64);
@@ -436,6 +451,8 @@ abort_bsd:
 		printf("pass\n");
 	}
 	udp_exit(s1);
+#endif /* WIN32 */
+
 	return;
 }
 

@@ -302,7 +302,9 @@ v1.2.3	- Add prototype for rtp_del_csrc() which will be needed by the
 	* 8 September 2000 [rat v4.2.9]
 
 v1.2.4	- Implement rtp_add_csrc() and rtp_del_csrc().
-
+	- ifdef'ed out FreeBSD bug check in test_net_udp.c for Win32.  
+	  Prevents compilation of test cases otherwise.  Reported by Micheal
+	  Stovenour <michael.stovenour@lucent.com>.
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
