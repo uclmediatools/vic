@@ -50,9 +50,9 @@ static const char rcsid[] =
 #include <stdlib.h>
 #ifndef WIN32
 #include <unistd.h>
+#include <strings.h>
 #endif
 #include <stdio.h>
-#include <strings.h>
 #include <sys/types.h>
 #ifdef WIN32
 #include <winsock.h>
