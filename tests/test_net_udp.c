@@ -375,8 +375,13 @@ abort_multicast_ipv6:
 			printf("fail: no data on file descriptor\n");
 			exit(0);
 		}
-		if (udp_recv(s1, buf2, BUFSIZE) < 0) {
+		rc = udp_recv(s1, buf2, BUFSIZE);
+		if (rc < 0) {
 			perror("fail");
+			exit(0);
+		}
+		if (rc != BUFSIZE) {
+			printf("fail: read size incorrect (%d != %d)\n", rc, BUFSIZE);
 			exit(0);
 		}
 		if (memcmp(buf1, buf2, BUFSIZE) != 0) {
@@ -409,10 +414,15 @@ abort_multicast_ipv6:
 			printf("fail: no data on file descriptor\n");
 			goto abort_bsd;
 		}
-		if (udp_recv(s1, buf2, BUFSIZE) < 0) {
-			perror("fail");
+                rc = udp_recv(s1, buf2, BUFSIZE);
+                if (rc < 0) {
+                        perror("fail");
 			goto abort_bsd;
-		}
+                }
+                if (rc != BUFSIZE) {
+                        printf("fail: read size incorrect (%d != %d)\n", rc, BUFSIZE);
+			goto abort_bsd;
+                }
 		if (memcmp(buf1, buf2, BUFSIZE) != 0) {
 			printf("fail: buffer corrupt\n");
 			goto abort_bsd;
