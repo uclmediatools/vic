@@ -56,7 +56,7 @@ void test_net_udp(void)
 	socket_udp	*s1, *s2;
 	char		 buf1[BUFSIZE], buf2[BUFSIZE];
 	const char	*hname;
-	int		 rc;
+	int		 rc, i;
 
 	srand48(time(NULL));
 
@@ -195,10 +195,56 @@ abort_unicast:
 		printf("fail: buffer corrupt\n");
 		goto abort_multicast;
 	}
-	hname = udp_host_addr(s1); /* we need this for the unicast test... */
 	printf("pass\n");
 abort_multicast:
 	udp_exit(s1);
+
+	/**********************************************************************/
+	/* Loopback a packet to ourselves via multicast, checking lengths...  */
+	printf("UDP/IP networking (IPv4 length check).. "); fflush(stdout);
+	s1 = udp_init("224.2.0.1", 5000, 5000, 1);
+	if (s1 == NULL) {
+		printf("fail: cannot initialize socket\n");
+		return;
+	}
+	for (i = 1; i < BUFSIZE; i++) {
+		randomize(buf1, i);
+		randomize(buf2, i);
+	        if (udp_send(s1, buf1, i) < 0) {
+                	perror("fail");
+                	goto abort_length;
+        	}
+        	timeout.tv_sec  = 1;
+        	timeout.tv_usec = 0;
+        	udp_fd_zero();
+        	udp_fd_set(s1);
+        	rc = udp_select(&timeout);
+        	if (rc < 0) {
+                	perror("fail");
+                	goto abort_length;
+        	}
+        	if (rc == 0) {
+                	printf("fail: no data waiting (no multicast loopback route?)\n");
+                	goto abort_length;
+        	}
+        	if (!udp_fd_isset(s1)) {
+                	printf("fail: no data on file descriptor\n");
+                	goto abort_length;
+        	}
+        	if (udp_recv(s1, buf2, BUFSIZE) != i) {
+                	perror("fail");
+                	goto abort_length; 
+        	}
+        	if (memcmp(buf1, buf2, i) != 0) {
+                	printf("fail: buffer corrupt\n"); 
+                	goto abort_length;
+        	}
+	}
+        printf("pass\n");
+abort_length:
+        udp_exit(s1);
+
+
 
 #ifdef HAVE_IPv6
 	/**********************************************************************/
