@@ -36,6 +36,7 @@
 proc net_open_ip { sessionType session dst } {
 	global V numLayers IPaddrFamily
 
+        set layer 0
 	set c $V(class)
 	set dst [split $dst /]
 	set n [llength $dst]
@@ -114,19 +115,13 @@ proc net_open_ip { sessionType session dst } {
 	}
 	set V(data-net) $dn
 
-	if { $IPaddrFamily == "ip6" } {
-		set ismulticast [in6_multicast $addr]
-	} else {
-		set ismulticast [in_multicast $addr]
-	}
-
 	if { $numLayers > 0 } {
 	    if { $IPaddrFamily == "ip6" } {
-		    set base [string range $addr 0 [string last : $addr]]
-		    set offset [string range $addr [expr {[string last : $addr]+1}] end]
+		    set base [string range [$dn addr] 0 [string last : [$dn addr]]]
+		    set offset [string range [$dn addr] [expr {[string last : [$dn addr]]+1}] end]
 		    set separator :
 	    } else {
-		    set oct [split $addr .]
+		    set oct [split [$dn addr] .]
 		    set base [lindex $oct 0].[lindex $oct 1].[lindex $oct 2]
 		    set offset [lindex $oct 3]
 		    set separator .
@@ -147,7 +142,7 @@ proc net_open_ip { sessionType session dst } {
 					incr port
 				}
 				set cn [new network $IPaddrFamily]
-				$cn open $base.$off $port $ttl
+				$cn open $base$separator$offset $port $ttl
 				$session ctrl-net $cn $layer
 			}
 		}
@@ -179,7 +174,7 @@ proc net_open_ip { sessionType session dst } {
 				default { set maxbw 71 }
 			}
 		} else {
-			if { $ttl <= 16 || ! $ismulticast } {
+			if { $ttl <= 16 || ![$dn ismulticast] } {
 				set maxbw 3072
 			} elseif { $ttl <= 64 } {
 				set maxbw 1024
@@ -295,14 +290,6 @@ proc init_network {} {
 	if { $key != "" } {
 		crypt_set $key
 	}
-}
-
-proc in_multicast addr {
-	return [expr ([lindex [split $addr .] 0] & 0xf0) == 0xe0]
-}
-
-proc in6_multicast addr {
-	return [expr (0x[lindex [split $addr :] 0] & 0xff00) == 0xff00]
 }
 
 proc crypt_format {key sessionType} {
