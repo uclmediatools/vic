@@ -38,18 +38,19 @@ ZIP = c:\progra~1\winzip\winzip32
 
 # Uncomment this line to compile an optimized (with no debug symbols)
 # version of the program.
-#NODEBUG=1
+NODEBUG=1
 
 APPVER=4.0
-TOOLS32       =  d:\progra~1\micros~1\vc98
-#cc32 = $(TOOLS32)\bin\cl -I$(TOOLS32)\include
-cc32 = cl
+TOOLS32 =  d:\progra~1\micros~1\vc98
+#VC5: TOOLS32 =  d:\progra~1\devstudio\vc
+cc32 = $(TOOLS32)\bin\cl -I$(TOOLS32)\include
 #rc32 = d:\progra~1\micros~1\common\msdev98\bin\rc
 rc32 = rc
 link32 = link
 
 TARGETOS=WIN95
 !include <ntwin32.mak>
+
 
 ALL = vic histtolut
 all:	vic
