@@ -1191,7 +1191,7 @@ X11Grabber::capture()
 	    XGetSubImage(dpy_, theroot_, x_origin_, y_origin_,
 		image->width, image->height, AllPlanes,
 		     ZPixmap, image, 0, 0);
-        c_grab();
+        (X11Grabber::c_grab)();
 	return 1 ;
     } else
         return 0;
