@@ -622,7 +622,7 @@ static void delete_source(struct rtp *session, uint32_t ssrc)
 		tv_add(&(session->next_rtcp_send_time), (session->ssrc_count / session->ssrc_count_prev) 
 						     * tv_diff(session->next_rtcp_send_time, event_ts));
 		tv_add(&(session->last_rtcp_send_time), - ((session->ssrc_count / session->ssrc_count_prev) 
-						     * tv_diff(event_ts, session->next_rtcp_send_time)));
+						     * tv_diff(event_ts, session->last_rtcp_send_time)));
 		session->ssrc_count_prev = session->ssrc_count;
 	}
 
@@ -1143,8 +1143,8 @@ static void rtp_recv_data(struct rtp *session, uint32_t curr_rtp_ts)
 		}
 		if (packet->x) {
 			packet->extn      = buffer + 12 + (packet->cc * 4);
-			packet->extn_len  = (packet->extn[2] << 16) | packet->extn[3];
-			packet->extn_type = (packet->extn[0] << 16) | packet->extn[1];
+			packet->extn_len  = (packet->extn[2] << 8) | packet->extn[3];
+			packet->extn_type = (packet->extn[0] << 8) | packet->extn[1];
 		} else {
 			packet->extn      = NULL;
 			packet->extn_len  = 0;
@@ -1216,6 +1216,7 @@ static int validate_rtcp(uint8_t *packet, int len)
 	rtcp_t	*r    = pkt;
 	int	 l    = 0;
 	int	 pc   = 1;
+	int	 p    = 0;
 
 	/* All RTCP packets must be compound packets (RFC1889, section 6.1) */
 	if (((ntohs(pkt->common.length) + 1) * 4) == len) {
@@ -1242,6 +1243,13 @@ static int validate_rtcp(uint8_t *packet, int len)
 	/* number must be 2, and the padding bit must be zero on all apart from  */
 	/* the last packet.                                                      */
 	do {
+		if (p == 1) {
+			debug_msg("Bogus RTCP packet: padding bit set before last in compound (sub-packet %d)\n", pc);
+			return FALSE;
+		}
+		if (r->common.p) {
+			p = 1;
+		}
 		if (r->common.version != 2) {
 			debug_msg("Bogus RTCP packet: version number != 2 in sub-packet %d\n", pc);
 			return FALSE;
@@ -1249,12 +1257,7 @@ static int validate_rtcp(uint8_t *packet, int len)
 		l += (ntohs(r->common.length) + 1) * 4;
 		r  = (rtcp_t *) (((uint32_t *) r) + ntohs(r->common.length) + 1);
 		pc++;	/* count of sub-packets, for debugging... */
-	} while (r < end && r->common.p == 0);
-
-        if (r < end && r->common.p == 1) {
-                debug_msg("Bogus RTCP packet: padding bit set before last in compound (sub-packet %d)\n", pc);
-                return FALSE;
-        }
+	} while (r < end);
 
 	/* Check that the length of the packets matches the length of the UDP */
 	/* packet in which they were received...                              */
@@ -2157,10 +2160,10 @@ static void send_rtcp(struct rtp *session, uint32_t rtp_ts,
 			int	padlen = 8 - ((ptr - buffer) % 8);
 			int	i;
 
-			for (i = 0; i < padlen; i++) {
+			for (i = 0; i < padlen-1; i++) {
 				*(ptr++) = '\0';
 			}
-			*ptr = (uint8_t) padlen;
+			*(ptr++) = (uint8_t) padlen;
 			assert(((ptr - buffer) % 8) == 0); 
 
 			((rtcp_t *) lpt)->common.p = TRUE;
@@ -2309,10 +2312,10 @@ void rtp_send_bye(struct rtp *session)
 				int	padlen = 8 - ((ptr - buffer) % 8);
 				int	i;
 
-				for (i = 0; i < padlen; i++) {
+				for (i = 0; i < padlen-1; i++) {
 					*(ptr++) = '\0';
 				}
-				*ptr = (uint8_t) padlen;
+				*(ptr++) = (uint8_t) padlen;
 
 				common->p      = TRUE;
 				common->length = htons((int16_t)(((ptr - (uint8_t *) common) / 4) - 1));

@@ -288,6 +288,13 @@ v1.2.2	- Fix bug in mbus transmit code which caused messages to have the same se
 	- Remove get_appname() function from util.[ch], since it didn't
 	  work in all cases (sometimes argv[0] doesn't contain anything
 	  sensible).
+	- Fix RTP header extension code (patch from Jori <jori@lumumba.luc.ac.be>)
+	  as part of RTP interoperability tests.
+	- FreeBSD 4.1 doesn't support binding to an IPv6 multicast address, must
+	  bind to in6addr_any instead (reported by Shirasaki Yasuhiro).
+	- Fix validation of RTCP packets with padding (reported by Vladimir Brauner).
+	- Fix padding octet count in RTCP packets sent with padding (Vladimir Brauner).
+	- Fix RTCP timer reconsideration (Vladimir Brauner).
 
 
 Still to do...

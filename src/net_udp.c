@@ -429,6 +429,11 @@ static socket_udp *udp_init6(const char *addr, const char *iface, uint16_t rx_po
 #ifdef HAVE_SIN6_LEN
 	s_in.sin6_len    = sizeof(s_in);
 #endif
+	s_in.sin6_addr = in6addr_any;
+	if (bind(s->fd, (struct sockaddr *) &s_in, sizeof(s_in)) != 0) {
+		socket_error("bind");
+		return NULL;
+	}
 	
 	if (IN6_IS_ADDR_MULTICAST(&(s->addr6))) {
 		unsigned int      loop = 1;
@@ -440,15 +445,6 @@ static socket_udp *udp_init6(const char *addr, const char *iface, uint16_t rx_po
 		imr.ipv6mr_multiaddr = s->addr6;
 		imr.ipv6mr_interface = 0;
 #endif
-		memcpy(s_in.sin6_addr.s6_addr, &s->addr6, sizeof(struct in6_addr));
-		if (bind(s->fd, (struct sockaddr *) &s_in, sizeof(s_in)) != 0) {
-			/* bind to group address failed, try generic address. */
-			s_in.sin6_addr = in6addr_any;
-			if (bind(s->fd, (struct sockaddr *) &s_in, sizeof(s_in)) != 0) {
-				socket_error("bind");
-				return NULL;
-			}
-		}
 		
 		if (SETSOCKOPT(s->fd, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, (char *) &imr, sizeof(struct ipv6_mreq)) != 0) {
 			socket_error("setsockopt IPV6_ADD_MEMBERSHIP");
@@ -461,12 +457,6 @@ static socket_udp *udp_init6(const char *addr, const char *iface, uint16_t rx_po
 		}
 		if (SETSOCKOPT(s->fd, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, (char *) &ttl, sizeof(ttl)) != 0) {
 			socket_error("setsockopt IPV6_MULTICAST_HOPS");
-			return NULL;
-		}
-	} else /* Unicast */ {
-		s_in.sin6_addr = in6addr_any;
-		if (bind(s->fd, (struct sockaddr *) &s_in, sizeof(s_in)) != 0) {
-			socket_error("bind");
 			return NULL;
 		}
 	}

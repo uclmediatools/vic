@@ -59,7 +59,7 @@ typedef struct {
 	uint32_t	*csrc;
 	char		*data;
 	int		 data_len;
-	char		*extn;
+	unsigned char	*extn;
 	uint16_t	 extn_len;	/* Size of the extension in 32 bit words minus one */
 	uint16_t	 extn_type;	/* Extension type field in the RTP packet header   */
 	/* The following map directly onto the RTP packet header...   */
