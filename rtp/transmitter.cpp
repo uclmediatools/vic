@@ -101,49 +101,10 @@ inline double Transmitter::gettimeofday() const
 	return (tv.tv_sec + 1e-6 * tv.tv_usec);
 }
 
-/*Transmitter::pktbuf* Transmitter::alloch(u_int32_t ts, int fmt)
-{
-	pktbuf* pb = freehdrs_;
-	if (pb != 0)
-		freehdrs_ = pb->next;
-	else {
-		/*XXX grow exponentially*
-		pb = new pktbuf;
-		++nhdrs_;
-	}
-	rtphdr* rh = (rtphdr*)pb->hdr;
-	int flags = RTP_VERSION << 14 | fmt;
-	rh->rh_flags = ntohs(flags);
-	rh->rh_seqno = htons(seqno_);
-	++seqno_;
-	rh->rh_ts = htonl(ts);
-	rh->rh_ssrc = SourceManager::instance().localsrc()->srcid();
-
-	pb->iov[0].iov_base = (char*)rh;
-	pb->buf = 0;
-
-	return (pb);
-}
-
-Transmitter::pktbuf* Transmitter::alloc(u_int32_t ts, int fmt)
-{
-	pktbuf* pb = alloch(ts, fmt);
-	buffer* p = freebufs_;
-	if (p != 0)
-		freebufs_ = p->next;
-	else
-		p = new buffer;
-
-	pb->buf = p;
-	pb->iov[1].iov_base = (char*)p->data;
-	return (pb);
-}*/
-
 void Transmitter::loopback(pktbuf* pb)
 {
 	int layer = pb->layer;
 	rtphdr* rh = (rtphdr*)pb->data;
-//	int cc = pb->iov[0].iov_len + pb->iov[1].iov_len;
 	int cc = pb->len;
 	/*
 	 * Update statistics.
@@ -189,8 +150,6 @@ void Transmitter::loopback(pktbuf* pb)
 		pb->release();
 		return;
 	}
-
-//	h->recv(rh, (u_char*)pb->iov[1].iov_base, pb->iov[1].iov_len);
 	h->recv(pb);
 }
 

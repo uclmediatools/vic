@@ -1180,6 +1180,13 @@ Source* SourceManager::lookup_duplicate(u_int32_t srcid, Address &addr)
 
 void SourceManager::remove(Source* s)
 {
+	/* Do not attempt to delete local src as it is not present in 
+	 * hashtable (It gets deleted on startup).
+	 * A call for localsrc deletion probably means the app has been 
+	 * suspended for a while.
+	 */
+	if (s==localsrc_) return;
+
 	--nsources_;
 	
 	remove_from_hashtable(s);
@@ -1222,16 +1229,15 @@ void SourceManager::CheckActiveSources(double msgint)
 		//		t = s->lts_ctrl().tv_sec;
 		t = s->layer(0).lts_ctrl().tv_sec;
 		if (t == 0) {
-		/*
-		* No session packets?  Probably ivs or nv sender.
-		* Revert to the data time stamp.
+		   /*
+			* No session packets?  Probably ivs or nv sender.
+			* Revert to the data time stamp.
 			*/
-			//			t = s->lts_data().tv_sec;
 			t = s->layer(0).lts_data().tv_sec;
 			if (t == 0) {
-			/*
-			* No data time stamp on layer 0.
-			* Look through the other layers.
+			   /*
+				* No data time stamp on layer 0.
+				* Look through the other layers.
 				*/
 				for (int i = 1; i < s->nlayer_; ++i) {
 					t = s->layer(i).lts_data().tv_sec;

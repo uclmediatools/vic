@@ -288,7 +288,8 @@ perror(const char *msg)
     }
 }
 /* Taken from Tcl_PutsObjCmd(); It outputs to stdout or stderr only
- * if a file arg is supplied it does nothing - ie empty file!
+ * if a file arg is supplied it [used to] does nothing - ie empty file!
+ * Now works with other files.
  */
 int
 WinPutsCmd(ClientData clientData, Tcl_Interp *interp, int argc, char **argv)

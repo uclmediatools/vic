@@ -166,6 +166,7 @@ int CryptDES::decrypt(const u_char* in, int len, u_char* out, int rtcp)
  	// We are not using the IV
  	char initVec[8] = {0,0,0,0,0,0,0,0};
  	u_char* inpk = (u_char *)in;
+	u_char* padbit;
  
  	// Carry out decryption
  	qfDES_CBC_d((unsigned char *)des_key, (unsigned char *)(inpk), len, (unsigned char *)initVec);
@@ -175,19 +176,30 @@ int CryptDES::decrypt(const u_char* in, int len, u_char* out, int rtcp)
  	{
  		memcpy(out, (u_char *)(in+4), (unsigned long)(len-4));
  		len -= 4;
+		// Find padding bit at end
+		u_char* rhp = out;
+		padbit = out;
+		while (((rhp+=((ntohs(((rtcphdr*)rhp)->rh_len)+1)<<2))-out) < (len)) {
+				padbit=rhp;
+		}
  	}
  	else
  	{
  		memcpy(out, in, len);
+		padbit = out;
   	}
-
-	if ((out[0] & 0x20) != 0) {
+	/* Check pad bit - officially supposed to be in last packet
+	 * Retain compat with old vic which put it in first packet
+	 */
+	if (((padbit[0] & 0x20) != 0) || ((out[0] & 0x20) != 0)) {
 		/* P bit set - trim off padding */
 		int pad = out[len - 1];
 		if (pad > 7 || pad == 0) {
 			++badpbit_;
 			return (-1);
 		}
+		//correct header length after pad removal
+		((rtcphdr*)padbit)->rh_len=htons(ntohs(((rtcphdr*)padbit)->rh_len)-(pad>>2));
 		len -= pad;
 	}
 	return (len);
@@ -215,17 +227,26 @@ u_char* CryptDESctrl::Encrypt(const u_char* in, int& len)
  
  	// Pad with zeros to the nearest 8 octet boundary	
  	int pad = len & 7;
-         if (pad != 0) {
-                 /* pad to an block (8 octet) boundary */
-                 pad = 8 - pad;
+    if (pad != 0) {
  		u_char* rh = (wrkbuf_+4);
-                 *rh |= 0x20; // set P bit
+		u_char* rhp = rh;
+		u_char* rhlastp = rh;
  		u_char *padding = (wrkbuf_ + len);
+
+		while (((rhp+=((ntohs(((rtcphdr*)rhp)->rh_len)+1)<<2))-rh) < (len-4))
+			rhlastp=rhp;
+		*rhlastp |= 0x20; // set Padding bit on LAST rtcp packet
+
+		/* pad to an block (8 octet) boundary */
+        pad = 8 - pad;
  		for (int i=1; i<pad; i++)
- 		  *padding++ = 0;
+ 			*padding++ = 0;
  		*padding++ = (char)pad;
  		len += pad;
-         }
+		//correct header length after pad removal
+		((rtcphdr*)rhlastp)->rh_len=htons(ntohs(((rtcphdr*)rhlastp)->rh_len)+(pad>>2));
+
+     }
  
  
  	// Carry out the encryption
