@@ -62,7 +62,7 @@ int base64encode(unsigned char *input, int input_length, unsigned char *output, 
 	int	i = 0, j = 0;
 	int	pad;
 
-	assert(output_length > (input_length * 4 / 3));
+	assert(output_length >= (input_length * 4 / 3));
 
 	while (i < input_length) {
 		pad = 3 - (input_length - i);
