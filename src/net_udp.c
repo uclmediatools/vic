@@ -253,7 +253,7 @@ static int udp_addr_valid4(const char *dst)
 
 static socket_udp *udp_init4(const char *addr, const char *iface, uint16_t rx_port, uint16_t tx_port, int ttl)
 {
-	int                 	 reuse = 1;
+	int                 	 reuse = 1, udpbufsize=1048576;
 	struct sockaddr_in  	 s_in;
 	struct in_addr		 iface_addr;
 	socket_udp         	*s = (socket_udp *)malloc(sizeof(socket_udp));
@@ -283,6 +283,14 @@ static socket_udp *udp_init4(const char *addr, const char *iface, uint16_t rx_po
 	s->fd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (s->fd < 0) {
 		socket_error("socket");
+	if (SETSOCKOPT(s->fd, SOL_SOCKET, SO_SNDBUF, (char *) &udpbufsize, sizeof(udpbufsize)) != 0) {
+		socket_error("setsockopt SO_SNDBUF");
+		return NULL;
+	}
+	if (SETSOCKOPT(s->fd, SOL_SOCKET, SO_RCVBUF, (char *) &udpbufsize, sizeof(udpbufsize)) != 0) {
+		socket_error("setsockopt SO_RCVBUF");
+		return NULL;
+	}
 		return NULL;
 	}
 	if (SETSOCKOPT(s->fd, SOL_SOCKET, SO_REUSEADDR, (char *) &reuse, sizeof(reuse)) != 0) {
@@ -351,7 +359,8 @@ static void udp_exit4(socket_udp *s)
 	free(s);
 }
 
-static int udp_send4(socket_udp *s, char *buffer, int buflen)
+static inline int 
+udp_send4(socket_udp *s, char *buffer, int buflen)
 {
 	struct sockaddr_in	s_in;
 	
@@ -366,7 +375,8 @@ static int udp_send4(socket_udp *s, char *buffer, int buflen)
 	return sendto(s->fd, buffer, buflen, 0, (struct sockaddr *) &s_in, sizeof(s_in));
 }
 
-static int udp_sendv4(socket_udp *s, struct iovec *vector, int count)
+static inline int 
+udp_sendv4(socket_udp *s, struct iovec *vector, int count)
 {
 	struct msghdr		msg;
 	struct sockaddr_in	s_in;
@@ -577,7 +587,8 @@ static int udp_send6(socket_udp *s, char *buffer, int buflen)
 #endif
 }
 
-static int udp_sendv6(socket_udp *s, struct iovec *vector, int count)
+static int 
+udp_sendv6(socket_udp *s, struct iovec *vector, int count)
 {
 #ifdef HAVE_IPv6
 	struct msghdr		msg;
