@@ -445,7 +445,12 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 	mbus_lock_config_file(m->cfg);
 	net_addr = (char *) xmalloc(20);
 	mbus_get_net_addr(m->cfg, net_addr, &net_port, &net_scope);
-	m->s		  = udp_init(net_addr, net_port, net_port, net_scope);	
+	m->s		  = udp_init(net_addr, net_port, net_port, net_scope);
+        if (m->s == NULL) {
+                debug_msg("Unable to initialize mbus address\n");
+                xfree(m);
+                return NULL;
+        }
 	m->seqnum         = 0;
 	m->cmd_handler    = cmd_handler;
 	m->err_handler	  = err_handler;

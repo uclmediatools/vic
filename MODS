@@ -259,6 +259,7 @@ v1.1.5  - Remove SunOS and Solaris defines from the configure script, they
 	- Change RTP event type #defines into rtp_event_type so compiler can
 	  check all cases are covered in decision blocks.
 	- Fix waiting_ack next is set to null when message is put on ack list.
+	- Add check for udp socket allocation success in mbus_init.
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
