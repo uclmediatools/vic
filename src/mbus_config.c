@@ -47,7 +47,9 @@
 #define MBUS_ENCRYPT_BY_DEFAULT
 #define MBUS_ENCRKEY_LEN      8
 #define MBUS_HASHKEY_LEN     12
-#define MBUS_BUF_SIZE	  1500
+#define MBUS_BUF_SIZE	   1500
+#define MBUS_FILE_NAME   ".mbus"
+#define MBUS_FILE_NAME_LEN    5
 
 char *mbus_new_encrkey(void)
 {
@@ -167,25 +169,43 @@ void mbus_lock_config_file(struct mbus_config *m)
 	/* local scope.                                                      */
 	struct flock	 l;
 	struct stat	 s;
-	struct passwd	*p;	
 	char		*buf;
 	char		*cfg_file;
+	char            *cfg_loc;
+	int              cfg_loc_len;
 
-	/* The getpwuid() stuff is to determine the users home directory, into which we */
-	/* write a .mbus config file. The struct returned by getpwuid() is statically   */
-	/* allocated, so it's not necessary to free it afterwards.                      */
-	p = getpwuid(getuid());
-	if (p == NULL) {
-		perror("Unable to get passwd entry");
-		abort();
+	cfg_loc = getenv("MBUS");
+	if (cfg_loc == NULL) {
+                cfg_loc = getenv("HOME");
+                if (cfg_loc == NULL) {
+                        /* The getpwuid() stuff is to determine the users    */
+                        /* home directory, into which we write a .mbus       */
+                        /* config file. The struct returned by getpwuid() is */
+                        /* statically allocated, so it's not necessary to    */
+                        /* free it afterwards.                               */
+                        struct passwd	*p;	
+                        p = getpwuid(getuid());
+                        if (p == NULL) {
+                                perror("Unable to get passwd entry");
+                                abort();	      
+                        }
+                        cfg_loc = p->pw_dir;
+                }
 	}
-        if (getenv("MBUS")==NULL) {
-                cfg_file = (char *) xmalloc(strlen(p->pw_dir) + 7);
-	        sprintf(cfg_file, "%s/.mbus", p->pw_dir);	
+
+	/* Check if config_loc is terminated by mbus config file name. If    */
+        /* it's not add it.  This is allows environment variable MBUS to     */
+        /* point to config file of directory of config file.                 */
+        cfg_loc_len = strlen(cfg_loc);
+	if (cfg_loc_len < MBUS_FILE_NAME_LEN ||
+	    strcmp(cfg_loc + cfg_loc_len - MBUS_FILE_NAME_LEN, MBUS_FILE_NAME)){
+                /* File location does not include config file name.          */
+                cfg_file = (char*)xmalloc(cfg_loc_len + MBUS_FILE_NAME_LEN + 2);
+                sprintf(cfg_file, "%s/%s", cfg_loc, MBUS_FILE_NAME);	
 	} else {
-	        cfg_file = (char *) xmalloc(strlen(getenv("MBUS")) + 1);
-		sprintf(cfg_file, "%s", getenv("MBUS"));
+                cfg_file = xstrdup(cfg_loc);
 	}
+        
 	m->cfgfd = open(cfg_file, O_RDWR | O_CREAT, 0600);
 	if (m->cfgfd == -1) {
 		perror("Unable to open mbus configuration file");
