@@ -57,7 +57,7 @@
 #define MBUS_MSG_MAGIC	0x12345678
 
 #ifdef NEED_VSNPRINTF
-int vsnprintf(char *s, size_t buf_size, const char *format, va_list ap)
+static int vsnprintf(char *s, size_t buf_size, const char *format, va_list ap)
 {
 	/* Quick hack replacement for vsnprintf... note that this */
 	/* doesn't check for buffer overflows, and so is open to  */

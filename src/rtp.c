@@ -796,7 +796,8 @@ static char *get_cname(socket_udp *s)
         uname = pwent->pw_name;
 #endif
         if (uname != NULL) {
-                snprintf(cname, MAXCNAMELEN, "%s@", uname);
+                strncpy(cname, uname, MAXCNAMELEN - 1);
+                strcat(cname, "@");
         }
 
         /* Now the hostname. Must be dotted-quad IP address. */
