@@ -1018,14 +1018,15 @@ int mbus_recv(struct mbus *m, void *data)
 		mbus_parse_init(m, buffer);
 		/* Parse the authentication header */
 		if (!mbus_parse_sym(m, &auth)) {
+			debug_msg("Failed to parse authentication header\n");
 			mbus_parse_done(m);
-			debug_msg("Failed to authenticate message\n");
 			return FALSE;
 		}
 		/* Check that the packet authenticates correctly... */
 		hmac_md5(buffer + strlen(auth) + 1, buffer_len - strlen(auth) - 1, m->hashkey, m->hashkeylen, digest);
 		base64encode(digest, 16, ackbuf, 24);
 		if ((strlen(auth) != 24) || (strncmp(auth, ackbuf, 24) != 0)) {
+			debug_msg("Failed to authenticate message\n");
 			mbus_parse_done(m);
 			return FALSE;
 		}
