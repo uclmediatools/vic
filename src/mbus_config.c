@@ -132,6 +132,8 @@ static void rewrite_config(struct mbus_config *m)
 	char	*hashkey = mbus_new_hashkey();
 	char	*encrkey = mbus_new_encrkey();
 	char	*scope   = MBUS_DEFAULT_SCOPE_NAME;
+	char			buffer[MBUS_BUF_SIZE];
+	LONG			status;
 
 	status = RegSetValueEx(m->cfgKey, "HASHKEY", 0, REG_SZ, hashkey, strlen(hashkey) + 1);
 	if (status != ERROR_SUCCESS) {
