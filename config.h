@@ -154,7 +154,7 @@ int strcasecmp(const char*, const char*);
 #include <winsock6.h>
 #else
 #include <winsock2.h>
-//#include <ws2tcpip.h>
+#include <ws2tcpip.h>
 #endif
 
 #ifdef HAVE_IPV6
