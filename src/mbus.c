@@ -771,7 +771,7 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 
 		mbus_parse_init(m, buffer);
 		/* remove trailing 0 bytes */
-		npos=strchr(buffer,'\0');
+		npos = (char *) strchr(buffer,'\0');
 		if(npos!=NULL) {
 			buffer_len=npos-buffer;
 		}
