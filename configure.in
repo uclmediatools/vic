@@ -246,6 +246,7 @@ sparc-sun-sunos*)
 	V_STATIC=""
 	if test $ipv6 = yes; then
 		V_DEFINE="$V_DEFINE -DFreeBSD -DHAVE_IPV6"
+		V_LIB="$V_LIB -L/usr/local/v6/lib -linet6"
 	else
 		V_DEFINE="$V_DEFINE -DFreeBSD"
 	fi
