@@ -201,6 +201,7 @@ v1.0.10 - Mbus updates from Markus Germeier, which fix compatibility with
 	- Add test routines for code in net_udp.c
 	- Fix SCOPE parameter in mbus configuration on windows
 	- Fix sending of hearbeat messages whilst in mbus.waiting() and mbus.go() loops
+	- Tidy up mbus_qmsg();
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,

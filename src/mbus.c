@@ -266,7 +266,7 @@ static void mark_activ_other_addr(struct mbus *m, char *a){
 
 static void remove_inactiv_other_addr(struct mbus *m, struct timeval t, int interval){
     /* Remove addresses we haven't heard from for about 5 * interval */
-    /* Count backwards so it is save to remove entries               */
+    /* Count backwards so it is safe to remove entries               */
     int i;
     
     for (i=m->num_other_addr-1; i>=0; i--){
@@ -588,6 +588,14 @@ void mbus_send(struct mbus *m)
 	}
 
 	while (curr != NULL) {
+		/* It's okay for us to send messages which haven't been marked as complete - */
+		/* that just means we're sending something which has the potential to have   */
+		/* more data piggybacked. However, if it's not complete it MUST be the last  */
+		/* in the list, or something has been reordered - which is bad.              */
+		if (!curr->complete) {
+			assert(curr->next == NULL);
+		}
+
 		if (curr->reliable) {
 		        if (!mbus_addr_valid(m, curr->dest)) {
 			    debug_msg("Trying to send reliably to an unknown address...\n");
@@ -620,8 +628,8 @@ void mbus_send(struct mbus *m)
 		} else {
 			while (curr->num_cmds > 0) {
 				curr->num_cmds--;
-				xfree(curr->cmd_list[curr->num_cmds]);
-				xfree(curr->arg_list[curr->num_cmds]);
+				xfree(curr->cmd_list[curr->num_cmds]); curr->cmd_list[curr->num_cmds] = NULL;
+				xfree(curr->arg_list[curr->num_cmds]); curr->arg_list[curr->num_cmds] = NULL;
 			}
 			xfree(curr->dest);
 			xfree(curr);
@@ -639,22 +647,27 @@ void mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, i
 	int		 alen = strlen(cmnd) + strlen(args) + 4;
 
 	while (curr != NULL) {
-		if ((!curr->complete)
-		&& mbus_addr_identical(curr->dest, dest) 
-		&& (curr->num_cmds < MBUS_MAX_QLEN) 
-		&& ((curr->message_size + alen) < (MBUS_BUF_SIZE - 8))) {
-			curr->num_cmds++;
-			curr->reliable |= reliable;
-			curr->cmd_list[curr->num_cmds-1] = xstrdup(cmnd);
-			curr->arg_list[curr->num_cmds-1] = xstrdup(args);
-			curr->message_size += alen;
-			return;
-		} else {
-			curr->complete = TRUE;
+		if (!curr->complete) {
+			/* This message is still open for new commands. It MUST be the last in the */
+			/* cmd_queue, else commands will be reordered.                             */
+			assert(curr->next == NULL);
+			if (mbus_addr_identical(curr->dest, dest) &&
+		            (curr->num_cmds < MBUS_MAX_QLEN) && ((curr->message_size + alen) < (MBUS_BUF_SIZE - 8))) {
+				curr->num_cmds++;
+				curr->reliable |= reliable;
+				curr->cmd_list[curr->num_cmds-1] = xstrdup(cmnd);
+				curr->arg_list[curr->num_cmds-1] = xstrdup(args);
+				curr->message_size += alen;
+				return;
+			} else {
+				curr->complete = TRUE;
+			}
 		}
 		prev = curr;
 		curr = curr->next;
 	}
+	/* If we get here, we've not found an open message in the cmd_queue.  We */
+	/* have to create a new message, and add it to the end of the cmd_queue. */
 	curr = (struct mbus_msg *) xmalloc(sizeof(struct mbus_msg));
 	curr->next             = NULL;
 	curr->dest             = xstrdup(dest);
@@ -673,7 +686,6 @@ void mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, i
 	}
 	gettimeofday(&(curr->time), NULL);
 	gettimeofday(&(curr->ts),   NULL);
-
 }
 
 void mbus_qmsgf(struct mbus *m, char *dest, int reliable, const char *cmnd, const char *format, ...)
@@ -1044,7 +1056,6 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 						} 
 						if (strcmp(cmd, "mbus.hello") == 0) {
 						/* Mark this source as activ. We remove dead sources in mbus_heartbeat */
-							debug_msg("******* %s\n", newsrc);
 							mark_activ_other_addr(m, newsrc);
 						}
 						m->cmd_handler(newsrc, cmd, param, data);
