@@ -36,6 +36,9 @@
  * SUCH DAMAGE.
  */
 
+#ifndef __RTP_H__
+#define __RTP_H__
+
 #define RTP_PACKET_HEADER_SIZE	((sizeof(char *) * 2) + sizeof(u_int32 *) + (2 * sizeof(int)))
 
 typedef struct {
@@ -151,3 +154,5 @@ void		 rtp_send_bye(struct rtp *session);
 void		 rtp_done(struct rtp *session);
 int              rtp_set_encryption_key(struct rtp *session, const char *key);
 const char      *rtp_get_encryption_key(struct rtp *session);
+
+#endif /* __RTP_H__ */
