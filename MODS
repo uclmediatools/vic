@@ -105,4 +105,6 @@ Still to do...
 	  into it.
 	- rtp_recv should split into rtp_select and rtp_recv. Jitter issues
 	  otherwise, as pointed out by Orion.
+	- Add win32 versions of gettimeofday() and drand48() since they're
+	  missing but used (use the versions from rat?)
 
