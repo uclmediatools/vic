@@ -145,7 +145,6 @@ socket_error(const char *msg)
 #else
 	perror(msg);
 #endif
-	abort();
 }
 
 #ifdef WIN32
@@ -257,16 +256,16 @@ static socket_udp *udp_init4(const char *addr, const char *iface, uint16_t rx_po
 	s->fd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (s->fd < 0) {
 		socket_error("socket");
-		abort();
+		return NULL;
 	}
 	if (SETSOCKOPT(s->fd, SOL_SOCKET, SO_REUSEADDR, (char *) &reuse, sizeof(reuse)) != 0) {
 		socket_error("setsockopt SO_REUSEADDR");
-		abort();
+		return NULL;
 	}
 #ifdef SO_REUSEPORT
 	if (SETSOCKOPT(s->fd, SOL_SOCKET, SO_REUSEPORT, (char *) &reuse, sizeof(reuse)) != 0) {
 		socket_error("setsockopt SO_REUSEPORT");
-		abort();
+		return NULL;
 	}
 #endif
 	s_in.sin_family      = AF_INET;
@@ -274,7 +273,7 @@ static socket_udp *udp_init4(const char *addr, const char *iface, uint16_t rx_po
 	s_in.sin_port        = htons(rx_port);
 	if (bind(s->fd, (struct sockaddr *) &s_in, sizeof(s_in)) != 0) {
 		socket_error("bind");
-		abort();
+		return NULL;
 	}
 	if (IN_MULTICAST(ntohl(s->addr4.s_addr))) {
 		char            loop = 1;
@@ -285,22 +284,22 @@ static socket_udp *udp_init4(const char *addr, const char *iface, uint16_t rx_po
 		
 		if (SETSOCKOPT(s->fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *) &imr, sizeof(struct ip_mreq)) != 0) {
 			socket_error("setsockopt IP_ADD_MEMBERSHIP");
-			abort();
+			return NULL;
 		}
 #ifndef WIN32
 		if (SETSOCKOPT(s->fd, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof(loop)) != 0) {
 			socket_error("setsockopt IP_MULTICAST_LOOP");
-			abort();
+			return NULL;
 		}
 #endif
 		if (SETSOCKOPT(s->fd, IPPROTO_IP, IP_MULTICAST_TTL, (char *) &s->ttl, sizeof(s->ttl)) != 0) {
 			socket_error("setsockopt IP_MULTICAST_TTL");
-			abort();
+			return NULL;
 		}
 		if (iface_addr.s_addr != 0) {
 			if (SETSOCKOPT(s->fd, IPPROTO_IP, IP_MULTICAST_IF, (char *) &iface_addr, sizeof(iface_addr)) != 0) {
 				socket_error("setsockopt IP_MULTICAST_IF");
-				abort();
+				return NULL;
 			}
 		}
 	}
@@ -407,16 +406,16 @@ static socket_udp *udp_init6(const char *addr, const char *iface, uint16_t rx_po
 	s->fd = socket(AF_INET6, SOCK_DGRAM, 0);
 	if (s->fd < 0) {
 		socket_error("socket");
-		abort();
+		return NULL;
 	}
 	if (SETSOCKOPT(s->fd, SOL_SOCKET, SO_REUSEADDR, (char *) &reuse, sizeof(reuse)) != 0) {
 		socket_error("setsockopt SO_REUSEADDR");
-		abort();
+		return NULL;
 	}
 #ifdef SO_REUSEPORT
 	if (SETSOCKOPT(s->fd, SOL_SOCKET, SO_REUSEPORT, (char *) &reuse, sizeof(reuse)) != 0) {
 		socket_error("setsockopt SO_REUSEPORT");
-		abort();
+		return NULL;
 	}
 #endif
 	
@@ -432,7 +431,7 @@ static socket_udp *udp_init6(const char *addr, const char *iface, uint16_t rx_po
 		s_in.sin6_addr = in6addr_any;
 		if (bind(s->fd, (struct sockaddr *) &s_in, sizeof(s_in)) != 0) {
 			socket_error("bind");
-			abort();
+			return NULL;
 		}
 	}
 	
@@ -449,16 +448,16 @@ static socket_udp *udp_init6(const char *addr, const char *iface, uint16_t rx_po
 		
 		if (SETSOCKOPT(s->fd, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, (char *) &imr, sizeof(struct ipv6_mreq)) != 0) {
 			socket_error("setsockopt IPV6_ADD_MEMBERSHIP");
-			abort();
+			return NULL;
 		}
 		
 		if (SETSOCKOPT(s->fd, IPPROTO_IPV6, IPV6_MULTICAST_LOOP, (char *) &loop, sizeof(loop)) != 0) {
 			socket_error("setsockopt IPV6_MULTICAST_LOOP");
-			abort();
+			return NULL;
 		}
 		if (SETSOCKOPT(s->fd, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, (char *) &ttl, sizeof(ttl)) != 0) {
 			socket_error("setsockopt IPV6_MULTICAST_HOPS");
-			abort();
+			return NULL;
 		}
 	}
 	assert(s != NULL);

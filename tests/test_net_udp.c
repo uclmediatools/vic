@@ -56,7 +56,7 @@ void test_net_udp(void)
 	socket_udp	*s1, *s2;
 	char		 buf1[BUFSIZE], buf2[BUFSIZE];
 	const char	*hname;
-	int		 rc, i;
+	int		 rc, i, status_parent, status_child;
 
 	srand48(time(NULL));
 
@@ -341,7 +341,8 @@ abort_multicast_ipv6:
 #endif
 
 	/**********************************************************************/
-	printf("UDP/IP networking (FreeBSD bug)........ \n");
+	printf("UDP/IP networking (FreeBSD bug)........ "); fflush(stdout);
+	status_parent = 0;
 	randomize(buf1, 64);
 	s1 = udp_init("224.2.0.1", 5000, 5000, 1);
 	if (s1 == NULL) {
@@ -357,11 +358,11 @@ abort_multicast_ipv6:
 		s2 = udp_init("224.2.0.1", 5000, 5000, 1);
 		if (s2 == NULL) {
 			printf("fail (child): cannot initialize socket\n");
-			return;
+			exit(0);
 		}
 		if (udp_send(s2, buf1, 64) < 0) {
 			perror("fail (child)");
-			goto abort_bsd;
+			exit(0);
 		}
 	        timeout.tv_sec  = 10;
         	timeout.tv_usec = 0;
@@ -394,7 +395,6 @@ abort_multicast_ipv6:
 			exit(0);
 		}
 		udp_exit(s2);
-		printf("pass (child)\n");
 		exit(1);
 	} else {
 		/* parent */
@@ -428,9 +428,13 @@ abort_multicast_ipv6:
 			printf("fail (parent): buffer corrupt\n");
 			goto abort_bsd;
 		}
-                printf("pass (parent)\n");
+		status_parent = 1;
 	}
 abort_bsd:
+	wait(&status_child);
+	if (status_parent && status_child) {
+		printf("pass\n");
+	}
 	udp_exit(s1);
 	return;
 }

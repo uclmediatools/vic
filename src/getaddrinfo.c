@@ -45,44 +45,18 @@
  *   in ai_flags?
  */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif 
-
 #ifndef lint
 static const char rcsid[] =
      "@(#) $Header$";
 #endif
 
+#include "config_unix.h"
 #include "config_win32.h"
 #include "debug.h"
 #include "memory.h"
 #include "inet_pton.h"
 #include "inet_ntop.h"
 #include <stddef.h>
-
-#if 0
-#include <sys/types.h>
-#ifndef WIN32
-#include <sys/param.h>
-#endif
-#if 0
-#include <sys/sysctl.h>
-#endif
-#include <sys/socket.h>
-#include <net/if.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <arpa/nameser.h>
-#include <netdb.h>
-#include <resolv.h>
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <errno.h>
-#endif
 
 #ifndef HAVE_PORTABLE_PROTOTYPE
 #include "cdecl_ext.h"

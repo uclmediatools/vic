@@ -4,34 +4,19 @@ AC_INIT(base64.c)
 
 AC_CANONICAL_HOST
 
-#  UCL checked $host_os and exited if we didn't recognize it.
-#  Let's be more optimistic for now.
-
-# XXX
-# Backwards compatability to UCL's -D<ostype> for now
-# All references to an OS should be replaced by references
-# to features!
-
-case "$host_os" in
-sunos*)
-	AC_DEFINE(SunOS)
-	;;
-solaris*)
-	AC_DEFINE(Solaris)
-	;;
-esac
-
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_RANLIB
 
 AC_HEADER_STDC
+AC_HEADER_SYS_WAIT
 AC_C_CONST
 AC_TYPE_SIZE_T
 
 AC_CHECK_HEADERS(stropts.h sys/filio.h)
 AC_CHECK_HEADERS(stdint.h inttypes.h)
 
+###############################################################################
 # Check for standard size types.  The defaults are only valid on some
 # systems so we hope that <inttypes.h> exists when they're wrong.
 AC_CHECK_TYPE(int8_t,  signed char)
@@ -70,12 +55,13 @@ then
 	 AC_CHECK_TYPE(uint32_t,  unsigned int)
 fi
 
+###############################################################################
 # The following two macros cause autoconf to complain.
 AC_C_BIGENDIAN
 AC_C_CHAR_UNSIGNED
 #
-# The (?which?) library does not work with unsigned characters.
-# Force the compiler to use signed chars.
+# Some of the codecs in rat don't with with unsigned characters. 
+# Force the compiler to use signed chars, to be consistent.
 if test $ac_cv_c_char_unsigned = yes
 then
 	if test "$GCC" = yes
@@ -95,6 +81,7 @@ then
 fi
 #  __CHAR_UNSIGNED__ will be defined; hope this is OK.
 
+###############################################################################
 # The following causes autoconf to complain.
 AC_CHECK_FILE(/dev/urandom,AC_DEFINE(HAVE_DEV_URANDOM))
 
@@ -102,6 +89,7 @@ AC_CHECK_FILE(/dev/urandom,AC_DEFINE(HAVE_DEV_URANDOM))
 # vsnprintf.c and add it to AC_REPLACE_FUNCS
 AC_CHECK_FUNC(vsnprintf,,AC_DEFINE(NEED_VSNPRINTF))
 
+###############################################################################
 # If inet_aton is actually needed somewhere, split it out into
 # inet_aton.c and add it to AC_REPLACE_FUNCS 
 #
@@ -135,16 +123,7 @@ dnl AC_REPLACE_FUNCS(inet_pton inet_ntop)
 AC_SEARCH_LIBS(socket, socket)
 AC_SEARCH_LIBS(inet_addr, nsl)
 
-# configure defaults CFLAGS to -g -O2
-# so a debug flag would have to fail to remove -g
-# and the optimize would have to modify or add the -O
-# flags:
-#  -debug:
-#       DEBUG2=$DEBUG
-#       AC_DEFINE(DEBUG)
-#  -optimize
-#       OPTIMIZE2=$OPTIMIZE
-#       AC_DEFINE(NDEBUG)
+###############################################################################
 #  -profile
 AC_ARG_ENABLE(profile,
 	[  --enable-profile        enable profiling],
@@ -174,11 +153,6 @@ AC_ARG_ENABLE(bounds,
 		fi
 	fi])
 
-#  others
-#       add as compile flag
-# also:
-# MBUS_ENCRYPT_BY_DEFAULT
-
 # -DDEBUG
 # -DDEBUG_MEM
 # -DNDEBUG
@@ -194,6 +168,9 @@ AC_ARG_ENABLE(debug-mem,
 	then
 		AC_DEFINE(DEBUG_MEM)
 	fi])
+
+###############################################################################
+# IPv6 related configuration options
 
 AC_ARG_ENABLE(ipv6,
 	[  --enable-ipv6           enable ipv6],
@@ -246,12 +223,14 @@ then
 	AC_DEFINE(HAVE_SIN6_LEN) 
 fi
 
+###############################################################################
 # GCC-specific warning flags
 if test "$GCC" = yes
 then
         CFLAGS="$CFLAGS -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -Werror"
 fi
 
+###############################################################################
 # Done, create the output files....
 AC_CONFIG_HEADER(uclconf.h:config.h.in)
 AC_OUTPUT(Makefile)

@@ -250,7 +250,11 @@ v1.1.4	- Add tests for mbus_parser.c/mbus_addr.c and fix bugs found
 	- Fix use of free()'d memory in mbus.c
 	* 24 February 2000
 
-v1.1.5	- 
+v1.1.5	- Remove SunOS and Solaris defines from the configure script, they
+	  shouldn't be necessary any longer.
+	- Add workaround for missing getaddrinfo() on some platforms.
+	- Remove most of the abort() statements from udp_init(), we now
+	  return NULL in most cases of an error.
 
 
 Still to do...
