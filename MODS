@@ -50,6 +50,8 @@ v1.0.4  - Fix compilation with Microsoft IPv6 stack
 	- Solaris 2.5.1 doesn't have vsnprintf(), use vsprintf() instead
 	  and don't worry about the possible buffer overflow problems. 
 	  Reported by Holger Wirtz.
+	- Added mbus_addr_valid()
+	- Added timeout to mbus_recv()
 
 
 Still to do...

@@ -562,12 +562,12 @@ static void store_other_addr(struct mbus *m, char *a)
 	m->other_addr[m->num_other_addr++] = xstrdup(a);
 }
 
-static int addr_known(struct mbus *m, char *a)
+int mbus_addr_valid(struct mbus *m, char *addr)
 {
 	int	i;
 
 	for (i = 0; i < m->num_other_addr; i++) {
-		if (mbus_addr_match(m->other_addr[i], a)) {
+		if (mbus_addr_match(m->other_addr[i], addr)) {
 			return TRUE;
 		}
 	}
@@ -842,7 +842,7 @@ void mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, i
 	struct mbus_msg	*prev = NULL;
 	int		 alen = strlen(cmnd) + strlen(args) + 4;
 
-	if (reliable && !addr_known(m, dest)) {
+	if (reliable && !mbus_addr_valid(m, dest)) {
 		debug_msg("Trying to send reliably to an unknown address...\n");
 #ifdef NDEF
 		if (m->err_handler == NULL) {
@@ -1087,14 +1087,13 @@ char *mbus_encode_str(const char *s)
 	return buf;
 }
 
-int mbus_recv(struct mbus *m, void *data)
+int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 {
 	char		*auth, *ver, *src, *dst, *ack, *r, *cmd, *param;
 	char	 	buffer[MBUS_BUF_SIZE];
 	int	 	buffer_len, seq, i, a, rx, ts, authlen;
 	char	 	ackbuf[MBUS_ACK_BUF_SIZE];
 	char	 	digest[16];
-	struct timeval	t;
 	unsigned char	initVec[8] = {0,0,0,0,0,0,0,0};
 
 	rx = FALSE;
@@ -1103,9 +1102,7 @@ int mbus_recv(struct mbus *m, void *data)
                 assert(m->s != NULL);
 		udp_fd_zero();
 		udp_fd_set(m->s);
-                t.tv_sec  = 0; /* timeout appears to get corrupted on w32 */
-	        t.tv_usec = 0; /* sometimes, reset to zero everytime.     */ 
-                if ((udp_select(&t) > 0) && udp_fd_isset(m->s)) {
+                if ((udp_select(timeout) > 0) && udp_fd_isset(m->s)) {
 			buffer_len = udp_recv(m->s, buffer, MBUS_BUF_SIZE);
 			if (buffer_len > 0) {
 				rx = TRUE;
@@ -1214,7 +1211,9 @@ int mbus_recv(struct mbus *m, void *data)
 				mbus_parse_done(m);
 				/* ...if an ACK was requested, send one... */
 				if (strcmp(r, "R") == 0) {
-					char *newsrc = (char *) xmalloc(strlen(src) + 3);
+					char 		*newsrc = (char *) xmalloc(strlen(src) + 3);
+					struct timeval	 t;
+
 					sprintf(newsrc, "(%s)", src);	/* Yes, this is a kludge. */
 					gettimeofday(&t, NULL);
 					tx_header(++m->seqnum, (int) t.tv_sec, 'U', m->addr[0], newsrc, seq);

@@ -46,10 +46,11 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 		       void  (*err_handler)(int seqnum, int reason));
 void         mbus_exit(struct mbus *m);
 void         mbus_addr(struct mbus *m, char *addr);
+int          mbus_addr_valid(struct mbus *m, char *addr);
 void         mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, int reliable);
 void         mbus_qmsgf(struct mbus *m, char *dest, int reliable, const char *cmnd, const char *format, ...);
 void         mbus_send(struct mbus *m);
-int          mbus_recv(struct mbus *m, void *data);
+int          mbus_recv(struct mbus *m, void *data, struct timeval *timeout);
 void         mbus_parse_init(struct mbus *m, char *str);
 void         mbus_parse_done(struct mbus *m);
 int          mbus_parse_lst(struct mbus *m, char **l);
