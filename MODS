@@ -237,3 +237,5 @@ Still to do...
 	  otherwise, as pointed out by Orion.
 	- Allow a callback for background processing during mbus_rendezvous_*()
 	- mbus_exit() queues an mbus.bye() message, but that never gets sent.
+	- Handling of SSRC collisions is broken.
+
