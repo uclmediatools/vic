@@ -40,7 +40,7 @@ V_OBJ_XIL=""
 
 if test -r /usr/lib/libvl.so ; then
 	V_LIB_GRABBER="$V_LIB_GRABBER -lvl -ldmedia"
-	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-vl.o output-vl.o"
+	V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-vl.o video/output-vl.o"
 	if test -r /usr/include/dmedia/cl_cosmo.h  ; then
 		V_LIB_GRABBER="$V_LIB_GRABBER -lcl"
 		V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-cosmo.o"

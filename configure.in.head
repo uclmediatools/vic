@@ -20,7 +20,11 @@ V_SIGRET="void"
 
 AC_CHECK_LIB(Xbsd, main, [V_LIB="$V_LIB -lXbsd"])
 AC_CHECK_LIB(socket, poll, [V_LIB="$V_LIB -lsocket"])
-AC_CHECK_LIB(nsl, gethostbyname, [V_LIB="$V_LIB -lnsl"])
+
+if test `echo "$target_os" | sed 's/\..*//'` != irix6 ; then
+	AC_CHECK_LIB(nsl, gethostbyname, [V_LIB="$V_LIB -lnsl"])
+fi
+
 AC_CHECK_LIB(dnet_stub, getnodebyname, [V_LIB="$V_LIB -ldnet_stub"])
 
 V_TAR_EXTRA=""
