@@ -51,19 +51,19 @@ void test_base64(void)
 		output[i] = '\0';
 	}
 
-	printf("Base64 encode... "); fflush(stdout);
+	printf("Base64 encode.......................... "); fflush(stdout);
 	i = base64encode(input, strlen(input), output, 100);
 	if ((i != 16) || (strncmp(output, "SGVsbG8sIHdvcmxk", i) != 0)) {
 		printf("fail\n");
-		abort();
+		return;
 	}
 	printf("pass\n");
 
-	printf("Base64 decode... "); fflush(stdout);
+	printf("Base64 decode.......................... "); fflush(stdout);
 	i = base64decode(output, i, decode, 100);
 	if ((i != 12) || (strncmp(decode, "Hello, world", i) != 0)) {
 		printf("fail\n");
-		abort();
+		return;
 	}
 	printf("pass\n");
 }

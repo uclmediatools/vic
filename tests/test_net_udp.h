@@ -1,8 +1,8 @@
 /*
- * FILE:    test.c
+ * FILE:    test_net_udp.h
  * AUTHORS: Colin Perkins
  * 
- * Copyright (c) 1999-2000 University College London
+ * Copyright (c) 2000 University College London
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,24 +33,5 @@
  * SUCH DAMAGE.
  */
 
-#include "config_unix.h"
-#include "config_win32.h"
-#include "debug.h"
-#include "version.h"
-#include "test_base64.h"
-#include "test_des.h"
-#include "test_md5.h"
-#include "test_net_udp.h"
-
-int main(int argc, char *argv[])
-{
-	UNUSED(argc);
-	UNUSED(argv);
-	printf("Testing common multimedia library %s\n", CCL_VERSION);
-	test_base64();
-	test_des();
-	test_md5();
-	test_net_udp();
-	return 0;
-}
+void test_net_udp(void);
 

@@ -198,6 +198,7 @@ v1.0.10	- Mbus updates from Markus Germeier, which fix compatibility with
 	- Update copyright notices to welcome in the new millennium
 	- Previous versions of udp_send() would sometimes return -1 on error, 
 	  and would sometimes abort(). We now always return -1 and never abort.
+	- Add test routines for code in net_udp.c
 
 
 Still to do...

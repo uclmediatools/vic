@@ -216,7 +216,7 @@ void test_des(void)
 	unsigned char	key[8], plain[8], crypt[8], buffer[8];
 	unsigned char	cbc_buffer[32], cbc_iv_buf[8];
 
-	printf("DES ECB......... "); fflush(stdout);
+	printf("DES ECB................................ "); fflush(stdout);
 	for (i = 0; i < NUM_TESTS; i++) {
 		for (j = 0; j < 8; j++) {
 			key[j]   = key_data[i][j];
@@ -227,35 +227,36 @@ void test_des(void)
 		qfDES_ECB_d(key, buffer, 8);
 		if (memcmp(buffer, plain, 8) != 0) {
 			printf("fail\n");
-			abort();
+			goto abort_ecb;
 		}
 		memcpy(buffer, plain, 8);
 		qfDES_ECB_e(key, buffer, 8);
 		if (memcmp(buffer, crypt, 8) != 0) {
 			printf("fail\n");
-			abort();
+			goto abort_ecb;
 		}
 		qfDES_ECB_d(key, buffer, 8);
 		if (memcmp(buffer, plain, 8) != 0) {
 			printf("fail\n");
-			abort();
+			goto abort_ecb;
 		}
 	}
 	printf("pass\n");
+abort_ecb:
 
-	printf("DES CBC......... "); fflush(stdout);
+	printf("DES CBC................................ "); fflush(stdout);
 	memcpy(cbc_buffer, cbc_data, 32);
 	memcpy(cbc_iv_buf, cbc_iv, 8);
 	qfDES_CBC_e(cbc_key, cbc_buffer, 32, cbc_iv_buf);
 	if (memcmp(cbc_buffer, cbc_ok, 32) != 0) {
 		printf("fail\n");
-		abort();
+		return;
 	}
 	memcpy(cbc_iv_buf, cbc_iv, 8);
 	qfDES_CBC_d(cbc_key, cbc_buffer, 32, cbc_iv_buf);
 	if (memcmp(cbc_buffer, cbc_data, 32) != 0) {
 		printf("fail\n");
-		abort();
+		return;
 	}
 	printf("pass\n");
 }

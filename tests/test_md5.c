@@ -66,7 +66,7 @@ void test_md5(void)
 {
 	int	i, l;
 
-	printf("MD5............. "); fflush(stdout);
+	printf("MD5.................................... "); fflush(stdout);
 	for (i = 0; i < 10000; i++) {
 		l = lrand48() % 1024;
 		if (do_test(l) == FALSE) {
