@@ -455,12 +455,8 @@ main(int argc, const char** argv)
 	/* initialise tcl/tk but ignore errors under windows. */
 	Tk_Window tk = 0;
 	Tcl_Init(tcl.interp());
-#ifdef WIN32
 	Tk_Init(tcl.interp());
-#else
-	if (Tk_Init(tcl.interp()) == TCL_OK)
-#endif
-		tk = Tk_MainWindow(tcl.interp());
+	tk = Tk_MainWindow(tcl.interp());
 	if (tk == 0) {
 		fprintf(stderr, "vic: %s\n", tcl.result());
 		exit(1);
