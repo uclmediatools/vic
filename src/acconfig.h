@@ -16,10 +16,11 @@
 #undef HAVE_SIN6_LEN
 
 /*
- * Define this if your C library doesn't have vsnprintf.
+ * Define these if your C library is missing some functions...
  */
 #undef NEED_VSNPRINTF
-
+#undef NEED_INET_PTON
+#undef NEED_INET_NTOP
 
 /*
  * If you don't have these types in <inttypes.h>, #define these to be

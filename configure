@@ -1851,7 +1851,7 @@ then
 #define NEED_INET_PTON 1
 EOF
 
-	LIBOJS="$LIBOBJS inet_pton.o"
+	LIBOBJS="$LIBOBJS inet_pton.o"
 fi
 echo $ac_n "checking for inet_ntop in <arpa/inet.h>""... $ac_c" 1>&6
 echo "configure:1858: checking for inet_ntop in <arpa/inet.h>" >&5
@@ -1882,7 +1882,7 @@ then
 #define NEED_INET_NTOP 1
 EOF
 
-	LIBOJS="$LIBOBJS inet_ntop.o"
+	LIBOBJS="$LIBOBJS inet_ntop.o"
 fi
 
 

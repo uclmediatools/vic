@@ -36,9 +36,11 @@
 #undef HAVE_SIN6_LEN
 
 /*
- * Define this if your C library doesn't have vsnprintf.
+ * Define these if your C library is missing some functions...
  */
 #undef NEED_VSNPRINTF
+#undef NEED_INET_PTON
+#undef NEED_INET_NTOP
 
 /*
  * If you don't have these types in <inttypes.h>, #define these to be
@@ -70,12 +72,6 @@
 #undef Solaris
 #undef Linux
 #undef HPUX
-
-/* Define if you have the inet_ntop function.  */
-#undef HAVE_INET_NTOP
-
-/* Define if you have the inet_pton function.  */
-#undef HAVE_INET_PTON
 
 /* Define if you have the <inttypes.h> header file.  */
 #undef HAVE_INTTYPES_H
