@@ -19,7 +19,7 @@
 #ifndef   _H263_H_
 #define   _H263_H_
 
-#include "motion.h"
+#include "Motion.h"
 #include "defs.h"
 #include "structs.h"
 #include "bitIn.h"

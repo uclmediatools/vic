@@ -16,7 +16,7 @@
 #include <string.h>
 #include <limits.h>
 
-#include "motion.h"
+#include "Motion.h"
 #include "defs.h"
 #include "structs.h"
 #include "Util.h"

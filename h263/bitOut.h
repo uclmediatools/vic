@@ -17,7 +17,6 @@
 #define _BITIO_H
 
 #include <stdio.h>
-typedef unsigned char     Byte;  /*!! MS 27.04.98 */
 
 
 

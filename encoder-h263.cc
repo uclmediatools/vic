@@ -18,13 +18,13 @@ static char rcsid[] =
 #include "crdef.h"
 //#include "p64/p64-huff.h"
  
-#include "h263\bitOut.h"
+#include "h263/bitOut.h"
 
-#include "h263\h263.h"
+#include "h263/h263.h"
 #include "encoder-h263.h"
 extern "C" {
-#include "h263\h263encoder.h"
-#include "h263\h263encoder.p"
+#include "h263/h263encoder.h"
+#include "h263/h263encoder.p"
 int split_h263stream(
 	u_char *bs,			/* bitstream [in] */
 	u_int bitcount,			/* bitstream length in bits [in] */

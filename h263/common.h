@@ -4,7 +4,7 @@
 #include "defs.h"
 #include "structs.h"
 #include "code.h"
-#include "motion.h"
+#include "Motion.h"
 #include "bitOut.h"
 
 /* Include prototype file */

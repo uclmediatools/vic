@@ -5,7 +5,7 @@
 #include "defs.h"
 #include "structs.h"
 #include "Util.h"
-#include "motion.h"
+#include "Motion.h"
 
 
 /* Subsampling factor for SAD measurement */
