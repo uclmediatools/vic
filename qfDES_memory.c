@@ -1,8 +1,4 @@
 /*****************************************************************************
-
-
-
-
 Saleem N. Bhatti
 February 1993
 *****************************************************************************/
@@ -32,8 +28,7 @@ extern int errno;
     fprintf(stderr, "%s: errno %d - %s\n", s_, errno, errno < sys_nerr ? sys_errlist[errno] : "???")
 #endif
 
-extern
-char G_padChar; /* in qfDES.c */
+char G_padChar= (char) 0; /* in qfDES.c */
 
 char
 #if defined(__STDC__) || defined(__cplusplus)

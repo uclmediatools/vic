@@ -18,8 +18,7 @@ February 1993
 #include "config.h"
 #include "qfDES.h"
 
-extern
-char G_padChar; /* in qfDES.c */
+extern char G_padChar; /* in qfDES.c */
 
 /*
 ** This function sets bit 8 of each byte to odd or even parity as requested.

@@ -12,10 +12,14 @@ Added 2 August 1996, Saleem
 
 #if defined(__i386__)
 #include <sys/types.h>
+
 #ifndef WIN32
 #include <netinet/in.h>
+
 #else
+
 #include "../config.h"
+
 #endif
 #endif
 
@@ -36,7 +40,7 @@ typedef unsigned long Word;
 #define PC2(regC, regD, k) \
         PC2_AUX(regC, regD, k[0], k[1])
 
-char G_padChar = (char) 0; /* Default pad charcater */
+extern char G_padChar; /* Default pad charcater */
 
 static
 Word rol[16][3] =
