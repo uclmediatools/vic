@@ -341,8 +341,6 @@ qfDES_checkWeakKeys
 <INCLUDE>rtp.h</INCLUDE>
 RTP_VERSION
 RTP_MAX_PACKET_LEN
-rtp_init
-rtp_init_if
 rtp_packet
 RTP_PACKET_HEADER_SIZE
 rtcp_sr
@@ -354,9 +352,11 @@ rtcp_app_callback
 rtp_event_type
 rtp_event
 rtp_callback
+rtp_option
+rtp_init
+rtp_init_if
 rtp_send_bye
 rtp_done
-rtp_option
 rtp_set_option
 rtp_get_option
 rtp_recv
@@ -366,7 +366,6 @@ rtp_update
 rtp_my_ssrc
 rtp_add_csrc
 rtp_del_csrc
-rtp_valid_ssrc
 rtp_set_sdes
 rtp_get_sdes
 rtp_get_sr

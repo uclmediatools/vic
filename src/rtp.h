@@ -49,6 +49,10 @@
 
 struct rtp;
 
+/* XXX gtkdoc doesn't seem to be able to handle functions that return
+ * struct *'s. */
+typedef struct rtp *rtp_t;
+
 typedef struct {
 	/* The following are pointers to the data in the packet as    */
 	/* it came off the wire. The packet it read in such that the  */
@@ -181,10 +185,6 @@ typedef enum {
         RTCP_SDES_PRIV  = 8
 } rtcp_sdes_type;
 
-/* XXX gtkdoc doesn't seem to be able to handle functions that return
- * struct *'s. */
-typedef struct rtp *rtp_t;
-
 rtp_t		rtp_init(const char *addr, 
 			  uint16_t rx_port, uint16_t tx_port, 
 			  int ttl, double rtcp_bw, 
@@ -216,7 +216,6 @@ void 		 rtp_update(struct rtp *session);
 uint32_t	 rtp_my_ssrc(struct rtp *session);
 int		 rtp_add_csrc(struct rtp *session, uint32_t csrc);
 int		 rtp_del_csrc(struct rtp *session, uint32_t csrc);
-int		 rtp_valid_ssrc(struct rtp *session, uint32_t ssrc);
 
 int		 rtp_set_sdes(struct rtp *session, uint32_t ssrc, 
 			      rtcp_sdes_type type, char *value, int length);
@@ -233,7 +232,5 @@ uint16_t	 rtp_get_rx_port(struct rtp *session);
 uint16_t	 rtp_get_tx_port(struct rtp *session);
 int		 rtp_get_ttl(struct rtp *session);
 void 		*rtp_get_userdata(struct rtp *session);
-
-
 
 #endif /* __RTP_H__ */

@@ -139,10 +139,6 @@ HREF="uclmmbase-rtp.html#RTP-VERSION-CAPS"
 >RTP_VERSION</A
 >
 #define     <A
-HREF="uclmmbase-rtp.html#RTP-PACKET-HEADER-SIZE-CAPS"
->RTP_PACKET_HEADER_SIZE</A
->
-#define     <A
 HREF="uclmmbase-rtp.html#RTP-MAX-PACKET-LEN-CAPS"
 >RTP_MAX_PACKET_LEN</A
 >
@@ -150,6 +146,10 @@ typedef     <A
 HREF="uclmmbase-rtp.html#RTP-PACKET"
 >rtp_packet</A
 >;
+#define     <A
+HREF="uclmmbase-rtp.html#RTP-PACKET-HEADER-SIZE-CAPS"
+>RTP_PACKET_HEADER_SIZE</A
+>
 typedef     <A
 HREF="uclmmbase-rtp.html#RTCP-SR"
 >rtcp_sr</A
@@ -157,6 +157,10 @@ HREF="uclmmbase-rtp.html#RTCP-SR"
 typedef     <A
 HREF="uclmmbase-rtp.html#RTCP-RR"
 >rtcp_rr</A
+>;
+enum        <A
+HREF="uclmmbase-rtp.html#RTCP-SDES-TYPE"
+>rtcp_sdes_type</A
 >;
 typedef     <A
 HREF="uclmmbase-rtp.html#RTCP-SDES-ITEM"
@@ -204,10 +208,57 @@ enum        <A
 HREF="uclmmbase-rtp.html#RTP-OPTION"
 >rtp_option</A
 >;
-enum        <A
-HREF="uclmmbase-rtp.html#RTCP-SDES-TYPE"
->rtcp_sdes_type</A
->;
+<GTKDOCLINK
+HREF="RTP-T"
+>rtp_t</GTKDOCLINK
+>       <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>                        (const char *addr,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> rx_port,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> tx_port,
+                                             int ttl,
+                                             <GTKDOCLINK
+HREF="DOUBLE"
+>double</GTKDOCLINK
+> rtcp_bw,
+                                             <A
+HREF="uclmmbase-rtp.html#RTP-CALLBACK"
+>rtp_callback</A
+> callback,
+                                             void *userdata);
+<GTKDOCLINK
+HREF="RTP-T"
+>rtp_t</GTKDOCLINK
+>       <A
+HREF="uclmmbase-rtp.html#RTP-INIT-IF"
+>rtp_init_if</A
+>                     (const char *addr,
+                                             char *iface,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> rx_port,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> tx_port,
+                                             int ttl,
+                                             <GTKDOCLINK
+HREF="DOUBLE"
+>double</GTKDOCLINK
+> rtcp_bw,
+                                             <A
+HREF="uclmmbase-rtp.html#RTP-CALLBACK"
+>rtp_callback</A
+> callback,
+                                             void *userdata);
 void        <A
 HREF="uclmmbase-rtp.html#RTP-SEND-BYE"
 >rtp_send_bye</A
@@ -304,7 +355,7 @@ HREF="UINT32-T"
                                              <A
 HREF="uclmmbase-rtp.html#RTCP-APP-CALLBACK"
 >rtcp_app_callback</A
-> callback);
+> appcallback);
 void        <A
 HREF="uclmmbase-rtp.html#RTP-UPDATE"
 >rtp_update</A
@@ -344,17 +395,6 @@ HREF="RTP"
 HREF="UINT32-T"
 >uint32_t</GTKDOCLINK
 > csrc);
-int         <A
-HREF="uclmmbase-rtp.html#RTP-VALID-SSRC"
->rtp_valid_ssrc</A
->                  (struct <GTKDOCLINK
-HREF="RTP"
->rtp</GTKDOCLINK
-> *session,
-                                             <GTKDOCLINK
-HREF="UINT32-T"
->uint32_t</GTKDOCLINK
-> ssrc);
 int         <A
 HREF="uclmmbase-rtp.html#RTP-SET-SDES"
 >rtp_set_sdes</A
@@ -486,7 +526,7 @@ HREF="RTP"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN586"
+NAME="AEN595"
 ></A
 ><H2
 >Description</H2
@@ -497,14 +537,14 @@ of audio, video, and other real-time data across IP capable networks.&#13;</P
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN589"
+NAME="AEN598"
 ></A
 ><H2
 >Details</H2
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN591"
+NAME="AEN600"
 ></A
 ><H3
 ><A
@@ -530,33 +570,7 @@ CLASS="PROGRAMLISTING"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN596"
-></A
-><H3
-><A
-NAME="RTP-PACKET-HEADER-SIZE-CAPS"
-></A
->RTP_PACKET_HEADER_SIZE</H3
-><TABLE
-BORDER="0"
-BGCOLOR="#D6E8FF"
-WIDTH="100%"
-CELLPADDING="6"
-><TR
-><TD
-><PRE
-CLASS="PROGRAMLISTING"
->#define RTP_PACKET_HEADER_SIZE	((sizeof(char *) * 2) + sizeof(uint32_t *) + (2 * sizeof(int)))</PRE
-></TD
-></TR
-></TABLE
-><P
-></P
-></DIV
-><HR><DIV
-CLASS="REFSECT2"
-><A
-NAME="AEN601"
+NAME="AEN605"
 ></A
 ><H3
 ><A
@@ -582,7 +596,7 @@ CLASS="PROGRAMLISTING"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN606"
+NAME="AEN610"
 ></A
 ><H3
 ><A
@@ -639,12 +653,50 @@ CLASS="PROGRAMLISTING"
 ></TR
 ></TABLE
 ><P
-></P
+>The struct begins with pointers to the data in the packet as
+it came off the wire. The packet is read in such that the
+header maps onto the latter part of this struct, and the
+fields in this first part of the struct point into it. The
+entire packet can be freed by freeing this struct, without
+having to free the csrc, data and extn blocks separately.
+WARNING: Don't change the size of the first portion of the
+struct without changing RTP_PACKET_HEADER_SIZE to match.</P
 ></DIV
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN611"
+NAME="AEN615"
+></A
+><H3
+><A
+NAME="RTP-PACKET-HEADER-SIZE-CAPS"
+></A
+>RTP_PACKET_HEADER_SIZE</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>#define RTP_PACKET_HEADER_SIZE	((sizeof(char *) * 2) + sizeof(uint32_t *) + (2 * sizeof(int)))</PRE
+></TD
+></TR
+></TABLE
+><P
+>This macro MUST resolve to the offset of the first packet
+field in the <A
+HREF="uclmmbase-rtp.html#RTP-PACKET"
+>rtp_packet</A
+> struct, including all padding.
+If you change rtp_packet, make sure to change this too.</P
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN621"
 ></A
 ><H3
 ><A
@@ -677,7 +729,7 @@ CLASS="PROGRAMLISTING"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN616"
+NAME="AEN626"
 ></A
 ><H3
 ><A
@@ -716,7 +768,221 @@ CLASS="PROGRAMLISTING"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN621"
+NAME="AEN631"
+></A
+><H3
+><A
+NAME="RTCP-SDES-TYPE"
+></A
+>enum rtcp_sdes_type</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef enum {
+        RTCP_SDES_END   = 0,
+        RTCP_SDES_CNAME = 1,
+        RTCP_SDES_NAME  = 2,
+        RTCP_SDES_EMAIL = 3,
+        RTCP_SDES_PHONE = 4,
+        RTCP_SDES_LOC   = 5,
+        RTCP_SDES_TOOL  = 6,
+        RTCP_SDES_NOTE  = 7,
+        RTCP_SDES_PRIV  = 8
+} rtcp_sdes_type;</PRE
+></TD
+></TR
+></TABLE
+><P
+>Possible values of Session Description (SDES) identifiers.  SDES items
+are announced via <A
+HREF="uclmmbase-rtp.html#RTP-CALLBACK"
+>rtp_callback</A
+> (with RX_SDES events) when they are
+received.  SDES items may be configured and queried with <A
+HREF="uclmmbase-rtp.html#RTP-SET-SDES"
+>rtp_set_sdes</A
+>
+and <A
+HREF="uclmmbase-rtp.html#RTP-GET-SDES"
+>rtp_get_sdes</A
+>.  The RTP guidelines recommend keeping SDES items
+constant during an RTP session to avoid confusing end users.</P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN639"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#F0F0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RTCP_SDES_END</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>Indicates the end of SDES item processing when SDES data is received.  Has no meaning with <A
+HREF="uclmmbase-rtp.html#RTP-SET-SDES"
+>rtp_set_sdes</A
+> and <A
+HREF="uclmmbase-rtp.html#RTP-GET-SDES"
+>rtp_get_sdes</A
+>.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RTCP_SDES_CNAME</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>The canonical name associated with participant. It is algorithmically derived and should never be changed.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RTCP_SDES_NAME</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>The local participant's name, typically displayed in RTP session participant list. The name can take any form, and should remain constant during a session to avoid confusion.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RTCP_SDES_EMAIL</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>The local participant's email address (optional).</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RTCP_SDES_PHONE</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>The local participant's telephone number (optional).</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RTCP_SDES_LOC</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>The local participant's geographic location (optional).</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RTCP_SDES_TOOL</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>The local participant's tool (optional).</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RTCP_SDES_NOTE</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>Any additional information the local participant wishes to communicate about themselves (optional).</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RTCP_SDES_PRIV</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>Private extension SDES item see <A
+HREF="http://www.ietf.org/rfc/rfc1889.txt"
+TARGET="_top"
+>RFC1889</A
+> for details.&#13;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN683"
 ></A
 ><H3
 ><A
@@ -746,7 +1012,7 @@ CLASS="PROGRAMLISTING"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN626"
+NAME="AEN688"
 ></A
 ><H3
 ><A
@@ -787,7 +1053,7 @@ CLASS="PROGRAMLISTING"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN631"
+NAME="AEN693"
 ></A
 ><H3
 ><A
@@ -819,11 +1085,12 @@ HREF="UINT32-T"
 ></TR
 ></TABLE
 ><P
-></P
+>This callback function crafts an RTCP APP packet to be sent with
+an RTCP RR.</P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN639"
+NAME="AEN701"
 ></A
 ><P
 ></P
@@ -850,7 +1117,10 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+>the session pointer (returned by <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>())</TD
 ></TR
 ><TR
 ><TD
@@ -867,7 +1137,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+>the current time expressed in units of the media timestamp.</TD
 ></TR
 ><TR
 ><TD
@@ -884,7 +1154,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+>the max allowed size of an APP packet.</TD
 ></TR
 ><TR
 ><TD
@@ -899,7 +1169,12 @@ CLASS="EMPHASIS"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+>A fully-formed RTCP APP packet as an <A
+HREF="uclmmbase-rtp.html#RTCP-APP"
+>rtcp_app</A
+>, or NULL (???)
+if no APP packet needs to be sent at this time.
+&#13;</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -910,7 +1185,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN660"
+NAME="AEN724"
 ></A
 ><H3
 ><A
@@ -944,12 +1219,254 @@ CLASS="PROGRAMLISTING"
 ></TR
 ></TABLE
 ><P
+>The possible values for the type field in <A
+HREF="uclmmbase-rtp.html#RTP-EVENT"
+>rtp_event</A
+>.
+Each value represents an event in RTP or RTCP processing.</P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN730"
+></A
+><P
 ></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#F0F0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RX_RTP</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>An RTP data packet was received.
+The ssrc field contains the RTP data packet's SSRC.
+The data field points to a <A
+HREF="uclmmbase-rtp.html#RTP-PACKET"
+>rtp_packet</A
+> containing the RTP data packet.
+The callback must free the rtp_packet when it's done with it.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RX_SR</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>An RTCP SR packet was received.
+The ssrc field contains the SR packet's SSRC.
+The data field points to an <A
+HREF="uclmmbase-rtp.html#RTCP-SR"
+>rtcp_sr</A
+>.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RX_RR</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>An RTCP RR packet was received.
+The ssrc field contains the RR packet's SSRC.
+The data field points to an <A
+HREF="uclmmbase-rtp.html#RTCP-RR"
+>rtcp_rr</A
+>.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RX_SDES</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>An RTCP SDES packet was received.
+The ssrc field contains the SDES packet's SSRC.
+The data field points to an <A
+HREF="uclmmbase-rtp.html#RTCP-SDES-ITEM"
+>rtcp_sdes_item</A
+>.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RX_BYE</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>An RTCP BYE packet was received.
+The ssrc field contains the BYE packet's SSRC.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>SOURCE_CREATED</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>A new session participant was heard from.
+The ssrc field contains the new participant's SSRC.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>SOURCE_DELETED</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>A source was deleted from the database.
+The ssrc field contains the ex-participant's SSRC.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RX_RR_EMPTY</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>An RTCP RR packet with no sources listed was received.
+The ssrc field contains the RR packet's SSRC.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RX_RTCP_START</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>Called at the start of parsing an RTCP packet.
+Neither the ssrc nor data fields are valid.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RX_RTCP_FINISH</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>Called at the end of parsing an RTCP packet.
+Neither the ssrc nor data fields are valid.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RR_TIMEOUT</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>An RR from the given receiver has not been refreshed recently enough.
+The ssrc field contains the RR packet's SSRC.
+The data field points to the expiring <A
+HREF="uclmmbase-rtp.html#RTCP-RR"
+>rtcp_rr</A
+>.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RX_APP</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>An APP packet was received.
+The ssrc field contains the APP packet's SSRC.
+The data field points to an <A
+HREF="uclmmbase-rtp.html#RTCP-APP"
+>rtcp_app</A
+>.
+The callback must free the app packet when it's done with it.&#13;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
 ></DIV
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN665"
+NAME="AEN789"
 ></A
 ><H3
 ><A
@@ -975,12 +1492,24 @@ CLASS="PROGRAMLISTING"
 ></TR
 ></TABLE
 ><P
-></P
+>The event structure as passed to <A
+HREF="uclmmbase-rtp.html#RTP-CALLBACK"
+>rtp_callback</A
+>().
+The callback type is carried in the type field; see <A
+HREF="uclmmbase-rtp.html#RTP-EVENT-TYPE"
+>rtp_event_type</A
+>
+for a description of each callback.
+Unless otherwise noted, the ssrc field contains the SSRC of the participant
+triggering this callback.  The data field points to any data contained in
+this callback; it must be cast to the appropriate type.  The ts field
+contains the timestamp of the packet reception that caused this event.</P
 ></DIV
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN670"
+NAME="AEN796"
 ></A
 ><H3
 ><A
@@ -1008,11 +1537,19 @@ HREF="uclmmbase-rtp.html#RTP-EVENT"
 ></TR
 ></TABLE
 ><P
-></P
+>Handles RTP events in an application-specific way.
+See <A
+HREF="uclmmbase-rtp.html#RTP-EVENT"
+>rtp_event</A
+> for a description of the possible events and
+how <A
+HREF="uclmmbase-rtp.html#RTP-CALLBACK"
+>rtp_callback</A
+>() should handle each.&#13;</P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN677"
+NAME="AEN805"
 ></A
 ><P
 ></P
@@ -1039,7 +1576,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+>The RTP Session.</TD
 ></TR
 ><TR
 ><TD
@@ -1056,7 +1593,11 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+>The RTP Event information.  See <A
+HREF="uclmmbase-rtp.html#RTP-EVENT"
+>rtp_event</A
+>.
+&#13;</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -1067,7 +1608,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN690"
+NAME="AEN819"
 ></A
 ><H3
 ><A
@@ -1092,18 +1633,92 @@ CLASS="PROGRAMLISTING"
 ></TR
 ></TABLE
 ><P
+>The possible options for a session that affect which RTP packets are
+passed to the application and when internal state for sources is created.</P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN824"
+></A
+><P
 ></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#F0F0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RTP_OPT_PROMISC</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>Pass RTP packets to application irrespective of
+whether a sender report has been received.  Normally, participant
+state is created when a sender report is received and RTP packets that
+arrive prior to the sender report are discarded.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RTP_OPT_WEAK_VALIDATION</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>Create source state when RTP packets arrive
+if none exists.  This option is set by default.  Disabling the option
+means source state is only created when sender reports are received.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RTP_OPT_FILTER_MY_PACKETS</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>Filter out packets from local participant
+if they are received.  With multicast sessions, packets may be looped
+back, causing senders packets to be received locally.  This may be
+filtered out with this option.&#13;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
 ></DIV
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN695"
+NAME="AEN841"
 ></A
 ><H3
 ><A
-NAME="RTCP-SDES-TYPE"
+NAME="RTP-INIT"
 ></A
->enum rtcp_sdes_type</H3
+>rtp_init ()</H3
 ><TABLE
 BORDER="0"
 BGCOLOR="#D6E8FF"
@@ -1113,27 +1728,440 @@ CELLPADDING="6"
 ><TD
 ><PRE
 CLASS="PROGRAMLISTING"
->typedef enum {
-        RTCP_SDES_END   = 0,
-        RTCP_SDES_CNAME = 1,
-        RTCP_SDES_NAME  = 2,
-        RTCP_SDES_EMAIL = 3,
-        RTCP_SDES_PHONE = 4,
-        RTCP_SDES_LOC   = 5,
-        RTCP_SDES_TOOL  = 6,
-        RTCP_SDES_NOTE  = 7,
-        RTCP_SDES_PRIV  = 8
-} rtcp_sdes_type;</PRE
+><GTKDOCLINK
+HREF="RTP-T"
+>rtp_t</GTKDOCLINK
+>       rtp_init                        (const char *addr,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> rx_port,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> tx_port,
+                                             int ttl,
+                                             <GTKDOCLINK
+HREF="DOUBLE"
+>double</GTKDOCLINK
+> rtcp_bw,
+                                             <A
+HREF="uclmmbase-rtp.html#RTP-CALLBACK"
+>rtp_callback</A
+> callback,
+                                             void *userdata);</PRE
 ></TD
 ></TR
 ></TABLE
 ><P
 ></P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN852"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>addr</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> IP destination of this session (unicast or multicast),
+as an ASCII string.  May be a host name, which will be looked up,
+or may be an IPv4 dotted quad or IPv6 literal adddress.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>rx_port</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The port to which to bind the UDP socket</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>tx_port</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The port to which to send UDP packets</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>ttl</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The TTL with which to send multicasts</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>rtcp_bw</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The total bandwidth (in units of bytes per second) that is
+allocated to RTCP.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>callback</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> See section on <A
+HREF="uclmmbase-rtp.html#RTP-CALLBACK"
+>rtp_callback</A
+>.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>userdata</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> Opaque data associated with the session.  See
+<A
+HREF="uclmmbase-rtp.html#RTP-GET-USERDATA"
+>rtp_get_userdata</A
+>().</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> An opaque session identifier to be used in future calls to
+the RTP library functions, or NULL on failure.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
 ></DIV
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN700"
+NAME="AEN891"
+></A
+><H3
+><A
+NAME="RTP-INIT-IF"
+></A
+>rtp_init_if ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+><GTKDOCLINK
+HREF="RTP-T"
+>rtp_t</GTKDOCLINK
+>       rtp_init_if                     (const char *addr,
+                                             char *iface,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> rx_port,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> tx_port,
+                                             int ttl,
+                                             <GTKDOCLINK
+HREF="DOUBLE"
+>double</GTKDOCLINK
+> rtcp_bw,
+                                             <A
+HREF="uclmmbase-rtp.html#RTP-CALLBACK"
+>rtp_callback</A
+> callback,
+                                             void *userdata);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Creates and initializes an RTP session.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN902"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>addr</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> IP destination of this session (unicast or multicast),
+as an ASCII string.  May be a host name, which will be looked up,
+or may be an IPv4 dotted quad or IPv6 literal adddress.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>iface</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> If the destination of the session is multicast,
+the optional interface to bind to.  May be NULL, in which case
+the default multicast interface as determined by the system
+will be used.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>rx_port</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The port to which to bind the UDP socket</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>tx_port</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The port to which to send UDP packets</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>ttl</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The TTL with which to send multicasts</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>rtcp_bw</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The total bandwidth (in units of ___) that is
+allocated to RTCP.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>callback</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> See section on <A
+HREF="uclmmbase-rtp.html#RTP-CALLBACK"
+>rtp_callback</A
+>.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>userdata</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> Opaque data associated with the session.  See
+<A
+HREF="uclmmbase-rtp.html#RTP-GET-USERDATA"
+>rtp_get_userdata</A
+>().</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> An opaque session identifier to be used in future calls to
+the RTP library functions, or NULL on failure.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN945"
 ></A
 ><H3
 ><A
@@ -1157,11 +2185,16 @@ HREF="RTP"
 ></TR
 ></TABLE
 ><P
+>Sends a BYE message on the RTP session, indicating that this
+system is leaving the session.
+Should implement reverse reconsideration; right now it sends a
+BYE if there are less than 50 members and sends nothing otherwise.</P
+><P
 ></P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN706"
+NAME="AEN952"
 ></A
 ><P
 ></P
@@ -1188,7 +2221,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> The RTP session</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -1199,7 +2232,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN715"
+NAME="AEN961"
 ></A
 ><H3
 ><A
@@ -1223,13 +2256,17 @@ HREF="RTP"
 ></TR
 ></TABLE
 ><P
->Frees state associated with given RTP session</P
+>Frees state associated with given RTP session.  Should be called
+after <A
+HREF="uclmmbase-rtp.html#RTP-SEND-BYE"
+>rtp_send_bye</A
+>().</P
 ><P
 ></P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN722"
+NAME="AEN969"
 ></A
 ><P
 ></P
@@ -1267,7 +2304,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN731"
+NAME="AEN978"
 ></A
 ><H3
 ><A
@@ -1296,11 +2333,17 @@ HREF="uclmmbase-rtp.html#RTP-OPTION"
 ></TR
 ></TABLE
 ><P
+>Sets the value of a session option.  See <A
+HREF="uclmmbase-rtp.html#RTP-OPTION"
+>rtp_option</A
+> for
+documentation on the options and their legal values.</P
+><P
 ></P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN738"
+NAME="AEN987"
 ></A
 ><P
 ></P
@@ -1327,7 +2370,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> The RTP session.</TD
 ></TR
 ><TR
 ><TD
@@ -1344,7 +2387,10 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> The option name, see <A
+HREF="uclmmbase-rtp.html#RTP-OPTION"
+>rtp_option</A
+>.</TD
 ></TR
 ><TR
 ><TD
@@ -1361,7 +2407,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> The value to set.</TD
 ></TR
 ><TR
 ><TD
@@ -1376,7 +2422,7 @@ CLASS="EMPHASIS"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> TRUE on success, else FALSE.</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -1387,7 +2433,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN759"
+NAME="AEN1009"
 ></A
 ><H3
 ><A
@@ -1416,11 +2462,17 @@ HREF="uclmmbase-rtp.html#RTP-OPTION"
 ></TR
 ></TABLE
 ><P
+>Retrieves the value of a session option.  See <A
+HREF="uclmmbase-rtp.html#RTP-OPTION"
+>rtp_option</A
+> for
+documentation on the options and their legal values.</P
+><P
 ></P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN766"
+NAME="AEN1018"
 ></A
 ><P
 ></P
@@ -1447,7 +2499,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> The RTP session.</TD
 ></TR
 ><TR
 ><TD
@@ -1464,7 +2516,10 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> The option name, see <A
+HREF="uclmmbase-rtp.html#RTP-OPTION"
+>rtp_option</A
+>.</TD
 ></TR
 ><TR
 ><TD
@@ -1481,7 +2536,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> The return value.</TD
 ></TR
 ><TR
 ><TD
@@ -1496,7 +2551,7 @@ CLASS="EMPHASIS"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> TRUE and the value of the option in optval on success, else FALSE.</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -1507,7 +2562,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN787"
+NAME="AEN1040"
 ></A
 ><H3
 ><A
@@ -1539,11 +2594,13 @@ HREF="UINT32-T"
 ></TR
 ></TABLE
 ><P
+>Receive RTP packets and dispatch them.</P
+><P
 ></P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN795"
+NAME="AEN1049"
 ></A
 ><P
 ></P
@@ -1570,7 +2627,10 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> the session pointer (returned by <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>())</TD
 ></TR
 ><TR
 ><TD
@@ -1587,7 +2647,10 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> the amount of time that <GTKDOCLINK
+HREF="RTCP-RECV"
+>rtcp_recv</GTKDOCLINK
+>() is allowed to block</TD
 ></TR
 ><TR
 ><TD
@@ -1604,7 +2667,8 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> the current time expressed in units of the media
+timestamp.</TD
 ></TR
 ><TR
 ><TD
@@ -1619,7 +2683,7 @@ CLASS="EMPHASIS"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> TRUE if data received, FALSE if the timeout occurred.</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -1630,7 +2694,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN816"
+NAME="AEN1072"
 ></A
 ><H3
 ><A
@@ -1676,11 +2740,78 @@ HREF="UINT16-T"
 ></TR
 ></TABLE
 ><P
+>Send an RTP packet.  Most media applications will only set the
+<TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>, <TT
+CLASS="PARAMETER"
+><I
+>rtp_ts</I
+></TT
+>, <TT
+CLASS="PARAMETER"
+><I
+>pt</I
+></TT
+>, <TT
+CLASS="PARAMETER"
+><I
+>m</I
+></TT
+>, <TT
+CLASS="PARAMETER"
+><I
+>data</I
+></TT
+>, <TT
+CLASS="PARAMETER"
+><I
+>data_len</I
+></TT
+> arguments.</P
+><P
+>Mixers and translators typically set additional contributing sources 
+arguments (<TT
+CLASS="PARAMETER"
+><I
+>cc</I
+></TT
+>, <TT
+CLASS="PARAMETER"
+><I
+>csrc</I
+></TT
+>).</P
+><P
+>Extensions fields (<TT
+CLASS="PARAMETER"
+><I
+>extn</I
+></TT
+>, <TT
+CLASS="PARAMETER"
+><I
+>extn_len</I
+></TT
+>, <TT
+CLASS="PARAMETER"
+><I
+>extn_type</I
+></TT
+>) are for including
+application specific information.  When the widest amount of
+inter-operability is required these fields should be avoided as
+some applications discard packets with extensions they do not
+recognize.</P
+><P
 ></P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN826"
+NAME="AEN1096"
 ></A
 ><P
 ></P
@@ -1707,7 +2838,10 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> the session pointer (returned by <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>())</TD
 ></TR
 ><TR
 ><TD
@@ -1724,7 +2858,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> The timestamp reflects the sampling instant of the first octet of the RTP data to be sent.  The timestamp is expressed in media units.</TD
 ></TR
 ><TR
 ><TD
@@ -1741,7 +2875,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> The payload type identifying the format of the data.</TD
 ></TR
 ><TR
 ><TD
@@ -1758,7 +2892,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> Marker bit, interpretation defined by media profile of payload.</TD
 ></TR
 ><TR
 ><TD
@@ -1775,7 +2909,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> Number of contributing sources (excluding local participant)</TD
 ></TR
 ><TR
 ><TD
@@ -1792,7 +2926,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> Array of SSRC identifiers for contributing sources.</TD
 ></TR
 ><TR
 ><TD
@@ -1809,7 +2943,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> The RTP data to be sent.</TD
 ></TR
 ><TR
 ><TD
@@ -1826,7 +2960,12 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> The size <TT
+CLASS="PARAMETER"
+><I
+>data</I
+></TT
+> in bytes.</TD
 ></TR
 ><TR
 ><TD
@@ -1843,7 +2982,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> Extension data (if present).</TD
 ></TR
 ><TR
 ><TD
@@ -1860,7 +2999,12 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> size of <TT
+CLASS="PARAMETER"
+><I
+>extn</I
+></TT
+> in bytes.</TD
 ></TR
 ><TR
 ><TD
@@ -1877,7 +3021,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> extension type indicator.</TD
 ></TR
 ><TR
 ><TD
@@ -1892,7 +3036,7 @@ CLASS="EMPHASIS"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> Number of bytes transmitted.</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -1903,7 +3047,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN879"
+NAME="AEN1152"
 ></A
 ><H3
 ><A
@@ -1930,16 +3074,23 @@ HREF="UINT32-T"
                                              <A
 HREF="uclmmbase-rtp.html#RTCP-APP-CALLBACK"
 >rtcp_app_callback</A
-> callback);</PRE
+> appcallback);</PRE
 ></TD
 ></TR
 ></TABLE
+><P
+>Checks RTCP timer and sends RTCP data when nececessary.  The
+interval between RTCP packets is randomized over an interval that
+depends on the session bandwidth, the number of participants, and
+whether the local participant is a sender.  This function should be
+called at least once per second, and can be safely called more
+frequently.</P
 ><P
 ></P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN887"
+NAME="AEN1161"
 ></A
 ><P
 ></P
@@ -1966,7 +3117,10 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> the session pointer (returned by <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>())</TD
 ></TR
 ><TR
 ><TD
@@ -1983,7 +3137,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> the current time expressed in units of the media timestamp.</TD
 ></TR
 ><TR
 ><TD
@@ -1993,14 +3147,14 @@ VALIGN="TOP"
 ><TT
 CLASS="PARAMETER"
 ><I
->callback</I
+>appcallback</I
 ></TT
 >&nbsp;:</TD
 ><TD
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> a callback to create an APP RTCP packet, if needed.</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -2011,7 +3165,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN904"
+NAME="AEN1179"
 ></A
 ><H3
 ><A
@@ -2035,11 +3189,17 @@ HREF="RTP"
 ></TR
 ></TABLE
 ><P
+>Trawls through the internal data structures and performs
+housekeeping.  This function should be called at least once per
+second.  It uses an internal timer to limit the number of passes
+through the data structures to once per second, it can be safely
+called more frequently.</P
+><P
 ></P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN910"
+NAME="AEN1186"
 ></A
 ><P
 ></P
@@ -2066,7 +3226,10 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> the session pointer (returned by <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>())</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -2077,7 +3240,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN919"
+NAME="AEN1196"
 ></A
 ><H3
 ><A
@@ -2105,10 +3268,12 @@ HREF="RTP"
 ></TABLE
 ><P
 ></P
+><P
+></P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN926"
+NAME="AEN1204"
 ></A
 ><P
 ></P
@@ -2135,7 +3300,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> The RTP Session.</TD
 ></TR
 ><TR
 ><TD
@@ -2150,7 +3315,7 @@ CLASS="EMPHASIS"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> My SSRC for this session.</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -2161,7 +3326,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN939"
+NAME="AEN1217"
 ></A
 ><H3
 ><A
@@ -2189,11 +3354,19 @@ HREF="UINT32-T"
 ></TR
 ></TABLE
 ><P
+>Adds <TT
+CLASS="PARAMETER"
+><I
+>csrc</I
+></TT
+> to list of contributing sources used in SDES items.
+Used by mixers and transcoders.</P
+><P
 ></P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN946"
+NAME="AEN1226"
 ></A
 ><P
 ></P
@@ -2220,7 +3393,10 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> the session pointer (returned by <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>()) </TD
 ></TR
 ><TR
 ><TD
@@ -2237,7 +3413,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> Constributing SSRC identifier</TD
 ></TR
 ><TR
 ><TD
@@ -2252,7 +3428,7 @@ CLASS="EMPHASIS"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> TRUE.</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -2263,7 +3439,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN963"
+NAME="AEN1244"
 ></A
 ><H3
 ><A
@@ -2291,11 +3467,19 @@ HREF="UINT32-T"
 ></TR
 ></TABLE
 ><P
+>Removes <TT
+CLASS="PARAMETER"
+><I
+>csrc</I
+></TT
+> from list of contributing sources used in SDES items.
+Used by mixers and transcoders.</P
+><P
 ></P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN970"
+NAME="AEN1253"
 ></A
 ><P
 ></P
@@ -2322,7 +3506,10 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> the session pointer (returned by <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>()) </TD
 ></TR
 ><TR
 ><TD
@@ -2339,7 +3526,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> Constributing SSRC identifier</TD
 ></TR
 ><TR
 ><TD
@@ -2354,7 +3541,12 @@ CLASS="EMPHASIS"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> TRUE on success, FALSE if <TT
+CLASS="PARAMETER"
+><I
+>csrc</I
+></TT
+> is not a valid source.</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -2365,109 +3557,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN987"
-></A
-><H3
-><A
-NAME="RTP-VALID-SSRC"
-></A
->rtp_valid_ssrc ()</H3
-><TABLE
-BORDER="0"
-BGCOLOR="#D6E8FF"
-WIDTH="100%"
-CELLPADDING="6"
-><TR
-><TD
-><PRE
-CLASS="PROGRAMLISTING"
->int         rtp_valid_ssrc                  (struct <GTKDOCLINK
-HREF="RTP"
->rtp</GTKDOCLINK
-> *session,
-                                             <GTKDOCLINK
-HREF="UINT32-T"
->uint32_t</GTKDOCLINK
-> ssrc);</PRE
-></TD
-></TR
-></TABLE
-><P
-></P
-><DIV
-CLASS="INFORMALTABLE"
-><A
-NAME="AEN994"
-></A
-><P
-></P
-><TABLE
-BORDER="0"
-WIDTH="100%"
-BGCOLOR="#FFD0D0"
-CELLSPACING="0"
-CELLPADDING="4"
-CLASS="CALSTABLE"
-><TBODY
-><TR
-><TD
-WIDTH="20%"
-ALIGN="RIGHT"
-VALIGN="TOP"
-><TT
-CLASS="PARAMETER"
-><I
->session</I
-></TT
->&nbsp;:</TD
-><TD
-WIDTH="80%"
-ALIGN="LEFT"
-VALIGN="TOP"
->&nbsp;</TD
-></TR
-><TR
-><TD
-WIDTH="20%"
-ALIGN="RIGHT"
-VALIGN="TOP"
-><TT
-CLASS="PARAMETER"
-><I
->ssrc</I
-></TT
->&nbsp;:</TD
-><TD
-WIDTH="80%"
-ALIGN="LEFT"
-VALIGN="TOP"
->&nbsp;</TD
-></TR
-><TR
-><TD
-WIDTH="20%"
-ALIGN="RIGHT"
-VALIGN="TOP"
-><I
-CLASS="EMPHASIS"
->Returns</I
-> :</TD
-><TD
-WIDTH="80%"
-ALIGN="LEFT"
-VALIGN="TOP"
->&nbsp;</TD
-></TR
-></TBODY
-></TABLE
-><P
-></P
-></DIV
-></DIV
-><HR><DIV
-CLASS="REFSECT2"
-><A
-NAME="AEN1011"
+NAME="AEN1272"
 ></A
 ><H3
 ><A
@@ -2501,11 +3591,28 @@ HREF="uclmmbase-rtp.html#RTCP-SDES-TYPE"
 ></TR
 ></TABLE
 ><P
+>Sets session description information associated with participant
+<TT
+CLASS="PARAMETER"
+><I
+>ssrc</I
+></TT
+>.  Under normal circumstances applications always use the
+<TT
+CLASS="PARAMETER"
+><I
+>ssrc</I
+></TT
+> of the local participant, this SDES information is
+transmitted in receiver reports.  Setting SDES information for
+other participants affects the local SDES entries, but are not
+transmitted onto the network.</P
+><P
 ></P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1019"
+NAME="AEN1283"
 ></A
 ><P
 ></P
@@ -2532,7 +3639,10 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> the session pointer (returned by <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>()) </TD
 ></TR
 ><TR
 ><TD
@@ -2549,7 +3659,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> the SSRC identifier of a participant</TD
 ></TR
 ><TR
 ><TD
@@ -2566,7 +3676,12 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> the SDES type represented by <TT
+CLASS="PARAMETER"
+><I
+>value</I
+></TT
+></TD
 ></TR
 ><TR
 ><TD
@@ -2583,7 +3698,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> the SDES description</TD
 ></TR
 ><TR
 ><TD
@@ -2600,7 +3715,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> the length of the description</TD
 ></TR
 ><TR
 ><TD
@@ -2615,7 +3730,7 @@ CLASS="EMPHASIS"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> Returns TRUE if participant exists, FALSE otherwise.</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -2626,7 +3741,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1048"
+NAME="AEN1314"
 ></A
 ><H3
 ><A
@@ -2658,11 +3773,25 @@ HREF="uclmmbase-rtp.html#RTCP-SDES-TYPE"
 ></TR
 ></TABLE
 ><P
+>Recovers session description (SDES) information on participant
+identified with <TT
+CLASS="PARAMETER"
+><I
+>ssrc</I
+></TT
+>.  The SDES information associated with a
+source is updated when receiver reports are received.  There are
+several different types of SDES information, e.g. username,
+location, phone, email.  These are enumerated by <A
+HREF="uclmmbase-rtp.html#RTCP-SDES-TYPE"
+>rtcp_sdes_type</A
+>.</P
+><P
 ></P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1056"
+NAME="AEN1325"
 ></A
 ><P
 ></P
@@ -2689,7 +3818,10 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> the session pointer (returned by <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>()) </TD
 ></TR
 ><TR
 ><TD
@@ -2706,7 +3838,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> the SSRC identifier of a participant</TD
 ></TR
 ><TR
 ><TD
@@ -2723,7 +3855,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> the SDES information to retrieve</TD
 ></TR
 ><TR
 ><TD
@@ -2738,7 +3870,8 @@ CLASS="EMPHASIS"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> pointer to string containing SDES description if
+received, NULL otherwise.  </TD
 ></TR
 ></TBODY
 ></TABLE
@@ -2749,7 +3882,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1077"
+NAME="AEN1347"
 ></A
 ><H3
 ><A
@@ -2780,11 +3913,18 @@ HREF="UINT32-T"
 ></TR
 ></TABLE
 ><P
+>Retrieve the latest sender report made by sender with <TT
+CLASS="PARAMETER"
+><I
+>ssrc</I
+></TT
+> identifier.</P
+><P
 ></P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1085"
+NAME="AEN1357"
 ></A
 ><P
 ></P
@@ -2811,7 +3951,10 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> the session pointer (returned by <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>()) </TD
 ></TR
 ><TR
 ><TD
@@ -2828,7 +3971,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> identifier of source</TD
 ></TR
 ><TR
 ><TD
@@ -2843,7 +3986,8 @@ CLASS="EMPHASIS"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> A pointer to an rtcp_sr structure on success, NULL
+otherwise.  The pointer must not be freed.</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -2854,7 +3998,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1102"
+NAME="AEN1375"
 ></A
 ><H3
 ><A
@@ -2889,11 +4033,24 @@ HREF="UINT32-T"
 ></TR
 ></TABLE
 ><P
+>Retrieve the latest receiver report on <TT
+CLASS="PARAMETER"
+><I
+>reportee</I
+></TT
+> made by <TT
+CLASS="PARAMETER"
+><I
+>reporter</I
+></TT
+>.
+Provides an indication of other receivers reception service.</P
+><P
 ></P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1111"
+NAME="AEN1387"
 ></A
 ><P
 ></P
@@ -2920,7 +4077,10 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> the session pointer (returned by <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>())</TD
 ></TR
 ><TR
 ><TD
@@ -2937,7 +4097,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> participant originating receiver report</TD
 ></TR
 ><TR
 ><TD
@@ -2954,7 +4114,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> participant included in receiver report</TD
 ></TR
 ><TR
 ><TD
@@ -2969,7 +4129,8 @@ CLASS="EMPHASIS"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> A pointer to a rtcp_rr structure on success, NULL
+otherwise.  The pointer must not be freed.</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -2980,7 +4141,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1132"
+NAME="AEN1409"
 ></A
 ><H3
 ><A
@@ -3005,11 +4166,28 @@ HREF="RTP"
 ></TR
 ></TABLE
 ><P
+>Converts the user supplied key into a form suitable for use with RTP
+and install it as the active key. Passing in NULL as the passphrase
+disables encryption. The passphrase is converted into a DES key as
+specified in RFC1890, that is:</P
+><P
+>- convert to canonical form</P
+><P
+>- derive an MD5 hash of the canonical form</P
+><P
+>- take the first 56 bits of the MD5 hash</P
+><P
+>- add parity bits to form a 64 bit key</P
+><P
+>Note that versions of rat prior to 4.1.2 do not convert the passphrase
+to canonical form before taking the MD5 hash, and so will
+not be compatible for keys which are non-invarient under this step.</P
+><P
 ></P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1138"
+NAME="AEN1421"
 ></A
 ><P
 ></P
@@ -3036,7 +4214,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> The RTP session.</TD
 ></TR
 ><TR
 ><TD
@@ -3053,7 +4231,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> The user-provided "pass phrase" to map to an encryption key.</TD
 ></TR
 ><TR
 ><TD
@@ -3068,7 +4246,7 @@ CLASS="EMPHASIS"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> TRUE on success, FALSE on failure.</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -3079,7 +4257,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1155"
+NAME="AEN1438"
 ></A
 ><H3
 ><A
@@ -3117,7 +4295,7 @@ should not be used otherwise.</P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1163"
+NAME="AEN1446"
 ></A
 ><P
 ></P
@@ -3187,7 +4365,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1180"
+NAME="AEN1463"
 ></A
 ><H3
 ><A
@@ -3212,10 +4390,12 @@ HREF="RTP"
 ></TABLE
 ><P
 ></P
+><P
+></P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1186"
+NAME="AEN1470"
 ></A
 ><P
 ></P
@@ -3242,7 +4422,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> The RTP Session.</TD
 ></TR
 ><TR
 ><TD
@@ -3257,7 +4437,14 @@ CLASS="EMPHASIS"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> The session's destination address, as set when creating the
+session with <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>() or <A
+HREF="uclmmbase-rtp.html#RTP-INIT-IF"
+>rtp_init_if</A
+>().</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -3268,7 +4455,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1199"
+NAME="AEN1485"
 ></A
 ><H3
 ><A
@@ -3296,10 +4483,12 @@ HREF="RTP"
 ></TABLE
 ><P
 ></P
+><P
+></P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1206"
+NAME="AEN1493"
 ></A
 ><P
 ></P
@@ -3326,7 +4515,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> The RTP Session.</TD
 ></TR
 ><TR
 ><TD
@@ -3341,7 +4530,14 @@ CLASS="EMPHASIS"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> The UDP port to which this session is bound, as set when
+creating the session with <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>() or <A
+HREF="uclmmbase-rtp.html#RTP-INIT-IF"
+>rtp_init_if</A
+>().</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -3352,7 +4548,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1219"
+NAME="AEN1508"
 ></A
 ><H3
 ><A
@@ -3380,10 +4576,12 @@ HREF="RTP"
 ></TABLE
 ><P
 ></P
+><P
+></P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1226"
+NAME="AEN1516"
 ></A
 ><P
 ></P
@@ -3410,7 +4608,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> The RTP Session.</TD
 ></TR
 ><TR
 ><TD
@@ -3425,7 +4623,14 @@ CLASS="EMPHASIS"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> The UDP port to which RTP packets are transmitted, as set
+when creating the session with <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>() or <A
+HREF="uclmmbase-rtp.html#RTP-INIT-IF"
+>rtp_init_if</A
+>().</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -3436,7 +4641,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1239"
+NAME="AEN1531"
 ></A
 ><H3
 ><A
@@ -3461,10 +4666,12 @@ HREF="RTP"
 ></TABLE
 ><P
 ></P
+><P
+></P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1245"
+NAME="AEN1538"
 ></A
 ><P
 ></P
@@ -3491,7 +4698,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> The RTP Session.</TD
 ></TR
 ><TR
 ><TD
@@ -3506,7 +4713,14 @@ CLASS="EMPHASIS"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> The session's TTL, as set when creating the session with
+<A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>() or <A
+HREF="uclmmbase-rtp.html#RTP-INIT-IF"
+>rtp_init_if</A
+>().</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -3517,7 +4731,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1258"
+NAME="AEN1553"
 ></A
 ><H3
 ><A
@@ -3541,11 +4755,22 @@ HREF="RTP"
 ></TR
 ></TABLE
 ><P
+>This function returns the userdata pointer that was passed to the
+<A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>() or <A
+HREF="uclmmbase-rtp.html#RTP-INIT-IF"
+>rtp_init_if</A
+>() function when creating this session.
+XXX (Note that gtkdoc thinks that it returns void, not void*, so
+ignores the "Returns:" block here)</P
+><P
 ></P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1264"
+NAME="AEN1562"
 ></A
 ><P
 ></P
@@ -3572,7 +4797,7 @@ CLASS="PARAMETER"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
->&nbsp;</TD
+> The RTP session.</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -3584,7 +4809,7 @@ VALIGN="TOP"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN1273"
+NAME="AEN1571"
 ></A
 ><H2
 >See Also</H2

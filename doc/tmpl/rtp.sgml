@@ -43,37 +43,6 @@ of audio, video, and other real-time data across IP capable networks.
 
 
 
-<!-- ##### FUNCTION rtp_init ##### -->
-<para>
-
-</para>
-
-@addr: 
-@rx_port: 
-@tx_port: 
-@ttl: 
-@rtcp_bw: 
-@callback: 
-@userdata: 
-@Returns: 
-
-
-<!-- ##### FUNCTION rtp_init_if ##### -->
-<para>
-
-</para>
-
-@addr: 
-@iface: 
-@rx_port: 
-@tx_port: 
-@ttl: 
-@rtcp_bw: 
-@callback: 
-@userdata: 
-@Returns: 
-
-
 <!-- ##### TYPEDEF rtp_packet ##### -->
 <para>
 The struct begins with pointers to the data in the packet as
@@ -110,18 +79,22 @@ If you change rtp_packet, make sure to change this too.
 
 <!-- ##### ENUM rtcp_sdes_type ##### -->
 <para>
-
+Possible values of Session Description (SDES) identifiers.  SDES items
+are announced via #rtp_callback (with RX_SDES events) when they are
+received.  SDES items may be configured and queried with #rtp_set_sdes
+and #rtp_get_sdes.  The RTP guidelines recommend keeping SDES items
+constant during an RTP session to avoid confusing end users.
 </para>
 
-@RTCP_SDES_END: 
-@RTCP_SDES_CNAME: 
-@RTCP_SDES_NAME: 
-@RTCP_SDES_EMAIL: 
-@RTCP_SDES_PHONE: 
-@RTCP_SDES_LOC: 
-@RTCP_SDES_TOOL: 
-@RTCP_SDES_NOTE: 
-@RTCP_SDES_PRIV: 
+@RTCP_SDES_END: Indicates the end of SDES item processing when SDES data is received.  Has no meaning with #rtp_set_sdes and #rtp_get_sdes.
+@RTCP_SDES_CNAME: The canonical name associated with participant. It is algorithmically derived and should never be changed.
+@RTCP_SDES_NAME: The local participant's name, typically displayed in RTP session participant list. The name can take any form, and should remain constant during a session to avoid confusion.
+@RTCP_SDES_EMAIL: The local participant's email address (optional).
+@RTCP_SDES_PHONE: The local participant's telephone number (optional).
+@RTCP_SDES_LOC: The local participant's geographic location (optional).
+@RTCP_SDES_TOOL: The local participant's tool (optional).
+@RTCP_SDES_NOTE: Any additional information the local participant wishes to communicate about themselves (optional).
+@RTCP_SDES_PRIV: Private extension SDES item see <ulink url="http://www.ietf.org/rfc/rfc1889.txt">RFC1889</ulink> for details.
 
 <!-- ##### TYPEDEF rtcp_sdes_item ##### -->
 <para>
@@ -211,6 +184,55 @@ how rtp_callback() should handle each.
 @e: The RTP Event information.  See #rtp_event.
 
 
+<!-- ##### ENUM rtp_option ##### -->
+<para>
+The possible options for a session that affect which RTP packets are
+passed to the application and when internal state for sources is created.
+</para>
+
+@RTP_OPT_PROMISC: Pass RTP packets to application irrespective of
+whether a sender report has been received.  Normally, participant
+state is created when a sender report is received and RTP packets that
+arrive prior to the sender report are discarded.
+@RTP_OPT_WEAK_VALIDATION: Create source state when RTP packets arrive
+if none exists.  This option is set by default.  Disabling the option
+means source state is only created when sender reports are received.
+@RTP_OPT_FILTER_MY_PACKETS: Filter out packets from local participant
+if they are received.  With multicast sessions, packets may be looped
+back, causing senders packets to be received locally.  This may be
+filtered out with this option.
+
+<!-- ##### FUNCTION rtp_init ##### -->
+<para>
+
+</para>
+
+@addr: 
+@rx_port: 
+@tx_port: 
+@ttl: 
+@rtcp_bw: 
+@callback: 
+@userdata: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_init_if ##### -->
+<para>
+
+</para>
+
+@addr: 
+@iface: 
+@rx_port: 
+@tx_port: 
+@ttl: 
+@rtcp_bw: 
+@callback: 
+@userdata: 
+@Returns: 
+
+
 <!-- ##### FUNCTION rtp_send_bye ##### -->
 <para>
 
@@ -226,15 +248,6 @@ how rtp_callback() should handle each.
 
 @session: 
 
-
-<!-- ##### ENUM rtp_option ##### -->
-<para>
-
-</para>
-
-@RTP_OPT_PROMISC: 
-@RTP_OPT_WEAK_VALIDATION: 
-@RTP_OPT_FILTER_MY_PACKETS: 
 
 <!-- ##### FUNCTION rtp_set_option ##### -->
 <para>
@@ -332,16 +345,6 @@ how rtp_callback() should handle each.
 
 @session: 
 @csrc: 
-@Returns: 
-
-
-<!-- ##### FUNCTION rtp_valid_ssrc ##### -->
-<para>
-
-</para>
-
-@session: 
-@ssrc: 
 @Returns: 
 
 

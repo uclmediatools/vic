@@ -892,6 +892,10 @@ static void init_rng(const char *s)
 	}
 }
 
+/* See rtp_init_if(); calling rtp_init() is just like calling
+ * rtp_init_if() with a NULL interface argument.
+ */
+
 /**
  * rtp_init:
  * @addr: IP destination of this session (unicast or multicast),
@@ -900,14 +904,12 @@ static void init_rng(const char *s)
  * @rx_port: The port to which to bind the UDP socket
  * @tx_port: The port to which to send UDP packets
  * @ttl: The TTL with which to send multicasts
- * @rtcp_bw: The total bandwidth (in units of ___) that is
+ * @rtcp_bw: The total bandwidth (in units of bytes per second) that is
  * allocated to RTCP.
  * @callback: See section on #rtp_callback.
  * @userdata: Opaque data associated with the session.  See
  * rtp_get_userdata().
  *
- * See rtp_init_if(); calling rtp_init() is just like calling
- * rtp_init_if() with a NULL interface argument.
  *
  * Returns: An opaque session identifier to be used in future calls to
  * the RTP library functions, or NULL on failure.
@@ -1738,7 +1740,7 @@ static void rtp_process_ctrl(struct rtp *session, uint8_t *buffer, int buflen)
 /**
  * rtp_recv:
  * @session: the session pointer (returned by rtp_init())
- * @timeout: the amount of time that rtcp_recv() is allowed to block.
+ * @timeout: the amount of time that rtcp_recv() is allowed to block
  * @curr_rtp_ts: the current time expressed in units of the media
  * timestamp.
  *
@@ -1769,6 +1771,18 @@ int rtp_recv(struct rtp *session, struct timeval *timeout, uint32_t curr_rtp_ts)
         return FALSE;
 }
 
+
+
+/**
+ * rtp_add_csrc:
+ * @session: the session pointer (returned by rtp_init()) 
+ * @csrc: Constributing SSRC identifier
+ * 
+ * Adds @csrc to list of contributing sources used in SDES items.
+ * Used by mixers and transcoders.
+ * 
+ * Return value: TRUE.
+ **/
 int rtp_add_csrc(struct rtp *session, uint32_t csrc)
 {
 	/* Mark csrc as something for which we should advertise RTCP SDES items, */
@@ -1788,6 +1802,16 @@ int rtp_add_csrc(struct rtp *session, uint32_t csrc)
 	return TRUE;
 }
 
+/**
+ * rtp_del_csrc:
+ * @session: the session pointer (returned by rtp_init()) 
+ * @csrc: Constributing SSRC identifier
+ * 
+ * Removes @csrc from list of contributing sources used in SDES items.
+ * Used by mixers and transcoders.
+ * 
+ * Return value: TRUE on success, FALSE if @csrc is not a valid source.
+ **/
 int rtp_del_csrc(struct rtp *session, uint32_t csrc)
 {
 	source	*s;
@@ -1807,6 +1831,23 @@ int rtp_del_csrc(struct rtp *session, uint32_t csrc)
 	return TRUE;
 }
 
+/**
+ * rtp_set_sdes:
+ * @session: the session pointer (returned by rtp_init()) 
+ * @ssrc: the SSRC identifier of a participant
+ * @type: the SDES type represented by @value
+ * @value: the SDES description
+ * @length: the length of the description
+ * 
+ * Sets session description information associated with participant
+ * @ssrc.  Under normal circumstances applications always use the
+ * @ssrc of the local participant, this SDES information is
+ * transmitted in receiver reports.  Setting SDES information for
+ * other participants affects the local SDES entries, but are not
+ * transmitted onto the network.
+ * 
+ * Return value: Returns TRUE if participant exists, FALSE otherwise.
+ **/
 int rtp_set_sdes(struct rtp *session, uint32_t ssrc, rtcp_sdes_type type, char *value, int length)
 {
 	source	*s;
@@ -1868,6 +1909,21 @@ int rtp_set_sdes(struct rtp *session, uint32_t ssrc, rtcp_sdes_type type, char *
 	return TRUE;
 }
 
+/**
+ * rtp_get_sdes:
+ * @session: the session pointer (returned by rtp_init()) 
+ * @ssrc: the SSRC identifier of a participant
+ * @type: the SDES information to retrieve
+ * 
+ * Recovers session description (SDES) information on participant
+ * identified with @ssrc.  The SDES information associated with a
+ * source is updated when receiver reports are received.  There are
+ * several different types of SDES information, e.g. username,
+ * location, phone, email.  These are enumerated by #rtcp_sdes_type.
+ * 
+ * Return value: pointer to string containing SDES description if
+ * received, NULL otherwise.  
+ */
 const char *rtp_get_sdes(struct rtp *session, uint32_t ssrc, rtcp_sdes_type type)
 {
 	source	*s;
@@ -1905,6 +1961,16 @@ const char *rtp_get_sdes(struct rtp *session, uint32_t ssrc, rtcp_sdes_type type
 	return NULL;
 }
 
+/**
+ * rtp_get_sr:
+ * @session: the session pointer (returned by rtp_init()) 
+ * @ssrc: identifier of source
+ * 
+ * Retrieve the latest sender report made by sender with @ssrc identifier.
+ * 
+ * Return value: A pointer to an rtcp_sr structure on success, NULL
+ * otherwise.  The pointer must not be freed.
+ **/
 const rtcp_sr *rtp_get_sr(struct rtp *session, uint32_t ssrc)
 {
 	/* Return the last SR received from this ssrc. The */
@@ -1921,14 +1987,56 @@ const rtcp_sr *rtp_get_sr(struct rtp *session, uint32_t ssrc)
 	return s->sr;
 }
 
+/**
+ * rtp_get_rr:
+ * @session: the session pointer (returned by rtp_init())
+ * @reporter: participant originating receiver report
+ * @reportee: participant included in receiver report
+ * 
+ * Retrieve the latest receiver report on @reportee made by @reporter.
+ * Provides an indication of other receivers reception service.
+ * 
+ * Return value: A pointer to a rtcp_rr structure on success, NULL
+ * otherwise.  The pointer must not be freed.
+ **/
 const rtcp_rr *rtp_get_rr(struct rtp *session, uint32_t reporter, uint32_t reportee)
 {
 	check_database(session);
         return get_rr(session, reporter, reportee);
 }
 
-int rtp_send_data(struct rtp *session, uint32_t rtp_ts, char pt, int m, int cc, uint32_t csrc[], 
-                  char *data, int data_len, char *extn, uint16_t extn_len, uint16_t extn_type)
+/**
+ * rtp_send_data:
+ * @session: the session pointer (returned by rtp_init())
+ * @rtp_ts: The timestamp reflects the sampling instant of the first octet of the RTP data to be sent.  The timestamp is expressed in media units.
+ * @pt: The payload type identifying the format of the data.
+ * @m: Marker bit, interpretation defined by media profile of payload.
+ * @cc: Number of contributing sources (excluding local participant)
+ * @csrc: Array of SSRC identifiers for contributing sources.
+ * @data: The RTP data to be sent.
+ * @data_len: The size @data in bytes.
+ * @extn: Extension data (if present).
+ * @extn_len: size of @extn in bytes.
+ * @extn_type: extension type indicator.
+ * 
+ * Send an RTP packet.  Most media applications will only set the
+ * @session, @rtp_ts, @pt, @m, @data, @data_len arguments.
+ *
+ * Mixers and translators typically set additional contributing sources 
+ * arguments (@cc, @csrc).
+ *
+ * Extensions fields (@extn, @extn_len, @extn_type) are for including
+ * application specific information.  When the widest amount of
+ * inter-operability is required these fields should be avoided as
+ * some applications discard packets with extensions they do not
+ * recognize.
+ * 
+ * Return value: Number of bytes transmitted.
+ **/
+int rtp_send_data(struct rtp *session, uint32_t rtp_ts, char pt, int m, 
+		  int cc, uint32_t* csrc, 
+                  char *data, int data_len, 
+		  char *extn, uint16_t extn_len, uint16_t extn_type)
 {
 	int		 buffer_len, i, rc, pad, pad_len;
 	uint8_t		*buffer;
@@ -2375,8 +2483,12 @@ static void send_rtcp(struct rtp *session, uint32_t rtp_ts,
  * @rtp_ts: the current time expressed in units of the media timestamp.
  * @appcallback: a callback to create an APP RTCP packet, if needed.
  *
- * Sends RTCP if it's time to send RTCP.  Must be called
- * "often enough".  (XXX Say something more here?)
+ * Checks RTCP timer and sends RTCP data when nececessary.  The
+ * interval between RTCP packets is randomized over an interval that
+ * depends on the session bandwidth, the number of participants, and
+ * whether the local participant is a sender.  This function should be
+ * called at least once per second, and can be safely called more
+ * frequently.  
  */
 void rtp_send_ctrl(struct rtp *session, uint32_t rtp_ts,
                    rtcp_app_callback appcallback)
@@ -2426,9 +2538,11 @@ void rtp_send_ctrl(struct rtp *session, uint32_t rtp_ts,
  * rtp_update:
  * @session: the session pointer (returned by rtp_init())
  *
- * Performs housekeeping.
- * Must be called ???how often???
- * No need to call more than once per second.
+ * Trawls through the internal data structures and performs
+ * housekeeping.  This function should be called at least once per
+ * second.  It uses an internal timer to limit the number of passes
+ * through the data structures to once per second, it can be safely
+ * called more frequently.
  */
 void rtp_update(struct rtp *session)
 {
@@ -2553,8 +2667,8 @@ void rtp_send_bye(struct rtp *session)
  * rtp_done:
  * @session: the RTP session to finish
  *
- * Frees state associated with given RTP session.  Does not send
- * any packets (e.g. BYE).
+ * Frees state associated with given RTP session.  Should be called
+ * after rtp_send_bye().  
  */
 void rtp_done(struct rtp *session)
 {
