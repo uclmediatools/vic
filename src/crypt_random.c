@@ -76,8 +76,8 @@ lbl_random(void)
 	close(fd);
 	return res;
 #else
-	register u_int32 x = randseed;
-	register u_int32 hi, lo, t;
+	register u_int32_t x = randseed;
+	register u_int32_t hi, lo, t;
 
 	hi = x / 127773;
 	lo = x % 127773;
