@@ -790,7 +790,7 @@ void mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, i
 	int		 alen = strlen(cmnd) + strlen(args) + 4;
 
 	while (curr != NULL) {
-		if (mbus_addr_match(curr->dest, dest) && (curr->num_cmds < MBUS_MAX_QLEN) && ((curr->message_size + alen) < MBUS_BUF_SIZE)) {
+		if (mbus_addr_match(curr->dest, dest) && (curr->num_cmds < MBUS_MAX_QLEN) && ((curr->message_size + alen) < (MBUS_BUF_SIZE - 8))) {
 			curr->num_cmds++;
 			curr->reliable |= reliable;
 			curr->cmd_list[curr->num_cmds-1] = xstrdup(cmnd);
@@ -1038,11 +1038,11 @@ int mbus_recv(struct mbus *m, void *data)
 			memcpy(tx_cryptbuf, buffer, buffer_len);
 			memset(initVec, 0, 8);
 			qfDES_CBC_d(m->encrkey, tx_cryptbuf, buffer_len, initVec);
-			memcpy(buffer, tx_cryptbuf, buffer_len);
-			if (strncmp(buffer + MBUS_AUTH_LEN + 1, "mbus/1.0", 8) != 0) {
+			if (strncmp(tx_cryptbuf + MBUS_AUTH_LEN + 1, "mbus/1.0", 8) != 0) {
 				debug_msg("Message did not correctly decrypt\n");
 				return FALSE;
 			}
+			memcpy(buffer, tx_cryptbuf, buffer_len);
 		}
 
 		mbus_parse_init(m, buffer);
