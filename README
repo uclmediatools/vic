@@ -1,10 +1,12 @@
 UCL Common Code Library
 
-Routines common to a number of multimedia tools. This library is required
-to build RAT v3.2.7 or later, and may be needed for other UCL tools.
+Routines common to a number of multimedia tools.  The library
+originates from work on the RAT project: these are portions that are
+not directly related to an audio tool and potentially useful
+elsewhere.  
 
-To build library on UNIX:
-	./configure
-	cd src && gmake 
+This library is required to build RAT v3.2.7 or later, and may be
+needed for other UCL tools.
 
-To build library on Win32 open common.dsw and click "build".
+--
+Comments and contributions welcome, please email to mm-tools@cs.ucl.ac.uk.

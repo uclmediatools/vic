@@ -1,0 +1,88 @@
+<!-- ##### SECTION Title ##### -->
+memory
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### MACRO xrealloc ##### -->
+<para>
+
+</para>
+
+@p: 
+@x: 
+
+
+<!-- ##### MACRO xmalloc ##### -->
+<para>
+
+</para>
+
+@x: 
+
+
+<!-- ##### MACRO xstrdup ##### -->
+<para>
+
+</para>
+
+@x: 
+
+
+<!-- ##### FUNCTION xdoneinit ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION xmemchk ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION xmemdmp ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION xclaim ##### -->
+<para>
+
+</para>
+
+@p: 
+@filen: 
+@line: 
+
+
+<!-- ##### FUNCTION xmemdist ##### -->
+<para>
+
+</para>
+
+@fp: 
+
+
+<!-- ##### FUNCTION xfree ##### -->
+<para>
+
+</para>
+
+@x: 
+
+

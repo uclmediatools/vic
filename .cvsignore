@@ -7,3 +7,4 @@ test-libcommon
 version.h
 .pure
 .devel
+*.bak

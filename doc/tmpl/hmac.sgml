@@ -1,0 +1,28 @@
+<!-- ##### SECTION Title ##### -->
+hmac
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION hmac_md5 ##### -->
+<para>
+
+</para>
+
+@data: 
+@data_len: 
+@key: 
+@key_len: 
+@digest: 
+
+

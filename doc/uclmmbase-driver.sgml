@@ -1,0 +1,20 @@
+<!doctype book PUBLIC "-//Davenport//DTD DocBook V3.0//EN" [
+<!entity rtp SYSTEM "sgml/rtp.sgml">
+]>
+
+<book>
+  <bookinfo>
+   <title>UCL Common Library Reference</title>
+  </bookinfo>
+
+<chapter id="uclmmbase">
+  <title>Overview</title>
+
+<para> The UCL Common Multimedia Library provides a number of useful
+features for multimedia applications.  The most notable feature of the
+library is the RTP implementation.</para>
+
+    &rtp; 
+</chapter>
+
+</book>

@@ -224,7 +224,7 @@ struct rtp {
 	uint32_t	 rtp_pcount;
 	uint32_t	 rtp_bcount;
         char            *encryption_key;
-	rtp_callback	*callback;
+	rtp_callback	 callback;
 	uint32_t	 magic;				/* For debugging...  */
 };
 
@@ -891,7 +891,7 @@ static void init_rng(const char *s)
 struct rtp *rtp_init(const char *addr, 
 		     uint16_t rx_port, uint16_t tx_port, 
 		     int ttl, double rtcp_bw, 
-                     rtp_callback *callback,
+                     rtp_callback callback,
                      void *userdata)
 {
 	return rtp_init_if(addr, NULL, rx_port, tx_port, ttl, rtcp_bw, callback, userdata);
@@ -900,7 +900,7 @@ struct rtp *rtp_init(const char *addr,
 struct rtp *rtp_init_if(const char *addr, char *iface, 
 			uint16_t rx_port, uint16_t tx_port, 
 			int ttl, double rtcp_bw, 
-                        rtp_callback *callback,
+                        rtp_callback callback,
                         void *userdata)
 {
 	struct rtp 	*session;
@@ -1000,16 +1000,13 @@ struct rtp *rtp_init_if(const char *addr, char *iface,
  * function is to co-ordinate SSRC's between layered sessions, it
  * should not be used otherwise.
  *
- * Returns: TRUE on success, FALSE otherwise.  */
-
+ * Returns: TRUE on success, FALSE otherwise.  
+ */
 int rtp_set_my_ssrc(struct rtp *session, uint32_t ssrc)
 {
         source *s;
         uint32_t h;
-        /* Sets my_ssrc when called immediately after rtp_init. */
-        /* Returns TRUE on success, FALSE otherwise.  Needed to */
-        /* co-ordinate SSRC's between LAYERED SESSIONS, SHOULD  */
-        /* NOT BE USED OTHERWISE.                               */
+
         if (session->ssrc_count != 1 && session->sender_count != 0) {
                 return FALSE;
         }
@@ -2183,7 +2180,7 @@ static uint8_t *format_rtcp_app(uint8_t *buffer, int buflen, uint32_t ssrc, rtcp
 }
 
 static void send_rtcp(struct rtp *session, uint32_t rtp_ts,
-		     rtcp_app_callback *appcallback)
+		     rtcp_app_callback appcallback)
 {
 	/* Construct and send an RTCP packet. The order in which packets are packed into a */
 	/* compound packet is defined by section 6.1 of draft-ietf-avt-rtp-new-03.txt and  */
@@ -2273,7 +2270,7 @@ static void send_rtcp(struct rtp *session, uint32_t rtp_ts,
 }
 
 void rtp_send_ctrl(struct rtp *session, uint32_t rtp_ts,
-                   rtcp_app_callback *appcallback)
+                   rtcp_app_callback appcallback)
 {
 	/* Send an RTCP packet, if one is due... */
 	struct timeval	 curr_time;

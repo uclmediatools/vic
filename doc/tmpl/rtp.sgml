@@ -1,0 +1,374 @@
+<!-- ##### SECTION Title ##### -->
+RTP API
+
+<!-- ##### SECTION Short_Description ##### -->
+Real-Time Transport Protocol Implementation.
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+The Real-Time Transport Protocol (RTP) is a protocol for the transport
+of audio, video, and other real-time data across IP capable networks.
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### MACRO RTP_VERSION ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO RTP_PACKET_HEADER_SIZE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO RTP_MAX_PACKET_LEN ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### TYPEDEF rtp_packet ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### TYPEDEF rtcp_sr ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### TYPEDEF rtcp_rr ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### TYPEDEF rtcp_sdes_item ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### TYPEDEF rtcp_app ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### USER_FUNCTION rtcp_app_callback ##### -->
+<para>
+
+</para>
+
+@session: 
+@rtp_ts: 
+@max_size: 
+@Returns: 
+
+
+<!-- ##### ENUM rtp_event_type ##### -->
+<para>
+
+</para>
+
+@RX_RTP: 
+@RX_SR: 
+@RX_RR: 
+@RX_SDES: 
+@RX_BYE: 
+@SOURCE_CREATED: 
+@SOURCE_DELETED: 
+@RX_RR_EMPTY: 
+@RX_RTCP_START: 
+@RX_RTCP_FINISH: 
+@RR_TIMEOUT: 
+@RX_APP: 
+
+<!-- ##### TYPEDEF rtp_event ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### USER_FUNCTION rtp_callback ##### -->
+<para>
+
+</para>
+
+@session: 
+@e: 
+
+
+<!-- ##### ENUM rtp_option ##### -->
+<para>
+
+</para>
+
+@RTP_OPT_PROMISC: 
+@RTP_OPT_WEAK_VALIDATION: 
+@RTP_OPT_FILTER_MY_PACKETS: 
+
+<!-- ##### ENUM rtcp_sdes_type ##### -->
+<para>
+
+</para>
+
+@RTCP_SDES_END: 
+@RTCP_SDES_CNAME: 
+@RTCP_SDES_NAME: 
+@RTCP_SDES_EMAIL: 
+@RTCP_SDES_PHONE: 
+@RTCP_SDES_LOC: 
+@RTCP_SDES_TOOL: 
+@RTCP_SDES_NOTE: 
+@RTCP_SDES_PRIV: 
+
+<!-- ##### FUNCTION rtp_send_bye ##### -->
+<para>
+
+</para>
+
+@session: 
+
+
+<!-- ##### FUNCTION rtp_done ##### -->
+<para>
+
+</para>
+
+@session: 
+
+
+<!-- ##### FUNCTION rtp_set_option ##### -->
+<para>
+
+</para>
+
+@session: 
+@optname: 
+@optval: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_get_option ##### -->
+<para>
+
+</para>
+
+@session: 
+@optname: 
+@optval: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_recv ##### -->
+<para>
+
+</para>
+
+@session: 
+@timeout: 
+@curr_rtp_ts: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_send_data ##### -->
+<para>
+
+</para>
+
+@session: 
+@rtp_ts: 
+@pt: 
+@m: 
+@cc: 
+@csrc: 
+@data: 
+@data_len: 
+@extn: 
+@extn_len: 
+@extn_type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_send_ctrl ##### -->
+<para>
+
+</para>
+
+@session: 
+@rtp_ts: 
+@callback: 
+<!-- # Unused Parameters # -->
+@appcallback: 
+
+
+<!-- ##### FUNCTION rtp_update ##### -->
+<para>
+
+</para>
+
+@session: 
+
+
+<!-- ##### FUNCTION rtp_my_ssrc ##### -->
+<para>
+
+</para>
+
+@session: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_add_csrc ##### -->
+<para>
+
+</para>
+
+@session: 
+@csrc: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_del_csrc ##### -->
+<para>
+
+</para>
+
+@session: 
+@csrc: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_valid_ssrc ##### -->
+<para>
+
+</para>
+
+@session: 
+@ssrc: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_set_sdes ##### -->
+<para>
+
+</para>
+
+@session: 
+@ssrc: 
+@type: 
+@value: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_get_sdes ##### -->
+<para>
+
+</para>
+
+@session: 
+@ssrc: 
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_get_sr ##### -->
+<para>
+
+</para>
+
+@session: 
+@ssrc: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_get_rr ##### -->
+<para>
+
+</para>
+
+@session: 
+@reporter: 
+@reportee: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_set_encryption_key ##### -->
+<para>
+
+</para>
+
+@session: 
+@passphrase: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_set_my_ssrc ##### -->
+<para>
+
+</para>
+
+@session: 
+@ssrc: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_get_addr ##### -->
+<para>
+
+</para>
+
+@session: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_get_rx_port ##### -->
+<para>
+
+</para>
+
+@session: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_get_tx_port ##### -->
+<para>
+
+</para>
+
+@session: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_get_ttl ##### -->
+<para>
+
+</para>
+
+@session: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_get_userdata ##### -->
+<para>
+
+</para>
+
+@session: 
+
+

@@ -1,0 +1,48 @@
+<!-- ##### SECTION Title ##### -->
+debug
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### MACRO UNUSED ##### -->
+<para>
+
+</para>
+
+@x: 
+
+
+<!-- ##### MACRO debug_msg ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION debug_dump ##### -->
+<para>
+
+</para>
+
+@lp: 
+@len: 
+
+
+<!-- ##### FUNCTION debug_set_core_dir ##### -->
+<para>
+
+</para>
+
+@argv0: 
+
+

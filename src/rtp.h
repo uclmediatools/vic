@@ -134,7 +134,7 @@ typedef struct {
 	char            data[1];        /* variable length field  */
 } rtcp_app;
 
-typedef rtcp_app* rtcp_app_callback(struct rtp *session, uint32_t rtp_ts, int max_size);
+typedef rtcp_app* (*rtcp_app_callback)(struct rtp *session, uint32_t rtp_ts, int max_size);
 
 /* rtp_event type values. */
 typedef enum {
@@ -159,7 +159,7 @@ typedef struct {
 	struct timeval	*ts;
 } rtp_event;
 
-typedef void rtp_callback(struct rtp *session, rtp_event *e);
+typedef void (*rtp_callback)(struct rtp *session, rtp_event *e);
 
 /* RTP options */
 typedef enum {
@@ -184,12 +184,12 @@ typedef enum {
 struct rtp	*rtp_init(const char *addr, 
 			  uint16_t rx_port, uint16_t tx_port, 
 			  int ttl, double rtcp_bw, 
-			  rtp_callback *callback,
+			  rtp_callback callback,
 			  void *user_data);
 struct rtp	*rtp_init_if(const char *addr, char *iface, 
 			     uint16_t rx_port, uint16_t tx_port, 
 			     int ttl, double rtcp_bw, 
-			     rtp_callback *callback,
+			     rtp_callback callback,
 			     void *user_data);
 
 void		 rtp_send_bye(struct rtp *session);
@@ -206,7 +206,7 @@ int 		 rtp_send_data(struct rtp *session,
                                char *data, int data_len, 
 			       char *extn, uint16_t extn_len, uint16_t extn_type);
 void 		 rtp_send_ctrl(struct rtp *session, uint32_t rtp_ts, 
-			       rtcp_app_callback *callback);
+			       rtcp_app_callback callback);
 void 		 rtp_update(struct rtp *session);
 
 uint32_t	 rtp_my_ssrc(struct rtp *session);

@@ -1,0 +1,3673 @@
+<HTML
+><HEAD
+><TITLE
+>RTP API</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.59"><LINK
+REL="HOME"
+TITLE="UCL Common Library Reference"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Overview"
+HREF="uclmmbase.html"><LINK
+REL="PREVIOUS"
+TITLE="Overview"
+HREF="uclmmbase.html"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+BGCOLOR="#000000"
+CELLPADDING="1"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="4"
+ALIGN="center"
+><FONT
+COLOR="#FFFFFF"
+SIZE="5"
+>UCL Common Library Reference</FONT
+></TH
+></TR
+><TR
+><TD
+WIDTH="25%"
+BGCOLOR="#C00000"
+ALIGN="left"
+><A
+HREF="uclmmbase.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>&#60;&#60;&#60; Previous Page</B
+></FONT
+></A
+></TD
+><TD
+WIDTH="25%"
+BGCOLOR="#0000C0"
+ALIGN="center"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+><A
+HREF="book1.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Home</B
+></FONT
+></A
+></B
+></FONT
+></TD
+><TD
+WIDTH="25%"
+BGCOLOR="#00C000"
+ALIGN="center"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+><A
+HREF="uclmmbase.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Up</B
+></FONT
+></A
+></B
+></FONT
+></TD
+><TD
+WIDTH="25%"
+BGCOLOR="#C00000"
+ALIGN="right"
+>&nbsp;</TD
+></TR
+></TABLE
+></DIV
+><H1
+><A
+NAME="UCLMMBASE-RTP"
+>RTP API</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN12"
+></A
+><H2
+>Name</H2
+>RTP API&nbsp;--&nbsp;Real-Time Transport Protocol Implementation.</DIV
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A
+NAME="AEN15"
+></A
+><H2
+>Synopsis</H2
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="SYNOPSIS"
+>&#13;
+
+#define     <A
+HREF="uclmmbase-rtp.html#RTP-VERSION-CAPS"
+>RTP_VERSION</A
+>
+#define     <A
+HREF="uclmmbase-rtp.html#RTP-PACKET-HEADER-SIZE-CAPS"
+>RTP_PACKET_HEADER_SIZE</A
+>
+#define     <A
+HREF="uclmmbase-rtp.html#RTP-MAX-PACKET-LEN-CAPS"
+>RTP_MAX_PACKET_LEN</A
+>
+typedef     <A
+HREF="uclmmbase-rtp.html#RTP-PACKET"
+>rtp_packet</A
+>;
+typedef     <A
+HREF="uclmmbase-rtp.html#RTCP-SR"
+>rtcp_sr</A
+>;
+typedef     <A
+HREF="uclmmbase-rtp.html#RTCP-RR"
+>rtcp_rr</A
+>;
+typedef     <A
+HREF="uclmmbase-rtp.html#RTCP-SDES-ITEM"
+>rtcp_sdes_item</A
+>;
+typedef     <A
+HREF="uclmmbase-rtp.html#RTCP-APP"
+>rtcp_app</A
+>;
+<A
+HREF="uclmmbase-rtp.html#RTCP-APP"
+>rtcp_app</A
+>*   (<A
+HREF="uclmmbase-rtp.html#RTCP-APP-CALLBACK"
+>*rtcp_app_callback</A
+>)            (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> rtp_ts,
+                                             int max_size);
+enum        <A
+HREF="uclmmbase-rtp.html#RTP-EVENT-TYPE"
+>rtp_event_type</A
+>;
+typedef     <A
+HREF="uclmmbase-rtp.html#RTP-EVENT"
+>rtp_event</A
+>;
+void        (<A
+HREF="uclmmbase-rtp.html#RTP-CALLBACK"
+>*rtp_callback</A
+>)                 (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <A
+HREF="uclmmbase-rtp.html#RTP-EVENT"
+>rtp_event</A
+> *e);
+enum        <A
+HREF="uclmmbase-rtp.html#RTP-OPTION"
+>rtp_option</A
+>;
+enum        <A
+HREF="uclmmbase-rtp.html#RTCP-SDES-TYPE"
+>rtcp_sdes_type</A
+>;
+void        <A
+HREF="uclmmbase-rtp.html#RTP-SEND-BYE"
+>rtp_send_bye</A
+>                    (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);
+void        <A
+HREF="uclmmbase-rtp.html#RTP-DONE"
+>rtp_done</A
+>                        (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);
+int         <A
+HREF="uclmmbase-rtp.html#RTP-SET-OPTION"
+>rtp_set_option</A
+>                  (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <A
+HREF="uclmmbase-rtp.html#RTP-OPTION"
+>rtp_option</A
+> optname,
+                                             int optval);
+int         <A
+HREF="uclmmbase-rtp.html#RTP-GET-OPTION"
+>rtp_get_option</A
+>                  (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <A
+HREF="uclmmbase-rtp.html#RTP-OPTION"
+>rtp_option</A
+> optname,
+                                             int *optval);
+int         <A
+HREF="uclmmbase-rtp.html#RTP-RECV"
+>rtp_recv</A
+>                        (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             struct <GTKDOCLINK
+HREF="TIMEVAL"
+>timeval</GTKDOCLINK
+> *timeout,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> curr_rtp_ts);
+int         <A
+HREF="uclmmbase-rtp.html#RTP-SEND-DATA"
+>rtp_send_data</A
+>                   (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> rtp_ts,
+                                             char pt,
+                                             int m,
+                                             int cc,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> csrc[],
+                                             char *data,
+                                             int data_len,
+                                             char *extn,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> extn_len,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> extn_type);
+void        <A
+HREF="uclmmbase-rtp.html#RTP-SEND-CTRL"
+>rtp_send_ctrl</A
+>                   (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> rtp_ts,
+                                             <A
+HREF="uclmmbase-rtp.html#RTCP-APP-CALLBACK"
+>rtcp_app_callback</A
+> callback);
+void        <A
+HREF="uclmmbase-rtp.html#RTP-UPDATE"
+>rtp_update</A
+>                      (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);
+<GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+>    <A
+HREF="uclmmbase-rtp.html#RTP-MY-SSRC"
+>rtp_my_ssrc</A
+>                     (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);
+int         <A
+HREF="uclmmbase-rtp.html#RTP-ADD-CSRC"
+>rtp_add_csrc</A
+>                    (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> csrc);
+int         <A
+HREF="uclmmbase-rtp.html#RTP-DEL-CSRC"
+>rtp_del_csrc</A
+>                    (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> csrc);
+int         <A
+HREF="uclmmbase-rtp.html#RTP-VALID-SSRC"
+>rtp_valid_ssrc</A
+>                  (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> ssrc);
+int         <A
+HREF="uclmmbase-rtp.html#RTP-SET-SDES"
+>rtp_set_sdes</A
+>                    (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> ssrc,
+                                             <A
+HREF="uclmmbase-rtp.html#RTCP-SDES-TYPE"
+>rtcp_sdes_type</A
+> type,
+                                             char *value,
+                                             int length);
+const char* <A
+HREF="uclmmbase-rtp.html#RTP-GET-SDES"
+>rtp_get_sdes</A
+>                    (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> ssrc,
+                                             <A
+HREF="uclmmbase-rtp.html#RTCP-SDES-TYPE"
+>rtcp_sdes_type</A
+> type);
+const <A
+HREF="uclmmbase-rtp.html#RTCP-SR"
+>rtcp_sr</A
+>* <A
+HREF="uclmmbase-rtp.html#RTP-GET-SR"
+>rtp_get_sr</A
+>                   (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> ssrc);
+const <A
+HREF="uclmmbase-rtp.html#RTCP-RR"
+>rtcp_rr</A
+>* <A
+HREF="uclmmbase-rtp.html#RTP-GET-RR"
+>rtp_get_rr</A
+>                   (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> reporter,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> reportee);
+int         <A
+HREF="uclmmbase-rtp.html#RTP-SET-ENCRYPTION-KEY"
+>rtp_set_encryption_key</A
+>          (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             const char *passphrase);
+int         <A
+HREF="uclmmbase-rtp.html#RTP-SET-MY-SSRC"
+>rtp_set_my_ssrc</A
+>                 (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> ssrc);
+char*       <A
+HREF="uclmmbase-rtp.html#RTP-GET-ADDR"
+>rtp_get_addr</A
+>                    (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);
+<GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+>    <A
+HREF="uclmmbase-rtp.html#RTP-GET-RX-PORT"
+>rtp_get_rx_port</A
+>                 (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);
+<GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+>    <A
+HREF="uclmmbase-rtp.html#RTP-GET-TX-PORT"
+>rtp_get_tx_port</A
+>                 (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);
+int         <A
+HREF="uclmmbase-rtp.html#RTP-GET-TTL"
+>rtp_get_ttl</A
+>                     (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);
+void*       <A
+HREF="uclmmbase-rtp.html#RTP-GET-USERDATA"
+>rtp_get_userdata</A
+>                (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);</PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN109"
+></A
+><H2
+>Description</H2
+><P
+>&#13;The Real-Time Transport Protocol (RTP) is a protocol for the transport
+of audio, video, and other real-time data across IP capable networks.&#13;</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN112"
+></A
+><H2
+>Details</H2
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN114"
+></A
+><H3
+><A
+NAME="RTP-VERSION-CAPS"
+></A
+>RTP_VERSION</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>#define RTP_VERSION 2</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN119"
+></A
+><H3
+><A
+NAME="RTP-PACKET-HEADER-SIZE-CAPS"
+></A
+>RTP_PACKET_HEADER_SIZE</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>#define RTP_PACKET_HEADER_SIZE	((sizeof(char *) * 2) + sizeof(uint32_t *) + (2 * sizeof(int)))</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN124"
+></A
+><H3
+><A
+NAME="RTP-MAX-PACKET-LEN-CAPS"
+></A
+>RTP_MAX_PACKET_LEN</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>#define RTP_MAX_PACKET_LEN 1500</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN129"
+></A
+><H3
+><A
+NAME="RTP-PACKET"
+></A
+>rtp_packet</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef struct {
+	/* The following are pointers to the data in the packet as    */
+	/* it came off the wire. The packet it read in such that the  */
+	/* header maps onto the latter part of this struct, and the   */
+	/* fields in this first part of the struct point into it. The */
+	/* entire packet can be freed by freeing this struct, without */
+	/* having to free the csrc, data and extn blocks separately.  */
+	/* WARNING: Don't change the size of the first portion of the */
+	/* struct without changing RTP_PACKET_HEADER_SIZE to match.   */
+	uint32_t	*csrc;
+	char		*data;
+	int		 data_len;
+	unsigned char	*extn;
+	uint16_t	 extn_len;	/* Size of the extension in 32 bit words minus one */
+	uint16_t	 extn_type;	/* Extension type field in the RTP packet header   */
+	/* The following map directly onto the RTP packet header...   */
+#ifdef WORDS_BIGENDIAN
+	unsigned short   v:2;		/* packet type                */
+	unsigned short   p:1;		/* padding flag               */
+	unsigned short   x:1;		/* header extension flag      */
+	unsigned short   cc:4;		/* CSRC count                 */
+	unsigned short   m:1;		/* marker bit                 */
+	unsigned short   pt:7;		/* payload type               */
+#else
+	unsigned short   cc:4;		/* CSRC count                 */
+	unsigned short   x:1;		/* header extension flag      */
+	unsigned short   p:1;		/* padding flag               */
+	unsigned short   v:2;		/* packet type                */
+	unsigned short   pt:7;		/* payload type               */
+	unsigned short   m:1;		/* marker bit                 */
+#endif
+	uint16_t          seq;		/* sequence number            */
+	uint32_t          ts;		/* timestamp                  */
+	uint32_t          ssrc;		/* synchronization source     */
+	/* The csrc list, header extension and data follow, but can't */
+	/* be represented in the struct.                              */
+} rtp_packet;</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN134"
+></A
+><H3
+><A
+NAME="RTCP-SR"
+></A
+>rtcp_sr</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef struct {
+	uint32_t         ssrc;
+	uint32_t         ntp_sec;
+	uint32_t         ntp_frac;
+	uint32_t         rtp_ts;
+	uint32_t         sender_pcount;
+	uint32_t         sender_bcount;
+} rtcp_sr;</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN139"
+></A
+><H3
+><A
+NAME="RTCP-RR"
+></A
+>rtcp_rr</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef struct {
+	uint32_t	ssrc;		/* The ssrc to which this RR pertains */
+#ifdef WORDS_BIGENDIAN
+	uint32_t	fract_lost:8;
+	uint32_t	total_lost:24;
+#else
+	uint32_t	total_lost:24;
+	uint32_t	fract_lost:8;
+#endif	
+	uint32_t	last_seq;
+	uint32_t	jitter;
+	uint32_t	lsr;
+	uint32_t	dlsr;
+} rtcp_rr;</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN144"
+></A
+><H3
+><A
+NAME="RTCP-SDES-ITEM"
+></A
+>rtcp_sdes_item</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef struct {
+	uint8_t		type;		/* type of SDES item              */
+	uint8_t		length;		/* length of SDES item (in bytes) */
+	char		data[1];	/* text, not zero-terminated      */
+} rtcp_sdes_item;</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN149"
+></A
+><H3
+><A
+NAME="RTCP-APP"
+></A
+>rtcp_app</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef struct {
+#ifdef WORDS_BIGENDIAN
+	unsigned short  version:2;	/* RTP version            */
+	unsigned short  p:1;		/* padding flag           */
+	unsigned short  subtype:5;	/* application dependent  */
+#else
+	unsigned short  subtype:5;	/* application dependent  */
+	unsigned short  p:1;		/* padding flag           */
+	unsigned short  version:2;	/* RTP version            */
+#endif
+	unsigned short  pt:8;		/* packet type            */
+	uint16_t        length;		/* packet length          */
+	uint32_t        ssrc;
+	char            name[4];        /* four ASCII characters  */
+	char            data[1];        /* variable length field  */
+} rtcp_app;</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN154"
+></A
+><H3
+><A
+NAME="RTCP-APP-CALLBACK"
+></A
+>rtcp_app_callback ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+><A
+HREF="uclmmbase-rtp.html#RTCP-APP"
+>rtcp_app</A
+>*   (*rtcp_app_callback)            (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> rtp_ts,
+                                             int max_size);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN162"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>rtp_ts</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>max_size</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN183"
+></A
+><H3
+><A
+NAME="RTP-EVENT-TYPE"
+></A
+>enum rtp_event_type</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef enum {
+        RX_RTP,
+        RX_SR,
+        RX_RR,
+        RX_SDES,
+        RX_BYE,         /* Source is leaving the session, database entry is still valid */
+        SOURCE_CREATED,
+        SOURCE_DELETED, /* Source has been removed from the database                    */
+        RX_RR_EMPTY,    /* We've received an empty reception report block                                               */
+        RX_RTCP_START,  /* Processing a compound RTCP packet about to start. The SSRC is not valid in this event. */
+        RX_RTCP_FINISH,	/* Processing a compound RTCP packet finished. The SSRC is not valid in this event.  */
+        RR_TIMEOUT,
+        RX_APP
+} rtp_event_type;</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN188"
+></A
+><H3
+><A
+NAME="RTP-EVENT"
+></A
+>rtp_event</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef struct {
+	uint32_t	 ssrc;
+	rtp_event_type	 type;
+	void		*data;
+	struct timeval	*ts;
+} rtp_event;</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN193"
+></A
+><H3
+><A
+NAME="RTP-CALLBACK"
+></A
+>rtp_callback ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>void        (*rtp_callback)                 (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <A
+HREF="uclmmbase-rtp.html#RTP-EVENT"
+>rtp_event</A
+> *e);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN200"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>e</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN213"
+></A
+><H3
+><A
+NAME="RTP-OPTION"
+></A
+>enum rtp_option</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef enum {
+        RTP_OPT_PROMISC =	    1,
+        RTP_OPT_WEAK_VALIDATION	=   2,
+        RTP_OPT_FILTER_MY_PACKETS = 3
+} rtp_option;</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN218"
+></A
+><H3
+><A
+NAME="RTCP-SDES-TYPE"
+></A
+>enum rtcp_sdes_type</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef enum {
+        RTCP_SDES_END   = 0,
+        RTCP_SDES_CNAME = 1,
+        RTCP_SDES_NAME  = 2,
+        RTCP_SDES_EMAIL = 3,
+        RTCP_SDES_PHONE = 4,
+        RTCP_SDES_LOC   = 5,
+        RTCP_SDES_TOOL  = 6,
+        RTCP_SDES_NOTE  = 7,
+        RTCP_SDES_PRIV  = 8
+} rtcp_sdes_type;</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN223"
+></A
+><H3
+><A
+NAME="RTP-SEND-BYE"
+></A
+>rtp_send_bye ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>void        rtp_send_bye                    (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN229"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN238"
+></A
+><H3
+><A
+NAME="RTP-DONE"
+></A
+>rtp_done ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>void        rtp_done                        (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Frees state associated with given RTP session</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN245"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> the RTP session to finish</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN254"
+></A
+><H3
+><A
+NAME="RTP-SET-OPTION"
+></A
+>rtp_set_option ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         rtp_set_option                  (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <A
+HREF="uclmmbase-rtp.html#RTP-OPTION"
+>rtp_option</A
+> optname,
+                                             int optval);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN261"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>optname</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>optval</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN282"
+></A
+><H3
+><A
+NAME="RTP-GET-OPTION"
+></A
+>rtp_get_option ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         rtp_get_option                  (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <A
+HREF="uclmmbase-rtp.html#RTP-OPTION"
+>rtp_option</A
+> optname,
+                                             int *optval);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN289"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>optname</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>optval</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN310"
+></A
+><H3
+><A
+NAME="RTP-RECV"
+></A
+>rtp_recv ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         rtp_recv                        (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             struct <GTKDOCLINK
+HREF="TIMEVAL"
+>timeval</GTKDOCLINK
+> *timeout,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> curr_rtp_ts);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN318"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>timeout</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>curr_rtp_ts</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN339"
+></A
+><H3
+><A
+NAME="RTP-SEND-DATA"
+></A
+>rtp_send_data ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         rtp_send_data                   (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> rtp_ts,
+                                             char pt,
+                                             int m,
+                                             int cc,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> csrc[],
+                                             char *data,
+                                             int data_len,
+                                             char *extn,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> extn_len,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> extn_type);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN349"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>rtp_ts</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>pt</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>m</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>cc</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>csrc</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>data</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>data_len</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>extn</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>extn_len</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>extn_type</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN402"
+></A
+><H3
+><A
+NAME="RTP-SEND-CTRL"
+></A
+>rtp_send_ctrl ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>void        rtp_send_ctrl                   (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> rtp_ts,
+                                             <A
+HREF="uclmmbase-rtp.html#RTCP-APP-CALLBACK"
+>rtcp_app_callback</A
+> callback);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN410"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>rtp_ts</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>callback</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN427"
+></A
+><H3
+><A
+NAME="RTP-UPDATE"
+></A
+>rtp_update ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>void        rtp_update                      (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN433"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN442"
+></A
+><H3
+><A
+NAME="RTP-MY-SSRC"
+></A
+>rtp_my_ssrc ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+><GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+>    rtp_my_ssrc                     (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN449"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN462"
+></A
+><H3
+><A
+NAME="RTP-ADD-CSRC"
+></A
+>rtp_add_csrc ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         rtp_add_csrc                    (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> csrc);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN469"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>csrc</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN486"
+></A
+><H3
+><A
+NAME="RTP-DEL-CSRC"
+></A
+>rtp_del_csrc ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         rtp_del_csrc                    (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> csrc);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN493"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>csrc</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN510"
+></A
+><H3
+><A
+NAME="RTP-VALID-SSRC"
+></A
+>rtp_valid_ssrc ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         rtp_valid_ssrc                  (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> ssrc);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN517"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>ssrc</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN534"
+></A
+><H3
+><A
+NAME="RTP-SET-SDES"
+></A
+>rtp_set_sdes ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         rtp_set_sdes                    (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> ssrc,
+                                             <A
+HREF="uclmmbase-rtp.html#RTCP-SDES-TYPE"
+>rtcp_sdes_type</A
+> type,
+                                             char *value,
+                                             int length);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN542"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>ssrc</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>type</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>value</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>length</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN571"
+></A
+><H3
+><A
+NAME="RTP-GET-SDES"
+></A
+>rtp_get_sdes ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>const char* rtp_get_sdes                    (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> ssrc,
+                                             <A
+HREF="uclmmbase-rtp.html#RTCP-SDES-TYPE"
+>rtcp_sdes_type</A
+> type);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN579"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>ssrc</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>type</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN600"
+></A
+><H3
+><A
+NAME="RTP-GET-SR"
+></A
+>rtp_get_sr ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>const <A
+HREF="uclmmbase-rtp.html#RTCP-SR"
+>rtcp_sr</A
+>* rtp_get_sr                   (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> ssrc);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN608"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>ssrc</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN625"
+></A
+><H3
+><A
+NAME="RTP-GET-RR"
+></A
+>rtp_get_rr ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>const <A
+HREF="uclmmbase-rtp.html#RTCP-RR"
+>rtcp_rr</A
+>* rtp_get_rr                   (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> reporter,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> reportee);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN634"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>reporter</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>reportee</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN655"
+></A
+><H3
+><A
+NAME="RTP-SET-ENCRYPTION-KEY"
+></A
+>rtp_set_encryption_key ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         rtp_set_encryption_key          (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             const char *passphrase);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN661"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>passphrase</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN678"
+></A
+><H3
+><A
+NAME="RTP-SET-MY-SSRC"
+></A
+>rtp_set_my_ssrc ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         rtp_set_my_ssrc                 (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> ssrc);</PRE
+></TD
+></TR
+></TABLE
+><P
+>This function coerces the local SSRC identifer to be ssrc.  For
+this function to succeed it must be called immediately after
+rtp_init or rtp_init_if.  The intended purpose of this
+function is to co-ordinate SSRC's between layered sessions, it
+should not be used otherwise.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN686"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> the RTP session </TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>ssrc</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> the SSRC to be used by the RTP session</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> TRUE on success, FALSE otherwise.  </TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN703"
+></A
+><H3
+><A
+NAME="RTP-GET-ADDR"
+></A
+>rtp_get_addr ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>char*       rtp_get_addr                    (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN709"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN722"
+></A
+><H3
+><A
+NAME="RTP-GET-RX-PORT"
+></A
+>rtp_get_rx_port ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+><GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+>    rtp_get_rx_port                 (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN729"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN742"
+></A
+><H3
+><A
+NAME="RTP-GET-TX-PORT"
+></A
+>rtp_get_tx_port ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+><GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+>    rtp_get_tx_port                 (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN749"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN762"
+></A
+><H3
+><A
+NAME="RTP-GET-TTL"
+></A
+>rtp_get_ttl ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         rtp_get_ttl                     (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN768"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN781"
+></A
+><H3
+><A
+NAME="RTP-GET-USERDATA"
+></A
+>rtp_get_userdata ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>void*       rtp_get_userdata                (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN787"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>&nbsp;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><BR
+CLEAR="all"><BR><TABLE
+WIDTH="100%"
+BORDER="0"
+BGCOLOR="#000000"
+CELLPADDING="1"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="25%"
+BGCOLOR="#C00000"
+ALIGN="left"
+><A
+HREF="uclmmbase.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>&#60;&#60;&#60; Previous Page</B
+></FONT
+></A
+></TD
+><TD
+WIDTH="25%"
+BGCOLOR="#0000C0"
+ALIGN="center"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+><A
+HREF="book1.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Home</B
+></FONT
+></A
+></B
+></FONT
+></TD
+><TD
+WIDTH="25%"
+BGCOLOR="#00C000"
+ALIGN="center"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+><A
+HREF="uclmmbase.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Up</B
+></FONT
+></A
+></B
+></FONT
+></TD
+><TD
+WIDTH="25%"
+BGCOLOR="#C00000"
+ALIGN="right"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+COLSPAN="2"
+ALIGN="left"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Overview</B
+></FONT
+></TD
+><TD
+COLSPAN="2"
+ALIGN="right"
+>&nbsp;</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>
