@@ -109,6 +109,7 @@ static int mbus_addr_match(char *a, char *b)
 
 static void resend(struct mbus *m, struct mbus_msg *curr) 
 {
+	char	 digest[16];
 	char	 buffer[MBUS_BUF_SIZE];
 	char	*bufp = buffer;
 	int	 i;
@@ -116,13 +117,14 @@ static void resend(struct mbus *m, struct mbus_msg *curr)
 	/* Don't need to check for buffer overflows: this was done in mbus_send() when */
 	/* this message was first transmitted. If it was okay then, it's okay now.     */
 	memset(buffer, 0, MBUS_BUF_SIZE);
-	sprintf(bufp, "XXXXXXXXXXXXXXXXXXXXXXXX\nmbus/1.0 %6d %c (%s) %s ()\n", curr->seqnum, curr->reliable?'R':'U', m->addr[0], curr->dest);
+	sprintf(bufp, "########################\nmbus/1.0 %6d %c (%s) %s ()\n", curr->seqnum, curr->reliable?'R':'U', m->addr[0], curr->dest);
+	hmac_md5(buffer+25, strlen(buffer)-25, m->authkey, m->authkeylen, digest);
+	base64encode(digest, 16, buffer, 24);
 	bufp += strlen(m->addr[0]) + strlen(curr->dest) + 50;
 	for (i = 0; i < curr->num_cmds; i++) {
 		sprintf(bufp, "%s (%s)\n", curr->cmd_list[i], curr->arg_list[i]);
 		bufp += strlen(curr->cmd_list[i]) + strlen(curr->arg_list[i]) + 4;
 	}
-	debug_msg("should add an authentication header here!n");
 
 	debug_msg("resending %d\n", curr->seqnum);
 	udp_send(m->s, buffer, bufp - buffer);
@@ -227,7 +229,7 @@ void mbus_send(struct mbus *m)
 		/* Create the message... */
 		bufp = buffer;
 		memset(buffer, 0, MBUS_BUF_SIZE);
-		sprintf(bufp, "XXXXXXXXXXXXXXXXXXXXXXXX\nmbus/1.0 %6d %c (%s) %s ()\n", curr->seqnum, curr->reliable?'R':'U', m->addr[0], curr->dest);
+		sprintf(bufp, "########################\nmbus/1.0 %6d %c (%s) %s ()\n", curr->seqnum, curr->reliable?'R':'U', m->addr[0], curr->dest);
 		bufp += strlen(m->addr[0]) + strlen(curr->dest) + 50;
 		for (i = 0; i < curr->num_cmds; i++) {
 			sprintf(bufp, "%s (%s)\n", curr->cmd_list[i], curr->arg_list[i]);
@@ -235,11 +237,10 @@ void mbus_send(struct mbus *m)
 		}
 		assert(strlen(buffer) > 0);
 
-		/* Add an authentication header... this overwrites the */
-		/* 32 byte string of X's at the start of the message   */
+		/* Add an authentication header... this overwrites */
+		/* the string of #'s at the start of the message.  */
 		hmac_md5(buffer+25, strlen(buffer)-25, m->authkey, m->authkeylen, digest);
 		i = base64encode(digest, 16, buffer, 24);
-		debug_msg("i=%d\n", i);
 		
 		/* Send the message... */
 		udp_send(m->s, buffer, bufp - buffer);
@@ -285,7 +286,7 @@ void mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, i
 	curr->next             = NULL;
 	curr->dest             = xstrdup(dest);
 	curr->retransmit_count = 0;
-	curr->message_size     = alen + 50 + strlen(dest) + strlen(m->addr[0]);
+	curr->message_size     = alen + 46 + strlen(dest) + strlen(m->addr[0]);
 	curr->seqnum           = m->seqnum++;
 	curr->reliable         = reliable;
 	curr->num_cmds         = 1;
@@ -370,7 +371,7 @@ static int mbus_parse_sym(struct mbus *m, char **s)
         while (isspace((unsigned char)*m->parse_buffer[m->parse_depth])) {
                 m->parse_buffer[m->parse_depth]++;
         }
-	if (!isalpha((unsigned char)*m->parse_buffer[m->parse_depth])) {
+	if (!isgraph((unsigned char)*m->parse_buffer[m->parse_depth])) {
 		return FALSE;
 	}
 	*s = m->parse_buffer[m->parse_depth]++;
@@ -462,6 +463,7 @@ int mbus_recv(struct mbus *m, void *data)
 	char	 buffer[MBUS_BUF_SIZE];
 	int	 buffer_len, seq, i, a, rx;
 	char	 ackbuf[96];
+	char	 digest[16];
 	struct timeval	t;
 
 	t.tv_sec  = 0;
@@ -486,7 +488,12 @@ int mbus_recv(struct mbus *m, void *data)
 			return FALSE;
 		}
 		/* Check that the packet authenticates correctly... */
-		
+		hmac_md5(buffer + strlen(auth) + 1, buffer_len - strlen(auth) - 1, m->authkey, m->authkeylen, digest);
+		base64encode(digest, 16, ackbuf, 24);
+		if ((strlen(auth) != 24) || (strncmp(auth, ackbuf, 24) != 0)) {
+			debug_msg("Unable to authenticate message\n");
+			return FALSE;
+		}
 
 		/* Parse the header */
 		if (!mbus_parse_sym(m, &ver)) {
@@ -545,19 +552,21 @@ int mbus_recv(struct mbus *m, void *data)
 				mbus_parse_done(m);
 				/* ...if an ACK was requested, send one... */
 				if (strcmp(r, "R") == 0) {
-					sprintf(ackbuf, "XXXXXXXXXXXXXXXXXXXXXXXX\nmbus/1.0 %d U (%s) (%s) (%d)\n", ++m->seqnum, m->addr[0], src, seq);
-					debug_msg("should add an authentication header here\n");
+					sprintf(ackbuf, "########################\nmbus/1.0 %d U (%s) (%s) (%d)\n", ++m->seqnum, m->addr[0], src, seq);
+					hmac_md5(ackbuf+25, strlen(ackbuf)-25, m->authkey, m->authkeylen, digest);
+					base64encode(digest, 16, ackbuf, 24);
 					udp_send(m->s, ackbuf, strlen(ackbuf));
 				}
 				/* ...and process the commands contained in the message */
 				while (mbus_parse_sym(m, &cmd)) {
-					if (mbus_parse_lst(m, &param) == FALSE) {
+					if (mbus_parse_lst(m, &param)) {
+						m->cmd_handler(src, cmd, param, data);
+					} else {
 						debug_msg("Unable to parse mbus command paramaters...\n");
 						debug_msg("cmd = %s\n", cmd);
 						debug_msg("arg = %s\n", param);
 						break;
 					}
-					m->cmd_handler(src, cmd, param, data);
 				}
 			}
 		}
