@@ -144,15 +144,17 @@ ${ECHO} "Searching for inet_pton in <arpa/inet.h>... \c"
 T2=`grep -c inet_pton /usr/include/arpa/inet.h`
 if [ $T2 = 0 ]; then
 	${ECHO} "no"
-	# ...but Solaris 2.6 has in it resolv.h...
-	${ECHO} "Searching for inet_pton in <resolv.h>... \c"
-	T2=`grep -c inet_pton /usr/include/resolv.h`
-	if [ $T2 = 0 ]; then
-		DEFS="$DEFS -DNEED_INET_PTON"
-		${ECHO} "no"
-	else 
-		${ECHO} "yes"
-	fi
+	DEFS="$DEFS -DNEED_INET_PTON"
+else 
+	${ECHO} "yes"
+fi
+
+# This is the usual place for inet_aton()...
+${ECHO} "Searching for inet_aton in <arpa/inet.h>... \c"
+T2=`grep -c inet_aton /usr/include/arpa/inet.h`
+if [ $T2 = 0 ]; then
+	${ECHO} "no"
+	DEFS="$DEFS -DNEED_INET_ATON"
 else 
 	${ECHO} "yes"
 fi
