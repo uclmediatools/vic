@@ -96,6 +96,12 @@ typedef struct {
 	} r;
 } rtcp_t;
 
+typedef struct _rtcp_rr_wrapper {
+	struct _rtcp_rr_wrapper	*next;
+	struct _rtcp_rr_wrapper	*prev;
+	rtcp_rr			*rr;
+} rtcp_rr_wrapper;
+
 /*
  * The RTP database contains source-specific information needed 
  * to make it all work. 
@@ -113,6 +119,7 @@ typedef struct _source {
 	char		*tool;
 	char		*note;
 	rtcp_sr		*sr;
+	rtcp_rr_wrapper	*rr;
 } source;
 
 /*
@@ -129,6 +136,56 @@ struct rtp {
 	int		 ssrc_count;
 	void (*callback)(struct rtp *session, rtp_event *event);
 };
+
+static void insert_rr(source *s, rtcp_rr *rr)
+{
+	/* Insert the reception report into the source database... */
+	/* The wrappers are used to ensure that the routines using */
+	/* the RTP library have no way of accessing the internal   */
+	/* database. This routine is rather inefficient when there */
+	/* are many active sources, since we maintain linked lists */
+	/* of RRs and do linear traversal of them. A hash table    */
+	/* would probably be better...                             */
+	rtcp_rr_wrapper	*new_wrapper;
+	rtcp_rr_wrapper	*curr;
+	rtcp_rr_wrapper	*prev;
+
+	assert(s  != NULL);
+	assert(rr != NULL);
+
+	if (s->rr == NULL) {
+		new_wrapper = (rtcp_rr_wrapper *) xmalloc(sizeof(rtcp_rr_wrapper));
+		new_wrapper->next = NULL;
+		new_wrapper->prev = NULL;
+		new_wrapper->rr   = rr;
+		s->rr = new_wrapper;
+		debug_msg("Created new rr entry for 0x%08lx in source 0x%08lx\n", rr->ssrc, s->ssrc);
+	} else {
+		prev = NULL;
+		for (curr = s->rr; curr != NULL; curr = curr->next) {
+			if (curr->rr->ssrc == rr->ssrc) {
+				/* Found an existing entry for this rr, replace with newly received version. */
+				debug_msg("Replaced rr entry for 0x%08lx in source 0x%08lx\n", rr->ssrc, s->ssrc);
+				xfree(curr->rr);
+				curr->rr = rr;
+				return;
+			}
+			prev = curr;
+		}
+		assert(curr == NULL);
+		assert(prev != NULL);
+		assert(prev->next == NULL);
+		/* If we get here, we know the rr isn't in the dbase... */
+		/* prev points to the last entry in the list, so we insert */
+		/* the rr after that.                                      */
+		new_wrapper = (rtcp_rr_wrapper *) xmalloc(sizeof(rtcp_rr_wrapper));
+		new_wrapper->next = NULL;
+		new_wrapper->prev = prev;
+		new_wrapper->rr   = rr;
+		prev->next = new_wrapper;
+		debug_msg("Created new rr entry at list end for 0x%08lx in source 0x%08lx\n", rr->ssrc, s->ssrc);
+	}
+}
 
 static source *get_source(struct rtp *session, u_int32 ssrc)
 {
@@ -172,6 +229,7 @@ static void create_source(struct rtp *session, u_int32 ssrc)
 	new_source->tool   = NULL;
 	new_source->note   = NULL;
 	new_source->sr     = NULL;
+	new_source->rr     = NULL;
 	/* Add the new_source to the database. We build up a binary tree of sources */
 	/* indexed by ssrc.  This is likely to work, on average, since ssrc values  */
 	/* are chosen at random, but has really bad worst case behaviour.           */
@@ -397,7 +455,9 @@ static void process_rtcp_sr(struct rtp *session, rtcp_t *packet, struct timeval 
 	u_int32		 ssrc;
 	rtp_event	 event;
 	rtcp_sr		*sr;
+	rtcp_rr		*rr;
 	source		*s;
+	int		 i;
 
 	ssrc = ntohl(packet->r.sr.sr.ssrc);
 	create_source(session, ssrc);
@@ -416,19 +476,40 @@ static void process_rtcp_sr(struct rtp *session, rtcp_t *packet, struct timeval 
 	sr->sender_pcount = ntohl(packet->r.sr.sr.sender_pcount);
 	sr->sender_bcount = ntohl(packet->r.sr.sr.sender_bcount);
 
-	event.ssrc = ntohl(packet->r.sr.sr.ssrc);
-	event.type = RX_SR;
-	event.data = (void *) sr;
-	event.ts   = event_ts;
-	session->callback(session, &event);
-
 	/* Store the SR for later retrieval... */
 	if (s->sr != NULL) {
 		xfree(s->sr);
 	}
 	s->sr = sr;
 
+	/* Call the event handler... */
+	event.ssrc = ntohl(packet->r.sr.sr.ssrc);
+	event.type = RX_SR;
+	event.data = (void *) sr;
+	event.ts   = event_ts;
+	session->callback(session, &event);
+
 	/* ...process RRs... */
+	for (i = 0; i < packet->common.count; i++) {
+		rr = (rtcp_rr *) xmalloc(sizeof(rtcp_rr));
+		rr->ssrc          = ntohl(packet->r.sr.rr[i].ssrc);
+		rr->fract_lost    = packet->r.sr.rr[i].fract_lost;	/* Endian conversion handled in the */
+		rr->total_lost    = packet->r.sr.rr[i].total_lost;	/* definition of the rtcp_rr type.  */
+		rr->last_seq      = ntohl(packet->r.sr.rr[i].last_seq);
+		rr->jitter        = ntohl(packet->r.sr.rr[i].jitter);
+		rr->lsr           = ntohl(packet->r.sr.rr[i].lsr);
+		rr->dlsr          = ntohl(packet->r.sr.rr[i].dlsr);
+
+		/* Store the RR for later use... */
+		insert_rr(s, rr);
+
+		/* Call the event handler... */
+		event.ssrc = ssrc;
+		event.type = RX_RR;
+		event.data = (void *) rr;
+		event.ts   = event_ts;
+		session->callback(session, &event);
+	}
 }
 
 static void process_rtcp_rr(struct rtp *session, rtcp_t *packet, struct timeval *event_ts)
@@ -457,14 +538,15 @@ static void process_rtcp_rr(struct rtp *session, rtcp_t *packet, struct timeval 
 		rr->lsr           = ntohl(packet->r.rr.rr[i].lsr);
 		rr->dlsr          = ntohl(packet->r.rr.rr[i].dlsr);
 
+		/* Store the RR for later use... */
+		insert_rr(s, rr);
+
+		/* Call the event handler... */
 		event.ssrc = ssrc;
 		event.type = RX_RR;
 		event.data = (void *) rr;
 		event.ts   = event_ts;
 		session->callback(session, &event);
-		
-		/* Store the RR for later use... */
-		xfree(rr);
 	}
 }
 
@@ -517,6 +599,7 @@ static void process_rtcp_bye(struct rtp *session, rtcp_t *packet, struct timeval
 {
 	UNUSED(session);
 	UNUSED(packet);
+	UNUSED(event_ts);
 	debug_msg("Got RTCP BYE\n");
 }
 
