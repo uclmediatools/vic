@@ -261,7 +261,7 @@ class Source : public TclObject, public Timer {
 	inline Layer& layer(int i) const { return (*layer_[i]); }
 	int nlayer_;/*XXX*/
 
-	void notify(Source::Layer* layer) {};
+	void notify(Source::Layer* layer) {UNUSED(layer);};
 
 	inline int late() const { return (late_); }
 
