@@ -78,6 +78,11 @@ v1.0.7  - Add udp_exit to close sockets and leave multicast groups if necessary.
 	  which will make it easier to write an mbus packet logger without code 
 	  duplication (such a logger can't easily be part of mbus.c, since it's
 	  needs conflict with correct protocol operation).
+	- Note that v1.3 of the Microsoft Research IPv6 stack requires an explicit
+	  route to be added for multicast traffic before a group can be joined. If
+	  you get errors in the IPV6_ADD_MEMBERSHIP setsockopt, this is probably
+	  the reason. We could specify an interface explicitly, but which one to
+	  pick?
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
