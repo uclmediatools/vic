@@ -385,6 +385,7 @@ v1.2.5	- More informative error message when the lock on the mbus configuration
 	  is more important than correctness) (Colin Perkins)
 	- Assorted performance tweaks (Colin Perkins)
 	- Add RTP_OPT_REUSE_PACKET_BUFS (Colin Perkins)
+	- Fix potential crash in init_rng (Bill May)
 
 
 

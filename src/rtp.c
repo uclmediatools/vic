@@ -934,6 +934,10 @@ static void init_opt(struct rtp *session)
 static void init_rng(const char *s)
 {
         static uint32_t seed;
+	if (s == NULL) {
+		/* This should never happen, but just in case */
+		s = "ARANDOMSTRINGSOWEDONTCOREDUMP";
+	}
         if (seed == 0) {
                 pid_t p = getpid();
 		int32_t i, n;
