@@ -174,7 +174,11 @@ sparc-sun-solaris*)
 	if test $CC = gcc ; then
 		V_DEFINE="$V_DEFINE -mv8 -msupersparc"
 	fi
-	V_DEFINE="$V_DEFINE -D__svr4__ -DSolaris"
+	if test $ipv6 = yes; then
+		V_DEFINE="$V_DEFINE -D__svr4__ -DSolaris -DHAVE_IPV6 -DSOLARIS7_IPV6"
+	else
+		V_DEFINE="$V_DEFINE -D__svr4__ -DSolaris"
+	fi
 	OPSYS=solaris
 	if test -f video/grabber-rtvc.cc || test -f video/grabber-rtvc.o ; then
 		V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-rtvc.o"
@@ -234,7 +238,11 @@ sparc-sun-sunos*)
 	;;
 *-*-freebsd*)
 	V_STATIC=""
-	V_DEFINE="$V_DEFINE -DFreeBSD"
+	if test $ipv6 = yes; then
+		V_DEFINE="$V_DEFINE -DFreeBSD -DHAVE_IPV6"
+	else
+		V_DEFINE="$V_DEFINE -DFreeBSD"
+	fi
 	OPSYS=freebsd
 	;;
 *-*-hpux*)
@@ -264,7 +272,11 @@ sparc-sun-sunos*)
 *-*-linux*)
 	V_STATIC=""
 	V_BROKEN_OBJ=
-	V_DEFINE="$V_DEFINE -DLinux"
+	if test $ipv6 = yes; then
+		V_DEFINE="$V_DEFINE -DLinux -DHAVE_IPV6 -DLINUX_IPV6"
+	else
+		V_DEFINE="$V_DEFINE -DLinux"
+	fi
 	OPSYS=linux
 	;;
 esac

@@ -19,6 +19,7 @@ if test "$ucltcl" != no; then
 	echo "Using UCL's tcl-8.0: $ucltcl"
 		
 elif test "$d" != "" ; then 
+	echo "Not using UCL tcl - You're on your own!"
 	if test ! -d $d ; then 
 		echo "'$d' is not a directory"
 		exit 1
@@ -58,6 +59,7 @@ elif test "$d" != "" ; then
 		exit 1
 	fi
 else
+	echo "Not using UCL tcl - You're on your own!"
 	AC_TEST_CPP([#include <tcl.h>], V_INCLUDE_TCL="", V_INCLUDE_TCL=FAIL)
 	if test "$V_INCLUDE_TCL" = FAIL; then
 		echo "checking for tcl.h"
@@ -170,7 +172,7 @@ if test "$ucltk" != no; then
 	echo "Using UCL's tk-8.0: $ucltk"
 		
 elif test "$d" != "" ; then 
-
+	echo "Not using UCL tk - You're on your own!"
 	if test ! -d $d ; then 
 		echo "'$d' is not a directory"
 		exit 1
@@ -209,6 +211,7 @@ elif test "$d" != "" ; then
 		exit 1
 	fi
 else
+	echo "Not using UCL tk - You're on your own!"
 	AC_TEST_CPP([#include <tk.h>], V_INCLUDE_TK="", V_INCLUDE_TK=FAIL)
 	if test "$V_INCLUDE_TK" = FAIL; then
 		echo "checking for tk.h"
