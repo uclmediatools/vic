@@ -43,11 +43,11 @@
 #include "crypt_random.h"
 #include "mbus.h"
 
-#define MBUS_BUF_SIZE	 1500
-#define MBUS_ACK_BUF_SIZE 110
-#define MBUS_MAX_ADDR	   10
-#define MBUS_MAX_PD	   10
-#define MBUS_MAX_QLEN	   50 /* Number of messages we can queue with mbus_qmsg() */
+#define MBUS_BUF_SIZE	  1500
+#define MBUS_ACK_BUF_SIZE 1500
+#define MBUS_MAX_ADDR	    10
+#define MBUS_MAX_PD	    10
+#define MBUS_MAX_QLEN	    50 /* Number of messages we can queue with mbus_qmsg() */
 
 struct mbus_key{
 	char	*algorithm;
