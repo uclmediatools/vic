@@ -80,7 +80,7 @@ void reconstructH263(H263Global *h263Data, int bx, int by, int P, int bdx, int b
   }
 
   mode = h263Data->modemap[y][x];
-debug_msg("reconstructH263:adv_pred_mode==%d\n",h263Data->adv_pred_mode);
+/*debug_msg("reconstructH263:adv_pred_mode==%d\n",h263Data->adv_pred_mode);*/
   assert(h263Data->adv_pred_mode == 0);
 
   if (P) {

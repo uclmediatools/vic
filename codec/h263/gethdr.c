@@ -174,7 +174,7 @@ static void getpicturehdr(H263Global *h263Data)
     h263Data->syntax_arith_coding = GetOneBit(bs);
     h263Data->adv_pred_mode = GetOneBit(bs);
     assert(h263Data->adv_pred_mode==0);
-debug_msg("gethdr:adv_pred_mode==0\n");
+/*debug_msg("gethdr:adv_pred_mode==0\n");*/
 
     h263Data->mv_outside_frame = (h263Data->adv_pred_mode ? 1 : h263Data->mv_outside_frame);
     h263Data->pb_frame = GetOneBit(bs);

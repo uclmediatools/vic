@@ -178,7 +178,6 @@ int H263Encoder::consume(const VideoFrame* vf)
 	Transmitter::pktbuf* pb;
 	rtphdr*		rh;
 	struct timeval tv1,tv2;
-debug_msg("debug_msg: H263Encoder::consume\n");
 
 	w = yuv->width_;
 	h = yuv->height_;
