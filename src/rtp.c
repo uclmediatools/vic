@@ -2598,6 +2598,63 @@ void rtp_update(struct rtp *session)
 	check_database(session);
 }
 
+static void rtp_send_bye_now(struct rtp *session)
+{
+	/* Send a BYE packet immediately. This is an internal function,  */
+	/* hidden behind the rtp_send_bye() wrapper which implements BYE */
+	/* reconsideration for the application.                          */
+	uint8_t	 	 buffer[RTP_MAX_PACKET_LEN + 8];	/* + 8 to allow for padding when encrypting */
+	uint8_t		*ptr = buffer;
+	rtcp_common	*common;
+	uint8_t    	 initVec[8] = {0,0,0,0,0,0,0,0};
+
+	check_database(session);
+	/* If encryption is enabled, add a 32 bit random prefix to the packet */
+	if (session->encryption_key != NULL) {
+		*((uint32_t *) ptr) = lbl_random();
+		ptr += 4;
+	}
+
+	ptr    = format_rtcp_rr(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), session);    
+	common = (rtcp_common *) ptr;
+	
+	common->version = 2;
+	common->p       = 0;
+	common->count   = 1;
+	common->pt      = RTCP_BYE;
+	common->length  = htons(1);
+	ptr += sizeof(common);
+	
+	*((uint32_t *) ptr) = htonl(session->my_ssrc);  
+	ptr += 4;
+	
+	if (session->encryption_key != NULL) {
+		if (((ptr - buffer) % 8) != 0) {
+			/* Add padding to the last packet in the compound, if necessary. */
+			/* We don't have to worry about overflowing the buffer, since we */
+			/* intentionally allocated it 8 bytes longer to allow for this.  */
+			int	padlen = 8 - ((ptr - buffer) % 8);
+			int	i;
+
+			for (i = 0; i < padlen-1; i++) {
+				*(ptr++) = '\0';
+			}
+			*(ptr++) = (uint8_t) padlen;
+
+			common->p      = TRUE;
+			common->length = htons((int16_t)(((ptr - (uint8_t *) common) / 4) - 1));
+		}
+		assert(((ptr - buffer) % 8) == 0); 
+		qfDES_CBC_e(session->encryption_key, buffer, ptr - buffer, initVec); 
+	}
+	udp_send(session->rtcp_socket, buffer, ptr - buffer);
+	/* Loop the data back to ourselves so local participant can */
+	/* query own stats when using unicast or multicast with no  */
+	/* loopback.                                                */
+	rtp_process_ctrl(session, buffer, ptr - buffer);
+	check_database(session);
+}
+
 /**
  * rtp_send_bye:
  * @session: The RTP session
@@ -2613,58 +2670,10 @@ void rtp_send_bye(struct rtp *session)
 	/* at present it either: a) sends a BYE packet immediately (if there are less than */
 	/* 50 members in the group), or b) returns without sending a BYE (if there are 50  */
 	/* or more members). See draft-ietf-avt-rtp-new-01.txt (section 6.3.7).            */
-	uint8_t	 	 buffer[RTP_MAX_PACKET_LEN + 8];	/* + 8 to allow for padding when encrypting */
-	uint8_t		*ptr = buffer;
-	rtcp_common	*common;
-	uint8_t    	 initVec[8] = {0,0,0,0,0,0,0,0};
-
 	check_database(session);
-	/* If encryption is enabled, add a 32 bit random prefix to the packet */
-	if (session->encryption_key != NULL) {
-		*((uint32_t *) ptr) = lbl_random();
-		ptr += 4;
-	}
-
 	if (session->ssrc_count < 50) {
-		ptr    = format_rtcp_rr(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), session);    
-		common = (rtcp_common *) ptr;
-		
-		common->version = 2;
-		common->p       = 0;
-		common->count   = 1;
-		common->pt      = RTCP_BYE;
-		common->length  = htons(1);
-		ptr += sizeof(common);
-		
-		*((uint32_t *) ptr) = htonl(session->my_ssrc);  
-		ptr += 4;
-		
-		if (session->encryption_key != NULL) {
-			if (((ptr - buffer) % 8) != 0) {
-				/* Add padding to the last packet in the compound, if necessary. */
-				/* We don't have to worry about overflowing the buffer, since we */
-				/* intentionally allocated it 8 bytes longer to allow for this.  */
-				int	padlen = 8 - ((ptr - buffer) % 8);
-				int	i;
-
-				for (i = 0; i < padlen-1; i++) {
-					*(ptr++) = '\0';
-				}
-				*(ptr++) = (uint8_t) padlen;
-
-				common->p      = TRUE;
-				common->length = htons((int16_t)(((ptr - (uint8_t *) common) / 4) - 1));
-			}
-			assert(((ptr - buffer) % 8) == 0); 
-			qfDES_CBC_e(session->encryption_key, buffer, ptr - buffer, initVec); 
-		}
-		udp_send(session->rtcp_socket, buffer, ptr - buffer);
-		/* Loop the data back to ourselves so local participant can */
-		/* query own stats when using unicast or multicast with no  */
-		/* loopback.                                                */
-		rtp_process_ctrl(session, buffer, ptr - buffer);
+		rtp_send_bye_now(session);
 	}
-	check_database(session);
 }
 
 /**
