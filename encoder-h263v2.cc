@@ -68,12 +68,12 @@ extern "C" int            h263_streamcount;    /* encoder output */
 extern "C" char          *h263_bitstream;
 #endif
 
-class H263Encoder : public TransmitterModule {
+class H263plusEncoder : public TransmitterModule {
 public:
     void setq(int q);
 
-    H263Encoder();
-    ~H263Encoder();
+    H263plusEncoder();
+    ~H263plusEncoder();
     int command(int argc, const char*const* argv);
     
     void size(int w, int h);
@@ -84,18 +84,18 @@ protected:
     int    i, qp, start_ts, last_iframe;
 };
 
-static class H263EncoderMatcher : public Matcher {
+static class H263plusEncoderMatcher : public Matcher {
     public:
-	H263EncoderMatcher() : Matcher("module") {}
+	H263plusEncoderMatcher() : Matcher("module") {}
 	TclObject* match(const char* fmt) {
 		if (strcasecmp(fmt, "h263+") == 0)
-			return (new H263Encoder);
+			return (new H263plusEncoder);
 		return (0);
 	}
 } encoder_matcher_h263;
 
 
-H263Encoder::H263Encoder() : TransmitterModule(FT_YUV_CIF)
+H263plusEncoder::H263plusEncoder() : TransmitterModule(FT_YUV_CIF)
 {
     /*fprintf(stderr,"send-h263: constructor\n");*/
     state = NULL;
@@ -103,7 +103,7 @@ H263Encoder::H263Encoder() : TransmitterModule(FT_YUV_CIF)
     qp = 10;
 }
 
-H263Encoder::~H263Encoder()
+H263plusEncoder::~H263plusEncoder()
 {
     /*fprintf(stderr,"send-h263: destructor\n");*/
     h263_cleanup(state);
@@ -111,7 +111,7 @@ H263Encoder::~H263Encoder()
 }
 
 void
-H263Encoder::size(int w, int h)
+H263plusEncoder::size(int w, int h)
 {
     /*fprintf(stderr,"send-h263: new frame size: %dx%d\n",w,h);*/
     Module::size(w, h);
@@ -131,7 +131,7 @@ H263Encoder::size(int w, int h)
 }
 
 int
-H263Encoder::command(int argc, const char*const* argv)
+H263plusEncoder::command(int argc, const char*const* argv)
 {
     /*fprintf(stderr,"send-h263: command: %s\n",argv[1]);*/
 
@@ -168,7 +168,7 @@ dump_paket(const unsigned char *data, int len)
 #endif
 }
 
-int H263Encoder::consume(const VideoFrame *vf)
+int H263plusEncoder::consume(const VideoFrame *vf)
 {
     Transmitter::pktbuf* pb;
     rtphdr* rh;

@@ -8,10 +8,10 @@
 
 #include "libh263.h"
 
-class H263Decoder : public Decoder {
+class H263plusDecoder : public Decoder {
 public:
-    H263Decoder();
-    virtual ~H263Decoder();
+    H263plusDecoder();
+    virtual ~H263plusDecoder();
     virtual void info(char* wrk) const;
     virtual void recv(const rtphdr* rh, const u_char* bp, int cc);
     int colorhist(u_int* hist) const;
@@ -37,12 +37,12 @@ protected:
     u_char     xxx_frame[160000];
 };
 
-static class H263DecoderMatcher : public Matcher {
+static class H263plusDecoderMatcher : public Matcher {
     public:
-	H263DecoderMatcher() : Matcher("decoder") {}
+	H263plusDecoderMatcher() : Matcher("decoder") {}
 	TclObject* match(const char* id) {
 		if (strcasecmp(id, "h263+") == 0)
-			return (new H263Decoder());
+			return (new H263plusDecoder());
 		return (0);
 	}
 } dm_h263;
@@ -55,7 +55,7 @@ static class H263DecoderMatcher : public Matcher {
 #define STAT_BAD_HEADER 5
 
 
-H263Decoder::H263Decoder() : Decoder(2) /* , codec_(0), */ 
+H263plusDecoder::H263plusDecoder() : Decoder(2) /* , codec_(0), */ 
 {
         /* no stats yet... */
 #if 0
@@ -82,17 +82,17 @@ H263Decoder::H263Decoder() : Decoder(2) /* , codec_(0), */
 	decoder_state = h263_start();
 }
 
-H263Decoder::~H263Decoder()
+H263plusDecoder::~H263plusDecoder()
 {
         h263_stop(decoder_state);
 }
 
-void H263Decoder::info(char* wrk) const
+void H263plusDecoder::info(char* wrk) const
 {
 	/* nop */
 }
 
-void H263Decoder::stats(char* wrk)
+void H263plusDecoder::stats(char* wrk)
 {
 #if 0
 	/* pull stats out of vic indepdendent P64Decoder */
@@ -104,7 +104,7 @@ void H263Decoder::stats(char* wrk)
 	Decoder::stats(wrk);
 }
 
-int H263Decoder::colorhist(u_int* hist) const
+int H263plusDecoder::colorhist(u_int* hist) const
 {
 #if 0
 	const u_char* frm = codec_->frame();
@@ -119,7 +119,7 @@ int H263Decoder::colorhist(u_int* hist) const
 extern void
 dump_paket(const unsigned char *data, int len);
 
-void H263Decoder::recv(const rtphdr* rh, const u_char* bp, int cc)
+void H263plusDecoder::recv(const rtphdr* rh, const u_char* bp, int cc)
 {
     /* RTP header  */
     int mbit  = ntohs(rh->rh_flags) >> 7 & 1;
@@ -218,7 +218,7 @@ void H263Decoder::recv(const rtphdr* rh, const u_char* bp, int cc)
     }
 }
 
-void H263Decoder::redraw()
+void H263plusDecoder::redraw()
 {
     if (decoder_state != 0)
 	Decoder::redraw(xxx_frame);
