@@ -328,6 +328,9 @@ v1.2.5	- More informative error message when the lock on the mbus configuration
 	  is defined.  Change DEBUG_MEM version to use same dummy value rather
 	  than a random value, reduces chances of uninitialized pointers 
 	  trashing data before crashing.
+	- Add callback types to rtp.h - rtp_callback and rtcp_app_callback.
+	- For consistency rtp_{get,set}opt -> rtp_{get,set}_option.
+	- Remove unnecessary components from qfdes enumeration declarations.
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,

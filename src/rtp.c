@@ -224,7 +224,7 @@ struct rtp {
 	uint32_t	 rtp_pcount;
 	uint32_t	 rtp_bcount;
         char            *encryption_key;
-	void (*callback)(struct rtp *session, rtp_event *event);
+	rtp_callback	*callback;
 	uint32_t	 magic;				/* For debugging...  */
 };
 
@@ -232,7 +232,7 @@ static int filter_event(struct rtp *session, uint32_t ssrc)
 {
 	int	filter;
 
-	rtp_getopt(session, RTP_OPT_FILTER_MY_PACKETS, &filter);
+	rtp_get_option(session, RTP_OPT_FILTER_MY_PACKETS, &filter);
 	return filter && (ssrc == rtp_my_ssrc(session));
 }
 
@@ -857,9 +857,9 @@ static char *get_cname(socket_udp *s)
 static void init_opt(struct rtp *session)
 {
 	/* Default option settings. */
-	rtp_setopt(session, RTP_OPT_PROMISC,           FALSE);
-	rtp_setopt(session, RTP_OPT_WEAK_VALIDATION,   TRUE);
-	rtp_setopt(session, RTP_OPT_FILTER_MY_PACKETS, FALSE);
+	rtp_set_option(session, RTP_OPT_PROMISC,           FALSE);
+	rtp_set_option(session, RTP_OPT_WEAK_VALIDATION,   TRUE);
+	rtp_set_option(session, RTP_OPT_FILTER_MY_PACKETS, FALSE);
 }
 
 static void init_rng(const char *s)
@@ -874,8 +874,9 @@ static void init_rng(const char *s)
                 }
                 seed = 1 + seed * 31 + (uint32_t)p;
                 srand48(seed);
-		/* At time of writing we use srand48 -> srand on Win32 which is only 16 bit. */
-		/* lrand48 -> rand which is only 15 bits, step a long way through table seq  */
+		/* At time of writing we use srand48 -> srand on Win32
+                   which is only 16 bit. lrand48 -> rand which is only
+                   15 bits, step a long way through table seq */
 #ifdef WIN32
 		n = (seed >> 16) & 0xffff;
 		for(i = 0; i < n; i++) {
@@ -887,15 +888,19 @@ static void init_rng(const char *s)
 	}
 }
 
-struct rtp *rtp_init(const char *addr, uint16_t rx_port, uint16_t tx_port, int ttl, double rtcp_bw, 
-                     void (*callback)(struct rtp *session, rtp_event *e),
+struct rtp *rtp_init(const char *addr, 
+		     uint16_t rx_port, uint16_t tx_port, 
+		     int ttl, double rtcp_bw, 
+                     rtp_callback *callback,
                      void *userdata)
 {
 	return rtp_init_if(addr, NULL, rx_port, tx_port, ttl, rtcp_bw, callback, userdata);
 }
 
-struct rtp *rtp_init_if(const char *addr, char *iface, uint16_t rx_port, uint16_t tx_port, int ttl, double rtcp_bw, 
-                        void (*callback)(struct rtp *session, rtp_event *e),
+struct rtp *rtp_init_if(const char *addr, char *iface, 
+			uint16_t rx_port, uint16_t tx_port, 
+			int ttl, double rtcp_bw, 
+                        rtp_callback *callback,
                         void *userdata)
 {
 	struct rtp 	*session;
@@ -984,6 +989,19 @@ struct rtp *rtp_init_if(const char *addr, char *iface, uint16_t rx_port, uint16_
 	return session;
 }
 
+/**
+ * rtp_set_my_ssrc:
+ * @session: the RTP session 
+ * @ssrc: the SSRC to be used by the RTP session
+ * 
+ * This function coerces the local SSRC identifer to be ssrc.  For
+ * this function to succeed it must be called immediately after
+ * rtp_init or rtp_init_if.  The intended purpose of this
+ * function is to co-ordinate SSRC's between layered sessions, it
+ * should not be used otherwise.
+ *
+ * Returns: TRUE on success, FALSE otherwise.  */
+
 int rtp_set_my_ssrc(struct rtp *session, uint32_t ssrc)
 {
         source *s;
@@ -1008,7 +1026,7 @@ int rtp_set_my_ssrc(struct rtp *session, uint32_t ssrc)
         return TRUE;
 }
 
-int rtp_setopt(struct rtp *session, int optname, int optval)
+int rtp_set_option(struct rtp *session, rtp_option optname, int optval)
 {
 	assert((optval == TRUE) || (optval == FALSE));
 
@@ -1023,13 +1041,13 @@ int rtp_setopt(struct rtp *session, int optname, int optval)
 			session->opt->filter_my_packets = optval;
 			break;
         	default:
-			debug_msg("Ignoring unknown option (%d) in call to rtp_setopt().\n", optname);
+			debug_msg("Ignoring unknown option (%d) in call to rtp_set_option().\n", optname);
                         return FALSE;
 	}
         return TRUE;
 }
 
-int rtp_getopt(struct rtp *session, int optname, int *optval)
+int rtp_get_option(struct rtp *session, rtp_option optname, int *optval)
 {
 	switch (optname) {
 		case RTP_OPT_WEAK_VALIDATION:
@@ -1043,7 +1061,7 @@ int rtp_getopt(struct rtp *session, int optname, int *optval)
 			break;
         	default:
                         *optval = 0;
-			debug_msg("Ignoring unknown option (%d) in call to rtp_getopt().\n", optname);
+			debug_msg("Ignoring unknown option (%d) in call to rtp_get_option().\n", optname);
                         return FALSE;
 	}
         return TRUE;
@@ -1183,13 +1201,13 @@ static void rtp_recv_data(struct rtp *session, uint32_t curr_rtp_ts)
 		}
 		if (validate_rtp(packet, buflen)) {
                         int weak = 0, promisc = 0;
-                        rtp_getopt(session, RTP_OPT_WEAK_VALIDATION, &weak);
+                        rtp_get_option(session, RTP_OPT_WEAK_VALIDATION, &weak);
 			if (weak) {
 				s = get_source(session, packet->ssrc);
 			} else {
 				s = create_source(session, packet->ssrc);
 			}
-                        rtp_getopt(session, RTP_OPT_PROMISC, &promisc);
+                        rtp_get_option(session, RTP_OPT_PROMISC, &promisc);
 			if (promisc) {
 				if (s == NULL) {
 					create_source(session, packet->ssrc);
@@ -2408,6 +2426,12 @@ void rtp_send_bye(struct rtp *session)
 	check_database(session);
 }
 
+/**
+ * rtp_done:
+ * @session: the RTP session to finish
+ *
+ * Frees state associated with given RTP session
+ */
 void rtp_done(struct rtp *session)
 {
 	int i;

@@ -47,6 +47,8 @@
 #error RTP library requires WORDS_BIGENDIAN or WORDS_SMALLENDIAN to be defined.
 #endif
 
+struct rtp;
+
 typedef struct {
 	/* The following are pointers to the data in the packet as    */
 	/* it came off the wire. The packet it read in such that the  */
@@ -132,7 +134,9 @@ typedef struct {
 	char            data[1];        /* variable length field  */
 } rtcp_app;
 
-/* rtp_event type values... use enum so compiler can check switch/if statements to see everything is covered */
+typedef rtcp_app* rtcp_app_callback(struct rtp *session, uint32_t rtp_ts, int max_size);
+
+/* rtp_event type values. */
 typedef enum {
         RX_RTP,
         RX_SR,
@@ -142,8 +146,8 @@ typedef enum {
         SOURCE_CREATED,
         SOURCE_DELETED, /* Source has been removed from the database                    */
         RX_RR_EMPTY,    /* We've received an empty reception report block                                               */
-        RX_RTCP_START,  /* We're about to start processing a compound RTCP packet. The SSRC is not valid in this event. */
-        RX_RTCP_FINISH,	/* We've just finished processing a compound RTCP packet. The SSRC is not valid in this event.  */
+        RX_RTCP_START,  /* Processing a compound RTCP packet about to start. The SSRC is not valid in this event. */
+        RX_RTCP_FINISH,	/* Processing a compound RTCP packet finished. The SSRC is not valid in this event.  */
         RR_TIMEOUT,
         RX_APP
 } rtp_event_type;
@@ -154,6 +158,8 @@ typedef struct {
 	void		*data;
 	struct timeval	*ts;
 } rtp_event;
+
+typedef void rtp_callback(struct rtp *session, rtp_event *e);
 
 /* RTP options */
 typedef enum {
@@ -175,41 +181,55 @@ typedef enum {
         RTCP_SDES_PRIV  = 8
 } rtcp_sdes_type;
 
-struct rtp;
-
-struct rtp	*rtp_init(const char *addr, uint16_t rx_port, uint16_t tx_port, int ttl, double rtcp_bw, 
-			  void (*callback)(struct rtp *session, rtp_event *e),
+struct rtp	*rtp_init(const char *addr, 
+			  uint16_t rx_port, uint16_t tx_port, 
+			  int ttl, double rtcp_bw, 
+			  rtp_callback *callback,
 			  void *user_data);
-struct rtp	*rtp_init_if(const char *addr, char *iface, uint16_t rx_port, uint16_t tx_port, int ttl, double rtcp_bw, 
-			     void (*callback)(struct rtp *session, rtp_event *e),
+struct rtp	*rtp_init_if(const char *addr, char *iface, 
+			     uint16_t rx_port, uint16_t tx_port, 
+			     int ttl, double rtcp_bw, 
+			     rtp_callback *callback,
 			     void *user_data);
-int 		 rtp_setopt(struct rtp *session, int optname, int optval);
-int 		 rtp_getopt(struct rtp *session, int optname, int *optval);
-void 		*rtp_get_userdata(struct rtp *session);
-int 		 rtp_recv(struct rtp *session, struct timeval *timeout, uint32_t curr_rtp_ts);
-int 		 rtp_send_data(struct rtp *session, uint32_t rtp_ts, char pt, int m, int cc, uint32_t csrc[], 
-                               char *data, int data_len, char *extn, uint16_t extn_len, uint16_t extn_type);
+
+void		 rtp_send_bye(struct rtp *session);
+void		 rtp_done(struct rtp *session);
+
+int 		 rtp_set_option(struct rtp *session, rtp_option optname, int optval);
+int 		 rtp_get_option(struct rtp *session, rtp_option optname, int *optval);
+
+int 		 rtp_recv(struct rtp *session, 
+			  struct timeval *timeout, uint32_t curr_rtp_ts);
+int 		 rtp_send_data(struct rtp *session, 
+			       uint32_t rtp_ts, char pt, int m, 
+			       int cc, uint32_t csrc[], 
+                               char *data, int data_len, 
+			       char *extn, uint16_t extn_len, uint16_t extn_type);
 void 		 rtp_send_ctrl(struct rtp *session, uint32_t rtp_ts, 
-			       rtcp_app *(*appcallback)(struct rtp *session, uint32_t rtp_ts, int max_size));
+			       rtcp_app_callback);
 void 		 rtp_update(struct rtp *session);
 
 uint32_t	 rtp_my_ssrc(struct rtp *session);
 int		 rtp_add_csrc(struct rtp *session, uint32_t csrc);
 int		 rtp_del_csrc(struct rtp *session, uint32_t csrc);
 int		 rtp_valid_ssrc(struct rtp *session, uint32_t ssrc);
-int		 rtp_set_sdes(struct rtp *session, uint32_t ssrc, rtcp_sdes_type type, char *value, int length);
+
+int		 rtp_set_sdes(struct rtp *session, uint32_t ssrc, 
+			      rtcp_sdes_type type, char *value, int length);
 const char	*rtp_get_sdes(struct rtp *session, uint32_t ssrc, rtcp_sdes_type type);
+
 const rtcp_sr	*rtp_get_sr(struct rtp *session, uint32_t ssrc);
 const rtcp_rr	*rtp_get_rr(struct rtp *session, uint32_t reporter, uint32_t reportee);
-void		 rtp_send_bye(struct rtp *session);
-void		 rtp_done(struct rtp *session);
+
 int              rtp_set_encryption_key(struct rtp *session, const char *passphrase);
+int              rtp_set_my_ssrc(struct rtp *session, uint32_t ssrc);
 
 char 		*rtp_get_addr(struct rtp *session);
 uint16_t	 rtp_get_rx_port(struct rtp *session);
 uint16_t	 rtp_get_tx_port(struct rtp *session);
 int		 rtp_get_ttl(struct rtp *session);
+void 		*rtp_get_userdata(struct rtp *session);
 
-int              rtp_set_my_ssrc(struct rtp *session, uint32_t ssrc);
+
 
 #endif /* __RTP_H__ */
