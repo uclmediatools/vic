@@ -43,6 +43,9 @@ v1.0.2	- Assorted fixes to RTP library
 	- Fix reordering of mbus messages
 	* 14 May 1999 [rat v4.0.1]
 
+v1.0.3	- Fix inet_aton() in net_udp.c
+
+
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
