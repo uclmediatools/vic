@@ -1186,7 +1186,7 @@ fi
 echo "$ac_t""$ac_cv_type_u_int8_t" 1>&6
 if test $ac_cv_type_u_int8_t = no; then
   cat >> confdefs.h <<\EOF
-#define u_int8_t unsigned char
+#define u_int8_t uint8_t
 EOF
 
 fi
@@ -1219,7 +1219,7 @@ fi
 echo "$ac_t""$ac_cv_type_u_int16_t" 1>&6
 if test $ac_cv_type_u_int16_t = no; then
   cat >> confdefs.h <<\EOF
-#define u_int16_t unsigned short
+#define u_int16_t uint16_t
 EOF
 
 fi
@@ -1252,7 +1252,7 @@ fi
 echo "$ac_t""$ac_cv_type_u_int32_t" 1>&6
 if test $ac_cv_type_u_int32_t = no; then
   cat >> confdefs.h <<\EOF
-#define u_int32_t unsigned long
+#define u_int32_t uint32_t
 EOF
 
 fi
