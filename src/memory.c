@@ -107,11 +107,11 @@ void xmemchk(void)
 static int 
 alloc_blk_cmp_origin(const void *vab1, const void *vab2)
 {
-        alloc_blk *ab1, *ab2;
+        const alloc_blk *ab1, *ab2;
         int sc;
         
-        ab1 = (alloc_blk*)vab1;
-        ab2 = (alloc_blk*)vab2;
+        ab1 = (const alloc_blk*)vab1;
+        ab2 = (const alloc_blk*)vab2;
 
         if (ab1->filen == NULL || ab2->filen == NULL) {
                 if (ab1->filen == NULL && ab2->filen == NULL) {
@@ -140,10 +140,10 @@ alloc_blk_cmp_origin(const void *vab1, const void *vab2)
 static int
 alloc_blk_cmp_est(const void *vab1, const void *vab2)
 {
-        alloc_blk *ab1, *ab2;
+        const alloc_blk *ab1, *ab2;
 
-        ab1 = (alloc_blk*)vab1;        
-        ab2 = (alloc_blk*)vab2;
+        ab1 = (const alloc_blk*)vab1;        
+        ab2 = (const alloc_blk*)vab2;
         
         if (ab1->est > ab2->est) {
                 return +1;

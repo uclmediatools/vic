@@ -2277,6 +2277,7 @@ void rtp_done(struct rtp *session)
 	udp_exit(session->rtp_socket);
 	udp_exit(session->rtcp_socket);
 	xfree(session->addr);
+	xfree(session->opt);
 	xfree(session);
 }
 

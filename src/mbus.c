@@ -53,6 +53,9 @@
 #define MBUS_MAX_PD	    10
 #define MBUS_MAX_QLEN	    50 /* Number of messages we can queue with mbus_qmsg() */
 
+#define MBUS_MAGIC	0x87654321
+#define MBUS_MSG_MAGIC	0x12345678
+
 #ifdef NEED_VSNPRINTF
 int vsnprintf(char *s, size_t buf_size, const char *format, va_list ap)
 {
@@ -77,6 +80,7 @@ struct mbus_msg {
 	int		 num_cmds;
 	char		*cmd_list[MBUS_MAX_QLEN];
 	char		*arg_list[MBUS_MAX_QLEN];
+	uint32_t	 magic;		/* For debugging... */
 };
 
 struct mbus {
@@ -101,7 +105,58 @@ struct mbus {
 	struct mbus_config	 *cfg;
 	void (*cmd_handler)(char *src, char *cmd, char *arg, void *dat);
 	void (*err_handler)(int seqnum, int reason);
+	uint32_t		  magic;			/* For debugging...                                             */
 };
+
+static void mbus_validate(struct mbus *m)
+{
+#ifdef DEBUG
+	int	i;
+
+	assert((m->num_addr < MBUS_MAX_ADDR)  && (m->num_addr >= 0));
+	for (i = 0; i < m->num_addr; i++) {
+		assert(m->addr[i] != NULL);
+	}
+	for (i = m->num_addr + 1; i < MBUS_MAX_ADDR; i++) {
+		assert(m->addr[i] == NULL);
+	}
+
+	assert((m->parse_depth < MBUS_MAX_PD) && (m->parse_depth >= 0));
+	assert(m->parse_buffer[0] == NULL);
+	assert(m->parse_bufend[0] == NULL);
+
+	assert(m->num_other_addr <= m->max_other_addr);
+	assert(m->num_other_addr >= 0);
+	for (i = 0; i < m->num_other_addr; i++) {
+		assert(m->other_addr[i]  != NULL);
+		assert(m->other_hello[i] != NULL);
+	}
+	for (i = m->num_other_addr + 1; i < m->max_other_addr; i++) {
+		assert(m->other_addr[i]  == NULL);
+		assert(m->other_hello[i] == NULL);
+	}
+#endif
+	assert(m->magic == MBUS_MAGIC);
+}
+
+static void mbus_msg_validate(struct mbus_msg *m)
+{
+#ifdef DEBUG
+	int	i;
+
+	assert((m->num_cmds < MBUS_MAX_QLEN) && (m->num_cmds >= 0));
+	for (i = 0; i < m->num_cmds; i++) {
+		assert(m->cmd_list[i] != NULL);
+		assert(m->arg_list[i] != NULL);
+	}
+	for (i = m->num_cmds + 1; i < MBUS_MAX_QLEN; i++) {
+		assert(m->cmd_list[i] == NULL);
+		assert(m->arg_list[i] == NULL);
+	}	
+	assert(m->dest != NULL);
+#endif
+	assert(m->magic == MBUS_MSG_MAGIC);
+}
 
 static int mbus_addr_match(char *a, char *b)
 {
@@ -215,6 +270,8 @@ static void store_other_addr(struct mbus *m, char *a)
 	/* list is small.                                             */
 	int	i;
 
+	mbus_validate(m);
+
 	for (i = 0; i < m->num_other_addr; i++) {
 		if (mbus_addr_match(m->other_addr[i], a)) {
 			/* Already in the list... */
@@ -239,6 +296,8 @@ static void remove_other_addr(struct mbus *m, char *a)
 	/* mbus structure.                                           */
 	int	i, j;
 
+	mbus_validate(m);
+
 	for (i = 0; i < m->num_other_addr; i++) {
 		if (mbus_addr_match(m->other_addr[i], a)) {
 			xfree(m->other_addr[i]);
@@ -247,40 +306,47 @@ static void remove_other_addr(struct mbus *m, char *a)
 				m->other_addr[j-1] = m->other_addr[j];
 				m->other_hello[j-1] = m->other_hello[j];
 			}
+			m->other_addr[m->num_other_addr  - 1] = NULL;
+			m->other_hello[m->num_other_addr - 1] = NULL;
 			m->num_other_addr--;
 		}
 	}
 }
 
 static void mark_activ_other_addr(struct mbus *m, char *a){
-    int i;
-    struct timeval	 t;
+	int i;
+	struct timeval	 t;
     
-    gettimeofday(&t, NULL);
-    for (i = 0; i < m->num_other_addr; i++) {
-	if (mbus_addr_match(m->other_addr[i], a)) {
-	    m->other_hello[i]->tv_sec=t.tv_sec;
+	mbus_validate(m);
+
+	gettimeofday(&t, NULL);
+	for (i = 0; i < m->num_other_addr; i++) {
+		if (mbus_addr_match(m->other_addr[i], a)) {
+			m->other_hello[i]->tv_sec=t.tv_sec;
+		}
 	}
-    }
 }
 
 static void remove_inactiv_other_addr(struct mbus *m, struct timeval t, int interval){
-    /* Remove addresses we haven't heard from for about 5 * interval */
-    /* Count backwards so it is safe to remove entries               */
-    int i;
+	/* Remove addresses we haven't heard from for about 5 * interval */
+	/* Count backwards so it is safe to remove entries               */
+	int i;
     
-    for (i=m->num_other_addr-1; i>=0; i--){
-	if ((t.tv_sec-(m->other_hello[i]->tv_sec)) > 5 * interval) {
-	    debug_msg("remove dead entity (%s)\n", m->other_addr[i]);
-	    remove_other_addr(m, m->other_addr[i]);
-	    
+	mbus_validate(m);
+
+	for (i=m->num_other_addr-1; i>=0; i--){
+		if ((t.tv_sec-(m->other_hello[i]->tv_sec)) > 5 * interval) {
+			debug_msg("remove dead entity (%s)\n", m->other_addr[i]);
+			remove_other_addr(m, m->other_addr[i]);
+		}
 	}
-    }
 }
 
 int mbus_addr_valid(struct mbus *m, char *addr)
 {
 	int	i;
+
+	mbus_validate(m);
 
 	for (i = 0; i < m->num_other_addr; i++) {
 		if (mbus_addr_match(m->other_addr[i], addr)) {
@@ -292,16 +358,16 @@ int mbus_addr_valid(struct mbus *m, char *addr)
 
 static int mbus_addr_unique(struct mbus *m, char *addr)
 {
-      int     i, n;
+	int     i, n = 0;
 
-      n = 0;
+	mbus_validate(m);
 
-      for (i = 0; i < m->num_other_addr; i++) {
-              if (mbus_addr_match(m->other_addr[i], addr)) {
-                  n++;
-              }
-      }
-      return (n==1);
+	for (i = 0; i < m->num_other_addr; i++) {
+		if (mbus_addr_match(m->other_addr[i], addr)) {
+			n++;
+		}
+	}
+	return n==1;
 }
 
 /* The mb_* functions are used to build an mbus message up in the */
@@ -347,6 +413,8 @@ static void mb_send(struct mbus *m)
 	int		len;
 	unsigned char	initVec[8] = {0,0,0,0,0,0,0,0};
  
+	mbus_validate(m);
+
 	*(mb_bufpos++) = '\0';
 	assert((mb_bufpos - mb_buffer) < MBUS_BUF_SIZE);
 	assert(strlen(mb_buffer) < MBUS_BUF_SIZE);
@@ -384,6 +452,8 @@ static void resend(struct mbus *m, struct mbus_msg *curr)
 	/* this message was first transmitted. If it was okay then, it's okay now.     */
 	int	 i;
 
+	mbus_validate(m);
+
 	mb_header(curr->seqnum, curr->ts.tv_sec, (char)(curr->reliable?'R':'U'), m->addr[0], curr->dest, -1);
 	for (i = 0; i < curr->num_cmds; i++) {
 		mb_add_command(curr->cmd_list[i], curr->arg_list[i]);
@@ -398,9 +468,13 @@ void mbus_retransmit(struct mbus *m)
 	struct timeval	time;
 	long		diff;
 
+	mbus_validate(m);
+
 	if (!mbus_waiting_ack(m)) {
 		return;
 	}
+
+	mbus_msg_validate(curr);
 
 	gettimeofday(&time, NULL);
 
@@ -447,6 +521,8 @@ void mbus_heartbeat(struct mbus *m, int interval)
 	char	*a = (char *) xmalloc(3);
 	sprintf(a, "()");
 
+	mbus_validate(m);
+
 	gettimeofday(&curr_time, NULL);
 	if (curr_time.tv_sec - m->last_heartbeat.tv_sec >= interval) {
 		mb_header(++m->seqnum, (int) curr_time.tv_sec, 'U', m->addr[0], "()", -1);
@@ -462,11 +538,13 @@ void mbus_heartbeat(struct mbus *m, int interval)
 
 int mbus_waiting_ack(struct mbus *m)
 {
+	mbus_validate(m);
 	return m->waiting_ack != NULL;
 }
 
 int mbus_sent_all(struct mbus *m)
 {
+	mbus_validate(m);
 	return (m->cmd_queue == NULL) && (m->waiting_ack == NULL);
 }
 
@@ -499,9 +577,14 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 	m->max_other_addr = 10;
 	m->other_addr     = (char **) xmalloc(sizeof(char *) * 10);
 	m->other_hello    = (struct timeval **) xmalloc(sizeof(struct timeval *) * 10);
+	for (i = 0; i < 10; i++) {
+		m->other_addr[i]  = NULL;
+		m->other_hello[i] = NULL;
+	}
 	m->parse_depth    = 0;
 	m->cmd_queue	  = NULL;
 	m->waiting_ack	  = NULL;
+	m->magic          = MBUS_MAGIC;
 
 	gettimeofday(&(m->last_heartbeat), NULL);
 
@@ -525,6 +608,7 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 
 void mbus_cmd_handler(struct mbus *m, void  (*cmd_handler)(char *src, char *cmd, char *arg, void *dat))
 {
+	mbus_validate(m);
 	m->cmd_handler = cmd_handler;
 }
 
@@ -550,22 +634,29 @@ void mbus_exit(struct mbus *m)
         int i;
 
         assert(m != NULL);
+	mbus_validate(m);
 
 	mbus_qmsg(m, "()", "mbus.bye", "", FALSE);
 	mbus_send(m);
 
-        while(m->parse_depth--) {
+        while(m->parse_depth > 0) {
                 xfree(m->parse_buffer[m->parse_depth]);
 		m->parse_buffer[m->parse_depth] = NULL;
 		m->parse_bufend[m->parse_depth] = NULL;
+		m->parse_depth--;
         }
 
+	/* FIXME: It should be a fatal error to call mbus_exit() if some messages are still outstanding. */
+	/*        We will need an mbus_flush() call first though, to ensure nothing is waiting.          */
         mbus_flush_msgs(m->cmd_queue);
         mbus_flush_msgs(m->waiting_ack);
 
         if (m->encrkey != NULL) {
                 xfree(m->encrkey);
         }
+        if (m->hashkey != NULL) {
+        	xfree(m->hashkey);
+	}
 
         udp_exit(m->s);
 
@@ -574,13 +665,15 @@ void mbus_exit(struct mbus *m)
 	    remove_other_addr(m, m->other_addr[i]);
 	}
 
-        xfree(m->hashkey);
+	xfree(m->other_addr);
+	xfree(m->other_hello);
 	xfree(m->cfg);
         xfree(m);
 }
 
 void mbus_addr(struct mbus *m, char *addr)
 {
+	mbus_validate(m);
 	assert(m->num_addr < MBUS_MAX_ADDR);
 	mbus_parse_init(m, xstrdup(addr));
 	if (mbus_parse_lst(m, &(m->addr[m->num_addr]))) {
@@ -597,11 +690,13 @@ void mbus_send(struct mbus *m)
 	struct mbus_msg	*curr = m->cmd_queue;
 	int		 i;
 
+	mbus_validate(m);
 	if (m->waiting_ack != NULL) {
 		return;
 	}
 
 	while (curr != NULL) {
+		mbus_msg_validate(curr);
 		/* It's okay for us to send messages which haven't been marked as complete - */
 		/* that just means we're sending something which has the potential to have   */
 		/* more data piggybacked. However, if it's not complete it MUST be the last  */
@@ -659,8 +754,11 @@ void mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, i
 	struct mbus_msg	*curr = m->cmd_queue;
 	struct mbus_msg	*prev = NULL;
 	int		 alen = strlen(cmnd) + strlen(args) + 4;
+	int		 i;
 
+	mbus_validate(m);
 	while (curr != NULL) {
+		mbus_msg_validate(curr);
 		if (!curr->complete) {
 			/* This message is still open for new commands. It MUST be the last in the */
 			/* cmd_queue, else commands will be reordered.                             */
@@ -672,6 +770,7 @@ void mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, i
 				curr->cmd_list[curr->num_cmds-1] = xstrdup(cmnd);
 				curr->arg_list[curr->num_cmds-1] = xstrdup(args);
 				curr->message_size += alen;
+				mbus_msg_validate(curr);
 				return;
 			} else {
 				curr->complete = TRUE;
@@ -683,6 +782,7 @@ void mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, i
 	/* If we get here, we've not found an open message in the cmd_queue.  We */
 	/* have to create a new message, and add it to the end of the cmd_queue. */
 	curr = (struct mbus_msg *) xmalloc(sizeof(struct mbus_msg));
+	curr->magic            = MBUS_MSG_MAGIC;
 	curr->next             = NULL;
 	curr->dest             = xstrdup(dest);
 	curr->retransmit_count = 0;
@@ -693,6 +793,10 @@ void mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, i
 	curr->num_cmds         = 1;
 	curr->cmd_list[0]      = xstrdup(cmnd);
 	curr->arg_list[0]      = xstrdup(args);
+	for (i = 1; i < MBUS_MAX_QLEN; i++) {
+		curr->cmd_list[i] = NULL;
+		curr->arg_list[i] = NULL;
+	}
 	if (prev == NULL) {
 		m->cmd_queue = curr;
 	} else {
@@ -700,6 +804,7 @@ void mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, i
 	}
 	gettimeofday(&(curr->time), NULL);
 	gettimeofday(&(curr->ts),   NULL);
+	mbus_msg_validate(curr);
 }
 
 void mbus_qmsgf(struct mbus *m, char *dest, int reliable, const char *cmnd, const char *format, ...)
@@ -711,6 +816,7 @@ void mbus_qmsgf(struct mbus *m, char *dest, int reliable, const char *cmnd, cons
 	char	buffer[MBUS_BUF_SIZE];
 	va_list	ap;
 
+	mbus_validate(m);
 	va_start(ap, format);
 #ifdef WIN32
         _vsnprintf(buffer, MBUS_BUF_SIZE, format, ap);
@@ -723,6 +829,7 @@ void mbus_qmsgf(struct mbus *m, char *dest, int reliable, const char *cmnd, cons
 
 void mbus_parse_init(struct mbus *m, char *str)
 {
+	mbus_validate(m);
 	assert(m->parse_depth < (MBUS_MAX_PD - 1));
 	m->parse_depth++;
 	m->parse_buffer[m->parse_depth] = str;
@@ -731,6 +838,7 @@ void mbus_parse_init(struct mbus *m, char *str)
 
 void mbus_parse_done(struct mbus *m)
 {
+	mbus_validate(m);
 	m->parse_buffer[m->parse_depth] = NULL;
 	m->parse_bufend[m->parse_depth] = NULL;
 	m->parse_depth--;
@@ -746,6 +854,8 @@ int mbus_parse_lst(struct mbus *m, char **l)
 {
 	int instr = FALSE;
 	int inlst = FALSE;
+
+	mbus_validate(m);
 
 	*l = m->parse_buffer[m->parse_depth];
         while (isspace((unsigned char)*m->parse_buffer[m->parse_depth])) {
@@ -781,6 +891,8 @@ int mbus_parse_lst(struct mbus *m, char **l)
 
 int mbus_parse_str(struct mbus *m, char **s)
 {
+	mbus_validate(m);
+
         while (isspace((unsigned char)*m->parse_buffer[m->parse_depth])) {
                 m->parse_buffer[m->parse_depth]++;
 		CHECK_OVERRUN;
@@ -804,6 +916,8 @@ int mbus_parse_str(struct mbus *m, char **s)
 
 static int mbus_parse_sym(struct mbus *m, char **s)
 {
+	mbus_validate(m);
+
         while (isspace((unsigned char)*m->parse_buffer[m->parse_depth])) {
                 m->parse_buffer[m->parse_depth]++;
 		CHECK_OVERRUN;
@@ -825,6 +939,8 @@ static int mbus_parse_sym(struct mbus *m, char **s)
 int mbus_parse_int(struct mbus *m, int *i)
 {
 	char	*p;
+
+	mbus_validate(m);
 
         while (isspace((unsigned char)*m->parse_buffer[m->parse_depth])) {
                 m->parse_buffer[m->parse_depth]++;
@@ -851,6 +967,9 @@ int mbus_parse_int(struct mbus *m, int *i)
 int mbus_parse_flt(struct mbus *m, double *d)
 {
 	char	*p;
+
+	mbus_validate(m);
+
         while (isspace((unsigned char)*m->parse_buffer[m->parse_depth])) {
                 m->parse_buffer[m->parse_depth]++;
 		CHECK_OVERRUN;
@@ -926,6 +1045,8 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 	char	 	digest[16];
 	unsigned char	initVec[8] = {0,0,0,0,0,0,0,0};
 	struct timeval	t;
+
+	mbus_validate(m);
 
 	rx = FALSE;
 	loop_count = 0;
@@ -1149,6 +1270,8 @@ char *mbus_rendezvous_waiting(struct mbus *m, char *addr, char *token, void *dat
 	struct timeval	 timeout;
 	struct mbus_rz	*r;
 
+	mbus_validate(m);
+
 	r = (struct mbus_rz *) xmalloc(sizeof(struct mbus_rz));
 	r->peer        = NULL;
 	r->token       = token;
@@ -1168,7 +1291,7 @@ char *mbus_rendezvous_waiting(struct mbus *m, char *addr, char *token, void *dat
 		mbus_retransmit(m);
 	}
 	m->cmd_handler = r->cmd_handler;
-	peer = xstrdup(r->peer);
+	peer = r->peer;
 	xfree(r);
 	xfree(token_e);
 	return peer;
@@ -1182,6 +1305,8 @@ char *mbus_rendezvous_go(struct mbus *m, char *token, void *data)
 	char		*token_e, *peer;
 	struct timeval	 timeout;
 	struct mbus_rz	*r;
+
+	mbus_validate(m);
 
 	r = (struct mbus_rz *) xmalloc(sizeof(struct mbus_rz));
 	r->peer        = NULL;
@@ -1212,8 +1337,9 @@ char *mbus_rendezvous_go(struct mbus *m, char *token, void *data)
 	} while (!mbus_sent_all(m));
 
 	m->cmd_handler = r->cmd_handler;
-	peer = xstrdup(r->peer);
+	peer = r->peer;
 	xfree(r);
 	xfree(token_e);
 	return peer;
 }
+
