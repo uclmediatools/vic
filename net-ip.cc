@@ -259,7 +259,7 @@ int IPNetwork::openrsock(u_int32_t addr, u_short port,
 #endif
 	memset((char *)&sin, 0, sizeof(sin));
 	sin.sin_family = AF_INET;
-	sin.sin_port   = htons(port);
+	sin.sin_port   = port;
 	if (IN_CLASSD(ntohl(addr))) {
 		/*
 		 * Try to bind the multicast address as the socket
@@ -267,12 +267,14 @@ int IPNetwork::openrsock(u_int32_t addr, u_short port,
 		 * so fall back to a destination of INADDR_ANY if
 		 * the first bind fails.
 		 */
-		sin.sin_addr.s_addr = htonl(addr);
+		sin.sin_addr.s_addr = addr;
 		if (bind(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
-			sin.sin_addr.s_addr = htonl(INADDR_ANY);
+			sin.sin_addr.s_addr = INADDR_ANY;
 			if (bind(fd, (struct sockaddr*)&sin, sizeof(sin)) < 0) {
 				perror("bind (INADDR_ANY)");
 				abort();
+			} else {
+				printf("bound to INADDR_ANY\n");
 			}
 		}
 		/* 
