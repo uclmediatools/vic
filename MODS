@@ -286,4 +286,9 @@ Still to do...
 	- Allow a callback for background processing during mbus_rendezvous_*()
 	- mbus_exit() queues an mbus.bye() message, but that never gets sent.
 	- Handling of SSRC collisions is broken.
+	- When weak RTP validation is enabled, spurious sources can be
+	  added to the database (from the CSRC area of a packet?). Reported
+	  by Xiaotao Wu <xiaotaow@cs.columbia.edu>
+	- packets with a header extension are silently thrown away.
+	  Reported by Peter Parnes.
 
