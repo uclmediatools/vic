@@ -122,7 +122,7 @@ void CtrlHandler::dispatch(int)
 
 SessionManager::SessionManager()
 	: dh_(*this), ch_(*this), rt_(*this), 
-	  mb_(0, mbus_handler_engine, NULL),
+	  mb_(1, mbus_handler_engine, NULL),
 	  badversion_(0), badoptions_(0), badfmt_(0), badext_(0), nrunt_(0),
 	  last_np_(0),
 	  sdes_seq_(0),

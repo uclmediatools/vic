@@ -510,7 +510,7 @@ proc build.src { w src color } {
 
 	pack $w.r.ctrl.mute -side left -fill x -expand 1
 	pack $w.r.ctrl.color -side left -fill x -expand 1
-	pack $w.r.ctrl.info -side left -fill x -expand 1
+	pack $w.r.ctrl.info -side left -fill x -fill y -expand 1
 #	pack $w.r.ctrl.options -side left -fill x -expand 1
 
 	global colorbutton

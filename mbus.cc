@@ -290,7 +290,7 @@ MBusHandler::MBusHandler(int  channel,
 	for (i=0; i<MBUS_MAX_PD; i++) 
 		m_->parse_buffer[i] = NULL;
 	/* XXX 0 should eventually be replaced by pid */
-	mbus_addr("(video engine vic 0)"); 
+	mbus_addr("(video engine vic *)"); 
 	mbus_audio_addr = strdup("(audio engine * *)");
 }
 
