@@ -55,7 +55,10 @@ v1.0.4  - Fix compilation with Microsoft IPv6 stack
 	- Fixes to mbus code from Dirk Kutscher
 	* 2 June 1999 [rat v4.0.3]
 
-v1.0.5	- Add ability to send to one port whilst receiving on another, 
+v1.0.5	- Not quite sure what happened with this version, but if you have
+          it it's probably not a good idea to use it! :-)
+
+v1.0.6	- Add ability to send to one port whilst receiving on another, 
 	  requested by Henning Schulzrinne.
 	- Add mbus_cmd_handler() to change the function handling the
 	  reception of mbus commands.
@@ -67,7 +70,7 @@ v1.0.5	- Add ability to send to one port whilst receiving on another,
 	- Fix memory leak in mbus_recv()
 	- Fixes for configure script on 64 bit IRIX from Peter Orbaek
 	- Move base64 tests into test_base64.c and integrate with the test suite
-
+	* Released 5 July 1999 
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
