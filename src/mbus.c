@@ -33,18 +33,16 @@
  * SUCH DAMAGE.
  */
 
-#define MBUS_ENCRYPT_BY_DEFAULT
-
 #include "config_unix.h"
 #include "config_win32.h"
 #include "debug.h"
 #include "memory.h"
 #include "net_udp.h"
 #include "hmac.h"
-#include "base64.h"
-#include "crypt_random.h"
 #include "qfDES.h"
+#include "base64.h"
 #include "mbus.h"
+#include "mbus_config.h"
 
 #define MBUS_BUF_SIZE	  1500
 #define MBUS_ACK_BUF_SIZE 1500
@@ -63,12 +61,6 @@ static int vsnprintf(char *s, int buf_size, const char *format, va_list ap)
 }
 #endif
 
-struct mbus_key{
-	char	*algorithm;
-	char	*key;
-	int	 key_len;
-};
-
 struct mbus_msg {
 	struct mbus_msg	*next;
 	struct timeval	 time;	/* Time the message was sent, to trigger a retransmit */
@@ -85,425 +77,27 @@ struct mbus_msg {
 };
 
 struct mbus {
-	socket_udp	 *s;
-	int		  num_addr;
-	char		 *addr[MBUS_MAX_ADDR];		/* Addresses we respond to. 					*/
-	int		  max_other_addr;
-	int		  num_other_addr;
-	char		**other_addr;			/* Addresses of other entities on the mbus. 			*/
-	char		 *parse_buffer[MBUS_MAX_PD];	/* Temporary storage for parsing mbus commands 			*/
-	char		 *parse_bufend[MBUS_MAX_PD];	/* End of space allocated for parsing, to check for overflows 	*/
-	int		  parse_depth;
-	int		  seqnum;
+	socket_udp	 	 *s;
+	int		 	  num_addr;
+	char		 	*addr[MBUS_MAX_ADDR];		/* Addresses we respond to. 					*/
+	int		 	  max_other_addr;
+	int		 	  num_other_addr;
+	char			**other_addr;			/* Addresses of other entities on the mbus. 			*/
+	char		 	 *parse_buffer[MBUS_MAX_PD];	/* Temporary storage for parsing mbus commands 			*/
+	char		 	 *parse_bufend[MBUS_MAX_PD];	/* End of space allocated for parsing, to check for overflows 	*/
+	int		 	  parse_depth;
+	int		 	  seqnum;
+	struct mbus_msg	 	 *cmd_queue;			/* Queue of messages waiting to be sent */
+	struct mbus_msg	 	 *waiting_ack;			/* The last reliable message sent, if we have not yet got the ACK */
+	char		 	 *hashkey;
+	int		 	  hashkeylen;
+	char		 	 *encrkey;
+	int		 	  encrkeylen;
+	struct timeval	 	  last_heartbeat;		/* Last time we sent a heartbeat message */
+	struct mbus_config	 *cfg;
 	void (*cmd_handler)(char *src, char *cmd, char *arg, void *dat);
 	void (*err_handler)(int seqnum, int reason);
-	struct mbus_msg	 *cmd_queue;			/* Queue of messages waiting to be sent */
-	struct mbus_msg	 *waiting_ack;			/* The last reliable message sent, if we have not yet got the ACK */
-	char		 *hashkey;
-	int		  hashkeylen;
-	char		 *encrkey;
-	int		  encrkeylen;
-#ifdef WIN32
-	HKEY		  cfgKey;
-#else
-	fd_t		  cfgfd;  			/* The file descriptor for the $HOME/.mbus config file, on Unix */
-#endif
-	int		  cfg_locked;
-	struct timeval	  last_heartbeat;		/* Last time we sent a heartbeat message */
 };
-
-#define SECS_PER_WEEK    604800
-#define MBUS_ENCRKEY_LEN      7
-#define MBUS_HASHKEY_LEN     12
-
-static char *mbus_new_encrkey(void)
-{
-	char		*key;	/* The key we are going to return... */
-#ifdef MBUS_ENCRYPT_BY_DEFAULT
-	/* Create a new key, for use by the hashing routines. Returns */
-	/* a key of the form (DES,MTIzMTU2MTg5MTEyMQ==)               */
-	char		 random_string[MBUS_ENCRKEY_LEN];
-	char		 encoded_string[(MBUS_ENCRKEY_LEN*4/3)+4];
-	int		 encoded_length;
-	int		 i;
-
-	/* Step 1: generate a random string for the key... */
-	for (i = 0; i < MBUS_ENCRKEY_LEN; i++) {
-		random_string[i] = ((int32)lbl_random() | 0x000ff000) >> 24;
-	}
-	/* Step 2: base64 encode that string... */
-	memset(encoded_string, 0, (MBUS_ENCRKEY_LEN*4/3)+4);
-	encoded_length = base64encode(random_string, MBUS_ENCRKEY_LEN, encoded_string, (MBUS_ENCRKEY_LEN*4/3)+4);
-
-	/* Step 3: put it all together to produce the key... */
-	key = (char *) xmalloc(encoded_length + 18);
-	sprintf(key, "(DES,%s)", encoded_string);
-#else
-	key = (char *) xmalloc(9);
-	sprintf(key, "(NOENCR)");
-#endif
-	return key;
-}
-
-static char *mbus_new_hashkey(void)
-{
-	/* Create a new key, for use by the hashing routines. Returns  */
-	/* a key of the form (HMAC-MD5,MTIzMTU2MTg5MTEyMQ==)           */
-	char		 random_string[MBUS_HASHKEY_LEN];
-	char		 encoded_string[(MBUS_HASHKEY_LEN*4/3)+4];
-	int		 encoded_length;
-	int		 i;
-	char		*key;
-
-	/* Step 1: generate a random string for the key... */
-	for (i = 0; i < MBUS_HASHKEY_LEN; i++) {
-		random_string[i] = ((int32)lbl_random() | 0x000ff000) >> 24;
-	}
-	/* Step 2: base64 encode that string... */
-	memset(encoded_string, 0, (MBUS_HASHKEY_LEN*4/3)+4);
-	encoded_length = base64encode(random_string, MBUS_HASHKEY_LEN, encoded_string, (MBUS_HASHKEY_LEN*4/3)+4);
-
-	/* Step 3: put it all together to produce the key... */
-	key = (char *) xmalloc(encoded_length + 23);
-	sprintf(key, "(HMAC-MD5,%s)", encoded_string);
-
-	return key;
-}
-
-static void mbus_lock_config_file(struct mbus *m)
-{
-#ifdef WIN32
-	/* Open the registry and create the mbus entries if they don't exist   */
-	/* already. The default contents of the registry are random encryption */
-	/* and authentication keys, and node local scope.                      */
-	HKEY			key    = HKEY_CURRENT_USER;
-	LPCTSTR			subKey = "Software\\Mbone Applications\\mbus";
-	DWORD			disp;
-	char			buffer[MBUS_BUF_SIZE];
-	LONG			status;
-
-	status = RegCreateKeyEx(key, subKey, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &(m->cfgKey), &disp);
-	if (status != ERROR_SUCCESS) {
-		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
-		debug_msg("Unable to open registry: %s\n", buffer);
-		abort();
-	}
-	if (disp == REG_CREATED_NEW_KEY) {
-		char	*hashkey = mbus_new_hashkey();
-		char	*encrkey = mbus_new_encrkey();
-		char	*scope   = "HOSTLOCAL";
-
-		status = RegSetValueEx(m->cfgKey, "HASHKEY", 0, REG_SZ, hashkey, strlen(hashkey) + 1);
-		if (status != ERROR_SUCCESS) {
-			FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
-			debug_msg("Unable to set hashkey: %s\n", buffer);
-			abort();
-		}	
-		status = RegSetValueEx(m->cfgKey, "ENCRYPTIONKEY", 0, REG_SZ, encrkey, strlen(encrkey) + 1);
-		if (status != ERROR_SUCCESS) {
-			FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
-			debug_msg("Unable to set encrkey: %s\n", buffer);
-			abort();
-		}	
-		status = RegSetValueEx(m->cfgKey, "SCOPE", 0, REG_SZ, scope, strlen(scope) + 1);
-		if (status != ERROR_SUCCESS) {
-			FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
-			debug_msg("Unable to set scope: %s\n", buffer);
-			abort();
-		}	
-		debug_msg("Created new registry entry...\n");
-	} else {
-		debug_msg("Opened existing registry entry...\n");
-	}
-#else
-	/* Obtain a valid lock on the mbus configuration file. This function */
-	/* creates the file, if one does not exist. The default contents of  */
-	/* this file are random authentication and encryption keys, and node */
-	/* local scope.                                                      */
-	struct flock	 l;
-	struct stat	 s;
-	struct passwd	*p;	
-	char		*buf;
-	char		*cfg_file;
-
-	/* The getpwuid() stuff is to determine the users home directory, into which we */
-	/* write a .mbus config file. The struct returned by getpwuid() is statically   */
-	/* allocated, so it's not necessary to free it afterwards.                      */
-	p = getpwuid(getuid());
-	if (p == NULL) {
-		perror("Unable to get passwd entry");
-		abort();
-	}
-	cfg_file = (char *) xmalloc(strlen(p->pw_dir) + 6);
-	sprintf(cfg_file, "%s/.mbus", p->pw_dir);
-	m->cfgfd = open(cfg_file, O_RDWR | O_CREAT, 0600);
-	if (m->cfgfd == -1) {
-		perror("Unable to open mbus configuration file");
-		abort();
-	}
-	xfree(cfg_file);
-
-	/* We attempt to get a lock on the config file, blocking until  */
-	/* the lock can be obtained. The only time this should block is */
-	/* when another instance of this code has a write lock on the   */
-	/* file, because the contents are being updated.                */
-	l.l_type   = F_WRLCK;
-	l.l_start  = 0;
-	l.l_whence = SEEK_SET;
-	l.l_len    = 0;
-	if (fcntl(m->cfgfd, F_SETLKW, &l) == -1) {
-		perror("Unable to lock mbus configuration file");
-		abort();
-	}
-
-	if (fstat(m->cfgfd, &s) != 0) {
-		perror("Unable to stat config file\n");
-		abort();
-	}
-	if (s.st_size == 0) {
-		/* Empty file, create with sensible defaults... */
-		char	*hashkey = mbus_new_hashkey();
-		char	*encrkey = mbus_new_encrkey();
-		char	*scope   = "HOSTLOCAL";
-		int	 len;
-
-		len = strlen(hashkey) + strlen(encrkey) + strlen(scope) + 39;
-		buf = (char *) xmalloc(len);
-		sprintf(buf, "[MBUS]\nHASHKEY=%s\nENCRYPTIONKEY=%s\nSCOPE=%s\n", hashkey, encrkey, scope);
-		write(m->cfgfd, buf, strlen(buf));
-		xfree(buf);
-		free(hashkey);
-		xfree(encrkey);
-		debug_msg("Wrote config file\n");
-	} else {
-		/* Read in the contents of the config file... */
-		buf = (char *) xmalloc(s.st_size+1);
-		memset(buf, '\0', s.st_size+1);
-		if (read(m->cfgfd, buf, s.st_size) != s.st_size) {
-			perror("Unable to read config file\n");
-			abort();
-		}
-		/* Check that the file contains sensible information...   */
-		/* This is rather a pathetic check, but it'll do for now! */
-		if (strncmp(buf, "[MBUS]", 6) != 0) {
-			debug_msg("Mbus config file has incorrect header\n");
-			abort();
-		}
-		xfree(buf);
-	}
-#endif
-	m->cfg_locked = TRUE;
-}
-
-static void mbus_unlock_config_file(struct mbus *m)
-{
-#ifdef WIN32
-	LONG status;
-	char buffer[MBUS_BUF_SIZE];
-	
-	status = RegCloseKey(m->cfgKey);
-	if (status != ERROR_SUCCESS) {
-		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
-		debug_msg("Unable to close registry: %s\n", buffer);
-		abort();
-	}
-	debug_msg("Closed registry entry...\n");
-#else
-	struct flock	l;
-
-	l.l_type   = F_UNLCK;
-	l.l_start  = 0;
-	l.l_whence = SEEK_SET;
-	l.l_len    = 0;
-	if (fcntl(m->cfgfd, F_SETLKW, &l) == -1) {
-		perror("Unable to unlock mbus configuration file");
-		abort();
-	}
-	close(m->cfgfd);
-	m->cfgfd = -1;
-#endif
-	m->cfg_locked = FALSE;
-}
-
-#ifndef WIN32
-static void mbus_get_key(struct mbus *m, struct mbus_key *key, char *id)
-{
-	struct stat	 s;
-	char		*buf;
-	char		*line;
-	char		*tmp;
-	int		 pos;
-
-	assert(m->cfg_locked);
-
-	if (lseek(m->cfgfd, 0, SEEK_SET) == -1) {
-		perror("Can't seek to start of config file");
-		abort();
-	}
-	if (fstat(m->cfgfd, &s) != 0) {
-		perror("Unable to stat config file\n");
-		abort();
-	}
-	/* Read in the contents of the config file... */
-	buf = (char *) xmalloc(s.st_size+1);
-	memset(buf, '\0', s.st_size+1);
-	if (read(m->cfgfd, buf, s.st_size) != s.st_size) {
-		perror("Unable to read config file\n");
-		abort();
-	}
-	
-	line = (char *) xmalloc(s.st_size+1);
-	sscanf(buf, "%s", line);
-	if (strcmp(line, "[MBUS]") != 0) {
-		debug_msg("Invalid .mbus file\n");
-		abort();
-	}
-	pos = strlen(line) + 1;
-	while (pos < s.st_size) {
-		sscanf(buf+pos, "%s", line);
-		pos += strlen(line) + 1;
-		if (strncmp(line, id, strlen(id)) == 0) {
-			key->algorithm   = (char *) strdup(strtok(line+strlen(id), ",)"));
-			if (strcmp(key->algorithm, "NOENCR") != 0) {
-				key->key     = (char *) strtok(NULL  , ")");
-				key->key_len = strlen(key->key);
-				tmp = (char *) xmalloc(key->key_len);
-				key->key_len = base64decode(key->key, key->key_len, tmp, key->key_len);
-				key->key = tmp;
-			} else {
-				key->key     = NULL;
-				key->key_len = 0;
-			}
-			xfree(buf);
-			xfree(line);
-			return;
-		}
-	}
-	debug_msg("Unable to read hashkey from config file\n");
-	xfree(buf);
-	xfree(line);
-}
-#endif
-
-static void mbus_get_encrkey(struct mbus *m, struct mbus_key *key)
-{
-	/* This MUST be called while the config file is locked! */
-	unsigned char	*des_key;
-	int		 i, j, k;
-#ifdef WIN32
-	long		 status;
-	DWORD		 type;
-	char		*buffer;
-	int	 	 buflen = MBUS_BUF_SIZE;
-	char		*tmp;
-
-	assert(m->cfg_locked);
-	
-	/* Read the key from the registry... */
-	buffer = (char *) xmalloc(MBUS_BUF_SIZE);
-	status = RegQueryValueEx(m->cfgKey, "ENCRYPTIONKEY", 0, &type, buffer, &buflen);
-	if (status != ERROR_SUCCESS) {
-		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
-		debug_msg("Unable to get encrkey: %s\n", buffer);
-		abort();
-	}
-	assert(type == REG_SZ);
-	assert(buflen > 0);
-
-	/* Parse the key... */
-	key->algorithm   = strdup(strtok(buffer+1, ",)"));
-	if (strcmp(key->algorithm, "NOENCR") != 0) {
-		key->key     = (char *) strtok(NULL  , ")");
-		key->key_len = strlen(key->key);
-		tmp = (char *) xmalloc(key->key_len);
-		key->key_len = base64decode(key->key, key->key_len, tmp, key->key_len);
-		key->key = tmp;
-	} else {
-		key->key     = NULL;
-		key->key_len = 0;
-	}
-
-	debug_msg("alg=%s key=%s keylen=%d\n", key->algorithm, key->key, key->key_len);
-
-	xfree(buffer);
-#else
-	mbus_get_key(m, key, "ENCRYPTIONKEY=(");
-#endif
-	if (strcmp(key->algorithm, "DES") == 0) {
-		assert(key->key != NULL);
-		assert(key->key_len == 7);
-		/* Take the first 56-bits of the input key and spread it across   */
-		/* the 64-bit DES key space inserting a bit-space of garbage      */
-		/* (for parity) every 7 bits. The garbage will be taken care of   */
-		/* below. The library we're using expects the key and parity bits */
-		/* in the following MSB order: K0 K1...K6 P0 K8 K9...K14 P1...    */
-		des_key = (unsigned char *) xmalloc(8);
-		des_key[0] = key->key[0];
-		des_key[1] = key->key[0] << 7 | key->key[1] >> 1;
-		des_key[2] = key->key[1] << 6 | key->key[2] >> 2;
-		des_key[3] = key->key[2] << 5 | key->key[3] >> 3;
-		des_key[4] = key->key[3] << 4 | key->key[4] >> 4;
-		des_key[5] = key->key[4] << 3 | key->key[5] >> 5;
-		des_key[6] = key->key[5] << 2 | key->key[6] >> 6;
-		des_key[7] = key->key[6] << 1;
-
-		/* fill in parity bits to make DES library happy */
-		for (i = 0; i < 8; ++i) 
-		{
-			k = des_key[i] & 0xfe;
-			j = k;
-			j ^= j >> 4;
-			j ^= j >> 2;
-			j ^= j >> 1;
-			j = (j & 1) ^ 1;
-			des_key[i] = k | j;
-		}
-		xfree(key->key);
-		key->key     = des_key;
-		key->key_len = 8;
-	}
-}
-
-static void mbus_get_hashkey(struct mbus *m, struct mbus_key *key)
-{
-	/* This MUST be called while the config file is locked! */
-#ifdef WIN32
-	long	 status;
-	DWORD	 type;
-	char	*buffer;
-	int	 buflen = MBUS_BUF_SIZE;
-	char	*tmp;
-
-	assert(m->cfg_locked);
-	
-	/* Read the key from the registry... */
-	buffer = (char *) xmalloc(MBUS_BUF_SIZE);
-	status = RegQueryValueEx(m->cfgKey, "HASHKEY", 0, &type, buffer, &buflen);
-	if (status != ERROR_SUCCESS) {
-		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
-		debug_msg("Unable to get encrkey: %s\n", buffer);
-		abort();
-	}
-	assert(type == REG_SZ);
-	assert(buflen > 0);
-
-	/* Parse the key... */
-	key->algorithm   = strdup(strtok(buffer+1, ","));
-	key->key         = strtok(NULL  , ")");
-	key->key_len     = strlen(key->key);
-
-	debug_msg("alg=%s key=%s keylen=%d\n", key->algorithm, key->key, key->key_len);
-
-	/* Decode the key... */
-	tmp = (char *) xmalloc(key->key_len);
-	key->key_len = base64decode(key->key, key->key_len, tmp, key->key_len);
-	key->key = tmp;
-
-	xfree(buffer);
-#else
-	mbus_get_key(m, key, "HASHKEY=(");
-#endif
-}
 
 static int mbus_addr_match(char *a, char *b)
 {
@@ -722,7 +316,8 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 		return NULL;
 	}
 
-	mbus_lock_config_file(m);
+	m->cfg = (struct mbus_config *) xmalloc(sizeof(struct mbus_config));
+	mbus_lock_config_file(m->cfg);
 	m->s		  = udp_init("224.255.222.239", (u_int16) 47000, (u_int16) 47000, 0);
 	m->seqnum         = 0;
 	m->cmd_handler    = cmd_handler;
@@ -737,18 +332,18 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 
 	gettimeofday(&(m->last_heartbeat), NULL);
 
-	mbus_get_encrkey(m, &k);
+	mbus_get_encrkey(m->cfg, &k);
 	m->encrkey    = k.key;
 	m->encrkeylen = k.key_len;
 
-	mbus_get_hashkey(m, &k);
+	mbus_get_hashkey(m->cfg, &k);
 	m->hashkey    = k.key;
 	m->hashkeylen = k.key_len;
 
 	for (i = 0; i < MBUS_MAX_ADDR; i++) m->addr[i]         = NULL;
 	for (i = 0; i < MBUS_MAX_PD;   i++) m->parse_buffer[i] = NULL;
 	for (i = 0; i < MBUS_MAX_PD;   i++) m->parse_bufend[i] = NULL;
-	mbus_unlock_config_file(m);
+	mbus_unlock_config_file(m->cfg);
 
 	return m;
 }
@@ -795,6 +390,7 @@ void mbus_exit(struct mbus *m)
         udp_exit(m->s);
 
         xfree(m->hashkey);
+	xfree(m->cfg);
         xfree(m);
 }
 

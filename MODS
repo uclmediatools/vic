@@ -74,6 +74,10 @@ v1.0.6	- Add ability to send to one port whilst receiving on another,
 
 v1.0.7  - Add udp_exit to close sockets and leave multicast groups if necessary.
 	- Fix mbus_exit close sockets.
+	- Move the code to deal with the mbus configuration into mbus_config.c
+	  which will make it easier to write an mbus packet logger without code 
+	  duplication (such a logger can't easily be part of mbus.c, since it's
+	  needs conflict with correct protocol operation).
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
