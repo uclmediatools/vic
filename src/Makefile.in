@@ -30,7 +30,7 @@ $(TARGET): $(OBJS)
 	$(RANLIB) $(TARGET)
 
 version.h:	VERSION
-	sed -e 's/.*/#define CCL_VERSION "CCL v& $(HOST)"/' VERSION > version.h
+	sed -e 's/.*/#define CCL_VERSION "v&"/' VERSION > version.h
 
 .c.o:
 	$(CC) $(CFLAGS) $(INC) -c $<

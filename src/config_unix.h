@@ -6,7 +6,7 @@
  *  $Revision$
  *  $Date$
  *
- * Copyright (c) 1995-98 University College London
+ * Copyright (c) 1995-2000 University College London
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -73,7 +73,6 @@
 #include <sys/ioctl.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-extern int h_errno;
 
 #ifdef HAVE_STDINT_H
 #include <stdint.h>

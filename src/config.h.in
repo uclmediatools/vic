@@ -36,11 +36,6 @@
 #undef HAVE_SIN6_LEN
 
 /*
- * Define this if your C library doesn't have vsnprintf.
- */
-#undef NEED_VSNPRINTF
-
-/*
  * If you don't have these types in <inttypes.h>, #define these to be
  * the types you do have.
  */
@@ -76,6 +71,9 @@
 
 /* Define if you have the inet_pton function.  */
 #undef HAVE_INET_PTON
+
+/* Define if you have the vsnprintf function.  */
+#undef HAVE_VSNPRINTF
 
 /* Define if you have the <inttypes.h> header file.  */
 #undef HAVE_INTTYPES_H

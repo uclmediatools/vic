@@ -8,7 +8,7 @@
  * Copyright (c) 1993 Eric Young
  * All rights reserved.
  * 
- * Copyright (c) 1999 University College London
+ * Copyright (c) 1999-2000 University College London
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -216,8 +216,8 @@ void test_des(void)
 	unsigned char	key[8], plain[8], crypt[8], buffer[8];
 	unsigned char	cbc_buffer[32], cbc_iv_buf[8];
 
+	printf("DES ECB......... "); fflush(stdout);
 	for (i = 0; i < NUM_TESTS; i++) {
-		printf("  DES ECB %2d: ", i); fflush(stdout);
 		for (j = 0; j < 8; j++) {
 			key[j]   = key_data[i][j];
 			plain[j] = plain_data[i][j];
@@ -226,194 +226,37 @@ void test_des(void)
 		memcpy(buffer, crypt, 8);
 		qfDES_ECB_d(key, buffer, 8);
 		if (memcmp(buffer, plain, 8) != 0) {
-			printf("decrypt failed\n");
+			printf("fail\n");
 			abort();
 		}
 		memcpy(buffer, plain, 8);
 		qfDES_ECB_e(key, buffer, 8);
 		if (memcmp(buffer, crypt, 8) != 0) {
-			printf("encrypt failed\n");
+			printf("fail\n");
 			abort();
 		}
 		qfDES_ECB_d(key, buffer, 8);
 		if (memcmp(buffer, plain, 8) != 0) {
-			printf("decrypt failed\n");
+			printf("fail\n");
 			abort();
 		}
-		printf("success\n");
 	}
+	printf("pass\n");
 
-	printf("  DES CBC: "); fflush(stdout);
+	printf("DES CBC......... "); fflush(stdout);
 	memcpy(cbc_buffer, cbc_data, 32);
 	memcpy(cbc_iv_buf, cbc_iv, 8);
 	qfDES_CBC_e(cbc_key, cbc_buffer, 32, cbc_iv_buf);
 	if (memcmp(cbc_buffer, cbc_ok, 32) != 0) {
-		printf("encrypt failed\n");
+		printf("fail\n");
 		abort();
 	}
 	memcpy(cbc_iv_buf, cbc_iv, 8);
 	qfDES_CBC_d(cbc_key, cbc_buffer, 32, cbc_iv_buf);
 	if (memcmp(cbc_buffer, cbc_data, 32) != 0) {
-		printf("decrypt failed\n");
+		printf("fail\n");
 		abort();
 	}
-	printf("success\n");
+	printf("pass\n");
 }
-
-
-/*****************************************************************************/
-#ifdef NDEF
-
-main()
-	{
-	int i,j;
-	des_cblock in,out,outin;
-	des_key_schedule ks;
-	unsigned char cbc_in[40],cbc_out[40];
-	unsigned long cs;
-	unsigned char qret[4][4];
-	unsigned long lqret[4];
-	char *str;
-
-	printf("Doing cbc\n");
-	if ((j=key_sched((C_Block *)cbc_key,ks)) != 0)
-		printf("Key error %2d:%d\n",i+1,j);
-	bzero(cbc_out,40);
-	bzero(cbc_in,40);
-	des_cbc_encrypt((C_Block *)cbc_data,(C_Block *)cbc_out,
-		(long)strlen(cbc_data),ks,(C_Block *)cbc_iv,DES_ENCRYPT);
-	if (bcmp(cbc_out,cbc_ok,32) != 0)
-		printf("cbc_encrypt encrypt error\n");
-	des_cbc_encrypt((C_Block *)cbc_out,(C_Block *)cbc_in,
-		(long)strlen(cbc_data),ks,(C_Block *)cbc_iv,DES_DECRYPT);
-	if (bcmp(cbc_in,cbc_data,32) != 0)
-		printf("cbc_encrypt decrypt error\n");
-
-	printf("Doing pcbc\n");
-	if ((j=key_sched((C_Block *)cbc_key,ks)) != 0)
-		printf("Key error %2d:%d\n",i+1,j);
-	bzero(cbc_out,40);
-	bzero(cbc_in,40);
-	des_pcbc_encrypt((C_Block *)cbc_data,(C_Block *)cbc_out,
-		(long)strlen(cbc_data),ks,(C_Block *)cbc_iv,DES_ENCRYPT);
-	if (bcmp(cbc_out,pcbc_ok,32) != 0)
-		printf("pcbc_encrypt encrypt error\n");
-	des_pcbc_encrypt((C_Block *)cbc_out,(C_Block *)cbc_in,
-		(long)strlen(cbc_data),ks,(C_Block *)cbc_iv,DES_DECRYPT);
-	if (bcmp(cbc_in,cbc_data,32) != 0)
-		printf("pcbc_encrypt decrypt error\n");
-
-	printf("Doing cfb\n");
-	key_sched((C_Block *)cfb_key,ks);
-	bcopy(cfb_iv,cfb_tmp,sizeof(cfb_iv));
-	des_cfb_encrypt(cfb_plain,cfb_buf1,8,(long)sizeof(cfb_plain),ks,
-		(C_Block *)cfb_tmp,DES_ENCRYPT);
-	if (bcmp(cfb_cipher,cfb_buf1,sizeof(cfb_buf1)) != 0)
-		printf("cfb_encrypt encrypt error\n");
-	bcopy(cfb_iv,cfb_tmp,sizeof(cfb_iv));
-	des_cfb_encrypt(cfb_buf1,cfb_buf2,8,(long)sizeof(cfb_buf1),ks,
-		(C_Block *)cfb_tmp,DES_DECRYPT);
-	if (bcmp(cfb_plain,cfb_buf2,sizeof(cfb_buf2)) != 0)
-		printf("cfb_encrypt decrypt error\n");
-
-	bcopy(cfb_iv,cfb_tmp,sizeof(cfb_iv));
-	for (i=0; i<sizeof(cfb_plain); i++)
-		des_cfb_encrypt(&(cfb_plain[i]),&(cfb_buf1[i]),
-			8,(long)1,ks,(C_Block *)cfb_tmp,DES_ENCRYPT);
-	if (bcmp(cfb_cipher,cfb_buf1,sizeof(cfb_buf1)) != 0)
-		printf("cfb_encrypt small encrypt error\n");
-
-	bcopy(cfb_iv,cfb_tmp,sizeof(cfb_iv));
-	for (i=0; i<sizeof(cfb_plain); i++)
-		des_cfb_encrypt(&(cfb_buf1[i]),&(cfb_buf2[i]),
-			8,(long)1,ks,(C_Block *)cfb_tmp,DES_DECRYPT);
-	if (bcmp(cfb_plain,cfb_buf2,sizeof(cfb_buf2)) != 0)
-		printf("cfb_encrypt small decrypt error\n");
-
-	printf("Doing ofb\n");
-	key_sched((C_Block *)ofb_key,ks);
-	bcopy(ofb_iv,ofb_tmp,sizeof(ofb_iv));
-	des_ofb_encrypt(ofb_plain,ofb_buf1,64,(long)sizeof(cfb_plain)/8,ks,
-		(C_Block *)ofb_tmp);
-	if (bcmp(ofb_cipher,ofb_buf1,sizeof(ofb_buf1)) != 0)
-		printf("ofb_encrypt encrypt error\n");
-	bcopy(ofb_iv,ofb_tmp,sizeof(ofb_iv));
-	des_ofb_encrypt(ofb_buf1,ofb_buf2,64,(long)sizeof(ofb_buf1)/8,ks,
-		(C_Block *)ofb_tmp);
-	if (bcmp(ofb_plain,ofb_buf2,sizeof(ofb_buf2)) != 0)
-		printf("ofb_encrypt decrypt error\n");
-
-	printf("Doing cbc_cksum\n");
-	des_cbc_cksum((C_Block *)cbc_data,(C_Block *)cbc_out,
-		(long)strlen(cbc_data),ks,(C_Block *)cbc_iv);
-	if (bcmp(cbc_out,cksum_ok,8) != 0)
-		printf("cbc_cksum error\n");
-
-	printf("Doing quad_cksum\n");
-	cs=quad_cksum((C_Block *)cbc_data,(C_Block *)qret,
-		(long)strlen(cbc_data),2,(C_Block *)cbc_iv);
-	for (i=0; i<4; i++)
-		{
-		lqret[i]=0;
-		bcopy(&(qret[i][0]),&(lqret[i]),4);
-		}
-	{ /* Big-endian fix */
-	static unsigned long l=1;
-	static unsigned char *c=(unsigned char *)&l;
-	unsigned long ll;
-
-	if (!c[0])
-		{
-		ll=lqret[0]^lqret[3];
-		lqret[0]^=ll;
-		lqret[3]^=ll;
-		ll=lqret[1]^lqret[2];
-		lqret[1]^=ll;
-		lqret[2]^=ll;
-		}
-	}
-	if (cs != 0x70d7a63a)
-		printf("quad_cksum error, ret %08x should be 70d7a63a\n",cs);
-	if (lqret[0] != 0x327eba8d)
-		printf("quad_cksum error, out[0] %08x is not %08x\n",
-			lqret[0],0x327eba8d);
-	if (lqret[1] != 0x201a49cc)
-		printf("quad_cksum error, out[1] %08x is not %08x\n",
-			lqret[1],0x201a49cc);
-	if (lqret[2] != 0x70d7a63a)
-		printf("quad_cksum error, out[2] %08x is not %08x\n",
-			lqret[2],0x70d7a63a);
-	if (lqret[3] != 0x501c2c26)
-		printf("quad_cksum error, out[3] %08x is not %08x\n",
-			lqret[3],0x501c2c26);
-
-	printf("input word alignment test");
-	for (i=0; i<4; i++)
-		{
-		printf(" %d",i);
-		des_cbc_encrypt((C_Block *)&(cbc_out[i]),(C_Block *)cbc_in,
-			(long)strlen(cbc_data),ks,(C_Block *)cbc_iv,
-			DES_ENCRYPT);
-		}
-	printf("\noutput word alignment test");
-	for (i=0; i<4; i++)
-		{
-		printf(" %d",i);
-		des_cbc_encrypt((C_Block *)cbc_out,(C_Block *)&(cbc_in[i]),
-			(long)strlen(cbc_data),ks,(C_Block *)cbc_iv,
-			DES_ENCRYPT);
-		}
-	printf("\n");
-	printf("fast crypt test ");
-	str=crypt("testing","ef");
-	if (strcmp("efGnQx2725bI2",str) != 0)
-		printf("fast crypt error, %x should be efGnQx2725bI2\n",str);
-	str=crypt("bca76;23","yA");
-	if (strcmp("yA1Rp/1hZXIJk",str) != 0)
-		printf("fast crypt error, %x should be yA1Rp/1hZXIJk\n",str);
-	printf("\n");
-	exit(0);
-	}
-
-#endif
 

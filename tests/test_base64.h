@@ -2,7 +2,7 @@
  * FILE:    test_base64.h
  * AUTHORS: Colin Perkins
  * 
- * Copyright (c) 1999 University College London
+ * Copyright (c) 1999-2000 University College London
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

@@ -2,7 +2,7 @@
  * FILE:    test_md5.c
  * AUTHORS: Colin Perkins
  * 
- * Copyright (c) 1999 University College London
+ * Copyright (c) 1999-2000 University College London
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,14 +66,14 @@ void test_md5(void)
 {
 	int	i, l;
 
-	printf("  md5: "); fflush(stdout);
-	for (i = 0; i < 100000; i++) {
+	printf("MD5............. "); fflush(stdout);
+	for (i = 0; i < 10000; i++) {
 		l = lrand48() % 1024;
 		if (do_test(l) == FALSE) {
-			printf("failed with len=%d\n", l);
-			return;
+			printf("fail\n");
+			abort();
 		}
 	}
-	printf("success\n");
+	printf("pass\n");
 }
 

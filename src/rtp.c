@@ -14,7 +14,7 @@
  * $Revision$ 
  * $Date$
  * 
- * Copyright (c) 1998-99 University College London
+ * Copyright (c) 1998-2000 University College London
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -773,6 +773,8 @@ static double rtcp_interval(struct rtp *session)
 	return (t * (drand48() + 0.5)) / COMPENSATION;
 }
 
+#define MAXCNAMELEN	255
+
 static char *get_cname(socket_udp *s)
 {
         /* Set the CNAME. This is "user@hostname" or just "hostname" if the username cannot be found. */
@@ -783,7 +785,7 @@ static char *get_cname(socket_udp *s)
         struct passwd           *pwent;
 #endif
 
-        cname = (char *) xmalloc(MAXHOSTNAMELEN + 10);
+        cname = (char *) xmalloc(MAXCNAMELEN + 1);
         cname[0] = '\0';
 
         /* First, fill in the username... */
@@ -794,12 +796,12 @@ static char *get_cname(socket_udp *s)
         uname = pwent->pw_name;
 #endif
         if (uname != NULL) {
-                sprintf(cname, "%s@", uname);
+                snprintf(cname, MAXCNAMELEN, "%s@", uname);
         }
 
         /* Now the hostname. Must be dotted-quad IP address. */
         hname = udp_host_addr(s);
-        strcpy(cname + strlen(cname), hname);
+        strncpy(cname + strlen(cname), hname, MAXCNAMELEN - strlen(cname));
         xfree(hname);
         return cname;
 }
@@ -1876,7 +1878,7 @@ static uint8_t *format_rtcp_rr(uint8_t *buffer, int buflen, struct rtp *session)
 	return buffer + 8 + (24 * packet->common.count);
 }
 
-static int add_sdes_item(uint8_t *buf, int type, const char *val)
+static int add_sdes_item(uint8_t *buf, int buflen, int type, const char *val)
 {
 	/* Fill out an SDES item. It is assumed that the item is a NULL    */
 	/* terminated string.                                              */
@@ -1890,7 +1892,7 @@ static int add_sdes_item(uint8_t *buf, int type, const char *val)
         shdr->type = type;
         namelen = strlen(val);
         shdr->length = namelen;
-        strcpy(shdr->data, val);
+        strncpy(shdr->data, val, buflen - 2); /* The "-2" accounts for the other shdr fields */
         return namelen + 2;
 }
 
@@ -1927,13 +1929,13 @@ static uint8_t *format_rtcp_sdes(uint8_t *buffer, int buflen, uint32_t ssrc, str
 	remaining_len = buflen - (packet - buffer);
 	item = rtp_get_sdes(session, ssrc, RTCP_SDES_CNAME);
 	if ((item != NULL) && ((strlen(item) + (size_t) 2) <= remaining_len)) {
-		packet += add_sdes_item(packet, RTCP_SDES_CNAME, item);
+		packet += add_sdes_item(packet, remaining_len, RTCP_SDES_CNAME, item);
 	}
 
 	remaining_len = buflen - (packet - buffer);
 	item = rtp_get_sdes(session, ssrc, RTCP_SDES_NOTE);
 	if ((item != NULL) && ((strlen(item) + (size_t) 2) <= remaining_len)) {
-		packet += add_sdes_item(packet, RTCP_SDES_NOTE, item);
+		packet += add_sdes_item(packet, remaining_len, RTCP_SDES_NOTE, item);
 	}
 
 	remaining_len = buflen - (packet - buffer);
@@ -1946,22 +1948,22 @@ static uint8_t *format_rtcp_sdes(uint8_t *buffer, int buflen, uint32_t ssrc, str
 			switch (session->sdes_count_ter % 4) {
 			case 0: item = rtp_get_sdes(session, ssrc, RTCP_SDES_TOOL);
 				if ((item != NULL) && ((strlen(item) + (size_t) 2) <= remaining_len)) {
-					packet += add_sdes_item(packet, RTCP_SDES_TOOL, item);
+					packet += add_sdes_item(packet, remaining_len, RTCP_SDES_TOOL, item);
 					break;
 				}
 			case 1: item = rtp_get_sdes(session, ssrc, RTCP_SDES_EMAIL);
 				if ((item != NULL) && ((strlen(item) + (size_t) 2) <= remaining_len)) {
-					packet += add_sdes_item(packet, RTCP_SDES_EMAIL, item);
+					packet += add_sdes_item(packet, remaining_len, RTCP_SDES_EMAIL, item);
 					break;
 				}
 			case 2: item = rtp_get_sdes(session, ssrc, RTCP_SDES_PHONE);
 				if ((item != NULL) && ((strlen(item) + (size_t) 2) <= remaining_len)) {
-					packet += add_sdes_item(packet, RTCP_SDES_PHONE, item);
+					packet += add_sdes_item(packet, remaining_len, RTCP_SDES_PHONE, item);
 					break;
 				}
 			case 3: item = rtp_get_sdes(session, ssrc, RTCP_SDES_LOC);
 				if ((item != NULL) && ((strlen(item) + (size_t) 2) <= remaining_len)) {
-					packet += add_sdes_item(packet, RTCP_SDES_LOC, item);
+					packet += add_sdes_item(packet, remaining_len, RTCP_SDES_LOC, item);
 					break;
 				}
 			}
@@ -1969,7 +1971,7 @@ static uint8_t *format_rtcp_sdes(uint8_t *buffer, int buflen, uint32_t ssrc, str
 		} else {
 			item = rtp_get_sdes(session, ssrc, RTCP_SDES_NAME);
 			if (item != NULL) {
-				packet += add_sdes_item(packet, RTCP_SDES_NAME, item);
+				packet += add_sdes_item(packet, remaining_len, RTCP_SDES_NAME, item);
 			}
 		}
 	}

@@ -2,7 +2,7 @@
  * FILE:    mbus.h
  * AUTHORS: Colin Perkins
  * 
- * Copyright (c) 1997,1998 University College London
+ * Copyright (c) 1997-2000 University College London
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

@@ -5,7 +5,7 @@
  * MIME base64 encoder/decoder described in rfc1521. This code is derived
  * from version 2.7 of the Bellcore metamail package.
  *
- * Copyright (c) 1998 University College London
+ * Copyright (c) 1998-2000 University College London
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

@@ -4,7 +4,7 @@
  * MODIFIED: Orion Hodson
  *           Markus Germeier
  * 
- * Copyright (c) 1997-99 University College London
+ * Copyright (c) 1997-2000 University College London
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,8 +53,8 @@
 #define MBUS_MAX_PD	    10
 #define MBUS_MAX_QLEN	    50 /* Number of messages we can queue with mbus_qmsg() */
 
-#ifdef NEED_VSNPRINTF
-static int vsnprintf(char *s, int buf_size, const char *format, va_list ap)
+#ifndef HAVE_VSNPRINTF
+int vsnprintf(char *s, size_t buf_size, const char *format, va_list ap)
 {
 	/* Quick hack replacement for vsnprintf... note that this */
 	/* doesn't check for buffer overflows, and so is open to  */
@@ -148,7 +148,8 @@ static int mbus_addr_identical(char *a, char *b)
 	/* A more restrictive version of mbus_addr_match. Returns TRUE  */
 	/* iff the addresses are identical (except, possibly, for order */
 	/* of the elements.                                             */
-	char	*y = NULL, c='\0';
+	char 	*y = NULL; 
+	char 	 c='\0';
 	char 	*a_orig, *b_orig;
 
 	assert(a != NULL);

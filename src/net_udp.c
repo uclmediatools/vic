@@ -3,7 +3,7 @@
 * AUTHOR:   Colin Perkins 
 * MODIFIED: Orion Hodson & Piers O'Hanlon
 * 
-* Copyright (c) 1998-99 University College London
+* Copyright (c) 1998-2000 University College London
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -272,7 +272,6 @@ static void udp_exit4(socket_udp *s)
 static int udp_send4(socket_udp *s, char *buffer, int buflen)
 {
 	struct sockaddr_in	s_in;
-	int			ret;
 	
 	assert(s != NULL);
 	assert(s->mode == IPv4);
@@ -282,12 +281,7 @@ static int udp_send4(socket_udp *s, char *buffer, int buflen)
 	s_in.sin_family      = AF_INET;
 	s_in.sin_addr.s_addr = s->addr4.s_addr;
 	s_in.sin_port        = htons(s->tx_port);
-	if ((ret = sendto(s->fd, buffer, buflen, 0, (struct sockaddr *) &s_in, sizeof(s_in))) < 0) {
-		if (errno != ECONNREFUSED) {
-			socket_error("sendto");
-		}
-	}
-	return ret;
+	return sendto(s->fd, buffer, buflen, 0, (struct sockaddr *) &s_in, sizeof(s_in));
 }
 
 static char *udp_host_addr4(void)
@@ -304,7 +298,7 @@ static char *udp_host_addr4(void)
 	hent = gethostbyname(hname);
 	assert(hent->h_addrtype == AF_INET);
 	memcpy(&iaddr.s_addr, hent->h_addr, sizeof(iaddr.s_addr));
-	strcpy(hname, inet_ntoa(iaddr));
+	strncpy(hname, inet_ntoa(iaddr), MAXHOSTNAMELEN);
 	return hname;
 }
 
@@ -427,7 +421,6 @@ static int udp_send6(socket_udp *s, char *buffer, int buflen)
 {
 #ifdef HAVE_IPv6
 	struct sockaddr_in6	s_in;
-	int			ret;
 	
 	assert(s != NULL);
 	assert(s->mode == IPv6);
@@ -441,10 +434,7 @@ static int udp_send6(socket_udp *s, char *buffer, int buflen)
 #ifdef HAVE_SIN6_LEN
 	s_in.sin6_len    = sizeof(s_in);
 #endif
-	if ((ret = sendto(s->fd, buffer, buflen, 0, (struct sockaddr *) &s_in, sizeof(s_in))) < 0) {
-		socket_error("udp_send6");
-	}
-	return ret;
+	return sendto(s->fd, buffer, buflen, 0, (struct sockaddr *) &s_in, sizeof(s_in));
 #else
 	UNUSED(s);
 	UNUSED(buffer);
@@ -594,10 +584,10 @@ int udp_recv(socket_udp *s, char *buffer, int buflen)
 	/* Note: since we don't care about the source address of the packet  */
 	/* we receive, this function becomes protocol independent.           */
 	int		len;
-	
+
 	assert(buffer != NULL);
 	assert(buflen > 0);
-	
+
 	len = recvfrom(s->fd, buffer, buflen, 0, 0, 0);
 	if (len > 0) {
 		return len;
@@ -644,3 +634,4 @@ char *udp_host_addr(socket_udp *s)
 	}
 	return NULL;
 }
+

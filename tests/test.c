@@ -2,7 +2,7 @@
  * FILE:    test.c
  * AUTHORS: Colin Perkins
  * 
- * Copyright (c) 1999 University College London
+ * Copyright (c) 1999-2000 University College London
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,9 +41,11 @@
 #include "test_des.h"
 #include "test_md5.h"
 
-int main()
+int main(int argc, char *argv[])
 {
-	printf("Test suite for %s\n", CCL_VERSION);
+	UNUSED(argc);
+	UNUSED(argv);
+	printf("Testing common multimedia library %s\n", CCL_VERSION);
 	test_base64();
 	test_des();
 	test_md5();

@@ -2,7 +2,7 @@
  * FILE:    test_base64.c
  * AUTHORS: Colin Perkins
  * 
- * Copyright (c) 1999 University College London
+ * Copyright (c) 1999-2000 University College London
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,20 +51,20 @@ void test_base64(void)
 		output[i] = '\0';
 	}
 
-	printf("  base64 encode: "); fflush(stdout);
+	printf("Base64 encode... "); fflush(stdout);
 	i = base64encode(input, strlen(input), output, 100);
 	if ((i != 16) || (strncmp(output, "SGVsbG8sIHdvcmxk", i) != 0)) {
-		printf("failed\n");
-	} else {
-		printf("success\n");
+		printf("fail\n");
+		abort();
 	}
+	printf("pass\n");
 
-	printf("  base64 decode: "); fflush(stdout);
+	printf("Base64 decode... "); fflush(stdout);
 	i = base64decode(output, i, decode, 100);
 	if ((i != 12) || (strncmp(decode, "Hello, world", i) != 0)) {
-		printf("failed\n");
-	} else {
-		printf("success\n");
+		printf("fail\n");
+		abort();
 	}
+	printf("pass\n");
 }
 
