@@ -839,13 +839,24 @@ static void init_rng(const char *s)
         static uint32_t seed;
         if (seed == 0) {
                 pid_t p = getpid();
+		int32_t i, n;
                 while (*s) {
                         seed += (uint32_t)*s++;
                         seed = seed * 31 + 1;
                 }
                 seed = 1 + seed * 31 + (uint32_t)p;
                 srand48(seed);
-        }
+		/* At time of writing we use srand48 -> srand on Win32 which is only 16 bit. */
+		/* lrand48 -> rand which is only 15 bits, step a long way through table seq  */
+#ifdef WIN32
+		n = (seed >> 16) & 0xffff;
+		for(i = 0; i < n; i++) {
+			seed = lrand48();
+		}
+#endif /* WIN32 */
+		UNUSED(i);
+		UNUSED(n);
+	}
 }
 
 struct rtp *rtp_init(char *addr, uint16_t rx_port, uint16_t tx_port, int ttl, double rtcp_bw, 

@@ -121,7 +121,7 @@ typedef unsigned long	in_addr_t;
 #define AUDIO_LINE_OUT		4
 
 #define srand48	srand
-#define lrand48 rand
+#define lrand48 rand() * rand
 #define snprintf _snprintf
 
 #define IN_CLASSD(i)	(((long)(i) & 0xf0000000) == 0xe0000000)
