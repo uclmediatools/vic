@@ -238,6 +238,7 @@ v1.1.2	- Add routines for handling NTP format timestamps, in ntp.[ch]
 	  specific interface
 	- Add rtp_init_if() call, to open an RTP socket bound to a 
 	  specific interface
+	- Add asarray.[ch] string holding associative array.
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
