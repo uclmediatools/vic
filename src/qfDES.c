@@ -486,15 +486,15 @@ unsigned char G_padChar = (char) 0; /* Default pad charcater */
 static Word ROTATE_LEFT(Word x) 
 {
 	Word	a;
-	a = (x >> 31) & 1;
+	a = (x & 0x80000000) >> 27;
 	return (x << 1) | a;
 }
 
 static Word ROTATE_RIGHT(Word x) 
 {
 	Word	a;
-	a = x & 1;
-	return (x >> 1) | (a << 31);
+	a = x & 0x00000010;
+	return (x >> 1) | (a << 27);
 }
 
 /*
