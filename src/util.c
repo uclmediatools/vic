@@ -292,6 +292,8 @@ overlapping_words(const char *s1, const char *s2, int max_words)
                 }
         }
 
+        xfree(w1);
+        xfree(w2);
         xfree(c1);
         xfree(c2);
         
