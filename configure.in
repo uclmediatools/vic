@@ -70,7 +70,6 @@ then
 	 AC_CHECK_TYPE(uint32_t,  unsigned int)
 fi
 
-
 # The following two macros cause autoconf to complain.
 AC_C_BIGENDIAN
 AC_C_CHAR_UNSIGNED
@@ -114,9 +113,34 @@ AC_CHECK_FILE(/dev/urandom,AC_DEFINE(HAVE_DEV_URANDOM))
 AC_CHECK_FUNC(vsnprintf,,AC_DEFINE(NEED_VSNPRINTF))
 
 # If inet_aton is actually needed somewhere, split it out into
-# inet_aton.c and add it to AC_REPLACE_FUNCS
+# inet_aton.c and add it to AC_REPLACE_FUNCS 
+#
+# AC_CHECK_FUNC succeeds on our IRIX 6.2 boxes, but it is not 
+# declared anywhere, use egrep header to check (ugh lame, but works)
 
-AC_REPLACE_FUNCS(inet_pton inet_ntop)
+AC_CACHE_CHECK(for inet_pton in <arpa/inet.h>, ucl_cv_inet_pton_in_inet_h,
+	AC_EGREP_HEADER(uint16_t,
+			stdint.h,
+			ucl_cv_inet_pton_in_inet_h=yes,
+			ucl_cv_inet_pton_in_inet_h=no))
+if test $ucl_cv_inet_pton_in_inet_h = "no"
+then
+	AC_DEFINE(NEED_INET_PTON)
+	LIBOJS="$LIBOBJS inet_pton.o"
+fi
+AC_CACHE_CHECK(for inet_ntop in <arpa/inet.h>, ucl_cv_inet_ntop_in_inet_h,
+	AC_EGREP_HEADER(uint16_t,
+			stdint.h,
+			ucl_cv_inet_ntop_in_inet_h=yes,
+			ucl_cv_inet_ntop_in_inet_h=no))
+if test $ucl_cv_inet_ntop_in_inet_h = "no"
+then
+	AC_DEFINE(NEED_INET_NTOP)
+	LIBOJS="$LIBOBJS inet_ntop.o"
+fi
+AC_SUBST(LIBOBJS)
+
+dnl AC_REPLACE_FUNCS(inet_pton inet_ntop)
 
 AC_SEARCH_LIBS(socket, socket)
 AC_SEARCH_LIBS(inet_addr, nsl)
