@@ -16,7 +16,8 @@
  * SOFTWARE.
  */
 
-#ifndef HAVE_INET_NTOP
+#include "uclconf.h"
+#ifdef NEED_INET_NTOP
 #include "config_unix.h"
 #include "config_win32.h"
 #include "inet_ntop.h"
