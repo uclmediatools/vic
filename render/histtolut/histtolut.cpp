@@ -48,6 +48,8 @@ static const char rcsid[] =
 #endif
 
 #include <stdlib.h>
+#include <string.h>
+
 #ifndef WIN32
 #include <unistd.h>
 #include <strings.h>
