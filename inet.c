@@ -35,15 +35,19 @@ static const char rcsid[] =
 u_int32_t
 LookupHostAddr(const char *s)
 {
-	if (isdigit(*s))
-		return (u_int32_t)inet_addr(s);
-	else {
-		struct hostent *hp = gethostbyname(s);
-		if (hp == 0)
-			/*XXX*/
-			return (0);
-		return *((u_int32_t **)hp->h_addr_list)[0];
-	}
+   u_int32_t result;
+   struct hostent *hp;
+
+   if (isdigit(*s)) {
+     result = inet_addr(s);
+     if (result != ~0) {
+       return (result);
+     }
+   }
+   hp = gethostbyname(s);
+   if (hp == 0)
+       return (0);
+   return *((u_int32_t **)hp->h_addr_list)[0];
 }
 
 u_int32_t
