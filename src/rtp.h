@@ -56,7 +56,7 @@ typedef struct {
 	/* having to free the csrc, data and extn blocks separately.  */
 	/* WARNING: Don't change the size of the first portion of the */
 	/* struct without changing RTP_PACKET_HEADER_SIZE to match.   */
-	uint32_t		*csrc;
+	uint32_t	*csrc;
 	char		*data;
 	int		 data_len;
 	char		*extn;

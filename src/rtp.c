@@ -89,7 +89,7 @@ typedef struct {
 	unsigned short  version:2;	/* packet type            */
 	unsigned short  pt:8;		/* payload type           */
 #endif
-	uint16_t         length;		/* packet length          */
+	uint16_t         length;	/* packet length          */
 } rtcp_common;
 
 typedef struct {
@@ -1025,7 +1025,6 @@ static void rtp_recv_data(struct rtp *session, uint32_t curr_time)
 	buflen = udp_recv(session->rtp_socket, buffer, RTP_MAX_PACKET_LEN - RTP_PACKET_HEADER_SIZE);
 	if (buflen > 0) {
 		if (session->encryption_key != NULL) {
-			/* Decrypt the packet... */
 			qfDES_CBC_d(session->encryption_key, buffer, buflen, initVec);
 		}
 		/* Convert header fields to host byte order... */
@@ -1107,6 +1106,7 @@ static int validate_rtcp(uint8_t *packet, int len)
 	rtcp_t	*r    = pkt;
 	int	 l    = 0;
 	int	 last = 0;
+	int	 pc   = 1;
 
 	/* All RTCP packets must be compound packets (RFC1889, section 6.1) */
 	if (((ntohs(pkt->common.length) + 1) * 4) == len) {
@@ -1134,22 +1134,27 @@ static int validate_rtcp(uint8_t *packet, int len)
 	/* the last packet.                                                      */
 	do {
 		if (r->common.version != 2) {
-			debug_msg("Bogus RTCP packet: version number != 2\n");
+			debug_msg("Bogus RTCP packet: version number != 2 in sub-packet %d\n", pc);
 			return FALSE;
 		}
 		if (last == 1) {
-			debug_msg("Bogus RTCP packet: padding bit set before last in compound\n");
+			debug_msg("Bogus RTCP packet: padding bit set before last in compound (sub-packet %d)\n", pc);
 			return FALSE;
 		}
 		if (r->common.p == 1) last = 1;
 		l += (ntohs(r->common.length) + 1) * 4;
 		r  = (rtcp_t *) (((uint32_t *) r) + ntohs(r->common.length) + 1);
+		pc++;	/* count of sub-packets, for debugging... */
 	} while (r < end);
 
 	/* Check that the length of the packets matches the length of the UDP */
 	/* packet in which they were received...                              */
-	if ((r != end) || (l != len))  {
-		debug_msg("Bogus RTCP packet: RTCP packet length does not match UDP packet\n");
+	if (l != len) {
+		debug_msg("Bogus RTCP packet: RTCP packet length does not match UDP packet length (%d != %d)\n", l, len);
+		return FALSE;
+	}
+	if (r != end) {
+		debug_msg("Bogus RTCP packet: RTCP packet length does not match UDP packet length (%p != %p)\n", r, end);
 		return FALSE;
 	}
 
@@ -1959,21 +1964,8 @@ static void send_rtcp(struct rtp *session, uint32_t ts,
 			assert(((ptr - buffer) % 8) == 0); 
 
 			((rtcp_t *) lpt)->common.p = TRUE;
-			debug_msg("padding %d bytes\n", padlen);
-		} else {
-			debug_msg("no padding\n");
+			((rtcp_t *) lpt)->common.length = htons(((ptr - lpt) / 4) - 1);
 		}
-#ifdef DEBUG
-		{
-			int i;
-			for (i = 0; i < ptr - buffer; i++) {
-				if ((i % 8) == 0) {
-					printf("\n");
-				}
-				printf("%02x ", buffer[i]);
-			}
-		}
-#endif
 		qfDES_CBC_e(session->encryption_key, buffer, ptr - buffer, initVec); 
 	}
 	udp_send(session->rtcp_socket, buffer, ptr - buffer);

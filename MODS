@@ -180,6 +180,7 @@ v1.0.10	- Mbus updates from Markus Germeier, which fix compatibility with
 		u_int16	-> u_int16_t
 		u_int32	-> u_int32_t
 	  and the same for the signed varients.
+	- Implement encryption in the RTP code
 
 
 Still to do...
@@ -197,5 +198,4 @@ Still to do...
 	- Add a version number to the mbus config file
 	- Allow a callback for background processing during mbus_rendezvous_*()
 	- move completely away from OS-based #ifdef's
-	- Implement encryption in the RTP code
 
