@@ -37,9 +37,10 @@
 
 extern "C" {
 #include <asm/types.h>
-#include <linux/videodev.h>
+//#include <linux/videodev.h>
 }
 
+#include "videodev.h"
 #include "grabber.h"
 #include "vic_tcl.h"
 #include "device-input.h"
@@ -51,7 +52,7 @@ static const char *devlist[] = {
     NULL
 };
 
-#define DEBUG(x)
+//#define DEBUG(x)
 
 #define NTSC_WIDTH  640
 #define NTSC_HEIGHT 480
@@ -264,6 +265,15 @@ V4lGrabber::V4lGrabber(const char *cformat, const char *dev)
     int i;
     struct video_mmap 	     vid_mmap;
 
+    struct video_capability  capability;
+    int palettes[] = {
+        VIDEO_PALETTE_YUV422,   // BT878 (OS driver broken, so listed first)
+        VIDEO_PALETTE_YUV422P,  // BT878 (untested)
+        VIDEO_PALETTE_YUV420P,  // (untested)
+        VIDEO_PALETTE_UYVY,     // LML33
+        VIDEO_PALETTE_YUYV      // others listed in order of preference
+    };
+
     have_mmap = 0;
     have_422P = 0;
     have_422  = 0;
@@ -273,8 +283,13 @@ V4lGrabber::V4lGrabber(const char *cformat, const char *dev)
     printf("Cformat: %s\n", cformat);
     fd_ = open(dev, O_RDWR);
     if (fd_ < 0) {
+	printf("on: %d\n", fd_);
 	perror("open");
 	exit(1);
+    }
+    if (-1 == ioctl (fd_, VIDIOCGCAP, &capability)) {
+            perror ("ioctl VIDIOCGCAP");
+            close (fd_);
     }
 
     vid_mmap.format = VIDEO_PALETTE_YUV420P;
@@ -288,7 +303,6 @@ V4lGrabber::V4lGrabber(const char *cformat, const char *dev)
       have_420P = 1;
       printf("Device capture VIDEO_PALETTE_YUV420P\n");
     }
-
 
     vid_mmap.format = VIDEO_PALETTE_YUV422;
     vid_mmap.frame = 0;
@@ -309,12 +323,28 @@ V4lGrabber::V4lGrabber(const char *cformat, const char *dev)
     if (-1 != ioctl(fd_, VIDIOCMCAPTURE, &vid_mmap)) {
            have_422P = 1;
 	   printf("Device capture VIDEO_PALETTE_YUV422P\n");
+    } else {
+	vid_mmap.width = capability.maxwidth;
+        vid_mmap.height = capability.maxheight;
+		if (-1 != ioctl (fd_, VIDIOCMCAPTURE, &vid_mmap)) {
+                    have_422P = 1;
+                    //v4lformat_ = palettes[i];
+                    width_ = capability.maxwidth;
+                    height_ = capability.maxheight;
+                    fprintf (stderr,
+                      "selected format index #%d of size %d x %d\n", 
+					      i, width_, height_);
+                } else {
+                    fprintf (stderr, "second mmap() failed\n");
+    		}
     }
 
+ 	printf("near end\n"); 
     if( !( have_422P || have_422 || have_420P))   {
       debug_msg("No suituable palette found\n");
       exit(1);
     }
+ 	printf("near end\n"); 
 
     /* Release device */
     close(fd_);
@@ -358,7 +388,6 @@ V4lGrabber::V4lGrabber(const char *cformat, const char *dev)
 		gb_buffers.size);
 	have_mmap = 1;
     }
-  
  
  
     /* fill in defaults */
