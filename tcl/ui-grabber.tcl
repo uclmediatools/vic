@@ -23,21 +23,71 @@
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 # ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
 # FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-# SUCH DAMAGE.
-#
 
-#
-# This file contains stubs for building any grabber specific controls.
-# If a device is named foo, then create define build.foo proc here
-# that builds UI.  If this proc doesn't exist, then it will be ommitted.
-# If there are multiple devices with the same name, they should be
-# called foo-1, foo-2, etc. and you'll only need build.foo
-#
+proc build.v4l w {
+    set f [smallfont]
+    global contrast brightness hue saturation 
+    set contrast 128
+    set brightness 128
+    set hue 128
+    set saturation 128
+
+    label $w.title -text "Video4Linux grabber controls"
+    pack $w.title  -fill x -expand 1
+
+    frame $w.f -relief sunken -borderwidth 2
+    frame $w.f.left -relief flat  
+
+
+    button $w.f.left.reset -font $f -width 10 -text "Reset" -command "set contrast 128; set brightness 128; set hue 128; set saturation 128; grabber controls reset"  -padx 1 -pady 1
+    pack $w.f.left.reset 
+
+
+    frame $w.f.right -relief flat  
+    frame $w.f.right.top -relief flat 
+
+    frame $w.f.right.top.c -relief flat -borderwidth 2
+    scale $w.f.right.top.c.cscale -orient horizontal -font $f -relief groove  -width 12  \
+                -showvalue 0 -from 0 -to 255 \
+                -variable contrast \
+                -label Contrast \
+                -command "grabber contrast"
+    pack  $w.f.right.top.c.cscale  -fill x -expand 1 
+
+    frame $w.f.right.top.b -relief flat -borderwidth 2
+    scale $w.f.right.top.b.bscale -orient horizontal -font $f -relief groove -width 12  \
+                -showvalue 0 -from 0 -to 255 \
+                -variable brightness \
+                -label Brightness \
+                -command "grabber brightness"
+    pack  $w.f.right.top.b.bscale -fill x -expand 1 
+    frame $w.f.right.bottom -relief flat 
+
+
+    frame $w.f.right.bottom.h -relief flat -borderwidth 2
+    scale $w.f.right.bottom.h.hscale -orient horizontal -font $f -relief groove  -width 12 \
+                -showvalue 0 -from 0 -to 255 \
+                -variable hue \
+                -label Hue \
+                -command "grabber hue"
+    pack  $w.f.right.bottom.h.hscale -fill x -expand 1 
+
+    frame $w.f.right.bottom.s -relief flat -borderwidth  2
+    scale $w.f.right.bottom.s.sscale -orient horizontal -font $f -relief groove  -width 12 \
+                -showvalue 0 -from 0 -to 255 \
+                -variable saturation \
+                -label Saturation \
+                -command "grabber saturation"
+    pack  $w.f.right.bottom.s.sscale -fill x -expand 1 
+
+    pack $w.f.right.top.b $w.f.right.top.c -side right
+    pack $w.f.right.bottom.s $w.f.right.bottom.h -side right
+    pack $w.f.right.top $w.f.right.bottom -side top -fill x -expand 1
+    pack $w.f.left $w.f.right -side left -expand 1 -fill x
+    pack $w.f -expand 1 -fill x 
+
+}
+
 
 proc build.meteor w {
 #

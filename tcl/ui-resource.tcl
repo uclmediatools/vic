@@ -175,6 +175,8 @@ proc init_resources {} {
 	option add Vic.medianCutColors 150 startupFile
 	option add Vic.gamma 0.7 startupFile
 
+	option add Vic.yuv_byteOrder "0" startupFile
+
 	#XXX
 	option add Vic.jvColors 32 startupFile
 
