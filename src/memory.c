@@ -129,6 +129,36 @@ void xmemdmp(void)
 #endif
 }
 
+
+/* Because block_alloc recycles blocks we need to know which code
+ * fragment takes over responsibility for the memory.  */
+void xclaim(void *addr, const char *filen, int line)
+{
+#ifdef DEBUG_MEM
+        int i;
+
+        char *x = (char*)addr - 8;
+        addr    = (int*)x;
+
+        for (i = 0; i < naddr; i++) {
+                if (mem_item[i].addr == addr) {
+                        free(mem_item[i].filen);
+                        mem_item[i].filen  = strdup(filen);
+                        mem_item[i].length = strlen(filen);
+                        mem_item[i].line   = line;
+                        mem_item[i].est    = tick++;
+                        break;
+                }
+        }
+        assert(i != naddr); /* Not found */
+#else
+        UNUSED(addr);
+        UNUSED(filen);
+        UNUSED(line);
+#endif /* DEBUG_MEM */
+} 
+
+
 void xfree(void *y)
 {
 #ifdef DEBUG_MEM

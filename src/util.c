@@ -92,6 +92,7 @@ _block_alloc(unsigned int size, const char *filen, int line)
 	if (blocks[i] != NULL) {
 		p = (char *)blocks[i];
 		blocks[i] = blocks[i]->next;
+                xclaim((char*)p - 8, filen, line);
 	} else {
 #ifdef DEBUG_MEM_BREAK
                 /* This can only go here if this file is merged with memory.c! [oh] */

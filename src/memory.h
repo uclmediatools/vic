@@ -43,9 +43,13 @@
 #define xmalloc(x)	_xmalloc(x,__FILE__,__LINE__)
 #define xstrdup(x)	_xstrdup(x,__FILE__,__LINE__)
 
+/* Debug Functions */
 void 	 xdoneinit(void);
 void	 xmemchk(void);
 void     xmemdmp(void);
+void     xclaim(void *p, const char *filen, int line);
+
+/* Replacements for regular memory fn's */
 void	 xfree(void *x);
 void	*_xmalloc(unsigned size,const char *filen,int line);
 char	*_xstrdup(const char *s1, const char *filen, int line);
