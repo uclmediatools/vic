@@ -105,6 +105,10 @@ typedef int	fd_t;
 #define max(a, b)	(((a) > (b))? (a): (b))
 #define min(a, b)	(((a) < (b))? (a): (b))
 
+#ifdef NEED_INADDR_T
+typedef unsigned long   in_addr_t;
+#endif
+
 #ifdef NDEBUG
 #define assert(x) if ((x) == 0) fprintf(stderr, "%s:%u: failed assertion\n", __FILE__, __LINE__)
 #else

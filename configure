@@ -126,6 +126,13 @@ case $OSTYPE in
             ;;
 esac
 
+# Tests...NEED_INADDR_T
+T1=`grep -c in_addr_t /usr/include/netinet/in.h`
+if [ $T1 = 0 ]; then
+    DEFS="$DEFS -DNEED_IN_ADDR_T"
+    echo "Need in_addr_t."
+fi
+
 # Process options to the configure script...
 DEBUG2=""
 OPTIMIZE2=""
