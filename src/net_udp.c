@@ -366,6 +366,28 @@ static int udp_send4(socket_udp *s, char *buffer, int buflen)
 	return sendto(s->fd, buffer, buflen, 0, (struct sockaddr *) &s_in, sizeof(s_in));
 }
 
+static int udp_sendv4(socket_udp *s, struct iovec *vector, int count)
+{
+	struct msghdr		msg;
+	struct sockaddr_in	s_in;
+	
+	assert(s != NULL);
+	assert(s->mode == IPv4);
+	
+	s_in.sin_family      = AF_INET;
+	s_in.sin_addr.s_addr = s->addr4.s_addr;
+	s_in.sin_port        = htons(s->tx_port);
+
+	msg.msg_name       = &s_in;
+	msg.msg_namelen    = sizeof(s_in);
+	msg.msg_iov        = vector;
+	msg.msg_iovlen     = count;
+	msg.msg_control    = 0;
+	msg.msg_controllen = 0;
+	msg.msg_flags      = 0;
+	return sendmsg(s->fd, &msg, 0);
+}
+
 static const char *udp_host_addr4(void)
 {
 	static char    		 hname[MAXHOSTNAMELEN];
@@ -555,6 +577,40 @@ static int udp_send6(socket_udp *s, char *buffer, int buflen)
 #endif
 }
 
+static int udp_sendv6(socket_udp *s, struct iovec *vector, int count)
+{
+#ifdef HAVE_IPv6
+	struct msghdr		msg;
+	struct sockaddr_in6	s_in;
+	
+	assert(s != NULL);
+	assert(s->mode == IPv6);
+	assert(buffer != NULL);
+	assert(buflen > 0);
+	
+	memset((char *)&s_in, 0, sizeof(s_in));
+	s_in.sin6_family = AF_INET6;
+	s_in.sin6_addr   = s->addr6;
+	s_in.sin6_port   = htons(s->tx_port);
+#ifdef HAVE_SIN6_LEN
+	s_in.sin6_len    = sizeof(s_in);
+#endif
+	msg.msg_name       = &s_in;
+	msg.msg_namelen    = sizeof(s_in);
+	msg.msg_iov        = vector;
+	msg.msg_iovlen     = count;
+	msg.msg_control    = 0;
+	msg.msg_controllen = 0;
+	msg.msg_flags      = 0;
+	return sendmsg(s->fd, &msg, 0);
+#else
+	UNUSED(s);
+	UNUSED(vector);
+	UNUSED(count);
+	return -1;
+#endif
+}
+
 static const char *udp_host_addr6(socket_udp *s)
 {
 #ifdef HAVE_IPv6
@@ -712,6 +768,18 @@ int udp_send(socket_udp *s, char *buffer, int buflen)
 	switch (s->mode) {
 	case IPv4 : return udp_send4(s, buffer, buflen);
 	case IPv6 : return udp_send6(s, buffer, buflen);
+	default   : abort(); /* Yuk! */
+	}
+	return -1;
+}
+
+
+int         
+udp_sendv(socket_udp *s, struct iovec *vector, int count)
+{
+	switch (s->mode) {
+	case IPv4 : return udp_sendv4(s, vector, count);
+	case IPv6 : return udp_sendv6(s, vector, count);
 	default   : abort(); /* Yuk! */
 	}
 	return -1;
