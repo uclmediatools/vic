@@ -48,11 +48,10 @@ inet6_LookupHostAddr(struct in6_addr *addr, const char* s) {
 #ifdef SOLARIS7_IPV6
     int error_num;
     hp = getipnodebyname(s, AF_INET6, AI_DEFAULT, &error_num);
-    if (error_num!=0) return (-1);
 #else
     hp = gethostbyname2(s, AF_INET6);
-    if (hp == 0)  return (-1);
 #endif
+    if (hp == 0)  return (-1);
     memcpy(addr->s6_addr, *(hp->h_addr_list), hp->h_length);
   }
   return (0);
