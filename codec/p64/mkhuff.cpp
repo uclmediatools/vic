@@ -41,12 +41,9 @@ static char rcsid[] =
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
-#ifdef WIN32
-//#include <winsock.h>
 extern "C" {
 int getopt(int, char * const *, const char *);
 }
-#endif
 #define HUFFSTRINGS
 #include "p64-huff.h"
 #include "config.h"
