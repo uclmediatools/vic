@@ -92,7 +92,7 @@ inet_pton4(src, dst)
 		const char *pch;
 
 		if ((pch = (char *) strchr(digits, ch)) != NULL) {
-			uint8_t new = *tp * 10 + (pch - digits);
+			uint32_t new = *tp * 10 + (pch - digits);
 
 			if (new > 255)
 				return (0);
