@@ -190,7 +190,7 @@ v1.0.10 - Mbus updates from Markus Germeier, which fix compatibility with
 	- Fix batching of multiple mbus messages into one packet.
 	* 13 December 1999 [rat v4.1.2]
 
-1.1.0   - Changed autoconf generated header to uclconf.h.
+v1.1.0  - Changed autoconf generated header to uclconf.h.
 	- Changed library name to uclmmbase to be consistent with other libs.   
 	- Add RTP_OPT_FILTER_MY_PACKETS
 	- Cleanup test routines
@@ -226,6 +226,7 @@ v1.0.10 - Mbus updates from Markus Germeier, which fix compatibility with
 	  main mbus.[ch] files. Note that the interface to the mbus_parse_*() functions has
 	  now changed and is not backwards compatible.
 	- Remove the mbus_addr() function, add an extra parameter to mbus_init() instead.
+	* 28 January 2000
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
