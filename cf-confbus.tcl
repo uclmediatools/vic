@@ -47,11 +47,11 @@ proc confbusHandler { cb msg } {
 	set proc $cb_dispatch($class)
 	set formals [info args $proc]
 	set actuals [lrange $msg 1 end]
-	if { [llength $actuals] != [llength $formals] } {
-		debug "confbus arg mismatch: $class ($formals)/($actuals)"
-		return		
-	}
-	eval "$proc $actuals"
+	#if { [llength $actuals] != [llength $formals] } {
+	#	debug "confbus arg mismatch: $class ($formals)/($actuals)"
+	#	return		
+	#}
+	$proc $actuals
 }
 
 proc init_confbus {} {

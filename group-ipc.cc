@@ -124,7 +124,7 @@ GroupIPC::GroupIPC(int channel) : handlers_(0)
 
 		struct ip_mreq mr;
 		mr.imr_multiaddr.s_addr = htonl(GROUP_IPC_ADDR);
-		mr.imr_interface.s_addr = htonl(INADDR_LOOPBACK);
+		mr.imr_interface.s_addr = INADDR_ANY;
 		if (setsockopt(rsock_, IPPROTO_IP, IP_ADD_MEMBERSHIP, 
 			       (char *)&mr, sizeof(mr)) < 0) {
 			/*
@@ -154,9 +154,13 @@ GroupIPC::GroupIPC(int channel) : handlers_(0)
 			perror("GroupIPC connect");
 			exit(1);
 		}
-		char ttl = 0;
+#ifdef WIN32
+		u_int ttl=0;
+#else
+		u_char ttl=0;
+#endif
 		if (setsockopt(ssock_, IPPROTO_IP, IP_MULTICAST_TTL,
-			       &ttl, 1) < 0) {
+			       (char*)&ttl, sizeof(ttl)) < 0) {
 			perror("GroupIPC: IP_MULTICAST_TTL");
 			exit(1);
 		}
