@@ -1,5 +1,5 @@
 /*
- * FILE:    test.c
+ * FILE:    test_des.h
  * AUTHORS: Colin Perkins
  * 
  * Copyright (c) 1999 University College London
@@ -33,18 +33,5 @@
  * SUCH DAMAGE.
  */
 
-#include "config_unix.h"
-#include "config_win32.h"
-#include "debug.h"
-#include "version.h"
-#include "test_des.h"
-#include "test_md5.h"
-
-int main()
-{
-	printf("Test suite for %s\n", CCL_VERSION);
-	test_des();
-	test_md5();
-	return 0;
-}
+void test_des(void);
 
