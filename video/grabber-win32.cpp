@@ -1006,7 +1006,7 @@ VfwGrabber::VideoHandler(HWND hwnd, LPVIDEOHDR vh)
     /* in case we are not fast enough */
     if (gp==NULL) return ((LRESULT)TRUE);
 
-    /* mutex with start/grab */
+    /* Block grab code until frame has been copied into last_frame_ (in capture function) */
     WaitForSingleObject(gp->cb_mutex_,INFINITE);
 
 #ifdef DEBUG__	
@@ -1020,13 +1020,7 @@ VfwGrabber::VideoHandler(HWND hwnd, LPVIDEOHDR vh)
 	else if (not_done++ % 10 == 0)
 		debug_msg("Frames not ready! %d\n", not_done);
 
-    /* now uses normal Grabber timeout to grab - cmg */
-
-	/* calculate amount of time to sleep*/
-	/*int sleep=((int)gp->tick(gp->grab())/1000);*/
-	/* only sleep if it's worth it */
-	/*if (sleep>0) Sleep(sleep);*/
-
+    /* Release to process frame in grab */
     ReleaseMutex(gp->cb_mutex_);
 	return ((LRESULT)TRUE);
 }
@@ -1038,10 +1032,7 @@ VfwGrabber::capture(VfwGrabber *gw, LPBYTE frame)
 	if (last_frame_ != NULL)
 		debug_msg("Last frame not grabbed!\n");
 #endif
-	if (capturing_) {
-		gw->last_frame_ = frame;
-		/*WaitForSingleObject(frame_sem_, INFINITE);*/
-	}
+	if (capturing_) gw->last_frame_ = frame;
 }
 
 int
@@ -1054,7 +1045,7 @@ VfwGrabber::grab()
 		inw_, inh_, outw_, outh_);
 #endif
 
-    /* mutex with VideoHandler */
+    /* block the VideoHandler callback code until we've processed frame */
     WaitForSingleObject(cb_mutex_,INFINITE);
 
     if (last_frame_ == NULL || capturing_ == 0) {
@@ -1063,12 +1054,13 @@ VfwGrabber::grab()
     }
 
 	converter_->convert((u_int8_t*)last_frame_, basewidth_ / decimate_, baseheight_ / decimate_, frame_, outw_, outh_, TRUE);
-	/*ReleaseSemaphore(frame_sem_, 1, NULL);*/
 	last_frame_ = NULL;
 	suppress(frame_);
 	saveblks(frame_);
 	YuvFrame f(media_ts(), frame_, crvec_, outw_, outh_);
 	int rval = (target_->consume(&f));
+
+    /* release block so that VideoHandler can get new frame */
     ReleaseMutex(cb_mutex_);
     return rval;
 }
