@@ -49,6 +49,7 @@
 #include "mbus_config.h"
 #include "mbus_parser.h"
 #include "mbus_addr.h"
+#include "asarray.h"
 
 #define MBUS_BUF_SIZE	  1500
 #define MBUS_ACK_BUF_SIZE 1500
@@ -97,6 +98,9 @@ struct mbus {
 	uint32_t		  index;
 	uint32_t		  index_sent;
 };
+
+/* For recording reliable message sequence numbers, so we can ignore duplicates */
+static asarray *seq_numbers;
 
 static void mbus_validate(struct mbus *m)
 {
@@ -451,6 +455,8 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 	uint16_t         	 net_port;
 	int              	 net_scope;
 
+	asarray_create (&seq_numbers);
+
 	m = (struct mbus *) xmalloc(sizeof(struct mbus));
 	if (m == NULL) {
 		debug_msg("Unable to allocate memory for mbus\n");
@@ -540,10 +546,12 @@ void mbus_exit(struct mbus *m)
         int i;
 
         assert(m != NULL);
-	mbus_validate(m);
+		mbus_validate(m);
 
-	mbus_qmsg(m, "()", "mbus.bye", "", FALSE);
-	mbus_send(m);
+		asarray_destroy(&seq_numbers);
+
+		mbus_qmsg(m, "()", "mbus.bye", "", FALSE);
+		mbus_send(m);
 
 	/* FIXME: It should be a fatal error to call mbus_exit() if some messages are still outstanding. */
 	/*        We will need an mbus_flush() call first though, to ensure nothing is waiting.          */
@@ -879,16 +887,39 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 			mbus_parse_done(mp2);
 			/* ...if an ACK was requested, send one... */
 			if (strcmp(r, "R") == 0) {
-				char 		*newsrc = (char *) xmalloc(strlen(src) + 3);
+				char 	*newsrc = (char *) xmalloc(strlen(src) + 3);
+				char	*newseq = (char *) xmalloc(9);
+				char	*value;
 				struct timeval	 t;
 
-			debug_msg("received reliable msg %d, sending ACK\n", seq);
-			
+				debug_msg("received reliable msg %d, sending ACK\n", seq);
+
 				sprintf(newsrc, "(%s)", src);	/* Yes, this is a kludge. */
+				sprintf(newseq, "(%6d)", seq);	/* size allocated in mb_header */
+
 				gettimeofday(&t, NULL);
-			mb_header(++m->seqnum, t, 'U', m->addr, newsrc, seq);
+				mb_header(++m->seqnum, t, 'U', m->addr, newsrc, seq);
 				mb_send(m);
-				xfree(newsrc);
+
+				/* Record sequence number of last reliable message from each source.
+				   If the next message we receive has the same source and same sequence
+				   number then it is a duplicate and we ignore it.  
+				*/
+				if (asarray_lookup (seq_numbers, newsrc, &value)) {
+					if (strcmp (value, newseq) == 0) {
+						debug_msg ("Duplicate reliable message received - ignored\n");
+						xfree (newseq);
+						xfree (newsrc);
+						continue;
+					} else {
+						asarray_remove(seq_numbers, newsrc);
+						asarray_add (seq_numbers, newsrc, newseq);
+					}
+				} else {
+					asarray_add (seq_numbers, newsrc, newseq);
+				}
+				xfree (newseq);
+				xfree (newsrc);
 			} else if (strcmp(r, "U") == 0) {
 				/* Unreliable message.... not need to do anything */
 			} else {
