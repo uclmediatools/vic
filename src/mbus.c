@@ -111,7 +111,7 @@ static int mbus_addr_match(char *a, char *b)
 	/* is a match if every word of address b is in address a.     */
 	/* NOTE: The strings passed to this function are stored for   */
 	/* later use and MUST NOT be modified by this routine.        */
-	char	*y, c;
+	char	*y = NULL, c='\0';
 
 	assert(a != NULL);
 	assert(b != NULL);
