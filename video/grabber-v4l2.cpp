@@ -42,8 +42,8 @@
 extern "C"
 {
 #include <asm/types.h>
-/*#include <linux/videodev.h>*/
-#include "videodev.h"
+/*#include <linux/videodev2.h>*/
+#include "videodev2.h"
 }
 
 #include "grabber.h"
@@ -51,9 +51,9 @@ extern "C"
 #include "device-input.h"
 #include "module.h"
 
-/* here you can tune the device names *
-static const char *devlist[] = { "/dev/video0", "/dev/video1", "/dev/video2", "/dev/video3",NULL };*/
-static const char *devlist[] = { "/dev/v4l2/capture0", "/dev/v4l2/capture1", "/dev/v4l2/capture2", "/dev/v4l2/capture3",NULL };
+/* here you can tune the device names */
+static const char *devlist[] = { "/dev/video0", "/dev/video1", "/dev/video2", "/dev/video3",NULL };
+/*static const char *devlist[] = { "/dev/v4l2/capture0", "/dev/v4l2/capture1", "/dev/v4l2/capture2", "/dev/v4l2/capture3",NULL };*/
 
 //#define DEBUG(x)
 #define DEBUG(x) (x)
@@ -191,7 +191,7 @@ V4l2Scanner::V4l2Scanner(const char **dev)
 
         for (i = 0; dev[i] != NULL; i++) {
                 fprintf(stderr,"V4l2: trying %s... ",dev[i]);
-                if (-1 == (fd = open(dev[i],O_NONCAP))) {
+                if (-1 == (fd = open(dev[i],O_RDWR))) {
                         perror("open");
                         continue;
                 }
@@ -200,49 +200,52 @@ V4l2Scanner::V4l2Scanner(const char **dev)
                         close(fd);
                         continue;
                 }
-
-                if (capability.type != V4L2_TYPE_CAPTURE) {
-                        fprintf(stderr,"device %d can't capture\n",capability.type);
+                if (!(capability.capabilities & V4L2_CAP_VIDEO_CAPTURE)) {
+                        fprintf(stderr,"device %s can't capture:%d\n",capability.driver, capability.capabilities);
                         close(fd);
                         continue;
                 }
-
-                fprintf(stderr,"ok, %s\nV4l2:   %s; size: %dx%d => %dx%d\n",
-                        capability.name,
-                        capability.flags & V4L2_FLAG_MONOCHROME ? "mono" : "color",
+                /*fprintf(stderr,"ok, %s\nV4l2:   %s; size: %dx%d => %dx%d\n",
+                        capability.driver,
+                        "color",
                         capability.minwidth,capability.minheight,
                         capability.maxwidth,capability.maxheight);
-
+		*/
                 attr = new char[512];
                 strcpy(attr,"format { 411 422 cif } ");
 
-                if (capability.maxwidth  > PAL_WIDTH/2 &&
-                                        capability.maxheight > PAL_HEIGHT/2) {
-                        strcat(attr,"size { small large cif } ");
+                /*if (capability.maxwidth  > PAL_WIDTH/2 &&
+                                        capability.maxheight > PAL_HEIGHT/2) {*/
+                strcat(attr,"size { small large cif } ");
+		/*
                 } else {
                         strcat(attr,"size { small cif } ");
-                }
+                }*/
 
                 fprintf(stderr,"V4l2:   ports:");
                 strcat(attr,"port { ");
-                for (j = 0; j < capability.inputs; j++) {
+                for (j = 0; j < 16; j++) {
                         if (-1 == ioctl(fd,VIDIOC_S_INPUT,&j)) {
                                 perror("ioctl VIDIOC_S_INPUT");
+				break;
                         } else {
                                 input.index=j;
                                 if (-1 == ioctl(fd,VIDIOC_ENUMINPUT,&input)) {
+					fprintf(stderr,"VIDIOC_ENUMINPUT:%d\n",j);
                                         perror("ioctl VIDIOC_ENUMINPUT");
+				break;
                                 } else {
                                         fprintf(stderr," %s: ",input.name);
-                                        for (unsigned int s=0 ; s<strlen(input.name) ; s++)
+                                        for (unsigned int s=0 ; s<strlen((const char*)input.name) ; s++)
                                                 if (input.name[s]==' ') input.name[s]='-';
-                                        strcat(attr,input.name);
+                                        strcat(attr,(const char*)input.name);
                                         strcat(attr," ");
                                 }
 
                                 pixfmt.index=j;
-                                if (-1 == ioctl(fd,VIDIOC_ENUM_PIXFMT,&pixfmt)) {
-                                        perror("ioctl VIDIOC_ENUM_PIXFMT");
+				pixfmt.type=V4L2_BUF_TYPE_VIDEO_CAPTURE;
+                                if (-1 == ioctl(fd,VIDIOC_ENUM_FMT,&pixfmt)) {
+                                        perror("ioctl VIDIOC_ENUM_FMT");
                                 } else fprintf(stderr, "%s ",pixfmt.description);
                         }
                 }
@@ -254,21 +257,21 @@ V4l2Scanner::V4l2Scanner(const char **dev)
 		
 		for (k = 0, err = 0; err == 0; ++k)
         	{
-                	struct v4l2_enumstd     estd;
+                	struct v4l2_standard     estd;
                 	estd.index = k;
                 	err = ioctl(fd, VIDIOC_ENUMSTD, &estd);
                 	if (!err) {
-				strcat(attr, (const char*)estd.std.name);
+				strcat(attr, (const char*)estd.name);
 				strcat(attr," ");           
-				fprintf(stderr,"%s ", estd.std.name);
+				fprintf(stderr,"%s ", estd.name);
 			}     	
         	}
                 fprintf(stderr,"\n");
 
 		strcat(attr,"} ");
 
-                nick = new char[strlen(capability.name)+6];
-                sprintf(nick,"v4l- %s",capability.name);
+                nick = new char[strlen((const char*)capability.card)+6];
+                sprintf(nick,"v4l- %s",capability.card);
                 new V4l2Device(dev[i],nick,attr);
 
                 close(fd);
@@ -289,19 +292,29 @@ V4l2Grabber::V4l2Grabber(const char *cformat, const char *dev)
         have_mmap = 0;
 
         struct v4l2_capability cap;
+	struct v4l2_requestbuffers reqbuf;
         if (-1 == ioctl(fd_,VIDIOC_QUERYCAP,&cap)) {
                 perror("ioctl VIDIOC_QUERYCAP");
         } else {
-                if ( !(cap.flags & V4L2_FLAG_READ) && !(cap.flags & V4L2_FLAG_STREAMING )) {
+                if ( !(cap.capabilities & V4L2_CAP_READWRITE) && !(cap.capabilities & V4L2_CAP_STREAMING )) {
                         fprintf(stderr,"v4l2: fatal: device does not support read() call or streaming capture.\n");
                         return;
                 }
 
-                if ( (cap.flags & V4L2_FLAG_STREAMING) && (cap.flags & V4L2_FLAG_SELECT))
-                        have_mmap = 1;
+	reqbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+	reqbuf.memory = V4L2_MEMORY_MMAP;
+	reqbuf.count = 20;
+        have_mmap = 1;
 
-        }
-
+	if (-1 == ioctl (fd_, VIDIOC_REQBUFS, &reqbuf)) {
+        if (errno == EINVAL) {
+                printf ("Video capturing or mmap-streaming is not supported\n");
+		have_mmap = 0;
+        } else {
+		perror ("VIDIOC_REQBUFS");
+		have_mmap = 0;
+	}}
+}
         /* fill in defaults */
         if(!strcmp(cformat, "411"))
                 cformat_ = CF_411;
@@ -321,7 +334,7 @@ V4l2Grabber::V4l2Grabber(const char *cformat, const char *dev)
 V4l2Grabber::~V4l2Grabber()
 {
         int i;
-        DEBUG(fprintf(stderr,"V4l2: destructor\n"));
+        debug_msg("V4l2: destructor\n");
 
         if (have_mmap) {
                 for (i = 0; i < STREAMBUFS; ++i) {
@@ -371,7 +384,7 @@ int V4l2Grabber::command(int argc, const char*const* argv)
 
                                         char input[32];
                                         unsigned int s;
-                                        for ( s=0 ; s<= strlen(inp.name) ; s++ )
+                                        for ( s=0 ; s<= strlen((const char*)inp.name) ; s++ )
                                                         if (inp.name[s]==' ') input[s]='-'; else input[s]=inp.name[s];
 
                                         if ( !strcmp(input,argv[2])) {
@@ -411,7 +424,7 @@ int V4l2Grabber::command(int argc, const char*const* argv)
 
                 if (strcmp(argv[1], "controls") == 0) {
                         if (strcmp(argv[2], "reset") == 0) {
-                                DEBUG(fprintf(stderr, "V4l2: Resetting controls\n"));
+                                debug_msg( "V4l2: Resetting controls\n");
 
                                 setctrl(atoi(argv[2]), V4L2_CID_BRIGHTNESS, "Brightness", 1);
                                 setctrl(atoi(argv[2]), V4L2_CID_HUE, "Hue", 1);
@@ -422,12 +435,12 @@ int V4l2Grabber::command(int argc, const char*const* argv)
                 }
 
                 if (strcmp(argv[1], "yuv_byteorder") == 0) {
-                        DEBUG(fprintf(stderr,"V4l2: asked for yuv_byteorder\n"));
+                        debug_msg("V4l2: asked for yuv_byteorder\n");
                         return (TCL_OK);
                 }
 
                 if (strcmp(argv[1], "fps") == 0) {
-                        DEBUG(fprintf(stderr,"V4l2: fps %s\n",argv[2]));
+                        debug_msg("V4l2: fps %s\n",argv[2]);
                 }
 
 
@@ -435,10 +448,10 @@ int V4l2Grabber::command(int argc, const char*const* argv)
                         
                         for (int k = 0, err = 0; err == 0; ++k)
         		{
-                		struct v4l2_enumstd     estd;
+                		struct v4l2_standard     estd;
                 		estd.index = k;
                 		if ( !(err = ioctl(fd_, VIDIOC_ENUMSTD, &estd)) )
-					if ( strcmp(argv[2], (const char *)estd.std.name) == 0)
+					if ( strcmp(argv[2], (const char *)estd.name) == 0)
 						norm_ = k;          
 			}     	     
 
@@ -465,7 +478,7 @@ void V4l2Grabber::start()
         int     i;
 
         if (fd_ > 0 ) {
-                DEBUG(fprintf(stderr,"\nv4l2: start\n"));
+                debug_msg("\nv4l2: start\n");
 
                 format();
 
@@ -473,46 +486,48 @@ void V4l2Grabber::start()
                         buf_sync = 1;
 
                         req.count = STREAMBUFS;
-                        req.type = V4L2_BUF_TYPE_CAPTURE;
+                        req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+                        req.memory = V4L2_MEMORY_MMAP;
                         err = ioctl(fd_, VIDIOC_REQBUFS, &req);
                         if (err < 0 || req.count < 1) {
-                                DEBUG(fprintf(stderr,"REQBUFS returned error %d, count %d\n", errno,req.count));
+                                debug_msg("REQBUFS returned error %d, count %d\n", errno,req.count);
                                 return;
                         }
 
-                        for (i = 0; i < req.count; ++i) {
+                        for (i = 0; i < (int)req.count; ++i) {
                                 vimage[i].vidbuf.index = i;
-                                vimage[i].vidbuf.type = V4L2_BUF_TYPE_CAPTURE;
+                                vimage[i].vidbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+                        	vimage[i].vidbuf.memory = V4L2_MEMORY_MMAP;
                                 err = ioctl(fd_, VIDIOC_QUERYBUF, &vimage[i].vidbuf);
                                 if (err < 0) {
-                                        DEBUG(fprintf(stderr,"QUERYBUF returned error %d\n",errno));
+                                        debug_msg("QUERYBUF returned error %d\n",errno);
                                         return;
                                 }
-                                vimage[i].data = (typeof(vimage[0].data)) mmap(0,  vimage[i].vidbuf.length, PROT_READ, MAP_SHARED, fd_, vimage[i].vidbuf.offset);
+                                vimage[i].data = (typeof(vimage[0].data)) mmap((void *)NULL, vimage[i].vidbuf.length, PROT_READ | PROT_WRITE, MAP_SHARED, fd_, vimage[i].vidbuf.m.offset);
 
                                 if ((int)vimage[i].data == -1) {
-                                        DEBUG(fprintf(stderr,"v4l2: mmap() returned error %d\n", errno));
+                                        debug_msg("v4l2: mmap() returned error %d\n", errno);
                                         return;
-                                } else DEBUG(fprintf(stderr,"v4l2: mmap()'ed buffer at 0x%x (%d bytes)\n", (int)vimage[i].data, vimage[i].vidbuf.length));
+                                } else debug_msg("v4l2: mmap()'ed buffer at 0x%x (%d bytes)\n", (int)vimage[i].data, vimage[i].vidbuf.length);
                         }
 
-                        for (i = 0; i < req.count; ++i)
+                        for (i = 0; i < (int)req.count; ++i)
                                 if ((err = ioctl(fd_, VIDIOC_QBUF, &vimage[i].vidbuf))) {
-                                        DEBUG(fprintf(stderr,"QBUF returned error %d\n",errno));
+                                        debug_msg("QBUF returned error %d\n",errno);
                                         return;
                                 }
 
                         err = ioctl(fd_, VIDIOC_STREAMON, &vimage[0].vidbuf.type);
                         if (err)
-                                DEBUG(fprintf(stderr,"STREAMON returned error %d\n",errno));
+                                debug_msg("STREAMON returned error %d\n",errno);
 
                 } else {
                         vimage[0].data = (typeof(vimage[0].data)) malloc(fmt.fmt.pix.sizeimage);
 
                         if (vimage[0].data == NULL) {
-                                DEBUG(fprintf(stderr,"malloc(%d) failed\n", fmt.fmt.pix.sizeimage));
+                                debug_msg("malloc(%d) failed\n", fmt.fmt.pix.sizeimage);
                                 return;
-                        } else DEBUG(fprintf(stderr,"v4l2: malloc()'ed buffer (%d bytes)\n",  fmt.fmt.pix.sizeimage));
+                        } else debug_msg("v4l2: malloc()'ed buffer (%d bytes)\n",  fmt.fmt.pix.sizeimage);
                 }
 
                 Grabber::start();
@@ -522,19 +537,19 @@ void V4l2Grabber::start()
 
 void V4l2Grabber::stop()
 {
-        DEBUG(fprintf(stderr,"V4l2: stop\n"));
+        debug_msg("V4l2: stop\n");
         int i, err;
 
         if (have_mmap) {
                 if ( fd_ > 0 ) {
-                        i = V4L2_BUF_TYPE_CAPTURE;
+                        i = V4L2_BUF_TYPE_VIDEO_CAPTURE;
                         if ( (err = ioctl(fd_, VIDIOC_STREAMOFF, &i) ) )
-                                DEBUG(fprintf(stderr,"v4l2: VIDIOC_STREAMOFF failed\n"));
+                                debug_msg("v4l2: VIDIOC_STREAMOFF failed\n");
                 }
 
                 tempbuf.type = vimage[0].vidbuf.type;
                 while (  !(err = ioctl(fd_, VIDIOC_DQBUF, &tempbuf)) )
-                        DEBUG(fprintf(stderr,"v4l2: dequeued old buffer\n"));
+                        debug_msg("v4l2: dequeued old buffer\n");
 
                 for (i = 0; i < STREAMBUFS; ++i) {
                         if (vimage[i].data)
@@ -678,7 +693,7 @@ void V4l2Grabber::packed422_to_planar411(char *dest, char *src)
 void V4l2Grabber::format()
 {
 
-        struct v4l2_standard 	standard;
+        v4l2_std_id 	standard;
 
         int i, err;
         int input;
@@ -688,63 +703,63 @@ void V4l2Grabber::format()
                 width_  = CIF_WIDTH  *2  / decimate_;
                 height_ = CIF_HEIGHT *2  / decimate_;
 
-                DEBUG(fprintf(stderr,"v4l2: format"));
+                debug_msg("v4l2: format");
                 switch (cformat_) {
                 case CF_CIF:
                         set_size_411(width_, height_);
-                        DEBUG(fprintf(stderr," cif"));
+                        debug_msg(" cif");
                         break;
                 case CF_411:
                         set_size_411(width_, height_);
-                        DEBUG(fprintf(stderr," 411"));
+                        debug_msg(" 411");
                         break;
                 case CF_422:
                         set_size_422(width_, height_);
-                        DEBUG(fprintf(stderr," 422"));
+                        debug_msg(" 422");
                         break;
                 }
-                DEBUG(fprintf(stderr,"\n"));
+                debug_msg("decimate: %d\n",decimate_);
 
                 ioctl(fd_, VIDIOC_G_STD, &standard);
-
                 
-                        struct v4l2_enumstd     estd;
+                        struct v4l2_standard     estd;
                         estd.index = norm_;
                         err = ioctl(fd_, VIDIOC_ENUMSTD, &estd);
                         if (!err) {         
-                                        standard = estd.std;
+                                        standard = estd.id;
                                         if (-1 == ioctl(fd_, VIDIOC_S_STD, &standard))
                                                 perror("ioctl VIDIOC_S_STD");
-                                        else DEBUG(fprintf(stderr,"v4l2: setting norm to %s\n",estd.std.name));                                     }
+                                        else debug_msg("v4l2: setting norm to %s\n",estd.name);
+                        }
                 
-
                 input = port_;
                 if ((err = ioctl(fd_, VIDIOC_S_INPUT, &input)) )
-                        DEBUG(fprintf(stderr,"S_INPUT returned error %d\n",errno));
-                else DEBUG(fprintf(stderr,"v4l2: setting input port to %d\n", port_));
+                        debug_msg("S_INPUT returned error %d\n",errno);
+                else debug_msg("v4l2: setting input port to %d\n", port_);
 
                 for (i = 0, err = 0; err == 0; ++i) {
                         struct v4l2_fmtdesc     fmtd;
                         fmtd.index = i;
-                        err = ioctl(fd_, VIDIOC_ENUM_PIXFMT, &fmtd);
+                        fmtd.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+                        err = ioctl(fd_, VIDIOC_ENUM_FMT, &fmtd);
                         if (!err) {
 
                                 if (fmtd.pixelformat == V4L2_PIX_FMT_YUYV) {
 
-                                        fmt.type = V4L2_BUF_TYPE_CAPTURE;
+                                        fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
                                         ioctl(fd_, VIDIOC_G_FMT, &fmt);
                                         fmt.fmt.pix.width = width_;
                                         fmt.fmt.pix.height = height_;
                                         fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
-                                        fmt.fmt.pix.flags |= V4L2_FMT_FLAG_INTERLACED;
+                                        fmt.fmt.pix.field = V4L2_FIELD_INTERLACED;
 
                                         if ( (err = ioctl(fd_, VIDIOC_S_FMT, &fmt) ) )
-                                                DEBUG(fprintf(stderr,"\nv4l2: Failed to set format\n"));
+                                                debug_msg("\nv4l2: Failed to set format\n");
 
                                         if ( ( fmt.fmt.pix.width != (unsigned int)width_ ) ||
                                                                 ( fmt.fmt.pix.height !=  (unsigned int)height_ ) ) {
 
-                                                DEBUG(fprintf(stderr,"v4l2: failed to set format! requested %dx%d, got %dx%d\n", width_, height_, fmt.fmt.pix.width, fmt.fmt.pix.height));
+                                                debug_msg("v4l2: failed to set format! requested %dx%d, got %dx%d\n", width_, height_, fmt.fmt.pix.width, fmt.fmt.pix.height);
 
 
                                                 switch(decimate_) {
@@ -762,12 +777,15 @@ void V4l2Grabber::format()
                                                 }
 
                                         } else {
-                                                DEBUG(fprintf(stderr,"v4l2: setting format: width=%d height=%d\n", fmt.fmt.pix.width, fmt.fmt.pix.height));
+                                                debug_msg("v4l2: setting format: width=%d height=%d\n", fmt.fmt.pix.width, fmt.fmt.pix.height);
                                                 format_ok = 1;
                                         }
                                         break;
                                 }
-                        }
+                        } else {
+				perror("ioctl VIDIOC_ENUM_FMT");
+				debug_msg("v4l2: VIDIOC_ENUM_FMT index: %d\n",i);
+			}
                 }
         }
 
@@ -791,7 +809,7 @@ void V4l2Grabber::setctrl(int val, int cid, char *controlname, int reset)
                                 ctrl.value = qctrl.minimum + (qctrl.maximum - qctrl.minimum) * val/256;
                         if (-1 == ioctl(fd_, VIDIOC_S_CTRL,&ctrl))
                                 perror("ioctl  VIDIOC_S_CTRL");
-                        else DEBUG(fprintf(stderr, "V4l2: %s = %d\n", controlname, val));
+                        else debug_msg( "V4l2: %s = %d\n", controlname, val);
                 }
         }
         return;
