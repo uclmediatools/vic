@@ -36,33 +36,39 @@
 #ifndef vic_config_h
 #define vic_config_h
 
-#if defined(sgi) || defined(__bsdi__) || defined(__FreeBSD__)
+#if defined(sgi) || defined(__bsdi__) || defined(__FreeBSD__) 
+# include <sys/types.h>
+#elif defined(sun)
 #include <sys/types.h>
+#define int8_t	char
+#define int32_t	long
+typedef unsigned char  u_int8_t;
+typedef unsigned short u_int16_t;
+typedef unsigned int   u_int32_t;
 #elif defined(linux)
-#include <sys/bitypes.h>
+# include <sys/bitypes.h>
 #else
-#ifdef ultrix
-#include <sys/types.h>
-#endif
-/*XXX*/
-#ifdef sco
-typedef char int8_t;
-#else
-typedef signed char int8_t;
-#endif
-typedef unsigned char u_int8_t;
+# ifdef ultrix
+#  include <sys/types.h>
+# endif
+# ifdef sco
+   typedef char int8_t;
+# else
+   typedef signed char int8_t;
+# endif
 typedef short int16_t;
+typedef int   int32_t;
+typedef unsigned char u_int8_t;
 typedef unsigned short u_int16_t;
 typedef unsigned int u_int32_t;
-typedef int int32_t;
 #endif
 
-#if defined(sun)||defined(_AIX)
+#if defined(sun) || defined(_AIX)
 #if defined(__cplusplus)
 extern "C" {
 #endif
-int srandom(int);
-int random(void);
+void srandom(unsigned);
+long random(void);
 #if defined(__cplusplus)
 }
 #endif
@@ -83,7 +89,7 @@ extern "C" {
 #include <arpa/inet.h>
 int strcasecmp(const char *, const char *);
 clock_t clock(void);
-#if !defined(sco) && !defined(sgi) && !defined(__bsdi__) && !defined(__FreeBSD__)
+#if !defined(sco) && !defined(sgi) && !defined(__bsdi__) && !defined(__FreeBSD__) && !defined(sun)
 int gethostid(void);
 #endif
 time_t time(time_t *);

@@ -382,11 +382,15 @@ RTVCGrabber::RTVCGrabber(int devno)
 	pagesize_ = NBPG;
 #endif
 	arpath_ = "xilSUNWrtvc_ucode.a";
-	if (access(arpath_, R_OK) == -1)
-		arpath_ =
-	      "/opt/SUNWits/Graphics-sw/xil/lib/pipelines/xilSUNWrtvc_ucode.a";
-	else
-		printf("-vic: using rtvc ucode in current directory\n");
+	if (access(arpath_, R_OK) == -1) {
+	        arpath_ = "/usr/openwin/lib/xil/devhandlers/xilIO_SUNWrtvc_ucode.a";
+	        if (access(arpath_, R_OK) == -1) {
+	                arpath_ = "/opt/SUNWits/Graphics-sw/xil/lib/pipelines/xilSUNWrtvc_ucode.a";
+	                if (access(arpath_, R_OK) == -1) {
+	                        printf("-vic: using rtvc ucode in current directory\n");
+	                }
+	        }
+	}
 	findFirmware();
 
 	fpb_.firmware_message.image_skip = 1;
