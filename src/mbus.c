@@ -506,16 +506,12 @@ static void tx_add_command(char *cmnd, char *args)
 	tx_bufpos += strlen(cmnd) + strlen(args) + 4;
 }
 
-static void tx_authenticate(char *key, int keylen)
+static void tx_send(struct mbus *m)
 {
 	char	 digest[16];
 
-	hmac_md5(tx_buffer + MBUS_AUTH_LEN, strlen(tx_buffer) - MBUS_AUTH_LEN, key, keylen, digest);
+	hmac_md5(tx_buffer + MBUS_AUTH_LEN, strlen(tx_buffer) - MBUS_AUTH_LEN, m->hashkey, m->hashkeylen, digest);
 	base64encode(digest, 16, tx_buffer, MBUS_AUTH_LEN - 1);
-}
-
-static void tx_send(struct mbus *m)
-{
 	udp_send(m->s, tx_buffer, tx_bufpos - tx_buffer);
 }
 
@@ -529,7 +525,6 @@ static void resend(struct mbus *m, struct mbus_msg *curr)
 	for (i = 0; i < curr->num_cmds; i++) {
 		tx_add_command(curr->cmd_list[i], curr->arg_list[i]);
 	}
-	tx_authenticate(m->hashkey, m->hashkeylen);
 	tx_send(m);
 	curr->retransmit_count++;
 }
@@ -692,7 +687,6 @@ void mbus_send(struct mbus *m)
 		for (i = 0; i < curr->num_cmds; i++) {
 			tx_add_command(curr->cmd_list[i], curr->arg_list[i]);
 		}
-		tx_authenticate(m->hashkey, m->hashkeylen);
 		tx_send(m);
 		
 		m->cmd_queue = curr->next;
@@ -1039,7 +1033,6 @@ int mbus_recv(struct mbus *m, void *data)
 					sprintf(newsrc, "(%s)", src);	/* Yes, this is a kludge. */
 					gettimeofday(&t, NULL);
 					tx_header(++m->seqnum, (int) t.tv_sec, 'U', m->addr[0], newsrc, seq);
-					tx_authenticate(m->hashkey, m->hashkeylen);
 					tx_send(m);
 					xfree(newsrc);
 				}
