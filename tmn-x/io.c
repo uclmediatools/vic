@@ -53,7 +53,7 @@
 #include        "sim.h"
 
 #ifdef VIC
-unsigned char *h263_frame;
+extern unsigned char *h263_frame;
 #endif
 
 /**********************************************************************
