@@ -1,6 +1,6 @@
 /*
  * FILE:     rtp.c
- * AUTHOR:   Colin Perkins   <c.perkins@cs.ucl.ac.uk>
+ * AUTHOR:   Colin Perkins   <csp@isi.edu>
  * MODIFIED: Orion Hodson    <o.hodson@cs.ucl.ac.uk>
  *           Markus Germeier <mager@tzi.de>
  *           Bill Fenner     <fenner@research.att.com>
@@ -71,7 +71,7 @@
 #define RTP_SEQ_MOD        0x10000
 #define RTP_MAX_SDES_LEN   256
 
-#define RTP_LOWER_LAYER_OVERHEAD 28	/* IP+UDP */
+#define RTP_LOWER_LAYER_OVERHEAD 28	/* IPv4 + UDP */
 
 #define RTCP_SR   200
 #define RTCP_RR   201
@@ -91,7 +91,7 @@ typedef struct {
 	unsigned short  version:2;	/* packet type            */
 	unsigned short  pt:8;		/* payload type           */
 #endif
-	uint16_t         length;	/* packet length          */
+	uint16_t        length;		/* packet length          */
 } rtcp_common;
 
 typedef struct {
@@ -102,7 +102,7 @@ typedef struct {
 			rtcp_rr       	rr[1];		/* variable-length list */
 		} sr;
 		struct {
-			uint32_t         ssrc;		/* source this RTCP packet is coming from */
+			uint32_t        ssrc;		/* source this RTCP packet is coming from */
 			rtcp_rr       	rr[1];		/* variable-length list */
 		} rr;
 		struct rtcp_sdes_t {
@@ -110,13 +110,13 @@ typedef struct {
 			rtcp_sdes_item 	item[1];	/* list of SDES */
 		} sdes;
 		struct {
-			uint32_t         ssrc[1];	/* list of sources */
+			uint32_t        ssrc[1];	/* list of sources */
 							/* can't express the trailing text... */
 		} bye;
 		struct {
-			uint32_t         ssrc;           
-			uint8_t          name[4];
-			uint8_t          data[1];
+			uint32_t        ssrc;           
+			uint8_t         name[4];
+			uint8_t         data[1];
 		} app;
 	} r;
 } rtcp_t;
@@ -124,7 +124,7 @@ typedef struct {
 typedef struct _rtcp_rr_wrapper {
 	struct _rtcp_rr_wrapper	*next;
 	struct _rtcp_rr_wrapper	*prev;
-        uint32_t                  reporter_ssrc;
+        uint32_t                 reporter_ssrc;
 	rtcp_rr			*rr;
 	struct timeval		*ts;	/* Arrival time of this RR */
 } rtcp_rr_wrapper;
@@ -279,7 +279,6 @@ static uint32_t next_csrc(struct rtp *session)
 	int	 chain, cc;
 	source	*s;
 
-	debug_msg("next_csrc\n");
 	cc = 0;
 	for (chain = 0; chain < RTP_DB_SIZE; chain++) {
 		/* Check that the linked lists making up the chains in */
@@ -1156,7 +1155,10 @@ void *rtp_get_userdata(struct rtp *session)
  * rtp_my_ssrc:
  * @session: The RTP Session.
  *
- * Returns: My SSRC for this session.
+ * Returns: The SSRC we are currently using in this session. Note that our
+ * SSRC can change at any time (due to collisions) so applications must not
+ * store the value returned, but rather should call this function each time 
+ * they need it.
  */
 uint32_t rtp_my_ssrc(struct rtp *session)
 {
@@ -1265,7 +1267,11 @@ static void rtp_recv_data(struct rtp *session, uint32_t curr_rtp_ts)
 		packet->ssrc     = ntohl(packet->ssrc);
 		/* Setup internal pointers, etc... */
 		if (packet->cc) {
+			int	i;
 			packet->csrc = (uint32_t *)(buffer + 12);
+			for (i = 0; i < packet->cc; i++) {
+				packet->csrc[i] = ntohl(packet->csrc[i]);
+			}
 		} else {
 			packet->csrc = NULL;
 		}
@@ -2490,8 +2496,7 @@ static void send_rtcp(struct rtp *session, uint32_t rtp_ts,
  * called at least once per second, and can be safely called more
  * frequently.  
  */
-void rtp_send_ctrl(struct rtp *session, uint32_t rtp_ts,
-                   rtcp_app_callback appcallback)
+void rtp_send_ctrl(struct rtp *session, uint32_t rtp_ts, rtcp_app_callback appcallback)
 {
 	/* Send an RTCP packet, if one is due... */
 	struct timeval	 curr_time;
@@ -2552,14 +2557,14 @@ void rtp_update(struct rtp *session)
 	struct timeval	 curr_time;
 	double		 delay;
 
-	check_database(session);
 	gettimeofday(&curr_time, NULL);
 	if (tv_diff(curr_time, session->last_update) < 1.0) {
-		/* We only cleanup once per second... */
-		check_database(session);
+		/* We only perform housekeeping once per second... */
 		return;
 	}
 	session->last_update = curr_time;
+
+	check_database(session);
 
 	for (h = 0; h < RTP_DB_SIZE; h++) {
 		for (s = session->db[h]; s != NULL; s = n) {
@@ -2667,8 +2672,9 @@ void rtp_send_bye(struct rtp *session)
  * rtp_done:
  * @session: the RTP session to finish
  *
- * Frees state associated with given RTP session.  Should be called
- * after rtp_send_bye().  
+ * Free the state associated with the given RTP session. This function does 
+ * not send any packets (e.g. an RTCP BYE) - an application which wishes to
+ * exit in a clean manner should call rtp_send_bye() first.
  */
 void rtp_done(struct rtp *session)
 {
@@ -2842,3 +2848,4 @@ int rtp_get_ttl(struct rtp *session)
 	check_database(session);
 	return session->ttl;
 }
+
