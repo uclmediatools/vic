@@ -1919,6 +1919,8 @@ void rtp_update(struct rtp *session)
 			n = s->next;
 			/* Expire sources which haven't been heard from for a long time.   */
 			/* Section 6.2.1 of the RTP specification details the timers used. */
+
+			/* How long since we last heard from this source?  */
 			delay = tv_diff(curr_time, s->last_active);
 			
 			/* Check if we've received a BYE packet from this source.    */
@@ -1930,8 +1932,10 @@ void rtp_update(struct rtp *session)
 				delete_source(session, s->ssrc);
 			}
 			/* If a source hasn't been heard from for more than 5 RTCP   */
-			/* reporting intervals, we mark the source as inactive.      */
-			/* TO BE DONE */
+			/* reporting intervals, we delete it from our database...    */
+			if (delay > (session->rtcp_interval * 5)) {
+				delete_source(session, s->ssrc);
+			}
 		}
 	}
 

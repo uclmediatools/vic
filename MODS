@@ -147,6 +147,8 @@ v1.0.9	- Ignore ECONNREFUSED in net_udp.c
 	- Change rtp_setopt() and rtp_getopt() to take boolean options only.
 	- Remove rtp_weak_validation(), use rtp_setopt(RTP_OPT_WEAK_VALIDATION)
 	  instead.
+	- Delete RTP database entries which haven't been heard from for
+  	  more than 5 times the RTCP reporting interval.
 
 
 Still to do...
