@@ -89,7 +89,7 @@ LIB = $(LIB_GRABBER) @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ \
 	codec/tmndec/libh263.a codec/tmn-x/libh263coder.a ../common/libcommon.a -lm
 INCLUDE = $(INCLUDE_MISC) $(INCLUDE_GRABBER) $(INCLUDE_TK) $(INCLUDE_TCL) \
 	$(INCLUDE_X11) $(MD_INC) -Icodec/jpeg -Icodec/p64 -I.
-DEFINE = @V_DEFINE@ -DED_YBITS=$(ED_YBITS) -DSIGRET=@V_SIGRET@
+DEFINE = @V_DEFINE@ -DED_YBITS=$(ED_YBITS) -DSIGRET=@V_SIGRET@ -DNLAYER=8
 BFLAGS = $(DEFINE) $(INCLUDE)
 CFLAGS = $(CCOPT) $(BFLAGS)
 
@@ -110,11 +110,13 @@ TCL_VIC_C = tcl/$(TCL_VIC:.tcl=.cpp)
 #
 BROKEN_OBJ = @V_BROKEN_OBJ@
 
-H263_OBJS = codec/h263/h263rtp.o codec/h263/h263dec.o codec/h263/bitIn.o codec/h263/input.o \
-	codec/h263/getgob.o codec/h263/reconh263.o codec/h263/recon.o codec/h263/getvlc.o \
-	codec/h263/getblk.o codec/h263/h263enc.o codec/h263/motion.o codec/h263/block.o \
+H263_OBJS = codec/h263/h263rtp.o codec/h263/h263dec.o codec/h263/bitIn.o \
+	codec/h263/input.o codec/h263/getgob.o codec/h263/reconh263.o \
+	codec/h263/recon.o codec/h263/getvlc.o codec/h263/getblk.o \
+	codec/h263/h263enc.o codec/h263/motion.o codec/h263/block.o \
 	codec/h263/bitOut.o codec/h263/h263mux.o codec/h263/idctdec.o \
-	codec/h263/fdct.o codec/h263/code.o codec/h263/gethdr.o codec/h263/idctenc.o codec/h263/sac.o
+	codec/h263/fdct.o codec/h263/code.o codec/h263/gethdr.o \
+	codec/h263/idctenc.o codec/h263/sac.o
 
 # .c objects
 OBJ1 =	net/inet.o net/inet6.o codec/cellb_tables.o tkStripchart.o md5c.o random.o \
@@ -122,21 +124,26 @@ OBJ1 =	net/inet.o net/inet6.o codec/cellb_tables.o tkStripchart.o md5c.o random.
 #	session-rtpv1.o session-nv.o session-ivs.o # Not supported anymore
 # .cpp objects
 OBJ2 =	main.o iohandler.o timer.o idlecallback.o media-timer.o \
-	net/net.o net/net-ip.o net/net-addr.o net/net-ipv6.o rtp/session.o rtp/source.o \
-	codec/decoder.o codec/decoder-jpeg.o codec/decoder-nv.o codec/decoder-h263.o \
+	rate-variable.o Tcl.o Tcl2.o module.o \
+	net/crypt.o net/crypt-des.o net/pkttbl.o net/pktbuf.o \
+	net/net.o net/net-ip.o net/net-addr.o net/net-ipv6.o \
+	net/mbus_handler.o net/mbus_engine.o net/group-ipc.o net/confbus.o \
+	rtp/session.o rtp/source.o rtp/transmitter.o rtp/pktbuf-rtp.o \
+	video/device.o video/grabber.o video/grabber-still.o \
+	codec/encoder-h261.o codec/encoder-jpeg.o codec/encoder-raw.o \
+	codec/encoder-h263.o codec/encoder-h263v2.o codec/encoder-nv.o \
+	codec/encoder-cellb.o codec/encoder-pvh.o codec/compositor.o \
+	codec/jpeg/jpeg.o codec/p64/p64.o codec/dct.o codec/transcoder-jpeg.o \
+	codec/framer-jpeg.o codec/decoder-pvh.o video/assistor-list.o \
+	codec/decoder.o codec/decoder-jpeg.o codec/decoder-nv.o \
+	codec/decoder-h263.o codec/decoder-h263v2.o codec/decoder-cellb.o \
 	codec/decoder-h261.o codec/decoder-h261v1.o codec/decoder-raw.o \
-	codec/decoder-cellb.o codec/decoder-h263v2.o net/mbus_handler.o net/mbus_engine.o \
-	video/device.o video/grabber.o render/vw.o Tcl.o Tcl2.o module.o rtp/transmitter.o \
-	codec/encoder-h263v2.o codec/encoder-nv.o codec/encoder-cellb.o codec/encoder-h261.o \
-	codec/encoder-jpeg.o codec/encoder-raw.o codec/encoder-h263.o \
-	codec/transcoder-jpeg.o codec/framer-jpeg.o video/assistor-list.o \
-	net/group-ipc.o net/confbus.o render/renderer.o render/renderer-window.o \
-	render/color.o render/color-true.o render/color-pseudo.o render/color-dither.o render/color-ed.o \
-	render/color-quant.o render/color-hi.o render/color-gray.o render/color-mono.o render/color-hist.o \
-	render/rgb-converter.o codec/jpeg/jpeg.o codec/p64/p64.o codec/dct.o \
-	codec/compositor.o rate-variable.o net/crypt.o net/crypt-des.o \
-	video/grabber-still.o @V_OBJ@
-OBJ3 =	cm0.o cm1.o huffcode.o version.o bv.o \
+	render/renderer.o render/renderer-window.o render/color.o \
+	render/color-true.o render/color-pseudo.o render/color-dither.o \
+	render/color-ed.o render/color-quant.o render/color-hi.o \
+	render/color-gray.o render/color-mono.o render/color-hist.o \
+	render/rgb-converter.o render/vw.o @V_OBJ@
+OBJ3 =	cm0.o cm1.o huffcode.o version.o bv.o codec/pvh-huff.o\
 	$(TCL_VIC:.tcl=.o) tk.o
 SRC =	$(OBJ1:.o=.c) $(OBJ2:.o=.cpp) $(BROKEN_OBJ:.o=.c) \
 	$(RTIP_OBJ:.o=.c) $(SRC_GRABBER) $(OBJ_XIL:.o=.cpp) $(OBJ_CRYPT:.o=.c)
