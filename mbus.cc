@@ -66,7 +66,6 @@
 #define MBUS_MAX_ADDR	10
 #define MBUS_MAX_PD	10
 
-
 int MBusHandler::mbus_addr_match(char *a, char *b)
 {
 	while ((*a != '\0') && (*b != '\0')) {
@@ -219,6 +218,7 @@ int MBusHandler::mbus_socket_init(int channel)
 	int                reuse =  1;
 	char               loop  =  1;
 	int                fd    = -1;
+	int port=MBUS_PORT+channel;
 
 	if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
 		perror("mbus: socket");
@@ -238,14 +238,14 @@ int MBusHandler::mbus_socket_init(int channel)
 
 	sinme.sin_family      = AF_INET;
 	sinme.sin_addr.s_addr = htonl(INADDR_ANY);
-	sinme.sin_port        = htons(MBUS_PORT+channel);
+	sinme.sin_port        = htons(port);
 	if (bind(fd, (struct sockaddr *) & sinme, sizeof(sinme)) < 0) {
 		perror("mbus: bind");
 		return -1;
 	}
 
-	imr.imr_multiaddr.s_addr = MBUS_ADDR;
-	imr.imr_interface.s_addr = INADDR_ANY;
+	imr.imr_multiaddr.s_addr = htonl (MBUS_ADDR);
+	imr.imr_interface.s_addr = htonl (INADDR_ANY);
 	if (setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *) &imr, sizeof(struct ip_mreq)) < 0) {
 		perror("mbus: setsockopt IP_ADD_MEMBERSHIP");
 		return -1;
@@ -288,8 +288,7 @@ MBusHandler::MBusHandler(int  channel,
 		m_->addr[i] = NULL;
 	for (i=0; i<MBUS_MAX_PD; i++) 
 		m_->parse_buffer[i] = NULL;
-	/*receive messages to 'audio ui * *' (for powerbars) and 'video engine * *' (for lipsync)*/
-	mbus_addr("(* * * *)");
+	mbus_addr("(video engine * *)");
 	mbus_audio_addr = strdup("(audio engine * *)");
 }
 
@@ -321,7 +320,7 @@ MBusHandler::~MBusHandler()
 }
 
 
-void MBusHandler::dispatch(int mask)
+void MBusHandler::dispatch(int)
 {
 	mbus_recv(this);
 }
@@ -526,7 +525,7 @@ void MBusHandler::mbus_recv(void *data)
 {
 	char	*ver, *src, *dst, *ack, *r, *cmd, *param;
 	char	 buffer[MBUS_BUF_SIZE];
-	int	 buffer_len, seq, i, a;
+	int	 buffer_len, seq, i;
 
 	memset(buffer, 0, MBUS_BUF_SIZE);
 	if ((buffer_len = recvfrom(m_->fd, buffer, MBUS_BUF_SIZE, 0, NULL, NULL)) <= 0) {

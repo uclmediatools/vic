@@ -40,6 +40,8 @@
 #include "source.h"
 #include "mbus.h"
 
+extern void dprintf(const char *fmt, ...);
+
 /*
 static void func_sync(char *srce, char *args, session_struct *sp)
 {
@@ -86,6 +88,7 @@ static void func_source_playout(char *srce, char *args, MBusHandler *mb)
 		addr = cname2addr(name);
 		SourceManager &sm = SourceManager::instance();
 		Source *s = sm.lookup(addr);
+		dprintf ("Playout:%i\n",playout);
 		if (s) {
 			/* if audio tool sends a playout msg
 			 * then vic has to enable the sync flag. This will
@@ -138,9 +141,9 @@ static void func_source_active(char *srce, char *args, MBusHandler *mb)
 char *mbus_cmnd[] = {
 	//"sync",
 	"source_playout",
-	"powermeter.output",
-	"powermeter.input",
-	"source.active.now",
+	"audio.output.powermeter",
+	"audio.input.powermeter",
+	"rtp.source.active",
 	""
 };
 
@@ -155,7 +158,7 @@ void (*mbus_func[])(char *srce, char *args, MBusHandler *mb) = {
 void mbus_handler_engine(char *srce, char *cmnd, char *args, void *data)
 {
 	int i;
-
+	dprintf ("command:%s\n",cmnd);
 	for (i=0; strlen(mbus_cmnd[i]) != 0; i++) {
 		if (strcmp(mbus_cmnd[i], cmnd) == 0) {
 			mbus_func[i](srce, args, (MBusHandler *) data);
