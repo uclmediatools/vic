@@ -238,7 +238,6 @@ purge_chars(char *src, char *to_go)
 {
         char *r, *w;
         r = w = src;
-        debug_msg("Input string: \"%s\"\n", src);
         while(*r) {
                 *w = *r;
                 if (!strchr(to_go, (int)*r)) {
@@ -247,5 +246,4 @@ purge_chars(char *src, char *to_go)
                 r++;
         }
         *w = '\0';
-        debug_msg("Output string: \"%s\"\n", src);
 }
