@@ -41,7 +41,7 @@ static const char rcsid[] =
 #include "sys-time.h"
 #include "source.h"
 #include "inet.h"
-#include "Tcl.h"
+#include "config.h"
 #include "ntp-time.h"
 
 #include <fcntl.h>
@@ -326,7 +326,10 @@ int Source::command(int argc, const char*const* argv)
 			return (TCL_OK);
 		}
 		if (strcmp(argv[1], "addr") == 0) {
-			strcpy(wrk, InetNtoa(addr_));
+			/* HL 980415 Memory leak fix (hakanl@cdt.luth.se) */
+			char *ptr= InetNtoa(addr_);
+			strcpy(wrk, ptr);
+			free(ptr);
 			tcl.result(wrk);
 			return (TCL_OK);
 		}
@@ -477,7 +480,7 @@ void Source::adapt(u_int32_t arr_ts, u_int32_t ts, int flag)
         if (adapt_init_ == 0) {
                 if (flag) {
                         adapt_init_ = 1;
-                        pdelay_ = FUDGE + delay_ + int(3. * dvar_);
+                        pdelay_ = /*FUDGE + */ delay_ + int(3. * dvar_);
                 }
                 return;
         }
@@ -489,7 +492,7 @@ void Source::adapt(u_int32_t arr_ts, u_int32_t ts, int flag)
         dvar_ += DGAIN * (double(d) - dvar_);
 
         if (flag) {
-		pdelay_ = FUDGE + delay_ + int(3. * dvar_); 
+		pdelay_ = /*FUDGE + */delay_ + int(3. * dvar_); 
 		if (pending_) {
 			/* prepare mbus msg and send it to mbus, if we have to ... */
 			sprintf(arg, "%s %d", mbus_->mbus_encode_str(sdes_[RTCP_SDES_CNAME]), pdelay_); 	
