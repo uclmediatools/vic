@@ -126,6 +126,7 @@ typedef struct {
 #define RX_RR_EMPTY	107	/* We've received an empty reception report block                                               */
 #define RX_RTCP_START	108	/* We're about to start processing a compound RTCP packet. The SSRC is not valid in this event. */
 #define RX_RTCP_FINISH	109	/* We've just finished processing a compound RTCP packet. The SSRC is not valid in this event.  */
+#define RR_TIMEOUT	110
 
 /* SDES packet types... */
 #define RTCP_SDES_END   0
