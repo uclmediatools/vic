@@ -41,14 +41,9 @@
  * the "Minimal Standard" Random Number Generator", David G. Carta,
  * Communications of the ACM, Jan 1990, Vol 33 No 1.
  */
-<<<<<<< crypt_random.c
-#include "config_win32.h"
-#include "config_unix.h"
-=======
 
-#include "config_unix.h"
 #include "config_win32.h"
->>>>>>> 1.3
+#include "config_unix.h"
 #include "crypt_random.h"
 
 static u_int32 randseed = 1;
