@@ -5,13 +5,11 @@
  *
  * Copyright (c) 1999-2000 University College London
  * All rights reserved.
+ *
+ * $Revision$
+ * $Date$
  */
  
-#ifndef HIDE_SOURCE_STRINGS
-static const char cvsid[] = 
-	"$Id$";
-#endif /* HIDE_SOURCE_STRINGS */
-
 #include "config_unix.h"
 #include "config_win32.h"
 
