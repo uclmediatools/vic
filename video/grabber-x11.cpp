@@ -261,6 +261,132 @@ VirtualRootWindow(Display *dpy, int screen)
 
 } /* end extern C */
 
+
+extern "C" {
+
+#include <sys/ipc.h>
+#ifdef USE_SHM
+#include <sys/shm.h>
+#if defined(sun) && !defined(__svr4__)
+int shmget(key_t, int, int);
+char *shmat(int, char*, int);
+int shmdt(char*);
+int shmctl(int, int, struct shmid_ds*);
+#endif
+#ifdef __osf__
+int XShmGetEventBase(struct _XDisplay *);
+#else
+int XShmGetEventBase(Display *);
+#endif
+#ifdef sgi
+#define XShmAttach __XShmAttach__
+#define XShmDetach __XShmDetach__
+#define XShmPutImage __XShmPutImage__
+#endif
+#include <X11/extensions/XShm.h>
+#ifdef sgi
+#undef XShmAttach
+#undef XShmDetach
+#undef XShmPutImage
+int XShmAttach(Display*, XShmSegmentInfo*);
+int XShmDetach(Display*, XShmSegmentInfo*);
+int XShmPutImage(Display*, Drawable, GC, XImage*, int, int, int, int,
+                 int, int, int);
+#endif
+#endif
+
+
+/*ARGSUSED*/
+static int
+ErrHandler(ClientData clientData, XErrorEvent *errevp)
+{
+    return 0;
+}
+
+ximage_t *
+VidUtil_AllocXImage(Display *dpy, Visual *vis, int depth, int width,
+			      int height, int readonly)
+{
+    ximage_t *ximage;
+    int ximage_size;
+    Tk_ErrorHandler handler;
+
+    ximage = (ximage_t *) malloc(sizeof(ximage_t));
+    if (ximage == NULL)
+	return NULL;
+
+#ifdef USE_SHM
+    if (use_shm) {
+	XShmSegmentInfo *shminfo;
+
+	ximage->shminfo = shminfo =
+	    (XShmSegmentInfo *) malloc(sizeof(XShmSegmentInfo));
+
+	ximage->image = XShmCreateImage(dpy, vis, depth, ZPixmap, 0, shminfo,
+					width, height);
+	ximage_size = ximage->image->bytes_per_line * ximage->image->height;
+
+	shminfo->shmid = shmget(IPC_PRIVATE, ximage_size, IPC_CREAT|0777);
+	if (shminfo->shmid != -1) {
+	    shminfo->shmaddr = ximage->image->data =
+		(char *) shmat(shminfo->shmid, 0, 0);
+	    shminfo->readOnly = readonly;
+
+	    handler = Tk_CreateErrorHandler(dpy, -1, -1, -1, ErrHandler, NULL);
+	    XShmAttach(dpy, shminfo);
+	    XSync(dpy, False);
+	    shmctl(shminfo->shmid, IPC_RMID, 0); /* so it goes away on exit */
+	    Tk_DeleteErrorHandler(handler);
+	    if (0) { /* so it goes away on exit... */
+		shmdt(shminfo->shmaddr);
+		shmctl(shminfo->shmid, IPC_RMID, 0);
+		XDestroyImage(ximage->image);
+		free(shminfo);
+	    }
+	    return ximage;
+	} else {
+	    XDestroyImage(ximage->image);
+	    free(shminfo);
+	    ximage->shminfo = NULL ;
+	    /* XXX hmmm... something more ? */
+	}
+    }
+#endif
+    {
+	ximage->image = XCreateImage(dpy, vis, depth, ZPixmap, 0, NULL, width,
+				     height, (depth == 24) ? 32 : depth, 0);
+	ximage_size = ximage->image->bytes_per_line * ximage->image->height;
+	ximage->image->data = (char *) malloc(ximage_size);
+
+	ximage->shminfo = NULL;
+    }
+
+    return ximage;
+}
+
+void
+VidUtil_DestroyXImage(Display *dpy, ximage_t *ximage)
+{
+#ifdef USE_SHM
+    if (use_shm && ximage->shminfo != NULL) {
+	XShmSegmentInfo *shminfo=(XShmSegmentInfo *)ximage->shminfo;
+
+	XShmDetach(dpy, shminfo);
+	shmdt(shminfo->shmaddr);
+	shmctl(shminfo->shmid, IPC_RMID, 0);
+	free(shminfo);
+    }
+    ximage->shminfo = NULL ;
+#endif
+
+    XDestroyImage(ximage->image);
+    free(ximage);
+}
+
+
+} /* end extern "C" block */
+
+
 void
 X11Grabber::X11Grab_ComputeYUVTable(void)
 {
@@ -1221,6 +1347,8 @@ X11Grabber::command(int argc, const char*const* argv)
     return (Grabber::command(argc, argv));
 }
 
+
+
 /*
  * captures in CIF or 411 -- color info is half the luma info.
  */
@@ -1278,126 +1406,3 @@ int X11Grabber::grab()
     return (target_->consume(&f));
 }
 
-extern "C" {
-
-#include <sys/ipc.h>
-#ifdef USE_SHM
-#include <sys/shm.h>
-#if defined(sun) && !defined(__svr4__)
-int shmget(key_t, int, int);
-char *shmat(int, char*, int);
-int shmdt(char*);
-int shmctl(int, int, struct shmid_ds*);
-#endif
-#ifdef __osf__
-int XShmGetEventBase(struct _XDisplay *);
-#else
-int XShmGetEventBase(Display *);
-#endif
-#ifdef sgi
-#define XShmAttach __XShmAttach__
-#define XShmDetach __XShmDetach__
-#define XShmPutImage __XShmPutImage__
-#endif
-#include <X11/extensions/XShm.h>
-#ifdef sgi
-#undef XShmAttach
-#undef XShmDetach
-#undef XShmPutImage
-int XShmAttach(Display*, XShmSegmentInfo*);
-int XShmDetach(Display*, XShmSegmentInfo*);
-int XShmPutImage(Display*, Drawable, GC, XImage*, int, int, int, int,
-                 int, int, int);
-#endif
-#endif
-
-
-/*ARGSUSED*/
-static int
-ErrHandler(ClientData clientData, XErrorEvent *errevp)
-{
-    return 0;
-}
-
-ximage_t *
-VidUtil_AllocXImage(Display *dpy, Visual *vis, int depth, int width,
-			      int height, int readonly)
-{
-    ximage_t *ximage;
-    int ximage_size;
-    Tk_ErrorHandler handler;
-
-    ximage = (ximage_t *) malloc(sizeof(ximage_t));
-    if (ximage == NULL)
-	return NULL;
-
-#ifdef USE_SHM
-    if (use_shm) {
-	XShmSegmentInfo *shminfo;
-
-	ximage->shminfo = shminfo =
-	    (XShmSegmentInfo *) malloc(sizeof(XShmSegmentInfo));
-
-	ximage->image = XShmCreateImage(dpy, vis, depth, ZPixmap, 0, shminfo,
-					width, height);
-	ximage_size = ximage->image->bytes_per_line * ximage->image->height;
-
-	shminfo->shmid = shmget(IPC_PRIVATE, ximage_size, IPC_CREAT|0777);
-	if (shminfo->shmid != -1) {
-	    shminfo->shmaddr = ximage->image->data =
-		(char *) shmat(shminfo->shmid, 0, 0);
-	    shminfo->readOnly = readonly;
-
-	    handler = Tk_CreateErrorHandler(dpy, -1, -1, -1, ErrHandler, NULL);
-	    XShmAttach(dpy, shminfo);
-	    XSync(dpy, False);
-	    shmctl(shminfo->shmid, IPC_RMID, 0); /* so it goes away on exit */
-	    Tk_DeleteErrorHandler(handler);
-	    if (0) { /* so it goes away on exit... */
-		shmdt(shminfo->shmaddr);
-		shmctl(shminfo->shmid, IPC_RMID, 0);
-		XDestroyImage(ximage->image);
-		free(shminfo);
-	    }
-	    return ximage;
-	} else {
-	    XDestroyImage(ximage->image);
-	    free(shminfo);
-	    ximage->shminfo = NULL ;
-	    /* XXX hmmm... something more ? */
-	}
-    }
-#endif
-    {
-	ximage->image = XCreateImage(dpy, vis, depth, ZPixmap, 0, NULL, width,
-				     height, (depth == 24) ? 32 : depth, 0);
-	ximage_size = ximage->image->bytes_per_line * ximage->image->height;
-	ximage->image->data = (char *) malloc(ximage_size);
-
-	ximage->shminfo = NULL;
-    }
-
-    return ximage;
-}
-
-void
-VidUtil_DestroyXImage(Display *dpy, ximage_t *ximage)
-{
-#ifdef USE_SHM
-    if (use_shm && ximage->shminfo != NULL) {
-	XShmSegmentInfo *shminfo=(XShmSegmentInfo *)ximage->shminfo;
-
-	XShmDetach(dpy, shminfo);
-	shmdt(shminfo->shmaddr);
-	shmctl(shminfo->shmid, IPC_RMID, 0);
-	free(shminfo);
-    }
-    ximage->shminfo = NULL ;
-#endif
-
-    XDestroyImage(ximage->image);
-    free(ximage);
-}
-
-
-} /* end extern "C" block */
