@@ -789,6 +789,14 @@ proc update_rate src {
 	set fps $fpshat($key)
 	set bps $bpshat($key)
 	
+	# csp
+	catch {
+	if {[resource logFrameRate] == "true"} {
+		global logFrameChannel
+		puts $logFrameChannel "[$src sdes cname] [clock seconds] $fps $bps $loss"
+	}
+	}
+
 	if { $fps < .1 } {
 		set fps "0 f/s"
 	} elseif { $fps < 10 } {

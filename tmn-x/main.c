@@ -1143,8 +1143,7 @@ ProcessArguments(int argc, char *argv[], Pict * pic)
 		EPTYPE = ON;
 		break;
 	    case 'M':
-		impr
-oved_pb_frames = ON;
+		improved_pb_frames = ON;
 		EPTYPE = ON;
 		break;
 	    case 'N':
@@ -1418,7 +1417,7 @@ CalculateStatistics(PictImage * curr_image, PictImage * curr_recon,
     switch (pic->picture_coding_type) {
     case PCT_INTRA:
 
-	fprintf(stdout, "Average Inra QP: %d\n", QP);
+	fprintf(stdout, "Average Intra QP: %d\n", QP);
 	AddRes(intra_res, res, pic);
 
 	AddBits(intra_bits, bits);
@@ -1710,3 +1709,4 @@ FrameLayerRC(Pict * pic)
     }
     return frameskip;
 
+}

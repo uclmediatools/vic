@@ -61,6 +61,10 @@ proc vic_main {} {
 	} else {
 		init_gui
 	}
+	if [yesno logFrameRate] {
+		global logFrameChannel
+		set logFrameChannel [open [resource logFrameFile] "w"]
+	}
 	init_late
 	build.menu
     if [yesno transmitOnStartup] {

@@ -544,6 +544,11 @@ main(int argc, const char** argv)
 			tcl.add_option("sessionKey", optarg);
 			break;
 
+		case 'l':
+			tcl.add_option("logFrameRate", "true");
+			tcl.add_option("logFrameFile", optarg);
+			break;
+
 		case 'L':
 			tcl.add_option("flowLabel", optarg);
 			break;
