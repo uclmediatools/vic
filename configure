@@ -2073,45 +2073,52 @@ fi
 if test "${enable_ipv6+set}" = set; then
   enableval="$enable_ipv6"
   if test $enableval = yes
-then
-	echo $ac_n "checking for getipnodebyname""... $ac_c" 1>&6
-echo "configure:2079: checking for getipnodebyname" >&5
-	cat > conftest.$ac_ext <<EOF
-#line 2081 "configure"
+	then
+		cat >> confdefs.h <<\EOF
+#define HAVE_IPv6 1
+EOF
+
+	fi
+fi
+
+
+echo $ac_n "checking for getipnodebyname""... $ac_c" 1>&6
+echo "configure:2087: checking for getipnodebyname" >&5
+cat > conftest.$ac_ext <<EOF
+#line 2089 "configure"
 #include "confdefs.h"
 #include <netdb.h>
 EOF
 if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
   egrep "getipnodebyname" >/dev/null 2>&1; then
   rm -rf conftest*
-  # variant tests to go here
-		cat >> confdefs.h <<\EOF
-#define HAVE_IPv6 1
+  cat >> confdefs.h <<\EOF
+#define HAVE_GETIPNODEBYNAME 1
 EOF
  
-		echo "$ac_t""yes" 1>&6
+	 echo "$ac_t""yes" 1>&6
 else
   rm -rf conftest*
-  echo "$ac_t""no" 1>&6 
-		echo "configure: warning: IPv6 support not found.  Ignoring request." 1>&2
+  echo "$ac_t""no" 1>&6
+	 LIBOBJS="$LIBOBJS getipnodebyname.o"
 fi
 rm -f conftest*
 
-	for ac_hdr in netinet6/in6.h
+for ac_hdr in netinet6/in6.h
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
-echo "configure:2105: checking for $ac_hdr" >&5
+echo "configure:2112: checking for $ac_hdr" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2110 "configure"
+#line 2117 "configure"
 #include "confdefs.h"
 #include <$ac_hdr>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:2115: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:2122: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -2137,10 +2144,10 @@ else
 fi
 done
 
-	echo $ac_n "checking for struct addrinfo""... $ac_c" 1>&6
-echo "configure:2142: checking for struct addrinfo" >&5
-	cat > conftest.$ac_ext <<EOF
-#line 2144 "configure"
+echo $ac_n "checking for struct addrinfo""... $ac_c" 1>&6
+echo "configure:2149: checking for struct addrinfo" >&5
+cat > conftest.$ac_ext <<EOF
+#line 2151 "configure"
 #include "confdefs.h"
 #include <netdb.h>
 EOF
@@ -2151,15 +2158,12 @@ if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
 #define HAVE_ST_ADDRINFO 1
 EOF
 
-		echo "$ac_t""yes" 1>&6
+	echo "$ac_t""yes" 1>&6
 else
   rm -rf conftest*
   echo "$ac_t""no" 1>&6
 fi
 rm -f conftest*
-
-fi
-fi
 
 
 

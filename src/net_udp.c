@@ -56,7 +56,7 @@
 /* We also need to define in6addr_any */
 #ifdef  MUSICA_IPV6
 #define	IPPROTO_IPV6	IPPROTO_IP
-struct	in6_addr		in6addr_any = {IN6ADDR_ANY_INIT};
+struct	in6_addr	in6addr_any = {IN6ADDR_ANY_INIT};
 #endif
 
 #ifndef INADDR_NONE
@@ -66,8 +66,8 @@ struct	in6_addr		in6addr_any = {IN6ADDR_ANY_INIT};
 struct _socket_udp {
 	int	 	 mode;	/* IPv4 or IPv6 */
 	char		*addr;
-	uint16_t	 	 rx_port;
-	uint16_t		 tx_port;
+	uint16_t	 rx_port;
+	uint16_t	 tx_port;
 	ttl_t	 	 ttl;
 	fd_t	 	 fd;
 	struct in_addr	 addr4;
@@ -78,7 +78,7 @@ struct _socket_udp {
 
 #ifdef WIN32
 /* Want to use both Winsock 1 and 2 socket options, but since
-* ipv6 support requires Winsock 2 we have to add own backwards
+* IPv6 support requires Winsock 2 we have to add own backwards
 * compatibility for Winsock 1.
 */
 #define SETSOCKOPT winsock_versions_setsockopt
@@ -101,13 +101,13 @@ socket_error(char *msg)
 	};
 	struct wse ws_errs[] = {
 		WSERR(WSANOTINITIALISED), WSERR(WSAENETDOWN),     WSERR(WSAEACCES),
-			WSERR(WSAEINVAL),         WSERR(WSAEINTR),        WSERR(WSAEINPROGRESS),
-			WSERR(WSAEFAULT),         WSERR(WSAENETRESET),    WSERR(WSAENOBUFS),
-			WSERR(WSAENOTCONN),       WSERR(WSAENOTSOCK),     WSERR(WSAEOPNOTSUPP),
-			WSERR(WSAESHUTDOWN),      WSERR(WSAEWOULDBLOCK),  WSERR(WSAEMSGSIZE),
-			WSERR(WSAEHOSTUNREACH),   WSERR(WSAECONNABORTED), WSERR(WSAECONNRESET),
-			WSERR(WSAEADDRNOTAVAIL),  WSERR(WSAEAFNOSUPPORT), WSERR(WSAEDESTADDRREQ),
-			WSERR(WSAENETUNREACH),    WSERR(WSAETIMEDOUT),    WSERR(0)
+		WSERR(WSAEINVAL),         WSERR(WSAEINTR),        WSERR(WSAEINPROGRESS),
+		WSERR(WSAEFAULT),         WSERR(WSAENETRESET),    WSERR(WSAENOBUFS),
+		WSERR(WSAENOTCONN),       WSERR(WSAENOTSOCK),     WSERR(WSAEOPNOTSUPP),
+		WSERR(WSAESHUTDOWN),      WSERR(WSAEWOULDBLOCK),  WSERR(WSAEMSGSIZE),
+		WSERR(WSAEHOSTUNREACH),   WSERR(WSAECONNABORTED), WSERR(WSAECONNRESET),
+		WSERR(WSAEADDRNOTAVAIL),  WSERR(WSAEAFNOSUPPORT), WSERR(WSAEDESTADDRREQ),
+		WSERR(WSAENETUNREACH),    WSERR(WSAETIMEDOUT),    WSERR(0)
 	};
 	
 	int i, e = WSAGetLastError();
@@ -179,6 +179,10 @@ int inet_aton(const char *name, struct in_addr *addr)
 
 #ifdef NEED_IN6_IS_ADDR_MULTICAST
 #define IN6_IS_ADDR_MULTICAST(addr) ((addr)->s6_addr[0] == 0xffU)
+#endif
+
+#if defined(NEED_IN6_IS_ADDR_UNSPECIFIED) && defined(MUSICA_IPV6)
+#define IN6_IS_ADDR_UNSPECIFIED(addr) IS_UNSPEC_IN6_ADDR(*addr)
 #endif
 
 
@@ -448,29 +452,23 @@ static char *udp_host_addr6(socket_udp *s)
 	int			 error_num;
 #endif
 #if HAVE_ST_ADDRINFO
-	int gai_err;
-	struct addrinfo hints, *ai;
+	int 			 gai_err;
+	struct addrinfo 	 hints, *ai;
 #endif
-	struct sockaddr_in6 local;
+	struct sockaddr_in6 	 local;
 	int len = sizeof(local), result = 0;
-	
+
 	hname = (char *) xmalloc(MAXHOSTNAMELEN);
-	
+
 	memset((char *)&local, 0, len);
 	local.sin6_family = AF_INET6;
-	
+
 	if ((result = getsockname(s->fd,(struct sockaddr *)&local, &len)) < 0){
 		local.sin6_addr = in6addr_any;
 		local.sin6_port = 0;
 		debug_msg("getsockname failed\n");
 	}
-#ifdef MUSICA_IPV6
-	/* Unfortunately MUSICA stack returns the multicast addr to above 
-	getsockname call, thus we have to check for and do DNS lookup instead */
-	if (IS_UNSPEC_IN6_ADDR(local.sin6_addr) || IN6_IS_ADDR_MULTICAST(&local.sin6_addr)) {
-#else
-	if (IN6_IS_ADDR_UNSPECIFIED(&(local.sin6_addr))) {
-#endif
+	if (IN6_IS_ADDR_UNSPECIFIED(&(local.sin6_addr) || IN6_IS_ADDR_MULTICAST(&local.sin6_addr))) {
 		if (gethostname(hname, MAXHOSTNAMELEN) != 0) {
 			debug_msg("gethostname failed\n");
 			abort();
@@ -482,14 +480,11 @@ static char *udp_host_addr6(socket_udp *s)
 		hname = xstrdup(inet6_ntoa((const struct in6_addr *) hent->h_addr_list[0]));
 #else
 #ifdef HAVE_ST_ADDRINFO
-		
 		memset(&hints, 0, sizeof(struct addrinfo));
 		
 		hints.ai_protocol = IPPROTO_IPV6;
-		/*hints.ai_family = AF_INET6; */
-		/*hints.ai_socktype = SOCK_DGRAM;*/
 		
-		if ((gai_err=getaddrinfo(hname, NULL, &hints, &ai))) {
+		if ((gai_err = getaddrinfo(hname, NULL, &hints, &ai))) {
 			debug_msg("getaddrinfo: %s: %s\n", hname, gai_strerror(gai_err));
 			abort();
 		}
@@ -502,12 +497,8 @@ static char *udp_host_addr6(socket_udp *s)
 		freeaddrinfo(ai);
 		UNUSED(error_num);
 		UNUSED(hent);
-#else
-#ifdef MUSICA_IPV6
-		hent = gethostbyname2(hname, AF_INET6);
-#else
+#else /* HAVE_ST_ADDRINFO */
 		hent = getipnodebyname(hname, AF_INET6, AI_DEFAULT, &error_num);
-#endif /*MUSICA_IPV6*/
 		if (hent == NULL) {
 			switch (error_num) {
 			case HOST_NOT_FOUND:
@@ -589,7 +580,7 @@ int udp_recv(socket_udp *s, char *buffer, int buflen)
 	/* If no data is available, this returns the value zero immediately. */
 	/* Note: since we don't care about the source address of the packet  */
 	/* we receive, this function becomes protocol independent.           */
-    int		len;
+	int		len;
 	
 	assert(buffer != NULL);
 	assert(buflen > 0);

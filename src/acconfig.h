@@ -9,14 +9,16 @@
 #undef HAVE_IPv6
 
 /*
- * V6 structure that host may or may not be present.
+ * V6 structures that host may or may not be present.
  */
 #undef HAVE_ST_ADDRINFO
+#undef HAVE_GETIPNODEBYNAME
 
 /*
  * Define this if your C library doesn't have vsnprintf.
  */
 #undef NEED_VSNPRINTF
+
 
 /*
  * If you don't have these types in <inttypes.h>, #define these to be
