@@ -307,14 +307,17 @@ static int mbus_addr_unique(struct mbus *m, char *addr)
 /* The mb_* functions are used to build an mbus message up in the */
 /* mb_buffer, and to add authentication and encryption before the */
 /* message is sent.                                               */
-static char	 mb_cryptbuf[MBUS_BUF_SIZE];
-static char	 mb_buffer[MBUS_BUF_SIZE];
-static char	*mb_bufpos;
+char	*mb_cryptbuf;
+char	*mb_buffer;
+char	*mb_bufpos;
 
 #define MBUS_AUTH_LEN 16
 
 static void mb_header(int seqnum, int ts, char reliable, char *src, char *dst, int ackseq)
 {
+	xmemchk();
+	mb_buffer   = (char *) xmalloc(MBUS_BUF_SIZE + 1);
+	mb_cryptbuf = (char *) xmalloc(MBUS_BUF_SIZE + 1);
 	memset(mb_buffer,   0, MBUS_BUF_SIZE);
 	memset(mb_buffer, ' ', MBUS_AUTH_LEN);
 	mb_bufpos = mb_buffer + MBUS_AUTH_LEN;
@@ -374,6 +377,8 @@ static void mb_send(struct mbus *m)
 		memcpy(mb_buffer, mb_cryptbuf, len);
 	}
 	udp_send(m->s, mb_buffer, len);
+	xfree(mb_buffer);
+	xfree(mb_cryptbuf);
 }
 
 static void resend(struct mbus *m, struct mbus_msg *curr) 
