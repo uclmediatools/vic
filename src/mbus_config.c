@@ -45,7 +45,7 @@
 #include "mbus_config.h"
 
 #define MBUS_ENCRYPT_BY_DEFAULT
-#define MBUS_ENCRKEY_LEN      7
+#define MBUS_ENCRKEY_LEN      8
 #define MBUS_HASHKEY_LEN     12
 #define MBUS_BUF_SIZE	  1500
 
@@ -58,17 +58,29 @@ char *mbus_new_encrkey(void)
 	char		 random_string[MBUS_ENCRKEY_LEN];
 	char		 encoded_string[(MBUS_ENCRKEY_LEN*4/3)+4];
 	int		 encoded_length;
-	int		 i;
+	int		 i, j, k;
 
 	/* Step 1: generate a random string for the key... */
 	for (i = 0; i < MBUS_ENCRKEY_LEN; i++) {
 		random_string[i] = ((int32)lbl_random() | 0x000ff000) >> 24;
 	}
-	/* Step 2: base64 encode that string... */
+
+	/* Step 2: fill in parity bits to make DES library happy */
+	for (i = 0; i < MBUS_ENCRKEY_LEN; ++i) {
+	        k = random_string[i] & 0xfe;
+		j = k;
+		j ^= j >> 4;
+		j ^= j >> 2;
+		j ^= j >> 1;
+		j = (j & 1) ^ 1;
+		random_string[i] = k | j;
+	}
+
+	/* Step 3: base64 encode that string... */
 	memset(encoded_string, 0, (MBUS_ENCRKEY_LEN*4/3)+4);
 	encoded_length = base64encode(random_string, MBUS_ENCRKEY_LEN, encoded_string, (MBUS_ENCRKEY_LEN*4/3)+4);
 
-	/* Step 3: put it all together to produce the key... */
+	/* Step 4: put it all together to produce the key... */
 	key = (char *) xmalloc(encoded_length + 18);
 	sprintf(key, "(DES,%s)", encoded_string);
 #else
@@ -81,7 +93,7 @@ char *mbus_new_encrkey(void)
 char *mbus_new_hashkey(void)
 {
 	/* Create a new key, for use by the hashing routines. Returns  */
-	/* a key of the form (HMAC-MD5,MTIzMTU2MTg5MTEyMQ==)           */
+	/* a key of the form (HMAC-MD5-96,MTIzMTU2MTg5MTEyMQ==)           */
 	char		 random_string[MBUS_HASHKEY_LEN];
 	char		 encoded_string[(MBUS_HASHKEY_LEN*4/3)+4];
 	int		 encoded_length;
@@ -97,8 +109,8 @@ char *mbus_new_hashkey(void)
 	encoded_length = base64encode(random_string, MBUS_HASHKEY_LEN, encoded_string, (MBUS_HASHKEY_LEN*4/3)+4);
 
 	/* Step 3: put it all together to produce the key... */
-	key = (char *) xmalloc(encoded_length + 23);
-	sprintf(key, "(HMAC-MD5,%s)", encoded_string);
+	key = (char *) xmalloc(encoded_length + 26);
+	sprintf(key, "(HMAC-MD5-96,%s)", encoded_string);
 
 	return key;
 }
@@ -124,7 +136,7 @@ void mbus_lock_config_file(struct mbus_config *m)
 	if (disp == REG_CREATED_NEW_KEY) {
 		char	*hashkey = mbus_new_hashkey();
 		char	*encrkey = mbus_new_encrkey();
-		char	*scope   = "HOSTLOCAL";
+		char	*scope   = SCOPE_HOSTLOCAL_NAME;
 
 		status = RegSetValueEx(m->cfgKey, "HASHKEY", 0, REG_SZ, hashkey, strlen(hashkey) + 1);
 		if (status != ERROR_SUCCESS) {
@@ -167,8 +179,13 @@ void mbus_lock_config_file(struct mbus_config *m)
 		perror("Unable to get passwd entry");
 		abort();
 	}
-	cfg_file = (char *) xmalloc(strlen(p->pw_dir) + 7);
-	sprintf(cfg_file, "%s/.mbus", p->pw_dir);
+        if (getenv("MBUS")==NULL) {
+                cfg_file = (char *) xmalloc(strlen(p->pw_dir) + 7);
+	        sprintf(cfg_file, "%s/.mbus", p->pw_dir);	
+	} else {
+	        cfg_file = (char *) xmalloc(strlen(getenv("MBUS")) + 1);
+		sprintf(cfg_file, "%s", getenv("MBUS"));
+	}
 	m->cfgfd = open(cfg_file, O_RDWR | O_CREAT, 0600);
 	if (m->cfgfd == -1) {
 		perror("Unable to open mbus configuration file");
@@ -266,6 +283,7 @@ static void mbus_get_key(struct mbus_config *m, struct mbus_key *key, char *id)
 	char		*line;
 	char		*tmp;
 	int		 pos;
+        int              linepos;
 
 	assert(m->cfg_locked);
 
@@ -293,12 +311,22 @@ static void mbus_get_key(struct mbus_config *m, struct mbus_key *key, char *id)
 	}
 	pos = strlen(line) + 1;
 	while (pos < s.st_size) {
-		sscanf(buf+pos, "%s", line);
-		pos += strlen(line) + 1;
+                /* get whole line and filter out spaces */
+                /* this is good enough for getting keys */
+                linepos=0;
+                do {
+                    while((buf[pos+linepos]==' ')||(buf[pos+linepos]=='\n')
+                                                 ||(buf[pos+linepos]=='\t'))
+                        pos++;
+                    sscanf(buf+pos+linepos, "%s", line+linepos);                
+                    linepos = strlen(line);
+                } while((buf[pos+linepos]!='\n') && (s.st_size>(pos+linepos+1)));
+                pos += linepos + 1;
 		if (strncmp(line, id, strlen(id)) == 0) {
 			key->algorithm   = (char *) strdup(strtok(line+strlen(id), ",)"));
 			if (strcmp(key->algorithm, "NOENCR") != 0) {
 				key->key     = (char *) strtok(NULL  , ")");
+                                assert(key->key!=NULL);
 				key->key_len = strlen(key->key);
 				tmp = (char *) xmalloc(key->key_len);
 				key->key_len = base64decode(key->key, key->key_len, tmp, key->key_len);
@@ -321,7 +349,6 @@ static void mbus_get_key(struct mbus_config *m, struct mbus_key *key, char *id)
 void mbus_get_encrkey(struct mbus_config *m, struct mbus_key *key)
 {
 	/* This MUST be called while the config file is locked! */
-	unsigned char	*des_key;
 	int		 i, j, k;
 #ifdef WIN32
 	long		 status;
@@ -364,36 +391,19 @@ void mbus_get_encrkey(struct mbus_config *m, struct mbus_key *key)
 #endif
 	if (strcmp(key->algorithm, "DES") == 0) {
 		assert(key->key != NULL);
-		assert(key->key_len == 7);
-		/* Take the first 56-bits of the input key and spread it across   */
-		/* the 64-bit DES key space inserting a bit-space of garbage      */
-		/* (for parity) every 7 bits. The garbage will be taken care of   */
-		/* below. The library we're using expects the key and parity bits */
-		/* in the following MSB order: K0 K1...K6 P0 K8 K9...K14 P1...    */
-		des_key = (unsigned char *) xmalloc(8);
-		des_key[0] = key->key[0];
-		des_key[1] = key->key[0] << 7 | key->key[1] >> 1;
-		des_key[2] = key->key[1] << 6 | key->key[2] >> 2;
-		des_key[3] = key->key[2] << 5 | key->key[3] >> 3;
-		des_key[4] = key->key[3] << 4 | key->key[4] >> 4;
-		des_key[5] = key->key[4] << 3 | key->key[5] >> 5;
-		des_key[6] = key->key[5] << 2 | key->key[6] >> 6;
-		des_key[7] = key->key[6] << 1;
+		assert(key->key_len == 8);
 
-		/* fill in parity bits to make DES library happy */
+		/* check parity bits */
 		for (i = 0; i < 8; ++i) 
 		{
-			k = des_key[i] & 0xfe;
+			k = key->key[i] & 0xfe;
 			j = k;
 			j ^= j >> 4;
 			j ^= j >> 2;
 			j ^= j >> 1;
 			j = (j & 1) ^ 1;
-			des_key[i] = k | j;
+			assert((key->key[i] & 0x01) == j);
 		}
-		xfree(key->key);
-		key->key     = des_key;
-		key->key_len = 8;
 	}
 }
 
@@ -450,6 +460,7 @@ void mbus_get_net_addr(struct mbus_config *m, char *net_addr, u_int16 *net_port,
 	char		*line;
 	int		 pos;
 	int              pos2;
+        int              linepos;
 
 	int              scope;
 	char            *addr;
@@ -487,8 +498,17 @@ void mbus_get_net_addr(struct mbus_config *m, char *net_addr, u_int16 *net_port,
 	}
 	pos = strlen(line) + 1;
 	while (pos < s.st_size) {
-		sscanf(buf+pos, "%s", line);
-		pos += strlen(line) + 1;
+                /* get whole line and filter out spaces */
+                linepos=0;
+                do {
+                    while((buf[pos+linepos]==' ')||(buf[pos+linepos]=='\n')
+                                                 ||(buf[pos+linepos]=='\t'))
+                        pos++;
+                    sscanf(buf+pos+linepos, "%s", line+linepos);                
+                    linepos = strlen(line);
+  
+                } while((buf[pos+linepos]!='\n') && (s.st_size>(pos+linepos+1)));
+                pos += linepos + 1;     
 		if (strncmp(line, "SCOPE", strlen("SCOPE")) == 0) {
 		    pos2 = strlen("SCOPE") + 1;
 		    if (strncmp(line+pos2, SCOPE_HOSTLOCAL_NAME, 
@@ -518,6 +538,9 @@ void mbus_get_net_addr(struct mbus_config *m, char *net_addr, u_int16 *net_port,
 	} else {
 	    strcpy(net_addr, MBUS_DEFAULT_NET_ADDR);
 	}
+        debug_msg("using Addr:%s Port:%d Scope:%s for MBUS\n", 
+		  net_addr, *net_port, 
+		  (*net_scope==0)?SCOPE_HOSTLOCAL_NAME:SCOPE_LINKLOCAL_NAME);
 	xfree(buf);
 	xfree(line);
 	xfree(addr);
