@@ -121,6 +121,7 @@ typedef struct _source {
 	rtcp_sr		*sr;
 	rtcp_rr_wrapper	*rr;
 	struct timeval	 last_active;
+	int		 got_bye;	/* TRUE if we've received an RTCP bye from this source */
 } source;
 
 /* The size of the hash table used to hold the source database. */
@@ -265,18 +266,19 @@ static void create_source(struct rtp *session, u_int32 ssrc)
 	/* This is a new source, we have to create it... */
 	h = ssrc_hash(ssrc);
 	s = (source *) xmalloc(sizeof(source));
-	s->next  = session->db[h];
-	s->prev  = NULL;
-	s->ssrc  = ssrc;
-	s->cname = NULL;
-	s->name  = NULL;
-	s->email = NULL;
-	s->phone = NULL;
-	s->loc   = NULL;
-	s->tool  = NULL;
-	s->note  = NULL;
-	s->sr    = NULL;
-	s->rr    = NULL;
+	s->next    = session->db[h];
+	s->prev    = NULL;
+	s->ssrc    = ssrc;
+	s->cname   = NULL;
+	s->name    = NULL;
+	s->email   = NULL;
+	s->phone   = NULL;
+	s->loc     = NULL;
+	s->tool    = NULL;
+	s->note    = NULL;
+	s->sr      = NULL;
+	s->rr      = NULL;
+	s->got_bye = FALSE;
 	gettimeofday(&(s->last_active), NULL);
 	/* Now, add it to the database... */
 	if (session->db[h] != NULL) {
@@ -785,6 +787,7 @@ static void process_rtcp_bye(struct rtp *session, rtcp_t *packet, struct timeval
 	int		 i;
 	u_int32		 ssrc;
 	rtp_event	 event;
+	source		*s;
 
 	for (i = 0; i < packet->common.count; i++) {
 		ssrc = ntohl(packet->r.bye.ssrc[i]);
@@ -798,8 +801,10 @@ static void process_rtcp_bye(struct rtp *session, rtcp_t *packet, struct timeval
 		event.data = NULL;
 		event.ts   = event_ts;
 		session->callback(session, &event);
-		/* Now delete the source... */
-		delete_source(session, ssrc);
+		/* Mark the source as ready for deletion. Sources are not deleted immediately */
+		/* since some packets may be delayed and arrive after the BYE...              */
+		s = get_source(session, ssrc);
+		s->got_bye = TRUE;
 	}
 }
 
@@ -984,12 +989,49 @@ int rtp_send_data(struct rtp *session, u_int32 ts, char pt, int m, int cc, u_int
 	return TRUE;
 }
 
+static void calc_ts_diff(struct timeval curr_time, struct timeval prev_time, struct timeval *diff)
+{
+	/* Make diff = curr_time - prev_time */
+
+}
+
+static void expire_sources(struct rtp *session)
+{
+	/* Expire sources which haven't been heard from for a long time.   */
+	/* Section 6.2.1 of the RTP specification details the timers used. */
+	int	 	 h;
+	source	 	*s;
+	struct timeval	 curr_time;
+	struct timeval	 ts_diff;
+
+	gettimeofday(&curr_time, NULL);
+
+	for (h = 0; h < RTP_DB_SIZE; h++) {
+		for (s = session->db[h]; s != NULL; s = s->next) {
+			calc_ts_diff(s->last_active, curr_time, &ts_diff);
+			/* Check if we've received a BYE packet from this source.    */
+			/* If we have, and it was received more than 2 seconds ago   */
+			/* then the source is deleted. The arbitrary 2 second delay  */
+			/* is to ensure that all delayed packets are received before */
+			/* the source is timed out.                                  */
+			if (s->got_bye && (ts_diff.tv_sec > 2)) {
+				delete_source(session, s->ssrc);
+			}
+			/* If a source hasn't been heard from for more than 5 RTCP   */
+			/* reporting intervals, we mark the source as inactive.      */
+
+			/* If a source hasn't been heard from for more than 30 mins, */
+			/* we delete that source.                                    */
+		}
+	}
+}
+
 int rtp_send_ctrl(struct rtp *session, u_int32 ts)
 {
-	/* Expire sources which we haven't heard from for a while   ... */
-	/* Send an RTCP packet, if one is due... */
-	UNUSED(session);
+	expire_sources(session);
+
 	UNUSED(ts);
+	/* Send an RTCP packet, if one is due... */
 	return -1;
 }
 

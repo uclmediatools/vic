@@ -1,11 +1,17 @@
 Common Code Library: Modification history
 
-v1.0.0  Initial version, based on RAT v3.2.7
-	Added HMAC authentication code
-	Added timeout to udp_recv()
-	Added authentication of Mbus messages
-	Added RTP library
-	Added select and fd_set functions to net_udp.[ch]
-	IPv6 code now runs on the pre-release stack for Solaris 2.7
-	Mbus code support a configuration file on Unix, and the registry
-	on Win32, to save/restore settings
+v1.0.0  - Initial version, based on RAT v3.2.7
+	- Added HMAC authentication code
+	- Added timeout to udp_recv()
+	- Added authentication of Mbus messages
+	- Added RTP library
+	- Added select and fd_set functions to net_udp.[ch]
+	- IPv6 code now runs on the pre-release stack for Solaris 2.7
+	- Mbus code support a configuration file on Unix, and the registry
+	  on Win32, to save/restore settings
+
+Still to do...
+	- Mbus code doesn't support encryption
+	- Resolve issues with expiry of encryption keys in the mbus
+	- IPv6 code doesn't correctly set the TTL
+
