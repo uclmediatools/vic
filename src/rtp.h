@@ -155,4 +155,6 @@ void		 rtp_done(struct rtp *session);
 int              rtp_set_encryption_key(struct rtp *session, const char *key);
 const char      *rtp_get_encryption_key(struct rtp *session);
 
+int              rtp_set_my_ssrc(struct rtp *session, u_int32 ssrc);
+
 #endif /* __RTP_H__ */
