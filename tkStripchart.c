@@ -1,3 +1,5 @@
+/* This is stolen from mash-5.0a11 [csp] */
+
 /*
  * tkStripchart.c --
  *
@@ -120,6 +122,9 @@ struct strip_struct {
 				 * means that the window has been destroyed
 				 * but the data structures haven't yet been
 				 * cleaned up.*/
+	Display *display;	/* Display containing widget;  needed, among
+				 * other things, to release resources after
+				 * tkwin has already gone away. */
 	Tcl_Interp *interp;	/* Interpreter associated with widget.  Used
 				 * to delete widget command.  */
 	Tk_Uid screenName;	/* If this window isn't a toplevel window
@@ -148,7 +153,7 @@ struct strip_struct {
 	int scrollrequired;
 	int guarantee_draw;
 	int grow_up;
-	XFontStruct *fontPtr;	/* Information about text font, or NULL. */
+	Tk_Font tkfont;	        /* Information about text font, or NULL. */
 	XColor *textColorPtr;	/* Color for drawing text. */
 	GC textGC;		/* GC for drawing text. */
 	XColor *tickColorPtr;	/* Color for drawing ticks. */
@@ -257,7 +262,7 @@ static Tk_ConfigSpec configSpecs[] =
 	{TK_CONFIG_SYNONYM, "-fg", "stripcolor", 0,
 	 0, 0, 0},
 	{TK_CONFIG_FONT, "-font", "font", "Font",
-	 DEF_STRIPCHART_FONT, Tk_Offset(Stripchart, fontPtr),
+	 DEF_STRIPCHART_FONT, Tk_Offset(Stripchart, tkfont),
 	 0},
 	{TK_CONFIG_BOOLEAN, "-guaranteedrawing", "guaranteedrawing",
 	 "Guaranteedrawing", DEF_GUARANTEE_DRAW,
@@ -326,7 +331,7 @@ static void Callback(Stripchart* StripchartPtr);
 static void ComputeStripchartGeometry(Stripchart* StripchartPtr);
 static int ConfigureStripchart(Tcl_Interp* interp, Stripchart* StripchartPtr,
 				int argc, char** argv, int flags);
-static void DestroyStripchart(ClientData clientData);
+static void DestroyStripchart(char* clientData);
 static void DisplayStripchart(ClientData clientData);
 static void DrawStripi(Stripchart* StripchartPtr, int i);
 static void EventuallyRedrawStripchart(Stripchart* StripchartPtr,
@@ -379,6 +384,7 @@ Tk_StripchartCmd(ClientData clientData, Tcl_Interp *interp, int argc,
 	Tk_SetClass(new, "Stripchart");
 	StripchartPtr = (Stripchart*)calloc(1, sizeof(Stripchart));
 	StripchartPtr->tkwin = new;
+	StripchartPtr->display = Tk_Display(new);
 	StripchartPtr->interp = interp;
 
 	Tk_CreateEventHandler(StripchartPtr->tkwin,
@@ -539,13 +545,16 @@ Callback(Stripchart *StripchartPtr)
  *      Everything associated with the Stripchart is freed up.
  */
 static void
-DestroyStripchart(ClientData clientData)
+DestroyStripchart(char* clientData)
 {
 	Stripchart* StripchartPtr = (Stripchart*)clientData;
 
 	if (StripchartPtr->timer)
 		Tk_DeleteTimerHandler(StripchartPtr->timer);
+	if (StripchartPtr->value != NULL)
+		free(StripchartPtr->value);
 
+#if TCL_MAJOR_VERSION < 8	
 	if (StripchartPtr->border != NULL)
 		Tk_Free3DBorder(StripchartPtr->border);
 
@@ -566,27 +575,16 @@ DestroyStripchart(ClientData clientData)
 
 	if (StripchartPtr->rescale_command != NULL)
 		ckfree(StripchartPtr->rescale_command);
-
-	if (StripchartPtr->value != NULL)
-		free(StripchartPtr->value);
-
-	if (StripchartPtr->fontPtr != NULL)
-		Tk_FreeFontStruct(StripchartPtr->fontPtr);
+	
+	if (StripchartPtr->tkfont != NULL)
+		Tk_FreeFontStruct(StripchartPtr->tkfont);
 
 	if (StripchartPtr->textColorPtr != NULL)
 		Tk_FreeColor(StripchartPtr->textColorPtr);
 
-	if (StripchartPtr->textGC != None && StripchartPtr->tkwin)
-		Tk_FreeGC(Tk_Display(StripchartPtr->tkwin),
-			  StripchartPtr->textGC);
-
 	if (StripchartPtr->tickColorPtr != NULL)
 		Tk_FreeColor(StripchartPtr->tickColorPtr);
-
-	if (StripchartPtr->tickGC != None && StripchartPtr->tkwin)
-		Tk_FreeGC(Tk_Display(StripchartPtr->tkwin),
-			  StripchartPtr->tickGC);
-
+	
 	if (StripchartPtr->a_textColor != NULL)
 		Tk_FreeColor(StripchartPtr->a_textColor);
 
@@ -597,7 +595,19 @@ DestroyStripchart(ClientData clientData)
 		Tk_FreeCursor(Tk_Display(StripchartPtr->tkwin),
 			      StripchartPtr->cursor);
 	}
-	ckfree((char *)StripchartPtr);
+#else /* ! TCL_MAJOR_VERSION < 8 */
+	Tk_FreeOptions(configSpecs, (char*)StripchartPtr,
+		       StripchartPtr->display, 0);
+#endif /* ! TCL_MAJOR_VERSION < 8 */
+	if (StripchartPtr->textGC != None)
+		Tk_FreeGC(StripchartPtr->display, StripchartPtr->textGC);
+
+	if (StripchartPtr->tickGC != None)
+		Tk_FreeGC(StripchartPtr->display, StripchartPtr->tickGC);
+
+	/* note that since we use calloc to allocate mem, we should free and
+	 * not ckfree */
+	free(StripchartPtr);
 }
 
 /*
@@ -631,7 +641,7 @@ ConfigureStripchart(Tcl_Interp *interp, Stripchart *StripchartPtr,
 
 	Tk_SetBackgroundFromBorder(StripchartPtr->tkwin, StripchartPtr->border);
 
-	gcValues.font = StripchartPtr->fontPtr->fid;
+	gcValues.font =  Tk_FontId(StripchartPtr->tkfont);
 	gcValues.foreground = StripchartPtr->textColorPtr->pixel;
 	newGC = Tk_GetGC(StripchartPtr->tkwin, GCForeground|GCFont, &gcValues);
 	if (StripchartPtr->textGC != None && StripchartPtr->tkwin) {
@@ -692,9 +702,12 @@ ComputeStripchartGeometry(Stripchart* StripchartPtr)
  {
 	int tt = hasatitle(StripchartPtr);
 	int bd = StripchartPtr->borderWidth;
-	int lineHeight = StripchartPtr->fontPtr->ascent +
-	StripchartPtr->fontPtr->descent;
-
+	Tk_FontMetrics fm;
+	int lineHeight;
+	
+	Tk_GetFontMetrics(StripchartPtr->tkfont, &fm);
+	lineHeight = fm.linespace;
+		
 	Tk_GeometryRequest(StripchartPtr->tkwin,
 			   2 * (bd + PADDING) + StripchartPtr->num_strips *
 			   StripchartPtr->strip_width,
@@ -722,15 +735,18 @@ DisplayStripchart(ClientData clientData)
 	Tk_Window tkwin = StripchartPtr->tkwin;
 	int bd = StripchartPtr->borderWidth;
 	int i, tt = hasatitle(StripchartPtr);
-
+	int width;
+	
 	/*
 	 * Variable declarations used in the title drawing routines
 	 */
-	XFontStruct *fp = StripchartPtr->fontPtr;
-	XCharStruct bbox;
-	int x, dummy;
-	int lineHeight = StripchartPtr->fontPtr->ascent +
-	StripchartPtr->fontPtr->descent;
+	Tk_Font tkfont = StripchartPtr->tkfont;
+	Tk_FontMetrics fm;
+	int x;
+	int lineHeight;
+
+	Tk_GetFontMetrics(StripchartPtr->tkfont, &fm);
+	lineHeight = fm.linespace;
 
 	StripchartPtr->displaybits &= ~REDRAW_PENDING;
 	if ((StripchartPtr->tkwin == NULL) || !Tk_IsMapped(tkwin))
@@ -747,19 +763,19 @@ DisplayStripchart(ClientData clientData)
 	 * space. Otherwise left justified and clipped on the right.
 	 */
 	if (tt && StripchartPtr->displaybits & DISPLAY_TITLE) {
-		XTextExtents(fp, StripchartPtr->title,
-			     strlen(StripchartPtr->title),
-			     &dummy, &dummy, &dummy, &bbox);
-		if (bbox.lbearing + bbox.rbearing < Tk_Width(tkwin) - 2 * bd)
-			x = (Tk_Width(tkwin) - bbox.lbearing - bbox.rbearing)/2;
+		width = Tk_TextWidth(tkfont, StripchartPtr->title,
+				     strlen(StripchartPtr->title));
+		if (width < Tk_Width(tkwin) - 2 * bd)
+			x = (Tk_Width(tkwin) - width)/2;
 		else
 			x = bd + PADDING;
 
 		XClearArea(Tk_Display(tkwin), Tk_WindowId(tkwin), bd, bd,
 		     Tk_Width(tkwin) - 2 * bd, lineHeight + PADDING, False);
-		XDrawString(Tk_Display(tkwin), Tk_WindowId(tkwin),
-		       StripchartPtr->textGC, x, fp->max_bounds.ascent + bd,
-			StripchartPtr->title, strlen(StripchartPtr->title));
+		Tk_DrawChars(Tk_Display(tkwin), Tk_WindowId(tkwin),
+			     StripchartPtr->textGC, StripchartPtr->tkfont,
+			     StripchartPtr->title,
+			     strlen(StripchartPtr->title), x, fm.ascent + bd);
 	}
 	/*
 	 * draw the strips
@@ -1057,7 +1073,9 @@ static void
 DrawStripi(Stripchart* SPtr, int i)
 {
 	Tk_Window tkwin = SPtr->tkwin;
-	int lineHeight = SPtr->fontPtr->ascent + SPtr->fontPtr->descent;
+	Tk_FontMetrics fm;
+	int lineHeight;
+
 	int x = SPtr->borderWidth + PADDING + (i - 1) * SPtr->strip_width;
 	int y = SPtr->borderWidth + PADDING +
 		hasatitle(SPtr) * (lineHeight + PADDING);
@@ -1065,6 +1083,10 @@ DrawStripi(Stripchart* SPtr, int i)
 	int h;
 	double maxv = SPtr->max_value;
 	double minv = SPtr->min_value;
+
+		
+	Tk_GetFontMetrics(SPtr->tkfont, &fm);
+	lineHeight = fm.linespace;
 
 	if (i < 1 || i > SPtr->num_strips)
 		return;
@@ -1136,7 +1158,8 @@ static void
 ScrollStrips(Stripchart* SPtr)
 {
 	Tk_Window tkwin = SPtr->tkwin;
-	int lineHeight = SPtr->fontPtr->ascent + SPtr->fontPtr->descent;
+	Tk_FontMetrics fm;
+	int lineHeight;	
 	int src_x = SPtr->borderWidth + PADDING + SPtr->strip_width;
 	int src_y = SPtr->borderWidth + PADDING +
 		    hasatitle(SPtr) * (lineHeight + PADDING);
@@ -1144,7 +1167,11 @@ ScrollStrips(Stripchart* SPtr)
 	int dest_y = src_y;
 	int w = (SPtr->num_strips - 1) * SPtr->strip_width;
 	int h = SPtr->max_height;
+	
+	Tk_GetFontMetrics(SPtr->tkfont, &fm);
+	lineHeight = fm.linespace;
 
 	XCopyArea(Tk_Display(tkwin), Tk_WindowId(tkwin), Tk_WindowId(tkwin),
 	          Tk_GetGC(tkwin, 0, NULL), src_x, src_y, w, h, dest_x, dest_y);
 }
+

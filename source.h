@@ -44,6 +44,80 @@
 #include "inet.h"
 #include "Tcl.h"
 #include "rtp.h"
+#include "mbus.h"
+
+
+
+/* Added as a variation of Isidor's approach 
+ * for the elastic playout buffer. It actually
+ * incorporates the playout.h & playout.cc files
+ * in source.h adn source.cc p
+ */
+
+
+class MtuAlloc {
+ public:
+        MtuAlloc();
+        ~MtuAlloc();
+        inline char *new_blk();
+        inline void delete_blk(char *bp);
+ protected:
+        static char *blk_list_;
+};
+
+inline char *MtuAlloc::new_blk()
+{
+        char    *bp;
+
+        if (blk_list_) {
+                bp = blk_list_;
+                blk_list_ = *((char**)bp);
+        } else
+                bp = new char[2 * RTP_MTU];
+
+        return (bp);
+}
+
+inline void MtuAlloc::delete_blk(char *bp)
+{
+        *((char**)bp) = blk_list_;
+        blk_list_ = bp;
+}
+
+class PacketData : public MtuAlloc {
+ public:
+        PacketData(u_char *pkt, struct rtphdr* rh, u_char *vh,
+                   int len, u_int playout);
+        inline void construct(u_char *pkt, struct rtphdr* rh, u_char *vh,
+                   int len, u_int playout);
+        ~PacketData();
+        inline const struct rtphdr *rtp_hdr() const { return (rh_); }
+        inline const u_char *video_data() const { return (vh_); }
+        inline const int data_length() const { return (len_); }
+        inline const int playout() const { return (playout_); }
+ private:
+        u_char          *pkt_;
+        struct rtphdr   *rh_;
+        u_char          *vh_;
+        int             len_;
+        u_int           playout_;
+ public:
+        PacketData *next_;
+};
+
+inline void
+PacketData::construct(u_char *pkt, struct rtphdr* rh, u_char *vh,
+                      int len, u_int playout)
+{
+        pkt_ = pkt;
+        rh_ = rh;
+        vh_ = vh;
+        len_ = len;
+        playout_ = playout;
+        next_ = 0;
+}
+
+
 
 class SourceManager;
 
@@ -63,7 +137,7 @@ class PacketHandler : public TclObject {
 	int delvar_;
 };
 
-class Source : public TclObject {
+class Source : public TclObject, public Timer {
     public:
 	Source(u_int32_t srcid, u_int32_t ssrc, u_int32_t addr);
 	virtual ~Source();
@@ -81,12 +155,19 @@ class Source : public TclObject {
 	void lts_ctrl(const timeval& now) { lts_ctrl_ = now; }
 	void sts_data(u_int32_t now) { sts_data_ = now; }
 	void sts_ctrl(u_int32_t now) { sts_ctrl_ = now; }
+	void rtp_ctrl(u_int32_t now) { rtp_ctrl_ = now; }
+	void map_ntp_time(u_int32_t t) { map_ntp_time_ = t; }
+	void map_rtp_time(u_int32_t t) { map_rtp_time_ = t; }
+	void rtp2ntp(int v) { rtp2ntp_ = v; }
 
 	inline const timeval& lts_ctrl() const { return (lts_ctrl_); }
 	inline const timeval& lts_data() const { return (lts_data_); }
 	inline const timeval& lts_done() const { return (lts_done_); }
 	inline int sts_ctrl() const { return (sts_ctrl_); }
 	inline int sts_data() const { return (sts_data_); }
+	inline int rtp_ctrl() const { return (rtp_ctrl_); }
+	inline int rtp2ntp() const { return (rtp2ntp_); }
+	inline int apdelay() const { return (apdelay_); }
 
 	inline const char* sdes(int t) const { return (sdes_[t]); }
 	void sdes(int t, const char* value);
@@ -116,6 +197,7 @@ class Source : public TclObject {
 	inline u_int32_t sns() const { return (sns_); }
 	inline u_int32_t runt() const { return (nrunt_); }
 	inline u_int32_t dups() const { return (ndup_); }
+	inline int late() const { return (late_); } 
 	inline u_int32_t badsesslen() const { return (badsesslen_); }
 	inline u_int32_t badsessver() const { return (badsessver_); }
 	inline u_int32_t badsessopt() const { return (badsessopt_); }
@@ -129,6 +211,9 @@ class Source : public TclObject {
 	inline void sns(int v) { sns_ = v; }
 	inline void fs(int v) { fs_ = v; }
 	inline void runt(int v) { nrunt_ += v; }
+	inline void late(int v) { late_ += v; }
+	inline void apdelay(int v) { apdelay_ = v; }
+	inline void pending(int v) { pending_ = v; }
 	inline void badsesslen(int v) { badsesslen_ += v; }
 	inline void badsessver(int v) { badsessver_ += v; }
 	inline void badsessopt(int v) { badsessopt_ += v; }
@@ -138,8 +223,30 @@ class Source : public TclObject {
 	int checkseq(u_int16_t v);
 	void lost(int);
 
+	inline void sync(int v) { sync_ = v; }
+	inline int sync() const { return (sync_); }
+
 	Source* next_;		/* link for SourceManager source list */
 	Source* hlink_;		/* link for SourceManager hash table */
+
+	// DMIRAS: This bit for the elastic buffer
+	inline u_int32_t convert_time(u_int32_t ts);
+	
+	void add(u_char *pckt, struct rtphdr* rh, u_char *vh,
+                      int len, u_int playout);
+        void process(struct rtphdr* rh, u_char *vh, int len);
+        inline void elastic(int v) { elastic_ = v; }
+        inline int elastic() { return (elastic_); }
+	
+	// DMIRAS: This bit related to elastic buffer
+        void adapt(u_int32_t arr_ts, u_int32_t src_ts, int flag);
+        inline void skew(u_int s) { skew_ = s; }
+        inline u_int skew() const { return (skew_); }
+        inline double dvar() const { return (dvar_); }
+        void recv(u_char *pkt, struct rtphdr* rh, u_char *vh, int cc);
+
+	inline void mbus(MBusHandler *m) { mbus_ = m; }
+
     protected:
 	char* stats(char* cp) const;
 	void set_busy();
@@ -150,8 +257,12 @@ class Source : public TclObject {
 	u_int32_t ssrc_;	/* rtp global sync src id (SSRC), net order) */
 	u_int32_t addr_;	/* address of sender (net order) */
 
+	int rtp2ntp_;		/* true if we've received a SR report */
 	u_int32_t sts_data_;	/* sndr ts from last data packet (net order) */
 	u_int32_t sts_ctrl_;	/* sndr ts from last control packet */
+	u_int32_t rtp_ctrl_;	/* sndr rtp ts from last control packet */
+	u_int32_t map_rtp_time_;/* local rtp time of last control packet */
+	u_int32_t map_ntp_time_;/* local ntp time of last control packet */
 	timeval lts_data_;	/* local unix time for last data packet */
 	timeval lts_ctrl_;	/* local unix time for last control packet */
 	timeval lts_done_;	/* local unix time for bye packet */
@@ -183,6 +294,32 @@ class Source : public TclObject {
 #define SOURCE_NSEQ 64
 	u_int16_t seqno_[SOURCE_NSEQ];
 	char* sdes_[RTCP_SDES_MAX + 1];
+
+	// DMIRAS: This bit the protected for elastic buffer
+	PacketData *head_;
+        PacketData *tail_;
+        PacketData *free_;
+        u_int32_t now_;
+        float dtskew_;
+        int elastic_;
+	// DMIRAS: adaptive bit of the elastic buffer
+	u_int skew_;            /* clock skew */
+        int delay_;	        /* pkt delay */
+        double dvar_;		/* delay variance */
+        int delta_;		/* last delay time */
+        int pdelay_;	        /* playout delay for this frame */
+	int apdelay_;		/* audio playout delay as sent via mbus */
+        int adapt_init_;        /* Initialised adapt? */
+	int late_;		/* num of late pkts */
+	int count_;
+	int pending_;		/* if set, then have to send a mbus msg */
+	int sync_;		/* set if audio-video synchronisation is set */
+
+        void schedule();
+        virtual void timeout();
+	
+	/* pointer to the mbus object, so that source can send to it */
+	MBusHandler *mbus_;
 };
 
 class SourceManager : public TclObject {
@@ -191,6 +328,7 @@ class SourceManager : public TclObject {
 	static inline SourceManager& instance() { return (instance_); }
 	void init(u_int32_t localid, u_int32_t localaddr);
 	virtual int command(int argc, const char*const* argv);
+	Source* lookup(u_int32_t addr);
 	Source* lookup(u_int32_t srcid, u_int32_t ssrc, u_int32_t addr);
 	Source* demux(u_int32_t srcid, u_int32_t addr, u_int16_t seq);
 	Source* consult(u_int32_t srcid);
