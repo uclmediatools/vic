@@ -146,8 +146,9 @@ typedef struct _source {
 	rtcp_sr		*sr;
 	struct timeval	 last_sr;
 	struct timeval	 last_active;
+	int		 should_advertise_sdes;	/* TRUE if this source is a CSRC which we need to advertise SDES for */
 	int		 sender;
-	int		 got_bye;	/* TRUE if we've received an RTCP bye from this source */
+	int		 got_bye;		/* TRUE if we've received an RTCP bye from this source */
 	uint32_t	 base_seq;
 	uint16_t	 max_seq;
 	uint32_t	 bad_seq;
@@ -158,7 +159,7 @@ typedef struct _source {
 	int		 probation;
 	uint32_t	 jitter;
 	uint32_t	 transit;
-	uint32_t	 magic;		/* For debugging... */
+	uint32_t	 magic;			/* For debugging... */
 } source;
 
 /* The size of the hash table used to hold the source database. */
@@ -194,12 +195,14 @@ struct rtp {
 	uint16_t	 tx_port;
 	int		 ttl;
 	uint32_t	 my_ssrc;
+	int		 last_advertised_csrc;
 	source		*db[RTP_DB_SIZE];
         rtcp_rr_wrapper  rr[RTP_DB_SIZE][RTP_DB_SIZE]; 	/* Indexed by [hash(reporter)][hash(reportee)] */
 	options		*opt;
 	void		*userdata;
 	int		 invalid_rtp_count;
 	int		 invalid_rtcp_count;
+	int		 csrc_count;
 	int		 ssrc_count;
 	int		 ssrc_count_prev;		/* ssrc_count at the time we last recalculated our RTCP interval */
 	int		 sender_count;
@@ -265,6 +268,31 @@ static int tv_gt(struct timeval a, struct timeval b)
 	}
 	assert(a.tv_sec == b.tv_sec);
 	return a.tv_usec > b.tv_usec;
+}
+
+static uint32_t next_csrc(struct rtp *session)
+{
+	/* This returns each source marked "should_advertise_sdes" in turn. */
+	int	 chain, cc;
+	source	*s;
+
+	debug_msg("next_csrc\n");
+	cc = 0;
+	for (chain = 0; chain < RTP_DB_SIZE; chain++) {
+		/* Check that the linked lists making up the chains in */
+		/* the hash table are correctly linked together...     */
+		for (s = session->db[chain]; s != NULL; s = s->next) {
+			if (s->should_advertise_sdes) {
+				if (cc == session->last_advertised_csrc) {
+					return s->ssrc;
+				} else {
+					cc++;
+				}
+			}
+		}
+	}
+	/* We should never get here... */
+	abort();
 }
 
 static int ssrc_hash(uint32_t ssrc)
@@ -528,6 +556,7 @@ static source *create_source(struct rtp *session, uint32_t ssrc)
 	s->note           = NULL;
 	s->sr             = NULL;
 	s->got_bye        = FALSE;
+	s->should_advertise_sdes = FALSE;
 	s->sender         = FALSE;
 	s->base_seq       = 0;
 	s->max_seq        = 0;
@@ -624,6 +653,14 @@ static void delete_source(struct rtp *session, uint32_t ssrc)
 		tv_add(&(session->last_rtcp_send_time), - ((session->ssrc_count / session->ssrc_count_prev) 
 						     * tv_diff(event_ts, session->last_rtcp_send_time)));
 		session->ssrc_count_prev = session->ssrc_count;
+	}
+
+	/* Reduce our csrc count... */
+	if (s->should_advertise_sdes == TRUE) {
+		session->csrc_count--;
+	}
+	if (session->last_advertised_csrc == session->csrc_count) {
+		session->last_advertised_csrc = 0;
 	}
 
 	/* Signal to the application that this source is dead... */
@@ -916,6 +953,7 @@ struct rtp *rtp_init_if(char *addr, char *iface, uint16_t rx_port, uint16_t tx_p
 	session->callback           = callback;
 	session->invalid_rtp_count  = 0;
 	session->invalid_rtcp_count = 0;
+	session->csrc_count         = 0;
 	session->ssrc_count         = 0;
 	session->ssrc_count_prev    = 0;
 	session->sender_count       = 0;
@@ -941,6 +979,7 @@ struct rtp *rtp_init_if(char *addr, char *iface, uint16_t rx_port, uint16_t tx_p
 	for (i = 0; i < RTP_DB_SIZE; i++) {
 		session->db[i] = NULL;
 	}
+	session->last_advertised_csrc = 0;
 
         /* Initialize sentinels in rr table */
         for (i = 0; i < RTP_DB_SIZE; i++) {
@@ -1629,16 +1668,37 @@ int rtp_recv(struct rtp *session, struct timeval *timeout, uint32_t curr_rtp_ts)
 
 int rtp_add_csrc(struct rtp *session, uint32_t csrc)
 {
+	/* Mark csrc as something for which we should advertise RTCP SDES items, */
+	/* in addition to our own SDES.                                          */
+	source	*s;
+
 	check_database(session);
-	UNUSED(csrc);
-	return FALSE;
+	s = get_source(session, csrc);
+	if (s == NULL) {
+		s = create_source(session, csrc);
+		debug_msg("Created source 0x%08x as CSRC\n", csrc);
+	}
+	check_source(s);
+	s->should_advertise_sdes = TRUE;
+	session->csrc_count++;
+	debug_msg("Added CSRC 0x%08lx as CSRC %d\n", csrc, session->csrc_count);
+	return TRUE;
 }
 
 int rtp_del_csrc(struct rtp *session, uint32_t csrc)
 {
+	source	*s;
+
 	check_database(session);
-	UNUSED(csrc);
-	return FALSE;
+	s = get_source(session, csrc);
+	if (s == NULL) {
+		debug_msg("Invalid source 0x%08x\n", csrc);
+		return FALSE;
+	}
+	check_source(s);
+	s->should_advertise_sdes = FALSE;
+	session->csrc_count--;
+	return TRUE;
 }
 
 int rtp_set_sdes(struct rtp *session, uint32_t ssrc, rtcp_sdes_type type, char *value, int length)
@@ -2137,6 +2197,11 @@ static void send_rtcp(struct rtp *session, uint32_t rtp_ts,
 	lpt = ptr;
 	ptr = format_rtcp_sdes(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), rtp_my_ssrc(session), session);
 
+	/* If we have any CSRCs, we include SDES items for each of them in turn...         */
+	if (session->csrc_count > 0) {
+		ptr = format_rtcp_sdes(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), next_csrc(session), session);
+	}
+
 	/* Following that, additional RR packets SHOULD follow if there are more than 31   */
 	/* senders, such that the reports do not fit into the initial packet. We give up   */
 	/* if there is insufficient space in the buffer: this is bad, since we always drop */
@@ -2203,7 +2268,7 @@ void rtp_send_ctrl(struct rtp *session, uint32_t rtp_ts,
 		struct timeval	 new_send_time;
 		double		 new_interval;
 
-		new_interval  = rtcp_interval(session);
+		new_interval  = rtcp_interval(session) / (session->csrc_count + 1);
 		new_send_time = session->last_rtcp_send_time;
 		tv_add(&new_send_time, new_interval);
 		if (tv_gt(curr_time, new_send_time)) {
