@@ -475,7 +475,12 @@ int IP6Network::openssock(Address & addr, u_short port, int ttl)
 	sin.sin6_port = 0;
 	sin.sin6_flowinfo = flowLabel_;
 /* __IPV6 memcopy address */
-	sin.sin6_addr = in6addr_any;
+        // Use Local name if already set via command line
+        if (((const char*)local_)[0]!='\0') {
+		sin.sin6_addr = (IP6Address&)local_;
+        } else {
+		sin.sin6_addr = in6addr_any;
+	}
 	if (bind(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
 		perror("bind");
 		exit(1);
