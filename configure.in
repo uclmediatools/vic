@@ -229,9 +229,9 @@ sparc-sun-sunos*)
 *-*-netbsd*)
 	V_TARCMD="tar -h -c -f"
 	V_LIB="$V_LIB -L/usr/local/lib"
-+	;;
-+*-*-freebsd*)
-+
+	;;
+*-*-freebsd*)
+
 	;;
 *-*-hpux*)
 	V_CCOPT="-O"

@@ -330,8 +330,8 @@ clean:
 		vic vic.dyn vic.xil h261_play h261_dump jpeg_play cb_wish \
 		mkcube rgb-cube.ppm yuv-map.ppm cm0.c cm1.c ppmtolut \
 		config.cache config.log domake.* dotar.*
-	cd tmn && make clean
-	cd tmndec && make clean
+	cd tmn && $(MAKE) clean
+	cd tmndec && $(MAKE) clean
 	rm -f tmn-x/*.o tmn-x/*.a
 
 realclean:
@@ -392,8 +392,7 @@ fulltar: force
 	     chmod 444 $$name.tar.gz
 
 tmndec/libh263.a:
-	(cd tmndec; make -f Makefile.lib)
+	(cd tmndec; $(MAKE) -f Makefile.lib)
 
 tmn-x/libh263coder.a:
-	(cd tmn; make)
-
+	(cd tmn; $(MAKE))
