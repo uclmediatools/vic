@@ -228,6 +228,9 @@ v1.1.0  - Changed autoconf generated header to uclconf.h.
 	- Remove the mbus_addr() function, add an extra parameter to mbus_init() instead.
 	* 28 January 2000
 
+v1.1.1	- Add extra debugging code
+	* 1 February 2000
+
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
 	  since it does a gethostbyname() and looks that up, yet that can
