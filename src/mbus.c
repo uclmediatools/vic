@@ -476,28 +476,61 @@ static int mbus_addr_match(char *a, char *b)
 	return TRUE;
 }
 
-static void resend(struct mbus *m, struct mbus_msg *curr) 
+/* The tx_* functions are used to build an mbus message up in the */
+/* tx_buffer, and to add authentication and encryption before the */
+/* message is sent.                                               */
+static char	 tx_buffer[MBUS_BUF_SIZE];
+static char	*tx_bufpos;
+
+#define MBUS_AUTH_LEN 25
+
+static void tx_header(int seqnum, int ts, char reliable, char *src, char *dst, int ackseq)
+{
+	memset(tx_buffer,   0, MBUS_BUF_SIZE);
+	memset(tx_buffer, ' ', MBUS_AUTH_LEN);
+	tx_bufpos = tx_buffer + MBUS_AUTH_LEN;
+	sprintf(tx_bufpos, "\nmbus/1.0 %6d %9d %c (%s) %s ", seqnum, ts, reliable, src, dst);
+	tx_bufpos += 33 + strlen(src) + strlen(dst);
+	if (ackseq == -1) {
+		sprintf(tx_bufpos, "()\n");
+		tx_bufpos += 3;
+	} else {
+		sprintf(tx_bufpos, "(%6d)\n", ackseq);
+		tx_bufpos += 9;
+	}
+}
+
+static void tx_add_command(char *cmnd, char *args)
+{
+	sprintf(tx_bufpos, "%s (%s)\n", cmnd, args);
+	tx_bufpos += strlen(cmnd) + strlen(args) + 4;
+}
+
+static void tx_authenticate(char *key, int keylen)
 {
 	char	 digest[16];
-	char	 buffer[MBUS_BUF_SIZE];
-	char	*bufp = buffer;
-	int	 i;
 
+	hmac_md5(tx_buffer + MBUS_AUTH_LEN, strlen(tx_buffer) - MBUS_AUTH_LEN, key, keylen, digest);
+	base64encode(digest, 16, tx_buffer, MBUS_AUTH_LEN - 1);
+}
+
+static void tx_send(struct mbus *m)
+{
+	udp_send(m->s, tx_buffer, tx_bufpos - tx_buffer);
+}
+
+static void resend(struct mbus *m, struct mbus_msg *curr) 
+{
 	/* Don't need to check for buffer overflows: this was done in mbus_send() when */
 	/* this message was first transmitted. If it was okay then, it's okay now.     */
-	memset(buffer, 0, MBUS_BUF_SIZE);
-	sprintf(bufp, "########################\nmbus/1.0 %6d %9d %c (%s) %s ()\n", 
-		curr->seqnum, (int) curr->ts.tv_sec, curr->reliable?'R':'U', m->addr[0], curr->dest);
-	hmac_md5(buffer+25, strlen(buffer)-25, m->hashkey, m->hashkeylen, digest);
-	base64encode(digest, 16, buffer, 24);
-	bufp += strlen(m->addr[0]) + strlen(curr->dest) + 60;
-	for (i = 0; i < curr->num_cmds; i++) {
-		sprintf(bufp, "%s (%s)\n", curr->cmd_list[i], curr->arg_list[i]);
-		bufp += strlen(curr->cmd_list[i]) + strlen(curr->arg_list[i]) + 4;
-	}
+	int	 i;
 
-	debug_msg("resending %d\n", curr->seqnum);
-	udp_send(m->s, buffer, bufp - buffer);
+	tx_header(curr->seqnum, (int) curr->ts.tv_sec, curr->reliable?'R':'U', m->addr[0], curr->dest, -1);
+	for (i = 0; i < curr->num_cmds; i++) {
+		tx_add_command(curr->cmd_list[i], curr->arg_list[i]);
+	}
+	tx_authenticate(m->hashkey, m->hashkeylen);
+	tx_send(m);
 	curr->retransmit_count++;
 }
 
@@ -646,11 +679,8 @@ void mbus_send(struct mbus *m)
 	/* Send one, or more, messages previosly queued with mbus_qmsg(). */
 	/* Messages for the same destination are batched together. Stops  */
 	/* when a reliable message is sent, until the ACK is received.    */
-	char		 buffer[MBUS_BUF_SIZE];
-	char		*bufp;
 	struct mbus_msg	*curr = m->cmd_queue;
 	int		 i;
-	char		 digest[16];
 
 	if (m->waiting_ack != NULL) {
 		return;
@@ -658,28 +688,16 @@ void mbus_send(struct mbus *m)
 
 	while (curr != NULL) {
 		/* Create the message... */
-		bufp = buffer;
-		memset(buffer, 0, MBUS_BUF_SIZE);
-		sprintf(bufp, "########################\nmbus/1.0 %6d %9d %c (%s) %s ()\n", 
-			curr->seqnum, (int) curr->ts.tv_sec, curr->reliable?'R':'U', m->addr[0], curr->dest);
-		bufp += strlen(m->addr[0]) + strlen(curr->dest) + 60;
+		tx_header(curr->seqnum, (int) curr->ts.tv_sec, curr->reliable?'R':'U', m->addr[0], curr->dest, -1);
 		for (i = 0; i < curr->num_cmds; i++) {
-			int cmdlen = strlen(curr->cmd_list[i]) + strlen(curr->arg_list[i]) + 4;
-			assert((bufp + cmdlen - buffer) < MBUS_BUF_SIZE);
-			sprintf(bufp, "%s (%s)\n", curr->cmd_list[i], curr->arg_list[i]);
-			bufp += cmdlen;
+			tx_add_command(curr->cmd_list[i], curr->arg_list[i]);
 		}
-		assert(*buffer && strlen(buffer) < MBUS_BUF_SIZE);
-
-		/* Add an authentication header... this overwrites */
-		/* the string of #'s at the start of the message.  */
-		hmac_md5(buffer+25, strlen(buffer)-25, m->hashkey, m->hashkeylen, digest);
-		i = base64encode(digest, 16, buffer, 24);
+		tx_authenticate(m->hashkey, m->hashkeylen);
+		tx_send(m);
 		
-		/* Send the message... */
-		udp_send(m->s, buffer, bufp - buffer);
 		m->cmd_queue = curr->next;
 		if (curr->reliable) {
+			/* Reliable message, wait for the ack... */
 			gettimeofday(&(curr->time), NULL);
 			m->waiting_ack = curr;
 			return;
@@ -1017,20 +1035,20 @@ int mbus_recv(struct mbus *m, void *data)
 				mbus_parse_done(m);
 				/* ...if an ACK was requested, send one... */
 				if (strcmp(r, "R") == 0) {
+					char *newsrc = (char *) xmalloc(strlen(src) + 3);
+					sprintf(newsrc, "(%s)", src);	/* Yes, this is a kludge. */
 					gettimeofday(&t, NULL);
-					sprintf(ackbuf, "########################\nmbus/1.0 %d %d U (%s) (%s) (%d)\n", 
-					        ++m->seqnum, (int) t.tv_sec, m->addr[0], src, seq);
-					assert(strlen(ackbuf)< MBUS_ACK_BUF_SIZE);
-					hmac_md5(ackbuf+25, strlen(ackbuf)-25, m->hashkey, m->hashkeylen, digest);
-					base64encode(digest, 16, ackbuf, 24);
-					udp_send(m->s, ackbuf, strlen(ackbuf));
+					tx_header(++m->seqnum, (int) t.tv_sec, 'U', m->addr[0], newsrc, seq);
+					tx_authenticate(m->hashkey, m->hashkeylen);
+					tx_send(m);
+					xfree(newsrc);
 				}
 				/* ...and process the commands contained in the message */
 				while (mbus_parse_sym(m, &cmd)) {
 					if (mbus_parse_lst(m, &param)) {
 						m->cmd_handler(src, cmd, param, data);
 					} else {
-						debug_msg("Unable to parse mbus command paramaters...\n");
+						debug_msg("Unable to parse mbus command:\n");
 						debug_msg("cmd = %s\n", cmd);
 						debug_msg("arg = %s\n", param);
 						break;

@@ -33,6 +33,7 @@ v1.0.2	- Assorted fixes to RTP library
 	  with the bounds checker on.
 	- Add timestamp to mbus packet headers.
 	- Add mbus_qmsgf()
+	- Cleanup mbus transmission path
 
 
 Still to do...
