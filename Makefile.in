@@ -1,0 +1,371 @@
+#
+# Copyright (c) 1993-1994 The Regents of the University of California.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+# 3. All advertising materials mentioning features or use of this software
+#    must display the following acknowledgement:
+#	This product includes software developed by the University of
+#	California, Berkeley and the Network Research Group at
+#	Lawrence Berkeley Laboratory.
+# 4. Neither the name of the University nor of the Laboratory may be used
+#    to endorse or promote products derived from this software without
+#    specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+# SUCH DAMAGE.
+#
+# @(#) $Header$ (LBL)
+#
+
+.SUFFIXES: .cc $(.SUFFIXES)
+
+ALL = @V_ALL@ histtolut
+all:	$(ALL)
+
+.cc.o:
+	$(C++) -o $@ -c $(CFLAGS) $*.cc
+
+.c.o:
+	$(CC) -o $@ -c $(CFLAGS) $*.c
+
+ED_YBITS = 4
+
+CC = @CC@
+C++ = @CXX@
+CCOPT = @V_CCOPT@
+
+INCLUDE_TK = @V_INCLUDE_TK@
+INCLUDE_TCL = @V_INCLUDE_TCL@
+INCLUDE_X11 = @V_INCLUDE_X11@
+INCLUDE_MISC = @V_INCLUDE@
+
+STATIC = @V_STATIC@
+MKDEP = ./mkdep
+
+@V_SHELL@
+
+LIBRARY_TK = @V_LIBRARY_TK@
+LIBRARY_TCL = @V_LIBRARY_TCL@
+TK_LIBRARY_FILES = \
+		$(LIBRARY_TCL)/init.tcl \
+		$(LIBRARY_TK)/tk.tcl \
+		$(LIBRARY_TK)/button.tcl \
+		$(LIBRARY_TK)/dialog.tcl \
+		$(LIBRARY_TK)/entry.tcl \
+		$(LIBRARY_TK)/focus.tcl \
+		$(LIBRARY_TK)/listbox.tcl \
+		$(LIBRARY_TK)/menu.tcl \
+		$(LIBRARY_TK)/palette.tcl \
+		$(LIBRARY_TK)/scale.tcl \
+		$(LIBRARY_TK)/tearoff.tcl \
+		$(LIBRARY_TK)/text.tcl \
+		@V_TKDOSNAMES@
+
+LIB_GRABBER = @V_LIB_GRABBER@
+INCLUDE_GRABBER = @V_INCLUDE_GRABBER@
+OBJ_GRABBER = @V_OBJ_GRABBER@
+SRC_GRABBER = $(OBJ_GRABBER:.o=.cc) 
+OBJ_XIL = @V_OBJ_XIL@
+OBJ_CRYPT = @V_OBJ_CRYPT@
+LIB = $(LIB_GRABBER) @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ -lm
+INCLUDE = $(INCLUDE_MISC) $(INCLUDE_GRABBER) $(INCLUDE_TK) $(INCLUDE_TCL) \
+	$(INCLUDE_X11) $(MD_INC) -I./jpeg -I./p64 -I.
+DEFINE = @V_DEFINE@ -DED_YBITS=$(ED_YBITS) -DSIGRET=@V_SIGRET@
+BFLAGS = $(DEFINE) $(INCLUDE)
+CFLAGS = $(CCOPT) $(BFLAGS)
+
+#
+# Remember to add a dependency if you add any tcl sources here.
+#
+TCL_VIC = ui-ctrlmenu.tcl ui-main.tcl ui-resource.tcl \
+	ui-srclist.tcl ui-stats.tcl ui-util.tcl ui-windows.tcl \
+	ui-switcher.tcl ui-extout.tcl ui-grabber.tcl ui-unix.tcl \
+	cf-main.tcl cf-tm.tcl cf-confbus.tcl cf-network.tcl cf-util.tcl \
+	tkerror.tcl entry.tcl
+TCL_VIC_C = $(TCL_VIC:.tcl=.cc)
+
+#
+# These modules are broken in libg++.  Rather than fix libg++
+# every time I install it on a given system, just make them
+# here (these sources came from tcl's compat directory)
+#
+BROKEN_OBJ = @V_BROKEN_OBJ@
+
+OBJ1 =	inet.o cellb_tables.o tkStripchart.o md5c.o random.o
+OBJ2 =	main.o net.o net-ip.o source.o \
+	iohandler.o timer.o idlecallback.o media-timer.o \
+	session.o session-rtpv1.o session-nv.o session-ivs.o \
+	mbus.o mbus_engine.o \
+	decoder.o decoder-jpeg.o decoder-nv.o \
+	decoder-h261.o decoder-h261v1.o \
+	decoder-cellb.o \
+	device.o grabber.o vw.o Tcl.o Tcl2.o module.o transmitter.o \
+	encoder-nv.o encoder-cellb.o encoder-h261.o \
+	transcoder-jpeg.o framer-jpeg.o \
+	group-ipc.o confbus.o renderer.o renderer-window.o \
+	color.o color-true.o color-pseudo.o color-dither.o color-ed.o \
+	color-quant.o color-hi.o color-gray.o color-mono.o color-hist.o \
+	rgb-converter.o jpeg/jpeg.o p64/p64.o dct.o \
+	compositor.o rate-variable.o crypt.o crypt-dull.o \
+	grabber-still.o @V_OBJ@
+OBJ3 =	cm0.o cm1.o huffcode.o version.o bv.o \
+	$(TCL_VIC:.tcl=.o) tk.o
+SRC =	$(OBJ1:.o=.c) $(OBJ2:.o=.cc) $(BROKEN_OBJ:.o=.c) \
+	$(RTIP_OBJ:.o=.c) $(SRC_GRABBER) $(OBJ_XIL:.o=.cc) $(OBJ_CRYPT:.o=.c)
+OBJ =	$(OBJ1) $(OBJ2) $(OBJ3) $(BROKEN_OBJ) $(RTIP_OBJ)
+
+OBJ_VDD = vdd.o p64/p64.o p64/p64dump.o \
+	module.o renderer.o renderer-window.o color.o \
+	color-dither.o color-gray.o color-pseudo.o color-ed.o \
+	color-quant.o color-true.o color-hi.o color-mono.o color-hist.o \
+	Tcl.o Tcl2.o vw.o cm0.o cm1.o \
+	dct.o huffcode.o bv.o iohandler.o timer.o \
+	ui-vdd.o tk.o random.o
+
+OBJ_H261PLAY = h261_play.o p64/p64.o p64/p64dump.o \
+	module.o renderer.o renderer-window.o color.o \
+	color-dither.o color-gray.o color-pseudo.o color-ed.o \
+	color-quant.o color-true.o color-hi.o color-mono.o color-hist.o \
+	Tcl.o Tcl2.o vw.o cm0.o cm1.o \
+	dct.o huffcode.o bv.o iohandler.o timer.o \
+	ui-h261_play.o tk.o random.o
+
+OBJ_JPEGPLAY = jpeg_play.o jpeg/jpeg.o \
+	renderer.o renderer-window.o color.o \
+	color-dither.o color-gray.o color-pseudo.o color-ed.o \
+	color-quant.o color-true.o color-hi.o color-mono.o \
+	Tcl.o Tcl2.o vw.o cm0.o cm1.o \
+	dct.o huffcode.o jpeg_play_tcl.o bv.o iohandler.o timer.o \
+	ui-jpeg_play.o tk.o random.o
+
+LIB_CB = @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ -lm
+OBJ_CB = cbAppInit.o cb.o confbus.o group-ipc.o iohandler.o \
+	net.o net-ip.o crypt.o crypt-dull.o $(OBJ_CRYPT) communicator.o \
+	ppm.o Tcl.o Tcl2.o inet.o md5c.o 
+
+OBJ_H261DUMP = h261_dump.o p64/p64.o p64/p64dump.o huffcode.o dct.o bv.o
+
+vic: $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)
+	rm -f $@
+	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(OBJ_CRYPT) $(LIB) $(STATIC)
+
+vic.dyn: $(OBJ) $(OBJ_GRABBER) $(JV_LIB)
+	rm -f $@
+	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(LIB)
+
+vic.xil: $(OBJ) $(OBJ_XIL)
+	rm -f $@
+	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_XIL) $(LIB) @V_LIB_XIL@
+
+histtolut: histtolut.cc convex_hull.o
+	rm -f $@
+	$(C++) -o $@ $(CFLAGS) histtolut.cc convex_hull.o
+
+vdd: $(OBJ_VDD)
+	rm -f $@
+	$(C++) -o $@ $(CFLAGS) $(LDFLAGS) $(OBJ_VDD) $(LIB) $(STATIC)
+
+cb_wish: $(OBJ_CB)
+	rm -f $@
+	$(C++) -o $@ $(CFLAGS) $(LDFLAGS) $(OBJ_CB) $(LIB_CB) $(STATIC)
+
+jpeg_play: $(OBJ_JPEGPLAY)
+	rm -f $@
+	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ_JPEGPLAY) $(LIB) $(STATIC)
+
+h261_play: $(OBJ_H261PLAY)
+	rm -f $@
+	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ_H261PLAY) $(LIB) $(STATIC)
+
+h261_dump: $(OBJ_H261DUMP)
+	rm -f $@
+	$(CC) -o $@ $(CFLAGS) $(OBJ_H261DUMP) -lm $(STATIC)
+
+h261tortp: h261tortp.cc
+	rm -f $@
+	$(C++) -o $@ $(CFLAGS) h261tortp.cc
+
+#
+# Compile without optimzation to work around an OSF compiler bug.
+#
+Tcl2.o: Tcl.h
+	rm -f $@
+	$(C++) -c $(BFLAGS) Tcl2.cc
+
+#
+# pass-1 embedded tcl files
+#
+tk.o: $(TK_LIBRARY_FILES) tcl2c++
+	base=tk; rm -f $@ $$base.cc ; \
+		./tcl2c++ 1 $(TK_LIBRARY_FILES) > $$base.cc ; \
+		$(C++) -o $@ -c $(CFLAGS) $$base.cc ; rm -f $$base.cc
+
+#
+# pass-2 embedded tcl files
+#
+TCL_VIC_OBJS=$(TCL_VIC:.tcl=.o) ui-vdd.o ui-h261_play.o
+$(TCL_VIC_OBJS): tcl2c++
+	base=$(@:.o=); rm -f $@ $$base.cc ; \
+		./tcl2c++ 2 $$base.tcl > $$base.cc ; \
+		$(C++) -o $@ -c $(CFLAGS) $$base.cc ; rm -f $$base.cc
+
+ui-ctrlmenu.o: ui-ctrlmenu.tcl
+ui-extout.o: ui-extout.tcl
+ui-grabber.o: ui-grabber.tcl
+ui-main.o: ui-main.tcl
+ui-resource.o: ui-resource.tcl
+ui-srclist.o: ui-srclist.tcl
+ui-stats.o: ui-stats.tcl
+ui-switcher.o: ui-switcher.tcl
+ui-unix.o: ui-unix.tcl
+ui-util.o: ui-util.tcl
+ui-windows.o: ui-windows.tcl
+cf-main.o: cf-main.tcl
+cf-util.o: cf-util.tcl
+cf-network.o: cf-network.tcl
+cf-tm.o: cf-tm.tcl
+cf-confbus.o: cf-confbus.tcl
+tkerror.o: tkerror.tcl
+entry.o: entry.tcl
+ui-vdd.o: ui-vdd.tcl
+ui-h261_play.o: ui-h261_play.tcl
+
+version.c: VERSION
+	rm -f version.c
+	cat VERSION | sed 's/.*/char version[] = "&";/' > version.c
+
+cm0.o: cm0.c
+cm0.c: rgb-cube.ppm jv-cube-128.ppm ppmtolut
+	rm -f $@
+	./ppmtolut -n cube rgb-cube.ppm >> $@
+	./ppmtolut -n jv_cube jv-cube-128.ppm >> $@
+
+cm1.o: cm1.c
+cm1.c: yuv-map.ppm cm170.ppm
+	rm -f $@
+	./ppmtolut -n quant cm170.ppm >> $@
+	./ppmtolut -Y $(ED_YBITS) -n ed -e yuv-map.ppm >> $@
+
+huffcode.c: mkhuff
+	rm -f $@
+	./mkhuff -e > huffcode.c
+
+mkhuff: p64/mkhuff.cc p64/p64-huff.h
+	rm -f $@
+	$(C++) -o $@ $(CFLAGS) p64/mkhuff.cc $(STATIC)
+
+bv.c: mkbv
+	rm -f $@
+	./mkbv > $@
+
+mkbv: mkbv.c
+	rm -f $@
+	$(C++) -o $@ $(CFLAGS) mkbv.c $(STATIC)
+
+rgb-cube.ppm: mkcube
+	rm -f $@
+	./mkcube rgb > $@
+
+yuv-map.ppm: mkcube
+	rm -f $@
+	./mkcube -Y $(ED_YBITS) -U 45 -V 45 yuv > $@
+
+mkcube: mkcube.cc
+	rm -f $@
+	$(C++) -o $@ $(CFLAGS) mkcube.cc $(STATIC)
+
+ppmtolut: ppmtolut.c
+	rm -f $@
+	$(CC) -o $@ $(CFLAGS) ppmtolut.c -lm $(STATIC)
+
+install: force
+	 cp vic @prefix@/bin/vic
+	 chown bin @prefix@/bin/vic
+	 chgrp bin @prefix@/bin/vic
+	 chmod 555 @prefix@/bin/vic
+	 cp vic.1 @prefix@/man/vic.1
+	 cp histtolut @prefix@/bin/histtolut
+	 chown bin @prefix@/bin/histtolut
+	 chgrp bin @prefix@/bin/histtolut
+	 chmod 555 @prefix@/bin/histtolut
+
+clean:
+	rm -f *.o jpeg/*.o p64/*.o core tcl2c++ mkbv bv.c mkhuff huffcode.c \
+		$(TCL_VIC_C) tk.tcl vic_tcl.c h261_play_tcl.c tmp.c \
+		vic vic.dyn vic.xil h261_play h261_dump jpeg_play cb_wish \
+		mkcube rgb-cube.ppm yuv-map.ppm cm0.c cm1.c ppmtolut \
+		config.cache config.log domake.* dotar.*
+
+realclean:
+	$(MAKE) clean
+	rm -f config.log config.cache config.status
+
+tags:	force
+	etags $(SRC) *.h 
+
+force:
+
+depend:
+	$(MKDEP) $(INCLUDE) $(DEFINE) $(SRC)
+
+tar:	force
+	tar=vicbin-`cat VERSION`-@V_TAR_TARGET@.tar.gz ; \
+	rm -f $$tar ; \
+	@V_TARCMD@ - README CHANGES.html vic.1 @V_TAR_EXTRA@ $(ALL) | \
+		gzip -c > $$tar
+
+srctar: force
+	@cwd=`pwd` ; dir=`basename $$cwd` ; \
+	    name=vic-`cat VERSION | tr A-Z a-z` ; \
+	    tar=vicsrc-`cat VERSION`.tar.gz ; \
+	    list="" ; \
+	    for i in `cat FILES` ; do list="$$list $$name/$$i" ; done; \
+	    echo \
+	    "(rm -f $$tar; cd .. ; ln -s $$dir $$name)" ; \
+	     (rm -f $$tar; cd .. ; ln -s $$dir $$name) ; \
+	    echo \
+	    "(cd .. ; tar cfh $$tar [lots of files])" ; \
+	     (cd .. ; tar cfh - $$list) | gzip -c > $$tar ; \
+	    echo \
+	    "rm ../$$name; chmod 444 $$tar" ;  \
+	     rm ../$$name; chmod 444 $$tar
+
+fulltar: force
+	@cwd=`pwd` ; dir=`basename $$cwd` ; \
+	    name=vic-`cat VERSION | tr A-Z a-z` ; \
+	    list="" ; \
+	    for i in `cat FILES FILES.EXTRA` ; \
+		do list="$$list $$name/$$i" ; done; \
+	    echo \
+	    "(cd .. ; rm -f $$name; ln -s $$dir $$name)" ; \
+	     (cd .. ; rm -f $$name; ln -s $$dir $$name) ; \
+	    echo \
+	    "(cd .. ; tar cfh $$dir/$$name.tar [lots of files])" ; \
+	     (cd .. ; tar cfh $$dir/$$name.tar $$list) ; \
+	    echo \
+	    "rm -f $$name.tar.gz ../$$name" ; \
+	     rm -f $$name.tar.gz ../$$name  ; \
+	    echo \
+	    "gzip $$name.tar" ; \
+	     gzip $$name.tar ; \
+	    echo \
+	    "chmod 444 $$name.tar.gz" ; \
+	     chmod 444 $$name.tar.gz
+
