@@ -187,6 +187,7 @@ v1.0.10	- Mbus updates from Markus Germeier, which fix compatibility with
 	- Fixes for FreeBSD v3.2 with INRIA IPv6 stack from Fred Templin
 	- Add configure check for sin6_len in struct sockaddr_in6 (seems
 	  that FreeBSD has this, but many systems don't)
+	- Fix batching of multiple mbus messages into one packet.
 
 
 Still to do...

@@ -143,6 +143,68 @@ static int mbus_addr_match(char *a, char *b)
 	return TRUE;
 }
 
+static int mbus_addr_identical(char *a, char *b)
+{
+	/* A more restrictive version of mbus_addr_match. Returns TRUE  */
+	/* iff the addresses are identical (except, possibly, for order */
+	/* of the elements.                                             */
+	char	*y = NULL, c='\0';
+	char 	*a_orig, *b_orig;
+
+	assert(a != NULL);
+	assert(b != NULL);
+
+	if ((*a == '\0') || (*b == '\0')) {
+		/* Unspecified addresses never match... */
+		return FALSE;
+	}
+
+	/* Skip leading whitespace and '('... */
+	while (isspace((unsigned char)*a) || (*a == '(')) a++;
+	while (isspace((unsigned char)*b) || (*b == '(')) b++;
+
+	a_orig = a;
+	b_orig = b;
+
+	/* Check that all elements of b are in a */
+	while ((*b != '\0') && (*b != ')')) {
+		while (isspace((unsigned char)*b)) b++;
+		for (y = b; ((*y != ' ') && (*y != ')') && (*y != '\0')); y++) {
+			/* do nothing */
+		}
+		c = *y;
+		*y = '\0';
+		if (strstr(a, b) == NULL) {
+			/* ...this word not found */
+			*y = c;
+			return FALSE;
+		}
+		*y = c;
+		b = y;
+	}		
+
+	a = a_orig;
+	b = b_orig;
+
+	/* Check that all elements of a are in b */
+	while ((*a != '\0') && (*a != ')')) {
+		while (isspace((unsigned char)*a)) a++;
+		for (y = a; ((*y != ' ') && (*y != ')') && (*y != '\0')); y++) {
+			/* do nothing */
+		}
+		c = *y;
+		*y = '\0';
+		if (strstr(b, a) == NULL) {
+			/* ...this word not found */
+			*y = c;
+			return FALSE;
+		}
+		*y = c;
+		a = y;
+	}		
+	return TRUE;
+}
+
 static void store_other_addr(struct mbus *m, char *a)
 {
 	/* This takes the address a and ensures it is stored in the   */
@@ -575,7 +637,7 @@ void mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, i
 
 	while (curr != NULL) {
 		if ((!curr->complete)
-		&& mbus_addr_match(curr->dest, dest) 
+		&& mbus_addr_identical(curr->dest, dest) 
 		&& (curr->num_cmds < MBUS_MAX_QLEN) 
 		&& ((curr->message_size + alen) < (MBUS_BUF_SIZE - 8))) {
 			curr->num_cmds++;
