@@ -1677,7 +1677,7 @@ static int format_report_blocks(rtcp_rr *rrp, int remaining_length, struct rtp *
 					dlsr = 0;
 				} else {
 					lsr = ((s->sr->ntp_sec & 0x0000ffff) << 16) | ((s->sr->ntp_frac & 0xffff0000) >> 16);
-					dlsr = tv_diff(now, s->last_sr) * 65536.;
+					dlsr = tv_diff(now, s->last_sr) * 65536;
 				}
 				rrp->ssrc       = htonl(s->ssrc);
 				rrp->fract_lost = fraction;

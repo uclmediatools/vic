@@ -78,20 +78,20 @@
 #include <sys/timeb.h>
 
 typedef int		ttl_t;
-typedef uint		fd_t;
+typedef unsigned int	fd_t;
 typedef unsigned char	byte;
 
 /*
  * the definitions below are valid for 32-bit architectures and will have to
  * be adjusted for 16- or 64-bit architectures
  */
-typedef u_char		uint8;
-typedef u_short		uint16;
-typedef u_long		uint32;
-typedef char		int8;
-typedef short		int16;
-typedef long		int32;
-typedef __int64		int64;
+typedef u_char		uint8_t;
+typedef u_short		uint16_t;
+typedef u_long		uint32_t;
+typedef char		int8_t;
+typedef short		int16_t;
+typedef long		int32_t;
+typedef __int64		int64_t;
 typedef unsigned long	in_addr_t;
 
 #ifndef TRUE
@@ -101,7 +101,7 @@ typedef unsigned long	in_addr_t;
 
 #define USERNAMELEN	8
 
-#define DIFF_BYTE_ORDER	1
+#define WORDS_SMALLENDIAN
 #define NEED_INET_ATON
 #define NEED_DRAND48
 #define NEED_GETTIMEOFDAY
