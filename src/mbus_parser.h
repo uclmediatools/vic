@@ -33,6 +33,13 @@
  * SUCH DAMAGE.
  */
 
+#ifndef _MBUS_PARSER_H
+#define _MBUS_PARSER_H
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 struct mbus_parser;
 
 struct mbus_parser 	*mbus_parse_init(char *str);
@@ -45,3 +52,8 @@ int			 mbus_parse_flt(struct mbus_parser *m, double *d);
 char			*mbus_decode_str(char *s);
 char			*mbus_encode_str(const char *s);
 
+#if defined(__cplusplus)
+}
+#endif
+
+#endif /* _MBUS_PARSER_H */
