@@ -1023,6 +1023,9 @@ static void rtp_recv_data(struct rtp *session, uint32_t curr_time)
 
 	buflen = udp_recv(session->rtp_socket, buffer, RTP_MAX_PACKET_LEN - RTP_PACKET_HEADER_SIZE);
 	if (buflen > 0) {
+		if (session->encryption_key != NULL) {
+			/* Decrypt the packet... */
+		}
 		/* Convert header fields to host byte order... */
 		packet->seq      = ntohs(packet->seq);
 		packet->ts       = ntohl(packet->ts);
@@ -1374,6 +1377,9 @@ static void rtp_process_ctrl(struct rtp *session, uint8_t *buffer, int buflen)
 
 	gettimeofday(&event_ts, NULL);
 	if (buflen > 0) {
+		if (session->encryption_key != NULL) {
+			/* Decrypt the packet... */
+		}
 		if (validate_rtcp(buffer, buflen)) {
 			/* Signal that we're about to process a compound RTCP packet */
 			event.ssrc = 0xdeadbeef;
@@ -1605,6 +1611,7 @@ int rtp_send_data(struct rtp *session, uint32_t ts, char pt, int m, int cc, uint
 	
 	/* Finally, encrypt if desired... */
 	if (session->encryption_key != NULL) {
+		assert((buffer_len % 8) == 0);
 		qfDES_CBC_e(session->encryption_key, buffer, buffer_len, initVec); 
 	}
 
@@ -1881,12 +1888,13 @@ static void send_rtcp(struct rtp *session, uint32_t ts,
 	/* Construct and send an RTCP packet. The order in which packets are packed into a */
 	/* compound packet is defined by section 6.1 of draft-ietf-avt-rtp-new-03.txt and  */
 	/* we follow the recommended order.                                                */
-	uint8_t	   buffer[RTP_MAX_PACKET_LEN];
+	uint8_t	   buffer[RTP_MAX_PACKET_LEN + 8];	/* The +8 is to allow for padding when encrypting */
 	uint8_t	  *ptr = buffer;
-	uint8_t    *old_ptr;
-	uint8_t    *lpt;		/* the last packet in the compound */
+	uint8_t   *old_ptr;
+	uint8_t   *lpt;		/* the last packet in the compound */
 	rtcp_app  *app;
-	uint8_t 	   initVec[8] = {0,0,0,0,0,0,0,0};
+	uint8_t    initVec[8] = {0,0,0,0,0,0,0,0};
+	int        padlen;
 
 	/* If encryption is enabled, add a 32 bit random prefix to the packet */
 	if (session->encryption_key != NULL) {
@@ -1930,11 +1938,18 @@ static void send_rtcp(struct rtp *session, uint32_t ts,
 		}
 	}
 
+	/* And encrypt if necessary... */
 	if (session->encryption_key != NULL) {
 		if (((ptr - buffer) % 8) != 0) {
-			/* We need to add padding to the last packet in the compound. */
+			/* Add padding to the last packet in the compound, if necessary. */
+			/* We don't have to worry about overflowing the buffer, since we */
+			/* intentionally allocated it 8 bytes longer to allow for this.  */
 			((rtcp_t *) lpt)->common.p = TRUE;
-			
+			for (padlen = 8 - ((ptr - buffer) % 8); padlen > 0; padlen--) {
+				*ptr++ = '\0';
+			}
+			*ptr = (uint8_t) padlen;
+			assert(((ptr - buffer) % 8) != 0); 
 		}
 		qfDES_CBC_e(session->encryption_key, buffer, ptr - buffer, initVec); 
 	}
