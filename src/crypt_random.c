@@ -42,6 +42,8 @@
  * Communications of the ACM, Jan 1990, Vol 33 No 1.
  */
 
+#include "config_unix.h"
+#include "config_win32.h"
 #include "crypt_random.h"
 
 static int randseed = 1;
@@ -55,6 +57,25 @@ lbl_srandom(int seed)
 int
 lbl_random(void)
 {
+#ifdef Linux
+	/* I don't trust the LBL random number generator, so if   */
+	/* we're on Linux we now use the random number generator  */
+	/* in the kernel which is cryptographically strong. [csp] */
+	int	fd, res, l;
+
+	fd = open("/dev/urandom", O_RDONLY);
+	if (fd == -1) {
+		perror("Cannot open random sequence generator");
+		abort();
+	}
+	l = read(fd, &res, sizeof(res));
+	if (l != sizeof(res)) {
+		perror("Cannot read random data");
+		abort();
+	}
+	close(fd);
+	return res;
+#else
 	register int x = randseed;
 	register int hi, lo, t;
 
@@ -65,5 +86,6 @@ lbl_random(void)
 		t += 0x7fffffff;
 	randseed = t;
 	return (t);
+#endif
 }
 
