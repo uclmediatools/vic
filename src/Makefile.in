@@ -22,7 +22,7 @@ SRCS = $(OBJS:%.o=%.c)
 all: version.h libcommon.a test-libcommon
 
 test-libcommon: $(TEST_OBJS) libcommon.a
-	$(CC) $(TEST_OBJS) $(CFLAGS) $(LIBS) -o test-libcommon libcommon.a
+	$(CC) $(TEST_OBJS) $(CFLAGS) libcommon.a $(LIBS) -o test-libcommon
 	
 libcommon.a: $(OBJS)
 	$(AR) r libcommon.a $(OBJS)
