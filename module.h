@@ -43,19 +43,21 @@ class Transmitter;
 
 class VideoFrame {
     public:
-	inline VideoFrame(u_int32_t ts, u_int8_t* bp, int w, int h) :
-		ts_(ts), bp_(bp), width_(w), height_(h) { }
+	inline VideoFrame(u_int32_t ts, u_int8_t* bp, int w, int h,
+			  int layer) :
+		ts_(ts), bp_(bp), width_(w), height_(h), layer_(layer) { }
 	u_int32_t ts_;
 	u_int8_t* bp_;
 	int width_;
 	int height_;
+	int layer_;
 };
 
 class YuvFrame : public VideoFrame {
     public:
 	inline YuvFrame(u_int32_t ts, u_int8_t* bp, u_int8_t* crvec,
-			int w, int h) :
-		VideoFrame(ts, bp, w, h), crvec_(crvec) {}
+			int w, int h, int layer=0) :
+		VideoFrame(ts, bp, w, h, layer), crvec_(crvec) {}
 	const u_int8_t* crvec_;
 };
 
@@ -63,7 +65,7 @@ class JpegFrame : public VideoFrame {
     public:
 	inline JpegFrame(u_int32_t ts, u_int8_t* bp, int len, int q, int type,
 			int w, int h) :
-		VideoFrame(ts, bp, w, h), len_(len), q_(q), type_(type) {}
+		VideoFrame(ts, bp, w, h, 0), len_(len), q_(q), type_(type) {}
 	int len_;
 	int q_;
 	int type_;
@@ -73,7 +75,7 @@ class DCTFrame : public VideoFrame {
     public:
 	inline DCTFrame(u_int32_t ts, short* bp, u_int8_t* crv,
 		int w, int h, int q = -1) :
-		VideoFrame(ts, (u_int8_t*)bp, w, h), crvec_(crv), q_(q) {}
+		VideoFrame(ts, (u_int8_t*)bp, w, h, 0), crvec_(crv), q_(q) {}
 
 	const u_int8_t *crvec_;
 	int q_;			// original q (if applicable)
@@ -85,6 +87,7 @@ class DCTFrame : public VideoFrame {
 #define FT_YUV_CIF	3
 #define FT_JPEG		(1|FT_HW)
 #define FT_DCT		4
+#define FT_RAW		5
 
 class Module : public TclObject {
     public:

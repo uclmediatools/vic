@@ -52,11 +52,11 @@ proc uniqueID { } {
 }
 
 proc isCIF fmt {
-	# only supported CIF format is h.261
+	# only supported CIF format is h.261/3
 	if { $fmt == "h261" } {
 		return 1
 	}
-	if { $fmt == "h263" } {
+	if { $fmt == "h263+" } {
 		return 1
 	}
 	return 0

@@ -43,7 +43,7 @@ extern "C" HINSTANCE TkWinGetAppInstance();
 
 void dprintf(const char *fmt, ...)
 {
-    char szTemp[512];
+    char szTemp[2048];
     
     va_list ap;
     va_start (ap, fmt);
@@ -451,11 +451,11 @@ VfwDevice::VfwDevice(const char* name, int index) :
 		vfwdev_ = index;
 		switch (get_device_type(name)) {
 		case gray_QuickCam_95:
-			attributes_ = "format { 422 } size { small cif } port { QuickCam } ";
+			attributes_ = "format { 422 411 } size { small cif } port { QuickCam } ";
 			break;
 		case Generic:
 		default:
-			attributes_ = "format { 422 } size { large small cif } port { external-in } ";
+			attributes_ = "format { 422 411 } size { large small cif } port { external-in } ";
 			break;
 		}
 	} else
@@ -668,8 +668,8 @@ void VfwGrabber::start()
 	fmt_->biPlanes = 1;
 
 	/* if the driver isn't set to either pal or ntsc then use default ntsc values */
-	if (fmt_->biWidth != 192 && fmt_->biWidth != 176 && fmt_->biWidth != 384 && fmt_->biWidth != 352 && fmt_->biWidth != 768 && fmt_->biWidth != 704 &&
-		fmt_->biHeight!= 142 && fmt_->biHeight!= 144 && fmt_->biHeight!= 284 && fmt_->biHeight!= 288 && fmt_->biHeight!= 568 && fmt_->biHeight!= 576) {
+	if ((fmt_->biWidth != 192 && fmt_->biWidth != 176 && fmt_->biWidth != 384 && fmt_->biWidth != 352 && fmt_->biWidth != 768 && fmt_->biWidth != 704) ||
+		(fmt_->biHeight!= 142 && fmt_->biHeight!= 144 && fmt_->biHeight!= 284 && fmt_->biHeight!= 288 && fmt_->biHeight!= 568 && fmt_->biHeight!= 576)) {
 		fmt_->biWidth = basewidth_ / decimate_;
 		fmt_->biHeight = baseheight_ / decimate_;
 	}

@@ -524,13 +524,13 @@ proc device_formats device {
 	set formats [attribute_class $L format]
 	set fmtList ""
 	if [inList 422 $formats] {
-		set fmtList "$fmtList nv nvdct cellb jpeg"
+		set fmtList "$fmtList nv nvdct cellb jpeg raw"
 	}
 	if [inList 411 $formats] {
 		set fmtList "$fmtList bvc"
 	}
 	if [inList cif $sizes] {
-		set fmtList "$fmtList h261 h263"
+		set fmtList "$fmtList h261 h263+"
 	}
 	if [inList jpeg $formats] {
 		set fmtList "$fmtList jpeg"
@@ -694,19 +694,15 @@ proc format_col { w n0 n1 n2 } {
 proc build.format w {
 	format_col $w.p0 nv nvdct cellb 
 	format_col $w.p1 jpeg h261 bvc
+	format_col $w.p2 h263+ h263 ""
 
 	set f [smallfont]
-	radiobutton $w.b2 -text h263 -relief flat -font $f -anchor w \
-		-variable videoFormat -value h263 -padx 0 -pady 0 \
-		-command "select_format h263" -state disabled
-        global formatButtons
-	lappend formatButtons $w.b2
 
 	frame $w.glue0
 	frame $w.glue1
 
 	pack $w.glue0 -side left -fill x -expand 1
-	pack $w.p0 $w.p1 $w.b2 -side left
+	pack $w.p0 $w.p1 $w.p2 -side left
 	pack $w.glue1 -side left -fill x -expand 1
 
 }
@@ -1046,7 +1042,7 @@ proc h261_setq value {
 	$qvalue configure -text $value
 }
 
-proc h263_setq value {
+proc h263+_setq value {
 	set value [expr int((1 - $value / 100.) * 29) + 1]
 	if [have grabber] {
 		encoder q $value
@@ -1066,6 +1062,15 @@ proc nv_setq value {
 
 proc nvdct_setq value {
 	nv_setq $value
+}
+
+proc raw_setq value {
+	set value [expr int((1 - $value / 100.) * 29) + 1]
+	if [have grabber] {
+		encoder q $value
+	}
+	global qvalue
+	$qvalue configure -text $value
 }
 
 set bvc_quantizer(0) { 0 0 0 0 1 1 1 1 2 2 }
@@ -1134,6 +1139,7 @@ set qscale_val(nv) 80
 set qscale_val(nvdct) 80
 set qscale_val(bvc) 60
 set qscale_val(jpeg) 29
+set qscale_val(raw) 1
 set lastFmt ""
 
 proc select_format fmt {

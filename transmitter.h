@@ -70,6 +70,7 @@ class Transmitter : public TclObject, public Timer {
 		iovec iov[2];
 		u_char hdr[MAXHDR];
 		buffer* buf;
+		int layer;
 	};
 	static void dump(int fd);
 	static inline void seqno(u_int16_t s) { seqno_ = s; }

@@ -187,7 +187,7 @@ proc init_resources {} {
 	option add Vic.softJPEGcthresh 6 startupFile
 
 	option add Vic.sunvideoDevice 0 startupFile
-	option add Vic.enableBVC false startupFile
+	option add Vic.enableBVC true startupFile
 
 	# true to allow voice-switch to switch to self
 	option add Vic.vain false startupFile
