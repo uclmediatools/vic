@@ -367,6 +367,8 @@ v1.2.5	- More informative error message when the lock on the mbus configuration
 
 1.2.9	- Fix complience with draft-ietf-mmusic-mbus-transport-06.txt (patch
 	  from Lars Fischer)
+	* 21 June 2001 [rat v4.2.19]
+
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
