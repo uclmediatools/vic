@@ -393,16 +393,19 @@ static void mbus_get_encrkey(struct mbus *m, struct mbus_key *key)
 	assert(buflen > 0);
 
 	/* Parse the key... */
-	key->algorithm   = strdup(strtok(buffer+1, ","));
-	key->key         = strtok(NULL  , ")");
-	key->key_len     = strlen(key->key);
+	key->algorithm   = strdup(strtok(buffer+1, ",)"));
+	if (strcmp(key->algorithm, "NOENCR") != 0) {
+		key->key     = (char *) strtok(NULL  , ")");
+		key->key_len = strlen(key->key);
+		tmp = (char *) xmalloc(key->key_len);
+		key->key_len = base64decode(key->key, key->key_len, tmp, key->key_len);
+		key->key = tmp;
+	} else {
+		key->key     = NULL;
+		key->key_len = 0;
+	}
 
 	debug_msg("alg=%s key=%s keylen=%d\n", key->algorithm, key->key, key->key_len);
-
-	/* Decode the key... */
-	tmp = (char *) xmalloc(key->key_len);
-	key->key_len = base64decode(key->key, key->key_len, tmp, key->key_len);
-	key->key = tmp;
 
 	xfree(buffer);
 #else
