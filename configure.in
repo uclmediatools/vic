@@ -30,7 +30,7 @@ AC_C_CONST
 AC_TYPE_SIZE_T
 
 AC_CHECK_HEADERS(stropts.h sys/filio.h)
-AC_CHECK_HEADERS(stdint.h unttypes.h)
+AC_CHECK_HEADERS(stdint.h inttypes.h)
 
 # Check for standard size types.  The defaults are only valid on some
 # systems so we hope that <inttypes.h> exists when they're wrong.
@@ -52,14 +52,14 @@ AC_EGREP_HEADER(uint16_t,
 		stdint.h,
 		[AC_MSG_RESULT(yes)],
 		[AC_MSG_RESULT(no) 
-		 AC_CHECK_TYPE(uint16_t,  unsigned char)])
+		 AC_CHECK_TYPE(uint16_t,  unsigned short)])
 
 AC_MSG_CHECKING(for uint32_t in <stdint.h>)
 AC_EGREP_HEADER(uint32_t,
 		stdint.h,
 		[AC_MSG_RESULT(yes)],
 		[AC_MSG_RESULT(no) 
-		 AC_CHECK_TYPE(uint32_t,  unsigned char)])
+		 AC_CHECK_TYPE(uint32_t,  unsigned int)])
 
 # The following two macros cause autoconf to complain.
 AC_C_BIGENDIAN
