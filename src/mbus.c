@@ -269,6 +269,7 @@ static void mbus_get_key(struct mbus *m, struct mbus_key *key, char *id)
 	struct stat	 s;
 	char		*buf;
 	char		*line;
+	char		*tmp;
 	int		 pos;
 
 	assert(m->cfg_locked);
@@ -299,18 +300,16 @@ static void mbus_get_key(struct mbus *m, struct mbus_key *key, char *id)
 	while (pos < s.st_size) {
 		sscanf(buf+pos, "%s", line);
 		pos += strlen(line) + 1;
-		debug_msg("%s %d %d\n", line, pos, s.st_size);
 		if (strncmp(line, id, 9) == 0) {
-#ifdef NDEF
 			key->algorithm   = strdup(strtok(line+9, ","));
-			key->expiry_time =   atol(strtok(NULL  , ","));
-			key->key         = strdup(strtok(NULL  , ")"));
-#else			
-			key->algorithm   = NULL;
-			key->expiry_time = 0;
-			key->key         = NULL;
-			key->key_len     = 0;
-#endif
+			key->expiry_time = atol(strtok(NULL  , ","));
+			key->key         = strtok(NULL  , ")");
+			key->key_len     = strlen(key->key);
+
+			tmp = (char *) xmalloc(key->key_len);
+			key->key_len = base64decode(key->key, key->key_len, tmp, key->key_len);
+			key->key = tmp;
+
 			xfree(buf);
 			xfree(line);
 			return;
@@ -320,6 +319,7 @@ static void mbus_get_key(struct mbus *m, struct mbus_key *key, char *id)
 	xfree(buf);
 	xfree(line);
 }
+/*int base64decode(unsigned char *input, int input_length, unsigned char *output, int output_length)*/
 
 static void mbus_get_encrkey(struct mbus *m, struct mbus_key *key)
 {
