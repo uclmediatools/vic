@@ -502,16 +502,16 @@ X11Grabber::X11Grab_TrueXBGR24()
     uint8 *up= (uint8 *)yp + framesize_ ;
     uint8 *vp= up + (framesize_ >> 2) ;
     uint16 p0, p1 ;
-    uint32 *data=(uint32 *)ximage_->image->data, d ;
+    uint32 d ;
 
     for (y=0; y<height_; y += 2) {
         for (x=0; x<width_; x+=2) {
-            d = *data++ ;
+            d = XGetPixel(ximage_->image,x,y);
             //p0 = ((d<<8) & 0xf100) | ((p0>>5) & 0x7e0) | ((p0>>19) & 0x1f);
             p0 = ((d<<8) & 0xf800) | ((d>>5) & 0x7e0) | ((d>>19) & 0x1f);
 	    *yp++ = rgb2y_[ p0 ];
 
-            d = *data++ ;
+            d = XGetPixel(ximage_->image,x+1,y);
             //p1 = ((d<<8) & 0xf100) | ((p0>>5) & 0x7e0) | ((p0>>19) & 0x1f);
             p1 = ((d<<8) & 0xf800) | ((d>>5) & 0x7e0) | ((d>>19) & 0x1f);
 	    *yp++ = rgb2y_[ p1 ];
@@ -521,12 +521,12 @@ X11Grabber::X11Grab_TrueXBGR24()
 	    *up++ = rgb2u_[ p0 ];
         }
         for (x=0; x<width_; x+=2) {
-            d = *data++ ;
+            d = XGetPixel(ximage_->image,x,y+1);
             //p0 = ((d<<8) & 0xf100) | ((p0>>5) & 0x7e0) | ((p0>>19) & 0x1f);
             p0 = ((d<<8) & 0xf800) | ((d>>5) & 0x7e0) | ((d>>19) & 0x1f);
 	    *yp++ = rgb2y_[ p0 ];
 
-            d = *data++ ;
+            d = XGetPixel(ximage_->image,x+1,y+1);
             //p1 = ((d<<8) & 0xf100) | ((p0>>5) & 0x7e0) | ((p0>>19) & 0x1f);
             p1 = ((d<<8) & 0xf800) | ((d>>5) & 0x7e0) | ((d>>19) & 0x1f);
 	    *yp++ = rgb2y_[ p1 ];
@@ -553,15 +553,15 @@ X11Grabber::X11Grab_TrueXRGB24()
     uint8 *up= (uint8 *)yp + framesize_ ;
     uint8 *vp= up + (framesize_ >> 2) ;
     uint16 p0, p1 ;
-    uint32 *data=(uint32 *)ximage_->image->data, d ;
+    uint32 d ;
 
     for (y=0; y<height_; y += 2) {
         for (x=0; x<width_; x+=2) {
-            d = *data++ ;
+            d = XGetPixel(ximage_->image,x,y);
 	    p0 = ((d>>3) & 0x1f) | ((d>>5) & 0x7e0) | ((d>>8) & 0xf800);
 	    *yp++ = rgb2y_[ p0 ];
 
-            d = *data++ ;
+            d = XGetPixel(ximage_->image,x+1,y);
 	    p1 = ((d>>3) & 0x1f) | ((d>>5) & 0x7e0) | ((d>>8) & 0xf800);
 	    *yp++ = rgb2y_[ p1 ];
 
@@ -570,11 +570,11 @@ X11Grabber::X11Grab_TrueXRGB24()
 	    *up++ = rgb2u_[ p0 ];
         }
         for (x=0; x<width_; x+=2) {
-            d = *data++ ;
+            d = XGetPixel(ximage_->image,x,y+1);
 	    p0 = ((d>>3) & 0x1f) | ((d>>5) & 0x7e0) | ((d>>8) & 0xf800);
 	    *yp++ = rgb2y_[ p0 ];
 
-            d = *data++ ;
+            d = XGetPixel(ximage_->image,x+1,y+1);
 	    p1 = ((d>>3) & 0x1f) | ((d>>5) & 0x7e0) | ((d>>8) & 0xf800);
 	    *yp++ = rgb2y_[ p1 ];
 
@@ -650,31 +650,23 @@ X11Grabber::X11Grab_Initialize(Window rw, int w, int h)
 	    break ;
 
         case 24:
+	    /* due to endianess we have two different 24 bit depth pixel
+	     * layouts. little endian uses BGR, big uses RGB.
+	     */
             if ((root_visinfo.c_class == TrueColor) &&
-                (root_visinfo.green_mask == 0xff00) &&
-	        /* this is an endianess issue, isn't it? */
-#if defined(__FreeBSD__) || defined(linux)
-                (root_visinfo.red_mask == 0xff0000) &&
-                (root_visinfo.blue_mask == 0xff))
-#else
-                (root_visinfo.red_mask == 0xff) &&
-                (root_visinfo.blue_mask == 0xff0000))
-#endif
-                {
+                (root_visinfo.blue_mask  == 0xff0000) &&
+                (root_visinfo.green_mask == 0x00ff00) &&
+                (root_visinfo.red_mask   == 0x0000ff)
+            ) {
                 c_grab = &X11Grabber::X11Grab_TrueXBGR24;
             }
-	    /* below change to deal with RGB X11,
-	       by Davide Cavagnino
-            */
 	    else if ((root_visinfo.c_class == TrueColor) &&
 		     (root_visinfo.red_mask == 0xff0000) &&
 		     (root_visinfo.green_mask == 0xff00) &&
 		     (root_visinfo.blue_mask == 0xff))
 	    {
                 c_grab = &X11Grabber::X11Grab_TrueXRGB24;
-            }
-	    else
-	    {
+            } else {
 	        fprintf(stderr, "don't know how to grab %d bits\n",
 	        	root_depth_);
                 c_grab = (int)NULL;
@@ -1265,7 +1257,8 @@ X11Grabber::capture()
 	     (X11Grabber::c_grab)();
    below new version that works with 2.8.1
 */
-        (this->*c_grab)();
+        if (this->c_grab)
+		(this->*c_grab)();
 	return 1 ;
     } else
         return 0;
