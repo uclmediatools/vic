@@ -71,15 +71,15 @@
 
 
 class MeteorGrabber : public Grabber {
- public:
+    public:
 	MeteorGrabber(const char* name);
+	virtual ~MeteorGrabber();
 	virtual int command(int argc, const char*const* argv);
 	virtual void fps(int);
-	virtual ~MeteorGrabber();
 	virtual void start();
 	virtual void stop();
- protected:
 	virtual int grab();
+    protected:
 	void format();
 	virtual void setsize() = 0;
 	void suppress(const u_char* in, int istride);
@@ -93,10 +93,6 @@ class MeteorGrabber : public Grabber {
 	u_int baseheight_;	/* Width of frame to be captured */
 	u_int decimate_;	/* division of base sizes */
 	volatile u_int* pyuv_;	/* pointer to yuv data */
-
-	int count;
-	long first;
-	double values[1500];
 	int tuner_ ;		/* tuner device... */
 };
 
@@ -121,17 +117,18 @@ class MeteorCIFGrabber : public MeteorGrabber {
 };
 
 class MeteorDevice : public InputDevice {
- public:
+    public:
 	MeteorDevice(const char* nickname, const char* devname, int free);
 	virtual int command(int argc, const char*const* argv);
- protected:
+    protected:
 	const char* name_;
 };
 
 class MeteorScanner {
- public:
+    public:
 	MeteorScanner(const int n);
 };
+
 static MeteorScanner find_meteor_devices(4);
 
 MeteorScanner::MeteorScanner(const int n)
@@ -160,8 +157,7 @@ MeteorScanner::MeteorScanner(const int n)
 		}
 			}
 		}
-}
-
+	}
 
 MeteorDevice::MeteorDevice(const char* nickname, const char *devname, int free):
 					InputDevice(nickname), name_(devname)
@@ -192,10 +188,8 @@ int MeteorDevice::command(int argc, const char*const* argv)
 	return (InputDevice::command(argc, argv));
 }
 
-MeteorGrabber::MeteorGrabber(const char* name, const char* format)
+MeteorGrabber::MeteorGrabber(const char* name)
 {
-	count = 0;
-
 	int devnum;
 	if (sscanf(name, "/dev/bktr%d", &devnum) == 1) {
 		char *tunerdev  = new char[strlen(name) + 3];
@@ -238,7 +232,7 @@ void MeteorGrabber::set_size_meteor(int w, int h)
 	geom.frames = 1;
 	geom.oformat = METEOR_GEO_UNSIGNED | METEOR_GEO_YUV_PACKED;
 	/*
-	 * If we can aet by with only reading even fields, then by all
+	 * If we can get by with only reading even fields, then by all
 	 * means do so.
 	 */
 	unsigned short status;
@@ -415,6 +409,7 @@ int MeteorGrabber::command(int argc, const char*const* argv)
 			u_char val = atoi(argv[2]);
 			ioctl(dev_, METEORSCHCV, &val);
 			return (TCL_OK);
+		}
 	} else if (argc == 2) {
 		if (strcmp(argv[1], "format") == 0 ||
 			   strcmp(argv[1], "type") == 0) {

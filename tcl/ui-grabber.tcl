@@ -497,13 +497,13 @@ proc build.slicvideo w {
        
 	scale $w.f.l.cscale \
 -orient horizontal -width 12 -length 100 -relief groove \
-                              -showvalue 1 -from 0 -to 127 \
+                              -showvalue 0 -from 0 -to 127 \
 	  -label "Contrast" \
 	  -command "grabber contrast"
        
 	scale $w.f.l.bscale \
 -orient horizontal -width 12 -length 100 -relief groove \
-                            -showvalue 1 -from 0 -to 255 \
+                            -showvalue 0 -from 0 -to 255 \
 	    -command "grabber brightness" -label "Brightness"
 	pack  $w.f.l.cscale $w.f.l.bscale  -side left -fill x -expand 1
 
@@ -513,14 +513,17 @@ proc build.slicvideo w {
 #	label $w.f.cl.slabel -font $f -text "Saturation" -anchor n
 #	pack  $w.f.cl.glabel $w.f.cl.label $w.f.cl.slabel \
 #			     -side left -fill x -expand 1
+
+	frame $w.f.c -relief flat
        
 	scale $w.f.c.gscale \
 -orient horizontal -width 12 -length 100 -relief groove \
-                             -showvalue 1 -from 0 -to 255 \
+                             -showvalue 0 -from 0 -to 255 \
 	     -command "grabber uvgain" -label "Chr.  Gain"
        
 	scale $w.f.c.sscale \
 -orient horizontal -width 12 -length 100 -relief groove \
+                            -showvalue 0 -from 0 -to 127 \
 	    -command "grabber saturation" -label "Saturation"
 	pack  $w.f.c.gscale $w.f.c.sscale -side left -fill x -expand 1
 
