@@ -41,11 +41,12 @@ ZIP = c:\progra~1\winzip\winzip32
 NODEBUG=1
 
 APPVER=4.0
-TOOLS32       = c:\msdev
+TOOLS32       =  c:\progra~1\devstudio\vc
 cc32 = $(TOOLS32)\bin\cl -I$(TOOLS32)\include
-rc32 = $(TOOLS32)\bin\rc
+rc32 = c:\progra~1\devstudio\sharedIDE\bin\rc
 link32 = $(TOOLS32)\bin\link
 
+TARGETOS=WIN95
 !include <ntwin32.mak>
 
 ALL = vic histtolut
@@ -61,16 +62,18 @@ all:	vic
 
 ED_YBITS = 4
 
-TK_DIR  = ../tk4.1
-TCL_DIR = ../tcl7.5
+TK_DIR  = ../tk8.0
+TCL_DIR = ../tcl8.0
 
 INCLUDE_TK = -I$(TK_DIR)/win -I$(TK_DIR)/generic
 INCLUDE_TCL = -I$(TCL_DIR)/win -I$(TCL_DIR)/generic
 INCLUDE_X11 = -I$(TK_DIR)/xlib
 INCLUDE_MISC = 
+GENERICDIR	= $(TK_DIR)\generic
+RCDIR		= $(TK_DIR)\win\rc
 
-LIB_TK = $(TK_DIR)/win/tk41.lib
-LIB_TCL = $(TCL_DIR)/win/tcl75.lib
+LIB_TK = $(TK_DIR)/win/tk80vc.lib
+LIB_TCL = $(TCL_DIR)/win/tcl80vc.lib
 
 MKDEP = \mksnt\sh .\mkdep
 
@@ -94,9 +97,9 @@ TK_LIBRARY_FILES = \
 		$(LIBRARY_TK)/text.tcl \
 		$(LIBRARY_TK)/optMenu.tcl $(LIBRARY_TK)/scrlbar.tcl
 
-LIB_GRABBER = 
+LIB_GRABBER = c:/progra~1/devstudio/vc/lib/vfw32.lib
 INCLUDE_GRABBER = 
-OBJ_GRABBER = 
+OBJ_GRABBER = grabber-win32.obj
 SRC_GRABBER = $(OBJ_GRABBER:.o=.cc) 
 OBJ_XIL = 
 LIBS = $(LIB_GRABBER) $(LIB_TK) $(LIB_TCL) $(guilibs) wsock32.lib
@@ -109,7 +112,7 @@ CFLAGS = $(CCOPT) $(BFLAGS)
 #
 # Remember to add a dependency if you add any tcl sources here.
 #
-TCL_VIC = ui-ctrlmenu.tcl ui-main.tcl ui-resource.tcl \
+TCL_VIC = ui-ctrlmenu.tcl ui-main.tcl ui-resource.tcl ui-relate.tcl\
 	ui-srclist.tcl ui-stats.tcl ui-util.tcl ui-windows.tcl \
 	ui-switcher.tcl ui-extout.tcl ui-grabber.tcl ui-win32.tcl \
 	cf-main.tcl cf-tm.tcl cf-confbus.tcl cf-network.tcl cf-util.tcl \
@@ -120,9 +123,10 @@ TCL_VIC = ui-ctrlmenu.tcl ui-main.tcl ui-resource.tcl \
 # every time I install it on a given system, just make them
 # here (these sources came from tcl's compat directory)
 #
-BROKEN_OBJ = strtol.obj strtoul.obj
+BROKEN_OBJ = strtol.obj strtoul.obj 
 COLOR_OBJS = color-true.obj color-pseudo.obj color-dither.obj color-ed.obj \
-	color-hi.obj color-quant.obj color-gray.obj color-mono.obj color-hist.obj
+	color-hi.obj color-quant.obj color-gray.obj color-mono.obj color-hist.obj 
+QFDES_OBJS = qfDES.obj qfDES_key.obj qfDES_memory.obj
 
 OBJ0 =	getopt.obj win32.obj win32X.obj
 OBJ1 =	inet.obj cellb_tables.obj tkStripchart.obj md5c.obj random.obj
@@ -131,15 +135,15 @@ OBJ2 =	main.obj net.obj net-ip.obj source.obj \
 	session.obj session-rtpv1.obj session-nv.obj session-ivs.obj \
 	decoder.obj decoder-jpeg.obj decoder-nv.obj \
 	decoder-h261.obj decoder-h261v1.obj \
-	decoder-cellb.obj \
+	decoder-cellb.obj mbus.obj mbus_engine.obj\
 	device.obj grabber.obj vw.obj Tcl.obj Tcl2.obj module.obj transmitter.obj \
 	encoder-nv.obj encoder-cellb.obj encoder-h261.obj \
 	transcoder-jpeg.obj framer-jpeg.obj \
 	group-ipc.obj confbus.obj renderer.obj renderer-window.obj \
-	color.obj $(COLOR_OBJS) \
+	color.obj $(COLOR_OBJS) $(QFDES_OBJS) \
 	rgb-converter.obj jpeg.obj p64.obj dct.obj \
-	compositor.obj rate-variable.obj crypt.obj crypt-dull.obj \
-	grabber-still.obj
+	compositor.obj rate-variable.obj crypt.obj crypt-des.obj \
+	grabber-still.obj tkWinColor.obj
 OBJ3 =	cm0.obj cm1.obj huffcode.obj version.obj bv.obj \
 	$(TCL_VIC:.tcl=.obj) tk.obj
 SRC =	$(OBJ1:.obj=.c) $(OBJ2:.obj=.cc) $(BROKEN_OBJ:.obj=.c) \
@@ -189,8 +193,8 @@ SBR_H261DUMP = $(OBJ_H261DUMP:.obj=.sbr)
 #vic: vic.exe vic.bsc
 vic: vic.exe
 
-vic.exe:	$(OBJ) $(OBJ_GRABBER)
-	$(link) $(ldebug) $(guilflags) -out:$@ $(OBJ) $(OBJ_GRABBER) $(LIBS)
+vic.exe:	$(OBJ) $(OBJ_GRABBER) tk.res
+	$(link) $(ldebug) $(guilflags) -out:$@ tk.res $(OBJ) $(OBJ_GRABBER) $(LIBS)
 
 vic.bsc : $(OUTDIR)  $(SBR)
     $(BSC32) @<<
@@ -261,7 +265,7 @@ h261tortp.exe: h261tortp.cc
 tk.obj: $(TK_LIBRARY_FILES) tcl2c++.exe
 	-del $@
 	.\tcl2c++ 1 $(TK_LIBRARY_FILES) > tk.cc
-	$(cc32) $(cdebug) $(cflags) $(cvars) -o $@ -FR$*.sbr -c $(CFLAGS) -Tp $(@:.obj=).cc
+	$(cc32) /Zm500 $(cdebug) $(cflags) $(cvars) -o $@ -FR$*.sbr -c $(CFLAGS) -Tp $(@:.obj=).cc
 	del $(@:.obj=).cc
 
 #
@@ -293,6 +297,7 @@ tkerror.obj: tkerror.tcl
 entry.obj: entry.tcl
 ui-vdd.obj: ui-vdd.tcl
 ui-h261_play.obj: ui-h261_play.tcl
+ui-relate.obj: ui-relate.tcl
 
 mkversion.exe: mkversion.obj
 	-del $@
@@ -360,6 +365,13 @@ p64dump.obj: p64/p64dump.cc
 
 jpeg.obj: jpeg/jpeg.cc
 	$(cc32) $(cdebug) $(cflags) $(cvars) $(CFLAGS) -o $@ -FR$*.sbr -Tp jpeg/jpeg.cc
+
+# qfdes doesn't like MSVC optimisations.... 
+qfdes.obj: qfdes.c
+	$(cc32) $(cdebug) /Od $(cflags) $(cvars) $(CFLAGS) -o $@ -FR$*.sbr -Tp qfdes.c
+
+tk.res:
+	$(rc32) -fo $@ -r -i $(GENERICDIR) $(RCDIR)/tk.rc
 
 install: vic.exe histtolut.exe
 	-mkdir "\Program Files\MBone"

@@ -247,22 +247,19 @@ int IPNetwork::openrsock(u_int32_t addr, u_short port,
 	}
 	nonblock(fd);
 	int on = 1;
-	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char *)&on,
-			sizeof(on)) < 0) {
+	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on)) < 0) {
 		perror("SO_REUSEADDR");
 	}
 #ifdef SO_REUSEPORT
 	on = 1;
-	if (setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, (char *)&on,
-		       sizeof(on)) < 0) {
+	if (setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, (char *)&on, sizeof(on)) < 0) {
 		perror("SO_REUSEPORT");
 		exit(1);
 	}
 #endif
 	memset((char *)&sin, 0, sizeof(sin));
 	sin.sin_family = AF_INET;
-	sin.sin_port = port;
-#ifdef IP_ADD_MEMBERSHIP
+	sin.sin_port   = port;
 	if (IN_CLASSD(ntohl(addr))) {
 		/*
 		 * Try to bind the multicast address as the socket
@@ -274,8 +271,10 @@ int IPNetwork::openrsock(u_int32_t addr, u_short port,
 		if (bind(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
 			sin.sin_addr.s_addr = INADDR_ANY;
 			if (bind(fd, (struct sockaddr*)&sin, sizeof(sin)) < 0) {
-				perror("bind");
-				exit(1);
+				perror("bind (INADDR_ANY)");
+				abort();
+			} else {
+				/*printf("bound to INADDR_ANY\n");*/
 			}
 		}
 		/* 
@@ -290,14 +289,11 @@ int IPNetwork::openrsock(u_int32_t addr, u_short port,
 
 		mr.imr_multiaddr.s_addr = addr;
 		mr.imr_interface.s_addr = INADDR_ANY;
-		if (setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, 
-			       (char *)&mr, sizeof(mr)) < 0) {
+		if (setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mr, sizeof(mr)) < 0) {
 			perror("IP_ADD_MEMBERSHIP");
 			exit(1);
 		}
-	} else
-#endif
-	{
+	} else {
 		/*
 		 * bind the local host's address to this socket.  If that
 		 * fails, another vic probably has the addresses bound so
@@ -331,14 +327,13 @@ int IPNetwork::openrsock(u_int32_t addr, u_short port,
 	 * XXX don't need this for the session socket.
 	 */	
 	int bufsize = 80 * 1024;
-	if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, (char *)&bufsize,
-			sizeof(bufsize)) < 0) {
+	if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, (char *)&bufsize, sizeof(bufsize)) < 0) {
 		bufsize = 32 * 1024;
-		if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, (char *)&bufsize,
-				sizeof(bufsize)) < 0)
+		if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, (char *)&bufsize, sizeof(bufsize)) < 0) {
 			perror("SO_RCVBUF");
+		}
 	}
-	return (fd);
+	return fd;
 }
 
 int IPNetwork::openssock(u_int32_t addr, u_short port, int ttl)

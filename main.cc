@@ -177,7 +177,7 @@ public:
 		else {
 			Tk_Window tk = t.tkmain();
 			Tk_Uid uid = Tk_GetUid((char*)argv[1]);
-			XFontStruct* p = Tk_GetFontStruct(t.interp(), tk, uid);
+			Tk_Font p = Tk_GetFont(t.interp(), tk, uid);
 			t.result(p != 0 ? "1" : "0");
 		}
 		return (TCL_OK);
@@ -275,27 +275,6 @@ checkXShm(Tk_Window tk, const char*)
 extern "C" char *optarg;
 extern "C" int optind;
 extern "C" int opterr;
-
-const char*
-disparg(int argc, const char** argv, const char* optstr)
-{
-	const char* display = 0;
-	int op;
-	while ((op = getopt(argc, (char**)argv, (char*)optstr)) != -1) {
-		if (op == 'd') {
-			display = optarg;
-			break;
-		}
-		else if (op == '?')
-			usage();
-	}
-#ifdef linux
-	optind = 0;
-#else
-	optind = 1;
-#endif
-	return (display);
-}
 
 char*
 parse_assignment(char* cp)
@@ -395,8 +374,7 @@ extern "C" int Tk_StripchartCmd(ClientData, Tcl_Interp*, int ac, char** av);
 #ifdef WIN32
 extern "C" int WinPutsCmd(ClientData, Tcl_Interp*, int ac, char** av);
 extern "C" int WinGetUserName(ClientData, Tcl_Interp*, int ac, char** av);
-extern "C" int WinPutRegistry(ClientData, Tcl_Interp*, int ac, char** av);
-extern "C" int WinGetRegistry(ClientData, Tcl_Interp*, int ac, char** av);
+extern "C" int WinReg(ClientData, Tcl_Interp *, int, char **);
 #endif
 
 extern "C" {
@@ -426,27 +404,52 @@ main(int argc, const char** argv)
 	signal(SIGINT, ciao);
 	signal(SIGTERM, ciao);
 
-#ifdef WIN32
+#ifdef WIN32_NOT
 	TkSetPlatformInit(TkPlatformInit);
 #endif
 
 	opterr = 0;
 	const char* options = 
-		"A:B:C:c:D:d:f:F:HI:K:M:m:N:n:o:Pq:sT:t:U:u:V:X:";
-	const char* display = disparg(argc, (const char**)argv, options);
+		"A:B:C:c:D:d:f:F:HI:K:M:m:N:n:o:Pq:re:sT:t:U:u:V:w:X:";
+
+	/* process display and window (-use) options before initialising tcl/tk */
+	char buf[128], tmp[16];
+	const char *display=0, *use=0;
+	int op;
+	while ((op = getopt(argc, (char**)argv, (char*)options)) != -1) {
+		if (op == 'd') {
+			display = optarg;
+		}
+		if (op =='w') {
+			use= optarg;
+		}
+		else if (op == '?')
+			usage();
+	}
 
 	Tcl::init("vic");
 	Tcl& tcl = Tcl::instance();
+
 #ifdef WIN32
 	if (display == NULL)
 		display = "localhost:0";
 #endif
-	tcl.evalf(display?
-		    "set argv \"-name vic -display %s\"" :
-		    "set argv \"-name vic\"",
+   	sprintf(buf,display?
+		    "-name vic -display %s" :
+		    "-name vic",
 		  display);
+	sprintf(tmp,use?" -use %s":"",use);
+	strncat(buf,tmp,strlen(tmp));
+	Tcl_SetVar(tcl.interp(), "argv", buf, TCL_GLOBAL_ONLY);
+
+	/* initialise tcl/tk but ignore errors under windows. */
 	Tk_Window tk = 0;
+	Tcl_Init(tcl.interp());
+#ifdef WIN32
+	Tk_Init(tcl.interp());
+#else
 	if (Tk_Init(tcl.interp()) == TCL_OK)
+#endif
 		tk = Tk_MainWindow(tcl.interp());
 	if (tk == 0) {
 		fprintf(stderr, "vic: %s\n", tcl.result());
@@ -459,13 +462,12 @@ main(int argc, const char** argv)
 #ifdef WIN32
 	tcl.CreateCommand("puts", WinPutsCmd, (ClientData)tk);
 	tcl.CreateCommand("getusername", WinGetUserName, (ClientData)tk);
-	tcl.CreateCommand("putregistry", WinPutRegistry, (ClientData)tk);
-	tcl.CreateCommand("getregistry", WinGetRegistry, (ClientData)tk);
+	tcl.CreateCommand("registry", WinReg, (ClientData)tk);
 #endif
 	EmbeddedTcl::init();
 	tcl.evalc("init_resources");
 
-	int op;
+	optind=1;
 	while ((op = getopt(argc, (char**)argv, (char*)options)) != -1) {
 		switch (op) {
 
@@ -548,6 +550,10 @@ main(int argc, const char** argv)
 			tcl.add_option("jpegQfactor", optarg);
 			break;
 
+		case 'r':
+			tcl.add_option("relateInterface","true");
+			break;
+
 		case 's':
 			use_shm = 0;
 			break;
@@ -570,6 +576,10 @@ main(int argc, const char** argv)
 
 		case 'V':
 			tcl.add_option("visual", optarg);
+			break;
+
+		/* window for application embedding - same as use */
+		case 'w':
 			break;
 
 		case 'X':

@@ -76,12 +76,20 @@ proc search_font { foundry style weight points } {
 }
 
 proc init_fonts {} {
+	global tcl_platform
 	set foundry [option get . foundry Vic]
 
-	set helv10  [search_font $foundry helvetica medium 10]
-	set helv10b [search_font $foundry helvetica bold 10]
-	set helv12b [search_font $foundry helvetica bold 12]
-	set times14 [search_font $foundry times medium 14]
+	if {$tcl_platform(platform) == "windows"} {
+		set helv10  [search_font $foundry helvetica medium 12]
+		set helv10b [search_font $foundry helvetica bold 12]
+		set helv12b [search_font $foundry helvetica bold 12]
+		set times14 [search_font $foundry times medium 14]
+	} else {
+		set helv10  [search_font $foundry helvetica medium 10]
+		set helv10b [search_font $foundry helvetica bold 10]
+		set helv12b [search_font $foundry helvetica bold 12]
+		set times14 [search_font $foundry times medium 14]
+	}
 
 	option add *Font $helv12b startupFile
 	option add Vic.medfont $helv12b startupFile
@@ -91,6 +99,7 @@ proc init_fonts {} {
 }
 
 proc init_resources {} {
+	global tcl_platform
 	#
 	# use 2 pixels of padding by default
 	#
@@ -107,9 +116,11 @@ proc init_resources {} {
 	# base priority from widgetDefault to 61 so that user's X resources
 	# won't override these.
 	#
-	tk_setPalette gray80
-	foreach option [array names tkPalette] {
-		option add *$option $tkPalette($option) 61
+	if {$tcl_platform(platform) != "windows"} {
+		tk_setPalette gray80
+		foreach option [array names tkPalette] {
+			option add *$option $tkPalette($option) 61
+		}
 	}
 
 	option add *Radiobutton.relief flat startupFile

@@ -1,0 +1,17 @@
+# Makefile for tmndec.exe
+
+CC = i486-cygwin32-gcc
+
+#
+# This will generate optimized machine code 
+#
+CFLAGS = -O3 #-DUSE_TIME -DWINDOWS -DWIN32
+
+
+OBJS = tmndec.o getpic.o getvlc.o gethdr.o getblk.o getbits.o store.o recon.o idct.o idctref.o display.o sac.o dither.o yuv2rgb.o yuvrgb24.o win.o
+SRCS = $(subst .o,.c,$(OBJS))
+
+
+tmndec.exe: $(OBJS)
+	$(CC) $(CFLAGS) $(LIBRARYDIR) -o $@ $(OBJS) -lm $(LIBS)
+

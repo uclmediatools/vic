@@ -318,7 +318,9 @@ int Network::recv(u_char* buf, int len, u_int32_t& from)
 		if (len > wrkbuflen_)
 			expand_wrkbuf(len);
 		int cc = dorecv(wrkbuf_, len, from, rsock_);
-		return (crypt_->Decrypt(wrkbuf_, cc, buf));
+		if (cc!=0) {
+			return (crypt_->Decrypt(wrkbuf_, cc, buf));
+		} else return 0;
 	}
 	return (dorecv(buf, len, from, rsock_));
 }

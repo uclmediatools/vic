@@ -1,0 +1,30 @@
+		          TODO version 3.1
+		     ===========================
+
+		       Suggestions are welcome.
+
+1.  (Annex I) Intra Mode selection is based on TMN-8 rev.0 and will
+not yield optimal compression.  
+
+2.  (Annex K) not yet implemented.
+
+3.  (Annex L) not yet implemented.
+
+4.  (Annex N) not yet implemented.
+
+5.  (Annex O) Rate control cannot be used with scalability.
+
+6.  (Annex O) The reconstructed sequence (out.raw) at the encoder
+must be written in display order.  Currently, the frames are written in
+encoding order.
+
+7.  (Annex P) not yet implemented.
+
+8.  (Annex Q) not yet implemented.
+
+9.  (Annex R) not yet implemented.
+
+10.  Rounding Type supported at the decoder but not implemented at the
+encoder.
+
+Contributions are also welcomed.

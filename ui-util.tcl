@@ -56,6 +56,9 @@ proc isCIF fmt {
 	if { $fmt == "h261" } {
 		return 1
 	}
+	if { $fmt == "h263" } {
+		return 1
+	}
 	return 0
 }
 
