@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Application" 0x0101
 
-CFG=vic - Win32 Debug IPv6 Musica
+CFG=vic - Win32 Debug IPv6 MSR
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,14 +13,15 @@ CFG=vic - Win32 Debug IPv6 Musica
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "vic.mak" CFG="vic - Win32 Debug IPv6 Musica"
+!MESSAGE NMAKE /f "vic.mak" CFG="vic - Win32 Debug IPv6 MSR"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
 !MESSAGE "vic - Win32 Release" (based on "Win32 (x86) Application")
-!MESSAGE "vic - Win32 Debug IPv6" (based on "Win32 (x86) Application")
 !MESSAGE "vic - Win32 Debug IPv6 Musica" (based on "Win32 (x86) Application")
 !MESSAGE "vic - Win32 Debug" (based on "Win32 (x86) Application")
+!MESSAGE "vic - Win32 Debug IPv6 Win2000" (based on "Win32 (x86) Application")
+!MESSAGE "vic - Win32 Debug IPv6 MSR" (based on "Win32 (x86) Application")
 !MESSAGE 
 
 # Begin Project
@@ -46,7 +47,7 @@ RSC=rc.exe
 # PROP Target_Dir ""
 vic=rc.exe
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /W3 /GX /O2 /I ".\\" /I "codec" /I "render" /I "rtp" /I "net" /I "win32" /I "video" /I "..\common" /I "..\tk-8.0\win" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\tcl-8.0\win" /I "..\tcl-8.0\generic" /I "codec\tmndec" /I "codec\tmn-x" /I "codec\jpeg" /I "codec\p64" /I "codec\h263" /D "NDEBUG" /D "_WINDOWS" /D "SASR" /D "WIN32" /D "HAVE_INET_PTON" /D ED_YBITS=4 /D SIGRET=void /D SIGARGS=int /D NLAYER=8 /FR /YX /FD /c
+# ADD CPP /nologo /W3 /GX /O2 /I ".\\" /I "render" /I "rtp" /I "net" /I "win32" /I "video" /I "codec" /I "codec\tmndec" /I "codec\tmn-x" /I "codec\jpeg" /I "codec\p64" /I "codec\h263" /I "codec\mpeg" /I "..\common\src" /I "..\tk-8.0\win" /I "..\tcl-8.0\win" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\tcl-8.0\generic" /D "VIC" /D "NDEBUG" /D "_WINDOWS" /D "SASR" /D "WIN32" /D "HAVE_INET_PTON" /D ED_YBITS=4 /D SIGRET=void /D SIGARGS=int /D NLAYER=8 /FR /YX /FD /c
 # SUBTRACT CPP /X
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
@@ -57,36 +58,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 tklib.lib tcllib.lib uclmm.lib libh263.lib libh263coder.lib wsock32.lib Ws2_32.lib winmm.lib kernel32.lib user32.lib gdi32.lib shell32.lib vfw32.lib advapi32.lib comdlg32.lib /nologo /subsystem:windows /machine:I386 /libpath:"..\common\Release" /libpath:"..\tcl-8.0\win\Release" /libpath:"..\tk-8.0\win\Release" /libpath:"codec\tmndec" /libpath:"codec\tmn-x"
-
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
-
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "vic___Win32_Debug_IPv6"
-# PROP BASE Intermediate_Dir "vic___Win32_Debug_IPv6"
-# PROP BASE Ignore_Export_Lib 0
-# PROP BASE Target_Dir ""
-# PROP Use_MFC 0
-# PROP Use_Debug_Libraries 1
-# PROP Output_Dir "Debug_IPv6"
-# PROP Intermediate_Dir "Debug_IPv6"
-# PROP Ignore_Export_Lib 0
-# PROP Target_Dir ""
-vic=rc.exe
-# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /I "c:\Program Files\Tcl\include" /I "c:\Program Files\Tcl\include\xlib" /I "c:\DDK\inc" /I "c:\src\msripv6\inc" /D "_WINDOWS" /D "DEBUG" /D "SASR" /D "WIN32" /D "_DEBUG" /D "HAVE_IPv6" /FR /YX /FD /c
-# ADD CPP /nologo /W3 /Gm /GX /Zi /Od /I ".\\" /I "codec" /I "render" /I "rtp" /I "net" /I "win32" /I "video" /I "..\common" /I "..\tk-8.0\win" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\tcl-8.0\win" /I "..\tcl-8.0\generic" /I "codec\tmndec" /I "codec\tmn-x" /I "codec\jpeg" /I "codec\p64" /I "codec\h263" /I "..\IPv6Kit\inc" /I "g:\DDK\inc" /D "DEBUG" /D "_DEBUG" /D "DEBUG_MEM" /D "HAVE_IPV6" /D "NEED_INET_NTOP" /D "WIN32" /D "NEED_INET_PTON" /D ED_YBITS=4 /D SIGRET=void /D SIGARGS=int /D NLAYER=8 /FR /YX /FD /I ../common /c
-# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
-# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
-# ADD BASE RSC /l 0x809 /d "_DEBUG"
-# ADD RSC /l 0x809 /d "_DEBUG"
-BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
-# ADD BSC32 /nologo
-LINK32=link.exe
-# ADD BASE LINK32 winmm.lib Ws2_32.lib msacm32.lib tcl80vc.lib tk80vc.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wship6.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept /libpath:"c:\src\rat32\rat" /libpath:"c:\Program Files\Tcl\lib" /libpath:".\win32" /libpath:"c:\src\msripv6\wship6\obj\i386\free"
-# ADD LINK32 tklib.lib tcllib.lib wship6.lib uclmm.lib winmm.lib wsock32.lib Ws2_32.lib msacm32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib libh263.lib libh263coder.lib vfw32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept /libpath:"..\tcl-8.0\win\Debug" /libpath:"..\tk-8.0\win\Debug" /libpath:"..\common\Debug_IPv6" /libpath:"codec\tmndec" /libpath:"codec\tmn-x" /libpath:"..\IPv6Kit\lib"
-# SUBTRACT LINK32 /pdb:none /incremental:no /map /force
+# ADD LINK32 tklib.lib tcllib.lib uclmm.lib wsock32.lib Ws2_32.lib winmm.lib kernel32.lib user32.lib gdi32.lib shell32.lib vfw32.lib advapi32.lib comdlg32.lib /nologo /subsystem:windows /machine:I386 /libpath:"..\common\src\Release" /libpath:"..\tcl-8.0\win\Release" /libpath:"..\tk-8.0\win\Release" /libpath:"codec\tmndec" /libpath:"codec\tmn-x"
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
@@ -104,7 +76,7 @@ LINK32=link.exe
 # PROP Target_Dir ""
 vic=rc.exe
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /I "\src\common" /I "\src\tcl-8.0\generic" /I "\src\tk-8.0\generic" /I "\src\tk-8.0\xlib" /I "\src\tk-8.0\xlib\X11" /I "\DDK\inc" /I "\src\msripv6-1.2\inc" /D "_WINDOWS" /D "DEBUG" /D "SASR" /D "WIN32" /D "_DEBUG" /D "HAVE_IPv6" /D "NEED_INET_PTON" /D "NEED_INET_NTOP" /FR /YX /FD /I ../common /c
-# ADD CPP /nologo /W3 /Gm /GX /Zi /Od /I ".\\" /I "codec" /I "render" /I "rtp" /I "net" /I "win32" /I "video" /I "..\common" /I "..\tk-8.0\win" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\tcl-8.0\win" /I "..\tcl-8.0\generic" /I "codec\tmndec" /I "codec\tmn-x" /I "codec\jpeg" /I "codec\p64" /I "codec\h263" /I "..\MUSICA\WINSOCK6" /D "_WINDOWS" /D "DEBUG" /D "SASR" /D "_DEBUG" /D "HAVE_IPV6" /D "NEED_INET_NTOP" /D "MUSICA_IPV6" /D "_POSIX" /D "_WINNT" /D "WIN32" /D "NEED_INET_PTON" /D ED_YBITS=4 /D SIGRET=void /D SIGARGS=int /D NLAYER=8 /FR /YX /FD /I ../common /c
+# ADD CPP /nologo /W3 /Gm /GX /Zi /Od /I ".\\" /I "render" /I "rtp" /I "net" /I "win32" /I "video" /I "codec" /I "codec\tmndec" /I "codec\tmn-x" /I "codec\jpeg" /I "codec\p64" /I "codec\h263" /I "codec\mpeg" /I "..\common\src" /I "..\tk-8.0\win" /I "..\tcl-8.0\win" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\tcl-8.0\generic" /I "..\MUSICA\WINSOCK6" /D "_WINDOWS" /D "DEBUG" /D "SASR" /D "_DEBUG" /D "HAVE_IPV6" /D "NEED_INET_NTOP" /D "MUSICA_IPV6" /D "_POSIX" /D "_WINNT" /D "WIN32" /D "NEED_INET_PTON" /D ED_YBITS=4 /D SIGRET=void /D SIGARGS=int /D NLAYER=8 /FR /YX /FD /I ../common /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x809 /d "_DEBUG"
@@ -115,7 +87,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 tklib.lib tcllib.lib wship6.lib uclmm.lib winmm.lib wsock32.lib Ws2_32.lib msacm32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept /libpath:"\src\tcl-8.0\win\Debug_IPv6" /libpath:"\src\tk-8.0\win\Debug_IPv6" /libpath:"\src\msripv6-1.2\wship6\obj\i386\free" /libpath:"\src\common\Debug"
 # SUBTRACT BASE LINK32 /pdb:none /incremental:no /map /force
-# ADD LINK32 tklib.lib tcllib.lib uclmm.lib libh263.lib libh263coder.lib lib44bsd.lib Resolv.lib wsock32.lib Ws2_32.lib winmm.lib kernel32.lib user32.lib gdi32.lib shell32.lib vfw32.lib advapi32.lib comdlg32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept /libpath:"..\tcl-8.0\win\Debug" /libpath:"..\tk-8.0\win\Debug" /libpath:"..\common\Debug" /libpath:"codec\tmndec" /libpath:"codec\tmn-x" /libpath:"..\MUSICA\WINSOCK6"
+# ADD LINK32 tklib.lib tcllib.lib uclmm.lib lib44bsd.lib Resolv.lib wsock32.lib Ws2_32.lib winmm.lib kernel32.lib user32.lib gdi32.lib shell32.lib vfw32.lib advapi32.lib comdlg32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept /libpath:"..\tcl-8.0\win\Debug" /libpath:"..\tk-8.0\win\Debug" /libpath:"..\common\Debug" /libpath:"codec\tmndec" /libpath:"codec\tmn-x" /libpath:"..\MUSICA\WINSOCK6"
 # SUBTRACT LINK32 /pdb:none /incremental:no /map /force
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug"
@@ -133,7 +105,7 @@ LINK32=link.exe
 # PROP Target_Dir ""
 vic=rc.exe
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I ".\\" /I "codec" /I "render" /I "rtp" /I "net" /I "win32" /I "video" /I "..\common" /I "..\tk-8.0\win" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\tcl-8.0\win" /I "..\tcl-8.0\generic" /I "codec\tmndec" /I "codec\tmn-x" /I "codec\jpeg" /I "codec\p64" /I "codec\h263" /D "_WINDOWS" /D "DEBUG" /D "SASR" /D "_DEBUG" /D "_WIN95" /D "WIN32" /D "NEED_INET_PTON" /D ED_YBITS=4 /D SIGRET=void /D SIGARGS=int /D NLAYER=8 /Fr /YX /FD /I ../common /c
+# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I ".\\" /I "render" /I "rtp" /I "net" /I "win32" /I "video" /I "codec" /I "codec\tmndec" /I "codec\tmn-x" /I "codec\jpeg" /I "codec\p64" /I "codec\h263" /I "codec\mpeg" /I "..\common\src" /I "..\tk-8.0\win" /I "..\tcl-8.0\win" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\tcl-8.0\generic" /I "mst_wm\incls" /D "DEBUG" /D "_DEBUG" /D "DEBUG_MEM" /D "WIN32" /D SIGRET=void /D SIGARGS=int /D NLAYER=8 /D ED_YBITS=4 /D "VIC" /D "USE_TIME" /D "WINDOWS" /Fr /YX /FD /I ../common /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x809 /d "_DEBUG"
@@ -143,17 +115,78 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 tklib.lib tcllib.lib libh263.lib libh263coder.lib wsock32.lib Ws2_32.lib winmm.lib kernel32.lib user32.lib gdi32.lib shell32.lib vfw32.lib advapi32.lib comdlg32.lib uclmm.lib /nologo /subsystem:windows /debug /machine:I386 /libpath:"..\common\Debug" /libpath:"..\tcl-8.0\win\Debug" /libpath:"..\tk-8.0\win\Debug" /libpath:"codec\tmndec" /libpath:"codec\tmn-x"
+# ADD LINK32 tklib.lib tcllib.lib wsock32.lib Ws2_32.lib winmm.lib kernel32.lib user32.lib gdi32.lib shell32.lib vfw32.lib advapi32.lib comdlg32.lib uclmm.lib /nologo /subsystem:windows /debug /machine:I386 /libpath:"..\common\src\Debug" /libpath:"..\tcl-8.0\win\Debug" /libpath:"..\tk-8.0\win\Debug" /libpath:"codec\tmndec" /libpath:"codec\tmn-x"
 # SUBTRACT LINK32 /pdb:none
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "vic___Win32_Debug_IPv6_Win2000"
+# PROP BASE Intermediate_Dir "vic___Win32_Debug_IPv6_Win2000"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "Debug_IPv6_Win2000"
+# PROP Intermediate_Dir "Debug_IPv6_Win2000"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+vic=rc.exe
+# ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /I ".\\" /I "codec" /I "render" /I "rtp" /I "net" /I "win32" /I "video" /I "..\common\src" /I "..\tk-8.0\win" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\tcl-8.0\win" /I "..\tcl-8.0\generic" /I "codec\tmndec" /I "codec\tmn-x" /I "codec\jpeg" /I "codec\p64" /I "codec\h263" /I "..\IPv6Kit\inc" /I "g:\DDK\inc" /D "DEBUG" /D "_DEBUG" /D "DEBUG_MEM" /D "HAVE_IPV6" /D "NEED_INET_NTOP" /D "WIN32" /D "NEED_INET_PTON" /D ED_YBITS=4 /D SIGRET=void /D SIGARGS=int /D NLAYER=8 /FR /YX /FD /I ../common /c
+# ADD CPP /nologo /W3 /Gm /GX /Zi /Od /I ".\\" /I "render" /I "rtp" /I "net" /I "win32" /I "video" /I "codec" /I "codec\tmndec" /I "codec\tmn-x" /I "codec\jpeg" /I "codec\p64" /I "codec\h263" /I "codec\mpeg" /I "..\common\src" /I "..\tk-8.0\win" /I "..\tcl-8.0\win" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\tcl-8.0\generic" /I "..\IPv6Kit\inc" /I "mst_wm\incls" /D "DEBUG" /D "_DEBUG" /D "DEBUG_MEM" /D "WIN32" /D SIGRET=void /D SIGARGS=int /D NLAYER=8 /D ED_YBITS=4 /D "VIC" /D "USE_TIME" /D "WINDOWS" /D "HAVE_IPV6" /D "NEED_INET_NTOP" /D "NEED_INET_PTON" /D "WIN2K_IPV6" /FR /YX /FD /I ../common /c
+# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
+# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
+# ADD BASE RSC /l 0x809 /d "_DEBUG"
+# ADD RSC /l 0x809 /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 tklib.lib tcllib.lib uclmm.lib winmm.lib wsock32.lib Ws2_32.lib msacm32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib libh263.lib libh263coder.lib vfw32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept /libpath:"..\tcl-8.0\win\Debug" /libpath:"..\tk-8.0\win\Debug" /libpath:"..\common\src\Debug_IPv6" /libpath:"codec\tmndec" /libpath:"codec\tmn-x" /libpath:"..\IPv6Kit\lib"
+# SUBTRACT BASE LINK32 /pdb:none /incremental:no /map /force
+# ADD LINK32 tklib.lib tcllib.lib uclmm.lib winmm.lib wsock32.lib Ws2_32.lib msacm32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib vfw32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept /libpath:"..\tcl-8.0\win\Debug" /libpath:"..\tk-8.0\win\Debug" /libpath:"..\common\src\Debug_IPv6" /libpath:"codec\tmndec" /libpath:"codec\tmn-x"
+# SUBTRACT LINK32 /pdb:none /incremental:no /map /force
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "vic___Win32_Debug_IPv6_MSR"
+# PROP BASE Intermediate_Dir "vic___Win32_Debug_IPv6_MSR"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "Debug_IPv6_MSR"
+# PROP Intermediate_Dir "Debug_IPv6_MSR"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+vic=rc.exe
+# ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /I ".\\" /I "codec" /I "render" /I "rtp" /I "net" /I "win32" /I "video" /I "..\common\src" /I "..\tk-8.0\win" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\tcl-8.0\win" /I "..\tcl-8.0\generic" /I "codec\tmndec" /I "codec\tmn-x" /I "codec\jpeg" /I "codec\p64" /I "codec\h263" /I "..\IPv6Kit\inc" /I "g:\DDK\inc" /D "DEBUG" /D "_DEBUG" /D "DEBUG_MEM" /D "HAVE_IPV6" /D "NEED_INET_NTOP" /D "WIN32" /D "NEED_INET_PTON" /D ED_YBITS=4 /D SIGRET=void /D SIGARGS=int /D NLAYER=8 /FR /YX /FD /I ../common /c
+# ADD CPP /nologo /W3 /Gm /GX /Zi /Od /I ".\\" /I "render" /I "rtp" /I "net" /I "win32" /I "video" /I "codec" /I "codec\tmndec" /I "codec\tmn-x" /I "codec\jpeg" /I "codec\p64" /I "codec\h263" /I "codec\mpeg" /I "..\common\src" /I "..\tk-8.0\win" /I "..\tcl-8.0\win" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\tcl-8.0\generic" /I "\DDK\inc" /I "..\msripv6\ms-1.4\msripv6-1.4-src\inc" /I "mst_wm\incls" /D "DEBUG" /D "_DEBUG" /D "DEBUG_MEM" /D "WIN32" /D SIGRET=void /D SIGARGS=int /D NLAYER=8 /D ED_YBITS=4 /D "VIC" /D "USE_TIME" /D "WINDOWS" /D "HAVE_IPV6" /D "HAVE_INET_PTON" /D "HAVE_INET_NTOP" /FR /YX /FD /I ../common /c
+# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
+# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
+# ADD BASE RSC /l 0x809 /d "_DEBUG"
+# ADD RSC /l 0x809 /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 tklib.lib tcllib.lib uclmm.lib winmm.lib wsock32.lib Ws2_32.lib msacm32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib libh263.lib libh263coder.lib vfw32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept /libpath:"..\tcl-8.0\win\Debug" /libpath:"..\tk-8.0\win\Debug" /libpath:"..\common\src\Debug_IPv6" /libpath:"codec\tmndec" /libpath:"codec\tmn-x" /libpath:"..\IPv6Kit\lib"
+# SUBTRACT BASE LINK32 /pdb:none /incremental:no /map /force
+# ADD LINK32 tklib.lib tcllib.lib uclmm.lib winmm.lib wsock32.lib Ws2_32.lib msacm32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib vfw32.lib wship6.lib /nologo /subsystem:windows /incremental:no /debug /machine:I386 /pdbtype:sept /libpath:"..\tcl-8.0\win\Debug" /libpath:"..\tk-8.0\win\Debug" /libpath:"..\common\src\Debug_IPv6" /libpath:"codec\tmndec" /libpath:"codec\tmn-x" /libpath:"..\IPv6Kit-1.4-NT4\lib"
+# SUBTRACT LINK32 /pdb:none /map /force
 
 !ENDIF 
 
 # Begin Target
 
 # Name "vic - Win32 Release"
-# Name "vic - Win32 Debug IPv6"
 # Name "vic - Win32 Debug IPv6 Musica"
 # Name "vic - Win32 Debug"
+# Name "vic - Win32 Debug IPv6 Win2000"
+# Name "vic - Win32 Debug IPv6 MSR"
 # Begin Group "Tcl/Tk Scripts"
 
 # PROP Default_Filter ".tcl"
@@ -256,17 +289,6 @@ InputName=cf-confbus
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
-
-# Begin Custom Build
-InputPath=".\tcl\cf-confbus.tcl"
-InputName=cf-confbus
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
@@ -280,6 +302,28 @@ InputName=cf-confbus
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# Begin Custom Build
+InputPath=".\tcl\cf-confbus.tcl"
+InputName=cf-confbus
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\cf-confbus.tcl"
+InputName=cf-confbus
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
 
 # Begin Custom Build
 InputPath=".\tcl\cf-confbus.tcl"
@@ -308,17 +352,6 @@ InputName=cf-main
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
-
-# Begin Custom Build
-InputPath=".\tcl\cf-main.tcl"
-InputName=cf-main
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
@@ -332,6 +365,28 @@ InputName=cf-main
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# Begin Custom Build
+InputPath=".\tcl\cf-main.tcl"
+InputName=cf-main
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\cf-main.tcl"
+InputName=cf-main
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
 
 # Begin Custom Build
 InputPath=".\tcl\cf-main.tcl"
@@ -360,17 +415,6 @@ InputName=cf-network
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
-
-# Begin Custom Build
-InputPath=".\tcl\cf-network.tcl"
-InputName=cf-network
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
@@ -384,6 +428,28 @@ InputName=cf-network
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# Begin Custom Build
+InputPath=".\tcl\cf-network.tcl"
+InputName=cf-network
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\cf-network.tcl"
+InputName=cf-network
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
 
 # Begin Custom Build
 InputPath=".\tcl\cf-network.tcl"
@@ -412,17 +478,6 @@ InputName=cf-tm
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
-
-# Begin Custom Build
-InputPath=".\tcl\cf-tm.tcl"
-InputName=cf-tm
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
@@ -436,6 +491,28 @@ InputName=cf-tm
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# Begin Custom Build
+InputPath=".\tcl\cf-tm.tcl"
+InputName=cf-tm
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\cf-tm.tcl"
+InputName=cf-tm
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
 
 # Begin Custom Build
 InputPath=".\tcl\cf-tm.tcl"
@@ -464,17 +541,6 @@ InputName=cf-util
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
-
-# Begin Custom Build
-InputPath=".\tcl\cf-util.tcl"
-InputName=cf-util
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
@@ -488,6 +554,28 @@ InputName=cf-util
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# Begin Custom Build
+InputPath=".\tcl\cf-util.tcl"
+InputName=cf-util
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\cf-util.tcl"
+InputName=cf-util
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
 
 # Begin Custom Build
 InputPath=".\tcl\cf-util.tcl"
@@ -516,17 +604,6 @@ InputName=entry
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
-
-# Begin Custom Build
-InputPath=.\tcl\entry.tcl
-InputName=entry
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
@@ -540,6 +617,28 @@ InputName=entry
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# Begin Custom Build
+InputPath=.\tcl\entry.tcl
+InputName=entry
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=.\tcl\entry.tcl
+InputName=entry
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
 
 # Begin Custom Build
 InputPath=.\tcl\entry.tcl
@@ -568,17 +667,6 @@ InputName=tkerror
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
-
-# Begin Custom Build
-InputPath=.\tcl\tkerror.tcl
-InputName=tkerror
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
@@ -592,6 +680,28 @@ InputName=tkerror
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# Begin Custom Build
+InputPath=.\tcl\tkerror.tcl
+InputName=tkerror
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=.\tcl\tkerror.tcl
+InputName=tkerror
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
 
 # Begin Custom Build
 InputPath=.\tcl\tkerror.tcl
@@ -620,17 +730,6 @@ InputName=ui-ctrlmenu
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
-
-# Begin Custom Build
-InputPath=".\tcl\ui-ctrlmenu.tcl"
-InputName=ui-ctrlmenu
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
@@ -644,6 +743,28 @@ InputName=ui-ctrlmenu
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-ctrlmenu.tcl"
+InputName=ui-ctrlmenu
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-ctrlmenu.tcl"
+InputName=ui-ctrlmenu
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
 
 # Begin Custom Build
 InputPath=".\tcl\ui-ctrlmenu.tcl"
@@ -672,17 +793,6 @@ InputName=ui-extout
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
-
-# Begin Custom Build
-InputPath=".\tcl\ui-extout.tcl"
-InputName=ui-extout
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
@@ -696,6 +806,28 @@ InputName=ui-extout
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-extout.tcl"
+InputName=ui-extout
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-extout.tcl"
+InputName=ui-extout
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
 
 # Begin Custom Build
 InputPath=".\tcl\ui-extout.tcl"
@@ -724,17 +856,6 @@ InputName=ui-grabber
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
-
-# Begin Custom Build
-InputPath=".\tcl\ui-grabber.tcl"
-InputName=ui-grabber
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
@@ -748,6 +869,28 @@ InputName=ui-grabber
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-grabber.tcl"
+InputName=ui-grabber
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-grabber.tcl"
+InputName=ui-grabber
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
 
 # Begin Custom Build
 InputPath=".\tcl\ui-grabber.tcl"
@@ -776,17 +919,6 @@ InputName=ui-help
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
-
-# Begin Custom Build
-InputPath=".\tcl\ui-help.tcl"
-InputName=ui-help
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
@@ -800,6 +932,28 @@ InputName=ui-help
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-help.tcl"
+InputName=ui-help
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-help.tcl"
+InputName=ui-help
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
 
 # Begin Custom Build
 InputPath=".\tcl\ui-help.tcl"
@@ -828,17 +982,6 @@ InputName=ui-main
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
-
-# Begin Custom Build
-InputPath=".\tcl\ui-main.tcl"
-InputName=ui-main
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
@@ -852,6 +995,28 @@ InputName=ui-main
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-main.tcl"
+InputName=ui-main
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-main.tcl"
+InputName=ui-main
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
 
 # Begin Custom Build
 InputPath=".\tcl\ui-main.tcl"
@@ -880,17 +1045,6 @@ InputName=ui-relate
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
-
-# Begin Custom Build
-InputPath=".\tcl\ui-relate.tcl"
-InputName=ui-relate
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
@@ -904,6 +1058,28 @@ InputName=ui-relate
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-relate.tcl"
+InputName=ui-relate
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-relate.tcl"
+InputName=ui-relate
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
 
 # Begin Custom Build
 InputPath=".\tcl\ui-relate.tcl"
@@ -932,17 +1108,6 @@ InputName=ui-resource
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
-
-# Begin Custom Build
-InputPath=".\tcl\ui-resource.tcl"
-InputName=ui-resource
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
@@ -956,6 +1121,28 @@ InputName=ui-resource
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-resource.tcl"
+InputName=ui-resource
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-resource.tcl"
+InputName=ui-resource
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
 
 # Begin Custom Build
 InputPath=".\tcl\ui-resource.tcl"
@@ -984,17 +1171,6 @@ InputName=ui-srclist
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
-
-# Begin Custom Build
-InputPath=".\tcl\ui-srclist.tcl"
-InputName=ui-srclist
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
@@ -1008,6 +1184,28 @@ InputName=ui-srclist
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-srclist.tcl"
+InputName=ui-srclist
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-srclist.tcl"
+InputName=ui-srclist
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
 
 # Begin Custom Build
 InputPath=".\tcl\ui-srclist.tcl"
@@ -1036,17 +1234,6 @@ InputName=ui-stats
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
-
-# Begin Custom Build
-InputPath=".\tcl\ui-stats.tcl"
-InputName=ui-stats
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
@@ -1060,6 +1247,28 @@ InputName=ui-stats
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-stats.tcl"
+InputName=ui-stats
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-stats.tcl"
+InputName=ui-stats
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
 
 # Begin Custom Build
 InputPath=".\tcl\ui-stats.tcl"
@@ -1088,17 +1297,6 @@ InputName=ui-switcher
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
-
-# Begin Custom Build
-InputPath=".\tcl\ui-switcher.tcl"
-InputName=ui-switcher
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
@@ -1112,6 +1310,28 @@ InputName=ui-switcher
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-switcher.tcl"
+InputName=ui-switcher
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-switcher.tcl"
+InputName=ui-switcher
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
 
 # Begin Custom Build
 InputPath=".\tcl\ui-switcher.tcl"
@@ -1140,17 +1360,6 @@ InputName=ui-util
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
-
-# Begin Custom Build
-InputPath=".\tcl\ui-util.tcl"
-InputName=ui-util
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
@@ -1164,6 +1373,28 @@ InputName=ui-util
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-util.tcl"
+InputName=ui-util
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-util.tcl"
+InputName=ui-util
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
 
 # Begin Custom Build
 InputPath=".\tcl\ui-util.tcl"
@@ -1192,17 +1423,6 @@ InputName=ui-win32
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
-
-# Begin Custom Build
-InputPath=".\tcl\ui-win32.tcl"
-InputName=ui-win32
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
@@ -1216,6 +1436,28 @@ InputName=ui-win32
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-win32.tcl"
+InputName=ui-win32
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-win32.tcl"
+InputName=ui-win32
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
 
 # Begin Custom Build
 InputPath=".\tcl\ui-win32.tcl"
@@ -1244,17 +1486,6 @@ InputName=ui-windows
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
-
-# Begin Custom Build
-InputPath=".\tcl\ui-windows.tcl"
-InputName=ui-windows
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
@@ -1268,6 +1499,28 @@ InputName=ui-windows
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-windows.tcl"
+InputName=ui-windows
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-windows.tcl"
+InputName=ui-windows
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
 
 # Begin Custom Build
 InputPath=".\tcl\ui-windows.tcl"
@@ -1367,13 +1620,15 @@ SOURCE=.\net\inet6.c
 
 !IF  "$(CFG)" == "vic - Win32 Release"
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # ADD CPP /D "NEED_ADDRINFO_H"
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
 
 !ENDIF 
 
@@ -1393,19 +1648,6 @@ SOURCE=".\net\net-addr.cpp"
 # Begin Source File
 
 SOURCE=".\net\net-ip.cpp"
-
-!IF  "$(CFG)" == "vic - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
-
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
-
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-# SUBTRACT CPP /D "_WIN95"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -1627,7 +1869,7 @@ SOURCE=.\codec\h263\reconh263.c
 SOURCE=.\codec\h263\sac.c
 # End Source File
 # End Group
-# Begin Group "codec Header Files"
+# Begin Group "General codec Headers"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -1641,6 +1883,10 @@ SOURCE=".\codec\decoder-h263.h"
 # Begin Source File
 
 SOURCE=".\codec\decoder-jpeg.h"
+# End Source File
+# Begin Source File
+
+SOURCE=".\codec\decoder-mpeg.h"
 # End Source File
 # Begin Source File
 
@@ -1660,12 +1906,1363 @@ SOURCE=.\codec\tmn\h263coder.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\codec\mpeg2par.h
+# End Source File
+# Begin Source File
+
+SOURCE=".\codec\parser-mpeg.h"
+# End Source File
+# Begin Source File
+
 SOURCE=".\codec\pvh-huff.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\codec\pvh.h
 # End Source File
+# End Group
+# Begin Group "tmn(v2) H.263+ codec"
+
+# PROP Default_Filter ""
+# Begin Group "Decoder (tmndec)"
+
+# PROP Default_Filter ""
+# Begin Group "Header Files"
+
+# PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=.\codec\tmndec\config.h
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\codec\tmndec\getvlc.h
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\codec\tmndec\global.h
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\codec\tmndec\indices.h
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\codec\tmndec\libh263.h
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\codec\tmndec\sactbls.h
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\codec\tmndec\tmndec.h
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\codec\tmndec\win.h
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
+
+!ENDIF 
+
+# End Source File
+# End Group
+# Begin Source File
+
+SOURCE=.\codec\tmndec\display.c
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\codec\tmndec\dither.c
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\codec\tmndec\getbits.c
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\codec\tmndec\getblk.c
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\codec\tmndec\gethdr.c
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\codec\tmndec\getpic.c
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\codec\tmndec\getvlc.c
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\codec\tmndec\idct.c
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\codec\tmndec\idctref.c
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\codec\tmndec\recon.c
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\codec\tmndec\sac.c
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\codec\tmndec\store.c
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\codec\tmndec\tmndec.c
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\codec\tmndec\win.c
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\codec\tmndec\yuv2rgb.c
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\codec\tmndec\yuvrgb24.c
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
+
+!ENDIF 
+
+# End Source File
+# End Group
+# Begin Group "Encoder (tmn-x)"
+
+# PROP Default_Filter ""
+# Begin Group "Header Files No. 1"
+
+# PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=.\config.h
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmn-x"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\h263coder.h
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmn-x"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\indices.h
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmn-x"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\macros.h
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmn-x"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\main.h
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmn-x"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\putvlc.h
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmn-x"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\sactbls.h
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmn-x"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\sim.h
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmn-x"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\vlc.h
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmn-x"
+
+!ENDIF 
+
+# End Source File
+# End Group
+# Begin Source File
+
+SOURCE=".\codec\tmn-x\coder.c"
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmn-x"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=".\codec\tmn-x\countbit.c"
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmn-x"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=".\codec\tmn-x\dct.c"
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmn-x"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=".\codec\tmn-x\filter.c"
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmn-x"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=".\codec\tmn-x\intra_pred.c"
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmn-x"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=".\codec\tmn-x\io.c"
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmn-x"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=".\codec\tmn-x\main.c"
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmn-x"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=".\codec\tmn-x\malloc_debug.c"
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmn-x"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=".\codec\tmn-x\mot_est.c"
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmn-x"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=".\codec\tmn-x\pred.c"
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmn-x"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=".\codec\tmn-x\putbits.c"
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmn-x"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=".\codec\tmn-x\putvlc.c"
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmn-x"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=".\codec\tmn-x\quant.c"
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmn-x"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=".\codec\tmn-x\ratectrl.c"
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmn-x"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=".\codec\tmn-x\sac.c"
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmn-x"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=".\codec\tmn-x\snr.c"
+
+!IF  "$(CFG)" == "vic - Win32 Release"
+
+# PROP Intermediate_Dir "Release\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+# PROP Intermediate_Dir "Debug_IPv6_Musica\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Intermediate_Dir "Debug\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+# PROP Intermediate_Dir "Debug_IPv6_MSR\tmn-x"
+
+!ENDIF 
+
+# End Source File
+# End Group
 # End Group
 # Begin Source File
 
@@ -2092,17 +3689,6 @@ InputPath=.\cm170.ppm
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
-
-USERDEP__CM170="render\mkbv\mkbv.exe"	
-# Begin Custom Build
-InputPath=.\cm170.ppm
-
-"codec\bv.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	render\mkbv\mkbv > codec\bv.c
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 USERDEP__CM170="render\mkbv\mkbv.exe"	
@@ -2126,6 +3712,28 @@ InputPath=.\cm170.ppm
 
 # End Custom Build
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+USERDEP__CM170="render\mkbv\mkbv.exe"	
+# Begin Custom Build
+InputPath=.\cm170.ppm
+
+"codec\bv.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	render\mkbv\mkbv > codec\bv.c
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+USERDEP__CM170="render\mkbv\mkbv.exe"	
+# Begin Custom Build
+InputPath=.\cm170.ppm
+
+"codec\bv.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	render\mkbv\mkbv > codec\bv.c
+
+# End Custom Build
+
 !ENDIF 
 
 # End Source File
@@ -2134,25 +3742,6 @@ InputPath=.\cm170.ppm
 SOURCE=".\rgb-cube.ppm"
 
 !IF  "$(CFG)" == "vic - Win32 Release"
-
-USERDEP__RGB_C="render\ppmtolut\ppmtolut.exe"	"render\mkcube\mkcube.exe"	
-# Begin Custom Build
-InputPath=".\rgb-cube.ppm"
-
-BuildCmds= \
-	render\mkcube\mkcube rgb > $(InputPath) \
-	render\ppmtolut\ppmtolut -n cube rgb-cube.ppm > render\cm0.c \
-	render\ppmtolut\ppmtolut -n jv_cube jv-cube-128.ppm >> render\cm0.c \
-	
-
-"$(InputPath)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-   $(BuildCmds)
-
-"render\cm0.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-   $(BuildCmds)
-# End Custom Build
-
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 USERDEP__RGB_C="render\ppmtolut\ppmtolut.exe"	"render\mkcube\mkcube.exe"	
 # Begin Custom Build
@@ -2209,6 +3798,44 @@ BuildCmds= \
    $(BuildCmds)
 # End Custom Build
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+USERDEP__RGB_C="render\ppmtolut\ppmtolut.exe"	"render\mkcube\mkcube.exe"	
+# Begin Custom Build
+InputPath=".\rgb-cube.ppm"
+
+BuildCmds= \
+	render\mkcube\mkcube rgb > $(InputPath) \
+	render\ppmtolut\ppmtolut -n cube rgb-cube.ppm > render\cm0.c \
+	render\ppmtolut\ppmtolut -n jv_cube jv-cube-128.ppm >> render\cm0.c \
+	
+
+"$(InputPath)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+
+"render\cm0.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
+USERDEP__RGB_C="render\ppmtolut\ppmtolut.exe"	"render\mkcube\mkcube.exe"	
+# Begin Custom Build
+InputPath=".\rgb-cube.ppm"
+
+BuildCmds= \
+	render\mkcube\mkcube rgb > $(InputPath) \
+	render\ppmtolut\ppmtolut -n cube rgb-cube.ppm > render\cm0.c \
+	render\ppmtolut\ppmtolut -n jv_cube jv-cube-128.ppm >> render\cm0.c \
+	
+
+"$(InputPath)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+
+"render\cm0.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+# End Custom Build
+
 !ENDIF 
 
 # End Source File
@@ -2221,23 +3848,6 @@ SOURCE="..\tk-8.0\win\tk.res"
 SOURCE=.\Version
 
 !IF  "$(CFG)" == "vic - Win32 Release"
-
-USERDEP__VERSI="win32\echo.txt"	"win32\set.txt"	"win32\null.txt"	
-# Begin Custom Build - Generating "version.c".
-InputPath=.\Version
-
-"version.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	copy win32\set.txt + VERSION win32\vergen.bat 
-	copy win32\vergen.bat + win32\null.txt win32\vergen.bat 
-	copy win32\vergen.bat + win32\echo.txt win32\vergen.bat 
-	win32\vergen.bat 
-	move win32\version.c version.c 
-	erase win32\version.c 
-	erase win32\vergen.bat 
-	
-# End Custom Build
-
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 USERDEP__VERSI="win32\echo.txt"	"win32\set.txt"	"win32\null.txt"	
 # Begin Custom Build - Generating "version.c".
@@ -2272,6 +3882,40 @@ InputPath=.\Version
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+USERDEP__VERSI="win32\echo.txt"	"win32\set.txt"	"win32\null.txt"	
+# Begin Custom Build - Generating "version.c".
+InputPath=.\Version
+
+"version.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	copy win32\set.txt + VERSION win32\vergen.bat 
+	copy win32\vergen.bat + win32\null.txt win32\vergen.bat 
+	copy win32\vergen.bat + win32\echo.txt win32\vergen.bat 
+	win32\vergen.bat 
+	move win32\version.c version.c 
+	erase win32\version.c 
+	erase win32\vergen.bat 
+	
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+USERDEP__VERSI="win32\echo.txt"	"win32\set.txt"	"win32\null.txt"	
+# Begin Custom Build - Generating "version.c".
+InputPath=.\Version
+
+"version.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	copy win32\set.txt + VERSION win32\vergen.bat 
+	copy win32\vergen.bat + win32\null.txt win32\vergen.bat 
+	copy win32\vergen.bat + win32\echo.txt win32\vergen.bat 
+	win32\vergen.bat 
+	move win32\version.c version.c 
+	erase win32\version.c 
+	erase win32\vergen.bat 
+	
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
 
 USERDEP__VERSI="win32\echo.txt"	"win32\set.txt"	"win32\null.txt"	
 # Begin Custom Build - Generating "version.c".
@@ -2315,26 +3959,6 @@ BuildCmds= \
    $(BuildCmds)
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
-
-USERDEP__YUV_M="render\ppmtolut\ppmtolut.exe"	"render\mkcube\mkcube.exe"	
-# Begin Custom Build
-InputPath=".\yuv-map.ppm"
-
-BuildCmds= \
-	set ED_YBITS=4 \
-	render\mkcube\mkcube -Y $ED_YBITS -U 45 -V 45 yuv >  $(InputPath) \
-	render\ppmtolut\ppmtolut -n quant cm170.ppm > render\cm1.c \
-	render\ppmtolut\ppmtolut -Y $ED_YBITS -n ed -e yuv-map.ppm >> render\cm1.c \
-	
-
-"$(InputPath)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-   $(BuildCmds)
-
-"render\cm1.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-   $(BuildCmds)
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 USERDEP__YUV_M="render\mkcube\mkcube.exe"	"render\ppmtolut\ppmtolut.exe"	
@@ -2358,6 +3982,46 @@ BuildCmds= \
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug"
 
 # PROP Ignore_Default_Tool 1
+USERDEP__YUV_M="render\ppmtolut\ppmtolut.exe"	"render\mkcube\mkcube.exe"	
+# Begin Custom Build
+InputPath=".\yuv-map.ppm"
+
+BuildCmds= \
+	set ED_YBITS=4 \
+	render\mkcube\mkcube -Y $ED_YBITS -U 45 -V 45 yuv >  $(InputPath) \
+	render\ppmtolut\ppmtolut -n quant cm170.ppm > render\cm1.c \
+	render\ppmtolut\ppmtolut -Y $ED_YBITS -n ed -e yuv-map.ppm >> render\cm1.c \
+	
+
+"$(InputPath)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+
+"render\cm1.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Win2000"
+
+USERDEP__YUV_M="render\ppmtolut\ppmtolut.exe"	"render\mkcube\mkcube.exe"	
+# Begin Custom Build
+InputPath=".\yuv-map.ppm"
+
+BuildCmds= \
+	set ED_YBITS=4 \
+	render\mkcube\mkcube -Y $ED_YBITS -U 45 -V 45 yuv >  $(InputPath) \
+	render\ppmtolut\ppmtolut -n quant cm170.ppm > render\cm1.c \
+	render\ppmtolut\ppmtolut -Y $ED_YBITS -n ed -e yuv-map.ppm >> render\cm1.c \
+	
+
+"$(InputPath)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+
+"render\cm1.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
+
 USERDEP__YUV_M="render\ppmtolut\ppmtolut.exe"	"render\mkcube\mkcube.exe"	
 # Begin Custom Build
 InputPath=".\yuv-map.ppm"

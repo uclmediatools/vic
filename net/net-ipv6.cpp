@@ -59,6 +59,7 @@ static const char rcsid[] =
 #include "config.h"
 #include "net.h"
 #include "vic_tcl.h"
+#include "inet_ntop.h"
 
 #include "inet6.h"
 #include "net-addr.h"

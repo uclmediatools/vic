@@ -166,8 +166,13 @@ char   *ctime(const time_t *);
 
 #if !defined(MUSICA_IPV6) && defined(WIN32) /* MS_IPV6 */
 
+#ifdef WIN2K_IPV6
+#include <ws2tcpip.h>
+#include <tpipv6.h>
+#else
 #include <ws2ip6.h>
 #include <ws2tcpip.h>
+#endif
 
 #define IN6_ARE_ADDR_EQUAL IN6_ADDR_EQUAL
 
