@@ -579,7 +579,6 @@ static const char *udp_host_addr6(socket_udp *s)
 		hints.ai_flags     = 0;
 		hints.ai_family    = AF_INET6;
 		hints.ai_socktype  = SOCK_DGRAM;
-		hints.ai_protocol  = IPPROTO_IPV6;
 		hints.ai_addrlen   = 0;
 		hints.ai_canonname = NULL;
 		hints.ai_addr      = NULL;
