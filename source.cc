@@ -53,7 +53,6 @@ MtuAlloc::MtuAlloc()
 {
 }
 
-/* When does this get called? */
 MtuAlloc::~MtuAlloc()
 {
         char **p;
@@ -73,10 +72,6 @@ PacketData::~PacketData()
 {
         /* RTPv1 */
         if ((u_char*)rh_ != pkt_) {
-#ifdef not_done
-                printf("Delete rh!\n");
-                delete rh_;
-#endif
         }
 //        rh_ = 0;
 
@@ -506,7 +501,6 @@ void Source::adapt(u_int32_t arr_ts, u_int32_t ts, int flag)
 #else
 				pdelay_ = apdelay_;
 #endif
-			/*printf("act del= %d\n", pdelay_);*/
 		}
 	}
 }
@@ -571,7 +565,7 @@ Source::timeout()
                 pkt->~PacketData();
                 pkt->next_ = free_;
                 free_ = pkt;
-        } while (head_ && head_->playout() <= playout); // && head_->rtp_hdr()->rh_ts == ts);
+        } while (head_ && head_->playout() <= playout);
         now_ = ntptime();    /* Needed for schedule */
 
         /* Calculate running average of render time */
@@ -605,7 +599,7 @@ Source::process(struct rtphdr* rh, u_char *bp, int len)
 	}
 }
 
-
+/*
 u_int32_t 
 Source::convert_time(u_int32_t ts)
 {
@@ -613,7 +607,7 @@ Source::convert_time(u_int32_t ts)
 	t += (ts >> 2) + (ts >> 3) - (ts >> 9) + (ts >> 12);
 	return (t);
 }
-
+*/
 
 void
 Source::recv(u_char *pkt, struct rtphdr* rh, u_char *vh, int cc)
