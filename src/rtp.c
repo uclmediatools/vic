@@ -2,6 +2,11 @@
  * FILE:   rtp.c
  * AUTHOR: Colin Perkins <c.perkins@cs.ucl.ac.uk>
  *
+ * The routines in this file implement the Real-time Transport Protocol,
+ * RTP, as specified in RFC1889 with current updates under discussion in
+ * the IETF audio/video transport working group. Portions of the code are
+ * derived from the algorithms published in that specification.
+ *
  * $Revision$ 
  * $Date$
  * 
@@ -34,6 +39,7 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
+ *
  */
 
 #include "config_unix.h"
@@ -45,8 +51,7 @@
 #include "rtp.h"
 
 /*
- * Definitions for the RTP/RTCP packets on the wire. These are mostly
- * copied from draft-ietf-avt-rtp-new-01
+ * Definitions for the RTP/RTCP packets on the wire...
  */
 
 #define RTP_MAX_PACKET_LEN 1500
@@ -147,6 +152,9 @@ struct rtp {
 	int		 invalid_rtp_count;
 	int		 invalid_rtcp_count;
 	int		 ssrc_count;
+	int		 sender_count;
+	int		 initial_rtcp;
+	int		 avg_rtcp_size;
 	void (*callback)(struct rtp *session, rtp_event *event);
 };
 
@@ -448,6 +456,9 @@ struct rtp *rtp_init(char *addr, u_int16 port, int ttl, void (*callback)(struct 
 	session->invalid_rtp_count  = 0;
 	session->invalid_rtcp_count = 0;
 	session->ssrc_count         = 0;
+	session->sender_count       = 0;
+	session->initial_rtcp       = TRUE;
+	session->avg_rtcp_size      = 0;
 	for (i = 0; i < RTP_DB_SIZE; i++) {
 		session->db[i] = NULL;
 	}
@@ -840,6 +851,7 @@ static void rtp_recv_ctrl(struct rtp *session)
 				}
 				packet = (rtcp_t *) ((char *) packet + (4 * (ntohs(packet->common.length) + 1)));
 			}
+			debug_msg("FIXME: should update session->avg_rtcp_size\n");
 		} else {
 			debug_msg("Invalid RTCP packet discarded\n");
 			session->invalid_rtcp_count++;
@@ -992,7 +1004,10 @@ int rtp_send_data(struct rtp *session, u_int32 ts, char pt, int m, int cc, u_int
 static void calc_ts_diff(struct timeval curr_time, struct timeval prev_time, struct timeval *diff)
 {
 	/* Make diff = curr_time - prev_time */
-
+	UNUSED(curr_time);
+	UNUSED(prev_time);
+	UNUSED(diff);
+	debug_msg("FIXME...\n");
 }
 
 static void expire_sources(struct rtp *session)
@@ -1026,12 +1041,80 @@ static void expire_sources(struct rtp *session)
 	}
 }
 
+#ifdef NDEF
+static double rtcp_interval(struct rtp *session, double rtcp_bw, int we_sent)
+{
+	/* Minimum average time between RTCP packets from this site (in   */
+	/* seconds).  This time prevents the reports from `clumping' when */
+	/* sessions are small and the law of large numbers isn't helping  */
+	/* to smooth out the traffic.  It also keeps the report interval  */
+	/* from becoming ridiculously small during transient outages like */
+	/* a network partition.                                           */
+	double const RTCP_MIN_TIME = 5.;
+	/* Fraction of the RTCP bandwidth to be shared among active       */
+	/* senders.  (This fraction was chosen so that in a typical       */
+	/* session with one or two active senders, the computed report    */
+	/* time would be roughly equal to the minimum report time so that */
+	/* we don't unnecessarily slow down receiver reports.) The        */
+	/* receiver fraction must be 1 - the sender fraction.             */
+	double const RTCP_SENDER_BW_FRACTION = 0.25;
+	double const RTCP_RCVR_BW_FRACTION = (1-RTCP_SENDER_BW_FRACTION);
+	double t;				              /* interval */
+	double rtcp_min_time = RTCP_MIN_TIME;
+	int n;			        /* no. of members for computation */
+
+	/* Very first call at application start-up uses half the min      */
+	/* delay for quicker notification while still allowing some time  */
+	/* before reporting for randomization and to learn about other    */
+	/* sources so the report interval will converge to the correct    */
+	/* interval more quickly.                                         */
+	if (session->initial_rtcp) {
+		rtcp_min_time /= 2;
+	}
+
+	/* If there were active senders, give them at least a minimum     */
+	/* share of the RTCP bandwidth.  Otherwise all participants share */
+	/* the RTCP bandwidth equally.                                    */
+	n = session->ssrc_count;
+	if (session->sender_count > 0 && session->sender_count < session->ssrc_count * RTCP_SENDER_BW_FRACTION) {
+		if (we_sent) {
+			rtcp_bw *= RTCP_SENDER_BW_FRACTION;
+			n = session->sender_count;
+		} else {
+			rtcp_bw *= RTCP_RCVR_BW_FRACTION;
+			n -= session->sender_count;
+		}
+	}
+
+	/* The effective number of sites times the average packet size is */
+	/* the total number of octets sent when each site sends a report. */
+	/* Dividing this by the effective bandwidth gives the time        */
+	/* interval over which those packets must be sent in order to     */
+	/* meet the bandwidth target, with a minimum enforced.  In that   */
+	/* time interval we send one report so this time is also our      */
+	/* average time between reports.                                  */
+	t = session->avg_rtcp_size * n / rtcp_bw;
+	if (t < rtcp_min_time) t = rtcp_min_time;
+
+	/* To avoid traffic bursts from unintended synchronization with   */
+	/* other sites, we then pick our actual next report interval as a */
+	/* random number uniformly distributed between 0.5*t and 1.5*t.   */
+	return t * (drand48() + 0.5);
+}
+#endif
+
 int rtp_send_ctrl(struct rtp *session, u_int32 ts)
 {
 	expire_sources(session);
 
 	UNUSED(ts);
 	/* Send an RTCP packet, if one is due... */
+/*
+	if (packet_due) {
+		send packet()
+		session->initial_rtcp = FALSE;
+	}
+*/
 	return -1;
 }
 
