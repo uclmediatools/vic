@@ -435,13 +435,13 @@ main(int argc, const char** argv)
 #endif
 #ifdef sgi
 	if (display == NULL) {
-        		display=getenv("DISPLAY");
+		display=getenv("DISPLAY");
       		if ((display != NULL) && (strcmp(display,":0.0") == 0)) {
 			strcpy(buf,"-name vic -display ");
 			gethostname(&buf[19],sizeof(buf)-19);
 			strcat(buf,":0");
-                	}
-	}
+		}
+	} else sprintf (buf, "-name vic -dispay %s", display);
 #else
    	sprintf(buf,display?
 		    "-name vic -display %s" :
