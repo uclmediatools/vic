@@ -96,7 +96,7 @@ unsigned int bitTest[] = {  0x80000000, 0x40000000, 0x20000000, 0x10000000,
 #define HDRSIZE_B	8
 
 /* FIXME: bitextraction can be done faster, yes */
-#ifdef WIN32
+#ifndef inline
 static u_long extract_bits(const u_char *bp,const int x,const int n) {
 #else 
 static inline u_long extract_bits(const u_char *bp,const int x,const int n) {
@@ -140,7 +140,7 @@ void copy_buf_to_streamheader(const u_char *bp,h263streamheader *h263sh) {
 
 #define SBIT(x,to) bp[x>>3]|=(to<<(7-(x&7)))
 
-#ifdef WIN32
+#ifndef inline
 static void  xset_bits(u_char *bp,int x,int to,int n) {
 #else
 static inline void xset_bits(u_char *bp,int x,int to,int n) {
