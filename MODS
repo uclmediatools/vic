@@ -51,4 +51,7 @@ Still to do...
 	  messages if it decreases, as a hinderance to replay attacks.
 	- Mbus should keep a cache of other entities, and only allow sending 
 	  of reliable messages to known unicast addresses. 
+	- Mbus code should be more paranoid about handling garbage inputs, we
+	  can likely get all sorts of buffer overflows by feeding random data
+	  into it.
 
