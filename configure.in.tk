@@ -74,7 +74,6 @@ else
 		places="$PWD/../tcl-8.0 \
 			$PWD/../tcl8.0 \
 			$PWD/../tcl \
-			/cs/research/mice/starship/common/$OPSYS/include/tcl8.0 \
 			/usr/local/include/tcl8.0 \
 			/usr/src/local/tcl8.0 \
 			/import/tcl/include/tcl8.0 \
@@ -101,7 +100,6 @@ else
 		places="$PWD/../tcl-8.0/unix \
                         $PWD/../tcl8.0/unix \
                         $PWD/../tcl/unix \
-                        /cs/research/mice/starship/common/$OPSYS/lib \
 			/usr/local/lib \
 			$prefix/lib \
 			$x_libraries \
@@ -135,7 +133,6 @@ else
 	places="$PWD/../tcl-8.0/library \
 		$PWD/../tcl8.0/library \
                 $PWD/../tcl/library \
-                /cs/research/mice/starship/common/$OPSYS/lib/tcl8.0 \
 		/usr/local/lib/tcl8.0 \
 		/usr/contrib/lib/tcl8.0 \
 		/usr/lib/tcl8.0 \
@@ -235,7 +232,6 @@ else
 		places="$PWD/../tk8.0/generic \
 	                $PWD/../tk-8.0/generic \
        		        $PWD/../tk/generic \
-       		        /cs/research/mice/starship/common/$OPSYS/include \
 			/usr/local/include \
 			$prefix/include \
 			/usr/contrib/include \
@@ -263,7 +259,6 @@ else
 		places="$PWD/../tk-8.0/unix \
 			$PWD/../tk8.0/unix \
                 	$PWD/../tk/unix \
-                	/cs/research/mice/starship/common/$OPSYS/lib \
 			/usr/local/lib \
 			/usr/contrib/lib \
 			/usr/lib \
@@ -297,7 +292,6 @@ else
 	places="$PWD/../tk-8.0/library \
 		$PWD/../tk8.0/library \
                	$PWD/../tk/library \
-               	/cs/research/mice/starship/common/$OPSYS/lib/tk8.0 \
 		/usr/local/lib/tk8.0 \
 		/usr/contrib/lib/tk8.0 \
 		/usr/lib/tk8.0 \
