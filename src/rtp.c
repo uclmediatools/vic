@@ -879,7 +879,6 @@ void rtp_setopt(struct rtp *session, int optname, int optval)
 			break;
         	default:
 			debug_msg("Ignoring unknown option (%d) in call to rtp_setopt().\n", optname);
-			abort();
 	}
 }
 
@@ -892,7 +891,7 @@ int rtp_getopt(struct rtp *session, int optname)
 			return session->opt->promiscuous_mode;
         	default:
 			debug_msg("Ignoring unknown option (%d) in call to rtp_getopt().\n", optname);
-			abort();
+                        return 0;
 	}
 }
 
