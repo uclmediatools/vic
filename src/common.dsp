@@ -320,6 +320,14 @@ SOURCE=.\rtp.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\sap.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sdp.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\util.c
 # End Source File
 # End Group
@@ -409,6 +417,14 @@ SOURCE=.\qfDES.h
 # Begin Source File
 
 SOURCE=.\rtp.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sap.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sdp.h
 # End Source File
 # Begin Source File
 
