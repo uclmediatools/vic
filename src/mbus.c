@@ -929,6 +929,7 @@ int mbus_parse_int(struct mbus *m, int *i)
 	*i = strtol(m->parse_buffer[m->parse_depth], &p, 10);
 	if (errno == ERANGE) {
 		debug_msg("integer out of range\n");
+		return FALSE;
 	}
 
 	if (p == m->parse_buffer[m->parse_depth]) {
@@ -1033,14 +1034,14 @@ int mbus_recv(struct mbus *m, void *data)
 			/* Decrypt the message... */
 			if ((buffer_len % 8) != 0) {
 				debug_msg("Encrypted message not a multiple of 8 bytes in length\n");
-				return FALSE;
+				continue;
 			}
 			memcpy(tx_cryptbuf, buffer, buffer_len);
 			memset(initVec, 0, 8);
 			qfDES_CBC_d(m->encrkey, tx_cryptbuf, buffer_len, initVec);
 			if (strncmp(tx_cryptbuf + MBUS_AUTH_LEN + 1, "mbus/1.0", 8) != 0) {
 				debug_msg("Message did not correctly decrypt\n");
-				return FALSE;
+				continue;
 			}
 			memcpy(buffer, tx_cryptbuf, buffer_len);
 		}
@@ -1050,7 +1051,7 @@ int mbus_recv(struct mbus *m, void *data)
 		if (!mbus_parse_sym(m, &auth)) {
 			debug_msg("Failed to parse authentication header\n");
 			mbus_parse_done(m);
-			return FALSE;
+			continue;
 		}
 
 		/* Check that the packet authenticates correctly... */
@@ -1060,49 +1061,49 @@ int mbus_recv(struct mbus *m, void *data)
 		if ((strlen(auth) != 24) || (strncmp(auth, ackbuf, 24) != 0)) {
 			debug_msg("Failed to authenticate message...\n");
 			mbus_parse_done(m);
-			return FALSE;
+			continue;
 		}
 
 		/* Parse the header */
 		if (!mbus_parse_sym(m, &ver)) {
 			mbus_parse_done(m);
 			debug_msg("Parser failed version (1): %s\n",ver);
-			return FALSE;
+			continue;
 		}
 		if (strcmp(ver, "mbus/1.0") != 0) {
 			mbus_parse_done(m);
 			debug_msg("Parser failed version (2): %s\n",ver);
-			return FALSE;
+			continue;
 		}
 		if (!mbus_parse_int(m, &seq)) {
 			mbus_parse_done(m);
 			debug_msg("Parser failed seq\n");
-			return FALSE;
+			continue;
 		}
 		if (!mbus_parse_int(m, &ts)) {
 			mbus_parse_done(m);
 			debug_msg("Parser failed ts\n");
-			return FALSE;
+			continue;
 		}
 		if (!mbus_parse_sym(m, &r)) {
 			mbus_parse_done(m);
 			debug_msg("Parser failed reliable\n");
-			return FALSE;
+			continue;
 		}
 		if (!mbus_parse_lst(m, &src)) {
 			mbus_parse_done(m);
 			debug_msg("Parser failed src\n");
-			return FALSE;
+			continue;
 		}
 		if (!mbus_parse_lst(m, &dst)) {
 			mbus_parse_done(m);
 			debug_msg("Parser failed dst\n");
-			return FALSE;
+			continue;
 		}
 		if (!mbus_parse_lst(m, &ack)) {
 			mbus_parse_done(m);
 			debug_msg("Parser failed ack\n");
-			return FALSE;
+			continue;
 		}
 
 		/* Check if the message was addressed to us... */
