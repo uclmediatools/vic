@@ -13,7 +13,8 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "uclconf.h"
+#include "config_unix.h"
+#include "config_unix.h"
 #include "debug.h"
 #include "memory.h"
 #include "rtp.h"
@@ -232,3 +233,4 @@ main(int argc, const char *argv[])
 
 	return 0;
 }
+

@@ -596,8 +596,6 @@ udp_sendv6(socket_udp *s, struct iovec *vector, int count)
 	
 	assert(s != NULL);
 	assert(s->mode == IPv6);
-	assert(buffer != NULL);
-	assert(buflen > 0);
 	
 	memset((char *)&s_in, 0, sizeof(s_in));
 	s_in.sin6_family = AF_INET6;
@@ -916,4 +914,5 @@ int udp_fd(socket_udp *s)
 	} 
 	return 0;
 }
+
 
