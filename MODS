@@ -1,7 +1,9 @@
 Common Code Library: Modification history
 
 v1.0.0  - Initial version, based on RAT v3.2.7
-	- Added HMAC authentication code
+	* 14 November 1998
+
+v1.0.1	- Added HMAC authentication code
 	- Added timeout to udp_recv()
 	- Added authentication of Mbus messages
 	- Added RTP library
@@ -9,8 +11,11 @@ v1.0.0  - Initial version, based on RAT v3.2.7
 	- IPv6 code now runs on the pre-release stack for Solaris 2.7
 	- Mbus code support a configuration file on Unix, and the registry
 	  on Win32, to save/restore settings
+	- Add udp_host_addr() to get a text-version of the address to which
+	  a socket is bound.
 
 Still to do...
+	- Mbus still uses old-style addressing scheme
 	- Mbus code doesn't support encryption
 	- Resolve issues with expiry of encryption keys in the mbus
 	- IPv6 code doesn't correctly set the TTL

@@ -41,6 +41,7 @@
 #include "config_unix.h"
 #include "config_win32.h"
 #include "debug.h"
+#include "memory.h"
 #include "net_udp.h"
 
 #define IPv4	4
@@ -406,5 +407,75 @@ int udp_fd_isset(socket_udp *s)
 int udp_select(struct timeval *timeout)
 {
 	return select(max_fd + 1, &rfd, NULL, NULL, timeout);
+}
+
+static char *udp_host_addr4(void)
+{
+	char	       		*hname;
+	struct hostent 		*hent;
+	struct in_addr  	 iaddr;
+
+	hname = (char *) xmalloc(MAXHOSTNAMELEN);
+	if (gethostname(hname, MAXHOSTNAMELEN) != 0) {
+		debug_msg("Cannot get hostname!");
+		abort();
+	}
+	hent = gethostbyname(hname);
+	assert(hent->h_addrtype == AF_INET);
+	memcpy(&iaddr.s_addr, hent->h_addr, sizeof(iaddr.s_addr));
+	strcpy(hname, inet_ntoa(iaddr));
+	return hname;
+}
+
+static char *udp_host_addr6(void)
+{
+	char	       		*hname;
+	struct hostent 		*hent;
+	int			 error_num;
+
+	hname = (char *) xmalloc(MAXHOSTNAMELEN);
+	if (gethostname(hname, MAXHOSTNAMELEN) != 0) {
+		debug_msg("Cannot get hostname!");
+		abort();
+	}
+	debug_msg("%s\n", hname);
+
+	hent = getipnodebyname(hname, AF_INET6, AI_DEFAULT, &error_num);
+	if (hent == NULL) {
+		switch (error_num) {
+		case HOST_NOT_FOUND:
+			debug_msg("host not found\n");
+			break;
+		case NO_ADDRESS:
+			debug_msg("no address\n");
+			break;
+		case NO_RECOVERY:
+			debug_msg("no recovery\n");
+			break;
+		case TRY_AGAIN:
+			debug_msg("try again\n");
+			break;
+		default:
+			debug_msg("unknown error\n");
+			break;
+		}
+		abort();
+	}
+	assert(hent->h_addrtype == AF_INET6);
+
+	if (inet_ntop(AF_INET6, hent->h_addr, hname, MAXHOSTNAMELEN) == NULL) {
+		abort();
+	}
+	return hname;
+}
+
+char *udp_host_addr(socket_udp *s)
+{
+	switch (s->mode) {
+		case IPv4 : return udp_host_addr4();
+		case IPv6 : return udp_host_addr6();
+		default   : abort();
+	}
+	return NULL;
 }
 
