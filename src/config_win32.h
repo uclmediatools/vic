@@ -103,10 +103,6 @@ typedef unsigned long	in_addr_t;
 
 #define DIFF_BYTE_ORDER	1
 #define NEED_INET_ATON
-#ifndef MUSICA_IPV6
-#define NEED_INET_PTON
-#endif
-#define NEED_IN6_IS_ADDR_MULTICAST
 
 #ifdef NDEBUG
 #define assert(x) if ((x) == 0) fprintf(stderr, "%s:%u: failed assertion\n", __FILE__, __LINE__)
@@ -149,7 +145,9 @@ struct msghdr {
 	int		msg_accrightslen;
 };
 
+#ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN	256
+#endif
 
 #define _SYS_NMLN	9
 struct utsname {
