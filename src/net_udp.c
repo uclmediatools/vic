@@ -598,7 +598,9 @@ int udp_recv(socket_udp *s, char *buffer, int buflen)
 	if (len > 0) {
 		return len;
 	}
-	socket_error("recvfrom");
+	if (errno != ECONNREFUSED) {
+		socket_error("recvfrom");
+	}
 	return 0;
 }
 

@@ -141,7 +141,7 @@ v1.0.8	- Add mbus_sent_all()
 		- Split rtp_recv_data() into two functions.
 	* 5 October 1999
 
-v1.0.9	-
+v1.0.9	- Ignore ECONNREFUSED in net_udp.c
 
 
 Still to do...
