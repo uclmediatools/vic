@@ -329,14 +329,16 @@ install: force
 	 chmod 555 @prefix@/bin/histtolut
 
 clean:
-	rm -f *.o jpeg/*.o p64/*.o core tcl2c++ mkbv bv.c mkhuff huffcode.c \
+	rm -f *.o codec/jpeg/*.o codec/p64/*.o core tcl2c++ mkbv bv.c \
+		codec/*.o render/*.o video/*.o net/*.o rtp/*.o mkhuff \
+		huffcode.c win32/*.o \
 		$(TCL_VIC_C) tk.tcl vic_tcl.c h261_play_tcl.c tmp.c \
 		vic vic.dyn vic.xil h261_play h261_dump jpeg_play cb_wish \
 		mkcube rgb-cube.ppm yuv-map.ppm cm0.c cm1.c ppmtolut \
 		config.cache config.log domake.* dotar.*
-	cd tmn && $(MAKE) clean
-	cd tmndec && $(MAKE) clean
-	rm -f tmn-x/*.o tmn-x/*.a
+	cd codec/tmn && $(MAKE) clean
+	cd codec/tmndec && $(MAKE) clean
+	rm -f codec/tmn-x/*.o codec/tmn-x/*.a
 
 realclean:
 	$(MAKE) clean
