@@ -169,7 +169,12 @@ static void check_database(struct rtp *session)
 #ifdef DEBUG
 	/* This routine performs a sanity check on the database. */
 	/* If the DEBUG symbol is not defined, it does nothing.  */
-	source *s;
+	/* This should not call any of the other routines which  */
+	/* manipulate the database, to avoid common failures.    */
+	source 	 	*s, *x;
+	int	 	 source_count;
+	int		 chain;
+	rtcp_rr_wrapper	*rr;
 
 	/* Check that we have a database entry for our ssrc... */
 	/* We only do this check if ssrc_count > 0 since it is */
@@ -183,14 +188,49 @@ static void check_database(struct rtp *session)
 		}
 		assert(s != NULL);
 	}
-	/* Check that the linked lists making up the chains in */
-	/* the hash table are correctly linked together...     */
 
+	source_count = 0;
+	for (chain = 0; chain < RTP_DB_SIZE; chain++) {
+		/* Check that the linked lists making up the chains in */
+		/* the hash table are correctly linked together...     */
+		for (s = session->db[chain]; s != NULL; s = s->next) {
+			source_count++;
+			if (s->prev == NULL) {
+				assert(s == session->db[chain]);
+			} else {
+				assert(s->prev->next == s);
+			}
+			if (s->next != NULL) {
+				assert(s->next->prev == s);
+			}
+			/* Walk through all the reception reports to ensure  */
+			/* that the SSRCs they reference are in the database */
+			/* and that the links are consistent...              */
+			for (rr = s->rr; rr != NULL; rr = rr->next) {
+				for (x = session->db[ssrc_hash(rr->rr->ssrc)]; x != NULL; x = x->next) {
+					if (x->ssrc == rr->rr->ssrc) {
+						break;
+					}
+				}
+				assert(x != NULL);	/* ...else the RR is for an unknown source */
+				if (rr->prev == NULL) {
+					assert(rr == s->rr);
+				} else {
+					assert(rr->prev->next == rr);
+				}
+				if (rr->next != NULL) {
+					assert(rr->next->prev == rr);
+				}
+			}
+			/* Check that the SR is for this source... */
+			if (s->sr != NULL) {
+				assert(s->sr->ssrc == s->ssrc);
+			}
+		}
+	}
 	/* Check that the number of entries in the hash table  */
 	/* matches session->ssrc_count                         */
-
-	/* Walk through all the reception reports to ensure    */
-	/* that the ssrcs they reference are in the database.  */
+	assert(source_count == session->ssrc_count);
 #endif
 }
 
@@ -271,11 +311,40 @@ static void free_source(source *s)
 	}
 }
 
+static void remove_rr(source *s, u_int32 ssrc)
+{
+	/* Remove any RRs from "s" which refer to "ssrc" */
+	rtcp_rr_wrapper		*curr;
+	rtcp_rr_wrapper		*next;
+
+	assert(s != NULL);
+
+	curr = s->rr;
+	while (curr != NULL) {
+		next = curr->next;
+		if (curr->rr->ssrc == ssrc) {
+			xfree(curr->rr);
+			if (curr->prev == NULL) {
+				s->rr = curr->next;
+			} else {
+				curr->prev->next = curr->next;
+			}
+			if (curr->next != NULL) {
+				curr->next->prev = curr->prev;
+			}
+			xfree(curr);
+		}
+		curr = next;
+	}
+}
+
 static void delete_source(struct rtp *session, u_int32 ssrc)
 {
 	/* Remove a source from the RTP database... */
-	source	*s = get_source(session, ssrc);
-	int	 h = ssrc_hash(ssrc);
+	source		*s = get_source(session, ssrc);
+	int		 h = ssrc_hash(ssrc);
+	rtp_event	 event;
+	struct timeval	 event_ts;
 
 	assert(s != NULL);	/* Deleting a source which doesn't exist is an error... */
 
@@ -294,8 +363,20 @@ static void delete_source(struct rtp *session, u_int32 ssrc)
 		}
 	}
 	free_source(s);
-	debug_msg("FIXME: should also free the rr entries pointing to this ssrc...\n");
+	/* Loop through all the sources, removing RRs which point to the source we are deleting... */
+	for (h = 0; h < RTP_DB_SIZE; h++) {
+		for (s = session->db[h]; s != NULL; s = s->next) {
+			remove_rr(s, ssrc);
+		}
+	}
+	/* Done... reduce our source count, and signal to the application that this source is dead */
 	session->ssrc_count--;
+	gettimeofday(&event_ts, NULL);
+	event.ssrc = ssrc;
+	event.type = SOURCE_DELETED;
+	event.data = NULL;
+	event.ts   = &event_ts;
+	session->callback(session, &event);
 	check_database(session);
 }
 

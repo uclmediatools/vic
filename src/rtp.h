@@ -112,12 +112,15 @@ typedef struct {
 	struct timeval	*ts;
 } rtp_event;
 
-#define RX_RTP  16
-#define RX_SR	17
-#define RX_RR   18
-#define RX_SDES 19
-#define RX_BYE  20
+/* rtp_event type values... */
+#define RX_RTP  	100
+#define RX_SR		101
+#define RX_RR   	102
+#define RX_SDES 	103
+#define RX_BYE  	104	/* Source is leaving the session, database entry is still valid */
+#define SOURCE_DELETED	105	/* Source has been removed from the database                    */
 
+/* SDES packet types... */
 #define RTCP_SDES_END   0
 #define RTCP_SDES_CNAME 1
 #define RTCP_SDES_NAME  2
