@@ -48,7 +48,8 @@ all:	$(ALL)
 ED_YBITS = 4
 
 CC = @CC@
-C++ = @CXX@
+#C++ = @CXX@
+C++ = @CC@
 CCOPT = @V_CCOPT@
 
 INCLUDE_TK = @V_INCLUDE_TK@
