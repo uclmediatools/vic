@@ -2274,6 +2274,47 @@ EOF
 fi
 
 ###############################################################################
+# Check whether gtk-doc is installed
+
+# Extract the first word of "xgtkdoc-scan", so it can be a program name with args.
+set dummy xgtkdoc-scan; ac_word=$2
+echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
+echo "configure:2283: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_prog_GTKDOC'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  if test -n "$GTKDOC"; then
+  ac_cv_prog_GTKDOC="$GTKDOC" # Let the user override the test.
+else
+  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
+  ac_dummy="$PATH"
+  for ac_dir in $ac_dummy; do
+    test -z "$ac_dir" && ac_dir=.
+    if test -f $ac_dir/$ac_word; then
+      ac_cv_prog_GTKDOC="yes"
+      break
+    fi
+  done
+  IFS="$ac_save_ifs"
+  test -z "$ac_cv_prog_GTKDOC" && ac_cv_prog_GTKDOC="no"
+fi
+fi
+GTKDOC="$ac_cv_prog_GTKDOC"
+if test -n "$GTKDOC"; then
+  echo "$ac_t""$GTKDOC" 1>&6
+else
+  echo "$ac_t""no" 1>&6
+fi
+
+if test "$GTKDOC" = yes 
+then
+	OPTDOC=doc
+else
+	OPTDOC=
+fi
+
+
+###############################################################################
 # GCC-specific warning flags
 if test "$GCC" = yes
 then
@@ -2424,6 +2465,8 @@ s%@CC@%$CC%g
 s%@CPP@%$CPP%g
 s%@RANLIB@%$RANLIB%g
 s%@LIBOBJS@%$LIBOBJS%g
+s%@GTKDOC@%$GTKDOC%g
+s%@OPTDOC@%$OPTDOC%g
 
 CEOF
 EOF

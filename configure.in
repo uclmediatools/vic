@@ -229,6 +229,18 @@ then
 fi
 
 ###############################################################################
+# Check whether gtk-doc is installed
+
+AC_CHECK_PROG(GTKDOC, gtkdoc-scan, yes, no, $PATH)
+if test "$GTKDOC" = yes 
+then
+	OPTDOC=doc
+else
+	OPTDOC=
+fi
+AC_SUBST(OPTDOC)
+
+###############################################################################
 # GCC-specific warning flags
 if test "$GCC" = yes
 then
