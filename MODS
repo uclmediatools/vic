@@ -109,6 +109,8 @@ v1.0.8	- Add mbus_sent_all()
 	- Add a SOURCE_CREATED event to the RTP callback.
 	- Add option to accept RTP packets before a corresponding RTCP
 	  packet has been received.
+	- Add RX_RR_EMPTY event to the RTP code, to indicate that an empty
+	  reception report (ie: no report blocks) has been received.
 
 
 Still to do...
