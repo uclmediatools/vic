@@ -735,6 +735,21 @@ void mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, i
 	gettimeofday(&(curr->ts),   NULL);
 }
 
+void mbus_qmsgf(struct mbus *m, char *dest, int reliable, const char *cmnd, const char *format, ...)
+{
+	/* This is a wrapper around mbus_qmsg() which does a printf() style format into  */
+	/* a buffer. Saves the caller from having to a a malloc(), write the args string */
+	/* and then do a free(), and also saves worring about overflowing the buffer, so */
+	/* removing a common source of bugs!                                             */
+	char	buffer[MBUS_BUF_SIZE];
+	va_list	ap;
+
+	va_start(ap, format);
+        vsnprintf(buffer, MBUS_BUF_SIZE, format, ap);
+	va_end(ap);
+	mbus_qmsg(m, dest, cmnd, buffer, reliable);
+}
+
 void mbus_parse_init(struct mbus *m, char *str)
 {
 	assert(m->parse_depth < (MBUS_MAX_PD - 1));

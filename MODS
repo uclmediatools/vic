@@ -32,6 +32,7 @@ v1.0.2	- Assorted fixes to RTP library
 	- Fix bounds overruns in memory.c - will now run with -DDEBUG_MEM
 	  with the bounds checker on.
 	- Add timestamp to mbus packet headers.
+	- Add mbus_qmsgf()
 
 
 Still to do...

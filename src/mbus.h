@@ -43,6 +43,7 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 void         mbus_exit(struct mbus *m);
 void         mbus_addr(struct mbus *m, char *addr);
 void         mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, int reliable);
+void         mbus_qmsgf(struct mbus *m, char *dest, int reliable, const char *cmnd, const char *format, ...);
 void         mbus_send(struct mbus *m);
 int          mbus_recv(struct mbus *m, void *data);
 void         mbus_parse_init(struct mbus *m, char *str);
