@@ -124,6 +124,12 @@ v1.0.8	- Add mbus_sent_all()
 	  3 times the RTCP reporting interval
 	- rtp_update() only expires sources once per reporting interval, to
 	  avoid burning too many cycles.
+	- we now can configure the multicast address and port which the
+	  mbus should use in ~/.mbus 
+	- honor the SCOPE setting in ~/.mbus
+ 	- expire sources we haven't heard from for a while
+        - fixes small memory leak in remove_other_addr
+        - mbus_exit now sends a mbus.quit and cleans up other_* structures
 
 
 Still to do...

@@ -51,6 +51,16 @@ struct mbus_config {
 	int		  cfg_locked;
 };
 
+#define SCOPE_HOSTLOCAL       0
+#define SCOPE_HOSTLOCAL_NAME "HOSTLOCAL"
+#define SCOPE_LINKLOCAL       1
+#define SCOPE_LINKLOCAL_NAME "LINKLOCAL"
+
+#define MBUS_DEFAULT_NET_ADDR "224.255.222.239"
+#define MBUS_DEFAULT_NET_PORT 47000
+#define MBUS_DEFAULT_SCOPE    SCOPE_HOSTLOCAL
+
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
@@ -61,6 +71,7 @@ void mbus_lock_config_file(struct mbus_config *m);
 void mbus_unlock_config_file(struct mbus_config *m);
 void mbus_get_encrkey(struct mbus_config *m, struct mbus_key *key);
 void mbus_get_hashkey(struct mbus_config *m, struct mbus_key *key);
+void mbus_get_net_addr(struct mbus_config *m, char *net_addr, u_int16 *net_port, int *net_scope);
 
 #if defined(__cplusplus)
 }

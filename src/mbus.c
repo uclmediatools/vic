@@ -1,6 +1,8 @@
 /*
- * FILE:    mbus.c
- * AUTHORS: Colin Perkins
+ * FILE:     mbus.c
+ * AUTHOR:   Colin Perkins
+ * MODIFIED: Orion Hodson
+ *           Markus Germeier
  * 
  * Copyright (c) 1997-99 University College London
  * All rights reserved.
@@ -84,6 +86,7 @@ struct mbus {
 	int		 	  max_other_addr;
 	int		 	  num_other_addr;
 	char			**other_addr;			/* Addresses of other entities on the mbus. 			*/
+        struct timeval          **other_hello;                  /* Time of last mbus.hello we received from other entities      */
 	char		 	 *parse_buffer[MBUS_MAX_PD];	/* Temporary storage for parsing mbus commands 			*/
 	char		 	 *parse_bufend[MBUS_MAX_PD];	/* End of space allocated for parsing, to check for overflows 	*/
 	int		 	  parse_depth;
@@ -155,7 +158,10 @@ static void store_other_addr(struct mbus *m, char *a)
 		/* Expand the list... */
 		m->max_other_addr *= 2;
 		m->other_addr = (char **) xrealloc(m->other_addr, m->max_other_addr * sizeof(char *));
+		m->other_hello = (struct timeval **) xrealloc(m->other_hello, m->max_other_addr * sizeof(struct timeval *));
 	}
+	m->other_hello[m->num_other_addr]=(struct timeval *)xmalloc(sizeof(struct timeval));
+	gettimeofday(m->other_hello[m->num_other_addr],NULL);
 	m->other_addr[m->num_other_addr++] = xstrdup(a);
 }
 
@@ -168,11 +174,40 @@ static void remove_other_addr(struct mbus *m, char *a)
 	for (i = 0; i < m->num_other_addr; i++) {
 		if (mbus_addr_match(m->other_addr[i], a)) {
 			for (j = i+1; j < m->num_other_addr; j++) {
+			        xfree(m->other_addr[i]);
+			        xfree(m->other_hello[i]);
 				m->other_addr[j-1] = m->other_addr[j];
+				m->other_hello[j-1] = m->other_hello[j];
 			}
 			m->num_other_addr--;
 		}
 	}
+}
+
+static void mark_activ_other_addr(struct mbus *m, char *a){
+    int i;
+    struct timeval	 t;
+    
+    gettimeofday(&t, NULL);
+    for (i = 0; i < m->num_other_addr; i++) {
+	if (mbus_addr_match(m->other_addr[i], a)) {
+	    m->other_hello[i]->tv_sec=t.tv_sec;
+	}
+    }
+}
+
+static void remove_inactiv_other_addr(struct mbus *m, struct timeval t, int interval){
+    /* Remove addresses we haven't heard from for about 5 * interval */
+    /* Count backwards so it is save to remove entries               */
+    int i;
+    
+    for (i=m->num_other_addr-1; i>=0; i--){
+	if ((t.tv_sec-(m->other_hello[i]->tv_sec)) > 5 * interval) {
+	    debug_msg("remove dead entity (%s)\n", m->other_addr[i]);
+	    remove_other_addr(m, m->other_addr[i]);
+	    
+	}
+    }
 }
 
 int mbus_addr_valid(struct mbus *m, char *addr)
@@ -312,6 +347,8 @@ void mbus_heartbeat(struct mbus *m, int interval)
 	if (curr_time.tv_sec - m->last_heartbeat.tv_sec > interval) {
 		mbus_qmsg(m, "()", "mbus.hello", "", FALSE);
 		m->last_heartbeat = curr_time;
+		/* Remove dead sources */
+		remove_inactiv_other_addr(m, curr_time, interval);
 	}
 }
 
@@ -331,6 +368,9 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 	struct mbus	*m;
 	struct mbus_key	 k;
 	int		 i;
+	char            *net_addr;
+	u_int16          net_port;
+	int              net_scope;
 
 	m = (struct mbus *) xmalloc(sizeof(struct mbus));
 	if (m == NULL) {
@@ -340,7 +380,9 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 
 	m->cfg = (struct mbus_config *) xmalloc(sizeof(struct mbus_config));
 	mbus_lock_config_file(m->cfg);
-	m->s		  = udp_init("224.255.222.239", (u_int16) 47000, (u_int16) 47000, 0);
+	net_addr = (char *) xmalloc(20);
+	mbus_get_net_addr(m->cfg, net_addr, &net_port, &net_scope);
+	m->s		  = udp_init(net_addr, net_port, net_port, net_scope);	
 	m->seqnum         = 0;
 	m->cmd_handler    = cmd_handler;
 	m->err_handler	  = err_handler;
@@ -348,6 +390,7 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 	m->num_other_addr = 0;
 	m->max_other_addr = 10;
 	m->other_addr     = (char **) xmalloc(sizeof(char *) * 10);
+	m->other_hello    = (struct timeval **) xmalloc(sizeof(struct timeval *) * 10);
 	m->parse_depth    = 0;
 	m->cmd_queue	  = NULL;
 	m->waiting_ack	  = NULL;
@@ -366,6 +409,8 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 	for (i = 0; i < MBUS_MAX_PD;   i++) m->parse_buffer[i] = NULL;
 	for (i = 0; i < MBUS_MAX_PD;   i++) m->parse_bufend[i] = NULL;
 	mbus_unlock_config_file(m->cfg);
+
+	xfree(net_addr);
 
 	return m;
 }
@@ -394,7 +439,12 @@ static void mbus_flush_msgs(struct mbus_msg *queue)
 
 void mbus_exit(struct mbus *m) 
 {
+        int i;
+
         assert(m != NULL);
+
+	mbus_qmsg(m, "()", "mbus.quit", "", FALSE);
+	mbus_send(m);
 
         while(m->parse_depth--) {
                 xfree(m->parse_buffer[m->parse_depth]);
@@ -410,6 +460,11 @@ void mbus_exit(struct mbus *m)
         }
 
         udp_exit(m->s);
+
+	/* Clean up other_* */
+	for (i=m->num_other_addr-1; i>=0; i--){
+	    remove_other_addr(m, m->other_addr[i]);
+	}
 
         xfree(m->hashkey);
 	xfree(m->cfg);
@@ -890,8 +945,8 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 							remove_other_addr(m, newsrc);
 						} 
 						if (strcmp(cmd, "mbus.hello") == 0) {
-							/* We should use these to mark sources as active, and timeout */
-							/* those we haven't heard from for a while. Oh well.          */
+						/* Mark this source as activ. We remove dead sources in mbus_heartbeat */
+						    mark_activ_other_addr(m, newsrc);
 						}
 						xfree(newsrc);
 					} else {

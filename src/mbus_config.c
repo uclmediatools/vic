@@ -1,6 +1,8 @@
 /*
- * FILE:    mbus_config.c
- * AUTHORS: Colin Perkins
+ * FILE:     mbus_config.c
+ * AUTHOR:   Colin Perkins
+ * MODIFIED: Orion Hodson
+ *           Markus Germeier
  * 
  * Copyright (c) 1999 University College London
  * All rights reserved.
@@ -436,3 +438,89 @@ void mbus_get_hashkey(struct mbus_config *m, struct mbus_key *key)
 #endif
 }
 
+void mbus_get_net_addr(struct mbus_config *m, char *net_addr, u_int16 *net_port, int *net_scope){
+#ifdef WIN32
+    /* TODO: get values out of registry */
+    strcpy(net_addr, MBUS_DEFAULT_NET_ADDR);
+    *net_port = MBUS_DEFAULT_NET_PORT;
+    *net_scope = MBUS_DEFAULT_SCOPE;
+#else
+	struct stat	 s;
+	char		*buf;
+	char		*line;
+	int		 pos;
+	int              pos2;
+
+	int              scope;
+	char            *addr;
+	u_int16          port;
+
+	assert(m->cfg_locked);
+
+	addr = (char *)xmalloc(20);
+	memset(addr, 0, 20);
+	port = 0;
+	scope = -1;
+	
+
+	if (lseek(m->cfgfd, 0, SEEK_SET) == -1) {
+		perror("Can't seek to start of config file");
+		abort();
+	}
+	if (fstat(m->cfgfd, &s) != 0) {
+		perror("Unable to stat config file\n");
+		abort();
+	}
+	/* Read in the contents of the config file... */
+	buf = (char *) xmalloc(s.st_size+1);
+	memset(buf, '\0', s.st_size+1);
+	if (read(m->cfgfd, buf, s.st_size) != s.st_size) {
+		perror("Unable to read config file\n");
+		abort();
+	}
+	
+	line = (char *) xmalloc(s.st_size+1);
+	sscanf(buf, "%s", line);
+	if (strcmp(line, "[MBUS]") != 0) {
+		debug_msg("Invalid .mbus file\n");
+		abort();
+	}
+	pos = strlen(line) + 1;
+	while (pos < s.st_size) {
+		sscanf(buf+pos, "%s", line);
+		pos += strlen(line) + 1;
+		if (strncmp(line, "SCOPE", strlen("SCOPE")) == 0) {
+		    pos2 = strlen("SCOPE") + 1;
+		    if (strncmp(line+pos2, SCOPE_HOSTLOCAL_NAME, 
+				strlen(SCOPE_HOSTLOCAL_NAME)) == 0) {
+			scope = SCOPE_HOSTLOCAL;
+		    }
+		    if (strncmp(line+pos2, SCOPE_LINKLOCAL_NAME, 
+				strlen(SCOPE_LINKLOCAL_NAME)) == 0) {
+			scope = SCOPE_LINKLOCAL ;
+		    }
+		}
+		if (strncmp(line, "ADDRESS", strlen("ADDRESS")) == 0) {
+		    pos2 = strlen("ADDRESS") + 1;
+		    strncpy(addr, line+pos2, 16);
+		}
+		if (strncmp(line, "PORT", strlen("PORT")) == 0) {
+		    pos2 = strlen("PORT") + 1;
+		    port = atoi(line+pos2);
+		}
+		    
+	}
+	/* If we did not find all values, fill in the default ones */
+	*net_port = (port>0)?port:MBUS_DEFAULT_NET_PORT;
+	*net_scope = (scope!=-1)?scope:MBUS_DEFAULT_SCOPE;
+	if (strlen(addr)>0) {
+	    strncpy(net_addr, addr, 16);
+	} else {
+	    strcpy(net_addr, MBUS_DEFAULT_NET_ADDR);
+	}
+	xfree(buf);
+	xfree(line);
+	xfree(addr);
+#endif
+   
+}
