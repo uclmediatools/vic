@@ -694,6 +694,7 @@ void V4lGrabber::packed422_to_planar411(char *dest, char *src)
 
 void V4lGrabber::format()
 {
+    struct video_channel     channel;
     DEBUG(fprintf(stderr,"V4l: format"));
 
     width_  = CIF_WIDTH  *2  / decimate_;
@@ -750,7 +751,9 @@ void V4lGrabber::format()
     
     DEBUG(fprintf(stderr," size=%dx%d",width_,height_));
 
-    if (-1 == ioctl(fd_, VIDIOCSCHAN, &port_))
+    channel.channel = port_;
+    channel.norm = VIDEO_MODE_PAL;
+    if (-1 == ioctl(fd_, VIDIOCSCHAN, &channel))
 	perror("ioctl VIDIOCSCHAN");
     DEBUG(fprintf(stderr," port=%d\n",port_));
 
