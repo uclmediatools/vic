@@ -490,6 +490,17 @@ void xclaim    (void *p, const char *filen, int line)
 }
 
 void xmemdist (FILE *f) { UNUSED(f); }
+
+/**
+ * xfree:
+ * @x: pointer to memory block to be freed.
+ *
+ * This function is conceptually the same as the standard C library
+ * free() function call, but contains some extra debugging
+ * functionality when DEBUG_MEM is defined.
+ *  
+ */
+
 void xfree    (void *x) { free(x); }
 
 void *_xmalloc(unsigned int size, const char *filen, int line) {

@@ -612,16 +612,49 @@ static const char *udp_host_addr6(socket_udp *s)
 /* Generic functions, which call the appropriate protocol specific routines. */
 /*****************************************************************************/
 
+/**
+ * udp_addr_valid:
+ * @addr: string representation of IPv4 or IPv6 network address.
+ *
+ * Returns TRUE if @addr is valid, FALSE otherwise.
+ **/
+
 int udp_addr_valid(const char *addr)
 {
         return udp_addr_valid4(addr) | udp_addr_valid6(addr);
 }
 
+/**
+ * udp_init:
+ * @addr: character string containing an IPv4 or IPv6 network address.
+ * @rx_port: receive port.
+ * @tx_port: transmit port.
+ * @ttl: time-to-live value for transmitted packets.
+ *
+ * Creates a session for sending and receiving UDP datagrams over IP
+ * networks. 
+ *
+ * Returns: a pointer to a valid socket_udp structure on success, NULL otherwise.
+ **/
 socket_udp *udp_init(const char *addr, uint16_t rx_port, uint16_t tx_port, int ttl)
 {
 	return udp_init_if(addr, NULL, rx_port, tx_port, ttl);
 }
 
+/**
+ * udp_init_if:
+ * @addr: character string containing an IPv4 or IPv6 network address.
+ * @iface: character string containing an interface name.
+ * @rx_port: receive port.
+ * @tx_port: transmit port.
+ * @ttl: time-to-live value for transmitted packets.
+ *
+ * Creates a session for sending and receiving UDP datagrams over IP
+ * networks.  The session uses @iface as the interface to send and
+ * receive datagrams on.
+ * 
+ * Return value: a pointer to a socket_udp structure on success, NULL otherwise.
+ **/
 socket_udp *udp_init_if(const char *addr, const char *iface, uint16_t rx_port, uint16_t tx_port, int ttl)
 {
 	socket_udp *res;
@@ -634,6 +667,13 @@ socket_udp *udp_init_if(const char *addr, const char *iface, uint16_t rx_port, u
 	return res;
 }
 
+/**
+ * udp_exit:
+ * @s: UDP session to be terminated.
+ *
+ * Closes UDP session.
+ * 
+ **/
 void udp_exit(socket_udp *s)
 {
     switch(s->mode) {
@@ -643,16 +683,36 @@ void udp_exit(socket_udp *s)
     }
 }
 
+/**
+ * udp_send:
+ * @s: UDP session.
+ * @buffer: pointer to buffer to be transmitted.
+ * @buflen: length of @buffer.
+ * 
+ * Transmits a UDP datagram containing data from @buffer.
+ * 
+ * Return value: 0 on success, -1 on failure.
+ **/
 int udp_send(socket_udp *s, char *buffer, int buflen)
 {
 	switch (s->mode) {
 	case IPv4 : return udp_send4(s, buffer, buflen);
 	case IPv6 : return udp_send6(s, buffer, buflen);
-	default   : abort();
+	default   : abort(); /* Yuk! */
 	}
 	return -1;
 }
 
+/**
+ * udp_recv:
+ * @s: UDP session.
+ * @buffer: buffer to read data into.
+ * @buflen: length of @buffer.
+ * 
+ * Reads from datagram queue associated with UDP session.
+ *
+ * Return value: number of bytes read, returns 0 if no data is available.
+ **/
 int udp_recv(socket_udp *s, char *buffer, int buflen)
 {
 	/* Reads data into the buffer, returning the number of bytes read.   */
@@ -677,12 +737,24 @@ int udp_recv(socket_udp *s, char *buffer, int buflen)
 static fd_set	rfd;
 static fd_t	max_fd;
 
+/**
+ * udp_fd_zero:
+ * 
+ * Clears file descriptor from set associated with UDP sessions (see select(2)).
+ * 
+ **/
 void udp_fd_zero(void)
 {
 	FD_ZERO(&rfd);
 	max_fd = 0;
 }
 
+/**
+ * udp_fd_set:
+ * @s: UDP session.
+ * 
+ * Adds file descriptor associated of @s to set associated with UDP sessions.
+ **/
 void udp_fd_set(socket_udp *s)
 {
 	FD_SET(s->fd, &rfd);
@@ -691,16 +763,40 @@ void udp_fd_set(socket_udp *s)
 	}
 }
 
+/**
+ * udp_fd_isset:
+ * @s: UDP session.
+ * 
+ * Checks if file descriptor associated with UDP session is ready for
+ * reading.  This function should be called after udp_select().
+ *
+ * Returns: non-zero if set, zero otherwise.
+ **/
 int udp_fd_isset(socket_udp *s)
 {
 	return FD_ISSET(s->fd, &rfd);
 }
 
+/**
+ * udp_select:
+ * @timeout: maximum period to wait for data to arrive.
+ * 
+ * Waits for data to arrive for UDP sessions.
+ * 
+ * Return value: number of UDP sessions ready for reading.
+ **/
 int udp_select(struct timeval *timeout)
 {
 	return select(max_fd + 1, &rfd, NULL, NULL, timeout);
 }
 
+/**
+ * udp_host_addr:
+ * @s: UDP session.
+ * 
+ * Return value: character string containing network address
+ * associated with session @s.
+ **/
 const char *udp_host_addr(socket_udp *s)
 {
 	switch (s->mode) {
@@ -711,6 +807,15 @@ const char *udp_host_addr(socket_udp *s)
 	return NULL;
 }
 
+/**
+ * udp_fd:
+ * @s: UDP session.
+ * 
+ * This function allows applications to apply their own socketopt()'s
+ * and ioctl()'s to the UDP session.
+ * 
+ * Return value: file descriptor of socket used by session @s.
+ **/
 int udp_fd(socket_udp *s)
 {
 	if (s && s->fd > 0) {

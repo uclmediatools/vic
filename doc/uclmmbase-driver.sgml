@@ -1,5 +1,7 @@
 <!doctype book PUBLIC "-//Davenport//DTD DocBook V3.0//EN" [
+<!entity netudp SYSTEM "sgml/net_udp.sgml">
 <!entity rtp SYSTEM "sgml/rtp.sgml">
+
 ]>
 
 <book>
@@ -14,7 +16,9 @@
 features for multimedia applications.  The most notable feature of the
 library is the RTP implementation.</para>
 
+    &netudp;
     &rtp; 
+
 </chapter>
 
 </book>

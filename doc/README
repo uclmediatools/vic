@@ -3,12 +3,12 @@
 
 This project uses gtkdoc to build DocBook documentation out of source
 code and sgml files.  By using DocBook the option exists to build
-documentation in a number of formats (html, man, ps). 
+documentation in a number of formats (html, man, ps), though we
+currently target html only.  
 
 gtkdoc is part of the GNOME project, details on downloading and
 installing can be found at:
 
-gtkdoc may be downloaded from:
 	http://developer.gnome.org/projects/gdp/
 
 FreeBSD and Linux have standard packages to install DocBook and
@@ -34,9 +34,10 @@ document is:
 
 Here is some "lore" on using gtkdoc and how things are with this
 documentation.  This is our first attempt at using gtkdoc, and our
-insight comes from reading the gtkdoc source code (so we're probably
-missing some of the intentions).  If you spot anything misleading,
-please let us know (mm-tools@cs.ucl.ac.uk).
+insight comes from reading the gtkdoc source code and various bits on
+docbook (so we're probably missing some of the intentions).  If you
+spot anything that would improve the documentation, please let us
+know (mm-tools@cs.ucl.ac.uk).
 
 Okay, so here's the deal.  There are a few "core" files:
 
@@ -48,6 +49,10 @@ $MODULE-decl.txt to uclmmbase-sections.txt.  The file contains all
 declarations found.  It will need updating when declarations change.
 Don't worry about it too much as the error message following a change
 instructs on what to do.
+
+	If you want '#include "foo.h"' message to appear with
+documentation associated with section foo, add it here (look for
+"INCLUDE" for an example).
 
 2. uclmmbase-driver.sgml 
 

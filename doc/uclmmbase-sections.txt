@@ -284,6 +284,7 @@ xfree
 
 <SECTION>
 <FILE>net_udp</FILE>
+<INCLUDE>net_udp.h</INCLUDE>
 socket_udp
 udp_addr_valid
 udp_init
@@ -335,6 +336,7 @@ qfDES_checkWeakKeys
 
 <SECTION>
 <FILE>rtp</FILE>
+<INCLUDE>rtp.h</INCLUDE>
 RTP_VERSION
 RTP_PACKET_HEADER_SIZE
 RTP_MAX_PACKET_LEN

@@ -1,12 +1,22 @@
 <!-- ##### SECTION Title ##### -->
-net_udp
+NETUDP interface
 
 <!-- ##### SECTION Short_Description ##### -->
 
+A unified interface for sending and receiving UDP datagrams over IPv4
+and IPv6 networks.
 
 <!-- ##### SECTION Long_Description ##### -->
 <para>
+These functions provide a unified interface for sending are receiving
+UDP datagrams over IPv4 and IPv6 networks.  
+</para>
 
+<para>
+For IPv6 addresses to work the common library must be built with IPv6
+enabled.  On UNIX, the <application>configure</application> script has an option <option>--enable-ip-v6</option>
+for this purpose.  On Win32, there is a project configuration to use
+the Microsoft IPv6 stack when installed.
 </para>
 
 <!-- ##### SECTION See_Also ##### -->
@@ -16,7 +26,7 @@ net_udp
 
 <!-- ##### STRUCT socket_udp ##### -->
 <para>
-
+An opaque data structure containing information for a UDP session.
 </para>
 
 
