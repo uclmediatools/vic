@@ -888,6 +888,25 @@ static void init_rng(const char *s)
 	}
 }
 
+/**
+ * rtp_init:
+ * @addr: IP destination of this session (unicast or multicast),
+ * as an ASCII string.  May be a host name, which will be looked up,
+ * or may be an IPv4 dotted quad or IPv6 literal adddress.
+ * @rx_port: The port to which to bind the UDP socket
+ * @tx_port: The port to which to send UDP packets
+ * @ttl: The TTL with which to send multicasts
+ * @rtcp_bw: The total bandwidth (in units of ___) that is
+ * allocated to RTCP.
+ * @callback: See section on #rtp_callback.
+ * @user_data: Opaque data passed to the callback function.
+ *
+ * See rtp_init_if(); calling rtp_init() is just like calling
+ * rtp_init_if() with a NULL interface argument.
+ *
+ * Returns: An opaque session identifier to be used in future calls to
+ * the RTP library functions, or NULL on failure.
+ */
 struct rtp *rtp_init(const char *addr, 
 		     uint16_t rx_port, uint16_t tx_port, 
 		     int ttl, double rtcp_bw, 
@@ -897,6 +916,28 @@ struct rtp *rtp_init(const char *addr,
 	return rtp_init_if(addr, NULL, rx_port, tx_port, ttl, rtcp_bw, callback, userdata);
 }
 
+/**
+ * rtp_init_if:
+ * @addr: IP destination of this session (unicast or multicast),
+ * as an ASCII string.  May be a host name, which will be looked up,
+ * or may be an IPv4 dotted quad or IPv6 literal adddress.
+ * @iface: If the destination of the session is multicast,
+ * the optional interface to bind to.  May be NULL, in which case
+ * the default multicast interface as determined by the system
+ * will be used.
+ * @rx_port: The port to which to bind the UDP socket
+ * @tx_port: The port to which to send UDP packets
+ * @ttl: The TTL with which to send multicasts
+ * @rtcp_bw: The total bandwidth (in units of ___) that is
+ * allocated to RTCP.
+ * @callback: See section on #rtp_callback.
+ * @user_data: Opaque data passed to the callback function.
+ *
+ * Creates and initializes an RTP session.
+ *
+ * Returns: An opaque session identifier to be used in future calls to
+ * the RTP library functions, or NULL on failure.
+ */
 struct rtp *rtp_init_if(const char *addr, char *iface, 
 			uint16_t rx_port, uint16_t tx_port, 
 			int ttl, double rtcp_bw, 
@@ -1070,6 +1111,12 @@ void *rtp_get_userdata(struct rtp *session)
 	return session->userdata;
 }
 
+/**
+ * rtp_my_ssrc:
+ * @session: The RTP Session.
+ *
+ * Returns: My SSRC for this session.
+ */
 uint32_t rtp_my_ssrc(struct rtp *session)
 {
 	check_database(session);
@@ -1649,6 +1696,17 @@ static void rtp_process_ctrl(struct rtp *session, uint8_t *buffer, int buflen)
 	}
 }
 
+/**
+ * rtp_recv:
+ * @session: the session pointer (returned by rtp_init())
+ * @timeout: the amount of time that rtcp_recv() is allowed to block.
+ * @curr_rtp_ts: the current time expressed in units of the media
+ * timestamp.
+ *
+ * Receive RTP packets and dispatch them.
+ *
+ * Returns: TRUE if data received, FALSE if the timeout occurred.
+ */
 int rtp_recv(struct rtp *session, struct timeval *timeout, uint32_t curr_rtp_ts)
 {
 	check_database(session);
@@ -2269,6 +2327,15 @@ static void send_rtcp(struct rtp *session, uint32_t rtp_ts,
 	check_database(session);
 }
 
+/**
+ * rtp_send_ctrl:
+ * @session: the session pointer (returned by rtp_init())
+ * @rtp_ts: the current time expressed in units of the media timestamp.
+ * @appcallback: a callback to create an APP RTCP packet, if needed.
+ *
+ * Sends RTCP if it's time to send RTCP.  Must be called
+ * "often enough".  (XXX Say something more here?)
+ */
 void rtp_send_ctrl(struct rtp *session, uint32_t rtp_ts,
                    rtcp_app_callback appcallback)
 {
@@ -2313,6 +2380,14 @@ void rtp_send_ctrl(struct rtp *session, uint32_t rtp_ts,
 	check_database(session);
 }
 
+/**
+ * rtp_update:
+ * @session: the session pointer (returned by rtp_init())
+ *
+ * Performs housekeeping.
+ * Must be called ???how often???
+ * No need to call more than once per second.
+ */
 void rtp_update(struct rtp *session)
 {
 	/* Perform housekeeping on the source database... */
@@ -2363,6 +2438,15 @@ void rtp_update(struct rtp *session)
 	check_database(session);
 }
 
+/**
+ * rtp_send_bye:
+ * @session: The RTP session
+ *
+ * Sends a BYE message on the RTP session, indicating that this
+ * system is leaving the session.
+ * Should implement reverse reconsideration; right now it sends a
+ * BYE if there are less than 50 members and sends nothing otherwise.
+ */
 void rtp_send_bye(struct rtp *session)
 {
 	/* The function sends an RTCP BYE packet. It should implement BYE reconsideration, */
@@ -2561,3 +2645,27 @@ int rtp_get_ttl(struct rtp *session)
 	return session->ttl;
 }
 
+/* XXX gtkdoc doesn't seem to like documentation in the .h,
+ * so these can't be near their definitions. */
+/**
+ * rtp_callback:
+ * @session: The RTP Session
+ * @e: The RTP Event information.
+ *
+ * Handles RTP events in an application-specific way.
+ * See #rtp_event for a description of the possible events and
+ * how rtp_callback() should handle each.
+ * XXX How to add text for type rtp_event?
+ */
+/**
+ * rtcp_app_callback:
+ * @session: the session pointer (returned by rtp_init())
+ * @rtp_ts: the current time expressed in units of the media timestamp.
+ * @max_size: the max allowed size of an APP packet.
+ *
+ * This callback function crafts an RTCP APP packet to be sent with
+ * an RTCP RR.
+ *
+ * Returns: A fully-formed RTCP APP packet as an rtcp_app, or NULL (???)
+ * if no APP packet needs to be sent at this time.
+ */

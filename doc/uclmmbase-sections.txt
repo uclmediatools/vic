@@ -342,6 +342,8 @@ qfDES_checkWeakKeys
 RTP_VERSION
 RTP_PACKET_HEADER_SIZE
 RTP_MAX_PACKET_LEN
+rtp_init
+rtp_init_if
 rtp_packet
 rtcp_sr
 rtcp_rr

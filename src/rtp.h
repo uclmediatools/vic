@@ -181,12 +181,16 @@ typedef enum {
         RTCP_SDES_PRIV  = 8
 } rtcp_sdes_type;
 
-struct rtp	*rtp_init(const char *addr, 
+/* XXX gtkdoc doesn't seem to be able to handle functions that return
+ * struct *'s. */
+typedef struct rtp *rtp_t;
+
+rtp_t		rtp_init(const char *addr, 
 			  uint16_t rx_port, uint16_t tx_port, 
 			  int ttl, double rtcp_bw, 
 			  rtp_callback callback,
 			  void *user_data);
-struct rtp	*rtp_init_if(const char *addr, char *iface, 
+rtp_t		rtp_init_if(const char *addr, char *iface, 
 			     uint16_t rx_port, uint16_t tx_port, 
 			     int ttl, double rtcp_bw, 
 			     rtp_callback callback,
@@ -206,7 +210,7 @@ int 		 rtp_send_data(struct rtp *session,
                                char *data, int data_len, 
 			       char *extn, uint16_t extn_len, uint16_t extn_type);
 void 		 rtp_send_ctrl(struct rtp *session, uint32_t rtp_ts, 
-			       rtcp_app_callback callback);
+			       rtcp_app_callback appcallback);
 void 		 rtp_update(struct rtp *session);
 
 uint32_t	 rtp_my_ssrc(struct rtp *session);
