@@ -139,6 +139,10 @@ SOURCE=.\base64.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\btree.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\crypt_random.c
 # End Source File
 # Begin Source File
@@ -204,6 +208,10 @@ SOURCE=.\util.c
 # Begin Source File
 
 SOURCE=.\base64.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\btree.h
 # End Source File
 # Begin Source File
 
