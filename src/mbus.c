@@ -536,12 +536,13 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 		       void  (*err_handler)(int seqnum, int reason),
 		       char  *addr)
 {
-	struct mbus	*m;
-	struct mbus_key	 k;
-	int		 i;
-	char            *net_addr;
-	uint16_t        net_port;
-	int              net_scope;
+	struct mbus		*m;
+	struct mbus_key	 	 k;
+	struct mbus_parser	*mp;
+	int		 	 i;
+	char            	*net_addr;
+	uint16_t         	 net_port;
+	int              	 net_scope;
 
 	m = (struct mbus *) xmalloc(sizeof(struct mbus));
 	if (m == NULL) {
@@ -554,7 +555,6 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 	net_addr = (char *) xmalloc(20);
 	mbus_get_net_addr(m->cfg, net_addr, &net_port, &net_scope);
 	m->s		  = udp_init(net_addr, net_port, net_port, net_scope);	
-	m->addr           = xstrdup(addr);
 	m->seqnum         = 0;
 	m->cmd_handler    = cmd_handler;
 	m->err_handler	  = err_handler;
@@ -569,6 +569,13 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 	m->cmd_queue	  = NULL;
 	m->waiting_ack	  = NULL;
 	m->magic          = MBUS_MAGIC;
+	mp = mbus_parse_init(xstrdup(addr));
+	if (!mbus_parse_lst(mp, &(m->addr))) {
+		debug_msg("Invalid mbus address\n");
+		abort();
+	}
+	mbus_parse_done(mp);
+	assert(m->addr != NULL);
 
 	gettimeofday(&(m->last_heartbeat), NULL);
 
