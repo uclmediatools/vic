@@ -254,13 +254,13 @@ string_to_words(char *s, char**w, int max_words)
         int n;
 
         n = 0;
-        w[0] = strtok(s, " ");
+        w[0] = (char *) strtok(s, " ");
         if (w[0] == NULL) {
                 return n;
         }
 
         while(++n < max_words) {
-                w[n] = strtok(NULL, " ");
+                w[n] = (char *) strtok(NULL, " ");
                 if (w[n] == NULL) break;
         }
         return n;

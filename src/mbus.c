@@ -339,8 +339,8 @@ static void mbus_get_key(struct mbus *m, struct mbus_key *key, char *id)
 		sscanf(buf+pos, "%s", line);
 		pos += strlen(line) + 1;
 		if (strncmp(line, id, 9) == 0) {
-			key->algorithm   = strdup(strtok(line+9, ","));
-			key->key         = strtok(NULL  , ")");
+			key->algorithm   = (char *) strdup(strtok(line+9, ","));
+			key->key         = (char *) strtok(NULL  , ")");
 			key->key_len     = strlen(key->key);
 
 			tmp = (char *) xmalloc(key->key_len);
