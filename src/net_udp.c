@@ -63,6 +63,16 @@ struct _socket_udp {
 #endif /* HAVE_IPv6 */
 };
 
+#ifdef WIN32
+/* Want to use both Winsock 1 and 2 socket options, but since
+ * ipv6 support requires Winsock 2 we have to add own backwards
+ * compatibility for Winsock 1.
+ */
+#define SETSOCKOPT winsock_versions_setsockopt
+#else
+#define SETSOCKOPT setsockopt
+#endif /* WIN32 */
+
 /*****************************************************************************/
 /* Support functions...                                                      */
 /*****************************************************************************/
@@ -98,6 +108,50 @@ socket_error(char *msg)
 #endif
 	abort();
 }
+
+#ifdef WIN32
+/* ws2tcpip.h defines these constants with different values from
+ * winsock.h so files that use winsock 2 values but try to use 
+ * winsock 1 fail.  So what was the motivation in changing the
+ * constants ?
+ */
+#define WS1_IP_MULTICAST_IF     2 /* set/get IP multicast interface   */
+#define WS1_IP_MULTICAST_TTL    3 /* set/get IP multicast timetolive  */
+#define WS1_IP_MULTICAST_LOOP   4 /* set/get IP multicast loopback    */
+#define WS1_IP_ADD_MEMBERSHIP   5 /* add  an IP group membership      */
+#define WS1_IP_DROP_MEMBERSHIP  6 /* drop an IP group membership      */
+
+/* winsock_versions_setsockopt tries 1 winsock version of option 
+ * optname and then winsock 2 version if that failed.
+ */
+
+static int
+winsock_versions_setsockopt(SOCKET s, int level, int optname, const char FAR * optval, int optlen)
+{
+        int success = -1;
+        switch (optname) {
+        case IP_MULTICAST_IF:
+                success = setsockopt(s, level, WS1_IP_MULTICAST_IF, optval, optlen);
+                break;
+        case IP_MULTICAST_TTL:
+                success = setsockopt(s, level, WS1_IP_MULTICAST_TTL, optval, optlen);
+                break;
+        case IP_MULTICAST_LOOP:
+                success = setsockopt(s, level, WS1_IP_MULTICAST_LOOP, optval, optlen);
+                break;
+        case IP_ADD_MEMBERSHIP: 
+                success = setsockopt(s, level, WS1_IP_ADD_MEMBERSHIP, optval, optlen);
+                break;
+        case IP_DROP_MEMBERSHIP: 
+                success = setsockopt(s, level, WS1_IP_DROP_MEMBERSHIP, optval, optlen);
+                break;
+        }
+        if (success != -1) {
+                return success;
+        }
+        return setsockopt(s, level, optname, optval, optlen);
+}
+#endif
 
 #ifdef NEED_INET_ATON
 #ifdef NEED_INET_ATON_STATIC
@@ -170,12 +224,12 @@ static socket_udp *udp_init4(char *addr, u_int16 port, int ttl)
 		socket_error("socket");
 		abort();
 	}
-	if (setsockopt(s->fd, SOL_SOCKET, SO_REUSEADDR, (char *) &reuse, sizeof(reuse)) != 0) {
+	if (SETSOCKOPT(s->fd, SOL_SOCKET, SO_REUSEADDR, (char *) &reuse, sizeof(reuse)) != 0) {
 		socket_error("setsockopt SO_REUSEADDR");
 		abort();
 	}
 #ifdef SO_REUSEPORT
-	if (setsockopt(s->fd, SOL_SOCKET, SO_REUSEPORT, (char *) &reuse, sizeof(reuse)) != 0) {
+	if (SETSOCKOPT(s->fd, SOL_SOCKET, SO_REUSEPORT, (char *) &reuse, sizeof(reuse)) != 0) {
 		socket_error("setsockopt SO_REUSEPORT");
 		abort();
         }
@@ -194,17 +248,17 @@ static socket_udp *udp_init4(char *addr, u_int16 port, int ttl)
 		imr.imr_multiaddr.s_addr = s->addr4.s_addr;
 		imr.imr_interface.s_addr = INADDR_ANY;
 
-		if (setsockopt(s->fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *) &imr, sizeof(struct ip_mreq)) != 0) {
+		if (SETSOCKOPT(s->fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *) &imr, sizeof(struct ip_mreq)) != 0) {
 			socket_error("setsockopt IP_ADD_MEMBERSHIP");
 			abort();
 		}
 #ifndef WIN32
-		if (setsockopt(s->fd, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof(loop)) != 0) {
+		if (SETSOCKOPT(s->fd, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof(loop)) != 0) {
 			socket_error("setsockopt IP_MULTICAST_LOOP");
 			abort();
 		}
 #endif
-		if (setsockopt(s->fd, IPPROTO_IP, IP_MULTICAST_TTL, (char *) &s->ttl, sizeof(s->ttl)) != 0) {
+		if (SETSOCKOPT(s->fd, IPPROTO_IP, IP_MULTICAST_TTL, (char *) &s->ttl, sizeof(s->ttl)) != 0) {
 			socket_error("setsockopt IP_MULTICAST_TTL");
 			abort();
 		}
@@ -261,12 +315,12 @@ static socket_udp *udp_init6(char *addr, u_int16 port, int ttl)
 		socket_error("socket");
 		abort();
 	}
-	if (setsockopt(s->fd, SOL_SOCKET, SO_REUSEADDR, (char *) &reuse, sizeof(reuse)) != 0) {
+	if (SETSOCKOPT(s->fd, SOL_SOCKET, SO_REUSEADDR, (char *) &reuse, sizeof(reuse)) != 0) {
 		socket_error("setsockopt SO_REUSEADDR");
 		abort();
 	}
 #ifdef SO_REUSEPORT
-	if (setsockopt(s->fd, SOL_SOCKET, SO_REUSEPORT, (char *) &reuse, sizeof(reuse)) != 0) {
+	if (SETSOCKOPT(s->fd, SOL_SOCKET, SO_REUSEPORT, (char *) &reuse, sizeof(reuse)) != 0) {
 		socket_error("setsockopt SO_REUSEPORT");
 		abort();
 	}
@@ -290,15 +344,15 @@ static socket_udp *udp_init6(char *addr, u_int16 port, int ttl)
 		imr.ipv6mr_multiaddr = s->addr6;
 		imr.ipv6mr_interface = 0;
 
-		if (setsockopt(s->fd, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, (char *) &imr, sizeof(struct ipv6_mreq)) != 0) {
+		if (SETSOCKOPT(s->fd, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, (char *) &imr, sizeof(struct ipv6_mreq)) != 0) {
 			socket_error("setsockopt IPV6_ADD_MEMBERSHIP");
 			abort();
 		}
-		if (setsockopt(s->fd, IPPROTO_IPV6, IPV6_MULTICAST_LOOP, &loop, sizeof(loop)) != 0) {
+		if (SETSOCKOPT(s->fd, IPPROTO_IPV6, IPV6_MULTICAST_LOOP, &loop, sizeof(loop)) != 0) {
 			socket_error("setsockopt IPV6_MULTICAST_LOOP");
 			abort();
 		}
-		if (setsockopt(s->fd, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, (int *) &ttl, sizeof(ttl)) != 0) {
+		if (SETSOCKOPT(s->fd, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, (int *) &ttl, sizeof(ttl)) != 0) {
 			socket_error("setsockopt IPV6_MULTICAST_HOPS");
 			abort();
 		}
