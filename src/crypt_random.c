@@ -41,20 +41,25 @@
  * the "Minimal Standard" Random Number Generator", David G. Carta,
  * Communications of the ACM, Jan 1990, Vol 33 No 1.
  */
+<<<<<<< crypt_random.c
+#include "config_win32.h"
+#include "config_unix.h"
+=======
 
 #include "config_unix.h"
 #include "config_win32.h"
+>>>>>>> 1.3
 #include "crypt_random.h"
 
-static int randseed = 1;
+static u_int32 randseed = 1;
 
 void
-lbl_srandom(int seed)
+lbl_srandom(u_int32 seed)
 {
 	randseed = seed;
 }
 
-int
+u_int32
 lbl_random(void)
 {
 #if defined (Linux) || defined(FreeBSD)
@@ -76,8 +81,8 @@ lbl_random(void)
 	close(fd);
 	return res;
 #else
-	register int x = randseed;
-	register int hi, lo, t;
+	register u_int32 x = randseed;
+	register u_int32 hi, lo, t;
 
 	hi = x / 127773;
 	lo = x % 127773;

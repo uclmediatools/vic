@@ -108,7 +108,7 @@ static char *mbus_new_encrkey(void)
 
 	/* Step 1: generate a random string for the key... */
 	for (i = 0; i < MBUS_ENCRKEY_LEN; i++) {
-		random_string[i] = (lbl_random() | 0x000ff000) >> 24;
+		random_string[i] = ((int32)lbl_random() | 0x000ff000) >> 24;
 	}
 	/* Step 2: base64 encode that string... */
 	memset(encoded_string, 0, (MBUS_ENCRKEY_LEN*4/3)+4);
@@ -133,7 +133,7 @@ static char *mbus_new_hashkey(void)
 
 	/* Step 1: generate a random string for the key... */
 	for (i = 0; i < MBUS_HASHKEY_LEN; i++) {
-		random_string[i] = (lbl_random() | 0x000ff000) >> 24;
+		random_string[i] = ((int32)lbl_random() | 0x000ff000) >> 24;
 	}
 	/* Step 2: base64 encode that string... */
 	memset(encoded_string, 0, (MBUS_HASHKEY_LEN*4/3)+4);
