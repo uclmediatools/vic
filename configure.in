@@ -233,5 +233,5 @@ then
 fi
 
 # Done, create the output files....
-AC_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADER(uclconf.h:config.h.in)
 AC_OUTPUT(Makefile)

@@ -42,7 +42,7 @@
 #define _CONFIG_UNIX_H
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#include "uclconf.h"
 #endif
 
 #include <limits.h>

@@ -190,6 +190,9 @@ v1.0.10	- Mbus updates from Markus Germeier, which fix compatibility with
 	- Fix batching of multiple mbus messages into one packet.
 	* 13 December 1999 [rat v4.1.2]
 
+1.0.11  - Changed autoconf generated header to uclconf.h.
+	- Changed library name to uclmmbase to be consistent with other libs.	
+
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
 	  since it does a gethostbyname() and looks that up, yet that can
