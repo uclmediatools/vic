@@ -1,5 +1,6 @@
 @(#) $Header$ (LBL)
 
+Originally from:
 Lawrence Berkeley National Laboratory
 Network Research Group
 and University of California, Berkeley
@@ -12,3 +13,9 @@ see the html documention in html/vic.html from the source code
 distribution, or for the latest information, consult the
 on-line documentation in http://www-nrg.ee.lbl.gov/vic/.
 
+---------------------------------------------------------
+THIS VERSION from UCL is based strongly upon the LBL vic;
+For further info see:
+The UCL Networked Multimedia Research Group:
+http://www-mice.cs.ucl.ac.uk/multimedia
+vic@cs.ucl.ac.uk
