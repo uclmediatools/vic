@@ -495,12 +495,12 @@ void mbus_cmd_handler(struct mbus *m, void  (*cmd_handler)(char *src, char *cmd,
 	m->cmd_handler = cmd_handler;
 }
 
-static void mbus_flush_msgs(struct mbus_msg *queue)
+static void mbus_flush_msgs(struct mbus_msg **queue)
 {
         struct mbus_msg *curr, *next;
         int i;
-
-        curr = queue;
+	
+        curr = *queue;
         while(curr) {
                 next = curr->next;
                 xfree(curr->dest);
@@ -508,8 +508,10 @@ static void mbus_flush_msgs(struct mbus_msg *queue)
                         xfree(curr->cmd_list[i]);
                         xfree(curr->arg_list[i]);
                 }
+		xfree(curr);
                 curr = next;
         }
+	*queue = NULL;
 }
 
 void mbus_exit(struct mbus *m) 
@@ -524,8 +526,8 @@ void mbus_exit(struct mbus *m)
 
 	/* FIXME: It should be a fatal error to call mbus_exit() if some messages are still outstanding. */
 	/*        We will need an mbus_flush() call first though, to ensure nothing is waiting.          */
-        mbus_flush_msgs(m->cmd_queue);
-        mbus_flush_msgs(m->waiting_ack);
+        mbus_flush_msgs(&m->cmd_queue);
+        mbus_flush_msgs(&m->waiting_ack);
 
         if (m->encrkey != NULL) {
                 xfree(m->encrkey);
@@ -601,6 +603,7 @@ void mbus_send(struct mbus *m)
 			/* Reliable message, wait for the ack... */
 			gettimeofday(&(curr->send_time), NULL);
 			m->waiting_ack = curr;
+			curr->next = NULL;
 			return;
 		} else {
 			while (curr->num_cmds > 0) {

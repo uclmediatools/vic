@@ -228,12 +228,12 @@ v1.1.0  - Changed autoconf generated header to uclconf.h.
 	- Remove the mbus_addr() function, add an extra parameter to mbus_init() instead.
 	* 28 January 2000
 
-v1.1.1	- Add extra debugging code
+v1.1.1  - Add extra debugging code
 	* 1 February 2000
 
-v1.1.2	- Add routines for handling NTP format timestamps, in ntp.[ch]
+v1.1.2  - Add routines for handling NTP format timestamps, in ntp.[ch]
 	- Add udp_addr_valid.
-        - Fix cname setup for Win32.
+	- Fix cname setup for Win32.
 	- Add udp_init_if() call, to open a UDP/IP socket bound to a
 	  specific interface
 	- Add rtp_init_if() call, to open an RTP socket bound to a 
@@ -243,14 +243,14 @@ v1.1.2	- Add routines for handling NTP format timestamps, in ntp.[ch]
 	- Split mbus_addr_match() and mbus_add_identical() into mbus_addr.[ch]
 	* 14 February 2000
 
-v1.1.3	- Fix debug_set_core_dir() when not debugging.
+v1.1.3  - Fix debug_set_core_dir() when not debugging.
 	* 14 February 2000
 
-v1.1.4	- Add tests for mbus_parser.c/mbus_addr.c and fix bugs found
+v1.1.4  - Add tests for mbus_parser.c/mbus_addr.c and fix bugs found
 	- Fix use of free()'d memory in mbus.c
 	* 24 February 2000
 
-v1.1.5	- Remove SunOS and Solaris defines from the configure script, they
+v1.1.5  - Remove SunOS and Solaris defines from the configure script, they
 	  shouldn't be necessary any longer.
 	- Add workaround for missing getaddrinfo() on some platforms.
 	- Remove most of the abort() statements from udp_init(), we now
@@ -258,6 +258,7 @@ v1.1.5	- Remove SunOS and Solaris defines from the configure script, they
 	- Fix header extension handling when padding bit set for RTP packets.
 	- Change RTP event type #defines into rtp_event_type so compiler can
 	  check all cases are covered in decision blocks.
+	- Fix waiting_ack next is set to null when message is put on ack list.
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
