@@ -49,11 +49,11 @@ void _dprintf(const char *format, ...)
 {
 #ifdef DEBUG
 #ifdef WIN32
-        char msg[255];
+        char msg[65535];
         va_list ap;
         
         va_start(ap, format);
-        vsprintf(msg, format, ap);
+        vsprintf(msg, format, ap);	/* FIXME - this should be vsnprintf() */
         va_end(ap);
         OutputDebugString(msg);
 #else 
