@@ -84,7 +84,7 @@ class DCTFrame : public VideoFrame {
 class H261Frame : public VideoFrame {
     public:
 	inline H261Frame(u_int32_t ts, short* bp,int len,int w, int h) :
-		VideoFrame(ts, (u_int8_t*)bp, w, h),len_(len) {}
+		VideoFrame(ts, (u_int8_t*)bp, w, h, 0),len_(len) {}
         /* additional vars here. */
 	int len_;
 };
@@ -92,7 +92,7 @@ class H261Frame : public VideoFrame {
 class CellBFrame : public VideoFrame {
     public:
 	inline CellBFrame(u_int32_t ts, short* bp,int len,int w, int h) :
-		VideoFrame(ts, (u_int8_t*)bp, w, h),len_(len) {}
+		VideoFrame(ts, (u_int8_t*)bp, w, h, 0),len_(len) {}
         /* additional vars here. */
 	int len_;
 };

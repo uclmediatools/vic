@@ -12,6 +12,7 @@ static char rcsid[] =
 #include <assert.h>
 #include <time.h>
 
+#include "defs.h"
 #include "bsd-endian.h"
 #include "transmitter.h"
 #include "module.h"

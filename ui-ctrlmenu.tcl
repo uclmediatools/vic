@@ -1184,6 +1184,7 @@ proc select_format fmt {
 	if [have grabber] {
 		global V
 		set encoder [create_encoder $videoFormat]
+	puts "1encoder :$encoder"
 
 # MM
 #		if { [info procs build.$devname\_$videoFormat] != "" } {
@@ -1212,6 +1213,7 @@ proc select_format fmt {
 			#
 			# Restart the grabber.
 			#
+			puts "encoder :$encoder"
 			delete $encoder
 			restart
 		}
