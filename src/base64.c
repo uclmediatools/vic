@@ -57,7 +57,7 @@
 
 static unsigned char basis_64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-int base64encode(unsigned char *input, int input_length, unsigned char *output, int output_length)
+int base64encode(const unsigned char *input, int input_length, unsigned char *output, int output_length)
 {
 	int	i = 0, j = 0;
 	int	pad;
@@ -102,7 +102,7 @@ static unsigned char index_64[128] = {
 
 #define char64(c)  ((c > 127) ? 0xff : index_64[(c)])
 
-int base64decode(unsigned char *input, int input_length, unsigned char *output, int output_length)
+int base64decode(const unsigned char *input, int input_length, unsigned char *output, int output_length)
 {
 	int		i = 0, j = 0, pad;
 	unsigned char	c[4];

@@ -1,8 +1,8 @@
 /*
- * FILE:    test_base64.c
+ * FILE:    test_mbus_addr.c
  * AUTHORS: Colin Perkins
  * 
- * Copyright (c) 1999-2000 University College London
+ * Copyright (c) 2000 University College London
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,33 +36,71 @@
 #include "config_unix.h"
 #include "config_win32.h"
 #include "debug.h"
-#include "base64.h"
-#include "test_base64.h"
+#include "mbus_addr.h"
+#include "test_mbus_addr.h"
 
-void test_base64(void)
+int strfind(const char *haystack, const char *needle_start, const char *needle_end);
+
+void test_mbus_addr(void)
 {
-	/* The string "Hello, world" should encode as "SGVsbG8sIHdvcmxk" */
-	const char	*input = "Hello, world";
-	char	 output[100];
-	char	 decode[100];
-	int	 i;
+	const char	haystack[] = "The quick brown fox jumped over the lazy dog";
+	const char	needle_1[] = "fox";
+	const char	needle_2[] = "fat fox jumping";
+	const char	needle_3[] = "The";
+	const char	needle_4[] = "dog";
+	const char	a1[] = "()";
+	const char	a2[] = "(one two three)";
+	const char	a3[] = "(four five six)";
+	const char	a4[] = "six four";
+	const char	a5[] = "three one two";
 
-	for (i = 0; i < 100; i++) {
-		output[i] = '\0';
+	printf("Mbus addr (strfind).................... "); fflush(stdout);
+	if (!strfind(haystack, needle_1, needle_1 + strlen(needle_1) - 1)) {
+		printf("fail (1)\n");
+		goto match;
 	}
-
-	printf("Base64 encode.......................... "); fflush(stdout);
-	i = base64encode(input, strlen(input), output, 100);
-	if ((i != 16) || (strncmp(output, "SGVsbG8sIHdvcmxk", i) != 0)) {
-		printf("fail\n");
-		return;
+	if (strfind(haystack, needle_2, needle_2 + strlen(needle_2) - 1)) {
+		printf("fail (2)\n");
+		goto match;
+	}
+	if (!strfind(haystack, needle_3, needle_3 + strlen(needle_1) - 1)) {
+		printf("fail (3)\n");
+		goto match;
+	}
+	if (!strfind(haystack, needle_4, needle_4 + strlen(needle_1) - 1)) {
+		printf("fail (4)\n");
+		goto match;
+	}
+	if (!strfind(haystack, needle_2 + 4, needle_2 + 7)) {
+		printf("fail (5)\n");
+		goto match;
 	}
 	printf("pass\n");
 
-	printf("Base64 decode.......................... "); fflush(stdout);
-	i = base64decode(output, i, decode, 100);
-	if ((i != 12) || (strncmp(decode, "Hello, world", i) != 0)) {
-		printf("fail\n");
+match:
+	printf("Mbus addr (match)...................... "); fflush(stdout);
+	if (!mbus_addr_match(a2, a1)) {
+		printf("fail (1)\n");
+		goto identical;
+	}
+	if (mbus_addr_match(a2, a3)) {
+		printf("fail (2)\n");
+		goto identical;
+	}
+	if (!mbus_addr_match(a3, a4)) {
+		printf("fail (3)\n");
+		goto identical;
+	}
+	printf("pass\n");
+
+identical:
+	printf("Mbus addr (identical).................. "); fflush(stdout);
+	if (!mbus_addr_identical(a2, a5)) {
+		printf("fail (1)\n");
+		return;
+	}
+	if (mbus_addr_identical(a4, a3)) {
+		printf("fail (2)\n");
 		return;
 	}
 	printf("pass\n");

@@ -91,7 +91,7 @@ struct _socket_udp {
 /*****************************************************************************/
 
 static void
-socket_error(char *msg)
+socket_error(const char *msg)
 {
 #ifdef WIN32
 #define WSERR(x) {#x,x}

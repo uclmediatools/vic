@@ -95,16 +95,6 @@ then
 fi
 #  __CHAR_UNSIGNED__ will be defined; hope this is OK.
 
-# GCC-specific warning flags
-if test "$GCC" = yes
-then
-        CFLAGS="$CFLAGS -W -Wall -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -Werror"
-        if test -f .devel
-        then
-                CFLAGS="$CFLAGS -Werror"
-        fi
-fi
-
 # The following causes autoconf to complain.
 AC_CHECK_FILE(/dev/urandom,AC_DEFINE(HAVE_DEV_URANDOM))
 
@@ -254,6 +244,12 @@ AC_CACHE_CHECK(for sin6_len in struct sockaddr_in6, ucl_cv_sin6_len,
 if test $ucl_cv_sin6_len = yes
 then
 	AC_DEFINE(HAVE_SIN6_LEN) 
+fi
+
+# GCC-specific warning flags
+if test "$GCC" = yes
+then
+        CFLAGS="$CFLAGS -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-align -Wcast-qual -Wmissing-declarations -Werror"
 fi
 
 # Done, create the output files....

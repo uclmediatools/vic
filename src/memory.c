@@ -1,6 +1,5 @@
 /*
  * FILE:    memory.c
- *
  * AUTHORS:  Isidor Kouvelas / Colin Perkins / Mark Handley / Orion Hodson
  *
  * $Revision$

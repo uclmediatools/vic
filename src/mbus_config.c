@@ -346,7 +346,7 @@ void mbus_unlock_config_file(struct mbus_config *m)
 }
 
 #ifndef WIN32
-static void mbus_get_key(struct mbus_config *m, struct mbus_key *key, char *id)
+static void mbus_get_key(struct mbus_config *m, struct mbus_key *key, const char *id)
 {
 	struct stat	 s;
 	char		*buf;

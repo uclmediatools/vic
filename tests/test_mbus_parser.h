@@ -1,8 +1,8 @@
 /*
- * FILE:    base64.h
+ * FILE:    test_mbus_parser.h
  * AUTHORS: Colin Perkins
  * 
- * Copyright (c) 1998-2000 University College London
+ * Copyright (c) 2000 University College London
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,5 @@
  * SUCH DAMAGE.
  */
 
-int base64encode(const unsigned char *input, int input_length, unsigned char *output, int output_length);
-int base64decode(const unsigned char *input, int input_length, unsigned char *output, int output_length);
+void test_mbus_parser(void);
 

@@ -42,6 +42,8 @@
 #include "test_md5.h"
 #include "test_memory.h"
 #include "test_net_udp.h"
+#include "test_mbus_parser.h"
+#include "test_mbus_addr.h"
 
 #ifdef WIN32
 #define WS_VERSION_ONE MAKEWORD(1,1)
@@ -67,6 +69,8 @@ int main(int argc, char *argv[])
 	test_md5();
         test_memory();
 	test_net_udp();
+	test_mbus_parser();
+	test_mbus_addr();
 #ifdef WIN32
 	Sleep(2000);
 	WSACleanup();

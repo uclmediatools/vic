@@ -53,8 +53,8 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 void         mbus_cmd_handler(struct mbus *m, void  (*cmd_handler)(char *src, char *cmd, char *arg, void *dat));
 void         mbus_exit(struct mbus *m);
 int          mbus_addr_valid(struct mbus *m, char *addr);
-void         mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, int reliable);
-void         mbus_qmsgf(struct mbus *m, char *dest, int reliable, const char *cmnd, const char *format, ...);
+void         mbus_qmsg(struct mbus *m, const char *dest, const char *cmnd, const char *args, int reliable);
+void         mbus_qmsgf(struct mbus *m, const char *dest, int reliable, const char *cmnd, const char *format, ...);
 void         mbus_send(struct mbus *m);
 int          mbus_recv(struct mbus *m, void *data, struct timeval *timeout);
 void         mbus_retransmit(struct mbus *m);
