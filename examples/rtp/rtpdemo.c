@@ -168,7 +168,7 @@ main(int argc, const char *argv[])
 	const char	*address = NULL;
 	struct rtp	*session = NULL;
 	uint16_t	port = 0;
-	int8_t		ac, filter_me = 0, send_enable = 1;
+	int32_t		ac, filter_me = 0, send_enable = 1;
 
 	ac = 1;
 	while (argv[ac][0] == '-') {
