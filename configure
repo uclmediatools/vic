@@ -54,7 +54,7 @@ esac
 
 echo "Configuring common code library v$VERSION for $OSTYPE"
 
-GCCWFLAGS="-W -Wall -Wbad-function-cast -Wmissing-prototypes -Werror"
+GCCWFLAGS="-ansi -W -Wall -Wbad-function-cast -Wmissing-prototypes -Werror"
 DEFS=""
 
 AR="ar"
