@@ -295,7 +295,7 @@ if test $CC = gcc ; then
      GCC_version=`$CC --version`
      echo "$GCC_version"
      if test "$GCC_version" = 2.96 ; then
-           echo "Turning off optimisation for H261 encoder"
+           echo "Turning off optimisation for dct code"
            V_CCOPT_H261="";
      fi
 fi

@@ -40,7 +40,7 @@ ALL = @V_ALL@ histtolut
 all:	$(ALL)
 
 # Special case for H261 encoder - no optimisation if using linux gcc 2.96
-codec/encoder-h261.o:
+codec/dct.o:
 	rm -f $@; $(C++) -o $@ -c @V_CCOPT_H261@ $(BFLAGS) $*.cpp
 
 .cpp.o:
