@@ -28,7 +28,7 @@ extern int errno;
     fprintf(stderr, "%s: errno %d - %s\n", s_, errno, errno < sys_nerr ? sys_errlist[errno] : "???")
 #endif
 
-char G_padChar= (char) 0; /* in qfDES.c */
+extern char G_padChar; /* in qfDES.c */
 
 char
 #if defined(__STDC__) || defined(__cplusplus)
