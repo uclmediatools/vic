@@ -37,8 +37,13 @@ static const char rcsid[] =
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "vw.h"
+#include "color.h"
+#include "rgb-converter.h"
+
 extern "C" {
-//#include <tk.h>
+#include <tk.h>
 
 #ifdef USE_SHM
 #include <sys/ipc.h>
@@ -70,14 +75,7 @@ int XShmPutImage(Display*, Drawable, GC, XImage*, int, int, int, int,
 		 int, int, int);
 #endif
 #endif
-//#include <X11/Xutil.h>
 }
-//undefed as windows unfortunately defines it
-//#undef Status
-#include "vw.h"
-//#undef Status
-#include "color.h"
-#include "rgb-converter.h"
 
 static class VideoCommand : public TclObject {
 public:
