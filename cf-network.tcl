@@ -361,6 +361,10 @@ proc net_open_ip6 { sessionType session dst } {
 			incr port
 		}
 		set cn [new network ip6]
+		if { $cn == "" } {
+			warn "Not compiled with IPv6 support"
+			exit 1
+		}
 		$cn open $addr $port $ttl
 		$session ctrl-net $cn
 		set V(ctrl-net) $cn
