@@ -114,28 +114,29 @@ proc net_open_ip { sessionType session dst } {
 	}
 	set V(data-net) $dn
 
+	if { $IPaddrFamily == "ip6" } {
+		set base [string range $addr 0 [string last : $addr]]
+		set offset [string range $addr [expr {[string last : $addr]+1}] end]
+		set ismulticast [in6_multicast $addr]
+		set separator :
+	} else {
+		set oct [split $addr .]
+		set base [lindex $oct 0].[lindex $oct 1].[lindex $oct 2]
+		set offset [lindex $oct 3]
+		set ismulticast [in_multicast $addr]
+		set separator .
+	}
+
 	if { $numLayers > 0 } {
-		if { $IPaddrFamily == "ip6" } {
-			set base [string range $addr 0 [string last : $addr]]
-			set offset [string range $addr [expr {[string last : $addr]+1}] end]
-			set ismulticast [in6_multicast $addr]
-			set separator :
-		} else {
-			set oct [split $addr .]
-			set base [lindex $oct 0].[lindex $oct 1].[lindex $oct 2]
-			set offset [lindex $oct 3]
-			set ismulticast [in_multicast $addr]
-			set separator .
-		}
 
 		while { $numLayers > $layer } {
 			incr port 
 			incr layer
 			if { $ismulticast } {
-				incr off
+				incr offset
 			}
 			set dn [new network $IPaddrFamily]
-			$dn open $base.$off $port $ttl
+			$dn open $base$separator$offset $port $ttl
 			$session data-net $dn $layer
 
 			if { $sessionType != "nv" } {
@@ -177,7 +178,7 @@ proc net_open_ip { sessionType session dst } {
 				default { set maxbw 71 }
 			}
 		} else {
-			if { $ttl <= 16 || ![in6_multicast [$dn addr]] } {
+			if { $ttl <= 16 || ! $ismulticast } {
 				set maxbw 3072
 			} elseif { $ttl <= 64 } {
 				set maxbw 1024
