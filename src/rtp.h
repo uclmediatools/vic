@@ -40,6 +40,7 @@
 #define __RTP_H__
 
 #define RTP_PACKET_HEADER_SIZE	((sizeof(char *) * 2) + sizeof(u_int32 *) + (2 * sizeof(int)))
+#define RTP_MAX_PACKET_LEN 1500
 
 typedef struct {
 	/* The following are pointers to the data in the packet as    */
