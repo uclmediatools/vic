@@ -42,10 +42,11 @@
 #include "base64.h"
 #include "mbus.h"
 
-#define MBUS_BUF_SIZE	1500
-#define MBUS_MAX_ADDR	10
-#define MBUS_MAX_PD	10
-#define MBUS_MAX_QLEN	50		/* Number of messages we can queue with mbus_qmsg() */
+#define MBUS_BUF_SIZE	 1500
+#define MBUS_ACK_BUF_SIZE 110
+#define MBUS_MAX_ADDR	   10
+#define MBUS_MAX_PD	       10
+#define MBUS_MAX_QLEN	   50 /* Number of messages we can queue with mbus_qmsg() */
 
 struct mbus_msg {
 	struct mbus_msg	*next;
@@ -234,8 +235,9 @@ void mbus_send(struct mbus *m)
 		for (i = 0; i < curr->num_cmds; i++) {
 			sprintf(bufp, "%s (%s)\n", curr->cmd_list[i], curr->arg_list[i]);
 			bufp += strlen(curr->cmd_list[i]) + strlen(curr->arg_list[i]) + 4;
+			assert((bufp - buffer) < MBUS_BUF_SIZE);
 		}
-		assert(strlen(buffer) > 0);
+		assert(*buffer && strlen(buffer) < MBUS_BUF_SIZE);
 
 		/* Add an authentication header... this overwrites */
 		/* the string of #'s at the start of the message.  */
@@ -462,7 +464,7 @@ int mbus_recv(struct mbus *m, void *data)
 	char	*auth, *ver, *src, *dst, *ack, *r, *cmd, *param;
 	char	 buffer[MBUS_BUF_SIZE];
 	int	 buffer_len, seq, i, a, rx;
-	char	 ackbuf[96];
+	char	 ackbuf[MBUS_ACK_BUF_SIZE];
 	char	 digest[16];
 	struct timeval	t;
 
@@ -559,6 +561,7 @@ int mbus_recv(struct mbus *m, void *data)
 				/* ...if an ACK was requested, send one... */
 				if (strcmp(r, "R") == 0) {
 					sprintf(ackbuf, "########################\nmbus/1.0 %d U (%s) (%s) (%d)\n", ++m->seqnum, m->addr[0], src, seq);
+					assert(strlen(ackbuf)< MBUS_ACK_BUF_SIZE);
 					hmac_md5(ackbuf+25, strlen(ackbuf)-25, m->authkey, m->authkeylen, digest);
 					base64encode(digest, 16, ackbuf, 24);
 					udp_send(m->s, ackbuf, strlen(ackbuf));
