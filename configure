@@ -44,7 +44,7 @@ case $OSTYPE in
                            ;;
   HP-UX                  ) OSTYPE=HPUX
                            ;;
-  Linux | IRIX | IRIX64 | FreeBSD | NetBSD ) 
+  Linux | IRIX | IRIX64 | FreeBSD | NetBSD | OpenBSD ) 
                            ;;
   *                      ) echo "$OSTYPE not supported. Sorry."
                            exit
@@ -118,6 +118,15 @@ case $OSTYPE in
 	    OPTIMIZE="-O4"
 	    PROFILE="-pg"
             ;;
+  OpenBSD)  CC="gcc"
+	    WFLAGS=$GCCWFLAGS
+	    INCLUDE="-I/usr/local/include"
+	    LDLIBS="-lm"
+	    DEBUG="-g"
+	    CHAR="-fsigned-char"
+	    OPTIMIZE="-O4"
+	    PROFILE="-pg"
+	    ;;
   NetBSD )  CC="gcc"
             WFLAGS=$GCCWFLAGS
 	    INCLUDE="-I/usr/local/include"

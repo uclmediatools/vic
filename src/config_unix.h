@@ -50,7 +50,7 @@
 #include <signal.h>
 #include <ctype.h>
 
-#ifndef __FreeBSD__
+#if !defined(__FreeBSD__) && !defined(__OpenBSD__)
 #include <malloc.h>
 #endif
 #include <stdio.h>
@@ -73,7 +73,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 extern int h_errno;
-#if !defined(HPUX) && !defined(Linux) && !defined(__FreeBSD__)
+#if !defined(HPUX) && !defined(Linux) && !defined(__FreeBSD__) && !defined(__OpenBSD__)
 #include <stropts.h>
 #include <sys/filio.h>  
 #endif /* HPUX */
