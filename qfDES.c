@@ -40,7 +40,7 @@ typedef unsigned long Word;
 #define PC2(regC, regD, k) \
         PC2_AUX(regC, regD, k[0], k[1])
 
-extern char G_padChar; /* Default pad charcater */
+char G_padChar = (char)0; /* Default pad charcater */
 
 static
 Word rol[16][3] =

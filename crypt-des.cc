@@ -30,11 +30,9 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static char rcsid[] =
+static const char rcsid[] =
     "@(#) $Header$ (LBL)";
-#endif
+ 
 
 #include "qfDES.h"
 #include "crypt.h"
@@ -42,13 +40,14 @@ static char rcsid[] =
 #include "rtp.h"
 
 class CryptDES : public Crypt {
- public:
+    public:
 	CryptDES();
 	~CryptDES();
 	virtual int install_key(const u_int8_t* key);
 	virtual u_char* Encrypt(const u_char* in, int& len);
 	virtual int Decrypt(const u_char* in, int len, u_char* out);
- protected:
+
+    protected:
 	int encrypt(u_int32_t* blk, const u_char* in, int len, u_char* rh);
 	int decrypt(const u_char* in, int len, u_char* out, int rtcp);
 	static int didinit_;
@@ -57,13 +56,13 @@ class CryptDES : public Crypt {
 };
 
 class CryptDESctrl : public CryptDES {
-public:
+    public:
 	virtual u_char* Encrypt(const u_char* in, int& len);
 	virtual int Decrypt(const u_char* in, int len, u_char* out);
 };
 
 static class CryptDESMatcher : public Matcher {
-public:
+    public:
 	CryptDESMatcher() : Matcher("crypt") {}
 	TclObject* match(const char* id) {
 		if (strcmp(id, "DES/data") == 0 ||
@@ -80,6 +79,7 @@ int CryptDES::didinit_;
 
 CryptDES::CryptDES()
 {
+
 	/* enough extra space for padding and RTCP 4-byte random header */
 	wrkbuf_ = new u_char[2*RTP_MTU + 4];
 }
@@ -91,7 +91,7 @@ CryptDES::~CryptDES()
 
 int CryptDES::install_key(const u_int8_t* key)
 {
-	/* DES key */
+
 	/*
 	 * Take the first 56-bits of the input key and spread
 	 * it across the 64-bit DES key space inserting a bit-space
@@ -100,14 +100,14 @@ int CryptDES::install_key(const u_int8_t* key)
 	 * using expects the key and parity bits in the following
 	 * MSB order: K0 K1 ... K6 P0 K8 K9 ... K14 P1 ...
 	 */
-	des_key[0] = key[0];
-	des_key[1] = key[0] << 7 | key[1] >> 1;
-	des_key[2] = key[1] << 6 | key[2] >> 2;
-	des_key[3] = key[2] << 5 | key[3] >> 3;
-	des_key[4] = key[3] << 4 | key[4] >> 4;
-	des_key[5] = key[4] << 3 | key[5] >> 5;
-	des_key[6] = key[5] << 2 | key[6] >> 6;
-	des_key[7] = key[6] << 1;
+ 	des_key[0] = key[0];
+ 	des_key[1] = key[0] << 7 | key[1] >> 1;
+ 	des_key[2] = key[1] << 6 | key[2] >> 2;
+ 	des_key[3] = key[2] << 5 | key[3] >> 3;
+ 	des_key[4] = key[3] << 4 | key[4] >> 4;
+ 	des_key[5] = key[4] << 3 | key[5] >> 5;
+ 	des_key[6] = key[5] << 2 | key[6] >> 6;
+ 	des_key[7] = key[6] << 1;
 
 	/* fill in parity bits to make DES library happy */
 	for (int i = 0; i < 8; ++i) {
@@ -125,38 +125,33 @@ int CryptDES::install_key(const u_int8_t* key)
 
 int CryptDES::encrypt(u_int32_t* blk, const u_char* in, int len, u_char* rh)
 {
-	// This function is not used in this implementation
-	return (len);
+ 	// This function is not used in this implementation
+  	return (len);
 }
 
 u_char* CryptDES::Encrypt(const u_char* in, int& len)
 {
-        /* We are not using the IV */
-         u_char initVec[8] = {0,0,0,0,0,0,0,0};
-        int pad;
-        u_char* rh = wrkbuf_;
-        int i;
-        u_char* padding;
+       // We are not using the IV
+       char initVec[8] = {0,0,0,0,0,0,0,0};
+        
+       // Pad with zeros to the nearest 8 octet boundary       
+       int pad = len & 7;
+         if (pad != 0) {
+                 /* pad to an block (8 octet) boundary */
+                 pad = 8 - pad;
+               u_char* rh = (u_char*)in;
+                 *rh |= 0x20; // set P bit
+               u_char *padding = ((u_char*)in + len);
+               for (int i=1; i<pad; i++)
+                 *padding++ = 0;
+               *padding++ = (char)pad;
+               len += pad;
+         }
  
-        memcpy(wrkbuf_, in, len);
-
-        /* Pad with zeros to the nearest 8 octet boundary */    
-        pad = len & 7;
-        if (pad != 0) 
-        {
-                /* pad to an block (8 octet) boundary */
-                pad = 8 - pad;
-                rh[0] = rh[0] | 0x20; /* set P bit */
-                padding = (wrkbuf_ + len);
-                for (i=1; i<pad; i++)
-                  *(padding++) = 0;
-                *(padding++) = (char)pad;
-                len += pad;
-        }
-
-        /* Carry out the encryption */
-        qfDES_CBC_e((char *) des_key, (char *) wrkbuf_, len, (char *) initVec);
-        return wrkbuf_;
+       // Carry out the encryption
+         memcpy(wrkbuf_, (u_char *)(in), (unsigned long)(len));
+         qfDES_CBC_e((char *)des_key, (char *)(wrkbuf_), len, initVec);
+       return(wrkbuf_);        
 }
 
 int CryptDES::decrypt(const u_char* in, int len, u_char* out, int rtcp)
@@ -165,35 +160,37 @@ int CryptDES::decrypt(const u_char* in, int len, u_char* out, int rtcp)
 	/* check that packet is an integral number of blocks */
 	if ((len & 7) != 0) {
 		++badpktlen_;
-		return -1;
+		return (-1);
 	}
 
-	// We are not using the IV
-	const u_char initVec[8] = {0,0,0,0,0,0,0,0};
+ 	// We are not using the IV
+ 	char initVec[8] = {0,0,0,0,0,0,0,0};
+ 	u_char* inpk = (u_char *)in;
+ 
+ 	// Carry out decryption
+ 	qfDES_CBC_d((char *)des_key, (char *)(inpk), len, initVec);
+ 
+ 	// Strip the header of the first 4 bytes if it is an RTCP packet
+ 	if (rtcp)
+ 	{
+ 		memcpy(out, (u_char *)(in+4), (unsigned long)(len-4));
+ 		len -= 4;
+ 	}
+ 	else
+ 	{
+ 		memcpy(out, in, len);
+  	}
 
-	// Carry out decryption
-	memcpy(wrkbuf_, in, len);
-	qfDES_CBC_d((char *) des_key, (char *)(wrkbuf_), len, (char *) initVec);
-
-	// Strip the header of the first 4 bytes if it is an RTCP packet
-	if (rtcp) {
-		memcpy(out, (u_char *)(in+4), (unsigned long)(len-4));
-		len -= 4;
-	} else {
-		memcpy(out, in, len);
-	}
-
-	// Strip off the padding, where necessary
 	if ((out[0] & 0x20) != 0) {
 		/* P bit set - trim off padding */
 		int pad = out[len - 1];
 		if (pad > 7 || pad == 0) {
 			++badpbit_;
-			return -1;
+			return (-1);
 		}
 		len -= pad;
 	}
-	return len;
+	return (len);
 }
 
 int CryptDES::Decrypt(const u_char* in, int len, u_char* out)
@@ -203,36 +200,36 @@ int CryptDES::Decrypt(const u_char* in, int len, u_char* out)
 
 u_char* CryptDESctrl::Encrypt(const u_char* in, int& len)
 {
-
-	// We are not using the IV
-	const u_char initVec[8] = {0,0,0,0,0,0,0,0};
-       
-	// Attach 4 random bytes to the top of the header to reduce chances of a
-	// plaintext attack on the otherwise fixed header.
-	u_int32_t* new_random = (u_int32_t*)wrkbuf_;
-	new_random[0] = random();
-
-	// Copy into the working buffer
-	memcpy((u_char *)(wrkbuf_+4),(u_char *)(in),(unsigned long)(len));
-	len +=4;
-
-	// Pad with zeros to the nearest 8 octet boundary	
-	int pad = len & 7;
-        if (pad != 0) {
-                /* pad to an block (8 octet) boundary */
-                pad = 8 - pad;
-		u_char* rh = (wrkbuf_+4);
-                *rh |= 0x20; // set P bit
-		u_char *padding = (wrkbuf_ + len);
-		for (int i=1; i<pad; i++)
-		  *padding++ = 0;
-		*padding++ = (char)pad;
-		len += pad;
-        }
-
-
-	// Carry out the encryption
-	qfDES_CBC_e((char *) des_key, (char *)(wrkbuf_), len, (char *) initVec);
+ 
+ 	// We are not using the IV
+ 	char initVec[8] = {0,0,0,0,0,0,0,0};
+        
+ 	// Attach 4 random bytes to the top of the header to reduce chances of a
+ 	// plaintext attack on the otherwise fixed header.
+ 	u_int32_t* new_random = (u_int32_t*)wrkbuf_;
+ 	new_random[0] = random();
+ 
+ 	// Copy into the working buffer
+ 	memcpy((u_char *)(wrkbuf_+4),(u_char *)(in),(unsigned long)(len));
+ 	len +=4;
+ 
+ 	// Pad with zeros to the nearest 8 octet boundary	
+ 	int pad = len & 7;
+         if (pad != 0) {
+                 /* pad to an block (8 octet) boundary */
+                 pad = 8 - pad;
+ 		u_char* rh = (wrkbuf_+4);
+                 *rh |= 0x20; // set P bit
+ 		u_char *padding = (wrkbuf_ + len);
+ 		for (int i=1; i<pad; i++)
+ 		  *padding++ = 0;
+ 		*padding++ = (char)pad;
+ 		len += pad;
+         }
+ 
+ 
+ 	// Carry out the encryption
+ 	qfDES_CBC_e((char *)des_key, (char *)(wrkbuf_), len, initVec);
 	return (wrkbuf_);
 }
 
