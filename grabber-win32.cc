@@ -52,10 +52,14 @@ void dprintf(const char *fmt, ...)
     va_end (ap);
 }
 
+int capture_=0;
+
 static const int NTSC_BASE_WIDTH  = 640;
 static const int NTSC_BASE_HEIGHT = 480;
 static const int PAL_BASE_WIDTH  = 768;
-static const int PAL_BASE_HEIGHT = 576;
+static const int PAL_BASE_HEIGHT = 568;
+static const int CIF_BASE_WIDTH  = 704;
+static const int CIF_BASE_HEIGHT = 576;
 /* CIF: 352 * 288 */
 
 static int bit_options[] = { 16, 24, 32, 8, 4, 1, 0 };
@@ -389,9 +393,11 @@ class Vfw422Grabber : public VfwGrabber
 class VfwDevice : public InputDevice {
  public:
 	VfwDevice(const char* name, int index);
+	~VfwDevice();
 	virtual int command(int argc, const char*const* argv);
  protected:
 	DWORD vfwdev_;
+	VfwGrabber *grabber_;
 };
 
 class VfwScanner {
@@ -417,7 +423,7 @@ VfwScanner::VfwScanner(const int n)
 }
 
 VfwDevice::VfwDevice(const char* name, int index) :
-	InputDevice(name), vfwdev_(DWORD(-1))
+	InputDevice(name), vfwdev_(DWORD(-1)), grabber_(0)
 {
 	dprintf("VfwDevice: [%d] \"%s\"\n", index, name);
 
@@ -429,11 +435,23 @@ VfwDevice::VfwDevice(const char* name, int index) :
 			break;
 		case Generic:
 		default:
-			attributes_ = "format { 422 } size { small cif } port { external-in } ";
+			attributes_ = "format { 422 } size { large small cif } port { external-in } ";
 			break;
 		}
 	} else
 		attributes_ = "disabled";
+}
+
+VfwDevice::~VfwDevice()
+{
+	/* The following should not be necessary but there is no call to
+	 * delete the grabber when vic exits while capturing. */
+	if (grabber_) {
+		if (capture_==1) {
+			dprintf("VfwDevice::~VfwDevice deleting grabber!\n");
+			delete grabber_;
+		}
+	}
 }
 
 int VfwDevice::command(int argc, const char*const* argv)
@@ -606,8 +624,14 @@ void VfwGrabber::start()
 	dprintf("Original comp=%x (%s) bpp=%d\n", orig_comp, get_comp_name(orig_comp), orig_bpp);
 
 	fmt_->biPlanes = 1;
-	fmt_->biWidth = basewidth_ / decimate_;
-	fmt_->biHeight = baseheight_ / decimate_;
+
+	/* if the driver isn't set to either pal or ntsc then use default ntsc values */
+	if (fmt_->biWidth != 192 && fmt_->biWidth != 176 && fmt_->biWidth != 384 && fmt_->biWidth != 352 && fmt_->biWidth != 768 && fmt_->biWidth != 704 &&
+		fmt_->biHeight!= 142 && fmt_->biHeight!= 144 && fmt_->biHeight!= 284 && fmt_->biHeight!= 288 && fmt_->biHeight!= 568 && fmt_->biHeight!= 576) {
+		fmt_->biWidth = basewidth_ / decimate_;
+		fmt_->biHeight = baseheight_ / decimate_;
+	}
+
 	switch (devtype_) {
 	case gray_QuickCam_NT:
 	case Miro_dc20_95:
@@ -707,13 +731,21 @@ void VfwGrabber::start()
 				basewidth_ = NTSC_BASE_WIDTH;
 				baseheight_ = NTSC_BASE_HEIGHT;
 				break;
+			case 704:
+			case 352:
+			case 176:
+				max_fps_ = 25;
+				basewidth_ = CIF_BASE_WIDTH;
+				baseheight_ = CIF_BASE_HEIGHT;
+				break;
 			case 768:
 			case 384:
 			case 192:
 				max_fps_ = 25;
 				basewidth_ = PAL_BASE_WIDTH;
-				baseheight_ = PAL_BASE_HEIGHT;
+				baseheight_ = CIF_BASE_HEIGHT;
 				break;
+
 			default:
 				fprintf(stderr, "Cannot make any sence out of driver!\n");
 				stop();
@@ -774,8 +806,10 @@ void VfwGrabber::start()
 	if (!capCaptureSequenceNoFile(capwin_)) {
 		fprintf(stderr, "capCaptureSequenceNoFile: failed - %lu\n", GetLastError());
 		/*abort();*/
-	} else
+	} else {
 		capturing_ = 1;
+		capture_=1;
+	}
 	last_frame_ = 0;
 
 	Grabber::start();
@@ -820,6 +854,7 @@ void VfwGrabber::stop()
 	if (capturing_)
 		capCaptureStop(capwin_);
 	capturing_ = 0;
+	capture_=0;
 	ReleaseSemaphore(frame_sem_, 1, NULL);
 	CloseHandle(frame_sem_);
 #ifdef NDEF
@@ -905,9 +940,7 @@ VfwGrabber::VideoHandler(HWND hwnd, LPVIDEOHDR vh)
 	static int not_done = 0;
 
 	if (set == 0) {
-		//SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
-		//SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
-		//SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
+		SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_BELOW_NORMAL);
 		set = 1;
 	}
 
@@ -922,7 +955,12 @@ VfwGrabber::VideoHandler(HWND hwnd, LPVIDEOHDR vh)
 		(gp->capture)(gp, vh->lpData);
 	else if (not_done++ % 10 == 0)
 		dprintf("Frames not ready! %d\n", not_done);
-	
+
+	/* calculate amount of time to sleep*/
+	int sleep=((int)gp->tick(gp->grab())/1000);
+	/* only sleep if it's worth it */
+	if (sleep>0) Sleep(sleep);
+
 	return ((LRESULT)TRUE);
 }
 
@@ -935,7 +973,7 @@ VfwGrabber::capture(VfwGrabber *gw, LPBYTE frame)
 #endif
 	if (capturing_) {
 		gw->last_frame_ = frame;
-		WaitForSingleObject(frame_sem_, INFINITE);
+		/*WaitForSingleObject(frame_sem_, INFINITE);*/
 	}
 }
 

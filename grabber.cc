@@ -226,7 +226,9 @@ double Grabber::tick(int n)
 void Grabber::start()
 {
 	frameclock_ = gettimeofday();
+#ifndef WIN32
 	timeout();
+#endif
 }
 
 void Grabber::stop()
@@ -447,7 +449,7 @@ void Grabber::set_size_cif(int w, int h)
 	int ispal;
 	switch (w) {
 	case 320:
-		/* 1/4 NTSC */
+		/* 1/2 NTSC */
 		ispal = 0;
 		outw_ = 352;
 		outh_ = 288;
@@ -460,15 +462,28 @@ void Grabber::set_size_cif(int w, int h)
 		outh_ = 144;
 		break;
 
+	case 352:
+		/* 1/2 CIF */
+		ispal = 1;
+		outw_ = 352;
+		outh_ = 288;
+		break;
+
+	case 176:
+		/* 1/8 CIF */
+		ispal = 1;
+		outw_ = 176;
+		outh_ = 144;
+
 	case 384:
-		/* 1/4 PAL */
+		/* 1/2 PAL */
 		ispal = 1;
 		outw_ = 352;
 		outh_ = 288;
 		break;
 
 	case 192:
-		/* 1/16 PAL */
+		/* 1/8 PAL */
 		ispal = 1;
 		outw_ = 176;
 		outh_ = 144;
