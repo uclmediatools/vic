@@ -41,6 +41,7 @@
 #elif defined(sun)
 #include <sys/types.h>
 #define int8_t	char
+#define int16_t	short
 #define int32_t	long
 typedef unsigned char  u_int8_t;
 typedef unsigned short u_int16_t;
