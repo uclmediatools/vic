@@ -396,7 +396,7 @@ udp_sendv4(socket_udp *s, struct iovec *vector, int count)
 	s_in.sin_addr.s_addr = s->addr4.s_addr;
 	s_in.sin_port        = htons(s->tx_port);
 
-	msg.msg_name       = &s_in;
+	msg.msg_name       = (caddr_t) &s_in;
 	msg.msg_namelen    = sizeof(s_in);
 	msg.msg_iov        = vector;
 	msg.msg_iovlen     = count;
