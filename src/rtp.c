@@ -433,10 +433,39 @@ static void process_rtcp_sr(struct rtp *session, rtcp_t *packet, struct timeval 
 
 static void process_rtcp_rr(struct rtp *session, rtcp_t *packet, struct timeval *event_ts)
 {
-	UNUSED(session);
-	UNUSED(packet);
-	/* ...convert RRs to native byte order... */
-	/* ...process RRs... */
+	u_int32		 ssrc;
+	rtp_event	 event;
+	rtcp_rr		*rr;
+	source		*s;
+	int		 i;
+
+	ssrc = ntohl(packet->r.rr.ssrc);
+	create_source(session, ssrc);
+	s = get_source(session, ssrc);
+	if (s == NULL) {
+		debug_msg("Source 0x%08x invalid, skipping...\n", ssrc);
+		return;
+	}
+
+	for (i = 0; i < packet->common.count; i++) {
+		rr = (rtcp_rr *) xmalloc(sizeof(rtcp_rr));
+		rr->ssrc          = ntohl(packet->r.rr.rr[i].ssrc);
+		rr->fract_lost    = packet->r.rr.rr[i].fract_lost;	/* Endian conversion handled in the */
+		rr->total_lost    = packet->r.rr.rr[i].total_lost;	/* definition of the rtcp_rr type.  */
+		rr->last_seq      = ntohl(packet->r.rr.rr[i].last_seq);
+		rr->jitter        = ntohl(packet->r.rr.rr[i].jitter);
+		rr->lsr           = ntohl(packet->r.rr.rr[i].lsr);
+		rr->dlsr          = ntohl(packet->r.rr.rr[i].dlsr);
+
+		event.ssrc = ssrc;
+		event.type = RX_RR;
+		event.data = (void *) rr;
+		event.ts   = event_ts;
+		session->callback(session, &event);
+		
+		/* Store the RR for later use... */
+		xfree(rr);
+	}
 }
 
 static void process_rtcp_sdes(struct rtp *session, rtcp_t *packet, struct timeval *event_ts)

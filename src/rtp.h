@@ -85,10 +85,14 @@ typedef struct {
 } rtcp_sr;
 
 typedef struct {
-	u_int32		reporter_ssrc;	/* The ssrc which sent this RR        */
 	u_int32		ssrc;		/* The ssrc to which this RR pertains */
+#ifndef DIFF_BYTE_ORDER
 	u_int32		fract_lost:8;
 	u_int32		total_lost:24;
+#else
+	u_int32		total_lost:24;
+	u_int32		fract_lost:8;
+#endif	
 	u_int32		last_seq;
 	u_int32		jitter;
 	u_int32		lsr;
