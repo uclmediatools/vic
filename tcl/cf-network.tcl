@@ -93,7 +93,10 @@ proc net_open_ip { sessionType session dst } {
 		set port [expr $port &~ 1]
 	}
 	set dn [new network ip]
-	$dn open $addr $port $ttl
+	if { [$dn open $addr $port $ttl] == 0 } {
+		warn "Problem opening IPv4 data socket"
+		exit 1
+	}
 	$session data-net $dn
 	if { $sessionType != "nv" } {
 		if { $sessionType == "ivs" } {
@@ -210,6 +213,9 @@ proc net_open_rtip { sessionType session dst } {
 
 proc init_network {} {
 	set netType [resource network]
+	if { [string first ":" [resource defaultHostSpec]] > 0 } {
+		set netType ip6
+	}
 	if { [info procs net_open_$netType] == "" } {
 		warn "$netType not a recognized network type"
 		exit 1
@@ -353,12 +359,14 @@ proc net_open_ip6 { sessionType session dst } {
 		set port [expr $port &~ 1]
 	}
 	set dn [new network ip6]
-	puts "dn: $dn"
 	if { $dn == "" } {
 		warn "Not compiled with IPv6 support"
 		exit 1
 	}
-	$dn open $addr $port $ttl
+	if { [$dn open $addr $port $ttl] == 0 } {
+		warn "Problem opening IPv6 data socket"
+		exit 1
+	}
 	$session data-net $dn
 	if { $sessionType != "nv" } {
 		if { $sessionType == "ivs" } {
@@ -368,7 +376,6 @@ proc net_open_ip6 { sessionType session dst } {
 		}
 		set cn [new network ip6]
 		$cn open $addr $port $ttl
-	puts "cn: $cn"
 		$session ctrl-net $cn
 		set V(ctrl-net) $cn
 	}
