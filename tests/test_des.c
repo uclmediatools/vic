@@ -214,7 +214,7 @@ void test_des(void)
 {
 	int 		i, j;
 	unsigned char	key[8], plain[8], crypt[8], buffer[8];
-	unsigned char	cbc_buffer[32];
+	unsigned char	cbc_buffer[32], cbc_iv_buf[8];
 
 	for (i = 0; i < NUM_TESTS; i++) {
 		printf("  DES ECB %2d: ", i); fflush(stdout);
@@ -239,12 +239,14 @@ void test_des(void)
 
 	printf("  DES CBC: "); fflush(stdout);
 	memcpy(cbc_buffer, cbc_data, 32);
-	qfDES_CBC_e(cbc_key, cbc_buffer, 32, cbc_iv);
+	memcpy(cbc_iv_buf, cbc_iv, 8);
+	qfDES_CBC_e(cbc_key, cbc_buffer, 32, cbc_iv_buf);
 	if (memcmp(cbc_buffer, cbc_ok, 32) != 0) {
 		printf("encrypt failed\n");
 		abort();
 	}
-	qfDES_CBC_d(cbc_key, cbc_buffer, 32, cbc_iv);
+	memcpy(cbc_iv_buf, cbc_iv, 8);
+	qfDES_CBC_d(cbc_key, cbc_buffer, 32, cbc_iv_buf);
 	if (memcmp(cbc_buffer, cbc_data, 32) != 0) {
 		printf("decrypt failed\n");
 		abort();

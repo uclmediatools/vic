@@ -646,12 +646,12 @@ const QFDES_mode   	 mode,
 
     /* Set up initilaisation vector */
     if (mode != qfDES_ecb) {
-
-        if (initVec)
+        if (initVec) {
             { cb[0] = ((Word *) initVec)[0]; cb[1] = ((Word *) initVec)[1]; }
-        else
-            cb[0] = cb[1] = 0;
-
+        } else {
+            cb[0] = 0;
+	    cb[1] = 0;
+	}
 #if defined(DIFF_BYTE_ORDER)
         MAKE_LITTLE_ENDIAN(cb, 8);
 #endif
@@ -813,7 +813,7 @@ _exit_qfDES_:
 /*
 ** This function sets bit 8 of each byte to odd or even parity as requested.
 ** It is assumed that the right-most bit of each byte is the parity bit.
-** Althoug this is really only used by the two key generation functions below,
+** Although this is really only used by the two key generation functions below,
 ** it may be useful to someone.
 */
 
