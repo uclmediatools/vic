@@ -498,8 +498,12 @@ void Source::adapt(u_int32_t arr_ts, u_int32_t ts, int flag)
 			pending_ = 0;
 			/* set to the max between the audio & video playout delays */
 			//printf("ad = %d\tvd= %d\t", apdelay_, pdelay_);
-			if (pdelay_ < apdelay_) 
+			if (pdelay_ < apdelay_)
+#ifndef WIN32 
 				pdelay_ = apdelay_;
+#else
+				pdelay_ += (apdelay_ - pdelay_) >> 2;
+#endif
 			//printf("act del= %d\n", pdelay_);
 		}
 	}
