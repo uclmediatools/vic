@@ -598,6 +598,39 @@ struct mbus *mbus_init(unsigned short channel,
 	return m;
 }
 
+static void mbus_flush_msgs(struct mbus_msg *queue)
+{
+        struct mbus_msg *curr, *next;
+        int i;
+
+        curr = queue;
+        while(curr) {
+                next = curr->next;
+                xfree(curr->dest);
+                for(i = 0; i < curr->num_cmds; i++) {
+                        xfree(curr->cmd_list[i]);
+                        xfree(curr->arg_list[i]);
+                }
+                curr = next;
+        }
+}
+
+void mbus_exit(struct mbus *m) 
+{
+        assert(m != NULL);
+
+        while(m->parse_depth--) {
+                xfree(m->parse_buffer[m->parse_depth]);
+        }
+
+        mbus_flush_msgs(m->cmd_queue);
+        mbus_flush_msgs(m->waiting_ack);
+
+        xfree(m->encrkey);
+        xfree(m->hashkey);
+        xfree(m);
+}
+
 void mbus_addr(struct mbus *m, char *addr)
 {
 	assert(m->num_addr < MBUS_MAX_ADDR);
