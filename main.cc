@@ -431,7 +431,7 @@ main(int argc, const char** argv)
 
 	opterr = 0;
 	const char* options = 
-		"A:B:C:c:D:d:f:F:HI:K:M:m:N:n:o:Pq:sT:t:U:u:V:X:";
+		"A:B:C:c:D:d:f:F:HI:K:M:m:N:n:o:Pq:re:sT:t:U:u:V:X:";
 	const char* display = disparg(argc, (const char**)argv, options);
 
 	Tcl::init("vic");
@@ -544,6 +544,10 @@ main(int argc, const char** argv)
 
 		case 'q':
 			tcl.add_option("jpegQfactor", optarg);
+			break;
+
+		case 'r':
+			tcl.add_option("relateInterface","true");
 			break;
 
 		case 's':
