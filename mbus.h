@@ -42,7 +42,9 @@
 
 #include "iohandler.h"
 #include "mbus_engine.h"
+#ifdef win32
 #include <winsock.h>
+#endif
 
 #define MBUS_ADDR       0xe0ffdeef      /* 224.255.222.239 */
 #define MBUS_PORT       47000
