@@ -46,6 +46,19 @@
 
 static size_t sz[] = {17, 32, 64, 81, 1024, 4096};
 
+static void fill_block(char *y, uint32_t ylen)
+{
+        uint32_t i, xlen;
+        double *x;
+
+        xlen = ylen / sizeof(double);
+        x    = (double*)y;
+
+        for(i = 0; i < xlen; i++) {
+                x[i] = 0;
+        }
+}
+
 static void 
 do_test()
 {
@@ -70,6 +83,7 @@ do_test()
                         }
                         r = drand48();
                         b[idx] = (void*)xmalloc(sz[r % nszs]);
+                        fill_block(b[idx], sz[r % nszs]);
                 }
 
                 for(idx = 0; idx < nslots; idx++) {
@@ -93,6 +107,7 @@ do_test()
                         r = drand48();
                         s[idx] = sz[r % nszs];
                         b[idx] = (void*)block_alloc(s[idx]);
+                        fill_block(b[idx], s[idx]);
                 }
 
                 for(idx = 0; idx < nslots; idx++) {
