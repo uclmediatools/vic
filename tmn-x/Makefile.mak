@@ -20,7 +20,8 @@ OBJS =	main.obj io.obj dct.obj coder.obj quant.obj mot_est.obj pred.obj  snr.obj
         filter.obj malloc_debug.obj
 
 TOOLS32       =  c:\progra~1\micros~2\vc98
-cc32 = $(TOOLS32)\bin\cl -I$(TOOLS32)\include
+#cc32 = cl -I$(TOOLS32)\include
+cc32 = cl
 
 libh263coder.lib: $(OBJS)
 	del $@
