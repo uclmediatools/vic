@@ -12,7 +12,7 @@ LNAME  = uclmmbase
 
 DEFS   = -DHAVE_CONFIG_H
 CFLAGS = -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -Werror $(DEFS) -I$(CSRC)
-LIBS   =  -L$(CSRC) -l$(LNAME)
+LIBS   = -lnsl -lsocket -L$(CSRC) -l$(LNAME)
 CC     = gcc
 
 TARGET = sapdemo
