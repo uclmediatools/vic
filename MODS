@@ -139,6 +139,7 @@ v1.0.8	- Add mbus_sent_all()
 		- Add the functions rtp_setopt() and rtp_getopt() that can be used
 		  to control various options (right now just promiscuous mode).
 		- Split rtp_recv_data() into two functions.
+	* 5 October 1999
 
 
 Still to do...
