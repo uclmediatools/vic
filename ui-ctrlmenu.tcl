@@ -404,10 +404,15 @@ proc build.buttons w {
 		-relief raised -command transmit \
 		-anchor w -variable transmitButtonState -font $f \
 		-state disabled -highlightthickness 0
+#	checkbutton $w.freeze -text "Freeze" \
+#		-relief raised -command "grabber freeze \$freeze" \
+#		-anchor w -variable freeze -font $f \
+#		-highlightthickness 0
 	button $w.release -text "Release" \
 		-relief raised -command release_device \
 		-font $f -highlightthickness 0
 
+#	pack $w.send $w.release $w.freeze -fill both
 	pack $w.send $w.release -fill both
 }
 
@@ -448,8 +453,9 @@ proc build.sliders w {
 	
 	frame $w.bps
 	scale $w.bps.scale -orient horizontal -font $f \
-		-showvalue 0 -from 10 -to [option get . maxbw Vic] \
+		-showvalue 0 -from 1 -to [option get . maxbw Vic] \
 		-command "set_bps $w.bps.value" -width 12 \
+		-sliderlength 20 \
 		-relief groove
 	label $w.bps.value -font $f -width 8 -anchor w
 
@@ -457,6 +463,7 @@ proc build.sliders w {
 	scale $w.fps.scale -font $f -orient horizontal \
 		-showvalue 0 -from 1 -to 30 \
 		-command "set_fps $w.fps.value" -width 12 \
+		-sliderlength 20 \
 		-relief groove
 	label $w.fps.value -font $f -width 8 -anchor w
 
@@ -579,7 +586,7 @@ proc insert_grabber_panel devname {
 proc select_device device {
 	global transmitButton sizeButtons portButton formatButtons \
 		videoFormat defaultFormat lastDevice defaultPort inputPort \
-		transmitButtonState
+		transmitButtonState typeButton
 
 	#
 	# Remember settings of various controls for previous device
@@ -622,7 +629,11 @@ proc select_device device {
 	} else {
 		$portButton configure -state disabled
 	}
-
+	if [device_supports $device type *] {
+		$typeButton configure -state normal
+	} else {
+		$typeButton configure -state disabled
+	}
 	insert_grabber_panel [$device nickname]
 
 	set videoFormat $defaultFormat($device)
@@ -793,7 +804,8 @@ proc build.encoder_buttons w {
 	build.encoder_options $w.options
 	build.device $w.device
 	build.port $w.port
-	pack $w.device $w.port $w.options -fill x
+	build.type $w.type
+	pack $w.device $w.port $w.type $w.options -fill x
 }
 
 proc build.encoder_options w {
@@ -1262,6 +1274,9 @@ proc init_grabber { grabber } {
 	global inputPort inputType portButton typeButton
 	if { [$portButton cget -state] == "normal" } {
 		$grabber port $inputPort
+	}
+	if { [$typeButton cget -state] == "normal" } {
+		$grabber type $inputType
 	}
 	setFillRate
 	update

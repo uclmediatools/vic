@@ -248,8 +248,6 @@ void SharedVideoImage::init(Tk_Window tk)
 	/*
 	 * Wrap segment in an ximage
 	 */
-	image_ = XCreateImage(dpy_, Tk_Visual(tk), Tk_Depth(tk), ZPixmap,
-			      0, (char*)0, width_, height_, 8, 0);
 	image_->obdata = (char*)&shminfo_;
 	image_->data = shminfo_.shmaddr;
 }

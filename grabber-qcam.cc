@@ -84,6 +84,11 @@ extern "C" {
 #define CIF_HEIGHT 288
 
 /*XXX*/
+#ifndef QC_MAX_CONTRAST
+#define	QC_MAX_CONTRAST	255
+#endif
+
+/*XXX*/
 #define VOLATILE volatile
 
 class QcamGrabber : public Grabber {

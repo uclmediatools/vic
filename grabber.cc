@@ -69,6 +69,7 @@ Grabber::Grabber()
 	  hstart_(0), hstop_(0),
 	  framebase_(0), frame_(0),
 	  inw_(0), inh_(0), outw_(0), outh_(0),
+	  threshold_(48),
 	  target_(0), tx_(0)
 {
 	bps(128);
@@ -120,6 +121,10 @@ int Grabber::command(int argc, const char*const* argv)
 					running_ = 0;
 				}
 			}
+			return (TCL_OK);
+		}
+		if (strcmp(argv[1], "threshold") == 0) {
+			threshold_ = 8*atoi(argv[2]);
 			return (TCL_OK);
 		}
 		if (strcmp(argv[1], "fps") == 0) {

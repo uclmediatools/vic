@@ -403,6 +403,9 @@ main(int argc, const char** argv)
 #endif
 	signal(SIGINT, ciao);
 	signal(SIGTERM, ciao);
+#ifdef __FreeBSD__
+	signal(SIGSYS, (sig_t)noXShm);
+#endif
 
 #ifdef WIN32_NOT
 	TkSetPlatformInit(TkPlatformInit);

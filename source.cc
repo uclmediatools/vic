@@ -326,11 +326,7 @@ int Source::command(int argc, const char*const* argv)
 			return (TCL_OK);
 		}
 		if (strcmp(argv[1], "addr") == 0) {
-			/* HL 980415 Memory leak fix (hakanl@cdt.luth.se) */
-			char *ptr= InetNtoa(addr_);
-			strcpy(wrk, ptr);
-			free(ptr);
-			tcl.result(wrk);
+			tcl.result(InetNtoa(addr_), TCL_DYNAMIC);
 			return (TCL_OK);
 		}
 		if (strcmp(argv[1], "srcid") == 0) {

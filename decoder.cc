@@ -74,6 +74,8 @@ Decoder::Decoder(int hdrlen) : PacketHandler(hdrlen),
 
 Decoder::~Decoder()
 {
+	if (rvts_)
+		delete rvts_;
 }
 
 int Decoder::command(int argc, const char*const* argv)

@@ -34,7 +34,7 @@ fi
 
 V_LIB_GRABBER=""
 V_INCLUDE_GRABBER=""
-V_OBJ_GRABBER=""
+V_OBJ_GRABBER="grabber-x11.cc"
 V_LIB_XIL=""
 V_OBJ_XIL=""
 
@@ -69,7 +69,7 @@ fi
 if test -r /usr/include/machine/ioctl_meteor.h ; then
 	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-meteor.o"
 fi
-if test -r /usr/local/lib/libspigot.a ; then
++if test -r /usr/local/lib/libspigot.a -a ${PORTOBJFORMAT} != elf; then
 	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-spigot.o"
 	V_LIB_GRABBER="$V_LIB_GRABBER -lspigot"
 	V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I/usr/local/include"
@@ -86,9 +86,6 @@ elif test -r /usr/local/lib/libqcam.a ; then
 elif test -r /dev/qcam0 ; then
 	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-qcam.o"
 	V_DEFINE="$V_DEFINE -DQCAMDEV"
-fi
-if test -r /usr/include/linux/scc.h -o -r /usr/include/machine/scc.h ; then
-	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-scc.o"
 fi
 vpix_dir=/usr/src/local/vfc-1.0
 vpix_lib=$vpix_dir/vfc_lib
@@ -228,6 +225,9 @@ sparc-sun-sunos*)
 *-*-netbsd*)
 	V_TARCMD="tar -h -c -f"
 	V_LIB="$V_LIB -L/usr/local/lib"
++	;;
++*-*-freebsd*)
++
 	;;
 *-*-hpux*)
 	V_CCOPT="-O"

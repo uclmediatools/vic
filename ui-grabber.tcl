@@ -39,6 +39,17 @@
 # called foo-1, foo-2, etc. and you'll only need build.foo
 #
 
+proc build.meteor w {
+#
+# The meteor has the same controls as the slicvideo, so just call that
+# routine to build the controls.
+
+	build.slicvideo $w
+}
+
+proc build.bktr w {
+	build.slicvideo $w
+}
 
 proc build.parallax w {
 global logoButton, setPlxInput, V
@@ -387,60 +398,69 @@ proc build.slicvideo w {
 	frame $w.f -relief sunken -borderwidth 2
 
         frame $w.f.h -relief flat
- 
-        label $w.f.h.label  -font $f -anchor e -text "Hue"
- 
-        scale $w.f.h.scale -orient horizontal -width 12 -length 20 \
-                           -relief groove -showvalue 1 -from -128 -to 127 \
-                            -command "grabber set HUE"
-        pack  $w.f.h.label $w.f.h.scale -side left -fill x -expand 1
+	frame $w.f.h.c
+	label $w.f.h.c.l1  -font $f -anchor e -text "Chan:"
+	mk.entry $w.f.h.c  do_chan "20"
+	$w.f.h.c.entry configure -relief sunken -width 5
+	bind $w.f.h.c.entry <Return> "grabber chan \[$w.f.h.c.entry get\]"
+	pack $w.f.h.c.l1 $w.f.h.c.entry -side top
 
-
-	frame $w.f.ll -relief flat 
-       
-	label $w.f.ll.label  -font $f -text "Luma" -anchor s
-       
-	label $w.f.ll.clabel -font $f -text "Contrast" -anchor s
-      
-	label $w.f.ll.blabel -font $f -text "Brightness" -anchor s
-	pack  $w.f.ll.clabel $w.f.ll.label $w.f.ll.blabel \
+	global ths
+	scale $w.f.h.ths \
+-orient horizontal -width 12 -length 60 -relief groove -sliderlength 6 \
+	    -showvalue 0 -from 1 -to 10 \
+	    -command "grabber threshold" -label Thre
+	$w.f.h.ths set 6
+	# the actual scale is multiplied by 8
+	scale $w.f.h.scale \
+-orient horizontal -width 12 -length 100 -relief groove \
+	    -showvalue 0 -from -128 -to 127 \
+	    -command "grabber hue" -label Hue
+	pack  $w.f.h.c \
+		$w.f.h.ths \
+		$w.f.h.scale \
 			     -side left -fill x -expand 1
+#	frame $w.f.ll -relief flat 
+#	label $w.f.ll.label  -font $f -text "Luma" -anchor s
+#	label $w.f.ll.clabel -font $f -text "Contrast" -anchor s
+#	label $w.f.ll.blabel -font $f -text "Brightness" -anchor s
+#	pack  $w.f.ll.clabel $w.f.ll.label $w.f.ll.blabel \
+#			     -side left -fill x -expand 1
 
 	frame $w.f.l  -relief flat
        
-	scale $w.f.l.cscale   -orient horizontal -width 12 -relief groove \
+	scale $w.f.l.cscale \
+-orient horizontal -width 12 -length 100 -relief groove \
                               -showvalue 1 -from 0 -to 127 \
-                              -command "grabber set LUMA_CONTRAST"
+	  -label "Contrast" \
+	  -command "grabber contrast"
        
-	scale $w.f.l.bscale -orient horizontal -width 12 -relief groove \
+	scale $w.f.l.bscale \
+-orient horizontal -width 12 -length 100 -relief groove \
                             -showvalue 1 -from 0 -to 255 \
-                            -command "grabber set LUMA_BRIGHTNESS"
+	    -command "grabber brightness" -label "Brightness"
 	pack  $w.f.l.cscale $w.f.l.bscale  -side left -fill x -expand 1
 
-	frame $w.f.cl  -relief flat
-
-	label $w.f.cl.label  -font $f -text "Chroma" -anchor n
+#	frame $w.f.cl  -relief flat
+#	label $w.f.cl.label  -font $f -text "Chroma" -anchor n
+#	label $w.f.cl.glabel -font $f -text "Gain" -anchor n
+#	label $w.f.cl.slabel -font $f -text "Saturation" -anchor n
+#	pack  $w.f.cl.glabel $w.f.cl.label $w.f.cl.slabel \
+#			     -side left -fill x -expand 1
        
-	label $w.f.cl.glabel -font $f -text "Gain" -anchor n
-       
-	label $w.f.cl.slabel -font $f -text "Saturation" -anchor n
-	pack  $w.f.cl.glabel $w.f.cl.label $w.f.cl.slabel \
-			     -side left -fill x -expand 1
-
-	frame $w.f.c -relief flat
-       
-	scale $w.f.c.gscale -orient horizontal -width 12 -relief groove \
+	scale $w.f.c.gscale \
+-orient horizontal -width 12 -length 100 -relief groove \
                              -showvalue 1 -from 0 -to 255 \
-                             -command "grabber set CHROMA_GAIN"
+	     -command "grabber uvgain" -label "Chr.  Gain"
        
-	scale $w.f.c.sscale -orient horizontal -width 12 -relief groove \
-                            -showvalue 1 -from 0 -to 127 \
-                            -command "grabber set CHROMA_SATURATION"
+	scale $w.f.c.sscale \
+-orient horizontal -width 12 -length 100 -relief groove \
+	    -command "grabber saturation" -label "Saturation"
 	pack  $w.f.c.gscale $w.f.c.sscale -side left -fill x -expand 1
 
      
-	pack  $w.f.h $w.f.ll $w.f.l $w.f.c $w.f.cl \
-	      -fill x -expand 1 -padx 1m 
+	# pack  $w.f.h $w.f.ll $w.f.l $w.f.c $w.f.cl
+	pack  $w.f.h $w.f.l $w.f.c -fill x -expand 1 -padx 1m 
 
 
 	pack $w.title $w.f -fill x -expand 1
@@ -534,6 +554,118 @@ proc build.qcam {w} {
     set qcamwindow(setbpp) "set qcambpp"
 }
 
+#
+# X11 Grabber controls
+#
+proc x11grabUpdatePos {x y w h} {
+
+    global x11grabcontrols
+    set w $x11grabcontrols
+
+    if {[string compare $x [$w.x11grab.row1.pos.x.e get]] != 0} {
+	$w.x11grab.row1.pos.x.e delete 0 end
+	$w.x11grab.row1.pos.x.e insert 0 $x
+    }
+    if {[string compare $y [$w.x11grab.row1.pos.y.e get]] != 0} {
+	$w.x11grab.row1.pos.y.e delete 0 end
+	$w.x11grab.row1.pos.y.e insert 0 $y
+    }
+    if {[string compare $w [$w.x11grab.row1.pos.w.e get]] != 0} {
+	$w.x11grab.row1.pos.w.e delete 0 end
+	$w.x11grab.row1.pos.w.e insert 0 $w
+    }
+    if {[string compare $h [$w.x11grab.row1.pos.h.e get]] != 0} {
+	$w.x11grab.row1.pos.h.e delete 0 end
+	$w.x11grab.row1.pos.h.e insert 0 $h
+    }
+}
+
+proc x11cmd.update.geo w {
+    grabber fixed [$w.row.x get]  [$w.row.y get]
+}
+
+proc x11cmd.fixed {} {
+    global x11Source x11grabcontrols
+    set w $x11grabcontrols
+    $w.label configure -text "$x11Source"
+    if [winfo exists $w.row] {
+	destroy $w.row
+    }
+    frame $w.row
+    pack append $w.row \
+	[label $w.row.xl -text "X:" -width 2 -anchor e] {left filly} \
+	[entry $w.row.x -relief flat -width 4] {left filly} \
+	[label $w.row.yl -text "Y:" -width 2 -anchor e] {left filly} \
+	[entry $w.row.y -relief flat -width 4] {left filly}
+    bind $w.row.x <Return> "x11cmd.update.geo $w"
+    bind $w.row.y <Return> "x11cmd.update.geo $w"
+
+    pack $w.row -after $w.label
+}
+
+proc x11cmd.pointer {} {
+    global x11Source x11grabcontrols
+    set w $x11grabcontrols
+    $w.label configure -text "$x11Source"
+    if [winfo exists $w.row] {
+	destroy $w.row
+    }
+    frame $w.row
+    pack append $w.row \
+	[button $w.row.s -text "Follow pointer" ] { left filly }
+    pack $w.row -after $w.label
+}
+
+proc x11cmd.window {} {
+	global x11Source x11grabcontrols
+	puts "x11cmd -- x11Source $x11Source"
+	set w $x11grabcontrols
+	$w.label configure -text "$x11Source"
+	if [winfo exists $w.row] {
+	    destroy $w.row
+	}
+	frame $w.row
+	pack append $w.row \
+	    [button $w.row.s -text "Select window" ] { left filly }
+	pack $w.row -after $w.label
+}
+
+proc build.x11 w {
+	global x11grabcontrols x11Source
+	set f [smallfont] 
+
+	label $w.title -text "X11 Grabber controls"
+	frame $w.x11grab -relief sunken -borderwidth 2
+	set x11grabcontrols $w.x11grab
+	set x11Source "Fixed"
+	set w1 $w.x11grab
+
+	
+	# luigi
+	set m $w1.menu
+	set m1 $m.m1
+	menubutton $w1.menu -menu $m1 -text "Source:" \
+		-relief raised -width 7 -font $f
+	label $w1.label -width 6 -font $f
+	frame $w1.row
+	menu $m1
+	$m1 add radiobutton -label Fixed \
+		-state active \
+		-command "x11cmd.fixed" -font $f -variable x11Source
+#	$m1 add radiobutton -label Pointer \
+#		-command "x11cmd.pointer" -font $f -variable x11Source
+#	$m1 add radiobutton -label Window \
+#		-command "x11cmd.window" -font $f -variable x11Source
+
+	pack append $w1 \
+		$w1.menu {left} \
+		$w1.label {left} \
+		$w1.row {left}
+	
+	pack $w $w.title $w1 -fill x -expand 1
+
+	x11cmd.fixed
+}
 
 proc build.cosmo w {
 	global fieldButtonState

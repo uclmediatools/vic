@@ -53,7 +53,8 @@ class Tcl {
 	inline int dark() const { return (tcl_ == 0); }
 	inline Tcl_Interp* interp() const { return (tcl_); }
 	inline char* result() const { return (tcl_->result); }
-	inline void result(const char* p) { tcl_->result = (char*)p; }
+	inline void result(const char* p, Tcl_FreeProc* freeProc = TCL_STATIC)
+	    { Tcl_SetResult(tcl_, (char *)p, freeProc); }
 	void resultf(const char* fmt, ...);
 	inline void CreateCommand(const char* cmd, Tcl_CmdProc* cproc,
 				  ClientData cd = 0,

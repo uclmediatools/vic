@@ -118,6 +118,7 @@ class H261Encoder : public TransmitterModule {
 	void setq(int q);
     protected:
 	H261Encoder(int ft);
+	~H261Encoder();
 	int encode(const VideoFrame*, const u_int8_t *crvec);
 	int command(int argc, const char*const* argv);
 	void encode_blk(const short* blk, const char* lm);
@@ -208,6 +209,16 @@ H261Encoder::H261Encoder(int ft) : TransmitterModule(ft),
 	for (int q = 0; q < 32; ++q) {
 		llm_[q] = 0;
 		clm_[q] = 0;
+	}
+}
+
+H261Encoder::~H261Encoder()
+{
+	for (int q = 0; q < 32; ++q) {
+		if (llm_[q] != 0)
+			delete (void *)llm_[q];
+		if (clm_[q] != 0)
+			delete (void *)clm_[q];
 	}
 }
 

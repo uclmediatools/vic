@@ -202,11 +202,14 @@ void SpigotGrabber::setsize()
 		hstart_ = 1;
 		hstop_ = blkw_ - 1;
 
+		{
 		int	voff = (outh_ - inh_) / 2;
-		hwrap_ = outw_ - inw_ ;
 		int	hoff = hwrap_ / 2;
+
+		hwrap_ = outw_ - inw_ ;
 		loff_ = outw_ * voff + hoff;
 		coff_ = (outw_ >> 1) * (voff >> 1) + (hoff >> 1);
+		}
 		hskip_ = 0;
 		break;
 	case f_411:

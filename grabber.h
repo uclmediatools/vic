@@ -87,6 +87,7 @@ class Grabber : public TclObject, public Timer, public MediaTimer {
 	int vstop_;
 	int hstart_;
 	int hstop_;
+	int threshold_ ; // when a block is changed ? (was constant 48)
 
 	u_int framesize_;
 	u_char* framebase_;
@@ -160,19 +161,19 @@ class Grabber : public TclObject, public Timer, public MediaTimer {
 			rb -= _rs << 3; \
  \
 			int center = 0; \
-			if (left >= 48 && x > 0) { \
+			if (left >= threshold_ && x > 0) { \
 				crv[-1] = CR_MOTION|CR_SEND; \
 				center = 1; \
 			} \
-			if (right >= 48 && x < w - 1) { \
+			if (right >= threshold_ && x < w - 1) { \
 				crv[1] = CR_MOTION|CR_SEND; \
 				center = 1; \
 			} \
-			if (bottom >= 48 && y < blkh_ - 1) { \
+			if (bottom >= threshold_ && y < blkh_ - 1) { \
 				crv[w] = CR_MOTION|CR_SEND; \
 				center = 1; \
 			} \
-			if (top >= 48 && y > 0) { \
+			if (top >= threshold_ && y > 0) { \
 				crv[-w] = CR_MOTION|CR_SEND; \
 				center = 1; \
 			} \

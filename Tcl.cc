@@ -162,6 +162,8 @@ TclObject::~TclObject()
 	Tcl& tcl = Tcl::instance();
 	if (!tcl.dark())
 		tcl.DeleteCommand(name_);
+	if (name_ != 0)
+		delete name_;
 	TclObject** p;
 	for (p = &all_; *p != this; p = &(*p)->next_)
 		;
@@ -197,8 +199,9 @@ void TclObject::inception()
 void TclObject::setproc(const char* s)
 {
 	Tcl& tcl = Tcl::instance();
-	if (name_ != 0 && !tcl.dark()) {
-		tcl.DeleteCommand(name_);
+	if (name_ != 0) {
+		if (!tcl.dark())
+			tcl.DeleteCommand(name_);
 		delete name_;
 	}
 	int n = strlen(s);
