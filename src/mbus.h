@@ -55,6 +55,7 @@ int          mbus_parse_flt(struct mbus *m, double *d);
 char        *mbus_decode_str(char *s);
 char        *mbus_encode_str(const char *s);
 void         mbus_retransmit(struct mbus *m);
+void         mbus_heartbeat(struct mbus *m, int interval);
 int          mbus_waiting_ack(struct mbus *m);
 
 #endif

@@ -91,6 +91,7 @@ struct mbus {
 	fd_t		 cfgfd;	  /* The file descriptor for the $HOME/.mbus config file, on Unix */
 #endif
 	int		 cfg_locked;
+	struct timeval	 last_heartbeat;
 };
 
 #define SECS_PER_WEEK    604800
@@ -553,6 +554,20 @@ void mbus_retransmit(struct mbus *m)
 	curr = curr->next;
 }
 
+void mbus_heartbeat(struct mbus *m, int interval)
+{
+	struct timeval	curr_time;
+
+	gettimeofday(&curr_time, NULL);
+
+	interval += (lrand48() % (interval / 2)) - (interval / 2);
+
+	if (curr_time.tv_sec - m->last_heartbeat.tv_sec > interval) {
+		mbus_qmsg(m, "(* * * *)", "mbus.hello", "", FALSE);
+		m->last_heartbeat = curr_time;
+	}
+}
+
 int mbus_waiting_ack(struct mbus *m)
 {
 	return m->waiting_ack != NULL;
@@ -582,6 +597,8 @@ struct mbus *mbus_init(unsigned short channel,
 	m->parse_depth  = 0;
 	m->cmd_queue	= NULL;
 	m->waiting_ack	= NULL;
+
+	gettimeofday(&(m->last_heartbeat), NULL);
 
 	mbus_get_encrkey(m, &k);
 	m->encrkey    = k.key;

@@ -14,6 +14,7 @@ v1.0.1	- Added HMAC authentication code
 	- Add udp_host_addr() to get a text-version of the address to which
 	  a socket is bound.
 	- Set IPv6 ttl and loopback state correctly on Solaris
+	- Move mbus hearbeat code into this library
 
 Still to do...
 	- Mbus still uses old-style addressing scheme
@@ -22,4 +23,5 @@ Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
 	  since it does a gethostbyname() and looks that up, yet that can
 	  return the IPv4 hostname only on some machines.
+	- Doesn't do DNS AAAA lookups when given a name rather than an IP address.
 
