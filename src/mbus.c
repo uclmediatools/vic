@@ -49,6 +49,13 @@
 #define MBUS_MAX_PD	   10
 #define MBUS_MAX_QLEN	   50 /* Number of messages we can queue with mbus_qmsg() */
 
+struct mbus_key{
+	char	*algorithm;
+	char	*key;
+	int	 key_len;
+	u_int32	 expiry_time;
+};
+
 struct mbus_msg {
 	struct mbus_msg	*next;
 	struct timeval	time;
@@ -81,6 +88,7 @@ struct mbus {
 #ifndef WIN32
 	fd_t		 cfgfd;	  /* The file descriptor for the $HOME/.mbus config file, on Unix */
 #endif
+	int		 cfg_locked;
 };
 
 #define SECS_PER_WEEK    604800
@@ -214,7 +222,8 @@ static void mbus_lock_config_file(struct mbus *m)
 		xfree(encrkey);
 	} else {
 		/* Read in the contents of the config file... */
-		buf = (char *) xmalloc(s.st_size);
+		buf = (char *) xmalloc(s.st_size+1);
+		memset(buf, '\0', s.st_size+1);
 		if (read(m->cfgfd, buf, s.st_size) != s.st_size) {
 			perror("Unable to read config file\n");
 			abort();
@@ -228,6 +237,7 @@ static void mbus_lock_config_file(struct mbus *m)
 		xfree(buf);
 	}
 #endif
+	m->cfg_locked = TRUE;
 }
 
 static void mbus_unlock_config_file(struct mbus *m)
@@ -248,29 +258,74 @@ static void mbus_unlock_config_file(struct mbus *m)
 	close(m->cfgfd);
 	m->cfgfd = -1;
 #endif
+	m->cfg_locked = FALSE;
 }
 
-static char *mbus_get_encrkey(struct mbus *m, int *keylen)
+static void mbus_get_key(struct mbus *m, struct mbus_key *key, char *id)
 {
+	struct stat	 s;
+	char		*buf;
+	char		*line;
+	int		 pos;
+
+	assert(m->cfg_locked);
+
+	if (lseek(m->cfgfd, 0, SEEK_SET) == -1) {
+		perror("Can't seek to start of config file");
+		abort();
+	}
+	if (fstat(m->cfgfd, &s) != 0) {
+		perror("Unable to stat config file\n");
+		abort();
+	}
+	/* Read in the contents of the config file... */
+	buf = (char *) xmalloc(s.st_size+1);
+	memset(buf, '\0', s.st_size+1);
+	if (read(m->cfgfd, buf, s.st_size) != s.st_size) {
+		perror("Unable to read config file\n");
+		abort();
+	}
+	
+	line = (char *) xmalloc(s.st_size+1);
+	sscanf(buf, "%s", line);
+	if (strcmp(line, "[MBUS]") != 0) {
+		debug_msg("Invalid .mbus file\n");
+		abort();
+	}
+	pos = strlen(line) + 1;
+	while (pos < s.st_size) {
+		sscanf(buf+pos, "%s", line);
+		pos += strlen(line) + 1;
+		if (strncmp(line, id, 9) == 0) {
+			key->algorithm   = strdup(strtok(line+9, ","));
+			key->expiry_time =   atol(strtok(NULL  , ","));
+			key->key         = strdup(strtok(NULL  , ")"));
+			xfree(buf);
+			xfree(line);
+		}
+	}
+	xfree(buf);
+	xfree(line);
+	debug_msg("Unable to read hashkey from config file\n");
+}
+
+static void mbus_get_encrkey(struct mbus *m, struct mbus_key *key)
+{
+	/* This MUST be called while the config file is locked! */
 #ifdef WIN32
 	/* Do something complicated with the registry... */
 #else
-	/* This MUST be called while the config file is locked! */
-	UNUSED(m);
-	*keylen = 0;
-	return "";
+	mbus_get_key(m, key, "ENCRYPTIONKEY=(");
 #endif
 }
 
-static char *mbus_get_hashkey(struct mbus *m, int *keylen)
+static void mbus_get_hashkey(struct mbus *m, struct mbus_key *key)
 {
+	/* This MUST be called while the config file is locked! */
 #ifdef WIN32
 	/* Do something complicated with the registry... */
 #else
-	/* This MUST be called while the config file is locked! */
-	UNUSED(m);
-	*keylen = 5;
-	return "Hello";
+	mbus_get_key(m, key, "HASHKEY=(");
 #endif
 }
 
@@ -379,6 +434,7 @@ struct mbus *mbus_init(unsigned short channel,
 		       void  (*err_handler)(int seqnum))
 {
 	struct mbus	*m;
+	struct mbus_key	 k;
 	int		 i;
 
 	m = (struct mbus *) xmalloc(sizeof(struct mbus));
@@ -397,8 +453,15 @@ struct mbus *mbus_init(unsigned short channel,
 	m->parse_depth  = 0;
 	m->cmd_queue	= NULL;
 	m->waiting_ack	= NULL;
-	m->hashkey 	= mbus_get_hashkey(m, &(m->hashkeylen));
-	m->encrkey      = mbus_get_encrkey(m, &(m->encrkeylen));
+
+	mbus_get_encrkey(m, &k);
+	m->encrkey    = k.key;
+	m->encrkeylen = k.key_len;
+
+	mbus_get_hashkey(m, &k);
+	m->hashkey    = k.key;
+	m->hashkeylen = k.key_len;
+
 	for (i = 0; i < MBUS_MAX_ADDR; i++) m->addr[i]         = NULL;
 	for (i = 0; i < MBUS_MAX_PD;   i++) m->parse_buffer[i] = NULL;
 	mbus_unlock_config_file(m);
