@@ -109,11 +109,11 @@ LIB32=link.exe -lib
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "common___Win32_Debug_IPv6_Win2000"
-# PROP Intermediate_Dir "common___Win32_Debug_IPv6_Win2000"
+# PROP Output_Dir "Debug_IPv6_Win2000"
+# PROP Intermediate_Dir "Debug_IPv6_Win2000"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /I "\src\tcl-8.0\generic" /I "\src\tk-8.0\generic" /I "\src\tk-8.0\xlib" /I "\DDK\inc" /I "\src\IPv6Kit\inc" /I "..\tcl-8.0\generic" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\ipv6kit\inc" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "DEBUG" /D "DEBUG_MEM" /D "HAVE_IPv6" /D "BUILD_tcl" /D "BUILD_tk" /D "NEED_IN6_IS_ADDR_MULTICAST" /D "HAVE_INET_PTON" /D "HAVE_INET_NTOP" /FR /YX /FD /GZ /GZ /c
-# ADD CPP /nologo /W3 /Gm /GX /Zi /Od /I "\src\tcl-8.0\generic" /I "\src\tk-8.0\generic" /I "\src\tk-8.0\xlib" /I "\DDK\inc" /I "\src\IPv6Kit\inc" /I "..\tcl-8.0\generic" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\ipv6kit\inc" /D "WIN2K_IPV6" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "DEBUG" /D "DEBUG_MEM" /D "HAVE_IPv6" /D "BUILD_tcl" /D "BUILD_tk" /D "NEED_IN6_IS_ADDR_MULTICAST" /D "HAVE_INET_PTON" /D "HAVE_INET_NTOP" /FR /YX /FD /GZ /GZ /c
+# ADD CPP /nologo /W3 /Gm /GX /Zi /Od /I "\src\tcl-8.0\generic" /I "\src\tk-8.0\generic" /I "\src\tk-8.0\xlib" /I "\DDK\inc" /I "\src\IPv6Kit\inc" /I "..\tcl-8.0\generic" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\ipv6kit\inc" /D "WIN2K_IPV6" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "DEBUG" /D "DEBUG_MEM" /D "HAVE_IPv6" /D "BUILD_tcl" /D "BUILD_tk" /D "NEED_IN6_IS_ADDR_MULTICAST" /D "NEED_INET_PTON" /D "NEED_INET_NTOP" /FR /YX /FD /GZ /GZ /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -121,7 +121,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"Debug_IPv6\uclmm.lib"
-# ADD LIB32 /nologo /out:"Debug_IPv6\uclmm.lib"
+# ADD LIB32 /nologo /out:"Debug\uclmm.lib"
 
 !ELSEIF  "$(CFG)" == "common - Win32 Debug IPv6 MSR"
 
@@ -132,8 +132,8 @@ LIB32=link.exe -lib
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "common___Win32_Debug_IPv6_MSR"
-# PROP Intermediate_Dir "common___Win32_Debug_IPv6_MSR"
+# PROP Output_Dir "Debug_IPv6_MSR"
+# PROP Intermediate_Dir "Debug_IPv6_MSR"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /I "\src\tcl-8.0\generic" /I "\src\tk-8.0\generic" /I "\src\tk-8.0\xlib" /I "\DDK\inc" /I "\src\IPv6Kit\inc" /I "..\tcl-8.0\generic" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\ipv6kit\inc" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "DEBUG" /D "DEBUG_MEM" /D "HAVE_IPv6" /D "BUILD_tcl" /D "BUILD_tk" /D "NEED_IN6_IS_ADDR_MULTICAST" /D "HAVE_INET_PTON" /D "HAVE_INET_NTOP" /FR /YX /FD /GZ /GZ /c
 # ADD CPP /nologo /W3 /Gm /GX /Zi /Od /I "\src\tcl-8.0\generic" /I "\src\tk-8.0\generic" /I "\src\tk-8.0\xlib" /I "\DDK\inc" /I "\src\IPv6Kit\inc" /I "..\tcl-8.0\generic" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\ipv6kit\inc" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "DEBUG" /D "DEBUG_MEM" /D "HAVE_IPv6" /D "BUILD_tcl" /D "BUILD_tk" /D "NEED_IN6_IS_ADDR_MULTICAST" /D "HAVE_INET_PTON" /D "HAVE_INET_NTOP" /FR /YX /FD /GZ /GZ /c
@@ -144,7 +144,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"Debug_IPv6\uclmm.lib"
-# ADD LIB32 /nologo /out:"Debug_IPv6\uclmm.lib"
+# ADD LIB32 /nologo /out:"Debug\uclmm.lib"
 
 !ENDIF 
 
