@@ -80,14 +80,14 @@ case $OSTYPE in
 	    PROFILE="-pg"
 	    ECHO=/usr/bin/echo
             ;;
-  IRIX | IRIX64 ) CC="cc"
-            WFLAGS="-fullwarn -w2"
+  IRIX | IRIX64 ) CC="gcc"
+            WFLAGS=$GCCWFLAGS
 	    INCLUDE=""
-	    LDLIBS="-lm"
+	    LDLIBS="-L/usr/lib/X11 -lX11 -lm"
 	    DEBUG="-g"
-	    CHAR="-signed"
+	    CHAR="-fsigned-char"
 	    OPTIMIZE="-O2"
-	    PROFILE=""
+	    PROFILE="-pg"
             ;;
   Linux   ) CC="gcc"
             WFLAGS=$GCCWFLAGS
