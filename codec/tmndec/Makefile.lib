@@ -1,0 +1,26 @@
+# Makefile for tmndec 
+
+# This is free software. See the file COPYING for copying conditions.
+
+#
+# This will generate optimized machine code 
+#
+CFLAGS = $(CCOPT) -DVIC
+
+# dither.o yuv2rgb.o yuvrgb24.o win.o display.o
+OBJS = tmndec.o getpic.o getvlc.o gethdr.o getblk.o getbits.o store.o \
+	recon.o idct.o idctref.o sac.o
+SRCS = $(subst .o,.c,$(OBJS))
+
+libh263.a : $(OBJS)
+	rm -f $@
+	ar rc $@ $(OBJS)
+	ranlib $@
+
+clean:
+	rm -f *.o *% core tmndec *~
+
+depend dep:
+	gccmakedep -- $(CFLAGS) -- $(SRCS)
+
+# DO NOT DELETE
