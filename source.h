@@ -167,6 +167,7 @@ class Source : public TclObject, public Timer {
 	inline int sts_data() const { return (sts_data_); }
 	inline int rtp_ctrl() const { return (rtp_ctrl_); }
 	inline int rtp2ntp() const { return (rtp2ntp_); }
+	inline int apdelay() const { return (apdelay_); }
 
 	inline const char* sdes(int t) const { return (sdes_[t]); }
 	void sdes(int t, const char* value);
@@ -221,6 +222,9 @@ class Source : public TclObject, public Timer {
 	int cs(u_int16_t v);
 	int checkseq(u_int16_t v);
 	void lost(int);
+
+	inline void sync(int v) { sync_ = v; }
+	inline int sync() const { return (sync_); }
 
 	Source* next_;		/* link for SourceManager source list */
 	Source* hlink_;		/* link for SourceManager hash table */

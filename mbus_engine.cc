@@ -1,7 +1,6 @@
 /*
  * FILE:    mbus_engine.c
- * AUTHORS: Colin Perkins
- * Modified by Dimitios Miras
+ * AUTHORS: Colin Perkins, Dimitrios Miras
  * 
  * Copyright (c) 1998 University College London
  * All rights reserved.
@@ -87,8 +86,15 @@ static void func_source_playout(char *srce, char *args, MBusHandler *mb)
 		addr = cname2addr(name);
 		SourceManager &sm = SourceManager::instance();
 		Source *s = sm.lookup(addr);
-		//printf("VIC<--  %d\n", playout); 
 		if (s) {
+			/* if audio tool sends a playout msg
+			 * then vic has to enable the sync flag. This will
+			 * create the playout buffer and schedule the playout 
+			 * of the video packets. 
+			 */
+			if (!s->sync()) { /* synchronisation not enabled yet */
+				s->sync(1); /* ... enable sync */
+			}
 			s->apdelay(playout);
 			s->pending(1);
 		}

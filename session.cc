@@ -590,49 +590,65 @@ void SessionManager::demux(rtphdr* rh, u_char* bp, int cc, u_int32_t addr)
 	} else
 		s->action();
 
+	if (s->sync()) {  
+		/*
+		 * Synchronisation is enabled; video packets have to 
+		 * be buffered, their playout point scheduled, and the 
+		 * playout delays communicated with the audio tool ...
+		 */ 
 
-// !! NOTE: This part of code is distributed in Source::recv &
-//          Source::process to enable the ElasticBuffer
-//
-//	/*
-//	 * This is a data packet.  If the source needs activation,
-//	 * or the packet format has changed, deal with this.
-//	 * Then, hand the packet off to the packet handler.
-//	 * XXX might want to be careful about flip-flopping
-//	 * here when format changes due to misordered packets
-//	 * (easy solution -- keep rtp seqno of last fmt change).
-//	 */
-//	PacketHandler* h = s->handler();
-//	if (h == 0)
-//		h = s->activate(fmt);
-//	else if (s->format() != fmt)
-//		h = s->change_format(fmt);
-//
-	/* DMIRAS this bit of code was in Source::recv in Isidor's hack */
-	/*
-	 * XXX bit rate doesn't include rtpv1 options;
-	 * but v1 is going away anyway.
-	 */
-	int dup = s->cs(seqno);
-	s->np(1);
-	s->nb(cc + sizeof(*rh));
-	if (dup)
-		return;
-	if (flags & RTP_M) // chack if reach frame boundaries
-		s->nf(1);
+		/*
+		 * XXX bit rate doesn't include rtpv1 options;
+		 * but v1 is going away anyway.
+		 */
+		int dup = s->cs(seqno);
+		s->np(1);
+		s->nb(cc + sizeof(*rh));
+		if (dup)
+			return;
+		if (flags & RTP_M) // chack if reach frame boundaries
+			s->nf(1);
 	
-	s->recv(pkt, rh, bp, cc); // this should invoke Source::recv and buffer
-	pktbuf_ = (u_char*)new_blk(); 
+		s->recv(pkt, rh, bp, cc); // this should invoke Source::recv and buffer
+		pktbuf_ = (u_char*)new_blk(); 
+	} /* synced */
 
+	else { /* ... playout video packets as they arrive */
+	        /*
+       	 	 * This is a data packet.  If the source needs activation,
+	         * or the packet format has changed, deal with this.
+		 * Then, hand the packet off to the packet handler.
+	         * XXX might want to be careful about flip-flopping
+	         * here when format changes due to misordered packets
+	         * (easy solution -- keep rtp seqno of last fmt change).
+	         */
+		PacketHandler* h = s->handler();
+	        if (h == 0)
+	                h = s->activate(fmt);
+	        else if (s->format() != fmt)
+	                h = s->change_format(fmt);
 
-//	int hlen = h->hdrlen();
-//	cc -= hlen;
-//	if (cc < 0) {
-//		s->runt(1);
-//		return;
-//	}
-//	if (!s->mute())
-//		h->recv(rh, bp + hlen, cc);
+	        /*
+	         * XXX bit rate doesn't include rtpv1 options;
+	         * but v1 is going away anyway.
+	         */
+	        int dup = s->cs(seqno);
+	        s->np(1);
+	        s->nb(cc + sizeof(*rh));
+	        if (dup)
+	                return;
+	        if (flags & RTP_M)
+	                s->nf(1);
+
+	        int hlen = h->hdrlen();
+	        cc -= hlen;
+	        if (cc < 0) {
+	                s->runt(1);
+ 	               return;
+	        }
+	        if (!s->mute())
+	                h->recv(rh, bp + hlen, cc);
+	} /* not sync-ed */
 
 }
 

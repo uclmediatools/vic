@@ -129,7 +129,7 @@ Source::Source(u_int32_t srcid, u_int32_t ssrc, u_int32_t addr)
 	  lost_(0),
 	  busy_(0),
 	  ismixer_(0),
-	  sync_(1), rtp2ntp_(0),
+	  sync_(0), rtp2ntp_(0),
 	  skew_(0), delta_(0), delay_(0), dvar_(80. * 90.), pdelay_(0),  
 	  adapt_init_(0), count_(0), late_(0), apdelay_(0), pending_(0), 
 	  head_(0), tail_(0), free_(0), 
