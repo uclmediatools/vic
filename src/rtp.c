@@ -1566,7 +1566,7 @@ int rtp_send_data(struct rtp *session, uint32_t ts, char pt, int m, int cc, uint
                   char *data, int data_len, char *extn, int extn_len)
 {
 	int		 buffer_len, i, rc, pad, pad_len;
-	uint8_t	*buffer;
+	uint8_t		*buffer;
 	rtp_packet	*packet;
 	uint8_t 	 initVec[8] = {0,0,0,0,0,0,0,0};
 
@@ -1578,15 +1578,16 @@ int rtp_send_data(struct rtp *session, uint32_t ts, char pt, int m, int cc, uint
 	/* the amount of padding to add here, so we can reserve    */
 	/* space - the actual padding is added later.              */
 	if ((session->encryption_key != NULL) && ((buffer_len % 8) != 0)) {
-		pad     = TRUE;
-		pad_len = 8 - (buffer_len % 8);
+		pad         = TRUE;
+		pad_len     = 8 - (buffer_len % 8);
+		buffer_len += pad_len; 
+		assert((buffer_len % 8) == 0);
 	} else {
 		pad     = FALSE;
 		pad_len = 0;
 	}
 
 	/* Allocate memory for the packet... */
-	buffer_len = buffer_len + pad_len;
 	buffer     = (uint8_t *) xmalloc(buffer_len + RTP_PACKET_HEADER_SIZE);
 	packet     = (rtp_packet *) buffer;
 
@@ -1615,15 +1616,15 @@ int rtp_send_data(struct rtp *session, uint32_t ts, char pt, int m, int cc, uint
 	/* ...and any padding... */
 	if (pad) {
 		for (i = 0; i < pad_len; i++) {
-			packet->data[buffer_len - i] = 0;
+			buffer[buffer_len + RTP_PACKET_HEADER_SIZE - pad_len + i] = 0;
 		}
-		packet->data[buffer_len] = (char) pad_len;
+		buffer[buffer_len + RTP_PACKET_HEADER_SIZE - 1] = (char) pad_len;
 	}
 	
 	/* Finally, encrypt if desired... */
 	if (session->encryption_key != NULL) {
 		assert((buffer_len % 8) == 0);
-		qfDES_CBC_e(session->encryption_key, buffer, buffer_len, initVec); 
+		qfDES_CBC_e(session->encryption_key, buffer + RTP_PACKET_HEADER_SIZE, buffer_len, initVec); 
 	}
 
 	rc = udp_send(session->rtp_socket, buffer + RTP_PACKET_HEADER_SIZE, buffer_len);
@@ -2067,28 +2068,55 @@ void rtp_send_bye(struct rtp *session)
 	/* at present it either: a) sends a BYE packet immediately (if there are less than */
 	/* 50 members in the group), or b) returns without sending a BYE (if there are 50  */
 	/* or more members). See draft-ietf-avt-rtp-new-01.txt (section 6.3.7).            */
-	uint8_t	 buffer[RTP_MAX_PACKET_LEN];
-	uint8_t	*ptr = buffer;
+	uint8_t	 	 buffer[RTP_MAX_PACKET_LEN + 8];	/* + 8 to allow for padding when encrypting */
+	uint8_t		*ptr = buffer;
 	rtcp_common	*common;
+	uint8_t    	 initVec[8] = {0,0,0,0,0,0,0,0};
 
+	/* If encryption is enabled, add a 32 bit random prefix to the packet */
 	if (session->encryption_key != NULL) {
-		printf("Encryption not yet supported in rtp_send_bye\n");
+		*((uint32_t *) ptr) = lbl_random();
+		ptr += 4;
 	}
+
 	if (session->ssrc_count < 50) {
-		ptr = format_rtcp_rr(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), session);    
+		ptr    = format_rtcp_rr(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), session);    
 		common = (rtcp_common *) ptr;
 		
 		common->version = 2;
 		common->p       = 0;
 		common->count   = 1;
 		common->pt      = RTCP_BYE;
-		common->length  = ntohs(1);
+		common->length  = htons(1);
 		ptr += sizeof(common);
 		
 		*((uint32_t *) ptr) = htonl(session->my_ssrc);  
-		ptr += sizeof(session->my_ssrc); 
+		ptr += 4;
 		
+		if (session->encryption_key != NULL) {
+			if (((ptr - buffer) % 8) != 0) {
+				/* Add padding to the last packet in the compound, if necessary. */
+				/* We don't have to worry about overflowing the buffer, since we */
+				/* intentionally allocated it 8 bytes longer to allow for this.  */
+				int	padlen = 8 - ((ptr - buffer) % 8);
+				int	i;
+
+				for (i = 0; i < padlen; i++) {
+					*(ptr++) = '\0';
+				}
+				*ptr = (uint8_t) padlen;
+
+				common->p      = TRUE;
+				common->length = htons(((ptr - (uint8_t *) common) / 4) - 1);
+			}
+			assert(((ptr - buffer) % 8) == 0); 
+			qfDES_CBC_e(session->encryption_key, buffer, ptr - buffer, initVec); 
+		}
 		udp_send(session->rtcp_socket, buffer, ptr - buffer);
+		/* Loop the data back to ourselves so local participant can */
+		/* query own stats when using unicast or multicast with no  */
+		/* loopback.                                                */
+		rtp_process_ctrl(session, buffer, ptr - buffer);
 	}
 }
 
