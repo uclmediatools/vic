@@ -331,8 +331,12 @@ static void mb_header(int seqnum, int ts, char reliable, char *src, char *dst, i
 
 static void mb_add_command(char *cmnd, char *args)
 {
+	int offset = strlen(cmnd) + strlen(args) + 5;
+
+	assert((mb_bufpos + offset - mb_buffer) < MBUS_BUF_SIZE);
+
 	sprintf(mb_bufpos, "%s (%s)\n", cmnd, args);
-	mb_bufpos += strlen(cmnd) + strlen(args) + 4;
+	mb_bufpos += offset - 1; /* The -1 in offset means we're not NUL terminated - fix in mb_send */
 }
 
 static void mb_send(struct mbus *m)
@@ -340,13 +344,19 @@ static void mb_send(struct mbus *m)
 	char		digest[16];
 	int		len;
 	unsigned char	initVec[8] = {0,0,0,0,0,0,0,0};
+ 
+	*(mb_bufpos++) = '\0';
+	assert((mb_bufpos - mb_buffer) < MBUS_BUF_SIZE);
+	assert(strlen(mb_buffer) < MBUS_BUF_SIZE);
 
+	/* Pad to a multiple of 8 bytes, so the encryption can work... */
 	while (((mb_bufpos - mb_buffer) % 8) != 0) {
-		/* Pad to a multiple of 8 bytes, so the encryption can work... */
 		*(mb_bufpos++) = '\0';
 	}
-	*mb_bufpos = '\0';
 	len = mb_bufpos - mb_buffer;
+	assert(len < MBUS_BUF_SIZE);
+	assert(strlen(mb_buffer) < MBUS_BUF_SIZE);
+	debug_msg("%d %s", len, mb_buffer);
 
 	if (m->hashkey != NULL) {
 		/* Authenticate... */
@@ -427,7 +437,6 @@ void mbus_retransmit(struct mbus *m)
 		resend(m, curr);
 		return;
 	}
-	curr = curr->next;
 }
 
 void mbus_heartbeat(struct mbus *m, int interval)
@@ -438,7 +447,10 @@ void mbus_heartbeat(struct mbus *m, int interval)
 
 	gettimeofday(&curr_time, NULL);
 	if (curr_time.tv_sec - m->last_heartbeat.tv_sec >= interval) {
-		mbus_qmsg(m, a, "mbus.hello", "", FALSE);
+		mb_header(++m->seqnum, (int) curr_time.tv_sec, 'U', m->addr[0], "()", -1);
+		mb_add_command("mbus.hello", "");
+		mb_send(m);
+
 		m->last_heartbeat = curr_time;
 		/* Remove dead sources */
 		remove_inactiv_other_addr(m, curr_time, interval);
@@ -584,6 +596,7 @@ void mbus_send(struct mbus *m)
 	int		 i;
 
 	if (m->waiting_ack != NULL) {
+		debug_msg("Not sending - waiting for ACK %d\n", m->waiting_ack->seqnum);
 		return;
 	}
 
@@ -652,7 +665,7 @@ void mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, i
 			/* cmd_queue, else commands will be reordered.                             */
 			assert(curr->next == NULL);
 			if (mbus_addr_identical(curr->dest, dest) &&
-		            (curr->num_cmds < MBUS_MAX_QLEN) && ((curr->message_size + alen) < (MBUS_BUF_SIZE - 8))) {
+		            (curr->num_cmds < MBUS_MAX_QLEN) && ((curr->message_size + alen) < (MBUS_BUF_SIZE - 500))) {
 				curr->num_cmds++;
 				curr->reliable |= reliable;
 				curr->cmd_list[curr->num_cmds-1] = xstrdup(cmnd);
@@ -911,6 +924,7 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 	char	 	ackbuf[MBUS_ACK_BUF_SIZE];
 	char	 	digest[16];
 	unsigned char	initVec[8] = {0,0,0,0,0,0,0,0};
+	struct timeval	t;
 
 	rx = FALSE;
 	loop_count = 0;
@@ -919,7 +933,9 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
                 assert(m->s != NULL);
 		udp_fd_zero();
 		udp_fd_set(m->s);
-                if ((udp_select(timeout) > 0) && udp_fd_isset(m->s)) {
+		t.tv_sec  = timeout->tv_sec;
+		t.tv_usec = timeout->tv_usec;
+                if ((udp_select(&t) > 0) && udp_fd_isset(m->s)) {
 			buffer_len = udp_recv(m->s, buffer, MBUS_BUF_SIZE);
 			if (buffer_len > 0) {
 				rx = TRUE;
@@ -1021,15 +1037,23 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 				/* ...if so, process any ACKs received... */
 				mbus_parse_init(m, ack);
 				while (mbus_parse_int(m, &a)) {
-					if (mbus_waiting_ack(m) && (m->waiting_ack->seqnum == a)) {
-						while (m->waiting_ack->num_cmds > 0) {
-							m->waiting_ack->num_cmds--;
-							xfree(m->waiting_ack->cmd_list[m->waiting_ack->num_cmds]);
-							xfree(m->waiting_ack->arg_list[m->waiting_ack->num_cmds]);
+					debug_msg("Got ACK for %d\n", a);
+					if (mbus_waiting_ack(m)) {
+						if (m->waiting_ack->seqnum == a) {
+							while (m->waiting_ack->num_cmds > 0) {
+								m->waiting_ack->num_cmds--;
+								xfree(m->waiting_ack->cmd_list[m->waiting_ack->num_cmds]);
+								xfree(m->waiting_ack->arg_list[m->waiting_ack->num_cmds]);
+							}
+							xfree(m->waiting_ack->dest);
+							xfree(m->waiting_ack);
+							m->waiting_ack = NULL;
+							debug_msg("Accepted ACK for %d\n", a);
+						} else {
+							debug_msg("Got ACK %d but wanted %d\n", a, m->waiting_ack->seqnum);
 						}
-						xfree(m->waiting_ack->dest);
-						xfree(m->waiting_ack);
-						m->waiting_ack = NULL;
+					} else {
+						debug_msg("Got ACK %d but wasn't expecting it\n", a);
 					}
 				}
 				mbus_parse_done(m);
@@ -1042,7 +1066,12 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 					gettimeofday(&t, NULL);
 					mb_header(++m->seqnum, (int) t.tv_sec, 'U', m->addr[0], newsrc, seq);
 					mb_send(m);
+					debug_msg("Sent ACK %s %d\n", newsrc, seq);
 					xfree(newsrc);
+				} else if (strcmp(r, "U") == 0) {
+					/* Unreliable message.... not need to do anything */
+				} else {
+					debug_msg("Message with invalid reliability field \"%s\" ignored\n", r);
 				}
 				/* ...and process the commands contained in the message */
 				while (mbus_parse_sym(m, &cmd)) {
@@ -1055,9 +1084,10 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 							remove_other_addr(m, newsrc);
 						} 
 						if (strcmp(cmd, "mbus.hello") == 0) {
-						/* Mark this source as activ. We remove dead sources in mbus_heartbeat */
+							/* Mark this source as activ. We remove dead sources in mbus_heartbeat */
 							mark_activ_other_addr(m, newsrc);
 						}
+						debug_msg("Rx %s %d\n", cmd, seq);
 						m->cmd_handler(newsrc, cmd, param, data);
 						xfree(newsrc);
 					} else {
@@ -1110,15 +1140,6 @@ static void rz_handler(char *src, char *cmd, char *args, void *data)
 		mbus_parse_done(r->m);
 	} else {
 		r->cmd_handler(src, cmd, args, r->data);
-		if (strcmp(cmd, "mbus.hello") == 0) {
-			/* Mark this source as activ. We remove dead sources in mbus_heartbeat */
-			mark_activ_other_addr(r->m, src);
-		}
-		if (strcmp(cmd, "mbus.bye") == 0) {
-			/* Finally, we snoop on the message we just passed to the application, */
-			/* to do housekeeping of our list of known mbus sources...             */
-			remove_other_addr(r->m, src);
-		}
 	}
 }
 
@@ -1176,18 +1197,26 @@ char *mbus_rendezvous_go(struct mbus *m, char *token, void *data)
 	token_e        = mbus_encode_str(token);
 	while (r->peer == NULL) {
 		timeout.tv_sec  = 0;
-		timeout.tv_usec = 250000;
+		timeout.tv_usec = 10000;
 		mbus_heartbeat(m, 1);
 		mbus_send(m);
 		mbus_recv(m, r, &timeout);
 		mbus_retransmit(m);
 	}
-	mbus_qmsgf(m, r->peer, FALSE, "mbus.go", "%s", token_e);
-	mbus_send(m);
+
+	mbus_qmsgf(m, r->peer, TRUE, "mbus.go", "%s", token_e);
+	do {
+		mbus_heartbeat(m, 1);
+		mbus_retransmit(m);
+		mbus_send(m);
+		timeout.tv_sec  = 0;
+		timeout.tv_usec = 10000;
+		mbus_recv(m, r, &timeout);
+	} while (!mbus_sent_all(m));
+
 	m->cmd_handler = r->cmd_handler;
 	peer = xstrdup(r->peer);
 	xfree(r);
 	xfree(token_e);
 	return peer;
 }
-
