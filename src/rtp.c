@@ -1949,7 +1949,7 @@ static void send_rtcp(struct rtp *session, uint32_t ts,
 				*ptr++ = '\0';
 			}
 			*ptr = (uint8_t) padlen;
-			assert(((ptr - buffer) % 8) != 0); 
+			assert(((ptr - buffer) % 8) == 0); 
 		}
 		qfDES_CBC_e(session->encryption_key, buffer, ptr - buffer, initVec); 
 	}
