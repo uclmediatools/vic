@@ -104,7 +104,7 @@ typedef struct {
 			rtcp_rr       	rr[1];		/* variable-length list */
 		} rr;
 		struct rtcp_sdes_t {
-			uint32_t		ssrc;
+			uint32_t	ssrc;
 			rtcp_sdes_item 	item[1];	/* list of SDES */
 		} sdes;
 		struct {
@@ -178,6 +178,7 @@ typedef struct _source {
 typedef struct {
 	int 	promiscuous_mode;
 	int	wait_for_rtcp;
+	int	filter_my_packets;
 } options;
 
 /*
@@ -188,10 +189,10 @@ struct rtp {
 	socket_udp	*rtp_socket;
 	socket_udp	*rtcp_socket;
 	char		*addr;
-	uint16_t		 rx_port;
-	uint16_t		 tx_port;
+	uint16_t	 rx_port;
+	uint16_t	 tx_port;
 	int		 ttl;
-	uint32_t		 my_ssrc;
+	uint32_t	 my_ssrc;
 	source		*db[RTP_DB_SIZE];
         rtcp_rr_wrapper  rr[RTP_DB_SIZE][RTP_DB_SIZE]; 	/* Indexed by [hash(reporter)][hash(reportee)] */
 	options		*opt;
@@ -212,12 +213,20 @@ struct rtp {
 	int		 sdes_count_pri;
 	int		 sdes_count_sec;
 	int		 sdes_count_ter;
-	uint16_t		 rtp_seq;
-	uint32_t		 rtp_pcount;
-	uint32_t		 rtp_bcount;
+	uint16_t	 rtp_seq;
+	uint32_t	 rtp_pcount;
+	uint32_t	 rtp_bcount;
         char            *encryption_key;
 	void (*callback)(struct rtp *session, rtp_event *event);
 };
+
+static int filter_event(struct rtp *session, uint32_t ssrc)
+{
+	int	filter;
+
+	rtp_getopt(session, RTP_OPT_FILTER_MY_PACKETS, &filter);
+	return filter && (ssrc == rtp_my_ssrc(session));
+}
 
 static double tv_diff(struct timeval curr_time, struct timeval prev_time)
 {
@@ -373,11 +382,13 @@ static void timeout_rr(struct rtp *session, struct timeval *curr_ts)
 			while (cur != start) {
 				if (tv_diff(*curr_ts, *(cur->ts)) > (session->rtcp_interval * 3)) {
 					/* Signal the application... */
-					event.ssrc = cur->reporter_ssrc;
-					event.type = RR_TIMEOUT;
-					event.data = cur->rr;
-					event.ts   = curr_ts;
-					session->callback(session, &event);
+					if (!filter_event(session, cur->reporter_ssrc)) {
+						event.ssrc = cur->reporter_ssrc;
+						event.type = RR_TIMEOUT;
+						event.data = cur->rr;
+						event.ts   = curr_ts;
+						session->callback(session, &event);
+					}
 					/* Delete this reception report... */
 					tmp = cur;
 					cur = cur->prev;
@@ -530,12 +541,14 @@ static source *create_source(struct rtp *session, uint32_t ssrc)
         if (ssrc != session->my_ssrc) {
                 /* Do not send during rtp_init since application cannot map the address */
                 /* of the rtp session to anything since rtp_init has not returned yet.  */
-                gettimeofday(&event_ts, NULL);
-                event.ssrc = ssrc;
-                event.type = SOURCE_CREATED;
-                event.data = NULL;
-                event.ts   = &event_ts;
-                session->callback(session, &event);
+		if (!filter_event(session, ssrc)) {
+			gettimeofday(&event_ts, NULL);
+			event.ssrc = ssrc;
+			event.type = SOURCE_CREATED;
+			event.data = NULL;
+			event.ts   = &event_ts;
+			session->callback(session, &event);
+		}
         }
 
 	return s;
@@ -602,11 +615,13 @@ static void delete_source(struct rtp *session, uint32_t ssrc)
 	}
 
 	/* Signal to the application that this source is dead... */
-	event.ssrc = ssrc;
-	event.type = SOURCE_DELETED;
-	event.data = NULL;
-	event.ts   = &event_ts;
-	session->callback(session, &event);
+	if (!filter_event(session, ssrc)) {
+		event.ssrc = ssrc;
+		event.type = SOURCE_DELETED;
+		event.data = NULL;
+		event.ts   = &event_ts;
+		session->callback(session, &event);
+	}
         xfree(s);
 	check_database(session);
 }
@@ -778,8 +793,9 @@ static char *get_cname(socket_udp *s)
 static void init_opt(struct rtp *session)
 {
 	/* Default option settings. */
-	rtp_setopt(session, RTP_OPT_PROMISC,       FALSE);
-	rtp_setopt(session, RTP_OPT_WEAK_VALIDATION, TRUE);
+	rtp_setopt(session, RTP_OPT_PROMISC,           FALSE);
+	rtp_setopt(session, RTP_OPT_WEAK_VALIDATION,   TRUE);
+	rtp_setopt(session, RTP_OPT_FILTER_MY_PACKETS, FALSE);
 }
 
 
@@ -896,6 +912,9 @@ int rtp_setopt(struct rtp *session, int optname, int optval)
 	        case RTP_OPT_PROMISC:
 			session->opt->promiscuous_mode = optval;
 			break;
+	        case RTP_OPT_FILTER_MY_PACKETS:
+			session->opt->filter_my_packets = optval;
+			break;
         	default:
 			debug_msg("Ignoring unknown option (%d) in call to rtp_setopt().\n", optname);
                         return FALSE;
@@ -912,6 +931,9 @@ int rtp_getopt(struct rtp *session, int optname, int *optval)
         	case RTP_OPT_PROMISC:
 			*optval = session->opt->promiscuous_mode;
                         break;
+	        case RTP_OPT_FILTER_MY_PACKETS:
+			*optval = session->opt->filter_my_packets;
+			break;
         	default:
                         *optval = 0;
 			debug_msg("Ignoring unknown option (%d) in call to rtp_getopt().\n", optname);
@@ -1005,12 +1027,14 @@ static void process_rtp(struct rtp *session, uint32_t curr_time, rtp_packet *pac
 	s->jitter += d - ((s->jitter + 8) / 16);
 	
 	/* Callback to the application to process the packet... */
-	gettimeofday(&event_ts, NULL);
-	event.ssrc = packet->ssrc;
-	event.type = RX_RTP;
-	event.data = (void *) packet;	/* The callback function MUST free this! */
-	event.ts   = &event_ts;
-	session->callback(session, &event);
+	if (!filter_event(session, packet->ssrc)) {
+		gettimeofday(&event_ts, NULL);
+		event.ssrc = packet->ssrc;
+		event.type = RX_RTP;
+		event.data = (void *) packet;	/* The callback function MUST free this! */
+		event.ts   = &event_ts;
+		session->callback(session, &event);
+	}
 }
 
 static void rtp_recv_data(struct rtp *session, uint32_t curr_time)
@@ -1169,11 +1193,13 @@ static void process_report_blocks(struct rtp *session, rtcp_t *packet, uint32_t 
 
 	/* ...process RRs... */
 	if (packet->common.count == 0) {
-		event.ssrc = ssrc;
-		event.type = RX_RR_EMPTY;
-		event.data = NULL;
-		event.ts   = event_ts;
-		session->callback(session, &event);
+		if (!filter_event(session, ssrc)) {
+			event.ssrc = ssrc;
+			event.type = RX_RR_EMPTY;
+			event.data = NULL;
+			event.ts   = event_ts;
+			session->callback(session, &event);
+		}
 	} else {
 		for (i = 0; i < packet->common.count; i++, rrp++) {
 			rr = (rtcp_rr *) xmalloc(sizeof(rtcp_rr));
@@ -1192,11 +1218,13 @@ static void process_report_blocks(struct rtp *session, rtcp_t *packet, uint32_t 
 			insert_rr(session, ssrc, rr, event_ts);
 
 			/* Call the event handler... */
-			event.ssrc = ssrc;
-			event.type = RX_RR;
-			event.data = (void *) rr;
-			event.ts   = event_ts;
-			session->callback(session, &event);
+			if (!filter_event(session, ssrc)) {
+				event.ssrc = ssrc;
+				event.type = RX_RR;
+				event.data = (void *) rr;
+				event.ts   = event_ts;
+				session->callback(session, &event);
+			}
 		}
 	}
 }
@@ -1232,11 +1260,13 @@ static void process_rtcp_sr(struct rtp *session, rtcp_t *packet, struct timeval 
 	s->last_sr = *event_ts;
 
 	/* Call the event handler... */
-	event.ssrc = ssrc;
-	event.type = RX_SR;
-	event.data = (void *) sr;
-	event.ts   = event_ts;
-	session->callback(session, &event);
+	if (!filter_event(session, ssrc)) {
+		event.ssrc = ssrc;
+		event.type = RX_SR;
+		event.data = (void *) sr;
+		event.ts   = event_ts;
+		session->callback(session, &event);
+	}
 
 	process_report_blocks(session, packet, ssrc, packet->r.sr.rr, event_ts);
 
@@ -1291,11 +1321,13 @@ static void process_rtcp_sdes(struct rtp *session, rtcp_t *packet, struct timeva
 					break;
 				}
 				if (rtp_set_sdes(session, sd->ssrc, rsp->type, rsp->data, rsp->length)) {
-					event.ssrc = sd->ssrc;
-					event.type = RX_SDES;
-					event.data = (void *) rsp;
-					event.ts   = event_ts;
-					session->callback(session, &event);
+					if (!filter_event(session, sd->ssrc)) {
+						event.ssrc = sd->ssrc;
+						event.type = RX_SDES;
+						event.data = (void *) rsp;
+						event.ts   = event_ts;
+						session->callback(session, &event);
+					}
 				} else {
 					debug_msg("Invalid sdes item for source 0x%08x, skipping...\n", sd->ssrc);
 				}
@@ -1322,11 +1354,13 @@ static void process_rtcp_bye(struct rtp *session, rtcp_t *packet, struct timeval
 		/* passed to the user of the RTP library is valid, and simplify client code. */
 		create_source(session, ssrc);
 		/* Call the event handler... */
-		event.ssrc = ssrc;
-		event.type = RX_BYE;
-		event.data = NULL;
-		event.ts   = event_ts;
-		session->callback(session, &event);
+		if (!filter_event(session, ssrc)) {
+			event.ssrc = ssrc;
+			event.type = RX_BYE;
+			event.data = NULL;
+			event.ts   = event_ts;
+			session->callback(session, &event);
+		}
 		/* Mark the source as ready for deletion. Sources are not deleted immediately */
 		/* since some packets may be delayed and arrive after the BYE...              */
 		s = get_source(session, ssrc);
@@ -1368,11 +1402,13 @@ static void process_rtcp_app(struct rtp *session, rtcp_t *packet, struct timeval
 	memcpy(app->data, packet->r.app.data, data_len);
 
 	/* Callback to the application to process the app packet... */
-	event.ssrc = ssrc;
-	event.type = RX_APP;
-	event.data = (void *) app;       /* The callback function MUST free this! */
-	event.ts   = event_ts;
-	session->callback(session, &event);
+	if (!filter_event(session, ssrc)) {
+		event.ssrc = ssrc;
+		event.type = RX_APP;
+		event.data = (void *) app;       /* The callback function MUST free this! */
+		event.ts   = event_ts;
+		session->callback(session, &event);
+	}
 }
 
 static void rtp_process_ctrl(struct rtp *session, uint8_t *buffer, int buflen)
@@ -1382,6 +1418,8 @@ static void rtp_process_ctrl(struct rtp *session, uint8_t *buffer, int buflen)
 	struct timeval	 event_ts;
 	rtcp_t		*packet;
 	uint8_t 	 initVec[8] = {0,0,0,0,0,0,0,0};
+	int		 first;
+	uint32_t	 packet_ssrc = rtp_my_ssrc(session);
 
 	gettimeofday(&event_ts, NULL);
 	if (buflen > 0) {
@@ -1392,29 +1430,63 @@ static void rtp_process_ctrl(struct rtp *session, uint8_t *buffer, int buflen)
 			buflen -= 4;
 		}
 		if (validate_rtcp(buffer, buflen)) {
-			/* Signal that we're about to process a compound RTCP packet */
-			event.ssrc = 0xdeadbeef;
-			event.type = RX_RTCP_START;
-			event.data = &buflen;
-			event.ts   = &event_ts;
-			session->callback(session, &event);
-
-			packet  = (rtcp_t *) buffer;
+			first  = TRUE;
+			packet = (rtcp_t *) buffer;
 			while (packet < (rtcp_t *) (buffer + buflen)) {
 				switch (packet->common.pt) {
 					case RTCP_SR:
+						if (first && !filter_event(session, ntohl(packet->r.sr.sr.ssrc))) {
+							event.ssrc  = ntohl(packet->r.sr.sr.ssrc);
+							event.type  = RX_RTCP_START;
+							event.data  = &buflen;
+							event.ts    = &event_ts;
+							packet_ssrc = event.ssrc;
+							session->callback(session, &event);
+						}
 						process_rtcp_sr(session, packet, &event_ts);
 						break;
 					case RTCP_RR:
+						if (first && !filter_event(session, ntohl(packet->r.rr.ssrc))) {
+							event.ssrc  = ntohl(packet->r.rr.ssrc);
+							event.type  = RX_RTCP_START;
+							event.data  = &buflen;
+							event.ts    = &event_ts;
+							packet_ssrc = event.ssrc;
+							session->callback(session, &event);
+						}
 						process_rtcp_rr(session, packet, &event_ts);
 						break;
 					case RTCP_SDES:
+						if (first && !filter_event(session, ntohl(packet->r.sdes.ssrc))) {
+							event.ssrc  = ntohl(packet->r.sdes.ssrc);
+							event.type  = RX_RTCP_START;
+							event.data  = &buflen;
+							event.ts    = &event_ts;
+							packet_ssrc = event.ssrc;
+							session->callback(session, &event);
+						}
 						process_rtcp_sdes(session, packet, &event_ts);
 						break;
 					case RTCP_BYE:
+						if (first && !filter_event(session, ntohl(packet->r.bye.ssrc[0]))) {
+							event.ssrc  = ntohl(packet->r.bye.ssrc[0]);
+							event.type  = RX_RTCP_START;
+							event.data  = &buflen;
+							event.ts    = &event_ts;
+							packet_ssrc = event.ssrc;
+							session->callback(session, &event);
+						}
 						process_rtcp_bye(session, packet, &event_ts);
 						break;
 				        case RTCP_APP:
+						if (first && !filter_event(session, ntohl(packet->r.app.ssrc))) {
+							event.ssrc  = ntohl(packet->r.app.ssrc);
+							event.type  = RX_RTCP_START;
+							event.data  = &buflen;
+							event.ts    = &event_ts;
+							packet_ssrc = event.ssrc;
+							session->callback(session, &event);
+						}
 					        process_rtcp_app(session, packet, &event_ts);
 						break;
 					default: 
@@ -1422,15 +1494,18 @@ static void rtp_process_ctrl(struct rtp *session, uint8_t *buffer, int buflen)
 						break;
 				}
 				packet = (rtcp_t *) ((char *) packet + (4 * (ntohs(packet->common.length) + 1)));
+				first  = FALSE;
 			}
 			/* The constants here are 1/16 and 15/16 (section 6.3.3 of draft-ietf-avt-rtp-new-02.txt) */
 			session->avg_rtcp_size = (0.0625 * buflen) + (0.9375 * session->avg_rtcp_size);
 			/* Signal that we've finished processing this packet */
-			event.ssrc = 0xdeadbeef;
-			event.type = RX_RTCP_FINISH;
-			event.data = NULL;
-			event.ts   = &event_ts;
-			session->callback(session, &event);
+			if (!filter_event(session, packet_ssrc)) {
+				event.ssrc = packet_ssrc;
+				event.type = RX_RTCP_FINISH;
+				event.data = NULL;
+				event.ts   = &event_ts;
+				session->callback(session, &event);
+			}
 		} else {
 			debug_msg("Invalid RTCP packet discarded\n");
 			session->invalid_rtcp_count++;

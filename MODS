@@ -192,6 +192,7 @@ v1.0.10	- Mbus updates from Markus Germeier, which fix compatibility with
 
 1.0.11  - Changed autoconf generated header to uclconf.h.
 	- Changed library name to uclmmbase to be consistent with other libs.	
+	- Add RTP_OPT_FILTER_MY_PACKETS
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,

@@ -94,24 +94,24 @@ typedef struct {
 } rtcp_sr;
 
 typedef struct {
-	uint32_t		ssrc;		/* The ssrc to which this RR pertains */
+	uint32_t	ssrc;		/* The ssrc to which this RR pertains */
 #ifdef WORDS_BIGENDIAN
-	uint32_t		fract_lost:8;
-	uint32_t		total_lost:24;
+	uint32_t	fract_lost:8;
+	uint32_t	total_lost:24;
 #else
-	uint32_t		total_lost:24;
-	uint32_t		fract_lost:8;
+	uint32_t	total_lost:24;
+	uint32_t	fract_lost:8;
 #endif	
-	uint32_t		last_seq;
-	uint32_t		jitter;
-	uint32_t		lsr;
-	uint32_t		dlsr;
+	uint32_t	last_seq;
+	uint32_t	jitter;
+	uint32_t	lsr;
+	uint32_t	dlsr;
 } rtcp_rr;
 
 typedef struct {
-	uint8_t          type;		/* type of SDES item              */
-	uint8_t          length;		/* length of SDES item (in bytes) */
-	char            data[1];	/* text, not zero-terminated      */
+	uint8_t		type;		/* type of SDES item              */
+	uint8_t		length;		/* length of SDES item (in bytes) */
+	char		data[1];	/* text, not zero-terminated      */
 } rtcp_sdes_item;
 
 typedef struct {
@@ -125,14 +125,14 @@ typedef struct {
 	unsigned short  version:2;	/* RTP version            */
 #endif
 	unsigned short  pt:8;		/* packet type            */
-	uint16_t         length;		/* packet length          */
-	uint32_t         ssrc;
+	uint16_t        length;		/* packet length          */
+	uint32_t        ssrc;
 	char            name[4];        /* four ASCII characters  */
 	char            data[1];        /* variable length field  */
 } rtcp_app;
 
 typedef struct {
-	uint32_t		 ssrc;
+	uint32_t	 ssrc;
 	int		 type;
 	void		*data;
 	struct timeval	*ts;
@@ -153,8 +153,9 @@ typedef struct {
 #define RX_APP  	111
 
 /* RTP options */
-#define RTP_OPT_PROMISC     	1
-#define RTP_OPT_WEAK_VALIDATION	2
+#define RTP_OPT_PROMISC     	  1
+#define RTP_OPT_WEAK_VALIDATION	  2
+#define RTP_OPT_FILTER_MY_PACKETS 3
 
 /* SDES packet types... */
 #define RTCP_SDES_END   0
