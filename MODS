@@ -188,7 +188,7 @@ v1.0.10	- Mbus updates from Markus Germeier, which fix compatibility with
 	- Add configure check for sin6_len in struct sockaddr_in6 (seems
 	  that FreeBSD has this, but many systems don't)
 	- Fix batching of multiple mbus messages into one packet.
-
+	* 13 December 1999 [rat v4.1.2]
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
