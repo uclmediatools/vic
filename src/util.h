@@ -49,6 +49,10 @@ void	 block_release_all(void);
 void     block_trash_check(void);
 void     block_check(char *p);
 
-void purge_chars(char *src, char *to_go); /* Removes occurances of chars in to_go from src */
+/* purge_chars: removes occurances of chars in to_go from src */
+void purge_chars(char *src, char *to_go); 
+
+/* overlapping_words: returns how many words match in two strings */
+int overlapping_words(const char *s1, const char *s2, int max_words);
 
 #endif 

@@ -247,3 +247,55 @@ purge_chars(char *src, char *to_go)
         }
         *w = '\0';
 }
+
+static int
+string_to_words(char *s, char**w, int max_words)
+{
+        char *lasts;
+        int n;
+
+        n = 0;
+        w[0] = strtok_r(s, " ", &lasts);
+        if (w[0] == NULL) {
+                return n;
+        }
+
+        while(++n < max_words) {
+                w[n] = strtok_r(NULL, " ", &lasts);
+                if (w[n] == NULL) break;
+        }
+        return n;
+}
+
+int
+overlapping_words(const char *s1, const char *s2, int max_words)
+{
+        char *c1, *c2, **w1, **w2;
+        int nw1, nw2, nover, i, j;
+
+        c1 = xstrdup(s1);
+        c2 = xstrdup(s2);
+
+        w1 = (char**)xmalloc(sizeof(char*)*max_words);
+        w2 = (char**)xmalloc(sizeof(char*)*max_words);
+
+        nw1 = string_to_words(c1, w1, max_words);
+        nw2 = string_to_words(c2, w2, max_words);
+
+        nover = 0;
+        for(i = 0; i < nw1; i++) {
+                for(j = 0; j < nw2; j++) {
+                        if (strcmp(w1[i], w2[j]) == 0) {
+                                nover++;
+                                continue;
+                        }
+                }
+        }
+
+        xfree(c1);
+        xfree(c2);
+        
+        return nover;
+}
+
+
