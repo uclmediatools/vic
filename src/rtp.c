@@ -1062,17 +1062,6 @@ static int validate_rtp(rtp_packet *packet, int len)
 		debug_msg("rtp_header_validation: packet length is smaller than the header\n");
 		return FALSE;
 	}
-	/* Check that the length of any header extension is sensible... */
-        if (packet->x) {
-                int expected_extn_len = len - 12 - (4 * packet->cc);
-                if (packet->p) {
-                        expected_extn_len -= packet->data[packet->data_len - 1];
-                }
-		if (packet->extn_len != expected_extn_len) {
-			debug_msg("rtp_header_validation: extension header is wrong size (%d != %d)!\n", packet->extn_len, expected_extn_len);
-			return FALSE;
-		}
-        }
 	/* Check that the amount of padding specified is sensible. */
 	/* Note: have to include the size of any extension header! */
 	if (packet->p) {
@@ -1153,14 +1142,16 @@ static void rtp_recv_data(struct rtp *session, uint32_t curr_rtp_ts)
 			packet->csrc = NULL;
 		}
 		if (packet->x) {
-			packet->extn     = buffer + 12 + (packet->cc * 4);
-			packet->extn_len = (packet->extn[2] << 16) | packet->extn[3];
+			packet->extn      = buffer + 12 + (packet->cc * 4);
+			packet->extn_len  = (packet->extn[2] << 16) | packet->extn[3];
+			packet->extn_type = (packet->extn[0] << 16) | packet->extn[1];
 		} else {
-			packet->extn     = NULL;
-			packet->extn_len = 0;
+			packet->extn      = NULL;
+			packet->extn_len  = 0;
+			packet->extn_type = 0;
 		}
-		packet->data     = buffer + 12 + (packet->cc * 4) + packet->extn_len;
-		packet->data_len = buflen - packet->extn_len - (packet->cc * 4) - 12;
+		packet->data     = buffer + 12 + (packet->cc * 4) + ((packet->extn_len + 1) * 4);
+		packet->data_len = buflen - ((packet->extn_len + 1) * 4)- (packet->cc * 4) - 12;
 		if (validate_rtp(packet, buflen)) {
                         int weak = 0, promisc = 0;
                         rtp_getopt(session, RTP_OPT_WEAK_VALIDATION, &weak);
@@ -1751,7 +1742,7 @@ const rtcp_rr *rtp_get_rr(struct rtp *session, uint32_t reporter, uint32_t repor
 }
 
 int rtp_send_data(struct rtp *session, uint32_t rtp_ts, char pt, int m, int cc, uint32_t csrc[], 
-                  char *data, int data_len, char *extn, int extn_len)
+                  char *data, int data_len, char *extn, uint16_t extn_len, uint16_t extn_type)
 {
 	int		 buffer_len, i, rc, pad, pad_len;
 	uint8_t		*buffer;
@@ -1760,7 +1751,12 @@ int rtp_send_data(struct rtp *session, uint32_t rtp_ts, char pt, int m, int cc, 
 
 	check_database(session);
 
-	buffer_len = data_len + extn_len + 12 + (4 * cc);
+	assert(data_len > 0);
+
+	buffer_len = data_len + 12 + (4 * cc);
+	if (extn != NULL) {
+		buffer_len += (extn_len + 1) * 4;
+	}
 
 	/* Do we need to pad this packet to a multiple of 64 bits? */
 	/* This is only needed if encryption is enabled, since DES */
@@ -1784,7 +1780,10 @@ int rtp_send_data(struct rtp *session, uint32_t rtp_ts, char pt, int m, int cc, 
 	/* These are internal pointers into the buffer... */
 	packet->csrc = (uint32_t *) (buffer + RTP_PACKET_HEADER_SIZE + 12);
 	packet->extn = (uint8_t  *) (buffer + RTP_PACKET_HEADER_SIZE + 12 + (4 * cc));
-	packet->data = (uint8_t  *) (buffer + RTP_PACKET_HEADER_SIZE + 12 + (4 * cc) + extn_len);
+	packet->data = (uint8_t  *) (buffer + RTP_PACKET_HEADER_SIZE + 12 + (4 * cc));
+	if (extn != NULL) {
+		packet->data += (extn_len + 1) * 4;
+	}
 	/* ...and the actual packet header... */
 	packet->v    = 2;
 	packet->p    = pad;
@@ -1800,7 +1799,13 @@ int rtp_send_data(struct rtp *session, uint32_t rtp_ts, char pt, int m, int cc, 
 		packet->csrc[i] = htonl(csrc[i]);
 	}
 	/* ...a header extension? */
-	memcpy(packet->extn, extn, extn_len);
+	if (extn != NULL) {
+		/* We don't use the packet->extn_type field here, that's for receive only... */
+		uint16_t *base = (uint16_t *) packet->extn;
+		base[0] = htons(extn_type);
+		base[1] = htons(extn_len);
+		memcpy(packet->extn + 4, extn, extn_len * 4);
+	}
 	/* ...and the media data... */
 	memcpy(packet->data, data, data_len);
 	/* ...and any padding... */
