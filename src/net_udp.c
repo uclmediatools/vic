@@ -695,3 +695,11 @@ const char *udp_host_addr(socket_udp *s)
 	return NULL;
 }
 
+int udp_fd(socket_udp *s)
+{
+	if (s && s->fd > 0) {
+		return s->fd;
+	} 
+	return 0;
+}
+

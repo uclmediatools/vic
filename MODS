@@ -268,7 +268,8 @@ v1.1.5  - Remove SunOS and Solaris defines from the configure script, they
 	  RTP format timestamp for the current time.
 	* 17 April 2000
 
-v1.1.6	- 
+v1.1.6	- Add udp_fd() function, to retrieve the underlying file descriptor.
+
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
