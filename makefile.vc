@@ -121,9 +121,9 @@ TCL_VIC = ui-ctrlmenu.tcl ui-main.tcl ui-resource.tcl ui-relate.tcl\
 # every time I install it on a given system, just make them
 # here (these sources came from tcl's compat directory)
 #
-BROKEN_OBJ = strtol.obj strtoul.obj
+BROKEN_OBJ = strtol.obj strtoul.obj 
 COLOR_OBJS = color-true.obj color-pseudo.obj color-dither.obj color-ed.obj \
-	color-hi.obj color-quant.obj color-gray.obj color-mono.obj color-hist.obj
+	color-hi.obj color-quant.obj color-gray.obj color-mono.obj color-hist.obj 
 QFDES_OBJS = qfDES.obj qfDES_key.obj qfDES_memory.obj
 
 OBJ0 =	getopt.obj win32.obj win32X.obj
@@ -141,7 +141,7 @@ OBJ2 =	main.obj net.obj net-ip.obj source.obj \
 	color.obj $(COLOR_OBJS) $(QFDES_OBJS) \
 	rgb-converter.obj jpeg.obj p64.obj dct.obj \
 	compositor.obj rate-variable.obj crypt.obj crypt-des.obj \
-	grabber-still.obj
+	grabber-still.obj tkWinColor.obj
 OBJ3 =	cm0.obj cm1.obj huffcode.obj version.obj bv.obj \
 	$(TCL_VIC:.tcl=.obj) tk.obj
 SRC =	$(OBJ1:.obj=.c) $(OBJ2:.obj=.cc) $(BROKEN_OBJ:.obj=.c) \
