@@ -41,7 +41,7 @@
 #define _RAT_DEBUG_H
 
 #define UNUSED(x)	(x=x)
-#define debug_msg	_dprintf("%s:%d ", __FILE__, __LINE__), _dprintf
+#define debug_msg	_dprintf("%d:%s:%d ", getpid(), __FILE__, __LINE__), _dprintf
 
 #if defined(__cplusplus)
 extern "C" {

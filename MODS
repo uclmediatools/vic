@@ -112,6 +112,7 @@ v1.0.8	- Add mbus_sent_all()
 	- Add RX_RR_EMPTY event to the RTP code, to indicate that an empty
 	  reception report (ie: no report blocks) has been received.
 	- Add RX_RTCP_START and RX_RTCP_FINISH events to the RTP code.
+	- debug_msg() now displays the pid
 
 
 Still to do...
