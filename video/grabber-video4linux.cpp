@@ -12,7 +12,7 @@
      Added support for various YUV byte orders.
      by Jean-Marc Orliaguet <jmo@medialab.chalmers.se>
 
-     Added support for NTSC/PAL/SECAM norm selection. (14/10/99)
+     Added support for NTSC/PAL/SECAM video norm selection. (14/10/99)
      by Jean-Marc Orliaguet <jmo@medialab.chalmers.se>
 
    ========================================================================= */
@@ -73,6 +73,9 @@ static const int  one = 1, zero = 0;
 #define BYTE_ORDER_YVYU 1
 #define BYTE_ORDER_UYVY 2
 #define BYTE_ORDER_VYUY 3
+
+/* VIDEO NORMS */
+#define MAX_NORMS 4
 
 
 class V4lGrabber : public Grabber {
@@ -240,11 +243,11 @@ V4lScanner::V4lScanner(const char **dev)
 		pict.depth,(pict.palette<sizeof(palette_name)/sizeof(char*))?
 		palette_name[pict.palette]:"??");
 
+	strcat(attr,"type {auto pal ntsc secam}");
 
 	nick = new char[strlen(capability.name)+6];
 	sprintf(nick,"v4l- %s",capability.name);
 	new V4lDevice(dev[i],nick,attr);
-
 
 	close(fd);
     }
@@ -326,6 +329,7 @@ V4lGrabber::V4lGrabber(const char *cformat, const char *dev)
 	cformat_ = CF_CIF;
     
     port_      = 0;
+    norm_      = 0;
     decimate_  = 2;
 }
 
@@ -342,6 +346,7 @@ int V4lGrabber::command(int argc, const char*const* argv)
 {
     int i;
     struct video_channel     channel;
+    static const char *norms[] = {"pal", "ntsc", "secam", "auto"};
 
     Tcl &tcl = Tcl::instance();
 
@@ -349,9 +354,8 @@ int V4lGrabber::command(int argc, const char*const* argv)
 
     if ( tcl.attr("yuv_byteOrder") != NULL ) 
 	byteorder_ = atoi( tcl.attr("yuv_byteOrder") );
- 
-    if ( ! ((byteorder_ >= 0) && (byteorder_ <= 3)) ) byteorder_=0;
 
+    if ( ! ((byteorder_ >= 0) && (byteorder_ <= 3)) ) byteorder_=0;
 
     if (argc == 3) {
 	if (strcmp(argv[1], "decimate") == 0) {
@@ -362,8 +366,9 @@ int V4lGrabber::command(int argc, const char*const* argv)
 
 	if (strcmp(argv[1], "port") == 0) {
 	    for (i = 0; i < capability.channels; i++)
-		if(!strcmp(argv[2], channels[i].name))
+		if(!strcmp(argv[2], channels[i].name)) {
 		    port_ = i;
+	    }
 	    if (running_)
 		format();
     	    return (TCL_OK);
@@ -434,30 +439,32 @@ int V4lGrabber::command(int argc, const char*const* argv)
 		}
         }
 
-
-
         if (strcmp(argv[1], "yuv_byteorder") == 0) {
                         byteorder_ = atoi(argv[2]);
                         return (TCL_OK);
         }
 
-        if (strcmp(argv[1], "norm") == 0) {
-                        norm_ = atoi(argv[2]);
-
-                        channel.channel=port_;
-                        channel.norm=norm_;
-
-    			if (-1 == ioctl(fd_, VIDIOCSCHAN, &channel))
-			perror("ioctl VIDIOCSCHAN");
-
-                        DEBUG(fprintf(stderr, "V4l: Norm = %d\n", norm_));
-                        return (TCL_OK);
-	}
 
 	if (strcmp(argv[1], "fps") == 0) {
 	    DEBUG(fprintf(stderr,"V4l: fps %s\n",argv[2]));
 	}
-    }
+
+
+        if (strcmp(argv[1], "type") == 0) {
+                        if (strcmp(argv[2], "auto") == 0)
+                                norm_ = VIDEO_MODE_AUTO;
+                        else if (strcmp(argv[2], "pal") == 0)
+                                norm_ = VIDEO_MODE_PAL;
+                        else if (strcmp(argv[2], "secam") == 0)
+                                norm_ = VIDEO_MODE_SECAM;
+                        else
+                                norm_ = VIDEO_MODE_NTSC;
+                        if (running_)
+                                format();
+                        return (TCL_OK);
+                }
+    
+    } 
 
     return (Grabber::command(argc, argv));
 }
@@ -767,10 +774,16 @@ void V4lGrabber::format()
     
     DEBUG(fprintf(stderr," size=%dx%d",width_,height_));
 
+    bzero(&channel, sizeof(struct video_channel));
+    if (-1 == ioctl(fd_, VIDIOCGCHAN, &channel))
+	perror("ioctl VIDIOCGCHAN");
+
     channel.channel = port_;
     channel.norm = norm_;
+
     if (-1 == ioctl(fd_, VIDIOCSCHAN, &channel))
 	perror("ioctl VIDIOCSCHAN");
+
     DEBUG(fprintf(stderr," port=%d\n",port_));
     DEBUG(fprintf(stderr," norm=%d\n",norm_));
 

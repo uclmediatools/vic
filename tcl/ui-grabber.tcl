@@ -26,11 +26,12 @@
 
 proc build.v4l w {
     set f [smallfont]
-    global contrast brightness hue saturation 
+    global contrast brightness hue saturation norm 
     set contrast 128
     set brightness 128
     set hue 128
     set saturation 128
+    set norm 0 
 
     label $w.title -text "Video4Linux grabber controls"
     pack $w.title  -fill x -expand 1
@@ -41,17 +42,6 @@ proc build.v4l w {
 
     button $w.f.left.reset -font $f -width 10 -text "Reset" -command "set contrast 128; set brightness 128; set hue 128; set saturation 128; grabber controls reset"  -padx 1 -pady 1
     pack $w.f.left.reset 
-
-    set m  $w.f.left.norm
-    set m1 $m.m1
-    menubutton $m -text " Norm... " -menu $m1 -relief raised -width 10 -font $f
-    menu $m1
-    $m1 add radiobutton  -font $f -label "PAL" -command "grabber norm 0" 
-    $m1 add radiobutton  -font $f -label "NTSC" -command "grabber norm 1"
-    $m1 add radiobutton  -font $f -label "SECAM" -command "grabber norm 2"
- 
-    pack $m
-
 
     frame $w.f.right -relief flat  
     frame $w.f.right.top -relief flat 
