@@ -241,6 +241,7 @@ v1.1.2	- Add routines for handling NTP format timestamps, in ntp.[ch]
 	- Add asarray.[ch] string holding associative array.
 	- Fix compilation with -Wwrite-strings and -Wcast-align
 	- Split mbus_addr_match() and mbus_add_identical() into mbus_addr.[ch]
+	* 14 February 2000
 
 
 Still to do...
