@@ -24,6 +24,8 @@ v1.0.1	- Added HMAC authentication code
 	  empty set is a valid destination address for a message, and that will
 	  be accepted by all receivers (ie: a wildcard).
 	- Remove channel ID from mbus code.
+	- Fix configure script to work with solaris 2.7 where inet_aton() and 
+	  inet_pton() have prototypes but no implementation.
 
 
 Still to do...

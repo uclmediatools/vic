@@ -100,7 +100,10 @@ socket_error(char *msg)
 }
 
 #ifdef NEED_INET_ATON
-static int inet_aton(const char *name, struct in_addr *addr)
+#ifdef NEED_INET_ATON_STATIC
+static 
+#endif
+int inet_aton(const char *name, struct in_addr *addr)
 {
 	addr->s_addr = inet_addr(name);
 	return addr->s_addr == (in_addr_t) INADDR_ANY;
@@ -108,7 +111,10 @@ static int inet_aton(const char *name, struct in_addr *addr)
 #endif
 
 #ifdef NEED_INET_PTON
-static int inet_pton(int family, const char *name, void *addr)
+#ifdef NEED_INET_PTON_STATIC
+static 
+#endif
+int inet_pton(int family, const char *name, void *addr)
 {
 	if (family == AF_INET) {
 		struct in_addr	in_val;
