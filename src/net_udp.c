@@ -552,7 +552,7 @@ static const char *udp_host_addr6(socket_udp *s)
 			abort();
 		}
 		
-		hints.ai_protocol  = IPPROTO_IPV6;
+		hints.ai_protocol  = 0;
 		hints.ai_flags     = 0;
 		hints.ai_family    = AF_INET6;
 		hints.ai_socktype  = SOCK_DGRAM;
