@@ -438,7 +438,7 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 	struct mbus_key	 	 k;
 	struct mbus_parser	*mp;
 	int		 	 i;
-	char            	*net_addr;
+	char            	*net_addr, *tmp;
 	uint16_t         	 net_port;
 	int              	 net_scope;
 
@@ -469,10 +469,11 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 	m->magic          = MBUS_MAGIC;
 
 	mp = mbus_parse_init(xstrdup(addr));
-	if (!mbus_parse_lst(mp, &(m->addr))) {
+	if (!mbus_parse_lst(mp, &tmp)) {
 		debug_msg("Invalid mbus address\n");
 		abort();
 	}
+	m->addr = xstrdup(tmp);
 	mbus_parse_done(mp);
 	assert(m->addr != NULL);
 
