@@ -50,14 +50,24 @@
 #include <math.h>
 #include <stdlib.h>   /* abs() */
 #include <string.h>
+#ifndef MUSICA_IPV6
 #include <winsock2.h>
+#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 
 #ifdef HAVE_IPv6
+#ifdef MUSICA_IPV6
+#include <winsock6.h>
+#else
 #include <ws2ip6.h>
 #endif
+#endif
+
+#ifndef MUSICA_IPV6
 #include <ws2tcpip.h>
+#endif
+
 #include <mmreg.h>
 #include <msacm.h>
 #include <mmsystem.h>
@@ -93,7 +103,9 @@ typedef unsigned long	in_addr_t;
 
 #define DIFF_BYTE_ORDER	1
 #define NEED_INET_ATON
+#ifndef MUSICA_IPV6
 #define NEED_INET_PTON
+#endif
 #define NEED_IN6_IS_ADDR_MULTICAST
 
 #ifdef NDEBUG

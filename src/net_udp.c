@@ -47,6 +47,13 @@
 #define IPv4	4
 #define IPv6	6
 
+/* This is pretty nasty but its the simplest way to get round the
+/* Detexis bug that means their MUSICA IPv6 stack uses 
+/* IPPROTO_IP instead of IPPROTO_IPV6 in setsockopt calls*/
+#ifdef MUSICA_IPV6
+#define IPPROTO_IPV6 IPPROTO_IP
+#endif
+
 #ifndef INADDR_NONE
 #define INADDR_NONE 0xffffffff
 #endif
@@ -353,13 +360,19 @@ static socket_udp *udp_init6(char *addr, u_int16 rx_port, u_int16 tx_port, int t
 	if (IN6_IS_ADDR_MULTICAST(&(s->addr6))) {
 		unsigned int      loop = 1;
 		struct ipv6_mreq  imr;
+#ifdef MUSICA_IPV6
+		imr.i6mr_interface = 1;
+		imr.i6mr_multiaddr = s->addr6;
+#else
 		imr.ipv6mr_multiaddr = s->addr6;
 		imr.ipv6mr_interface = 0;
+#endif
 
 		if (SETSOCKOPT(s->fd, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, (char *) &imr, sizeof(struct ipv6_mreq)) != 0) {
 			socket_error("setsockopt IPV6_ADD_MEMBERSHIP");
 			abort();
 		}
+
 		if (SETSOCKOPT(s->fd, IPPROTO_IPV6, IPV6_MULTICAST_LOOP, (char *) &loop, sizeof(loop)) != 0) {
 			socket_error("setsockopt IPV6_MULTICAST_LOOP");
 			abort();
@@ -385,8 +398,13 @@ static void udp_exit6(socket_udp *s)
 #ifdef HAVE_IPv6
 	if (IN6_IS_ADDR_MULTICAST(&(s->addr6))) {
 		struct ipv6_mreq  imr;
+#ifdef MUSICA_IPV6
+		imr.i6mr_interface = 1;
+		imr.i6mr_multiaddr = s->addr6;
+#else
 		imr.ipv6mr_multiaddr = s->addr6;
 		imr.ipv6mr_interface = 0;
+#endif
 
 		if (SETSOCKOPT(s->fd, IPPROTO_IPV6, IPV6_DROP_MEMBERSHIP, (char *) &imr, sizeof(struct ipv6_mreq)) != 0) {
 			socket_error("setsockopt IPV6_DROP_MEMBERSHIP");
@@ -530,7 +548,7 @@ static char *udp_host_addr6(void)
 {
 	char	       		*hname;
 	struct hostent 		*hent;
-#ifndef WIN32
+#if !defined(WIN32) || defined(MUSICA_IPV6)
 	int			 error_num;
 #endif
 
@@ -541,10 +559,31 @@ static char *udp_host_addr6(void)
 	}
 	debug_msg("%s\n", hname);
 
-#ifdef WIN32
+#if defined(WIN32) && !defined(MUSICA_IPV6)
 	hent = getnodebyname(hname, AF_INET6, AI_DEFAULT);
+	assert(hent->h_addrtype == AF_INET6);
+	hname = xstrdup(inet6_ntoa((const struct in6_addr *) hent->h_addr_list[0]));
+#else
+#if defined(Linux) || defined(Solaris)
+    struct addrinfo hints, *ai, *ai2;
+    memset(&hints, 0, sizeof(struct addrinfo));
+
+    hints.ai_family = AF_INET6;
+    hints.ai_socktype = SOCK_DGRAM;
+
+    if (getaddrinfo(hostname, NULL, &hints, &ai)) {
+		debug_msg("getaddrinfo: %s: %s\n", hostname, gai_strerror(i));
+		abort();
+    }
+	if (inet_ntop(AF_INET6, (((struct sockaddr_in6 *)(ai->ai_addr))->sin6_addr), hname, MAXHOSTNAMELEN) == NULL) {
+		abort();
+	}
+#else
+#ifdef MUSICA_IPV6
+    hent = gethostbyname2(hname, AF_INET6);
 #else
 	hent = getipnodebyname(hname, AF_INET6, AI_DEFAULT, &error_num);
+#endif /*MUSICA_IPV6*/
 	if (hent == NULL) {
 		switch (error_num) {
 		case HOST_NOT_FOUND:
@@ -565,16 +604,13 @@ static char *udp_host_addr6(void)
 		}
 		abort();
 	}
-#endif
 	assert(hent->h_addrtype == AF_INET6);
-
-#ifdef WIN32
-	hname = xstrdup(inet6_ntoa((const struct in6_addr *) hent->h_addr));
-#else
-	if (inet_ntop(AF_INET6, hent->h_addr, hname, MAXHOSTNAMELEN) == NULL) {
+	if (inet_ntop(AF_INET6, hent->h_addr_list[0], hname, MAXHOSTNAMELEN) == NULL) {
 		abort();
 	}
-#endif
+#endif /*Linux || Solaris7 IPv6 */
+#endif /*MS_IPV6*/
+
 	return hname;
 }
 #endif /* HAVE_IPv6 */
