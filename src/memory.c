@@ -223,7 +223,7 @@ printf("malloc %d %s %d\n", size, filen, line);
 		*(p+q+2) = rand();
 	}
 	mem_item[naddr].addr   = p;
-	mem_item[naddr].filen  = strdup(filen);
+	mem_item[naddr].filen  = (char *) strdup(filen);
 	mem_item[naddr].line   = line;
 	mem_item[naddr].length = strlen(filen);
         mem_item[naddr].est    = tick++;
