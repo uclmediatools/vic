@@ -498,6 +498,9 @@ _xrealloc(void *p, unsigned size, const char *filen, int line)
                         debug_msg("realloc failed\n");
                         return NULL;
                 }
+		/* update ch/p */
+		ch = (chk_header*)m->addr;
+		p = (void*)(ch+1);
                 /* Update table */
                 free(m->filen);
                 m->filen  = (char *) strdup(filen);
