@@ -163,7 +163,7 @@ void H263Decoder::recv(const rtphdr* rh, const u_char* bp, int cc)
 	b_off = 2;
     }
 
-#if 1
+#ifdef DEBUG263
     /* DEBUG: dump packet data */
     fprintf(stderr,
 	    "recv-h263: cc=%4d  "
@@ -192,8 +192,8 @@ void H263Decoder::recv(const rtphdr* rh, const u_char* bp, int cc)
 	memcpy(bitstream+b_off,"\x00\x00\x80",3); /* add PSC */
 	if (-1 != h263_decode_frame(decoder_state,bitstream)) {
 	    if (decoder_state->width != inw_) {
-		fprintf(stderr,"recv-h263: resize to %dx%d\n",
-			decoder_state->width,decoder_state->height);
+		/*fprintf(stderr,"recv-h263: resize to %dx%d\n",
+			decoder_state->width,decoder_state->height);*/
 		resize(decoder_state->width, decoder_state->height);
 		h263_stop(decoder_state);
 		decoder_state = h263_start();

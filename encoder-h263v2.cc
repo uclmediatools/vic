@@ -97,7 +97,7 @@ static class H263EncoderMatcher : public Matcher {
 
 H263Encoder::H263Encoder() : TransmitterModule(FT_YUV_CIF)
 {
-    fprintf(stderr,"send-h263: constructor\n");
+    /*fprintf(stderr,"send-h263: constructor\n");*/
     state = NULL;
     start_ts = 0;
     qp = 10;
@@ -105,7 +105,7 @@ H263Encoder::H263Encoder() : TransmitterModule(FT_YUV_CIF)
 
 H263Encoder::~H263Encoder()
 {
-    fprintf(stderr,"send-h263: destructor\n");
+    /*fprintf(stderr,"send-h263: destructor\n");*/
     h263_cleanup(state);
     free(h263_bitstream);
 }
@@ -113,7 +113,7 @@ H263Encoder::~H263Encoder()
 void
 H263Encoder::size(int w, int h)
 {
-    fprintf(stderr,"send-h263: new frame size: %dx%d\n",w,h);
+    /*fprintf(stderr,"send-h263: new frame size: %dx%d\n",w,h);*/
     Module::size(w, h);
 
     sed_pels = w;
@@ -125,7 +125,7 @@ H263Encoder::size(int w, int h)
     } else if (w == QCIF_WIDTH && h == QCIF_HEIGHT) {
 	state->pic->source_format = 2;
     } else {
-	fprintf(stderr,"send-h263: unsupported format\n");
+	/*fprintf(stderr,"send-h263: unsupported format\n");*/
 	exit(1);
     }
 }
@@ -133,7 +133,7 @@ H263Encoder::size(int w, int h)
 int
 H263Encoder::command(int argc, const char*const* argv)
 {
-    fprintf(stderr,"send-h263: command: %s\n",argv[1]);
+    /*fprintf(stderr,"send-h263: command: %s\n",argv[1]);*/
 
     if (argc == 3 && strcmp(argv[1], "q") == 0) {
 	qp = QP = QPI = atoi(argv[2]);
@@ -145,7 +145,8 @@ H263Encoder::command(int argc, const char*const* argv)
 void
 dump_paket(const unsigned char *data, int len)
 {
-    int x,y;
+#ifdef DEBUG263
+	int x,y;
 
     for (y = 0; y < len; y += 16) {
 	fprintf(stderr,"\t");
@@ -164,6 +165,7 @@ dump_paket(const unsigned char *data, int len)
 	}
 	fprintf(stderr,"\n");
     }
+#endif
 }
 
 int H263Encoder::consume(const VideoFrame *vf)
@@ -219,7 +221,7 @@ int H263Encoder::consume(const VideoFrame *vf)
 	    rh->rh_flags |= htons(RTP_M);
 
 	memcpy(pb->iov[1].iov_base, h263_bitstream+n, ps);
-#if 0
+#ifdef DEBUG263
 	dump_paket((const unsigned char *)pb->iov[0].iov_base,16);
 	dump_paket((const unsigned char *)pb->iov[1].iov_base,16);
 #endif

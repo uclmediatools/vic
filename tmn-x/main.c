@@ -174,7 +174,7 @@ h263_encode_one_frame(struct ENCODER_STATE *s, int i, int tr)
 
 	s->image = ReadImage(seqfilename, frame_no, headerlength);
 	s->curr_image = FillImage(s->image);
-	fprintf(stdout, "Coding I frame... ");
+	/*fprintf(stdout, "Coding I frame... ");*/
 
 	s->pic->QUANT = QPI;
 	s->pic->DQUANT = 0;
@@ -219,7 +219,7 @@ h263_encode_one_frame(struct ENCODER_STATE *s, int i, int tr)
 	/* Frame layer Rate Control */
 	frameskip = FrameLayerRC(s->pic);
 
-	fprintf(stdout, "Finished INTRA\n");
+	/*fprintf(stdout, "Finished INTRA\n");*/
 
 	break;
 
