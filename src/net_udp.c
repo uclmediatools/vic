@@ -566,10 +566,10 @@ static const char *udp_host_addr6(socket_udp *s)
 	memset((char *)&empty, 0, len);
 	empty.sin6_family = AF_INET6;
 #ifdef HAVE_SIN6_LEN
-	empty.local.sin6_len    = len;
+	empty.sin6_len    = len;
 #endif
 	empty.sin6_addr = s->addr6; 
-	connect(s->fd, (struct sockaddr *) &local, len);
+	connect(s->fd, (struct sockaddr *) &empty, len);
 
 	memset((char *)&local, 0, len);
 	local.sin6_family = AF_INET6;
@@ -583,10 +583,10 @@ static const char *udp_host_addr6(socket_udp *s)
 	}
 
 	/* disconnect socket */
-	memset((char *)&local, 0, len);
-	local.sin6_family = AF_UNSPEC;
+	memset((char *)&empty, 0, len);
+	empty.sin6_family = AF_UNSPEC;
 	empty.sin6_addr = in6addr_any;	
-	connect(s->fd, (struct sockaddr *) &local, len);	
+	connect(s->fd, (struct sockaddr *) &empty, len);	
 
 	if (IN6_IS_ADDR_UNSPECIFIED(&local.sin6_addr) || IN6_IS_ADDR_MULTICAST(&local.sin6_addr)) {
 		if (gethostname(hname, MAXHOSTNAMELEN) != 0) {
