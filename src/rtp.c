@@ -546,10 +546,42 @@ static int tv_gt(struct timeval a, struct timeval b)
 	return a.tv_usec > b.tv_usec;
 }
 
+static char *get_cname(socket_udp *s)
+{
+        /* Set the CNAME. This is "user@hostname" or just "hostname" if the username cannot be found. */
+        char                    *uname;
+        char                    *hname;
+        char                    *cname;
+#ifndef WIN32
+        struct passwd           *pwent;
+#endif
+
+        cname = (char *) xmalloc(MAXHOSTNAMELEN + 10);
+        cname[0] = '\0';
+
+        /* First, fill in the username... */
+#ifdef WIN32
+        uname = getenv("USER");
+#else
+        pwent = getpwuid(getuid());
+        uname = pwent->pw_name;
+#endif
+        if (uname != NULL) {
+                sprintf(cname, "%s@", uname);
+        }
+
+        /* Now the hostname. Must be dotted-quad IP address. */
+        hname = udp_host_addr(s);
+        strcpy(cname + strlen(cname), hname);
+        xfree(hname);
+        return cname;
+}
+
 struct rtp *rtp_init(char *addr, u_int16 port, int ttl, double rtcp_bw, void (*callback)(struct rtp *session, rtp_event *e))
 {
 	struct rtp 	*session;
 	int         	 i;
+	char		*cname;
 
 	assert(ttl >= 0 && ttl < 128);
 	assert(port % 2 == 0);
@@ -579,7 +611,13 @@ struct rtp *rtp_init(char *addr, u_int16 port, int ttl, double rtcp_bw, void (*c
 	for (i = 0; i < RTP_DB_SIZE; i++) {
 		session->db[i] = NULL;
 	}
+
+	/* Create a database entry for ourselves... */
 	create_source(session, session->my_ssrc);
+	cname = get_cname(session->rtp_socket);
+	rtp_set_sdes(session, session->my_ssrc, RTCP_SDES_CNAME, cname, strlen(cname));
+	xfree(cname);	/* cname is copied by rtp_set_sdes()... */
+
 	return session;
 }
 
@@ -1128,52 +1166,149 @@ int rtp_send_data(struct rtp *session, u_int32 ts, char pt, int m, int cc, u_int
 	return TRUE;
 }
 
-#ifdef NDEF
-static u_int8 *format_rtcp_sr(u_int8 *buffer, struct rtp *session, u_int32 ts)
+static u_int8 *format_rtcp_sr(u_int8 *buffer, int buflen, struct rtp *session, u_int32 ts)
 {
 	/* Write an RTCP SR header into buffer, returning a pointer */
 	/* to the next byte after the header we have just written.  */
-	return buffer;
+	u_int8		*packet = buffer;
+	rtcp_common	 common;
+	rtcp_sr		 sr;
+
+	assert(buflen > (int) (sizeof(rtcp_common) + sizeof(rtcp_sr)));
+
+	common.version = 2;
+	common.p       = 0;
+	common.count   = 0;
+	common.pt      = RTCP_SR;
+	common.length  = 0;
+
+	memcpy(packet, &common, sizeof(common)); 
+	packet += sizeof(common);
+
+	sr.ssrc          = htonl(rtp_my_ssrc(session));
+	sr.ntp_sec       = 0;
+	sr.ntp_frac      = 0;
+	sr.rtp_ts        = htonl(ts);
+	sr.sender_pcount = 0;
+	sr.sender_bcount = 0;
+
+	memcpy(packet, &sr, sizeof(sr)); 
+	packet += sizeof(sr);
+
+	/* ...fill out the RRs... */
+
+	return packet;
 }
 
-static u_int8 *format_rtcp_rr(u_int8 *buffer, struct rtp *session, u_int32 ts)
+static u_int8 *format_rtcp_rr(u_int8 *buffer, int buflen, struct rtp *session, u_int32 ts)
 {
 	/* Write an RTCP RR header into buffer, returning a pointer */
 	/* to the next byte after the header we have just written.  */
-	return buffer;
+	/* Write an RTCP SR header into buffer, returning a pointer */
+	/* to the next byte after the header we have just written.  */
+	u_int8		*packet = buffer;
+	rtcp_common	 common;
+
+	UNUSED(session);
+	UNUSED(ts);
+
+	assert(buflen > (int) (sizeof(rtcp_common) + sizeof(rtcp_rr)));
+
+	common.version = 2;
+	common.p       = 0;
+	common.count   = 0;
+	common.pt      = RTCP_RR;
+	common.length  = htons(1);
+
+	memcpy(packet, &common, sizeof(common)); 
+	packet += sizeof(common);
+	*((u_int32 *) packet) = htonl(rtp_my_ssrc(session));
+	packet += 4;
+
+#ifdef NDEF
+	rr.srrc          = htonl(rtp_my_srrc(session));
+	rr.ntp_sec       = 0;
+	rr.ntp_frac      = 0;
+	rr.rtp_ts        = htonl(ts);
+	rr.sender_pcount = 0;
+	rr.sender_bcount = 0;
+
+	memcpy(packet, &rr, sizeof(rr)); 
+	packet += sizeof(rr);
+#endif
+
+	/* ...fill out the RRs... */
+
+	return packet;
 }
 
-static u_int8 *format_rtcp_sdes(u_int8 *buffer, struct rtp *session)
+/*
+ * Fill out an SDES item.  I assume here that the item is a NULL terminated
+ * string.
+ */
+static int add_sdes_item(u_int8 *buf, int type, char *val)
 {
-	return buffer;
+        rtcp_sdes_item *shdr = (rtcp_sdes_item *) buf;
+        int             namelen;
+
+        if (val == NULL) {
+                debug_msg("Cannot format SDES item. type=%d val=%xp\n", type, val);
+                return 0;
+        }
+        shdr->type = type;
+        namelen = strlen(val);
+        shdr->length = namelen;
+        strcpy(shdr->data, val);
+        return namelen + 2;
 }
-#endif
+
+static u_int8 *format_rtcp_sdes(u_int8 *buffer, int buflen, struct rtp *session)
+{
+	u_int8		*packet = buffer;
+	rtcp_common	*common = (rtcp_common *) buffer;
+
+	assert(buflen > (int) sizeof(rtcp_common));
+
+	common->version = 2;
+	common->p       = 0;
+	common->count   = 1;
+	common->pt      = RTCP_SDES;
+	common->length  = 0;
+	packet += sizeof(common);
+
+	/* Add SDES items following the fixed header... */
+	*((u_int32 *) packet) = htonl(rtp_my_ssrc(session));
+	packet += 4;
+	packet += add_sdes_item(packet, RTCP_SDES_CNAME, rtp_get_sdes(session, rtp_my_ssrc(session), RTCP_SDES_CNAME));
+
+	/* Pad to a multiple of 4 bytes... */
+	while ((((int) (packet - buffer)) % 4) != 0) {
+		*packet++ = '\0';
+	}
+
+	common->length = htons(((int) (packet - buffer) / 4) - 1);
+
+	return packet;
+}
 
 static void send_rtcp(struct rtp *session, u_int32 ts)
 {
-#ifdef NDEF
 	u_int8	 buffer[RTP_MAX_PACKET_LEN];
 	u_int8	*ptr = buffer;
 
 	if (session->we_sent) {
-		ptr = format_rtcp_sr(ptr, session, ts);
+		ptr = format_rtcp_sr(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), session, ts);
 	} else {
-		ptr = format_rtcp_rr(ptr, session, ts);
+		ptr = format_rtcp_rr(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), session, ts);
 	}
-	ptr = format_rtcp_sdes(ptr, session);
+	ptr = format_rtcp_sdes(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), session);
 	udp_send(session->rtcp_socket, buffer, ptr - buffer);
-#else
-	UNUSED(session);
-	UNUSED(ts);
-#endif
 }
 
 int rtp_send_ctrl(struct rtp *session, u_int32 ts)
 {
 	/* Send an RTCP packet, if one is due... */
 	struct timeval	 curr_time;
-
-	UNUSED(ts);
 
 	gettimeofday(&curr_time, NULL);
 	if (tv_gt(curr_time, session->next_rtcp_send_time)) {
