@@ -101,6 +101,7 @@ rtp_event_handler(struct rtp *session, rtp_event *e)
 	case RX_RTCP_FINISH:
 	case RR_TIMEOUT:
 	case RX_APP:
+		break;
 	}
 	fflush(stdout);
 }
