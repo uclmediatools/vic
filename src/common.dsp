@@ -74,7 +74,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"Debug\uclmm.lib"
-# ADD LIB32 /nologo /out:"Debug\uclmm.lib"
+# ADD LIB32 /nologo /out:"Debug_IPv6\uclmm.lib"
 
 !ELSEIF  "$(CFG)" == "common - Win32 Debug IPv6 Musica"
 
@@ -293,6 +293,20 @@ SOURCE=.\VERSION
 !IF  "$(CFG)" == "common - Win32 Release"
 
 !ELSEIF  "$(CFG)" == "common - Win32 Debug IPv6"
+
+# Begin Custom Build
+InputPath=.\VERSION
+
+"version.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	copy win32\set.txt + VERSION win32\vergen.bat 
+	copy win32\vergen.bat + win32\null.txt win32\vergen.bat 
+	copy win32\vergen.bat + win32\echo.txt win32\vergen.bat 
+	win32\vergen.bat 
+	move win32\version.h version.h 
+	erase win32\version.h 
+	erase win32\vergen.bat 
+	
+# End Custom Build
 
 !ELSEIF  "$(CFG)" == "common - Win32 Debug IPv6 Musica"
 

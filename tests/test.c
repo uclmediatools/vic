@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 	test_md5();
 	test_net_udp();
 #ifdef WIN32
-	Sleep(50000);
+	Sleep(2000);
 	WSACleanup();
 #endif
 	return 0;
