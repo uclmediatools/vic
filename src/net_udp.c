@@ -562,17 +562,30 @@ static const char *udp_host_addr6(socket_udp *s)
 	struct sockaddr_in6 	 local;
 	int len = sizeof(local), result = 0;
 
+	/* connect to socket before getsockname call */
 	memset((char *)&local, 0, len);
 	local.sin6_family = AF_INET6;
 #ifdef HAVE_SIN6_LEN
 	local.sin6_len    = len;
 #endif
+	local.sin6_addr = s->addr6; 
+	connect(s->fd, (struct sockaddr *) &local, len);
+	local.sin6_addr = in6addr_any;
 
 	if ((result = getsockname(s->fd,(struct sockaddr *)&local, &len)) < 0){
 		local.sin6_addr = in6addr_any;
 		local.sin6_port = 0;
 		debug_msg("getsockname failed\n");
 	}
+
+	/* disconnect socket */
+	memset((char *)&local, 0, len);
+	local.sin6_family = AF_UNSPEC;
+#ifdef HAVE_SIN6_LEN
+	local.sin6_len    = len;
+#endif
+	connect(s->fd, (struct sockaddr *) &local, len);	
+
 	if (IN6_IS_ADDR_UNSPECIFIED(&local.sin6_addr) || IN6_IS_ADDR_MULTICAST(&local.sin6_addr)) {
 		if (gethostname(hname, MAXHOSTNAMELEN) != 0) {
 			debug_msg("gethostname failed\n");
