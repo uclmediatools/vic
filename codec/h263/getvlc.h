@@ -50,7 +50,7 @@
 
 
 
-#ifdef 0
+#ifdef notdef
 typedef struct {
   int val, len;
 } VLCtab;
