@@ -63,9 +63,9 @@
 #include "sim.h"
 
 #ifdef VIC
-/*extern */
+/*extern*/
 int            h263_streamcount;
-/*extern */
+/*extern*/
 unsigned char *h263_bitstream;
 #else
 extern FILE *streamfile;        /* the only global var we need here */
