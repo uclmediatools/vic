@@ -3,14 +3,9 @@
 # This is free software. See the file COPYING for copying conditions.
 
 #
-# GNU gcc
-#
-
-CC = gcc
-#
 # This will generate optimized machine code 
 #
-CFLAGS = -g -Wall -O3 -DVIC
+CFLAGS = $(CCOPT) -DVIC
 
 # dither.o yuv2rgb.o yuvrgb24.o win.o display.o
 OBJS = tmndec.o getpic.o getvlc.o gethdr.o getblk.o getbits.o store.o \

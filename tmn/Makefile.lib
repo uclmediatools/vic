@@ -11,9 +11,7 @@ OBJS =	main.o io.o dct.o coder.o quant.o mot_est.o pred.o  snr.o \
         countbit.o putbits.o ratectrl.o sac.o putvlc.o intra_pred.o \
         filter.o malloc_debug.o
 
-CC = gcc
-#CFLAGS =  -O3 -DVIC
-CFLAGS =  -g -Wall -DVIC
+CFLAGS =  $(CCOPT) -DVIC
 
 libh263coder.a:	$(OBJS)
 	rm -f $@
