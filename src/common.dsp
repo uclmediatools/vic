@@ -195,6 +195,10 @@ SOURCE=.\net_udp.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\ntp.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\qfDES.c
 # End Source File
 # Begin Source File
@@ -276,6 +280,10 @@ SOURCE=.\memory.h
 # Begin Source File
 
 SOURCE=.\net_udp.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ntp.h
 # End Source File
 # Begin Source File
 
