@@ -100,11 +100,13 @@ void ConfBus::ipc_input(int, int, u_char* msg, int cc)
 	/* if this is a power message then compare it with the last 
 	message and if the value is not significantly different then return */
 	if (sscanf((char*)msg, "relate_power %*s %d",&value1)!=0) {
-		if (value1<value2  && value1!=0) {
-			if (value1+10>=value2) return;
-		} else
-			if (value1-10<=value2) return;
-		value2=value1;
+		if (value1>0) {
+			if (value1<value2) {
+				if (value1+10>=value2) return;
+				} else
+				if (value1-10<=value2) return;
+			value2=value1;
+		}
 	}
 
 	Tcl& tcl = Tcl::instance();
