@@ -137,3 +137,38 @@ void debug_dump(void*lp, long len)
    }
 }
 
+void debug_set_core_dir(const char *argv0)
+{
+#if defined(DEBUG) && !defined(WIN32)
+        struct stat s;
+        char coredir[64];
+        const char *appname;
+
+        appname = strrchr(argv0, '/');
+        if (appname == NULL) {
+                appname = argv0;
+        } else {
+                appname = appname + 1;
+        }
+
+        /* Should check length of appname, but this is debug code...*/
+        /* and developers should know better than to have 64 char   */
+        /* app name.                                                */
+        sprintf(coredir, "core-%s\n", appname);
+
+        mkdir(coredir, S_IRWXU);
+        if (stat(coredir, &s) != 0) {
+                debug_msg("Could not stat %s\n", coredir);
+                return;
+        }
+        if (!S_ISDIR(s.st_mode)) {
+                debug_msg("Not a directory: %s\n", coredir);
+                return;
+        }
+        if (!(s.st_mode & S_IWUSR) || !(s.st_mode & S_IXUSR)) {
+                debug_msg("Cannot write in or change to %s\n", coredir);
+                return;
+        }
+        chdir(coredir);
+#endif /* DEBUG */
+}

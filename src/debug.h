@@ -49,6 +49,7 @@ extern "C" {
 
 void _dprintf(const char *format, ...);
 void debug_dump(void*lp, long len);
+void debug_set_core_dir(const char *argv0);
 
 #if defined(__cplusplus)
 }
