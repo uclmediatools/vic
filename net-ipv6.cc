@@ -116,6 +116,7 @@ class IP6Network : public Network {
 	int openssock(Address & addr, u_short port, int ttl);
 	int openrsock(Address & addr, u_short port, Address & local);
 	time_t last_reset_;
+	unsigned int flowLabel_;
 };
 
 static class IP6NetworkMatcher : public Matcher {
@@ -208,6 +209,7 @@ int IP6Network::command(int argc, const char*const* argv)
 			const char * host = argv[2];
 			int port = htons(atoi(argv[3]));
 			int ttl = atoi(argv[4]);
+			flowLabel_ = htonl(atoi(tcl.attr("flowLabel")));
 			if (open(host, port, ttl) < 0)
 				tcl.result("0");
 			else
@@ -433,6 +435,7 @@ int IP6Network::openssock(Address & addr, u_short port, int ttl)
 	memset((char *)&sin, 0, sizeof(sin));
 	sin.sin6_family = AF_INET6;
 	sin.sin6_port = 0;
+	sin.sin6_flowinfo = flowLabel_;
 /* __IPV6 memcopy address */
 	sin.sin6_addr = vic_in6addr_any;
 	if (bind(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
@@ -445,6 +448,7 @@ int IP6Network::openssock(Address & addr, u_short port, int ttl)
 /* __IPV6 memcopy address */
 	sin.sin6_addr = (IP6Address&)addr;
 	sin.sin6_port = port;
+	sin.sin6_flowinfo = flowLabel_;
 	if (connect(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
 		perror("connect");
 		exit(1);

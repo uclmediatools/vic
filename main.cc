@@ -124,7 +124,7 @@ usage()
 Usage: vic [-HPs] [-A nv|ivs|rtp] [-B maxbps] [-C conf]\n\
 \t[-c ed|gray|od|quantize] [-D device] [-d display]\n\
 \t[-f bvc|cellb|h261|jpeg|nv] [-F maxfps] [-I channel]\n\
-\t[-K key ] [-M colormap] [-m mtu] [-N session]\n\
+\t[-K key ] [-L flowLabel (ip6 only)] [-M colormap] [-m mtu] [-N session]\n\
 \t[-n atm|ip|rtip] [-o clipfile] [-t ttl] [-U interval]\n\
 \t[-u script] [-V visual] [-X resource=value] dest/port[/fmt/ttl]\n"
 	);
@@ -274,7 +274,10 @@ checkXShm(Tk_Window tk, const char*)
 
 extern "C" char *optarg;
 extern "C" int optind;
+
+#ifndef WIN32
 extern "C" int opterr;
+#endif
 
 char*
 parse_assignment(char* cp)
@@ -411,9 +414,11 @@ main(int argc, const char** argv)
 	TkSetPlatformInit(TkPlatformInit);
 #endif
 
+#ifndef WIN32
 	opterr = 0;
+#endif
 	const char* options = 
-		"A:B:C:c:D:d:f:F:Hl:I:K:M:m:N:n:o:Pq:re:sT:t:U:u:V:w:X:yy:";
+		"A:B:C:c:D:d:f:F:Hl:I:K:L:M:m:N:n:o:Pq:re:sT:t:U:u:V:w:X:yy:";
 	/* process display and window (-use) options before initialising tcl/tk */
 	char buf[128], tmp[16];
 	const char *display=0, *use=0;
@@ -537,6 +542,10 @@ main(int argc, const char** argv)
 		case 'K':
 			/*XXX probably do not want this in X server*/
 			tcl.add_option("sessionKey", optarg);
+			break;
+
+		case 'L':
+			tcl.add_option("flowLabel", optarg);
 			break;
 
 		case 'M':

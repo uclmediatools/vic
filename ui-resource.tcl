@@ -191,6 +191,10 @@ proc init_resources {} {
 	option add Vic.rtipU 1000 startupFile
 	option add Vic.rtipType 1 startupFile
 
+# Flow Label info for IPV6
+
+	option add Vic.flowLabel 0 startupFile
+
 	option add Vic.foundry adobe startupFile
 
 	init_fonts
