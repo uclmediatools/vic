@@ -39,6 +39,7 @@
 #include "version.h"
 #include "test_base64.h"
 #include "test_des.h"
+#include "test_aes.h"
 #include "test_md5.h"
 #include "test_memory.h"
 #include "test_net_udp.h"
