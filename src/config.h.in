@@ -33,6 +33,7 @@
  */
 #undef HAVE_ST_ADDRINFO
 #undef HAVE_GETIPNODEBYNAME
+#undef HAVE_SIN6_LEN
 
 /*
  * Define this if your C library doesn't have vsnprintf.
@@ -76,6 +77,9 @@
 /* Define if you have the inet_pton function.  */
 #undef HAVE_INET_PTON
 
+/* Define if you have the <inttypes.h> header file.  */
+#undef HAVE_INTTYPES_H
+
 /* Define if you have the <netinet6/in6.h> header file.  */
 #undef HAVE_NETINET6_IN6_H
 
@@ -87,9 +91,6 @@
 
 /* Define if you have the <sys/filio.h> header file.  */
 #undef HAVE_SYS_FILIO_H
-
-/* Define if you have the <unttypes.h> header file.  */
-#undef HAVE_UNTTYPES_H
 
 #ifndef WORDS_BIGENDIAN
 #define WORDS_SMALLENDIAN

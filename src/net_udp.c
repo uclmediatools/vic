@@ -346,8 +346,12 @@ static socket_udp *udp_init6(char *addr, uint16_t rx_port, uint16_t tx_port, int
 	}
 #endif
 	
+	memset((char *)&s_in, 0, sizeof(s_in));
 	s_in.sin6_family = AF_INET6;
 	s_in.sin6_port   = htons(rx_port);
+#ifdef HAVE_SIN6_LEN
+	s_in.sin6_len    = sizeof(s_in);
+#endif
 	memcpy(s_in.sin6_addr.s6_addr, &s->addr6, sizeof(struct in6_addr));
 	if (bind(s->fd, (struct sockaddr *) &s_in, sizeof(s_in)) != 0) {
 		/* bind to group address failed, try generic address. */
@@ -430,9 +434,13 @@ static int udp_send6(socket_udp *s, char *buffer, int buflen)
 	assert(buffer != NULL);
 	assert(buflen > 0);
 	
+	memset((char *)&s_in, 0, sizeof(s_in));
 	s_in.sin6_family = AF_INET6;
 	s_in.sin6_addr   = s->addr6;
 	s_in.sin6_port   = htons(s->tx_port);
+#ifdef HAVE_SIN6_LEN
+	s_in.sin6_len    = sizeof(s_in);
+#endif
 	if ((ret = sendto(s->fd, buffer, buflen, 0, (struct sockaddr *) &s_in, sizeof(s_in))) < 0) {
 		socket_error("udp_send6");
 	}
@@ -464,6 +472,9 @@ static char *udp_host_addr6(socket_udp *s)
 
 	memset((char *)&local, 0, len);
 	local.sin6_family = AF_INET6;
+#ifdef HAVE_SIN6_LEN
+	local.sin6_len    = len;
+#endif
 
 	if ((result = getsockname(s->fd,(struct sockaddr *)&local, &len)) < 0){
 		local.sin6_addr = in6addr_any;

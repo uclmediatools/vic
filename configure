@@ -2200,7 +2200,51 @@ EOF
  
 fi
 
+echo $ac_n "checking for sin6_len in struct sockaddr_in6""... $ac_c" 1>&6
+echo "configure:2205: checking for sin6_len in struct sockaddr_in6" >&5
+if eval "test \"`echo '$''{'ucl_cv_sin6_len'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 2210 "configure"
+#include "confdefs.h"
 
+		#ifdef HAVE_NETINET6_IN6_H
+		#include <netinet6/in6.h>
+		#else
+		#include <netinet/in.h>
+		#endif /* HAVE_NETINET_IN6_H */
+	
+int main() {
+
+		struct sockaddr_in6	s_in;
+		s_in.sin6_len = 0;
+	
+; return 0; }
+EOF
+if { (eval echo configure:2226: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  ucl_cv_sin6_len=yes
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  ucl_cv_sin6_len=no
+	
+fi
+rm -f conftest*
+fi
+
+echo "$ac_t""$ucl_cv_sin6_len" 1>&6
+if test $ucl_cv_sin6_len = yes
+then
+	cat >> confdefs.h <<\EOF
+#define HAVE_SIN6_LEN 1
+EOF
+ 
+fi
+
+# Done, create the output files....
 
 trap '' 1 2 15
 cat > confcache <<\EOF

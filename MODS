@@ -184,6 +184,9 @@ v1.0.10	- Mbus updates from Markus Germeier, which fix compatibility with
 	- Ignore connection refused errors in IPv4 UDP send.
 	- Hide definition of struct mbus_config
 	- Add a version number to the mbus config file
+	- Fixes for FreeBSD v3.2 with INRIA IPv6 stack from Fred Templin
+	- Add configure check for sin6_len in struct sockaddr_in6 (seems
+	  that FreeBSD has this, but many systems don't)
 
 
 Still to do...

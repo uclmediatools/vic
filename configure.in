@@ -213,6 +213,25 @@ then
 	AC_DEFINE(HAVE_ST_ADDRINFO) 
 fi
 
-AC_CONFIG_HEADER(config.h)
+AC_CACHE_CHECK(for sin6_len in struct sockaddr_in6, ucl_cv_sin6_len,
+	[AC_TRY_COMPILE([
+		#ifdef HAVE_NETINET6_IN6_H
+		#include <netinet6/in6.h>
+		#else
+		#include <netinet/in.h>
+		#endif /* HAVE_NETINET_IN6_H */
+	],[
+		struct sockaddr_in6	s_in;
+		s_in.sin6_len = 0;
+	],
+		ucl_cv_sin6_len=yes,	
+		ucl_cv_sin6_len=no
+	)])
+if test $ucl_cv_sin6_len = yes
+then
+	AC_DEFINE(HAVE_SIN6_LEN) 
+fi
 
+# Done, create the output files....
+AC_CONFIG_HEADER(config.h)
 AC_OUTPUT(Makefile)

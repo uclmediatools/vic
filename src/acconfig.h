@@ -13,6 +13,7 @@
  */
 #undef HAVE_ST_ADDRINFO
 #undef HAVE_GETIPNODEBYNAME
+#undef HAVE_SIN6_LEN
 
 /*
  * Define this if your C library doesn't have vsnprintf.
