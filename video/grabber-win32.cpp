@@ -354,6 +354,7 @@ class VfwGrabber : public Grabber {
 	u_int			fmtsize_;
 
 	HANDLE			frame_sem_;
+    HANDLE          cb_mutex_;
 	LPBYTE			last_frame_;
 	Converter		*converter_;
 	
@@ -610,6 +611,10 @@ void VfwGrabber::start()
 		}
 	}
 
+    /* lock out VideoHandler until everything is set up - cmg */
+    cb_mutex_ = CreateMutex(NULL,FALSE,NULL);
+    WaitForSingleObject(cb_mutex_,INFINITE);
+
 	if ((capwin_ = capCreateCaptureWindow((LPSTR)"Capture Window", WS_POPUP | WS_CAPTION, CW_USEDEFAULT, CW_USEDEFAULT, (basewidth_ / decimate_ + GetSystemMetrics(SM_CXFIXEDFRAME)), (baseheight_ / decimate_ + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYFIXEDFRAME)), (HWND) 0, (int) 0)) == NULL) {
 		fprintf(stderr, "capCreateCaptureWindow: failed - %lu\n", capwin_);
 		abort();
@@ -862,6 +867,9 @@ void Vfw422Grabber::start()
 		converter(new IC_Converter_422(fmt_->biCompression, fmt_->biBitCount, fmt_->biWidth, fmt_->biHeight));
 		break;
 	}
+    /* allow video handler callback to progress */
+    ReleaseMutex(cb_mutex_);
+    Grabber::timeout();
 }
 
 void VfwCIFGrabber::start()
@@ -878,6 +886,9 @@ void VfwCIFGrabber::start()
 		converter(new IC_Converter_411(fmt_->biCompression, fmt_->biBitCount, fmt_->biWidth, fmt_->biHeight));
 		break;
 	}
+    /* allow video handler callback to progress */
+    ReleaseMutex(cb_mutex_);
+    Grabber::timeout();
 }
 
 void VfwGrabber::stop()
@@ -886,10 +897,13 @@ void VfwGrabber::stop()
 
 	if (capturing_)
 		capCaptureStop(capwin_);
-	capturing_ = 0;
+    /* ensure this won't be called */
+    capSetCallbackOnVideoStream(capwin_, NULL);
+    capturing_ = 0;
 	capture_=0;
 	ReleaseSemaphore(frame_sem_, 1, NULL);
 	CloseHandle(frame_sem_);
+    CloseHandle(cb_mutex_);
 #ifdef NDEF
 	if (caps_.fHasOverlay)
 		capOverlay(capwin_, FALSE);
@@ -906,7 +920,6 @@ void VfwGrabber::stop()
 
 	delete [] fmt_;
 
-	capSetCallbackOnVideoStream(capwin_, NULL);
 	capSetCallbackOnError(capwin_, NULL);
 	DestroyWindow(capwin_);
 	capwin_ = NULL;
@@ -975,6 +988,12 @@ VfwGrabber::VideoHandler(HWND hwnd, LPVIDEOHDR vh)
 	static int not_done = 0;
 
 	VfwGrabber *gp = (VfwGrabber*)capGetUserData(hwnd);
+    /* in case we are not fast enough */
+    if (gp==NULL) return ((LRESULT)TRUE);
+
+    /* mutex with start/grab */
+    WaitForSingleObject(gp->cb_mutex_,INFINITE);
+
 #ifdef DEBUG__	
 	debug_msg("VfwGrabber::VideoHandler: thread=%x data=%x flags=%x len=%d time=%d\n",
 		GetCurrentThreadId(),
@@ -986,11 +1005,14 @@ VfwGrabber::VideoHandler(HWND hwnd, LPVIDEOHDR vh)
 	else if (not_done++ % 10 == 0)
 		debug_msg("Frames not ready! %d\n", not_done);
 
-	/* calculate amount of time to sleep*/
-	int sleep=((int)gp->tick(gp->grab())/1000);
-	/* only sleep if it's worth it */
-	if (sleep>0) Sleep(sleep);
+    /* now uses normal Grabber timeout to grab - cmg */
 
+	/* calculate amount of time to sleep*/
+	/*int sleep=((int)gp->tick(gp->grab())/1000);*/
+	/* only sleep if it's worth it */
+	/*if (sleep>0) Sleep(sleep);*/
+
+    ReleaseMutex(gp->cb_mutex_);
 	return ((LRESULT)TRUE);
 }
 
@@ -1017,8 +1039,13 @@ VfwGrabber::grab()
 		inw_, inh_, outw_, outh_);
 #endif
 
-	if (last_frame_ == NULL || capturing_ == 0)
+    /* mutex with VideoHandler */
+    WaitForSingleObject(cb_mutex_,INFINITE);
+
+    if (last_frame_ == NULL || capturing_ == 0) {
+        ReleaseMutex(cb_mutex_);
 		return (FALSE);
+    }
 
 	converter_->convert((u_int8_t*)last_frame_, basewidth_ / decimate_, baseheight_ / decimate_, frame_, outw_, outh_, TRUE);
 	/*ReleaseSemaphore(frame_sem_, 1, NULL);*/
@@ -1026,5 +1053,7 @@ VfwGrabber::grab()
 	suppress(frame_);
 	saveblks(frame_);
 	YuvFrame f(media_ts(), frame_, crvec_, outw_, outh_);
-	return (target_->consume(&f));
+	int rval = (target_->consume(&f));
+    ReleaseMutex(cb_mutex_);
+    return rval;
 }
