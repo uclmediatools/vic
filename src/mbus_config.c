@@ -45,6 +45,7 @@
 #define MBUS_ENCRYPT_BY_DEFAULT
 #define MBUS_ENCRKEY_LEN      7
 #define MBUS_HASHKEY_LEN     12
+#define MBUS_BUF_SIZE	  1500
 
 char *mbus_new_encrkey(void)
 {
