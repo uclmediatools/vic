@@ -679,16 +679,12 @@ void VfwGrabber::start()
 	case Miro_dc20_NT:
 	case AV_Master:
     case Generic:
-		if (caps_.fHasDlgVideoFormat)
-			if (caps_.fHasDlgVideoSource)
-				capDlgVideoSource(capwin_);
-			for (;;) {
-				capDlgVideoFormat(capwin_);
-				delete [] fmt_;
-				fmtsize_ = capGetVideoFormatSize(capwin_);
-				fmt_ = (LPBITMAPINFOHEADER) new u_char [fmtsize_];
-				capGetVideoFormat(capwin_, fmt_, fmtsize_);
-			}
+        if (caps_.fHasDlgVideoFormat) capDlgVideoFormat(capwin_);
+		if (caps_.fHasDlgVideoSource) capDlgVideoSource(capwin_);
+		delete [] fmt_;
+		fmtsize_ = capGetVideoFormatSize(capwin_);
+		fmt_ = (LPBITMAPINFOHEADER) new u_char [fmtsize_];
+	    capGetVideoFormat(capwin_, fmt_, fmtsize_);
 		break;
 	case Intel_SVR3:
 		/* the driver does not like to generic query much
