@@ -43,8 +43,8 @@ extern "C" {
 #endif
 
 int         udp_addr_valid(const char *addr);
-socket_udp *udp_init(char *addr, uint16_t rx_port, uint16_t tx_port, int ttl);
-socket_udp *udp_init_if(char *addr, char *iface, uint16_t rx_port, uint16_t tx_port, int ttl);
+socket_udp *udp_init(const char *addr, uint16_t rx_port, uint16_t tx_port, int ttl);
+socket_udp *udp_init_if(const char *addr, const char *iface, uint16_t rx_port, uint16_t tx_port, int ttl);
 void        udp_exit(socket_udp *s);
 int         udp_send(socket_udp *s, char *buffer, int buflen);
 int         udp_recv(socket_udp *s, char *buffer, int buflen);

@@ -55,7 +55,7 @@ void test_net_udp(void)
 	struct timeval	 timeout;
 	socket_udp	*s1, *s2;
 	char		 buf1[BUFSIZE], buf2[BUFSIZE];
-	char		*hname;
+	const char	*hname;
 	int		 rc;
 
 	srand48(time(NULL));

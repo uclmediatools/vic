@@ -65,7 +65,7 @@ struct	in6_addr	in6addr_any = {IN6ADDR_ANY_INIT};
 
 struct _socket_udp {
 	int	 	 mode;	/* IPv4 or IPv6 */
-	char		*addr;
+        char	        *addr;
 	uint16_t	 rx_port;
 	uint16_t	 tx_port;
 	ttl_t	 	 ttl;
@@ -199,20 +199,21 @@ static int udp_addr_valid4(const char *dst)
         return FALSE;
 }
 
-static socket_udp *udp_init4(char *addr, char *iface, uint16_t rx_port, uint16_t tx_port, int ttl)
+static socket_udp *udp_init4(const char *addr, const char *iface, uint16_t rx_port, uint16_t tx_port, int ttl)
 {
 	int                 	 reuse = 1;
 	struct sockaddr_in  	 s_in;
 	struct in_addr		 iface_addr;
-	socket_udp         	*s = (socket_udp *) malloc(sizeof(socket_udp));
+	socket_udp         	*s = (socket_udp *)malloc(sizeof(socket_udp));
 	s->mode    = IPv4;
-	s->addr    = addr;
+	s->addr    = NULL;
 	s->rx_port = rx_port;
 	s->tx_port = tx_port;
 	s->ttl     = ttl;
 	if (inet_pton(AF_INET, addr, &s->addr4) != 1) {
 		struct hostent *h = gethostbyname(addr);
 		if (h == NULL) {
+                        free(s);
 			return NULL;
 		}
 		memcpy(&(s->addr4), h->h_addr_list[0], sizeof(s->addr4));
@@ -220,6 +221,7 @@ static socket_udp *udp_init4(char *addr, char *iface, uint16_t rx_port, uint16_t
 	if (iface != NULL) {
 		if (inet_pton(AF_INET, iface, &iface_addr) != 1) {
 			debug_msg("Illegal interface specification\n");
+                        free(s);
 			return NULL;
 		}
 	} else {
@@ -275,6 +277,7 @@ static socket_udp *udp_init4(char *addr, char *iface, uint16_t rx_port, uint16_t
 			}
 		}
 	}
+        s->addr = strdup(addr);
 	return s;
 }
 
@@ -290,6 +293,7 @@ static void udp_exit4(socket_udp *s)
 		}
 	}
 	close(s->fd);
+        free(s->addr);
 	free(s);
 }
 
@@ -349,14 +353,14 @@ static int udp_addr_valid6(const char *dst)
         return FALSE;
 }
 
-static socket_udp *udp_init6(char *addr, char *iface, uint16_t rx_port, uint16_t tx_port, int ttl)
+static socket_udp *udp_init6(const char *addr, const char *iface, uint16_t rx_port, uint16_t tx_port, int ttl)
 {
 #ifdef HAVE_IPv6
 	int                 reuse = 1;
 	struct sockaddr_in6 s_in;
 	socket_udp         *s = (socket_udp *) malloc(sizeof(socket_udp));
 	s->mode    = IPv6;
-	s->addr    = addr;
+	s->addr    = NULL;
 	s->rx_port = rx_port;
 	s->tx_port = tx_port;
 	s->ttl     = ttl;
@@ -370,6 +374,7 @@ static socket_udp *udp_init6(char *addr, char *iface, uint16_t rx_port, uint16_t
 		/* We should probably try to do a DNS lookup on the name */
 		/* here, but I'm trying to get the basics going first... */
 		debug_msg("IPv6 address conversion failed\n");
+                free(s);
 		return NULL;	
 	}
 	s->fd = socket(AF_INET6, SOCK_DGRAM, 0);
@@ -430,6 +435,8 @@ static socket_udp *udp_init6(char *addr, char *iface, uint16_t rx_port, uint16_t
 		}
 	}
 	assert(s != NULL);
+
+        s->addr = strdup(addr);
 	return s;
 #else
 	UNUSED(addr);
@@ -460,6 +467,7 @@ static void udp_exit6(socket_udp *s)
 		}
 	}
 	close(s->fd);
+        free(s->addr);
 	free(s);
 #else
 	UNUSED(s);
@@ -560,12 +568,12 @@ int udp_addr_valid(const char *addr)
         return udp_addr_valid4(addr) | udp_addr_valid6(addr);
 }
 
-socket_udp *udp_init(char *addr, uint16_t rx_port, uint16_t tx_port, int ttl)
+socket_udp *udp_init(const char *addr, uint16_t rx_port, uint16_t tx_port, int ttl)
 {
 	return udp_init_if(addr, NULL, rx_port, tx_port, ttl);
 }
 
-socket_udp *udp_init_if(char *addr, char *iface, uint16_t rx_port, uint16_t tx_port, int ttl)
+socket_udp *udp_init_if(const char *addr, const char *iface, uint16_t rx_port, uint16_t tx_port, int ttl)
 {
 	socket_udp *res;
 	
