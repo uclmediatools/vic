@@ -182,6 +182,7 @@ v1.0.10	- Mbus updates from Markus Germeier, which fix compatibility with
 	  and the same for the signed varients.
 	- Implement encryption in the RTP code
 	- Ignore connection refused errors in IPv4 UDP send.
+	- Hide definition of struct mbus_config
 
 
 Still to do...

@@ -42,14 +42,7 @@ struct mbus_key {
 	int	 key_len;
 };
 
-struct mbus_config {
-#ifdef WIN32
-	HKEY		  cfgKey;
-#else
-	fd_t		  cfgfd;
-#endif
-	int		  cfg_locked;
-};
+struct mbus_config;
 
 #define SCOPE_HOSTLOCAL       0
 #define SCOPE_HOSTLOCAL_NAME "HOSTLOCAL"
@@ -72,6 +65,7 @@ void mbus_unlock_config_file(struct mbus_config *m);
 void mbus_get_encrkey(struct mbus_config *m, struct mbus_key *key);
 void mbus_get_hashkey(struct mbus_config *m, struct mbus_key *key);
 void mbus_get_net_addr(struct mbus_config *m, char *net_addr, uint16_t *net_port, int *net_scope);
+struct mbus_config *mbus_create_config(void);
 
 #if defined(__cplusplus)
 }

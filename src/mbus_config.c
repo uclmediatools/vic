@@ -51,6 +51,15 @@
 #define MBUS_FILE_NAME   ".mbus"
 #define MBUS_FILE_NAME_LEN    5
 
+struct mbus_config {
+#ifdef WIN32
+	HKEY		  cfgKey;
+#else
+	fd_t		  cfgfd;
+#endif
+	int		  cfg_locked;
+};
+
 char *mbus_new_encrkey(void)
 {
 	char		*key;	/* The key we are going to return... */
@@ -568,3 +577,9 @@ void mbus_get_net_addr(struct mbus_config *m, char *net_addr, uint16_t *net_port
 #endif
    
 }
+
+struct mbus_config *mbus_create_config(void)
+{
+	return (struct mbus_config *) xmalloc(sizeof(struct mbus_config));
+}
+

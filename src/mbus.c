@@ -407,7 +407,7 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 		return NULL;
 	}
 
-	m->cfg = (struct mbus_config *) xmalloc(sizeof(struct mbus_config));
+	m->cfg = mbus_create_config();
 	mbus_lock_config_file(m->cfg);
 	net_addr = (char *) xmalloc(20);
 	mbus_get_net_addr(m->cfg, net_addr, &net_port, &net_scope);
