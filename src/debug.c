@@ -1,7 +1,11 @@
 /*
  * FILE:    debug.c
  * PROGRAM: RAT
- * AUTHOR:  Isidor Kouvelas + Colin Perkins + Mark Handley + Orion Hodson
+ * AUTHORS: Isidor Kouvelas 
+ *          Colin Perkins 
+ *          Mark Handley 
+ *          Orion Hodson
+ *          Jerry Isdale
  * 
  * $Revision$
  * $Date$
@@ -62,5 +66,74 @@ void _dprintf(const char *format, ...)
 #else
         UNUSED (format);
 #endif /* DEBUG */
+}
+
+void debug_dump(void*lp, long len)
+{
+   char * p;
+   long i, j, start;
+   char Buff[80];
+   char stuffBuff[10];
+   char tmpBuf[10];
+  
+   _dprintf("Dump of %ld=%lx bytes\n",len, len);
+   start = 0L;
+   while (start < len)
+   {
+    /* start line with pointer position key */
+      p = (char*)lp + start;
+      sprintf(Buff,"%p: ",p);
+  
+    /* display each character as hex value */
+      for (i=start, j=0; j < 16; p++,i++, j++)
+      {
+         if (i < len)
+         {
+            sprintf(tmpBuf,"%X",((int)(*p) & 0xFF));
+  
+            if (strlen((char *)tmpBuf) < 2)
+            {
+               stuffBuff[0] = '0';
+               stuffBuff[1] = tmpBuf[0];
+               stuffBuff[2] = ' ';
+               stuffBuff[3] = '\0';
+            } else
+            {
+               stuffBuff[0] = tmpBuf[0];
+               stuffBuff[1] = tmpBuf[1];
+               stuffBuff[2] = ' ';
+               stuffBuff[3] = '\0';
+            }
+            strcat(Buff, stuffBuff);
+         } else
+            strcat(Buff," ");
+         if (j == 7) /* space between groups of 8 */
+            strcat(Buff," ");
+      }
+  
+    /* fill out incomplete lines */
+      for(;j<16;j++)
+      {
+         strcat(Buff,"   ");
+         if (j == 7)
+            strcat(Buff," ");
+      }
+      strcat(Buff,"  ");
+  
+    /* display each character as character value */
+      for (i=start,j=0,p=(char*)lp+start;
+         (i < len && j < 16); p++,i++, j++)
+      {
+         if ( ((*p) >= ' ') && ((*p) <= '~') )   /* test displayable */
+            sprintf(tmpBuf,"%c", *p);
+         else
+            sprintf(tmpBuf,"%c", '.');
+         strcat(Buff,tmpBuf);
+         if (j == 7)   /* space between groups of 8 */
+            strcat(Buff," ");
+      }
+      _dprintf("%s\n", Buff);
+      start = i;  /* next line starting byte */
+   }
 }
 

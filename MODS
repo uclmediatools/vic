@@ -98,6 +98,7 @@ v1.0.8	- Add mbus_sent_all()
 	  if packets are sent faster than the timeout period.
 	- Add binary tree.
 	- Add OpenBSD fixes from Angelos D. Keromytis
+	- Add Jerry Isdale's debug_dump() routine.
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,

@@ -41,14 +41,14 @@
 #define _RAT_DEBUG_H
 
 #define UNUSED(x)	(x=x)
-
 #define debug_msg	_dprintf("%s:%d ", __FILE__, __LINE__), _dprintf
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
-void	 _dprintf(const char *format, ...);
+void _dprintf(const char *format, ...);
+void debug_dump(void*lp, long len);
 
 #if defined(__cplusplus)
 }
