@@ -54,7 +54,7 @@ static const char rcsid[] =
 #include "iohandler.h"
 #include "device-input.h"
 
-class XILGrabber : public Grabber, public IOHandler {
+class XILGrabber : public Grabber {
  protected:
 	XILGrabber();
  public:
@@ -65,7 +65,6 @@ class XILGrabber : public Grabber, public IOHandler {
 	virtual void fps(int);
 	inline int is_pal() { return (max_fps_ == 25); }
  protected:
-	void dispatch(int mask);
 	int attr(const char* name, int value);
 	int attr(const char* name);
 	const char* cattr(const char* name);
@@ -77,12 +76,11 @@ class XILGrabber : public Grabber, public IOHandler {
 	XilImage source_;
 	XilImage image_;
 	double scale_;
-	double nextframetime_;
-	int fd_;		/* rtvc data fd */
 	u_int decimate_;
 	u_int basewidth_;
 	u_int baseheight_;
 	u_int max_fps_;		/* 25 (PAL) or 30 (NTSC) */
+
 };
 
 class XILYuvGrabber : public XILGrabber {
@@ -189,39 +187,54 @@ int XILDevice::command(int argc, const char*const* argv)
 
 XILGrabber::XILGrabber()
 {
-	xil_ = xil_open();
-	if (xil_ == 0) {
-		status_ = -1;
-		return;
-	}
-	source_ = xil_create_from_device(xil_, "SUNWrtvc", 0);
-	if (source_ == 0) {
-		xil_close(xil_);
-		status_ = -1;
-		return;
-	}
+  xil_ = NULL;
+  source_ = NULL;
+  image_ = NULL;
 
-	attr("PORT_V", 1);
-	attr("IMAGE_SKIP", 1);
-	attr("MAX_BUFFERS", 1);
-
-	XilDataType datatype;
-	u_int nbands;
-	xil_get_info(source_, &basewidth_, &baseheight_, &nbands, &datatype);
-	image_ = xil_create(xil_, basewidth_ >> 1, baseheight_ >> 1,
-			    nbands, datatype);
-	decimate_ = 2;
-	scale_ = .5;
-	frame_ = 0;
-
-	fd_ = attr("FILE_DESCRIPTOR");
-	max_fps_ = attr("FORMAT_V") == 1? 25 : 30;
+  xil_ = xil_open();
+  if (xil_ == 0) {
+    status_ = -1;
+    return;
+  }
+  
+  source_ = xil_create_from_device(xil_, "MMACo1k", 0);
+  
+  if (source_ == 0) {
+    xil_close(xil_);
+    status_ = -1;
+    return;
+  }
+  
+  attr("PORT_V", 1);
+  attr("IMAGE_SKIP", 1);
+  attr("MAX_BUFFERS", 1);
+  
+  XilDataType datatype;
+  u_int nbands;
+  xil_get_info(source_, &basewidth_, &baseheight_, &nbands, &datatype);
+  image_ = xil_create(xil_, basewidth_ >> 1, baseheight_ >> 1,
+                      nbands, datatype);
+  decimate_ = 2;
+  scale_ = .5;
+  frame_ = 0;
+  
+  max_fps_ = attr("FORMAT_V") == 1? 25 : 30;
 }
 
 XILGrabber::~XILGrabber()
 {
-	if (status_ >= 0)
-		xil_close(xil_);
+  if (status_ >= 0){
+    if (image_)
+      xil_destroy(image_);
+    image_ = NULL;
+    if (source_)
+      xil_destroy(source_);
+    source_ = NULL;
+    if (xil_)
+      xil_close(xil_);        
+    xil_ = NULL;
+  }
+
 }
 
 int XILGrabber::attr(const char* name, int value)
@@ -311,32 +324,15 @@ void XILGrabber::fps(int f)
 
 void XILGrabber::start()
 {
-	link(fd_, TK_READABLE);
-	double now = gettimeofday();
-	frameclock_ = now;
-	nextframetime_ = now + tick(grab());
+  if (running_) return;
+
+  Grabber::start();  
 }
+
 
 void XILGrabber::stop()
 {
-	unlink();
-}
-
-void XILGrabber::dispatch(int mask)
-{
-	double now = gettimeofday();
-	if (nextframetime_ > now) {
-		/*
-		 * the frame is too early & we want to flush it.
-		 * unfortunately, the sunvideo driver doesn't provide
-		 * a hook for flushing a frame.  So, we have to do
-		 * a 2MB read to get rid of the sucker.
-		 */
-		char* buf = new char[768 * 576 * 3];
-		(void)pread(fd_, (void*)buf, sizeof(buf), (off_t)0x01000000);
-		delete buf;
-	} else
-		nextframetime_ = tick(grab()) + now;
+  Grabber::stop();  
 }
 
 /*
@@ -374,8 +370,10 @@ XILYuvGrabber::XILYuvGrabber()
 
 XILYuvGrabber::~XILYuvGrabber()
 {
-	xil_destroy(image_);
-	delete frame_;
+  if (image_)
+    xil_destroy(image_);
+  image_= NULL;
+  delete frame_;
 }
 
 void XILYuvGrabber::setsize()
@@ -603,8 +601,11 @@ XILCodecGrabber::XILCodecGrabber(const char* type)
 
 XILCodecGrabber::~XILCodecGrabber()
 {
+  if (image_)
 	xil_destroy(image_);
-	xil_cis_destroy(cis_);
+  image_ = NULL;
+  
+  xil_cis_destroy(cis_);
 }
 
 int XILCodecGrabber::cattr(const char* name, int value)
@@ -619,9 +620,10 @@ u_char* XILCodecGrabber::capture(int& length)
 	xil_compress(image_, cis_);
 	xil_cis_sync(cis_);
 	xil_toss(image_);
-	if (!xil_cis_has_frame(cis_))
-		return (0);
-
+	if (!xil_cis_has_frame(cis_)){
+      printf("capture no frame in cis\n");
+      return (0);
+    }
 	int cc, nf;
 	u_char* p = (u_char*)xil_cis_get_bits_ptr(cis_, &cc, &nf);
 	length = cc;
@@ -677,11 +679,13 @@ int XILJpegGrabber::grab()
 {
 	/*XXX can get timestamp from xil */
 	int cc;
+
 	u_char* p = capture(cc);
 	if (p == 0)
 		return (0);
 	/* get rid of the jfif header that xil prepends to each frame */
 	u_char* ep;
+
 	for (ep = p + cc; p < ep; ++p) {
 		if (*p == 0xff) {
 			++p;
@@ -697,11 +701,13 @@ int XILJpegGrabber::grab()
 			}
 		}
 	}
+
 	if (p >= ep)
 		return (0);
 
 	JpegFrame f(media_ts(), p, ep - p, q_, 1,
 		    basewidth_ / decimate_, baseheight_ / decimate_);
+
 	return (target_->consume(&f));
 }
 

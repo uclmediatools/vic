@@ -289,7 +289,7 @@ proc transmit { } {
 		# if that doesn't work, try anything else
 
 		if { [inList $videoFormat $DF] } {
-			if { $videoFormat == "h261" || $videoFormat == "cellb" } {
+			if { $videoFormat == "h261" || $videoFormat == "cellb" || $videoFormat == "jpeg"} {
 				# use special hardware tag...
 				set encoder ""
 				if  { $useHardwareComp } {
@@ -328,7 +328,7 @@ proc transmit { } {
 		}
 		if { $V(grabber) == "" } {
 			#XXX
-			puts XXX couldn't set up grabber/encoder for $ff->$videoFormat
+			puts "Error: grabber=\"\" puts XXX couldn't set up grabber/encoder for $ff->$videoFormat"
 			exit 1
 		}
 		set error [$V(grabber) status]
@@ -1019,15 +1019,20 @@ proc build.encoder w {
 }
 
 proc jpeg_setq value {
+	global useHardwareComp
 	incr value
 	if { $value > 95 } {
 		set value 95
 	} elseif { $value < 5 } {
 		set value 5
 	}
-	if [have grabber] {
-		encoder q $value
-	}
+	
+	if { $useHardwareComp } {
+		grabber q $value
+	} elseif [have grabber] {
+			encoder q $value
+	}	
+	
 	global qvalue
 	$qvalue configure -text $value
 }

@@ -47,7 +47,6 @@ static const char rcsid[] =
 #include <fcntl.h>
 /* This bit for playout buffer as was in playout.cc */
 
-extern void dprintf(const char *fmt, ...);
 char *MtuAlloc::blk_list_;
 
 MtuAlloc::MtuAlloc()
@@ -497,7 +496,6 @@ void Source::adapt(u_int32_t arr_ts, u_int32_t ts, int flag)
 			mbus_->mbus_send(mbus_->mbus_audio_addr, "rtp.source.playout", arg, 0);
 			pending_ = 0;
 			/* set to the max between the audio & video playout delays */
-			dprintf("ad = %d\tvd= %d\n", apdelay_, pdelay_);
 			if (pdelay_ < apdelay_)
 #ifndef WIN32 
 				pdelay_ = apdelay_;
