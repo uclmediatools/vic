@@ -173,6 +173,9 @@ struct rtp;
 struct rtp	*rtp_init(char *addr, uint16_t rx_port, uint16_t tx_port, int ttl, double rtcp_bw, 
 			  void (*callback)(struct rtp *session, rtp_event *e),
 			  void *user_data);
+struct rtp	*rtp_init_if(char *addr, char *iface, uint16_t rx_port, uint16_t tx_port, int ttl, double rtcp_bw, 
+			     void (*callback)(struct rtp *session, rtp_event *e),
+			     void *user_data);
 int 		 rtp_setopt(struct rtp *session, int optname, int optval);
 int 		 rtp_getopt(struct rtp *session, int optname, int *optval);
 void 		*rtp_get_userdata(struct rtp *session);

@@ -840,6 +840,13 @@ struct rtp *rtp_init(char *addr, uint16_t rx_port, uint16_t tx_port, int ttl, do
                      void (*callback)(struct rtp *session, rtp_event *e),
                      void *userdata)
 {
+	return rtp_init_if(addr, NULL, rx_port, tx_port, ttl, rtcp_bw, callback, userdata);
+}
+
+struct rtp *rtp_init_if(char *addr, char *iface, uint16_t rx_port, uint16_t tx_port, int ttl, double rtcp_bw, 
+                        void (*callback)(struct rtp *session, rtp_event *e),
+                        void *userdata)
+{
 	struct rtp 	*session;
 	int         	 i, j;
 	char		*cname;
@@ -856,8 +863,8 @@ struct rtp *rtp_init(char *addr, uint16_t rx_port, uint16_t tx_port, int ttl, do
 	session->rx_port	= rx_port;
 	session->tx_port	= tx_port;
 	session->ttl		= ttl;
-	session->rtp_socket	= udp_init(addr, rx_port, tx_port, ttl);
-	session->rtcp_socket	= udp_init(addr, (uint16_t) (rx_port+1), (uint16_t) (tx_port+1), ttl);
+	session->rtp_socket	= udp_init_if(addr, iface, rx_port, tx_port, ttl);
+	session->rtcp_socket	= udp_init_if(addr, iface, (uint16_t) (rx_port+1), (uint16_t) (tx_port+1), ttl);
 
 	init_opt(session);
 
