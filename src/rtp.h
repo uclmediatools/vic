@@ -145,8 +145,8 @@ int		 rtp_add_csrc(struct rtp *session, u_int32 csrc);
 int		 rtp_valid_ssrc(struct rtp *session, u_int32 ssrc);
 int		 rtp_set_sdes(struct rtp *session, u_int32 ssrc, u_int8 type, char *value, int length);
 const char	*rtp_get_sdes(struct rtp *session, u_int32 ssrc, u_int8 type);
-rtcp_sr		*rtp_get_sr(struct rtp *session, u_int32 ssrc);
-rtcp_rr 	*rtp_get_rr(struct rtp *session, u_int32 reporter, u_int32 reportee);
+const rtcp_sr	*rtp_get_sr(struct rtp *session, u_int32 ssrc);
+const rtcp_rr	*rtp_get_rr(struct rtp *session, u_int32 reporter, u_int32 reportee);
 void		 rtp_send_bye(struct rtp *session);
 void		 rtp_done(struct rtp *session);
 
