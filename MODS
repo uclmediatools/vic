@@ -381,12 +381,13 @@ v1.2.5	- More informative error message when the lock on the mbus configuration
 	- Add udp_sendv() (Colin Perkins/Bill May)
 	- Explicitly set send/recv buffer sizes to 1Mbyte (Colin Perkins)
 	- Fix sense of RTP_OPT_WEAK_VALIDATION (Colin Perkins)
-	- Make RTP_OPT_WEAK_VALIDATION more aggressive (only use when speed
-	  is more important than correctness) (Colin Perkins)
-	- Assorted performance tweaks (Colin Perkins)
+	- Make RTP_OPT_WEAK_VALIDATION more aggressive, for use when speed
+	  is more important than correctness (Colin Perkins)
+	- Assorted performance tweaks to RTP code (Colin Perkins)
 	- Add RTP_OPT_REUSE_PACKET_BUFS (Colin Perkins)
 	- Fix potential crash in init_rng (Bill May)
 	- Add rtp_send_data_iov() (Bill May)
+	* 15 April 2002
 
 
 Still to do...
