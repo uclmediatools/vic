@@ -52,6 +52,7 @@ static const char rcsid[] =
 #include <sys/stat.h>
 #endif
 #include "ntp-time.h"
+#include "pktbuf-rtp.h"
 #include "transmitter.h"
 #include "net.h"
 #include "source.h"
@@ -62,8 +63,8 @@ static const char rcsid[] =
 extern "C" writev(int, iovec*, int);
 #endif
 
-Transmitter::pktbuf* Transmitter::freehdrs_;
-Transmitter::buffer* Transmitter::freebufs_;
+//Transmitter::pktbuf* Transmitter::freehdrs_;
+//Transmitter::buffer* Transmitter::freebufs_;
 int Transmitter::nbufs_;
 int Transmitter::nhdrs_;
 
@@ -86,6 +87,7 @@ Transmitter::Transmitter() :
 	busy_(0),
 	head_(0),
 	tail_(0),
+	loop_layer_(1000),
 	loopback_(1)
 {
 	memset((char*)&mh_, 0, sizeof(mh_));
@@ -99,13 +101,13 @@ inline double Transmitter::gettimeofday() const
 	return (tv.tv_sec + 1e-6 * tv.tv_usec);
 }
 
-Transmitter::pktbuf* Transmitter::alloch(u_int32_t ts, int fmt)
+/*Transmitter::pktbuf* Transmitter::alloch(u_int32_t ts, int fmt)
 {
 	pktbuf* pb = freehdrs_;
 	if (pb != 0)
 		freehdrs_ = pb->next;
 	else {
-		/*XXX grow exponentially*/
+		/*XXX grow exponentially*
 		pb = new pktbuf;
 		++nhdrs_;
 	}
@@ -135,48 +137,61 @@ Transmitter::pktbuf* Transmitter::alloc(u_int32_t ts, int fmt)
 	pb->buf = p;
 	pb->iov[1].iov_base = (char*)p->data;
 	return (pb);
-}
+}*/
 
 void Transmitter::loopback(pktbuf* pb)
 {
-	rtphdr* rh = (rtphdr*)pb->hdr;
-	int cc = pb->iov[0].iov_len + pb->iov[1].iov_len;
+	int layer = pb->layer;
+	rtphdr* rh = (rtphdr*)pb->data;
+//	int cc = pb->iov[0].iov_len + pb->iov[1].iov_len;
+	int cc = pb->len;
 	/*
 	 * Update statistics.
 	 */
+	if (layer >= loop_layer_) {
+		/*XXX*/
+		pb->release();
+		return;
+	}
 	nb_ += cc;
 	++np_;
 
 	SourceManager& sm = SourceManager::instance();
-	Source& s = *sm.localsrc();
+	Source* s = sm.localsrc();
 	timeval now = unixtime();
-	s.lts_data(now);
-	s.action();
-	s.sts_data(rh->rh_ts);
-	s.np(1);
-	s.nb(cc);
-	s.cs((u_int16_t)ntohs(rh->rh_seqno));
+	Source::Layer& sl = s->layer(pb->layer);
+
+	sl.lts_data(now);
+	s->action();
+	sl.sts_data(rh->rh_ts);
+	sl.np(1);
+	sl.nb(cc);
+	sl.cs((u_int16_t)ntohs(rh->rh_seqno),s);
 
 	int flags = ntohs(rh->rh_flags);
 	if (flags & RTP_M) {
 		++nf_;
-		s.nf(1);
+		sl.nf(1);
 	}
 	int fmt = flags & 0x7f;
 	/*
 	 * Handle initialization of loopback decoder
 	 * and changes in the stream.
 	 */
-	PacketHandler* h = s.handler();
+	PacketHandler* h = s->handler();
 	if (h == 0)
-		h = s.activate(fmt);
-	else if (s.format() != fmt)
-		h = s.change_format(fmt);
+		h = s->activate(fmt);
+	else if (s->format() != fmt) {
+		h = s->change_format(fmt);
+	}
 
-	if (s.mute() || !loopback_)
+	if (s->mute() || !loopback_) {
+		pb->release();
 		return;
+	}
 
-	h->recv(rh, (u_char*)pb->iov[1].iov_base, pb->iov[1].iov_len);
+//	h->recv(rh, (u_char*)pb->iov[1].iov_base, pb->iov[1].iov_len);
+	h->recv(pb);
 }
 
 int Transmitter::dumpfd_ = -1;
@@ -227,7 +242,8 @@ void Transmitter::dump(int fd, iovec* iov, int iovlen) const
  */
 double Transmitter::txtime(pktbuf* pb)
 {
-	int cc = pb->iov[0].iov_len + pb->iov[1].iov_len;
+//	int cc = pb->iov[0].iov_len + pb->iov[1].iov_len;
+	int cc = pb->len;
 	return (8 * cc / (1000. * kbps_));
 }
 
@@ -293,14 +309,15 @@ void Transmitter::flush()
 
 void Transmitter::output(pktbuf* pb)
 {
-	if (dumpfd_ >= 0)
-		dump(dumpfd_, pb->iov, mh_.msg_iovlen);
+	//if (dumpfd_ >= 0)
+	//	dump(dumpfd_, pb->iov, mh_.msg_iovlen);
+//dprintf("layer: %d \n",pb->layer);
 	transmit(pb);
 	loopback(pb);
-	release(pb);
+//	pb->release() is called by decoder in loopback;
 }
 
-void Transmitter::release(pktbuf* pb)
+/*void Transmitter::release(pktbuf* pb)
 {
 	pb->next = freehdrs_;
 	freehdrs_ = pb;
@@ -310,3 +327,4 @@ void Transmitter::release(pktbuf* pb)
 		freebufs_ = p;
 	}
 }
+*/

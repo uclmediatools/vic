@@ -55,30 +55,32 @@ extern "C" int getpid();
 
 static class SessionMatcher : public Matcher {
     public:
-	SessionMatcher() : Matcher("session") {}
-	TclObject* match(const char* id) {
-		if (strcmp(id, "audio/rtp") == 0)
-			return (new AudioSessionManager);
-		else if (strcmp(id, "video/rtp") == 0)
-			return (new VideoSessionManager);
-		return (0);
-	}
+		SessionMatcher() : Matcher("session") {}
+		TclObject* match(const char* id) {
+			if (strcmp(id, "audio/rtp") == 0)
+				return (new AudioSessionManager);
+			else if (strcmp(id, "video/rtp") == 0)
+				return (new VideoSessionManager);
+			return (0);
+		}
 } session_matcher;
 
 int VideoSessionManager::check_format(int fmt) const
 {
 	switch(fmt) {
-	case RTP_PT_RAW:
-	case RTP_PT_CELLB:
-	case RTP_PT_JPEG:
-	case RTP_PT_CUSEEME:
-	case RTP_PT_NV:
-	case RTP_PT_CPV:
-	case RTP_PT_H261:
-	case RTP_PT_BVC:
-	case RTP_PT_H261_COMPAT:/*XXX*/
-	case RTP_PT_H263:
-	case RTP_PT_H263P:
+		case RTP_PT_RAW:
+		case RTP_PT_CELLB:
+		case RTP_PT_JPEG:
+		case RTP_PT_CUSEEME:
+		case RTP_PT_NV:
+		case RTP_PT_CPV:
+		case RTP_PT_H261:
+		case RTP_PT_BVC:
+		case RTP_PT_H261_COMPAT:/*XXX*/
+		case RTP_PT_H263:
+		case RTP_PT_H263P:
+		case RTP_PT_LDCT:
+		case RTP_PT_PVH:
 		return (1);
 	}
 	return (0);
@@ -108,55 +110,135 @@ adios()
 	exit(0);
 }
 
-void ReportTimer::timeout()
+/*void ReportTimer::timeout()
 {
-	sm_.send_report();
-}
+sm_.send_report();
+}*/
 
 void DataHandler::dispatch(int)
 {
-	sm_.recv(this);
+	sm_->recv(this);
 }
 
 void CtrlHandler::dispatch(int)
 {
-	sm_.recv(this);
+	sm_->recv(this);
+}
+
+CtrlHandler::CtrlHandler()
+: ctrl_inv_bw_(0.),
+ctrl_avg_size_(128.)
+{
+}
+
+inline void CtrlHandler::schedule_timer()
+{
+	msched(int(fmod(double(random()), rint_) + rint_ * .5 + .5));
+}
+
+void CtrlHandler::net(Network* n)
+{
+	DataHandler::net(n);
+	cancel();
+	if (n != 0) {
+	/*
+	* schedule a timer for our first report using half the
+	* min ctrl interval.  This gives us some time before
+	* our first report to learn about other sources so our
+	* next report interval will account for them.  The avg
+	* ctrl size was initialized to 128 bytes which is
+	* conservative (it assumes everyone else is generating
+	* SRs instead of RRs).
+		*/
+		double rint = ctrl_avg_size_ * ctrl_inv_bw_;
+		if (rint < CTRL_MIN_RPT_TIME / 2. * 1000.)
+			rint = CTRL_MIN_RPT_TIME / 2. * 1000.;
+		rint_ = rint;
+		schedule_timer();
+	}
+}
+
+void CtrlHandler::sample_size(int cc)
+{
+	ctrl_avg_size_ += CTRL_SIZE_GAIN * (double(cc + 28) - ctrl_avg_size_);
+}
+
+void CtrlHandler::adapt(int nsrc, int nrr, int we_sent)
+{
+/*
+* compute the time to the next report.  we do this here
+* because we need to know if there were any active sources
+* during the last report period (nrr above) & if we were
+* a source.  The bandwidth limit for ctrl traffic was set
+* on startup from the session bandwidth.  It is the inverse
+* of bandwidth (ie., ms/byte) to avoid a divide below.
+	*/
+	double ibw = ctrl_inv_bw_;
+	if (nrr) {
+		/* there were active sources */
+		if (we_sent) {
+			ibw *= 1./CTRL_SENDER_BW_FRACTION;
+			nsrc = nrr;
+		} else {
+			ibw *= 1./CTRL_RECEIVER_BW_FRACTION;
+			nsrc -= nrr;
+		}
+	}
+	double rint = ctrl_avg_size_ * double(nsrc) * ibw;
+	if (rint < CTRL_MIN_RPT_TIME * 1000.)
+		rint = CTRL_MIN_RPT_TIME * 1000.;
+	rint_ = rint;
+}
+
+void CtrlHandler::timeout()
+{
+	sm_->announce(this);
+	schedule_timer();
 }
 
 SessionManager::SessionManager()
-	: dh_(*this), ch_(*this), rt_(*this), 
-	  badversion_(0), badoptions_(0), badfmt_(0), badext_(0), nrunt_(0),
-	  last_np_(0),
-	  sdes_seq_(0),
-	  rtcp_inv_bw_(0.),
-	  rtcp_avg_size_(128.),
-	  confid_(-1), mb_(mbus_handler_engine, NULL), lipSyncEnabled_(0)
+//	: dh_(*this), ch_(*this), rt_(*this), 
+: badversion_(0), badoptions_(0), badfmt_(0), badext_(0), nrunt_(0),
+last_np_(0),
+sdes_seq_(0),
+rtcp_inv_bw_(0.),
+rtcp_avg_size_(128.), 
+confid_(-1), mb_(mbus_handler_engine, NULL), lipSyncEnabled_(0)
 {
-	/*XXX*/
+	/*XXX For adios() to send bye*/
 	manager = this;
+	
+	for (int i = 0; i < NLAYER; ++i) {
+		dh_[i].manager(this);
+		ch_[i].manager(this);
+	}
+	
 	/*XXX*/
 	pktbuf_ = new u_char[2 * RTP_MTU];
-
+	pool_ = new BufferPool;
+	
 	/*
-	 * schedule a timer for our first report using half the
-	 * min rtcp interval.  This gives us some time before
-	 * our first report to learn about other sources so our
-	 * next report interval will account for them.  The avg
-	 * rtcp size was initialized to 128 bytes which is
-	 * conservative (it assumes everyone else is generating
-	 * SRs instead of RRs).
-	 */
+	* schedule a timer for our first report using half the
+	* min rtcp interval.  This gives us some time before
+	* our first report to learn about other sources so our
+	* next report interval will account for them.  The avg
+	* rtcp size was initialized to 128 bytes which is
+	* conservative (it assumes everyone else is generating
+	* SRs instead of RRs).
+	*/
 	double rint = rtcp_avg_size_ * rtcp_inv_bw_;
 	if (rint < RTCP_MIN_RPT_TIME / 2. * 1000.)
 		rint = RTCP_MIN_RPT_TIME / 2. * 1000.;
 	rint_ = rint;
-	rt_.msched(int(fmod(double(random()), rint) + rint * .5 + .5));
+	//rt_.msched(int(fmod(double(random()), rint) + rint * .5 + .5));
 }
 
 SessionManager::~SessionManager()
 {
 	if (pktbuf_) 
 		delete pktbuf_;
+	
+	delete pool_;
 }
 
 u_int32_t SessionManager::alloc_srcid(Address & addr) const
@@ -168,7 +250,7 @@ u_int32_t SessionManager::alloc_srcid(Address & addr) const
 	srcid += (u_int32_t)getpid();
 /* __IPv6 changed srcid computation */
 	for(int i = 0; i < (addr.length() % sizeof(u_int32_t)); i++) {
-	  srcid += ((u_int32_t*)((const void*)addr))[i];
+		srcid += ((u_int32_t*)((const void*)addr))[i];
 	}
 	return (srcid);
 }
@@ -182,14 +264,14 @@ char* SessionManager::stats(char* cp) const
 	cp = onestat(cp, "Bad-Payload-Format", badfmt_);
 	cp = onestat(cp, "Bad-RTP-Extension", badext_);
 	cp = onestat(cp, "Runts", nrunt_);
-	Crypt* p = dh_.net()->crypt();
+	Crypt* p = dh_[0].net()->crypt();
 	if (p != 0) {
 		cp = onestat(cp, "Crypt-Bad-Length", p->badpktlen());
 		cp = onestat(cp, "Crypt-Bad-P-Bit", p->badpbit());
 	}
 	/*XXX*/
-	if (ch_.net() != 0) {
-		Crypt* p = ch_.net()->crypt();
+	if (ch_[0].net() != 0) {
+		Crypt* p = ch_[0].net()->crypt();
 		if (p != 0) {
 			cp = onestat(cp, "Crypt-Ctrl-Bad-Length", p->badpktlen());
 			cp = onestat(cp, "Crypt-Ctrl-Bad-P-Bit", p->badpbit());
@@ -242,6 +324,10 @@ int SessionManager::command(int argc, const char*const* argv)
 		}
 
 	} else if (argc == 3) {
+		if (strcmp(argv[1], "sm") == 0) {
+			sm_ = (SourceManager*)TclObject::lookup(argv[2]);
+			return (TCL_OK);
+		}
 		if (strcmp(argv[1], "name") == 0) {
 			Source* s = SourceManager::instance().localsrc();
 			s->sdes(RTCP_SDES_NAME, argv[2]);
@@ -262,11 +348,11 @@ int SessionManager::command(int argc, const char*const* argv)
 			return (TCL_OK);
 		}
 		if (strcmp(argv[1], "data-net") == 0) {
-			dh_.net((Network*)TclObject::lookup(argv[2]));
+			dh_[0].net((Network*)TclObject::lookup(argv[2]));
 			return (TCL_OK);
 		}
 		if (strcmp(argv[1], "ctrl-net") == 0) {
-			ch_.net((Network*)TclObject::lookup(argv[2]));
+			ch_[0].net((Network*)TclObject::lookup(argv[2]));
 			return (TCL_OK);
 		}
 		if (strcmp(argv[1], "max-bandwidth") == 0) {
@@ -295,14 +381,64 @@ int SessionManager::command(int argc, const char*const* argv)
 			lipSyncEnabled_ = atoi(argv[2]);
 			return (TCL_OK);
 		}
+
+	}  else if (argc == 4) {
+		if (strcmp(argv[1], "data-net") == 0) {
+			u_int layer = atoi(argv[3]);
+			if (layer >= NLAYER)
+				abort();
+			if (*argv[2] == 0) {
+				dh_[layer].net(0);
+				return (TCL_OK);
+			}
+			Network* net = (Network*)TclObject::lookup(argv[2]);
+			if (net == 0) {
+				tcl.resultf("no network %s", argv[2]);
+				return (TCL_ERROR);
+			}
+			if (net->rchannel() < 0) {
+				tcl.resultf("network not open");
+				return (TCL_ERROR);
+			}
+			dh_[layer].net(net);
+			return (TCL_OK);
+		}
+		if (strcmp(argv[1], "ctrl-net") == 0) {
+			u_int layer = atoi(argv[3]);
+			if (layer >= NLAYER)
+				abort();
+			if (*argv[2] == 0) {
+				ch_[layer].net(0);
+				return (TCL_OK);
+			}
+			Network* net = (Network*)TclObject::lookup(argv[2]);
+			if (net == 0) {
+				tcl.resultf("no network %s", argv[2]);
+				return (TCL_ERROR);
+			}
+			if (net->rchannel() < 0) {
+				tcl.resultf("network not open");
+				return (TCL_ERROR);
+			}
+			ch_[layer].net(net);
+			return (TCL_OK);
+		}
+		return (Transmitter::command(argc, argv));
 	}
-	return (Transmitter::command(argc, argv));
 }
 
 void SessionManager::transmit(pktbuf* pb)
 {
-	mh_.msg_iov = pb->iov;
-	dh_.net()->send(mh_);
+	//mh_.msg_iov = pb->iov;
+	//	dh_[.net()->send(mh_);
+		//debug_msg("L %d,",pb->layer);
+	// Using loop_layer for now to restrict transmission as well
+	if (pb->layer < loop_layer_) {
+	//	if ( pb->layer <0 ) exit(1);
+		Network* n = dh_[pb->layer].net();
+		if (n != 0)
+			n->send(pb);
+	}
 }
 
 u_char* SessionManager::build_sdes_item(u_char* p, int code, Source& s)
@@ -376,29 +512,40 @@ int SessionManager::build_sdes(rtcphdr* rh, Source& ls)
 	return (len);
 }
 
-void SessionManager::send_report()
+/*void SessionManager::send_report()
 {
 	send_report(0);
 }
 
-void SessionManager::send_bye()
+  void SessionManager::send_bye()
+  {
+  send_report(1);
+}*/
+
+// SessionManager is no longer used as Timer - Each
+// CtrlHandler has its own Timer which calls this;
+void SessionManager::announce(CtrlHandler* ch)
 {
-	send_report(1);
+	send_report(ch, 0);
 }
 
 /*XXX check for buffer overflow*/
 /*
- * Send an RTPv2 report packet.
- */
-void SessionManager::send_report(int bye)
+* Send an RTPv2 report packet.
+*/
+//void SessionManager::send_report(int bye)
+
+void SessionManager::send_report(CtrlHandler* ch, int bye, int app)
 {
 	SourceManager& sm = SourceManager::instance();
 	Source& s = *sm.localsrc();
 	rtcphdr* rh = (rtcphdr*)pktbuf_;
 	rh->rh_ssrc = s.srcid();
 	int flags = RTP_VERSION << 14;
+	int layer = ch - ch_; //LLL
+	Source::Layer& sl = s.layer(layer);
 	timeval now = unixtime();
-	s.lts_ctrl(now);
+	sl.lts_ctrl(now);
 	int we_sent = 0;
 	rtcp_rr* rr;
 	/*
@@ -408,8 +555,8 @@ void SessionManager::send_report(int bye)
 	 * media timestamps so there's no point in sending an SR.
 	 */
 	MediaTimer* mt = MediaTimer::instance();
-	if (s.np() != last_np_ && mt) {
-		last_np_ = s.np();
+	if (sl.np() != last_np_ && mt) {
+		last_np_ = sl.np();
 		we_sent = 1;
 		flags |= RTCP_PT_SR;
 		rtcp_sr* sr = (rtcp_sr*)(rh + 1);
@@ -417,8 +564,8 @@ void SessionManager::send_report(int bye)
 		HTONL(sr->sr_ntp.upper);
 		HTONL(sr->sr_ntp.lower);
 		sr->sr_ts = htonl(mt->ref_ts());
-		sr->sr_np = htonl(s.np());
-		sr->sr_nb = htonl(s.nb());
+		sr->sr_np = htonl(sl.np());
+		sr->sr_nb = htonl(sl.nb());
 		rr = (rtcp_rr*)(sr + 1);
 	} else {
 		flags |= RTCP_PT_RR;
@@ -427,26 +574,33 @@ void SessionManager::send_report(int bye)
 	int nrr = 0;
 	int nsrc = 0;
 	/*
-	 * we don't want to inflate report interval if user has set
-	 * the flag that causes all sources to be 'kept' so we
-	 * consider sources 'inactive' if we haven't heard a control
-	 * msg from them for ~32 reporting intervals.
-	 */
-	u_int inactive = u_int(rint_ * (32./1000.));
+	* we don't want to inflate report interval if user has set
+	* the flag that causes all sources to be 'kept' so we
+	* consider sources 'inactive' if we haven't heard a control
+	* msg from them for ~32 reporting intervals.
+	*/
+	//LLL	u_int inactive = u_int(rint_ * (32./1000.));
+	u_int inactive = u_int(ch->rint() * (32./1000.));
 	if (inactive < 2)
 		inactive = 2;
 	for (Source* sp = sm.sources(); sp != 0; sp = sp->next_) {
 		++nsrc;
-		int received = sp->np() - sp->snp();
+		Source::Layer& sl = sp->layer(layer);
+		//		int received = sp->np() - sp->snp();
+		int received = sl.np() - sl.snp();
 		if (received == 0) {
-			if (u_int(now.tv_sec - sp->lts_ctrl().tv_sec) > inactive)
+			//			if (u_int(now.tv_sec - sp->lts_ctrl().tv_sec) > inactive)
+			if (u_int(now.tv_sec - sl.lts_ctrl().tv_sec) > inactive)
 				--nsrc;
 			continue;
 		}
-		sp->snp(sp->np());
+		//		sp->snp(sp->np());
+		sl.snp(sl.np());
 		rr->rr_srcid = sp->srcid();
-		int expected = sp->ns() - sp->sns();
-		sp->sns(sp->ns());
+		//		int expected = sp->ns() - sp->sns();
+		int expected = sl.ns() - sl.sns();
+		//		sp->sns(sp->ns());
+		sl.sns(sl.ns());
 		u_int32_t v;
 		int lost = expected - received;
 		if (lost <= 0)
@@ -455,16 +609,21 @@ void SessionManager::send_report(int bye)
 			/* expected != 0 if lost > 0 */
 			v = ((lost << 8) / expected) << 24;
 		/* XXX should saturate on over/underflow */
-		v |= (sp->ns() - sp->np()) & 0xffffff;
+		//		v |= (sp->ns() - sp->np()) & 0xffffff;
+		v |= (sl.ns() - sl.np()) & 0xffffff;
 		rr->rr_loss = htonl(v);
-		rr->rr_ehsr = htonl(sp->ehs());
+		//		rr->rr_ehsr = htonl(sp->ehs());
+		rr->rr_ehsr = htonl(sl.ehs());
 		rr->rr_dv = (sp->handler() != 0) ? sp->handler()->delvar() : 0;
-		rr->rr_lsr = htonl(sp->sts_ctrl());
-		if (sp->lts_ctrl().tv_sec == 0)
+		//		rr->rr_lsr = htonl(sp->sts_ctrl());
+		rr->rr_lsr = htonl(sl.sts_ctrl());
+		//		if (sp->lts_ctrl().tv_sec == 0)
+		if (sl.lts_ctrl().tv_sec == 0)
 			rr->rr_dlsr = 0;
 		else {
 			u_int32_t ntp_now = ntptime(now);
-			u_int32_t ntp_then = ntptime(sp->lts_ctrl());
+			//			u_int32_t ntp_then = ntptime(sp->lts_ctrl());
+			u_int32_t ntp_then = ntptime(sl.lts_ctrl());
 			rr->rr_dlsr = htonl(ntp_now - ntp_then);
 		}
 		++rr;
@@ -480,37 +639,46 @@ void SessionManager::send_report(int bye)
 		len += build_bye((rtcphdr*)rr, s);
 	else
 		len += build_sdes((rtcphdr*)rr, s);
-
-	ch_.send(pktbuf_, len);
-
-	rtcp_avg_size_ += RTCP_SIZE_GAIN * (double(len + 28) - rtcp_avg_size_);
-
-	/*
-	 * compute the time to the next report.  we do this here
-	 * because we need to know if there were any active sources
-	 * during the last report period (nrr above) & if we were
-	 * a source.  The bandwidth limit for rtcp traffic was set
-	 * on startup from the session bandwidth.  It is the inverse
-	 * of bandwidth (ie., ms/byte) to avoid a divide below.
-	 */
-	double ibw = rtcp_inv_bw_;
+	
+	//LLL	ch_.send(pktbuf_, len);
+	ch->send(pktbuf_, len);
+	
+	/*	rtcp_avg_size_ += RTCP_SIZE_GAIN * (double(len + 28) - rtcp_avg_size_);
+	
+	  /*
+	  * compute the time to the next report.  we do this here
+	  * because we need to know if there were any active sources
+	  * during the last report period (nrr above) & if we were
+	  * a source.  The bandwidth limit for rtcp traffic was set
+	  * on startup from the session bandwidth.  It is the inverse
+	  * of bandwidth (ie., ms/byte) to avoid a divide below.
+	*/
+	/*	double ibw = rtcp_inv_bw_;
 	if (nrr) {
-		/* there were active sources */
-		if (we_sent) {
-			ibw *= 1./RTCP_SENDER_BW_FRACTION;
-			nsrc = nrr;
-		} else {
-			ibw *= 1./RTCP_RECEIVER_BW_FRACTION;
-			nsrc -= nrr;
-		}
+	/* there were active sources */
+	/*		if (we_sent) {
+	ibw *= 1./RTCP_SENDER_BW_FRACTION;
+	nsrc = nrr;
+	} else {
+	ibw *= 1./RTCP_RECEIVER_BW_FRACTION;
+	nsrc -= nrr;
+	}
 	}
 	double rint = rtcp_avg_size_ * double(nsrc) * ibw;
 	if (rint < RTCP_MIN_RPT_TIME * 1000.)
 		rint = RTCP_MIN_RPT_TIME * 1000.;
 	rint_ = rint;
 	rt_.msched(int(fmod(double(random()), rint) + rint * .5 + .5));
-
-	sm.CheckActiveSources(rint);
+	*/
+	
+	// Call timer adaption for each layer
+	ch->adapt(nsrc, nrr, we_sent);
+	ch->sample_size(len);
+	
+	//	sm.CheckActiveSources(rint);
+	if (layer == 0)
+		sm.CheckActiveSources(ch->rint());
+	
 }
 
 int SessionManager::build_bye(rtcphdr* rh, Source& ls)
@@ -524,41 +692,56 @@ int SessionManager::build_bye(rtcphdr* rh, Source& ls)
 
 void SessionManager::recv(DataHandler* dh)
 {
+	int layer = dh - dh_;
+	pktbuf* pb = pool_->alloc(layer);
 	Address * addrp;
 	/* leave room in case we need to expand rtpv1 into an rtpv2 header */
 	/* XXX the free mem routine didn't like it ... */
 	//u_char* bp = &pktbuf_[4];
-	u_char* bp = pktbuf_;
-	int cc = dh->recv(bp, 2 * RTP_MTU - 4, addrp);
-	if (cc <= 0)
+	//u_char* bp = pktbuf_;
+	
+	int cc = dh->recv(pb->data, sizeof(pb->data), addrp);
+	//int cc = dh->recv(bp, 2 * RTP_MTU - 4, addrp);
+	if (cc <= 0) {
+		pb->release();
 		return;
-
-	rtphdr* rh = (rtphdr*)bp;
-	int version = *(u_char*)rh >> 6;
+	}
+	
+	//rtphdr* rh = (rtphdr*)pb->data;
+	int version = pb->data[0] >> 6;
+	//int version = *(u_char*)rh >> 6;
 	if (version != 2) {
 		++badversion_;
+		pb->release();
 		return;
 	}
-	bp += sizeof(*rh);
-	cc -= sizeof(*rh);
-	demux(rh, bp, cc, *addrp);
+	if (cc < sizeof(rtphdr)) {
+		++nrunt_;
+		pb->release();
+		return;
+	}
+	pb->len = cc;
+	
+	//bp += sizeof(*rh);
+	//cc -= sizeof(*rh);
+	demux(pb, *addrp);
 }
 
-void SessionManager::demux(rtphdr* rh, u_char* bp, int cc, Address & addr)
+void SessionManager::demux(pktbuf* pb, Address & addr)
 {
-	u_char *pkt = bp - sizeof(*rh);
-	if (cc < 0) {
-		++nrunt_;
-		return;
-	}
+	rtphdr* rh = (rtphdr*)pb->data;
 	u_int32_t srcid = rh->rh_ssrc;
 	int flags = ntohs(rh->rh_flags);
+	// for LIP SYNC
+	u_char *pkt = pb->data - sizeof(*rh);
+
 	if ((flags & RTP_X) != 0) {
-		/*
-		 * the minimal-control audio/video profile
-		 * explicitly forbids extensions
-		 */
+	/*
+	* the minimal-control audio/video profile
+	* explicitly forbids extensions
+		*/
 		++badext_;
+		pb->release();
 		return;
 	}
 
@@ -569,41 +752,53 @@ void SessionManager::demux(rtphdr* rh, u_char* bp, int cc, Address & addr)
 	int fmt = flags & 0x7f;
 	if (!check_format(fmt)) {
 		++badfmt_;
+		pb->release();
 		return;
 	}
 
 	SourceManager& sm = SourceManager::instance();
 	u_int16_t seqno = ntohs(rh->rh_seqno);
-	Source* s = sm.demux(srcid, addr, seqno);
-	if (s == 0)
-		/*
-		 * Takes a pair of validated packets before we will
-		 * believe the source.  This prevents a runaway
-		 * allocation of Source data structures for a
-		 * stream of garbage packets.
-		 */
+	Source* s = sm.demux(srcid, addr, seqno, pb->layer);
+	if (s == 0) {
+	/*
+	* Takes a pair of validated packets before we will
+	* believe the source.  This prevents a runaway
+	* allocation of Source data structures for a
+	* stream of garbage packets.
+		*/
+		pb->release();
 		return;
-
+	}
 	/* inform this source of the mbus */
 	s->mbus(&mb_);
 	
+	Source::Layer& sl = s->layer(pb->layer);
 	timeval now = unixtime();
-	s->lts_data(now);
-	s->sts_data(rh->rh_ts);
-
+	//	s->lts_data(now);
+	sl.lts_data(now);
+	//	s->sts_data(rh->rh_ts);
+	sl.sts_data(rh->rh_ts);
+	
+	// extract CSRC count (CC field); increment pb->dp data pointer & adjust length accordingly
 	int cnt = (flags >> 8) & 0xf;
 	if (cnt > 0) {
-		u_char* nh = (u_char*)rh + (cnt << 2);
+		//u_char* nh = (u_char*)rh + (cnt << 2);
+		rtphdr hdr = *rh;
+		pb->dp += (cnt << 2);
+		pb->len -= (cnt << 2);
+		u_int32_t* bp = (u_int32_t*)(rh + 1);
 		while (--cnt >= 0) {
 			u_int32_t csrc = *(u_int32_t*)bp;
 			bp += 4;
 			Source* cs = sm.lookup(csrc, srcid, addr);
-			cs->lts_data(now);
+			//			cs->lts_data(now);
+			cs->layer(pb->layer).lts_data(now);
 			cs->action();
 		}
+		//		rtphdr hdr = *rh;
+		//		rh = (rtphdr*)nh;
 		/*XXX move header up so it's contiguous with data*/
-		rtphdr hdr = *rh;
-		rh = (rtphdr*)nh;
+		rh = (rtphdr*)pb->dp;
 		*rh = hdr;
 	} else
 		s->action();
@@ -617,18 +812,26 @@ void SessionManager::demux(rtphdr* rh, u_char* bp, int cc, Address & addr)
 		 */ 
 
 		/*
-		 * XXX bit rate doesn't include rtpv1 options;
-		 * but v1 is going away anyway.
-		 */
-		int dup = s->cs(seqno);
-		s->np(1);
-		s->nb(cc + sizeof(*rh));
-		if (dup)
+		* XXX bit rate doesn't include rtpv1 options;
+		* but v1 is going away anyway.
+		*/
+		//		int dup = s->cs(seqno);
+		//		s->np(1);
+		//		s->nb(cc + sizeof(*rh));
+		int dup = sl.cs(seqno, s);
+		sl.np(1);
+		sl.nb(pb->len);
+		if (dup) {
+			pb->release();
 			return;
-		if (flags & RTP_M) // chack if reach frame boundaries
-			s->nf(1);
-	
-		s->recv(pkt, rh, bp, cc); // this should invoke Source::recv and buffer
+		}
+		if (flags & RTP_M) // check if reach frame boundaries
+			//			s->nf(1);
+			sl.nf(1);
+		
+		//s->recv(pkt, rh, pb, pb->len); // this should invoke Source::recv and buffer
+		//s->recv(bp); // this should invoke Source::recv and buffer
+		
 		pktbuf_ = (u_char*)new_blk(); 
 	} /* synced */
 
@@ -642,31 +845,47 @@ void SessionManager::demux(rtphdr* rh, u_char* bp, int cc, Address & addr)
 	         * (easy solution -- keep rtp seqno of last fmt change).
 	         */
 		PacketHandler* h = s->handler();
-	        if (h == 0)
-	                h = s->activate(fmt);
-	        else if (s->format() != fmt)
-	                h = s->change_format(fmt);
-
-	        /*
-	         * XXX bit rate doesn't include rtpv1 options;
-	         * but v1 is going away anyway.
-	         */
-	        int dup = s->cs(seqno);
-	        s->np(1);
-	        s->nb(cc + sizeof(*rh));
-	        if (dup)
-	                return;
-	        if (flags & RTP_M)
-	                s->nf(1);
-
-	        int hlen = h->hdrlen();
-	        cc -= hlen;
-	        if (cc < 0) {
-	                s->runt(1);
- 	               return;
-	        }
-	        if (!s->mute())
-	                h->recv(rh, bp + hlen, cc);
+		if (h == 0)
+			h = s->activate(fmt);
+		else if (s->format() != fmt)
+			h = s->change_format(fmt);
+		
+			/*
+			* XXX bit rate doesn't include rtpv1 options;
+			* but v1 is going away anyway.
+		*/
+		//	        int dup = s->cs(seqno);
+		//	        s->np(1);
+		//	        s->nb(cc + sizeof(*rh));
+		int dup = sl.cs(seqno, s);
+		sl.np(1);
+		sl.nb(pb->len);
+		if (dup){
+			pb->release();
+			return;
+		}
+		if (flags & RTP_M)
+			//	            s->nf(1);
+			sl.nf(1);
+#ifdef notdef
+	/* This should move to the handler */
+	/*XXX could get rid of hdrlen and move run check into recv method*/
+		
+		int hlen = h->hdrlen();
+		cc -= hlen;
+		if (cc < 0) {
+			//	            s->runt(1);
+			sl.runt(1);
+			pb->release();
+			return;
+		}
+#endif
+		if (s->mute()) {
+			pb->release();
+			return;
+		}
+		//h->recv(rh, bp + hlen, cc);
+		h->recv(pb);
 	} /* not sync-ed */
 
 }
@@ -678,7 +897,7 @@ void SessionManager::parse_rr_records(u_int32_t, rtcp_rr*, int,
 				      
 
 void SessionManager::parse_sr(rtcphdr* rh, int flags, u_char*ep,
-			      Source* ps, Address & addr)
+							  Source* ps, Address & addr, int layer)
 {
 	rtcp_sr* sr = (rtcp_sr*)(rh + 1);
 	Source* s;
@@ -687,10 +906,22 @@ void SessionManager::parse_sr(rtcphdr* rh, int flags, u_char*ep,
 		s = SourceManager::instance().lookup(ssrc, ssrc, addr);
 	else
 		s = ps;
+	
+	Source::Layer& sl = s->layer(layer);
+	
 	timeval now = unixtime();
-	s->lts_ctrl(now);
+
+	sl.lts_ctrl(now);
+	sl.sts_ctrl(ntohl(sr->sr_ntp.upper) << 16 |
+		ntohl(sr->sr_ntp.lower) >> 16);
+	
+	//int cnt = flags >> 8 & 0x1f;
+	//parse_rr_records(ssrc, (rtcp_rr*)(sr + 1), cnt, ep, addr);
+	
+	/*s->lts_ctrl(now);
 	s->sts_ctrl(ntohl(sr->sr_ntp.upper) << 16 |
-		    ntohl(sr->sr_ntp.lower) >> 16);
+	ntohl(sr->sr_ntp.lower) >> 16);*/
+	
 	s->rtp_ctrl(ntohl(sr->sr_ts));
 	u_int32_t t = ntptime(now);
 	s->map_ntp_time(t);
@@ -703,7 +934,7 @@ void SessionManager::parse_sr(rtcphdr* rh, int flags, u_char*ep,
 }
 
 void SessionManager::parse_rr(rtcphdr* rh, int flags, u_char* ep,
-			      Source* ps, Address & addr)
+							  Source* ps, Address & addr, int layer)
 {
 	Source* s;
 	u_int32_t ssrc = rh->rh_ssrc;
@@ -711,14 +942,14 @@ void SessionManager::parse_rr(rtcphdr* rh, int flags, u_char* ep,
 		s = SourceManager::instance().lookup(ssrc, ssrc, addr);
 	else
 		s = ps;
-
-	s->lts_ctrl(unixtime());
+	
+	s->layer(layer).lts_ctrl(unixtime());
 	int cnt = flags >> 8 & 0x1f;
 	parse_rr_records(ssrc, (rtcp_rr*)(rh + 1), cnt, ep, addr);
 }
 
 int SessionManager::sdesbody(u_int32_t* p, u_char* ep, Source* ps,
-			     Address & addr, u_int32_t ssrc)
+						Address & addr, u_int32_t ssrc, int layer)
 {
 	Source* s;
 	u_int32_t srcid = *p;
@@ -728,13 +959,13 @@ int SessionManager::sdesbody(u_int32_t* p, u_char* ep, Source* ps,
 		s = ps;
 	if (s == 0)
 		return (0);
-	/*
-	 * Note ctrl packet since we will never see any direct ctrl packets
-	 * from a source through a mixer (and we don't want the source to
-	 * time out).
-	 */
-	s->lts_ctrl(unixtime());
-
+		/*
+		* Note ctrl packet since we will never see any direct ctrl packets
+		* from a source through a mixer (and we don't want the source to
+		* time out).
+	*/
+	s->layer(layer).lts_ctrl(unixtime());
+	
 	u_char* cp = (u_char*)(p + 1);
 	while (cp < ep) {
 		char buf[256];
@@ -762,12 +993,12 @@ int SessionManager::sdesbody(u_int32_t* p, u_char* ep, Source* ps,
 }
 
 void SessionManager::parse_sdes(rtcphdr* rh, int flags, u_char* ep, Source* ps,
-				Address & addr, u_int32_t ssrc)
+								Address & addr, u_int32_t ssrc, int layer)
 {
 	int cnt = flags >> 8 & 0x1f;
 	u_int32_t* p = (u_int32_t*)&rh->rh_ssrc;
-	while (--cnt >= 0) {
-		int n = sdesbody(p, ep, ps, addr, ssrc);
+	while (--cnt >= 0 && (u_char*)p < ep) {
+		int n = sdesbody(p, ep, ps, addr, ssrc, layer);
 		if (n == 0)
 			break;
 		p += n;
@@ -847,12 +1078,13 @@ void SessionManager::recv(CtrlHandler* ch)
 	Source* ps = SourceManager::instance().lookup(ssrc, ssrc, addr);
 	if (ps == 0)
 		return;
-
-	/*
-	 * Outer loop parses multiple RTCP records of a "compound packet".
-	 * There is no framing between records.  Boundaries are implicit
-	 * and the overall length comes from UDP.
-	 */
+	
+	int layer = ch - ch_;
+		/*
+		* Outer loop parses multiple RTCP records of a "compound packet".
+		* There is no framing between records.  Boundaries are implicit
+		* and the overall length comes from UDP.
+	*/
 	u_char* epack = (u_char*)rh + cc;
 	while ((u_char*)rh < epack) {
 		u_int len = (ntohs(rh->rh_len) << 2) + 4;
@@ -869,15 +1101,15 @@ void SessionManager::recv(CtrlHandler* ch)
 		switch (flags & 0xff) {
 
 		case RTCP_PT_SR:
-			parse_sr(rh, flags, ep, ps, addr);
+			parse_sr(rh, flags, ep, ps, addr, layer);
 			break;
 
 		case RTCP_PT_RR:
-			parse_rr(rh, flags, ep, ps, addr);
+			parse_rr(rh, flags, ep, ps, addr, layer);
 			break;
 
 		case RTCP_PT_SDES:
-			parse_sdes(rh, flags, ep, ps, addr, ssrc);
+			parse_sdes(rh, flags, ep, ps, addr, ssrc, layer);
 			break;
 
 		case RTCP_PT_BYE:

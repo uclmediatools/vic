@@ -44,6 +44,8 @@
 #define RTP_PT_BVC		22	/* Berkeley video codec */
 
 /* RTP standard content encodings for video */
+#define RTP_PT_LDCT		20 	/* Layered DCT */
+#define RTP_PT_PVH		21 	/* Steve McCanne's  */
 #define RTP_PT_RGB8		23 	/* 8-bit dithered RGB */
 #define RTP_PT_HDCC		24 	/* SGI proprietary */
 #define RTP_PT_CELLB		25 	/* Sun CellB */
@@ -152,7 +154,8 @@ struct rtcp_rr {
  */
 #define RTP_MTU 1024
 
-#define MAXHDR 24
+//now defined in pktbuf.h
+//#define MAXHDR 24
 
 /*
  * Motion JPEG encapsulation.

@@ -48,10 +48,12 @@ class SessionManager;
 
 class DataHandler : public IOHandler {
     public:
-	inline DataHandler(SessionManager& sm) : sm_(sm), net_(0), addrp_(0) {}
+	DataHandler* next;
+	inline DataHandler() : next(0), sm_(0), net_(0), addrp_(0) {}
+//	inline DataHandler(SessionManager& sm) : sm_(sm), net_(0), addrp_(0) {}
 	virtual void dispatch(int mask);
 	inline Network* net() const { return (net_); }
-	inline void net(Network* net) {
+	virtual void net(Network* net) {
 		unlink();
 		link(net->rchannel(), TK_READABLE);
 		net_ = net;
@@ -64,16 +66,38 @@ class DataHandler : public IOHandler {
 	inline void send(u_char* bp, int len) {
 		net_->send(bp, len);
 	}
+	inline void manager(SessionManager* sm) { sm_ = sm; }
     protected:
-	SessionManager& sm_;
+	SessionManager *sm_;
 	Network* net_;
 	Address *addrp_;
 };
+/*
+ * Parameters controling the RTCP report rate timer.
+ */
+#define CTRL_SESSION_BW_FRACTION (0.05)
+#define CTRL_MIN_RPT_TIME (5.)
+#define CTRL_SENDER_BW_FRACTION (0.25)
+#define CTRL_RECEIVER_BW_FRACTION (1. - CTRL_SENDER_BW_FRACTION)
+#define CTRL_SIZE_GAIN (1./8.)
 
-class CtrlHandler : public DataHandler {
+class CtrlHandler : public DataHandler, public Timer {
     public:
-	inline CtrlHandler(SessionManager& sm) : DataHandler(sm) {}
+	CtrlHandler();
+//	inline CtrlHandler(SessionManager& sm) : DataHandler(sm) {}
 	virtual void dispatch(int mask);
+	inline Network* net() const { return (net_); }
+// new for layering - individual report timers for each layer 
+	virtual void timeout();
+	virtual void net(Network* net);
+	void adapt(int nsrc, int nrr, int we_sent);
+	void sample_size(int cc);
+	inline double rint() const { return (rint_); }
+ protected:
+	void schedule_timer();
+	double ctrl_inv_bw_;
+	double ctrl_avg_size_;	/* (estimated) average size of ctrl packets */
+	double rint_;		/* current session report rate (in ms) */
 };
 
 class ReportTimer : public Timer {
@@ -85,16 +109,21 @@ class ReportTimer : public Timer {
 };
 
 class SessionManager : public Transmitter, public MtuAlloc {
-    public:
+public:
 	SessionManager();
 	virtual ~SessionManager();
 	virtual int command(int argc, const char*const* argv);
 	virtual void recv(CtrlHandler*);
 	virtual void recv(DataHandler*);
-	virtual void send_bye();
-	virtual void send_report();
-    protected:
-	void demux(rtphdr* rh, u_char* bp, int cc, Address & addr);
+	virtual void announce(CtrlHandler*); //LLL
+//	virtual void send_bye();
+	virtual inline void send_bye() { send_report(&ch_[0], 1); }
+//	virtual void send_report();
+	virtual void send_report(CtrlHandler*, int bye, int app = 0);
+
+protected:
+//	void demux(rtphdr* rh, u_char* bp, int cc, Address & addr, int layer);
+	void demux(pktbuf* pb, Address & addr);
 	virtual int check_format(int fmt) const = 0;
 	virtual void transmit(pktbuf* pb);
 	void send_report(int bye);
@@ -103,15 +132,15 @@ class SessionManager : public Transmitter, public MtuAlloc {
 	u_char* build_sdes_item(u_char* p, int code, Source&);
 
 	void parse_sr(rtcphdr* rh, int flags, u_char* ep,
-		      Source* ps, Address & addr);
+		      Source* ps, Address & addr, int layer);
 	void parse_rr(rtcphdr* rh, int flags, u_char* ep,
-		      Source* ps, Address & addr);
+		      Source* ps, Address & addr, int layer);
 	void parse_rr_records(u_int32_t ssrc, rtcp_rr* r, int cnt,
 			      const u_char* ep, Address & addr);
 	int sdesbody(u_int32_t* p, u_char* ep, Source* ps,
-		     Address & addr, u_int32_t ssrc);
+		     Address & addr, u_int32_t ssrc, int layer);
 	void parse_sdes(rtcphdr* rh, int flags, u_char* ep, Source* ps,
-			Address & addr, u_int32_t ssrc);
+			Address & addr, u_int32_t ssrc, int layer);
 	void parse_bye(rtcphdr* rh, int flags, u_char* ep, Source* ps);
 
 	int parseopts(const u_char* bp, int cc, Address & addr) const;
@@ -124,15 +153,13 @@ class SessionManager : public Transmitter, public MtuAlloc {
 
 	char* stats(char* cp) const;
 
-	DataHandler dh_;
-	CtrlHandler ch_;
-	ReportTimer rt_;
+	DataHandler dh_[NLAYER];
+	CtrlHandler ch_[NLAYER];
 
 	// MBus stuff
 	MBusHandler mb_; // Handles mbus and interfaces to mbus
 					 // code in common libraries
 	int lipSyncEnabled_;
-
 
 	/*XXX cleanup*/
 	u_int badversion_;
@@ -150,7 +177,10 @@ class SessionManager : public Transmitter, public MtuAlloc {
 
 	int confid_;
 
+	BufferPool* pool_;
 	u_char* pktbuf_;
+
+	SourceManager *sm_;
 };
 
 class AudioSessionManager : public SessionManager {

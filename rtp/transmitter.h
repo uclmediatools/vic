@@ -47,6 +47,7 @@
 #include "timer.h"
 #include "rtp.h"
 #include "inet.h"
+#include "pktbuf-rtp.h"
 
 /*
  * The base object for performing the outbound path of
@@ -65,26 +66,28 @@ class Transmitter : public TclObject, public Timer {
 		 */
 		u_char data[2 * RTP_MTU];
 	};
-	struct pktbuf {
+/*	struct pktbuf {
 		struct pktbuf* next;
 		iovec iov[2];
 		u_char hdr[MAXHDR];
 		buffer* buf;
 		int layer;
-	};
+	};*/
 	static void dump(int fd);
 	static inline void seqno(u_int16_t s) { seqno_ = s; }
 	inline void bps(int kbps) { kbps = kbps_; }
-	inline int mtu() const { return (mtu_); }
+	inline void loop_layer(int loop_layer) { loop_layer_ = loop_layer; }
+	inline int loop_layer() { return loop_layer_; }
+	inline int mtu() { return (mtu_); }
 	void flush();
 	void send(pktbuf*);
 	/*
 	 * Buffer allocation hooks.
 	 */
-	pktbuf* alloch(u_int32_t, int fmt);
-	void release(pktbuf*);
-	pktbuf* alloc(u_int32_t, int fmt);
-    protected:
+	//pktbuf* alloch(u_int32_t, int fmt);
+	//void release(pktbuf*);
+	//pktbuf* alloc(u_int32_t, int fmt);
+protected:
 	void update(int nbytes);
 	void dump(int fd, iovec*, int iovel) const;
 	void loopback(pktbuf*);
@@ -107,6 +110,8 @@ class Transmitter : public TclObject, public Timer {
 	int busy_;
 	pktbuf* head_;
 	pktbuf* tail_;
+
+	int loop_layer_;	/* # of layers to loop back (for testing) */
 
 	int loopback_;		/* true to loopback data packets */
 	static int dumpfd_;	/* fd to dump packet stream to */
