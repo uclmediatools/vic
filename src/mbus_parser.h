@@ -57,3 +57,4 @@ char			*mbus_encode_str(const char *s);
 #endif
 
 #endif /* _MBUS_PARSER_H */
+

@@ -36,12 +36,66 @@
 #include "config_unix.h"
 #include "config_win32.h"
 #include "debug.h"
+#include "memory.h"
 #include "mbus_parser.h"
 #include "test_mbus_parser.h"
 
+static void test_encdec(void)
+{
+	char		*res;
+	const char 	*str1d = "Hello, world!";
+	const char 	*str1e = "\"Hello,\\ world!\"";
+	const char 	*str2d = "Test \"quoted\" text";
+	const char 	*str2e = "\"Test\\ \\\"quoted\\\"\\ text\"";
+
+	printf("Mbus parser (string encode/decode)..... "); fflush(stdout);
+	res = mbus_encode_str(str1d);
+	if (strcmp(res, str1e) != 0) {
+		printf("fail (%s != %s)\n", res, str1e);
+		goto fail;
+	}
+	xfree(res);
+	
+	res = mbus_encode_str(str2d);
+	if (strcmp(res, str2e) != 0) {
+		printf("fail (%s != %s)\n", res, str2e);
+		goto fail;
+	}
+
+	res = xstrdup(str1e);
+	mbus_decode_str(res);
+	if (strcmp(res, str1d) != 0) {
+		printf("fail (%s != %s)\n", res, str1d);
+		goto fail;
+	}
+	xfree(res);
+
+	res = xstrdup(str2e);
+	mbus_decode_str(res);
+	if (strcmp(res, str2d) != 0) {
+		printf("fail (%s != %s)\n", res, str2d);
+		goto fail;
+	}
+
+	printf("pass\n");
+fail:
+	xfree(res);
+}
+
+static void test_parsing(void)
+{
+	struct mbus_parser	*p;
+	char			*str1 = xstrdup("1234 567.89 Symbol \"String\"");
+
+	printf("Mbus parser (parsing).................. "); fflush(stdout);
+	p = mbus_parse_init(str1);
+	mbus_parse_done(p);
+	printf("fail\n");
+}
+
 void test_mbus_parser(void)
 {
-	printf("Mbus parser............................ "); fflush(stdout);
-	printf("fail\n");
+	test_encdec();
+	test_parsing();
 }
 
