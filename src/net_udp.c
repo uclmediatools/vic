@@ -468,7 +468,7 @@ static char *udp_host_addr6(socket_udp *s)
 		local.sin6_port = 0;
 		debug_msg("getsockname failed\n");
 	}
-	if (IN6_IS_ADDR_UNSPECIFIED(&(local.sin6_addr) || IN6_IS_ADDR_MULTICAST(&local.sin6_addr))) {
+	if (IN6_IS_ADDR_UNSPECIFIED(&local.sin6_addr) || IN6_IS_ADDR_MULTICAST(&local.sin6_addr)) {
 		if (gethostname(hname, MAXHOSTNAMELEN) != 0) {
 			debug_msg("gethostname failed\n");
 			abort();
