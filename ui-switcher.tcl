@@ -149,7 +149,7 @@ proc switcher_focus src {
 		}
 	}
 	if { $target != "" && \
-		( "[srctab local]" != $target || [yesno vain] ) } {
+		( "[srctab local]" != $src || [yesno vain] ) } {
 		switcher_set $target $src
 		switcher_touch $target
 	}
