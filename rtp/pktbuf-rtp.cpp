@@ -97,5 +97,6 @@ void RTP_BufferPool::initpkt(pktbuf *pb, u_int32_t ts, int fmt, int layer)
 	rh->rh_seqno = htons(seqno_[layer]);
 	++seqno_[layer];
 	rh->rh_ts = htonl(ts);
-	rh->rh_ssrc = srcid_;
+	//rh->rh_ssrc = srcid_;
+	rh->rh_ssrc = SourceManager::instance().localsrc()->srcid();
 }
