@@ -109,23 +109,28 @@ TCL_VIC_C = $(TCL_VIC:.tcl=.cc)
 #
 BROKEN_OBJ = @V_BROKEN_OBJ@
 
+H263_OBJS = h263/h263rtp.o h263/h263dec.o h263/bitIn.o h263/input.o h263/getgob.o \
+	h263/reconh263.o h263/recon.obj h263/getvlc.o h263/getblk.o h263/h263enc.o \
+	h263/motion.o h263/block.o h263/bitOut.o h263/h263mux.j h263/idctdec.o \
+	h263/fdct.o h263/code.o h263/gethdr.o h263/idctenc.j h263/sac.o
+
 OBJ1 =	inet.o cellb_tables.o tkStripchart.o md5c.o random.o
 OBJ2 =	main.o net.o net-ip.o source.o \
 	iohandler.o timer.o idlecallback.o media-timer.o \
 	session.o session-rtpv1.o session-nv.o session-ivs.o \
-	decoder.o decoder-jpeg.o decoder-nv.o \
+	decoder.o decoder-jpeg.o decoder-nv.o decoder-h263.o \
 	decoder-h261.o decoder-h261v1.o decoder-raw.o \
 	decoder-cellb.o decoder-h263v2.o mbus.o mbus_engine.o \
 	device.o grabber.o vw.o Tcl.o Tcl2.o module.o transmitter.o \
 	encoder-h263v2.o encoder-nv.o encoder-cellb.o encoder-h261.o \
-	encoder-jpeg.o enocder-raw.o \
+	encoder-jpeg.o enocder-raw.o encoder-h263.o \
 	transcoder-jpeg.o framer-jpeg.o \
 	group-ipc.o confbus.o renderer.o renderer-window.o \
 	color.o color-true.o color-pseudo.o color-dither.o color-ed.o \
 	color-quant.o color-hi.o color-gray.o color-mono.o color-hist.o \
 	rgb-converter.o jpeg/jpeg.o p64/p64.o dct.o \
 	compositor.o rate-variable.o crypt.o crypt-des.o \
-	grabber-still.o @V_OBJ@
+	grabber-still.o $(H263_OBJS) @V_OBJ@
 OBJ3 =	cm0.o cm1.o huffcode.o version.o bv.o \
 	$(TCL_VIC:.tcl=.o) tk.o
 SRC =	$(OBJ1:.o=.c) $(OBJ2:.o=.cc) $(BROKEN_OBJ:.o=.c) \
