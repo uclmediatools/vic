@@ -546,31 +546,12 @@ static source *create_source(struct rtp *session, uint32_t ssrc)
 	/* This is a new source, we have to create it... */
 	h = ssrc_hash(ssrc);
 	s = (source *) xmalloc(sizeof(source));
+	memset(s, 0, sizeof(source));
 	s->magic          = 0xc001feed;
 	s->next           = session->db[h];
-	s->prev           = NULL;
 	s->ssrc           = ssrc;
-	s->cname          = NULL;
-	s->name           = NULL;
-	s->email          = NULL;
-	s->phone          = NULL;
-	s->loc            = NULL;
-	s->tool           = NULL;
-	s->note           = NULL;
-	s->sr             = NULL;
-	s->got_bye        = FALSE;
-	s->should_advertise_sdes = FALSE;
-	s->sender         = FALSE;
-	s->base_seq       = 0;
-	s->max_seq        = 0;
-	s->bad_seq        = 0;
-	s->cycles         = 0;
-	s->received       = 0;
-	s->received_prior = 0;
-	s->expected_prior = 0;
 	s->probation      = -1;
-	s->jitter         = 0;
-	s->transit        = 0;
+
 	gettimeofday(&(s->last_active), NULL);
 	/* Now, add it to the database... */
 	if (session->db[h] != NULL) {
