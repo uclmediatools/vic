@@ -121,7 +121,7 @@ v1.0.8	- Add mbus_sent_all()
 	- Change return type of rtp_recv to int (was void).  Returns TRUE if
 	  packets were processed, FALSE otherwise.
 	- Timeout RRs from the RTP database, if they're not refreshed for
-	  1.5 times the RTCP reporting interval
+	  3 times the RTCP reporting interval
 	- rtp_update() only expires sources once per reporting interval, to
 	  avoid burning too many cycles.
 
