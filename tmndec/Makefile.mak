@@ -11,8 +11,8 @@ CFLAGS =  -DVIC -DWIN32 -DWINDOWS -DUSE_TIME
 	$(cc32) $(cdebug) $(cflags) $(cvars) $(CFLAGS) -o $@ -FR$*.sbr $<
 
 TOOLS32       =  e:\progra~1\devstudio\vc
-cc32 = $(TOOLS32)\bin\cl -I$(TOOLS32)\include
-
+#cc32 = cl -I$(TOOLS32)\include
+cc32 = cl
 
 OBJS = tmndec.obj getpic.obj getvlc.obj gethdr.obj getblk.obj getbits.obj store.obj \
 	recon.obj idct.obj idctref.obj sac.obj win.obj yuvrgb24.obj
