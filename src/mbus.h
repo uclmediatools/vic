@@ -37,8 +37,9 @@
 #define _MBUS_H
 
 /* Error codes... */
-#define MBUS_MESSAGE_LOST        1
-#define MBUS_DESTINATION_UNKNOWN 2
+#define MBUS_MESSAGE_LOST           1
+#define MBUS_DESTINATION_UNKNOWN    2
+#define MBUS_DESTINATION_NOT_UNIQUE 3
 
 struct mbus;
 

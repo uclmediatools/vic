@@ -222,6 +222,20 @@ int mbus_addr_valid(struct mbus *m, char *addr)
 	return FALSE;
 }
 
+static int mbus_addr_unique(struct mbus *m, char *addr)
+{
+      int     i, n;
+
+      n = 0;
+
+      for (i = 0; i < m->num_other_addr; i++) {
+              if (mbus_addr_match(m->other_addr[i], addr)) {
+                  n++;
+              }
+      }
+      return (n==1);
+}
+
 /* The mb_* functions are used to build an mbus message up in the */
 /* mb_buffer, and to add authentication and encryption before the */
 /* message is sent.                                               */
@@ -318,6 +332,16 @@ void mbus_retransmit(struct mbus *m)
 			abort();
 		}
 		m->err_handler(curr->seqnum, MBUS_MESSAGE_LOST);
+		/* if we don't delete this failed message, the error handler
+                   gets triggered every time we call mbus_retransmit */
+		while (m->waiting_ack->num_cmds > 0) {
+		    m->waiting_ack->num_cmds--;
+		    xfree(m->waiting_ack->cmd_list[m->waiting_ack->num_cmds]);
+		    xfree(m->waiting_ack->arg_list[m->waiting_ack->num_cmds]);
+		}
+		xfree(m->waiting_ack->dest);
+		xfree(m->waiting_ack);
+		m->waiting_ack = NULL;
 		return;
 	} 
 	/* Note: We only send one retransmission each time, to avoid
@@ -344,7 +368,7 @@ void mbus_heartbeat(struct mbus *m, int interval)
 
 	gettimeofday(&curr_time, NULL);
 
-	if (curr_time.tv_sec - m->last_heartbeat.tv_sec > interval) {
+	if (curr_time.tv_sec - m->last_heartbeat.tv_sec >= interval) {
 		mbus_qmsg(m, "()", "mbus.hello", "", FALSE);
 		m->last_heartbeat = curr_time;
 		/* Remove dead sources */
@@ -443,7 +467,7 @@ void mbus_exit(struct mbus *m)
 
         assert(m != NULL);
 
-	mbus_qmsg(m, "()", "mbus.quit", "", FALSE);
+	mbus_qmsg(m, "()", "mbus.bye", "", FALSE);
 	mbus_send(m);
 
         while(m->parse_depth--) {
@@ -494,12 +518,21 @@ void mbus_send(struct mbus *m)
 	}
 
 	while (curr != NULL) {
-		if (curr->reliable && !mbus_addr_valid(m, curr->dest)) {
-			debug_msg("Trying to send reliably to an unknown address...\n");
-			if (m->err_handler == NULL) {
+		if (curr->reliable) {
+		        if (!mbus_addr_valid(m, curr->dest)) {
+			    debug_msg("Trying to send reliably to an unknown address...\n");
+			    if (m->err_handler == NULL) {
 				abort();
+			    }
+			    m->err_handler(curr->seqnum, MBUS_DESTINATION_UNKNOWN);
 			}
-			m->err_handler(curr->seqnum, MBUS_DESTINATION_UNKNOWN);
+		        if (!mbus_addr_unique(m, curr->dest)) {
+			    debug_msg("Trying to send reliably but address is not unique...\n");
+			    if (m->err_handler == NULL) {
+				abort();
+			    }
+			    m->err_handler(curr->seqnum, MBUS_DESTINATION_NOT_UNIQUE);
+			}
 		}
 		/* Create the message... */
 		mb_header(curr->seqnum, curr->ts.tv_sec, (char)(curr->reliable?'R':'U'), m->addr[0], curr->dest, -1);
@@ -937,7 +970,7 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 						m->cmd_handler(newsrc, cmd, param, data);
 						/* Finally, we snoop on the message we just passed to the application, */
 						/* to do housekeeping of our list of known mbus sources...             */
-						if (strcmp(cmd, "mbus.quit") == 0) {
+						if (strcmp(cmd, "mbus.bye") == 0) {
 							remove_other_addr(m, newsrc);
 						} 
 						if (strcmp(cmd, "mbus.hello") == 0) {
