@@ -183,6 +183,10 @@ SOURCE=.\qfDES.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\rtp.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\util.c
 # End Source File
 # End Group
@@ -244,6 +248,10 @@ SOURCE=.\net_udp.h
 # Begin Source File
 
 SOURCE=.\qfDES.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\rtp.h
 # End Source File
 # Begin Source File
 
