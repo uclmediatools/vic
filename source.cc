@@ -462,7 +462,7 @@ void Source::clear_counters()
 
 
 
-/* DMIRAS: Extras functions to implement he buffer */
+/* DMIRAS: Extra functions to implement the buffer */
 
 void Source::adapt(u_int32_t arr_ts, u_int32_t ts, int flag)
 {
@@ -492,15 +492,15 @@ void Source::adapt(u_int32_t arr_ts, u_int32_t ts, int flag)
         if (flag) {
 		pdelay_ = FUDGE + delay_ + int(3. * dvar_); 
 		if (pending_) {
-			/* set to the max between the audio & video playout delays */
-			printf("ad = %d\tvd= %d\n", apdelay_, pdelay_);
-			if (pdelay_ < apdelay_) 
-				pdelay_ = apdelay_;
 			/* prepare mbus msg and send it to mbus, if we have to ... */
 			sprintf(arg, "%s %d", mbus_->mbus_encode_str(sdes_[RTCP_SDES_CNAME]), pdelay_); 	
-			//printf("VIC--> %s\n", arg);
 			mbus_->mbus_send(mbus_->mbus_audio_addr, "source.playout", arg, 0);
 			pending_ = 0;
+			/* set to the max between the audio & video playout delays */
+			//printf("ad = %d\tvd= %d\t", apdelay_, pdelay_);
+			if (pdelay_ < apdelay_) 
+				pdelay_ = apdelay_;
+			//printf("act del= %d\n", pdelay_);
 		}
 	}
 }
@@ -542,8 +542,6 @@ Source::schedule()
         if (playout <= now_ || elastic_ == 0) {
                 timeout();
         } else {
-		//if (int((playout - now_) / 65.536) > 700)
-			printf("%d\n", int((playout - now_) / 65.536));
                 msched(int((playout - now_) / 65.536));
         }
 }
