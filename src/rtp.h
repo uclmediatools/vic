@@ -102,9 +102,10 @@ typedef struct {
 } rtcp_sdes_item;
 
 typedef struct {
-	u_int32	 ssrc;
-	int	 type;
-	void	*data;
+	u_int32		 ssrc;
+	int		 type;
+	void		*data;
+	struct timeval	*ts;
 } rtp_event;
 
 #define RX_RTP  16

@@ -137,11 +137,9 @@ static source *get_source(struct rtp *session, u_int32 ssrc)
 	while (curr != NULL) {
 		if (curr->ssrc == ssrc) {
 			return curr;
-		}
-		if (curr->ssrc < ssrc) {
+		} else if (curr->ssrc < ssrc) {
 			curr = curr->l_link;
-		}
-		if (curr->ssrc > ssrc) {
+		} else if (curr->ssrc > ssrc) {
 			curr = curr->r_link;
 		}
 	}
@@ -207,7 +205,7 @@ struct rtp *rtp_init(char *addr, u_int16 port, int ttl, void (*callback)(struct 
 {
 	struct rtp *session;
 
-	assert(ttl > 0 && ttl < 128);
+	assert(ttl >= 0 && ttl < 128);
 	assert(port % 2 == 0);
 
 	session = (struct rtp *) xmalloc(sizeof(struct rtp));
@@ -284,6 +282,7 @@ static void rtp_recv_data(struct rtp *session)
 	u_int8		*buffer = ((u_int8 *) packet) + RTP_PACKET_HEADER_SIZE;
 	int		 buflen;
 	rtp_event	 event;
+	struct timeval	 event_ts;
 
 	buflen = udp_recv(session->rtp_socket, buffer, RTP_MAX_PACKET_LEN - RTP_PACKET_HEADER_SIZE);
 	if (buflen > 0) {
@@ -310,9 +309,11 @@ static void rtp_recv_data(struct rtp *session)
 		/* This implies that we discard RTP packets from a source until we've */
 		/* received a valid RTCP packet from that source.                  */
 		if (validate_rtp(packet, buflen) && (get_source(session, packet->ssrc) != NULL)) {
+			gettimeofday(&event_ts, NULL);
 			event.ssrc = packet->ssrc;
 			event.type = RX_RTP;
 			event.data = (void *) packet;	/* The callback function MUST free this! */
+			event.ts   = &event_ts;
 			session->callback(session, &event);
 			return;
 		}
@@ -391,7 +392,7 @@ static int validate_rtcp(u_int8 *packet, int len)
 	return TRUE;
 }
 
-static void process_rtcp_sr(struct rtp *session, rtcp_t *packet)
+static void process_rtcp_sr(struct rtp *session, rtcp_t *packet, struct timeval *event_ts)
 {
 	u_int32		 ssrc;
 	rtp_event	 event;
@@ -418,6 +419,7 @@ static void process_rtcp_sr(struct rtp *session, rtcp_t *packet)
 	event.ssrc = ntohl(packet->r.sr.sr.ssrc);
 	event.type = RX_SR;
 	event.data = (void *) sr;
+	event.ts   = event_ts;
 	session->callback(session, &event);
 
 	/* Store the SR for later retrieval... */
@@ -429,7 +431,7 @@ static void process_rtcp_sr(struct rtp *session, rtcp_t *packet)
 	/* ...process RRs... */
 }
 
-static void process_rtcp_rr(struct rtp *session, rtcp_t *packet)
+static void process_rtcp_rr(struct rtp *session, rtcp_t *packet, struct timeval *event_ts)
 {
 	UNUSED(session);
 	UNUSED(packet);
@@ -437,7 +439,7 @@ static void process_rtcp_rr(struct rtp *session, rtcp_t *packet)
 	/* ...process RRs... */
 }
 
-static void process_rtcp_sdes(struct rtp *session, rtcp_t *packet)
+static void process_rtcp_sdes(struct rtp *session, rtcp_t *packet, struct timeval *event_ts)
 {
 	int 			count = packet->common.count;
 	struct rtcp_sdes_t 	*sd   = &packet->r.sdes;
@@ -468,6 +470,7 @@ static void process_rtcp_sdes(struct rtp *session, rtcp_t *packet)
 					event.ssrc = sd->ssrc;
 					event.type = RX_SDES;
 					event.data = (void *) rsp;
+					event.ts   = event_ts;
 					session->callback(session, &event);
 				} else {
 					debug_msg("Invalid sdes item for source 0x%08x, skipping...\n", sd->ssrc);
@@ -481,7 +484,7 @@ static void process_rtcp_sdes(struct rtp *session, rtcp_t *packet)
 	}
 }
 
-static void process_rtcp_bye(struct rtp *session, rtcp_t *packet)
+static void process_rtcp_bye(struct rtp *session, rtcp_t *packet, struct timeval *event_ts)
 {
 	UNUSED(session);
 	UNUSED(packet);
@@ -491,26 +494,28 @@ static void process_rtcp_bye(struct rtp *session, rtcp_t *packet)
 static void rtp_recv_ctrl(struct rtp *session)
 {
 	/* This routine processes incoming RTCP packets */
-	u_int8	buffer[RTP_MAX_PACKET_LEN];
-	int	buflen;
+	struct timeval	event_ts;
+	u_int8		buffer[RTP_MAX_PACKET_LEN];
+	int		buflen;
 
 	buflen = udp_recv(session->rtcp_socket, buffer, RTP_MAX_PACKET_LEN);
+	gettimeofday(&event_ts, NULL);
 	if (buflen > 0) {
 		if (validate_rtcp(buffer, buflen)) {
 			rtcp_t	*packet  = (rtcp_t *) buffer;
 			while (packet < (rtcp_t *) (buffer + buflen)) {
 				switch (packet->common.pt) {
 					case RTCP_SR:
-						process_rtcp_sr(session, packet);
+						process_rtcp_sr(session, packet, &event_ts);
 						break;
 					case RTCP_RR:
-						process_rtcp_rr(session, packet);
+						process_rtcp_rr(session, packet, &event_ts);
 						break;
 					case RTCP_SDES:
-						process_rtcp_sdes(session, packet);
+						process_rtcp_sdes(session, packet, &event_ts);
 						break;
 					case RTCP_BYE:
-						process_rtcp_bye(session, packet);
+						process_rtcp_bye(session, packet, &event_ts);
 						break;
 					default: 
 						debug_msg("RTCP packet with unknown type (%d) ignored.\n", packet->common.pt);
