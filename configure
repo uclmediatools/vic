@@ -2515,7 +2515,7 @@ echo "$ac_t""$ucl_cv_control" 1>&6
 if test $ucl_cv_control = yes
 then
         cat >> confdefs.h <<\EOF
-#define HAVE_MSGHDR_MSHCTRL 1
+#define HAVE_MSGHDR_MSGCTRL 1
 EOF
 
 fi

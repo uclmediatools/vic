@@ -89,6 +89,9 @@
 /* Define if you have the <sys/time.h> header file.  */
 #undef HAVE_SYS_TIME_H
 
+/* Define if struct msghdr contains msg_control */
+#undef HAVE_MSGHDR_MSGCTRL
+
 #ifndef WORDS_BIGENDIAN
 #define WORDS_SMALLENDIAN
 #endif
