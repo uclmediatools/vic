@@ -124,7 +124,7 @@ GroupIPC::GroupIPC(int channel) : handlers_(0)
 
 		struct ip_mreq mr;
 		mr.imr_multiaddr.s_addr = htonl(GROUP_IPC_ADDR);
-		mr.imr_interface.s_addr = INADDR_ANY;
+		mr.imr_interface.s_addr = htonl(INADDR_ANY);
 		if (setsockopt(rsock_, IPPROTO_IP, IP_ADD_MEMBERSHIP, 
 			       (char *)&mr, sizeof(mr)) < 0) {
 			/*
@@ -143,7 +143,7 @@ GroupIPC::GroupIPC(int channel) : handlers_(0)
 			exit(1);
 		}
 		sin.sin_port = 0;
-		sin.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+		sin.sin_addr.s_addr = htonl(INADDR_ANY);
 		if (bind(ssock_, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
 			perror("GroupIPC bind");
 			exit(1);
@@ -164,7 +164,7 @@ GroupIPC::GroupIPC(int channel) : handlers_(0)
 			perror("GroupIPC: IP_MULTICAST_TTL");
 			exit(1);
 		}
-		u_int32_t addr = htonl(INADDR_LOOPBACK);
+		u_int32_t addr = htonl(INADDR_ANY);
 		if (setsockopt(ssock_, IPPROTO_IP, IP_MULTICAST_IF,
 				(char *)&addr, 4) < 0) {
 			perror("GroupIPC: IP_MULTICAST_IF");
