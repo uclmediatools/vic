@@ -111,7 +111,7 @@ void MBusHandler::timeout()
 	mbus_send(mbusp_);
 	mbus_recv(mbusp_, (void *) this, &timeout);
 	mbus_retransmit(mbusp_);
-	mbus_heartbeat(mbusp_, 5);
+	mbus_heartbeat(mbusp_, 1);
 	mbus_send(mbusp_);
 
 	msched(50);
