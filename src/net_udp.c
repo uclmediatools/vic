@@ -161,7 +161,7 @@ static
 int inet_aton(const char *name, struct in_addr *addr)
 {
 	addr->s_addr = inet_addr(name);
-	return (addr->s_addr != (in_addr_t) INADDR_ANY);
+	return (addr->s_addr != (in_addr_t) INADDR_NONE);
 }
 #endif
 
@@ -423,7 +423,7 @@ int udp_recv(socket_udp *s, char *buffer, int buflen)
 	/* If no data is available, this returns the value zero immediately. */
 	/* Note: since we don't care about the source address of the packet  */
 	/* we receive, this function becomes protocol independent.           */
-	int		len;
+        int		len;
 
 	assert(buffer != NULL);
 	assert(buflen > 0);
