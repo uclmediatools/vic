@@ -165,7 +165,7 @@ void mbus_lock_config_file(struct mbus_config *m)
 		perror("Unable to get passwd entry");
 		abort();
 	}
-	cfg_file = (char *) xmalloc(strlen(p->pw_dir) + 6);
+	cfg_file = (char *) xmalloc(strlen(p->pw_dir) + 7);
 	sprintf(cfg_file, "%s/.mbus", p->pw_dir);
 	m->cfgfd = open(cfg_file, O_RDWR | O_CREAT, 0600);
 	if (m->cfgfd == -1) {
