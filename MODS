@@ -66,4 +66,6 @@ Still to do...
 	- Mbus code should be more paranoid about handling garbage inputs, we
 	  can likely get all sorts of buffer overflows by feeding random data
 	  into it.
+	- rtp_recv should split into rtp_select and rtp_recv. Jitter issues
+	  otherwise, as pointed out by Orion.
 
