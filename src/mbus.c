@@ -386,7 +386,7 @@ static void mbus_get_encrkey(struct mbus *m, struct mbus_key *key)
 	key->key         = strtok(NULL  , ")");
 	key->key_len     = strlen(key->key);
 
-	debug_msg("alg=%s expiry_time=%d key=%s keylen=%d\n", key->algorithm, key->expiry_time, key->key, key->key_len);
+	debug_msg("alg=%s key=%s keylen=%d\n", key->algorithm, key->key, key->key_len);
 
 	/* Decode the key... */
 	tmp = (char *) xmalloc(key->key_len);
@@ -424,11 +424,10 @@ static void mbus_get_hashkey(struct mbus *m, struct mbus_key *key)
 
 	/* Parse the key... */
 	key->algorithm   = strdup(strtok(buffer+1, ","));
-	key->expiry_time = atol(strtok(NULL  , ","));
 	key->key         = strtok(NULL  , ")");
 	key->key_len     = strlen(key->key);
 
-	debug_msg("alg=%s expiry_time=%d key=%s keylen=%d\n", key->algorithm, key->expiry_time, key->key, key->key_len);
+	debug_msg("alg=%s key=%s keylen=%d\n", key->algorithm, key->key, key->key_len);
 
 	/* Decode the key... */
 	tmp = (char *) xmalloc(key->key_len);
