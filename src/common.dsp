@@ -243,6 +243,14 @@ SOURCE=.\qfDES.c
 # End Source File
 # Begin Source File
 
+SOURCE=".\rijndael-alg-fst.c"
+# End Source File
+# Begin Source File
+
+SOURCE=".\rijndael-api-fst.c"
+# End Source File
+# Begin Source File
+
 SOURCE=.\rtp.c
 # End Source File
 # Begin Source File
