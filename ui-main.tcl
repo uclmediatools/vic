@@ -33,6 +33,7 @@
 # @(#) $Header$ (LBL)
 #
 
+set updated 0
 
 proc session args {
 	global V
@@ -792,14 +793,15 @@ proc update_rate src {
 }
 
 proc update_src src {
-	global ftext
+	global ftext updated
 	if ![info exists ftext($src)] {
 		return
 	}
+	if {$updated==1} {return}
 	update_rate $src
 	#XXX
 	update_source_info $src
-	after 1000 "update_src $src"
+	after 1000 "catch {update_src $src}"
 }
 
 proc build.help { } {
