@@ -266,6 +266,7 @@ v1.1.5  - Remove SunOS and Solaris defines from the configure script, they
 	  inappropriate.
 	- Clarify that rtp_recv(), rtp_send_data() and rtp_send_ctrl() take an
 	  RTP format timestamp for the current time.
+	* 17 April 2000
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
