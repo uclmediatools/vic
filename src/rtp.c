@@ -175,6 +175,9 @@ struct rtp {
 	struct timeval	 last_rtcp_send_time;
 	struct timeval	 next_rtcp_send_time;
 	double		 rtcp_interval;
+	int		 sdes_count_pri;
+	int		 sdes_count_sec;
+	int		 sdes_count_ter;
 	void (*callback)(struct rtp *session, rtp_event *event);
 };
 
@@ -656,7 +659,7 @@ static char *get_cname(socket_udp *s)
         uname = pwent->pw_name;
 #endif
         if (uname != NULL) {
-                sprintf(cname, "test-%s@", uname);
+                sprintf(cname, "%s@", uname);
         }
 
         /* Now the hostname. Must be dotted-quad IP address. */
@@ -690,6 +693,9 @@ struct rtp *rtp_init(char *addr, u_int16 port, int ttl, double rtcp_bw, void (*c
 	session->avg_rtcp_size      = 70;	/* Guess for a sensible starting point... */
 	session->we_sent            = FALSE;
 	session->rtcp_bw            = rtcp_bw;
+	session->sdes_count_pri     = 0;
+	session->sdes_count_sec     = 0;
+	session->sdes_count_ter     = 0;
 	gettimeofday(&(session->last_rtcp_send_time), NULL);
 	gettimeofday(&(session->next_rtcp_send_time), NULL);
 
@@ -1383,12 +1389,10 @@ static u_int8 *format_rtcp_rr(u_int8 *buffer, int buflen, struct rtp *session)
 	return buffer + 8 + (24 * packet->common.count);
 }
 
-/*
- * Fill out an SDES item.  I assume here that the item is a NULL terminated
- * string.
- */
 static int add_sdes_item(u_int8 *buf, int type, char *val)
 {
+	/* Fill out an SDES item. It is assumed that the item is a NULL    */
+	/* terminated string.                                              */
         rtcp_sdes_item *shdr = (rtcp_sdes_item *) buf;
         int             namelen;
 
@@ -1403,10 +1407,21 @@ static int add_sdes_item(u_int8 *buf, int type, char *val)
         return namelen + 2;
 }
 
-static u_int8 *format_rtcp_sdes(u_int8 *buffer, int buflen, struct rtp *session)
+static u_int8 *format_rtcp_sdes(u_int8 *buffer, int buflen, u_int32 ssrc, struct rtp *session)
 {
+        /* From draft-ietf-avt-profile-new-00:                             */
+        /* "Applications may use any of the SDES items described in the    */
+        /* RTP specification. While CNAME information is sent every        */
+        /* reporting interval, other items should be sent only every third */
+        /* reporting interval, with NAME sent seven out of eight times     */
+        /* within that slot and the remaining SDES items cyclically taking */
+        /* up the eighth slot, as defined in Section 6.2.2 of the RTP      */
+        /* specification. In other words, NAME is sent in RTCP packets 1,  */
+        /* 4, 7, 10, 13, 16, 19, while, say, EMAIL is used in RTCP packet  */
+        /* 22".                                                            */
 	u_int8		*packet = buffer;
 	rtcp_common	*common = (rtcp_common *) buffer;
+	char		*item;
 
 	assert(buflen > (int) sizeof(rtcp_common));
 
@@ -1417,10 +1432,51 @@ static u_int8 *format_rtcp_sdes(u_int8 *buffer, int buflen, struct rtp *session)
 	common->length  = 0;
 	packet += sizeof(common);
 
-	/* Add SDES items following the fixed header... */
-	*((u_int32 *) packet) = htonl(rtp_my_ssrc(session));
+	*((u_int32 *) packet) = htonl(ssrc);
 	packet += 4;
-	packet += add_sdes_item(packet, RTCP_SDES_CNAME, rtp_get_sdes(session, rtp_my_ssrc(session), RTCP_SDES_CNAME));
+	item = rtp_get_sdes(session, ssrc, RTCP_SDES_CNAME);
+	if (item != NULL) {
+		packet += add_sdes_item(packet, RTCP_SDES_CNAME, item);
+	}
+	item = rtp_get_sdes(session, ssrc, RTCP_SDES_NOTE);
+	if (item != NULL) {
+		packet += add_sdes_item(packet, RTCP_SDES_NOTE, item);
+	}
+
+	if ((session->sdes_count_pri % 3) == 0) {
+		session->sdes_count_sec++;
+		if ((session->sdes_count_sec % 8) == 0) {
+			switch (session->sdes_count_ter % 4) {
+			case 0: item = rtp_get_sdes(session, ssrc, RTCP_SDES_EMAIL);
+				if (item != NULL) {
+					packet += add_sdes_item(packet, RTCP_SDES_EMAIL, item);
+					break;
+				}
+			case 1: item = rtp_get_sdes(session, ssrc, RTCP_SDES_PHONE);
+				if (item != NULL) {
+					packet += add_sdes_item(packet, RTCP_SDES_PHONE, item);
+					break;
+				}
+			case 2: item = rtp_get_sdes(session, ssrc, RTCP_SDES_LOC);
+				if (item != NULL) {
+					packet += add_sdes_item(packet, RTCP_SDES_LOC, item);
+					break;
+				}
+			case 3: item = rtp_get_sdes(session, ssrc, RTCP_SDES_TOOL);
+				if (item != NULL) {
+					packet += add_sdes_item(packet, RTCP_SDES_TOOL, item);
+					break;
+				}
+			}
+			session->sdes_count_ter++;
+		} else {
+			item = rtp_get_sdes(session, ssrc, RTCP_SDES_NAME);
+			if (item != NULL) {
+				packet += add_sdes_item(packet, RTCP_SDES_NAME, item);
+			}
+		}
+	}
+	session->sdes_count_pri++;
 
 	/* Pad to a multiple of 4 bytes... */
 	while ((((int) (packet - buffer)) % 4) != 0) {
@@ -1444,7 +1500,7 @@ static void send_rtcp(struct rtp *session, u_int32 ts)
 	} else {
 		ptr = format_rtcp_rr(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), session);
 	}
-	ptr = format_rtcp_sdes(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), session);
+	ptr = format_rtcp_sdes(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), rtp_my_ssrc(session), session);
 	udp_send(session->rtcp_socket, buffer, ptr - buffer);
 }
 
@@ -1457,10 +1513,8 @@ int rtp_send_ctrl(struct rtp *session, u_int32 ts)
 	if (tv_gt(curr_time, session->next_rtcp_send_time)) {
 		/* The RTCP transmission timer has expired. The following */
 		/* implements draft-ietf-avt-rtp-new-02.txt section 6.3.6 */
-#ifdef NDEF
 		int		 h;
 		source		*s;
-#endif
 		struct timeval	 new_send_time;
 		double		 new_interval;
 
@@ -1469,18 +1523,19 @@ int rtp_send_ctrl(struct rtp *session, u_int32 ts)
 		tv_add(&new_send_time, new_interval);
 		if (tv_gt(curr_time, new_send_time)) {
 			send_rtcp(session, ts);
+			session->initial_rtcp        = FALSE;
+			session->we_sent             = FALSE;
 			session->last_rtcp_send_time = curr_time;
-			session->next_rtcp_send_time = curr_time; tv_add(&(session->next_rtcp_send_time), new_interval);
-			session->initial_rtcp = FALSE;
-			session->we_sent      = FALSE;
-#ifdef NDEF
+			session->next_rtcp_send_time = curr_time; 
+			tv_add(&(session->next_rtcp_send_time), new_interval);
+			/* We're starting a new RTCP reporting interval, zero out */
+			/* the per-interval statistics.                           */
 			session->sender_count = 0;
 			for (h = 0; h < RTP_DB_SIZE; h++) {
 				for (s = session->db[h]; s != NULL; s = s->next) {
 					s->sender = FALSE;
 				}
 			}
-#endif
 		} else {
 			session->next_rtcp_send_time = session->last_rtcp_send_time; 
 			tv_add(&(session->next_rtcp_send_time), new_interval);
