@@ -19,8 +19,8 @@ OBJS =	main.obj io.obj dct.obj coder.obj quant.obj mot_est.obj pred.obj  snr.obj
         countbit.obj putbits.obj ratectrl.obj sac.obj putvlc.obj intra_pred.obj \
         filter.obj malloc_debug.obj
 
-TOOLS32       =  e:\progra~1\devstudio\vc
-cc32 = $(TOOLS32)\bin\cl -I$(TOOLS32)\include 
+TOOLS32       =  c:\progra~1\micros~2\vc98
+cc32 = $(TOOLS32)\bin\cl -I$(TOOLS32)\include
 
 libh263coder.lib: $(OBJS)
 	del $@
