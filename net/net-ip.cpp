@@ -246,7 +246,11 @@ int IPNetwork::localname(sockaddr_in* p)
 {
 	memset((char *)p, 0, sizeof(*p));
 	p->sin_family = AF_INET;
+#ifndef WIN32
 	unsigned int len = sizeof(*p), result =0;
+#else
+	int len = sizeof(*p), result =0;
+#endif
 
 	if ((result = getsockname(ssock_, (struct sockaddr *)p, &len)) < 0) {
 		perror("getsockname");
@@ -469,7 +473,11 @@ you must specify a unicast destination\n");
 int IPNetwork::dorecv(u_char* buf, int len, Address & from, int fd)
 {
 	sockaddr_in sfrom;
+#ifndef WIN32
 	unsigned int fromlen = sizeof(sfrom);
+#else
+	int fromlen = sizeof(sfrom);
+#endif
 	int cc = ::recvfrom(fd, (char*)buf, len, 0,
 			    (sockaddr*)&sfrom, &fromlen);
 	if (cc < 0) {

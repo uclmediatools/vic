@@ -53,6 +53,7 @@ static const char rcsid[] =
 #endif
 #include "net.h"
 #include "crypt.h"
+#include "pktbuf.h"
 
 #include "net-addr.h"
 
@@ -300,6 +301,12 @@ int Network::cpmsg(const msghdr& mh)
 	return (len);
 }
 
+void Network::send(const pktbuf* pb)
+{
+	/*XXX*/
+	send(pb->dp, pb->len);
+}
+/*
 void Network::send(const msghdr& mh)
 {
 	if (crypt_) {
@@ -311,7 +318,7 @@ void Network::send(const msghdr& mh)
 	if (cc < 0) {
 		switch (errno) {
 		case ECONNREFUSED:
-			/* no one listening at some site - ignore */
+			/* no one listening at some site - ignore *
 #if defined(__osf__) || defined(_AIX)
 			reset();
 #endif
@@ -328,23 +335,27 @@ void Network::send(const msghdr& mh)
 			 * just did cleared the errno for the previous
 			 * icmp unreachable, so we should be able to
 			 * send now.
-			 */
+			 *
 			(void)::sendmsg(ssock_, (msghdr*)&mh, 0);
 			break;
 
 		default:
-			/*perror("sendmsg");*/
+			/*perror("sendmsg");*
 			return;
 		}
 	}
 }
-
+*/
 
 
 int Network::dorecv(u_char* buf, int len, u_int32_t& from, int fd)
 {
 	sockaddr_in sfrom;
+#ifndef WIN32
 	unsigned int fromlen = sizeof(sfrom);
+#else	
+	int fromlen = sizeof(sfrom);
+#endif
 	int cc = ::recvfrom(fd, (char*)buf, len, 0,
 			    (sockaddr*)&sfrom, &fromlen);
 	if (cc < 0) {

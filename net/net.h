@@ -40,6 +40,8 @@
 #include "inet.h"
 #include "vic_tcl.h"
 
+class pktbuf;
+
 struct msghdr;
 
 class Crypt;
@@ -77,7 +79,8 @@ class Network : public TclObject {
 	virtual ~Network();
 	virtual int command(int argc, const char*const* argv);
 	virtual void send(u_char* buf, int len);
-	virtual void send(const msghdr& mh);
+	//virtual void send(const msghdr& mh);
+	virtual void send(const pktbuf* );
 	virtual int recv(u_char* buf, int len, u_int32_t& from);
 	virtual int recv(u_char* buf, int len, Address &from);
 	inline int rchannel() const { return (rsock_); }
