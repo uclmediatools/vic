@@ -18,10 +18,10 @@ CFG=vic - Win32 Debug IPv6 Musica
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
 !MESSAGE "vic - Win32 Release" (based on "Win32 (x86) Application")
-!MESSAGE "vic - Win32 Debug" (based on "Win32 (x86) Application")
 !MESSAGE "vic - Win32 Debug IPv6" (based on "Win32 (x86) Application")
 !MESSAGE "vic - Win32 Debug IPv6 Musica" (based on "Win32 (x86) Application")
-!MESSAGE 
+!MESSAGE "vic - Win32 Debug" (based on "Win32 (x86) Application")
+!MESSAGE
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
