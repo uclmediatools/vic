@@ -246,6 +246,8 @@ static void check_database(struct rtp *session)
 	/* Check that the number of entries in the hash table  */
 	/* matches session->ssrc_count                         */
 	assert(source_count == session->ssrc_count);
+#else
+        UNUSED(session);
 #endif
 }
 

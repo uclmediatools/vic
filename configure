@@ -79,6 +79,7 @@ case $OSTYPE in
 	    CHAR="-fsigned-char"
 	    OPTIMIZE="-O4"
 	    PROFILE="-pg"
+	    ECHO=/usr/bin/echo
             ;;
   IRIX    ) CC="cc"
             WFLAGS="-fullwarn -w2"
@@ -107,6 +108,7 @@ case $OSTYPE in
 	    CHAR="-fsigned-char"
 	    OPTIMIZE="-O4"
 	    PROFILE="-pg"
+	    ECHO=/bin/echo
             ;;
   HPUX    ) CC="gcc"
             WFLAGS=$GCCWFLAGS
