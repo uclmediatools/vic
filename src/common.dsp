@@ -175,6 +175,10 @@ SOURCE=.\mbus.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\mbus_addr.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\mbus_config.c
 # End Source File
 # Begin Source File
@@ -260,6 +264,10 @@ SOURCE=.\inet_pton.h
 # Begin Source File
 
 SOURCE=.\mbus.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\mbus_addr.h
 # End Source File
 # Begin Source File
 
