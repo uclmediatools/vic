@@ -74,10 +74,14 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 extern int h_errno;
-#if !defined(HPUX) && !defined(Linux) && !defined(__FreeBSD__) && !defined(__OpenBSD__)
+
+#ifdef HAVE_STROPTS_H
 #include <stropts.h>
+#endif /* HAVE_STROPTS_H */
+#ifdef HAVE_FILIO_H
 #include <sys/filio.h>  
-#endif /* HPUX */
+#endif /* HAVE_FILIO_H */
+
 #include <net/if.h>
 
 typedef unsigned char	byte;
@@ -112,10 +116,13 @@ int gethostname(char *name, int namelen);
 #endif
 #endif
 
-#ifdef SunOS
+#ifndef EXIT_SUCCESS
 #define EXIT_SUCCESS 0
+#endif /* EXIT_SUCCESS */
+
+#ifndef EXIT_FAILURE
 #define EXIT_FAILURE 7
-#endif
+#endif /* EXIT_FAILURE */
 
 #ifndef STDC_HEADERS
 int 	gethostname(char *name, int namelen);
