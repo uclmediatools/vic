@@ -94,7 +94,7 @@ CFLAGS = $(CCOPT) $(BFLAGS)
 #
 # Remember to add a dependency if you add any tcl sources here.
 #
-TCL_VIC = ui-ctrlmenu.tcl ui-main.tcl ui-resource.tcl \
+TCL_VIC = ui-ctrlmenu.tcl ui-main.tcl ui-resource.tcl ui-relate.tcl \
 	ui-srclist.tcl ui-stats.tcl ui-util.tcl ui-windows.tcl \
 	ui-switcher.tcl ui-extout.tcl ui-grabber.tcl ui-unix.tcl \
 	cf-main.tcl cf-tm.tcl cf-confbus.tcl cf-network.tcl cf-util.tcl \
@@ -114,7 +114,7 @@ OBJ2 =	main.o net.o net-ip.o source.o \
 	session.o session-rtpv1.o session-nv.o session-ivs.o \
 	decoder.o decoder-jpeg.o decoder-nv.o \
 	decoder-h261.o decoder-h261v1.o \
-	decoder-cellb.o \
+	decoder-cellb.o mbus.o mbus_engine.o \
 	device.o grabber.o vw.o Tcl.o Tcl2.o module.o transmitter.o \
 	encoder-nv.o encoder-cellb.o encoder-h261.o \
 	transcoder-jpeg.o framer-jpeg.o \
@@ -249,6 +249,7 @@ tkerror.o: tkerror.tcl
 entry.o: entry.tcl
 ui-vdd.o: ui-vdd.tcl
 ui-h261_play.o: ui-h261_play.tcl
+ui-relate.o: ui-relate.tcl
 
 version.c: VERSION
 	rm -f version.c

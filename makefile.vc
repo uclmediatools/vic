@@ -41,11 +41,12 @@ ZIP = c:\progra~1\winzip\winzip32
 NODEBUG=1
 
 APPVER=4.0
-TOOLS32       = c:\msdev
+TOOLS32       =  c:\progra~1\devstudio\vc
 cc32 = $(TOOLS32)\bin\cl -I$(TOOLS32)\include
-rc32 = $(TOOLS32)\bin\rc
+rc32 = c:\progra~1\devstudio\sharedIDE\bin\rc
 link32 = $(TOOLS32)\bin\link
 
+TARGETOS=WIN95
 !include <ntwin32.mak>
 
 ALL = vic histtolut
@@ -61,16 +62,16 @@ all:	vic
 
 ED_YBITS = 4
 
-TK_DIR  = ../tk4.1
-TCL_DIR = ../tcl7.5
+TK_DIR  = ../tk8.0
+TCL_DIR = ../tcl8.0
 
 INCLUDE_TK = -I$(TK_DIR)/win -I$(TK_DIR)/generic
 INCLUDE_TCL = -I$(TCL_DIR)/win -I$(TCL_DIR)/generic
 INCLUDE_X11 = -I$(TK_DIR)/xlib
 INCLUDE_MISC = 
 
-LIB_TK = $(TK_DIR)/win/tk41.lib
-LIB_TCL = $(TCL_DIR)/win/tcl75.lib
+LIB_TK = $(TK_DIR)/win/tk80vc.lib
+LIB_TCL = $(TCL_DIR)/win/tcl80vc.lib
 
 MKDEP = \mksnt\sh .\mkdep
 
@@ -94,9 +95,9 @@ TK_LIBRARY_FILES = \
 		$(LIBRARY_TK)/text.tcl \
 		$(LIBRARY_TK)/optMenu.tcl $(LIBRARY_TK)/scrlbar.tcl
 
-LIB_GRABBER = 
+LIB_GRABBER = c:/progra~1/devstudio/vc/lib/vfw32.lib
 INCLUDE_GRABBER = 
-OBJ_GRABBER = 
+OBJ_GRABBER = grabber-win32.obj
 SRC_GRABBER = $(OBJ_GRABBER:.o=.cc) 
 OBJ_XIL = 
 LIBS = $(LIB_GRABBER) $(LIB_TK) $(LIB_TCL) $(guilibs) wsock32.lib
@@ -109,7 +110,7 @@ CFLAGS = $(CCOPT) $(BFLAGS)
 #
 # Remember to add a dependency if you add any tcl sources here.
 #
-TCL_VIC = ui-ctrlmenu.tcl ui-main.tcl ui-resource.tcl \
+TCL_VIC = ui-ctrlmenu.tcl ui-main.tcl ui-resource.tcl ui-relate.tcl\
 	ui-srclist.tcl ui-stats.tcl ui-util.tcl ui-windows.tcl \
 	ui-switcher.tcl ui-extout.tcl ui-grabber.tcl ui-win32.tcl \
 	cf-main.tcl cf-tm.tcl cf-confbus.tcl cf-network.tcl cf-util.tcl \
@@ -131,7 +132,7 @@ OBJ2 =	main.obj net.obj net-ip.obj source.obj \
 	session.obj session-rtpv1.obj session-nv.obj session-ivs.obj \
 	decoder.obj decoder-jpeg.obj decoder-nv.obj \
 	decoder-h261.obj decoder-h261v1.obj \
-	decoder-cellb.obj \
+	decoder-cellb.obj mbus.obj mbus_engine.obj\
 	device.obj grabber.obj vw.obj Tcl.obj Tcl2.obj module.obj transmitter.obj \
 	encoder-nv.obj encoder-cellb.obj encoder-h261.obj \
 	transcoder-jpeg.obj framer-jpeg.obj \
@@ -293,6 +294,7 @@ tkerror.obj: tkerror.tcl
 entry.obj: entry.tcl
 ui-vdd.obj: ui-vdd.tcl
 ui-h261_play.obj: ui-h261_play.tcl
+ui-relate.obj: ui-relate.tcl
 
 mkversion.exe: mkversion.obj
 	-del $@
