@@ -344,6 +344,8 @@ v1.2.5	- More informative error message when the lock on the mbus configuration
 
 1.2.6	- Fix so that we no longer send an RTCP BYE if we leave the session 
           before sending any other packets.
+	- Fix initial estimate of average RTCP packet size.
+	- Implement RTCP BYE reconsideration.
 
 
 
@@ -365,4 +367,5 @@ Still to do...
 	- When weak RTP validation is enabled, spurious sources can be
 	  added to the database (from the CSRC area of a packet?). Reported
 	  by Xiaotao Wu <xiaotaow@cs.columbia.edu>
+	- RTP estimate of lower layer overhead is IPv4 specific.
 

@@ -205,11 +205,13 @@ struct rtp {
 	uint8_t		*userdata;
 	int		 invalid_rtp_count;
 	int		 invalid_rtcp_count;
+	int		 bye_count;
 	int		 csrc_count;
 	int		 ssrc_count;
 	int		 ssrc_count_prev;		/* ssrc_count at the time we last recalculated our RTCP interval */
 	int		 sender_count;
 	int		 initial_rtcp;
+	int		 sending_bye;			/* TRUE if we're in the process of sending a BYE packet */
 	double		 avg_rtcp_size;
 	int		 we_sent;
 	double		 rtcp_bw;			/* RTCP bandwidth fraction, in octets per second. */
@@ -770,8 +772,12 @@ static double rtcp_interval(struct rtp *session)
 	/* If there were active senders, give them at least a minimum     */
 	/* share of the RTCP bandwidth.  Otherwise all participants share */
 	/* the RTCP bandwidth equally.                                    */
-	n = session->ssrc_count;
-	if (session->sender_count > 0 && session->sender_count < session->ssrc_count * RTCP_SENDER_BW_FRACTION) {
+	if (session->sending_bye) {
+		n = session->bye_count;
+	} else {
+		n = session->ssrc_count;
+	}
+	if (session->sender_count > 0 && session->sender_count < n * RTCP_SENDER_BW_FRACTION) {
 		if (session->we_sent) {
 			rtcp_bw *= RTCP_SENDER_BW_FRACTION;
 			n = session->sender_count;
@@ -993,12 +999,14 @@ struct rtp *rtp_init_if(const char *addr, char *iface,
 	session->callback           = callback;
 	session->invalid_rtp_count  = 0;
 	session->invalid_rtcp_count = 0;
+	session->bye_count          = 0;
 	session->csrc_count         = 0;
 	session->ssrc_count         = 0;
 	session->ssrc_count_prev    = 0;
 	session->sender_count       = 0;
 	session->initial_rtcp       = TRUE;
-	session->avg_rtcp_size      = 70.0 + RTP_LOWER_LAYER_OVERHEAD;	/* Guess for a sensible starting point... */
+	session->sending_bye        = FALSE;
+	session->avg_rtcp_size      = -1;	/* Sentinal value: reception of first packet starts initial value... */
 	session->we_sent            = FALSE;
 	session->rtcp_bw            = rtcp_bw;
 	session->sdes_count_pri     = 0;
@@ -1593,6 +1601,7 @@ static void process_rtcp_bye(struct rtp *session, rtcp_t *packet, struct timeval
 		s = get_source(session, ssrc);
 		s->got_bye = TRUE;
 		check_source(s);
+		session->bye_count++;
 	}
 }
 
@@ -1725,8 +1734,15 @@ static void rtp_process_ctrl(struct rtp *session, uint8_t *buffer, int buflen)
 				packet = (rtcp_t *) ((char *) packet + (4 * (ntohs(packet->common.length) + 1)));
 				first  = FALSE;
 			}
-			/* The constants here are 1/16 and 15/16 (section 6.3.3 of draft-ietf-avt-rtp-new-02.txt) */
-			session->avg_rtcp_size = (0.0625 * (buflen + RTP_LOWER_LAYER_OVERHEAD)) + (0.9375 * session->avg_rtcp_size);
+			if (session->avg_rtcp_size < 0) {
+				/* This is the first RTCP packet we've received, set our initial estimate */
+				/* of the average  packet size to be the size of this packet.             */
+				session->avg_rtcp_size = buflen + RTP_LOWER_LAYER_OVERHEAD;
+			} else {
+				/* Update our estimate of the average RTCP packet size. The constants are */
+				/* 1/16 and 15/16 (section 6.3.3 of draft-ietf-avt-rtp-new-02.txt).       */
+				session->avg_rtcp_size = (0.0625 * (buflen + RTP_LOWER_LAYER_OVERHEAD)) + (0.9375 * session->avg_rtcp_size);
+			}
 			/* Signal that we've finished processing this packet */
 			if (!filter_event(session, packet_ssrc)) {
 				event.ssrc = packet_ssrc;
@@ -2660,27 +2676,80 @@ static void rtp_send_bye_now(struct rtp *session)
  * @session: The RTP session
  *
  * Sends a BYE message on the RTP session, indicating that this
- * system is leaving the session.
- * Should implement reverse reconsideration; right now it sends a
- * BYE if there are less than 50 members and sends nothing otherwise.
+ * participant is leaving the session. The process of sending a
+ * BYE may take some time, and this function will block until 
+ * it is complete. During this time, RTCP events are reported 
+ * to the application via the callback function (data packets 
+ * are silently discarded).
  */
 void rtp_send_bye(struct rtp *session)
 {
-	/* The function sends an RTCP BYE packet. It should implement BYE reconsideration, */
-	/* at present it either: a) sends a BYE packet immediately (if there are less than */
-	/* 50 members in the group), or b) returns without sending a BYE (if there are 50  */
-	/* or more members). See draft-ietf-avt-rtp-new-01.txt (section 6.3.7).            */
+	struct timeval	curr_time, timeout, new_send_time;
+	uint8_t		buffer[RTP_MAX_PACKET_LEN];
+	int		buflen;
+	double		new_interval;
+
 	check_database(session);
 
+	/* "...a participant which never sent an RTP or RTCP packet MUST NOT send  */
+	/* a BYE packet when they leave the group." (section 6.3.7 of RTP spec)    */
 	if ((session->we_sent == FALSE) && (session->initial_rtcp == TRUE)) {
-		/* "...a participant which never sent an RTP or RTCP packet MUST NOT send  */
-		/* a BYE packet when they leave the group." (section 6.3.6 of RTP spec)    */
+		debug_msg("Silent BYE\n");
 		return;
 	}
 
+	/* If the session is small, send an immediate BYE. Otherwise, we delay and */
+	/* perform BYE reconsideration as needed.                                  */
+#ifdef NDEF
 	if (session->ssrc_count < 50) {
 		rtp_send_bye_now(session);
+	} else {
+#endif
+		gettimeofday(&curr_time, NULL);
+		session->sending_bye         = TRUE;
+		session->last_rtcp_send_time = curr_time;
+		session->next_rtcp_send_time = curr_time; 
+		session->bye_count           = 1;
+		session->initial_rtcp        = TRUE;
+		session->we_sent             = FALSE;
+		session->sender_count        = 0;
+		session->avg_rtcp_size       = 70.0 + RTP_LOWER_LAYER_OVERHEAD;	/* FIXME */
+		tv_add(&session->next_rtcp_send_time, rtcp_interval(session) / (session->csrc_count + 1));
+
+		debug_msg("Preparing to send BYE...\n");
+		while (1) {
+			/* Schedule us to block in udp_select() until the time we are due to send our */
+			/* BYE packet. If we receive an RTCP packet from another participant before   */
+			/* then, we are woken up to handle it...                                      */
+			timeout.tv_sec  = 0;
+			timeout.tv_usec = 0;
+			tv_add(&timeout, tv_diff(session->next_rtcp_send_time, curr_time));
+			udp_fd_zero();
+			udp_fd_set(session->rtcp_socket);
+			if ((udp_select(&timeout) > 0) && udp_fd_isset(session->rtcp_socket)) {
+				/* We woke up because an RTCP packet was received; process it... */
+				buflen = udp_recv(session->rtcp_socket, buffer, RTP_MAX_PACKET_LEN);
+				rtp_process_ctrl(session, buffer, buflen);
+			}
+			/* Is it time to send our BYE? */
+			gettimeofday(&curr_time, NULL);
+			new_interval  = rtcp_interval(session) / (session->csrc_count + 1);
+			new_send_time = session->last_rtcp_send_time;
+			tv_add(&new_send_time, new_interval);
+			if (tv_gt(curr_time, new_send_time)) {
+				debug_msg("Sent BYE...\n");
+				rtp_send_bye_now(session);
+				break;
+			}
+			/* No, we reconsider... */
+			session->next_rtcp_send_time = new_send_time;
+			debug_msg("Reconsidered sending BYE... delay %f seconds\n", tv_diff(new_send_time, curr_time));
+			/* ...and perform housekeeping in the usual manner */
+			rtp_update(session);
+		}
+#ifdef NDEF
 	}
+#endif
 }
 
 /**
