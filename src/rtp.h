@@ -159,6 +159,11 @@ void		 rtp_done(struct rtp *session);
 int              rtp_set_encryption_key(struct rtp *session, const char *key);
 const char      *rtp_get_encryption_key(struct rtp *session);
 
+char 		*rtp_get_addr(struct rtp *session);
+u_int16		 rtp_get_rx_port(struct rtp *session);
+u_int16		 rtp_get_tx_port(struct rtp *session);
+int		 rtp_get_ttl(struct rtp *session);
+
 int              rtp_set_my_ssrc(struct rtp *session, u_int32 ssrc);
 void 		 rtp_weak_validation(struct rtp *session);
 

@@ -117,6 +117,7 @@ v1.0.8	- Add mbus_sent_all()
 	  making mbus_addr_valid() useful
 	- rtp_init() now takes separate rx_port and tx_port, instead of a
 	  single port for both sending and receiving.
+	- Add rtp_get_addr(), rtp_get_rx_port(), rtp_get_tx_port() and rtp_get_ttl()
 
 
 Still to do...
