@@ -342,43 +342,81 @@ abort_multicast_ipv6:
 
 	/**********************************************************************/
 	printf("UDP/IP networking (FreeBSD bug)........ \n");
-	s1 = udp_init("224.2.0.1", 5000, 5000, 1);
-	if (s1 == NULL) {
-		printf("fail: cannot initialize socket\n");
-		return;
-	}
-	randomize(buf1, BUFSIZE);
-	if (udp_send(s1, buf1, BUFSIZE) < 0) {
-                perror("fail");
-                goto abort_bsd;
-        }
 	rc = fork();
 	if (rc == -1) {
 		printf("fail: cannot fork\n");
 		goto abort_bsd;
 	} else if (rc == 0) {
 		/* child */
+		s1 = udp_init("224.2.0.1", 5000, 5000, 1);
+		if (s1 == NULL) {
+			printf("fail: cannot initialize socket\n");
+			return;
+		}
+		randomize(buf1, BUFSIZE);
+		if (udp_send(s1, buf1, BUFSIZE) < 0) {
+			perror("fail");
+			goto abort_bsd;
+		}
 	        timeout.tv_sec  = 1;
         	timeout.tv_usec = 0;
         	udp_fd_zero();
         	udp_fd_set(s1);
         	rc = udp_select(&timeout);
-        	if (rc != BUFSIZE) {
-                	perror("fail");
-			exit(-1);
-        	}
+		if (rc < 0) {
+			perror("fail");
+			exit(0);
+		}
+		if (rc == 0) {
+			printf("fail: no data waiting (no multicast loopback route?)\n");
+			exit(0);
+		}
+		if (!udp_fd_isset(s1)) {
+			printf("fail: no data on file descriptor\n");
+			exit(0);
+		}
+		if (udp_recv(s1, buf2, BUFSIZE) < 0) {
+			perror("fail");
+			exit(0);
+		}
+		if (memcmp(buf1, buf2, BUFSIZE) != 0) {
+			printf("fail: buffer corrupt\n");
+			exit(0);
+		}
 		printf("pass (child)\n");
+		exit(1);
 	} else {
 		/* parent */
+		s1 = udp_init("224.2.0.1", 5000, 5000, 1);
+		if (s1 == NULL) {
+			printf("fail: cannot initialize socket\n");
+			return;
+		}
                 timeout.tv_sec  = 1;
                 timeout.tv_usec = 0;
                 udp_fd_zero();
                 udp_fd_set(s1);
                 rc = udp_select(&timeout);
-                if (rc != BUFSIZE) {
-                        perror("fail");
-                        exit(-1);
-                }
+		if (rc < 0) {
+			perror("fail");
+			goto abort_bsd;
+		}
+		if (rc == 0) {
+			printf("fail: no data waiting (no multicast loopback route?)\n");
+			goto abort_bsd;
+		}
+		if (!udp_fd_isset(s1)) {
+			printf("fail: no data on file descriptor\n");
+			goto abort_bsd;
+		}
+		if (udp_recv(s1, buf2, BUFSIZE) < 0) {
+			perror("fail");
+			goto abort_bsd;
+		}
+		if (memcmp(buf1, buf2, BUFSIZE) != 0) {
+			printf("fail: buffer corrupt\n");
+			goto abort_bsd;
+		}
                 printf("pass (parent)\n");
 	}
 	printf("pass\n");
