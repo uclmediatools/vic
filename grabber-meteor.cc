@@ -97,6 +97,11 @@ class MeteorGrabber : public Grabber {
 	struct meteor_counts cnts_;	/* pointer to counters */
 	double	start_time_;
 #endif
+
+	int count;
+	long first;
+	double values[1500];
+
 };
 
 static const int	f_411 = 0;	/* coder_format_s */
@@ -170,6 +175,8 @@ int MeteorDevice::command(int argc, const char*const* argv)
 
 MeteorGrabber::MeteorGrabber(const char* name, const char* format)
 {
+	count = 0;
+
 	coder_format_ = -1;
 	if(!strcmp(format, "411")) coder_format_ = f_411;
 	if(!strcmp(format, "422")) coder_format_ = f_422;
@@ -215,7 +222,7 @@ void MeteorGrabber::setsize()
 	geom.oformat = METEOR_GEO_UNSIGNED;
 	geom.oformat |= METEOR_GEO_YUV_422;
 	/*
-	 * If we can get by with only reading even fields, then by all
+	 * If we can aet by with only reading even fields, then by all
 	 * means do so.
 	 */
 	unsigned short status;
@@ -467,10 +474,27 @@ int MeteorGrabber::capture()
 
 int MeteorGrabber::grab()
 {
+	int temp;
+	timeval s, e;
 	if (capture() == 0)
 		return (0);
 	suppress(frame_);
 	saveblks(frame_);
 	YuvFrame f(media_ts(), frame_, crvec_, outw_, outh_);
-	return (target_->consume(&f));
+
+#define diff(x, y) \
+               (double) (1000 * (y.tv_sec - x.tv_sec) + (double)(y.tv_usec - x.tv_usec) / 1000)
+	::gettimeofday(&s , 0);
+	if (count == 0)
+		first = s.tv_sec;
+	temp = target_->consume(&f);
+	::gettimeofday(&e , 0);
+	values[count++] = diff(s, e);
+	if (e.tv_sec - first > 60) {  /* 30 sec expirement */
+		for (int i=0; i<count; i++)
+			printf("%f\n", values[i]);
+		exit(0);
+	}	
+	return(temp); 
+	//return (target_->consume(&f));
 }
