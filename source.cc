@@ -140,6 +140,7 @@ Source::Source(u_int32_t srcid, u_int32_t ssrc, Address &addr)
 	 * Put an invalid seqno in each slot to guarantee that
 	 * we don't count any initial dups by mistake.
 	 */
+
 	int i;
 	for (i = 0; i < SOURCE_NSEQ; ++i)
 		seqno_[i] = i + 1;
@@ -323,6 +324,7 @@ int Source::command(int argc, const char*const* argv)
 		}
 		if (strcmp(argv[1], "addr") == 0) {
 			strcpy(wrk, (const char *)addr_);
+			tcl.result(wrk);
 		//	tcl.result(InetNtoa(addr_), TCL_DYNAMIC);
 			return (TCL_OK);
 		}
