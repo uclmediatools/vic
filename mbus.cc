@@ -359,6 +359,7 @@ int MBusHandler::mbus_send(char *dest, char *cmnd, char *args, int reliable)
 
 	memcpy((char *) &saddr.sin_addr.s_addr, (char *) &addr, sizeof(addr));
 	saddr.sin_family = AF_INET;
+	saddr.sin_addr.s_addr = htonl(MBUS_ADDR);
 	saddr.sin_port = htons(port);
 	buffer = (char *) malloc(strlen(dest) + strlen(cmnd) + strlen(args) + strlen(m_->addr[0]) + 80);
 	sprintf(buffer, "mbus/1.0 %d %c (%s) %s ()\n%s (%s)\n", m_->seqnum, reliable?'R':'U', m_->addr[0], dest, cmnd, args);
