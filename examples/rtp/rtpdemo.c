@@ -10,6 +10,7 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "uclconf.h"
@@ -111,7 +112,7 @@ rtp_event_handler(struct rtp *session, rtp_event *e)
 #define MULAW_PAYLOAD	0
 #define MULAW_MS	4 * 20
 
-#define MAX_ROUNDS	1000
+#define MAX_ROUNDS	100
 
 static void
 rxtx_loop(struct rtp* session, int send_enable) 
