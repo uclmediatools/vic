@@ -37,7 +37,7 @@ static char rcsid[] =
 #endif
 
 #include <stdlib.h>
-#include <unistd.h>
+//#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
@@ -318,7 +318,7 @@ main(int argc, char **argv)
 		printf("const short %s[] = {", p->name);
 		int n = 1 << ht.maxlen;
 		for (int i = 0; i < n; ++i)
-			printf("%s0x%04x,", (i & 7) ? " " : "\n\t",
+			printf("(short)%s0x%04x,", (i & 7) ? " " : "\n\t",
 			       ht.prefix[i] & 0xffff);
 		printf("\n};\n");
 		++p;
