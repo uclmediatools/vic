@@ -125,6 +125,7 @@ typedef unsigned long	in_addr_t;
 
 #define srand48	srand
 #define lrand48 rand
+#define snprintf _snprintf
 
 #define IN_CLASSD(i)	(((long)(i) & 0xf0000000) == 0xe0000000)
 #define IN_MULTICAST(i)	IN_CLASSD(i)
