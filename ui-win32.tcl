@@ -34,6 +34,17 @@
 
 
 proc run_resource_dialog { name email } {
+	global V
+	set owner ""
+	set email ""
+	catch {set owner [registry get "HKEY_CURRENT_USER\\Software\\Mbone Applications\\common" "*rtpName"]}
+	catch {set email [registry get "HKEY_CURRENT_USER\\Software\\Mbone Applications\\common" "*rtpEmail"]}
+	if {$owner!="" && $email!=""} {
+		option add *rtpName "$owner" interactive
+		option add *rtpEmail "$email" interactive
+		return
+	}
+
 	set w .form
 	global V
 	frame $w
@@ -64,15 +75,15 @@ Software\\Vic\\vic key so you will not have to re-enter them." -relief ridge
 	pack $w.name $w.email -side top -fill x
 
 	set owner ""
-	catch {set owner [getregistry "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion" "RegisteredOwner"]}
+	catch {set owner [registry get "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion" "RegisteredOwner"]}
 	if { $owner == "" } {
-	    catch {set owner [getregistry "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion" "RegisteredOwner"]}
+	    catch {set owner [registry get "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion" "RegisteredOwner"]}
 	}
 
 	set org ""
-	catch {set org [getregistry "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion" "RegisteredOrganization"]}
+	catch {set org [registry get "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion" "RegisteredOrganization"]}
 	if { $org == "" } {
-	    catch {set org [getregistry "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion" "RegisteredOrganization"]}
+	    catch {set org [registry get "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion" "RegisteredOrganization"]}
 	}
 
 	$w.name.entry insert 0 [format "%s (%s)" $owner $org ]
@@ -110,8 +121,8 @@ Software\\Vic\\vic key so you will not have to re-enter them." -relief ridge
 	option add *rtpName "$name" interactive
 	option add *rtpEmail "$email" interactive
 
-	putregistry "HKEY_CURRENT_USER\\Software\\$V(class)\\$V(app)" "*rtpName" "$name"
-	putregistry "HKEY_CURRENT_USER\\Software\\$V(class)\\$V(app)" "*rtpEmail" "$email"
+	registry set "HKEY_CURRENT_USER\\Software\\Mbone Applications\\common" "*rtpName" "$name"
+	registry set "HKEY_CURRENT_USER\\Software\\Mbone Applications\\common" "*rtpEmail" "$email"
 
 	pack forget $w
 	destroy $w

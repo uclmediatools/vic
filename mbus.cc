@@ -211,7 +211,11 @@ int MBusHandler::mbus_socket_init(int channel)
 {
 	struct sockaddr_in sinme;
 	struct ip_mreq     imr;
+#ifdef WIN32
+	int				   ttl	 =  0;
+#else
 	char               ttl   =  0;
+#endif
 	int                reuse =  1;
 	char               loop  =  1;
 	int                fd    = -1;
@@ -247,12 +251,14 @@ int MBusHandler::mbus_socket_init(int channel)
 		return -1;
 	}
 
+#ifndef WIN32
 	if (setsockopt(fd, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof(loop)) < 0) {
 		perror("mbus: setsockopt IP_MULTICAST_LOOP");
 		return -1;
 	}
+#endif
 
-	if (setsockopt(fd, IPPROTO_IP, IP_MULTICAST_TTL, &ttl, sizeof(ttl)) < 0) {
+	if (setsockopt(fd, IPPROTO_IP, IP_MULTICAST_TTL, (char*)&ttl, sizeof(ttl)) < 0) {
 		perror("mbus: setsockopt IP_MULTICAST_TTL");
 		return -1;
 	}

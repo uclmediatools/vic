@@ -395,8 +395,7 @@ extern "C" int Tk_StripchartCmd(ClientData, Tcl_Interp*, int ac, char** av);
 #ifdef WIN32
 extern "C" int WinPutsCmd(ClientData, Tcl_Interp*, int ac, char** av);
 extern "C" int WinGetUserName(ClientData, Tcl_Interp*, int ac, char** av);
-extern "C" int WinPutRegistry(ClientData, Tcl_Interp*, int ac, char** av);
-extern "C" int WinGetRegistry(ClientData, Tcl_Interp*, int ac, char** av);
+extern "C" int WinReg(ClientData, Tcl_Interp *, int, char **);
 #endif
 
 extern "C" {
@@ -459,8 +458,7 @@ main(int argc, const char** argv)
 #ifdef WIN32
 	tcl.CreateCommand("puts", WinPutsCmd, (ClientData)tk);
 	tcl.CreateCommand("getusername", WinGetUserName, (ClientData)tk);
-	tcl.CreateCommand("putregistry", WinPutRegistry, (ClientData)tk);
-	tcl.CreateCommand("getregistry", WinGetRegistry, (ClientData)tk);
+	tcl.CreateCommand("registry", WinReg, (ClientData)tk);
 #endif
 	EmbeddedTcl::init();
 	tcl.evalc("init_resources");

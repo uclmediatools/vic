@@ -274,7 +274,7 @@ int IPNetwork::openrsock(u_int32_t addr, u_short port,
 				perror("bind (INADDR_ANY)");
 				abort();
 			} else {
-				printf("bound to INADDR_ANY\n");
+				/*printf("bound to INADDR_ANY\n");*/
 			}
 		}
 		/* 
