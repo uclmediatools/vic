@@ -499,6 +499,7 @@ int mbus_recv(struct mbus *m, void *data)
 		hmac_md5(buffer + strlen(auth) + 1, buffer_len - strlen(auth) - 1, m->authkey, m->authkeylen, digest);
 		base64encode(digest, 16, ackbuf, 24);
 		if ((strlen(auth) != 24) || (strncmp(auth, ackbuf, 24) != 0)) {
+			mbus_parse_done(m);
 			debug_msg("Unable to authenticate message\n");
 			return FALSE;
 		}
