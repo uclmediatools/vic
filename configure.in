@@ -69,12 +69,31 @@ fi
 if test -r /usr/include/machine/ioctl_meteor.h ; then
 	V_OBJ_GRABBER="video/grabber-meteor.o $V_OBJ_GRABBER"
 fi
+
+AC_ARG_ENABLE(v4l2old,	--enable-v4l2old    Enable or disable old Video4Linux2 grabber, v4l2old=yes, v4l2old=no)
+AC_ARG_ENABLE(v4l2,	--enable-v4l2    Enable or disable Video4Linux2 grabber, v4l2=yes, v4l2=no)
+AC_ARG_ENABLE(v4l2auto,	--disable-v4l2auto    Disable Video4Linux2 grabber autodetect, v4l2auto=yes, v4l2auto=no)
+if test "$v4l2old" = "yes" ; then
+                V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-v4l2-old.o"
+		echo "Using old Linux grabber-v4l2"
+elif test "$v4l2" = "yes" ; then
+                V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-v4l2.o"
+		echo "Using Linux grabber-v4l2"
+elif test "$v4l2" = "no" ; then
+if test -r /usr/include/linux/videodev.h ; then
+                V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-video4linux.o"
+		echo "Using Linux grabber-video4linux Video 4 linux vers 1"
+fi
+elif test "$v4l2auto" = "no" ; then
 if test -r /usr/include/linux/videodev.h ; then
         if grep V4L2 /usr/include/linux/videodev.h >/dev/null 2>&1  ; then
                 V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-v4l2.o"
+		echo "Autodetected Linux grabber-v4l2"
         else
                 V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-video4linux.o"
+		echo "Autodetected Linux grabber-video4linux Video 4 linux vers 1"
         fi
+fi
 fi
 #if test -r /usr/local/lib/libspigot.a -a ${PORTOBJFORMAT} != elf; then
 if test -r /usr/local/lib/libspigot.a ; then
