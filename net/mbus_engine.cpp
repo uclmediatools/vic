@@ -45,7 +45,7 @@ MBusEngine  me; // MBus Engine that deals with mbus messages
 MBusEngine::MBusEngine() {
 	int i;
 	
-	while (i++<SOURCE_HASH) {
+	for (i=0; i<SOURCE_HASH; i++) {
 		cname_hash_table[i].cname=(char *)NULL;
 		cname_hash_table[i].source=(Source *)NULL;
 	}
