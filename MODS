@@ -281,7 +281,7 @@ v1.2.0	- Add udp_fd() function, to retrieve the underlying file descriptor.
 	- Fix reception of packets with RTP header extension.
 	* 16 May 2000
 
-v1.2.1	- 
+v1.2.1	* 16 June 2000 [rat 4.2.5]
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
