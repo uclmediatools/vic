@@ -88,6 +88,8 @@ typedef unsigned int	uint32;		/* 32 bit unsigned int */
 typedef unsigned long	uint64;		/* 64 bit unsigned int */
 #endif
 
+extern int use_shm;	/* from main.cc */
+
 /* Mildly gross but moderately portable test for littleendian machines */
 #define LITTLEENDIAN (ntohl(0x12345678) != 0x12345678)
 
@@ -141,6 +143,7 @@ class X11Grabber : public Grabber {
 	int X11Grab_Pseudo8(void);
 	int X11Grab_RGB16(void);
 	int X11Grab_TrueXBGR24(void);
+	int X11Grab_TrueXRGB24(void);
 
     	int X11Grab_Initialize(Window rw, int w, int h);
         int (X11Grabber::*c_grab)(void);
@@ -194,7 +197,7 @@ X11Device::X11Device(const char* nickname):
 	if (free)
 		attributes_ = "\
 size {large normal small cif} \
-format {422}" ;
+format {411}" ;
 	else
 		attributes_ = "disabled";
 }
@@ -503,11 +506,13 @@ X11Grabber::X11Grab_TrueXBGR24()
     for (y=0; y<height_; y += 2) {
         for (x=0; x<width_; x+=2) {
             d = *data++ ;
-            p0 = ((d<<8) & 0xf100) | ((p0>>5) & 0x7e0) | ((p0>>19) & 0x1f);
+            //p0 = ((d<<8) & 0xf100) | ((p0>>5) & 0x7e0) | ((p0>>19) & 0x1f);
+            p0 = ((d<<8) & 0xf800) | ((d>>5) & 0x7e0) | ((d>>19) & 0x1f);
 	    *yp++ = rgb2y_[ p0 ];
 
             d = *data++ ;
-            p1 = ((d<<8) & 0xf100) | ((p0>>5) & 0x7e0) | ((p0>>19) & 0x1f);
+            //p1 = ((d<<8) & 0xf100) | ((p0>>5) & 0x7e0) | ((p0>>19) & 0x1f);
+            p1 = ((d<<8) & 0xf800) | ((d>>5) & 0x7e0) | ((d>>19) & 0x1f);
 	    *yp++ = rgb2y_[ p1 ];
 
 	    /* average the two pixels... */
@@ -516,11 +521,13 @@ X11Grabber::X11Grab_TrueXBGR24()
         }
         for (x=0; x<width_; x+=2) {
             d = *data++ ;
-            p0 = ((d<<8) & 0xf100) | ((p0>>5) & 0x7e0) | ((p0>>19) & 0x1f);
+            //p0 = ((d<<8) & 0xf100) | ((p0>>5) & 0x7e0) | ((p0>>19) & 0x1f);
+            p0 = ((d<<8) & 0xf800) | ((d>>5) & 0x7e0) | ((d>>19) & 0x1f);
 	    *yp++ = rgb2y_[ p0 ];
 
             d = *data++ ;
-            p1 = ((d<<8) & 0xf100) | ((p0>>5) & 0x7e0) | ((p0>>19) & 0x1f);
+            //p1 = ((d<<8) & 0xf100) | ((p0>>5) & 0x7e0) | ((p0>>19) & 0x1f);
+            p1 = ((d<<8) & 0xf800) | ((d>>5) & 0x7e0) | ((d>>19) & 0x1f);
 	    *yp++ = rgb2y_[ p1 ];
 
 	    /* average the two pixels... */
@@ -528,7 +535,53 @@ X11Grabber::X11Grab_TrueXBGR24()
 	    *vp++ = rgb2v_[ p0 ];
         }
     }
+    return 1;
+}
 
+/* X11Grab_TrueXRGB24() by Davide Cavagnino
+			   Dipartimento di Informatica
+			   Universita' degli Studi di Torino
+   Fixes some bugs in X11Grab_TrueXBRG24() and makes it work for
+   true color RGB devices
+*/
+int
+X11Grabber::X11Grab_TrueXRGB24()
+{
+    int x, y;
+    uint8 *yp= (uint8 *)frame_ ;
+    uint8 *up= (uint8 *)yp + framesize_ ;
+    uint8 *vp= up + (framesize_ >> 2) ;
+    uint16 p0, p1 ;
+    uint32 *data=(uint32 *)ximage_->image->data, d ;
+
+    for (y=0; y<height_; y += 2) {
+        for (x=0; x<width_; x+=2) {
+            d = *data++ ;
+	    p0 = ((d>>3) & 0x1f) | ((d>>5) & 0x7e0) | ((d>>8) & 0xf800);
+	    *yp++ = rgb2y_[ p0 ];
+
+            d = *data++ ;
+	    p1 = ((d>>3) & 0x1f) | ((d>>5) & 0x7e0) | ((d>>8) & 0xf800);
+	    *yp++ = rgb2y_[ p1 ];
+
+	    /* average the two pixels... */
+  	    p0 = ( (p0 >> 1) & 0x7bef ) + ( (p1 >> 1) & 0x7bef ) ;
+	    *up++ = rgb2u_[ p0 ];
+        }
+        for (x=0; x<width_; x+=2) {
+            d = *data++ ;
+	    p0 = ((d>>3) & 0x1f) | ((d>>5) & 0x7e0) | ((d>>8) & 0xf800);
+	    *yp++ = rgb2y_[ p0 ];
+
+            d = *data++ ;
+	    p1 = ((d>>3) & 0x1f) | ((d>>5) & 0x7e0) | ((d>>8) & 0xf800);
+	    *yp++ = rgb2y_[ p1 ];
+
+	    /* average the two pixels... */
+  	    p0 = ( (p0 >> 1) & 0x7bef ) + ( (p1 >> 1) & 0x7bef ) ;
+	    *vp++ = rgb2v_[ p0 ];
+        }
+    }
     return 1;
 }
 
@@ -597,7 +650,9 @@ X11Grabber::X11Grab_Initialize(Window rw, int w, int h)
 
         case 24:
             if ((root_visinfo.c_class == TrueColor) &&
-                (root_visinfo.green_mask = 0xff00) &&
+                (root_visinfo.green_mask == 0xff00) &&
+     /* the upper line replaces this one, by Davide Cavagnino
+		(root_visinfo.green_mask = 0xff00) &&  */
 #ifdef __FreeBSD__
                 (root_visinfo.red_mask == 0xff0000) &&
                 (root_visinfo.blue_mask == 0xff))
@@ -607,8 +662,23 @@ X11Grabber::X11Grab_Initialize(Window rw, int w, int h)
 #endif
                 {
                 c_grab = X11Grab_TrueXBGR24;
-            } else
+            }
+	    /* below change to deal with RGB X11,
+	       by Davide Cavagnino
+            */
+	    else if ((root_visinfo.c_class == TrueColor) &&
+		     (root_visinfo.red_mask == 0xff0000) &&
+		     (root_visinfo.green_mask == 0xff00) &&
+		     (root_visinfo.blue_mask == 0xff))
+	    {
+                c_grab = X11Grab_TrueXRGB24;
+            }
+	    else
+	    {
+	        fprintf(stderr, "don't know how to grab %d bits\n",
+	        	root_depth_);
                 c_grab = (int)NULL;
+	    }
             config = VID_GREYSCALE|VID_COLOR;
             break;
 
@@ -994,7 +1064,7 @@ X11Grabber::X11Grabber(const char* name, const char* format)
 	height_ = 240 ;
 	x_origin_ = y_origin_ = 0 ; /* XXX */
 
-	if (strcmp(format, "422") && strcmp(format, "cif")) {
+	if (strcmp(format, "411") && strcmp(format, "cif")) {
 		fprintf(stderr,
 			"vic: x11Grabber: unsupported format: %s\n",
 			format);
@@ -1061,7 +1131,7 @@ X11Grabber::setsize()
 
 	/* XXX set size of captured window ? */
 
-	set_size_422(columns, rows); /* was 422... */
+	set_size_411(columns, rows); /* was 422... */
 	X11Grab_Initialize(rootwin_, columns, rows); /* XXX */
 
 	allocref();	/* allocate reference frame */
@@ -1184,14 +1254,18 @@ X11Grabber::capture()
 	XImage *image=ximage_->image;
 
 #ifdef USE_SHM
-	if (ximage_->shminfo != NULL)
+	if (use_shm && ximage_->shminfo != NULL) 
 	    XShmGetImage(dpy_, theroot_, image, x_origin_, y_origin_,AllPlanes);
 	else
 #endif
 	    XGetSubImage(dpy_, theroot_, x_origin_, y_origin_,
 		image->width, image->height, AllPlanes,
 		     ZPixmap, image, 0, 0);
-        (X11Grabber::c_grab)();
+/* Davide Cavagnino: old version; gcc 2.8.1 hangs up
+	     (X11Grabber::c_grab)();
+   below new version that works with 2.8.1
+*/
+        (this->*c_grab)();
 	return 1 ;
     } else
         return 0;
@@ -1261,7 +1335,7 @@ VidUtil_AllocXImage(Display *dpy, Visual *vis, int depth, int width,
 	return NULL;
 
 #ifdef USE_SHM
-    if (1) {
+    if (use_shm) {
 	XShmSegmentInfo *shminfo;
 
 	ximage->shminfo = shminfo =
@@ -1313,7 +1387,7 @@ void
 VidUtil_DestroyXImage(Display *dpy, ximage_t *ximage)
 {
 #ifdef USE_SHM
-    if (ximage->shminfo != NULL) {
+    if (use_shm && ximage->shminfo != NULL) {
 	XShmSegmentInfo *shminfo=(XShmSegmentInfo *)ximage->shminfo;
 
 	XShmDetach(dpy, shminfo);
