@@ -88,7 +88,7 @@ static class H263EncoderMatcher : public Matcher {
     public:
 	H263EncoderMatcher() : Matcher("module") {}
 	TclObject* match(const char* fmt) {
-		if (strcasecmp(fmt, "h263") == 0)
+		if (strcasecmp(fmt, "h263+") == 0)
 			return (new H263Encoder);
 		return (0);
 	}

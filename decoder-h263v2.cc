@@ -41,7 +41,7 @@ static class H263DecoderMatcher : public Matcher {
     public:
 	H263DecoderMatcher() : Matcher("decoder") {}
 	TclObject* match(const char* id) {
-		if (strcasecmp(id, "h263") == 0)
+		if (strcasecmp(id, "h263+") == 0)
 			return (new H263Decoder());
 		return (0);
 	}
