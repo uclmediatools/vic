@@ -139,7 +139,7 @@ JpegDCTDecoder_411::JpegDCTDecoder_411(const config& c, int ow, int oh)
 	dct_unbias_ = 1;
 
 	short *sp = (short *)frm_;
-	for (register i = 0; i < n / (BMB * 64) ; i++) {
+	for (register int i = 0; i < n / (BMB * 64) ; i++) {
 		*sp = DCT_GRAY;
 		sp += 64;
 		*sp = DCT_GRAY;
@@ -173,7 +173,7 @@ JpegDCTDecoder_422::JpegDCTDecoder_422(const config& c, int ow, int oh)
 	dct_unbias_ = 1;
 
 	short *sp = (short*)frm_;
-	for (register i = 0; i < n / (BMB * 64) ; i++) {
+	for (register int i = 0; i < n / (BMB * 64) ; i++) {
 		*sp = DCT_GRAY;
 		sp += 64;
 		*sp = DCT_GRAY;

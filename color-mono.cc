@@ -200,7 +200,7 @@ public:
 	~MonoColorModel();
 	virtual int alloc_grays();
 	virtual int command(int argc, const char*const* argv);
-	inline white(void) { return (white_); }
+	inline int white(void) { return (white_); }
 private:
 	int white_;
 };
@@ -250,7 +250,7 @@ public:
 protected:
 	MonoColorModel& cm_;
 	virtual void update();
-	virtual void disable() { method_ = WindowDitherer::dither_null; }
+	virtual void disable() { method_ = &WindowDitherer::dither_null; }
 	MonoMethod method_;
 	void dither(const u_char* frm, u_int off, u_int x,
 		    u_int width, u_int height) const;

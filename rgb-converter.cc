@@ -79,25 +79,25 @@ RGB_Converter::RGB_Converter(int bpp, u_int8_t *map, int ncol) :
 
 	switch (bpp) {
 	case 32 :
-		method_ = convert32;
+		method_ = &RGB_Converter::convert32;
 		break;
 	case 24:
-		method_ = convert24;
+		method_ = &RGB_Converter::convert24;
 		break;
 	case 16:
-		method_ = convert16;
+		method_ = &RGB_Converter::convert16;
 		ncol_ = 65536;
 		break;
 	case 8:
-		method_ = convert8;
+		method_ = &RGB_Converter::convert8;
 		ncol_ = 256;
 		break;
 	case 4:
-		method_ = convert4;
+		method_ = &RGB_Converter::convert4;
 		ncol_ = 16;
 		break;
 	case 1:
-		method_ = convert1;
+		method_ = &RGB_Converter::convert1;
 		ncol_ = 2;
 		break;
 	default:

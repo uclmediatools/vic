@@ -138,7 +138,7 @@ JpegTranscoder::consume(const VideoFrame *vf)
 	rval = target_->consume(df);
 
 	// update CR vec
-	register blkno;
+	register int blkno;
 	int s;
 	for (blkno = 0; blkno < crvlen_; blkno++) {
 		s = CR_STATE(crvec_[blkno]);

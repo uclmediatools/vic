@@ -248,7 +248,9 @@ int MBusHandler::mbus_socket_init(int channel)
 	imr.imr_interface.s_addr = htonl (INADDR_ANY);
 	if (setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *) &imr, sizeof(struct ip_mreq)) < 0) {
 		perror("mbus: setsockopt IP_ADD_MEMBERSHIP");
+		/*
 		return -1;
+		*/
 	}
 
 #ifndef WIN32
@@ -260,7 +262,9 @@ int MBusHandler::mbus_socket_init(int channel)
 
 	if (setsockopt(fd, IPPROTO_IP, IP_MULTICAST_TTL, (char*)&ttl, sizeof(ttl)) < 0) {
 		perror("mbus: setsockopt IP_MULTICAST_TTL");
+		/*
 		return -1;
+		*/
 	}
 	assert(fd != -1);
 	return fd;

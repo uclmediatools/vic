@@ -642,7 +642,7 @@ H261DCTEncoder::encode_mb(u_int mba, const u_char* frm,
 	if (q < 8) {
 		register int cmin = 0, cmax = 0;
 		register short* bp = lblk;
-		register i, j;
+		register int i, j;
 
 		// Y U and V blocks
 		for (i = 6; --i >= 0; ) {

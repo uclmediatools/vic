@@ -82,7 +82,7 @@ public:
 	}
 protected:
 	virtual void update();
-	virtual void disable() { method_ = PseudoWindowRenderer::dither_null; }
+	virtual void disable() { method_ = &PseudoWindowRenderer::dither_null; }
 	GrayMethod method_;
 };
 

@@ -177,7 +177,7 @@ public:
 protected:
 	DitherColorModel& cm_;
 	virtual void update();
-	virtual void disable() { method_ = PseudoWindowRenderer::dither_null; }
+	virtual void disable() { method_ = &PseudoWindowRenderer::dither_null; }
 	DitherMethod method_;
 	void dither_422(const u_char* frm, u_int off, u_int x,
 			u_int width, u_int height) const;

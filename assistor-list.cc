@@ -53,7 +53,7 @@ AssistorList::command(int argc,const char *const*argv) {
 			int	len;
 			
 			len = 0;
-			for (int i=0;i<nrofwassistors;i++)
+			for (i=0;i<nrofwassistors;i++)
 				if (NULL!=strstr(wassistors[i].formats,argv[2]))
 					len+=strlen(wassistors[i].name+1);
 			len+=3;

@@ -206,6 +206,7 @@ extern "C" {
 /*** most of this taken from nv:x11-grab.c  ***/
 extern ximage_t *VidUtil_AllocXImage(Display *dpy, Visual *vis, int depth,
 				     int width, int height, int readonly);
+extern void VidUtil_DestroyXImage(Display *dpy, ximage_t *ximage);
 
 #if 0 /* debugging stuff */
 static int my_Tcl_Eval(Tcl_Interp *interp, char *cmd)
@@ -622,9 +623,9 @@ X11Grabber::X11Grab_Initialize(Window rw, int w, int h)
         switch (root_depth_) {
         case 1:
             if (white == 1) {
-                c_grab = (LITTLEENDIAN) ? X11Grab_LSBWhite1 : X11Grab_MSBWhite1;
+                c_grab = (LITTLEENDIAN) ? &X11Grabber::X11Grab_LSBWhite1 : &X11Grabber::X11Grab_MSBWhite1;
             } else {
-                c_grab = (LITTLEENDIAN) ? X11Grab_LSBBlack1 : X11Grab_MSBBlack1;
+                c_grab = (LITTLEENDIAN) ? &X11Grabber::X11Grab_LSBBlack1 : &X11Grabber::X11Grab_MSBBlack1;
             }
             config = VID_GREYSCALE;
             break;
@@ -635,7 +636,7 @@ X11Grabber::X11Grab_Initialize(Window rw, int w, int h)
             case GrayScale:
             case StaticColor:
             case StaticGray:
-                c_grab = X11Grab_Pseudo8;
+                c_grab = &X11Grabber::X11Grab_Pseudo8;
                 break;
             default:
                 c_grab = (int)NULL;
@@ -645,15 +646,14 @@ X11Grabber::X11Grab_Initialize(Window rw, int w, int h)
             break;
 
         case 16:
-	    c_grab = X11Grab_RGB16;
+	    c_grab = &X11Grabber::X11Grab_RGB16;
 	    break ;
 
         case 24:
             if ((root_visinfo.c_class == TrueColor) &&
                 (root_visinfo.green_mask == 0xff00) &&
-     /* the upper line replaces this one, by Davide Cavagnino
-		(root_visinfo.green_mask = 0xff00) &&  */
-#ifdef __FreeBSD__
+	        /* this is an endianess issue, isn't it? */
+#if defined(__FreeBSD__) || defined(linux)
                 (root_visinfo.red_mask == 0xff0000) &&
                 (root_visinfo.blue_mask == 0xff))
 #else
@@ -661,7 +661,7 @@ X11Grabber::X11Grab_Initialize(Window rw, int w, int h)
                 (root_visinfo.blue_mask == 0xff0000))
 #endif
                 {
-                c_grab = X11Grab_TrueXBGR24;
+                c_grab = &X11Grabber::X11Grab_TrueXBGR24;
             }
 	    /* below change to deal with RGB X11,
 	       by Davide Cavagnino
@@ -671,7 +671,7 @@ X11Grabber::X11Grab_Initialize(Window rw, int w, int h)
 		     (root_visinfo.green_mask == 0xff00) &&
 		     (root_visinfo.blue_mask == 0xff))
 	    {
-                c_grab = X11Grab_TrueXRGB24;
+                c_grab = &X11Grabber::X11Grab_TrueXRGB24;
             }
 	    else
 	    {

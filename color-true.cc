@@ -50,11 +50,11 @@ static char rcsid[] =
 #include "tcl.h"
 #include "vw.h"
 
-//#ifdef WIN32
-//typedef RGBTRIPLE* RGBPointer;
-//#else
+#if defined(WIN32) && 0
+typedef RGBTRIPLE* RGBPointer;
+#else
 typedef u_int* RGBPointer;
-//#endif
+#endif
 
 class TrueColorModel : public ColorModel {
 public:
@@ -198,7 +198,7 @@ public:
     }
 protected:
 	virtual void update();
-	virtual void disable() { method_ = True24Method(WindowRenderer::dither_null); }
+	virtual void disable() { method_ = True24Method(&WindowRenderer::dither_null); }
 	True24Method method_;
     
 	void map_422(const u_char* frm, u_int off, u_int x,
@@ -246,7 +246,7 @@ public:
     }
 protected:
 	virtual void update();
-	virtual void disable() { method_ = True32Method(WindowRenderer::dither_null); }
+	virtual void disable() { method_ = True32Method(&WindowRenderer::dither_null); }
 	True32Method method_;
 
 	void map_422(const u_char* frm, u_int off, u_int x,
@@ -387,17 +387,19 @@ void TrueWindowRenderer32::update()
  * 2^7 bit = 0.  The chroma term is not biased so a negative number has
  * the 2^7 bit = 1.  So underflow is indicated by (L & C & sum) != 0;
  */
-//#ifdef WIN32
+#if defined(WIN32) && 0
 
- //#define ONERGB(dst, rgb) \
-// 	(dst).rgbtBlue = GetBValue(rgb); \
-// 	(dst).rgbtGreen = GetGValue(rgb); \
-// 	(dst).rgbtRed = GetRValue(rgb);
+#define ONERGB(dst, rgb) \
+	(dst).rgbtBlue = GetBValue(rgb); \
+	(dst).rgbtGreen = GetGValue(rgb); \
+ 	(dst).rgbtRed = GetRValue(rgb);
 
-// #define ONEGRAY(dst, pix) \
-// 	(dst).rgbtBlue = (dst).rgbtGreen = (dst).rgbtRed = (pix & 0xff);
 
-// #else /* !WIN32 */
+#define ONEGRAY(dst, pix) \
+	(dst).rgbtBlue = (dst).rgbtGreen = (dst).rgbtRed = (pix & 0xff);
+
+
+#else /* !WIN32 */
 
 #define ONERGB(dst, rgb) \
 	dst = rgb;
@@ -405,7 +407,7 @@ void TrueWindowRenderer32::update()
 #define ONEGRAY(dst, pix) \
 	(dst) =  (pix << 16) | (pix << 8) | pix;
 
-// #endif /* !WIN32 */
+#endif /* !WIN32 */
 
 #define ONEPIX(src, dst) { \
 	l = src; \

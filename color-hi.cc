@@ -174,7 +174,7 @@ class HiWindowRenderer : public WindowDitherer {
     protected:
 	HiColorModel& cm_;
 	virtual void update();
-	virtual void disable() { method_ = HiMethod(WindowRenderer::dither_null); }
+	virtual void disable() { method_ = HiMethod(&WindowRenderer::dither_null); }
 	HiMethod method_;
 	void map_422(const u_char* frm, u_int off, u_int x,
 		     u_int width, u_int height) const;

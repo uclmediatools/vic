@@ -57,7 +57,7 @@ static const char rcsid[] =
 #define	QCIF_HEIGHT	144
 
 #ifndef WIN32
-extern	QP,QPI;
+extern	int QP,QPI;
 unsigned char *h263_frame;          /* encoder input */
 int            h263_streamcount;    /* encoder output */
 char          *h263_bitstream;
