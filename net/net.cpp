@@ -344,7 +344,7 @@ void Network::send(const msghdr& mh)
 int Network::dorecv(u_char* buf, int len, u_int32_t& from, int fd)
 {
 	sockaddr_in sfrom;
-	int fromlen = sizeof(sfrom);
+	unsigned int fromlen = sizeof(sfrom);
 	int cc = ::recvfrom(fd, (char*)buf, len, 0,
 			    (sockaddr*)&sfrom, &fromlen);
 	if (cc < 0) {
