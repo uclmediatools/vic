@@ -303,5 +303,10 @@ time_t time(time_t *);
 #include <windows.h>
 
 #endif /* WIN32 */
-  
+
+#ifndef TRUE
+#define FALSE   0
+#define TRUE    1
+#endif /* TRUE */
+
 #endif /* vic_config_h */

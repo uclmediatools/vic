@@ -184,8 +184,8 @@ sparc-sun-solaris*)
 		V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-rtvc.o"
 		if test "$have_xil" = yes ; then
 			V_ALL="$V_PROG $V_PROG.xil"
-			V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I$xil_dir/include"
-			V_LIB_XIL="-L$xil_dir/lib -R\"$xil_dir/lib:/opt/SUNWo1kp/lib:/opt/MMACo1k/lib\" -lxil "
+			V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -isystem $xil_dir/include -DSUNXIL_WARNING_DISABLE"
+			V_LIB_XIL="-L$xil_dir/lib -R\"$xil_dir/lib:/opt/SUNWo1kp/lib:/opt/MMACo1k/lib\" -lxil"
 			V_OBJ_XIL="video/grabber-xil.o codec/framer-h261hw.o codec/framer-cellb.o video/assistor-xil.o" 
 		fi
 	elif test "$have_xil" = yes ; then

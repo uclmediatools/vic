@@ -332,6 +332,7 @@ gethostid()
 #ifdef __svr4__
 #include <sys/systeminfo.h>
 #define gethostid xgethostid
+u_int32_t
 gethostid()
 {
 	char wrk[32];

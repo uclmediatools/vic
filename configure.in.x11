@@ -48,7 +48,7 @@ if test "$x_includes" = NONE ; then
 	fi
 fi
 if test -n "$x_includes" ; then 
-	V_INCLUDE_X11=-I$x_includes
+	V_INCLUDE_X11="-isystem $x_includes"
 	AC_SUBST(V_INCLUDE_X11)
 fi
 
