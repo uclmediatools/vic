@@ -36,6 +36,10 @@ v1.0.2	- Assorted fixes to RTP library
 	- Cleanup mbus transmission path
 	- Add support for DES encryption to the mbus (on by default)
 	- Fix DES code
+	- Mbus keeps a cache of other entities, and only allows sending of
+	  reliable messages to known unicast addresses. 
+	- Mbus error function now takes a "type of error" argument
+	- Added xrealloc()
 
 
 Still to do...
@@ -49,9 +53,8 @@ Still to do...
 	- Fixed offsets in the mbus config file parser?
 	- Mbus code should check timestamp in received headers, and discard
 	  messages if it decreases, as a hinderance to replay attacks.
-	- Mbus should keep a cache of other entities, and only allow sending 
-	  of reliable messages to known unicast addresses. 
 	- Mbus code should be more paranoid about handling garbage inputs, we
 	  can likely get all sorts of buffer overflows by feeding random data
 	  into it.
+	- Need to implement debugging xrealloc()
 

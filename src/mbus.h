@@ -36,10 +36,14 @@
 #ifndef _MBUS_H
 #define _MBUS_H
 
+/* Error codes... */
+#define MBUS_MESSAGE_LOST        1
+#define MBUS_DESTINATION_UNKNOWN 2
+
 struct mbus;
 
 struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, void *dat), 
-		       void  (*err_handler)(int seqnum));
+		       void  (*err_handler)(int seqnum, int reason));
 void         mbus_exit(struct mbus *m);
 void         mbus_addr(struct mbus *m, char *addr);
 void         mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, int reliable);

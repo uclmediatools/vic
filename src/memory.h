@@ -40,6 +40,7 @@
 #ifndef _RAT_MEMORY_H
 #define _RAT_MEMORY_H
 
+#define xrealloc(p,x)	_xrealloc(p, x,__FILE__,__LINE__)
 #define xmalloc(x)	_xmalloc(x,__FILE__,__LINE__)
 #define xstrdup(x)	_xstrdup(x,__FILE__,__LINE__)
 
@@ -52,6 +53,7 @@ void     xclaim(void *p, const char *filen, int line);
 /* Replacements for regular memory fn's */
 void	 xfree(void *x);
 void	*_xmalloc(unsigned size,const char *filen,int line);
+void	*_xrealloc(void *p,unsigned size,const char *filen,int line);
 char	*_xstrdup(const char *s1, const char *filen, int line);
 void	*_block_alloc(unsigned size, const char *filen, int line);
 void	 _block_free(void *p, int size, int line);

@@ -73,27 +73,30 @@ struct mbus_msg {
 };
 
 struct mbus {
-	socket_udp	*s;
-	int		 num_addr;
-	char		*addr[MBUS_MAX_ADDR];
-	char		*parse_buffer[MBUS_MAX_PD];
-	int		 parse_depth;
-	int		 seqnum;
+	socket_udp	 *s;
+	int		  num_addr;
+	char		 *addr[MBUS_MAX_ADDR];	/* Addresses we respond to. 			*/
+	int		  max_other_addr;
+	int		  num_other_addr;
+	char		**other_addr;		/* Addresses of other entities on the mbus. 	*/
+	char		 *parse_buffer[MBUS_MAX_PD];
+	int		  parse_depth;
+	int		  seqnum;
 	void (*cmd_handler)(char *src, char *cmd, char *arg, void *dat);
-	void (*err_handler)(int seqnum);
-	struct mbus_msg	*cmd_queue;
-	struct mbus_msg	*waiting_ack;
-	char		*hashkey;
-	int		 hashkeylen;
-	char		*encrkey;
-	int		 encrkeylen;
+	void (*err_handler)(int seqnum, int reason);
+	struct mbus_msg	 *cmd_queue;		/* Queue of messages waiting to be sent */
+	struct mbus_msg	 *waiting_ack;		/* The last reliable message sent, if we have not yet got the ACK */
+	char		 *hashkey;
+	int		  hashkeylen;
+	char		 *encrkey;
+	int		  encrkeylen;
 #ifdef WIN32
-	HKEY		 cfgKey;
+	HKEY		  cfgKey;
 #else
-	fd_t		 cfgfd;	  /* The file descriptor for the $HOME/.mbus config file, on Unix */
+	fd_t		  cfgfd;  		/* The file descriptor for the $HOME/.mbus config file, on Unix */
 #endif
-	int		 cfg_locked;
-	struct timeval	 last_heartbeat;
+	int		  cfg_locked;
+	struct timeval	  last_heartbeat;	/* Last time we sent a heartbeat message */
 };
 
 #define SECS_PER_WEEK    604800
@@ -524,6 +527,43 @@ static int mbus_addr_match(char *a, char *b)
 	return TRUE;
 }
 
+static void store_other_addr(struct mbus *m, char *a)
+{
+	/* This takes the address a and ensures it is stored in the   */
+	/* m->other_addr field of the mbus structure. The other_addr  */
+	/* field should probably be a hash table, but for now we hope */
+	/* that there are not too many entities on the mbus, so the   */
+	/* list is small.                                             */
+	int	i;
+
+	for (i = 0; i < m->num_other_addr; i++) {
+		if (mbus_addr_match(m->other_addr[i], a)) {
+			/* Already in the list... */
+			return;
+		}
+	}
+
+	if (m->num_other_addr == m->max_other_addr) {
+		/* Expand the list... */
+		m->max_other_addr *= 2;
+		m->other_addr = (char **) xrealloc(m->other_addr, m->max_other_addr * sizeof(char *));
+	}
+	m->other_addr[m->num_other_addr++] = xstrdup(a);
+	debug_msg("Added (%s) to list of known mbus entities\n", a);
+}
+
+static int addr_known(struct mbus *m, char *a)
+{
+	int	i;
+
+	for (i = 0; i < m->num_other_addr; i++) {
+		if (mbus_addr_match(m->other_addr[i], a)) {
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
 /* The tx_* functions are used to build an mbus message up in the */
 /* tx_buffer, and to add authentication and encryption before the */
 /* message is sent.                                               */
@@ -619,7 +659,7 @@ void mbus_retransmit(struct mbus *m)
 		if (m->err_handler == NULL) {
 			abort();
 		}
-		m->err_handler(curr->seqnum);
+		m->err_handler(curr->seqnum, MBUS_MESSAGE_LOST);
 		return;
 	} 
 	/* Note: We only send one retransmission each time, to avoid
@@ -658,7 +698,7 @@ int mbus_waiting_ack(struct mbus *m)
 }
 
 struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, void *dat), 
-		       void  (*err_handler)(int seqnum))
+		       void  (*err_handler)(int seqnum, int reason))
 {
 	struct mbus	*m;
 	struct mbus_key	 k;
@@ -671,14 +711,17 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 	}
 
 	mbus_lock_config_file(m);
-	m->s		= udp_init("224.255.222.239", (u_int16) 47000, 0);
-	m->seqnum       = 0;
-	m->cmd_handler  = cmd_handler;
-	m->err_handler	= err_handler;
-	m->num_addr     = 0;
-	m->parse_depth  = 0;
-	m->cmd_queue	= NULL;
-	m->waiting_ack	= NULL;
+	m->s		  = udp_init("224.255.222.239", (u_int16) 47000, 0);
+	m->seqnum         = 0;
+	m->cmd_handler    = cmd_handler;
+	m->err_handler	  = err_handler;
+	m->num_addr       = 0;
+	m->num_other_addr = 0;
+	m->max_other_addr = 10;
+	m->other_addr     = (char **) xmalloc(sizeof(char *) * 10);
+	m->parse_depth    = 0;
+	m->cmd_queue	  = NULL;
+	m->waiting_ack	  = NULL;
 
 	gettimeofday(&(m->last_heartbeat), NULL);
 
@@ -789,8 +832,18 @@ void mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, i
 	struct mbus_msg	*prev = NULL;
 	int		 alen = strlen(cmnd) + strlen(args) + 4;
 
+	if (reliable && !addr_known(m, dest)) {
+		debug_msg("Trying to send reliably to an unknown address...\n");
+		if (m->err_handler == NULL) {
+			abort();
+		}
+		m->err_handler(curr->seqnum, MBUS_DESTINATION_UNKNOWN);
+	}
+
 	while (curr != NULL) {
-		if (mbus_addr_match(curr->dest, dest) && (curr->num_cmds < MBUS_MAX_QLEN) && ((curr->message_size + alen) < (MBUS_BUF_SIZE - 8))) {
+		if (mbus_addr_match(curr->dest, dest) 
+		&& (curr->num_cmds < MBUS_MAX_QLEN) 
+		&& ((curr->message_size + alen) < (MBUS_BUF_SIZE - 8))) {
 			curr->num_cmds++;
 			curr->reliable |= reliable;
 			curr->cmd_list[curr->num_cmds-1] = xstrdup(cmnd);
@@ -1105,6 +1158,8 @@ int mbus_recv(struct mbus *m, void *data)
 			debug_msg("Parser failed ack\n");
 			continue;
 		}
+
+		store_other_addr(m, src);
 
 		/* Check if the message was addressed to us... */
 		for (i = 0; i < m->num_addr; i++) {

@@ -240,8 +240,18 @@ printf("malloc %d %s %d\n", size, filen, line);
 #else
         UNUSED(filen);
         UNUSED(line);
-        
 	return (void *) malloc(size);
+#endif
+}
+
+void *_xrealloc(void *p, unsigned size, const char *filen, int line)
+{
+#ifdef DEBUG_MEM
+	abort();
+#else
+        UNUSED(filen);
+        UNUSED(line);
+	return (void *) realloc(p, size);
 #endif
 }
 
