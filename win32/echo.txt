@@ -1,0 +1,3 @@
+echo const char version[] = "%v%"; > version.c
+
+
