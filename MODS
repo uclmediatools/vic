@@ -72,6 +72,9 @@ v1.0.6	- Add ability to send to one port whilst receiving on another,
 	- Move base64 tests into test_base64.c and integrate with the test suite
 	* Released 5 July 1999 
 
+v1.0.7  - Add udp_exit to close sockets and leave multicast groups if necessary.
+	- Fix mbus_exit close sockets.
+
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
 	  since it does a gethostbyname() and looks that up, yet that can

@@ -791,6 +791,9 @@ void mbus_exit(struct mbus *m)
         if (m->encrkey != NULL) {
                 xfree(m->encrkey);
         }
+
+        udp_exit(m->s);
+
         xfree(m->hashkey);
         xfree(m);
 }

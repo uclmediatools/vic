@@ -263,6 +263,21 @@ static socket_udp *udp_init4(char *addr, u_int16 rx_port, u_int16 tx_port, int t
 	return s;
 }
 
+static void udp_exit4(socket_udp *s)
+{
+        if (IN_MULTICAST(ntohl(s->addr4.s_addr))) {
+		struct ip_mreq  imr;
+		imr.imr_multiaddr.s_addr = s->addr4.s_addr;
+		imr.imr_interface.s_addr = INADDR_ANY;
+		if (SETSOCKOPT(s->fd, IPPROTO_IP, IP_DROP_MEMBERSHIP, (char *) &imr, sizeof(struct ip_mreq)) != 0) {
+			socket_error("setsockopt IP_DROP_MEMBERSHIP");
+			abort();
+		}
+        }
+        close(s->fd);
+        free(s);
+}
+
 static int udp_send4(socket_udp *s, char *buffer, int buflen)
 {
 	struct sockaddr_in	s_in;
@@ -365,6 +380,26 @@ static socket_udp *udp_init6(char *addr, u_int16 rx_port, u_int16 tx_port, int t
 #endif
 }
 
+static void udp_exit6(socket_udp *s)
+{
+#ifdef HAVE_IPv6
+	if (IN6_IS_ADDR_MULTICAST(&(s->addr6))) {
+		struct ipv6_mreq  imr;
+		imr.ipv6mr_multiaddr = s->addr6;
+		imr.ipv6mr_interface = 0;
+
+		if (SETSOCKOPT(s->fd, IPPROTO_IPV6, IPV6_DROP_MEMBERSHIP, (char *) &imr, sizeof(struct ipv6_mreq)) != 0) {
+			socket_error("setsockopt IPV6_DROP_MEMBERSHIP");
+			abort();
+		}
+        }
+        close(s->fd);
+        free(s);
+#else
+        UNUSED(s);
+#endif  /* HAVE_IPv6 */
+}
+
 static int udp_send6(socket_udp *s, char *buffer, int buflen)
 {
 #ifdef HAVE_IPv6
@@ -405,6 +440,15 @@ socket_udp *udp_init(char *addr, u_int16 rx_port, u_int16 tx_port, int ttl)
 		res = udp_init6(addr, rx_port, tx_port, ttl);
 	}
 	return res;
+}
+
+void udp_exit(socket_udp *s)
+{
+        switch(s->mode) {
+        case IPv4 : udp_exit4(s); break;
+        case IPv6 : udp_exit6(s); break;
+        default   : abort();
+        }
 }
 
 int udp_send(socket_udp *s, char *buffer, int buflen)
