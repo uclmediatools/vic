@@ -39,17 +39,15 @@ AC_HEADER_STDC
 AC_C_CONST
 AC_TYPE_SIZE_T
 
+AC_CHECK_HEADERS(stropts.h sys/filio.h)
+AC_CHECK_HEADERS(stdint.h unttypes.h)
+
 # Check for standard size types.  The defaults are only valid on some
 # systems so we hope that <inttypes.h> exists when they're wrong.
 AC_CHECK_TYPE(int8_t,  signed char)
 AC_CHECK_TYPE(int16_t, short)
 AC_CHECK_TYPE(int32_t, long)
 AC_CHECK_TYPE(int64_t, long long)
-
-AC_CHECK_HEADER(stdint.h,
-		AC_DEFINE(HAVE_STDINT_H))
-AC_CHECK_HEADER(inttypes.h,
-		AC_DEFINE(HAVE_INTTYPES_H))
 
 # Some systems have these in <stdint.h>, just to be difficult...
 AC_MSG_CHECKING(for uint8_t in <stdint.h>)
@@ -72,14 +70,6 @@ AC_EGREP_HEADER(uint32_t,
 		[AC_MSG_RESULT(yes)],
 		[AC_MSG_RESULT(no) 
 		 AC_CHECK_TYPE(uint32_t,  unsigned char)])
-
-AC_CHECK_HEADER(stropts.h,
-		AC_DEFINE(HAVE_STROPTS_H)
-)
-
-AC_CHECK_HEADER(sys/filio.h,
-		AC_DEFINE(HAVE_FILIO_H)
-)
 
 # The following two macros cause autoconf to complain.
 AC_C_BIGENDIAN
@@ -127,7 +117,6 @@ AC_CHECK_FUNC(vsnprintf,,AC_DEFINE(NEED_VSNPRINTF))
 # inet_aton.c and add it to AC_REPLACE_FUNCS
 
 AC_REPLACE_FUNCS(inet_pton inet_ntop)
-
 
 AC_SEARCH_LIBS(socket, socket)
 AC_SEARCH_LIBS(inet_addr, nsl)
@@ -202,7 +191,7 @@ then
 		# variant tests to go here
 		[AC_DEFINE(HAVE_IPv6) 
 		AC_MSG_RESULT(yes)
-		AC_CHECK_HEADER(netinet6/in6.h,AC_DEFINE(HAVE_IN6_H))],
+		AC_CHECK_HEADERS(netinet6/in6.h)],
 		AC_MSG_RESULT(no))
 fi])
 

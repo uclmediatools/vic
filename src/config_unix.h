@@ -75,12 +75,49 @@
 #include <arpa/inet.h>
 extern int h_errno;
 
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
+
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
+
 #ifdef HAVE_STROPTS_H
 #include <stropts.h>
 #endif /* HAVE_STROPTS_H */
-#ifdef HAVE_FILIO_H
+
+#ifdef HAVE_SYS_FILIO_H
 #include <sys/filio.h>  
-#endif /* HAVE_FILIO_H */
+#endif /* HAVE_SYS_FILIO_H */
+
+#ifdef HAVE_IPv6
+
+#ifdef HAVE_NETINET6_IN6_H
+/* Expect IPV6_{JOIN,LEAVE}_GROUP in in6.h, otherwise expect                 */
+/* IPV_{ADD,DROP}_MEMBERSHIP in in.h                                         */
+#include <netinet6/in6.h>
+#else
+#include <netinet/in.h>
+#endif /* HAVE_NETINET_IN6_H */
+
+#ifndef IPV6_ADD_MEMBERSHIP
+#ifdef  IPV6_JOIN_GROUP
+#define IPV6_ADD_MEMBERSHIP IPV6_JOIN_GROUP
+#else
+#error  No definition of IPV6_ADD_MEMBERSHIP, please report to mm-tools@cs.ucl.ac.uk.
+#endif /* IPV6_JOIN_GROUP     */
+#endif /* IPV6_ADD_MEMBERSHIP */
+
+#ifndef IPV6_DROP_MEMBERSHIP
+#ifdef  IPV6_LEAVE_GROUP
+#define IPV6_DROP_MEMBERSHIP IPV6_LEAVE_GROUP
+#else
+#error  No definition of IPV6_LEAVE_GROUP, please report to mm-tools@cs.ucl.ac.uk.
+#endif  /* IPV6_LEAVE_GROUP     */
+#endif  /* IPV6_DROP_MEMBERSHIP */
+
+#endif /* HAVE_IPv6 */
 
 #include <net/if.h>
 

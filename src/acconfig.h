@@ -7,22 +7,11 @@
  * Define this if you want IPv6 support.
  */
 #undef HAVE_IPv6
-#undef HAVE_IN6_H
 
 /*
  * Define this if your C library doesn't have vsnprintf.
  */
 #undef NEED_VSNPRINTF
-
-/*
- * Defines that were Solaris specific...
- */
-
-#undef HAVE_STROPTS_H
-#undef HAVE_FILIO_H
-
-#undef HAVE_STDINT_H
-#undef HAVE_INTTYPES_H
 
 /*
  * If you don't have these types in <inttypes.h>, #define these to be
@@ -61,40 +50,4 @@
 #define WORDS_SMALLENDIAN
 #endif
 
-#include <sys/types.h>
 
-#ifdef HAVE_STDINT_H
-#include <stdint.h>
-#endif
-
-#ifdef HAVE_INTTYPES_H
-#include <inttypes.h>
-#endif
-
-#ifdef HAVE_IPv6
-
-#ifdef HAVE_IN6_H
-/* Expect IPV6_{JOIN,LEAVE}_GROUP in in6.h, otherwise expect                 */
-/* IPV_{ADD,DROP}_MEMBERSHIP in in.h                                         */
-#include <netinet6/in6.h>
-#else
-#include <netinet/in.h>
-#endif /* HAVE_IN6_H */
-
-#ifndef IPV6_ADD_MEMBERSHIP
-#ifdef  IPV6_JOIN_GROUP
-#define IPV6_ADD_MEMBERSHIP IPV6_JOIN_GROUP
-#else
-#error  No definition of IPV6_ADD_MEMBERSHIP, please report to mm-tools@cs.ucl.ac.uk.
-#endif /* IPV6_JOIN_GROUP     */
-#endif /* IPV6_ADD_MEMBERSHIP */
-
-#ifndef IPV6_DROP_MEMBERSHIP
-#ifdef  IPV6_LEAVE_GROUP
-#define IPV6_DROP_MEMBERSHIP IPV6_LEAVE_GROUP
-#else
-#error  No definition of IPV6_LEAVE_GROUP, please report to mm-tools@cs.ucl.ac.uk.
-#endif  /* IPV6_LEAVE_GROUP     */
-#endif  /* IPV6_DROP_MEMBERSHIP */
-
-#endif /* HAVE_IPv6 */
