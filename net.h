@@ -49,18 +49,41 @@ class Crypt;
 #undef interface
 #endif
 
+
+/* Generic Address class */
+class Address {
+public:
+	Address() : text_(0) {;}
+	virtual ~Address() { if (text_) delete text_; }
+
+	virtual int operator=(const char*) {;}
+	virtual Address* copy() const { return (0); }
+	virtual size_t length() const { return (0); }
+	virtual operator const void*() const { return (0); }
+
+	operator const char*() const { return (const char *)text_; };
+	int operator==(const Address & addr) const;
+
+	static Address * alloc(const char * name);
+	static Address * default_alloc();
+protected:
+	char *text_;
+};
+
 class Network : public TclObject {
     public:
 	Network();
+	Network(Address & addr, Address & local);
 	virtual ~Network();
 	virtual int command(int argc, const char*const* argv);
 	virtual void send(u_char* buf, int len);
 	virtual void send(const msghdr& mh);
 	virtual int recv(u_char* buf, int len, u_int32_t& from);
+	virtual int recv(u_char* buf, int len, Address &from);
 	inline int rchannel() const { return (rsock_); }
 	inline int schannel() const { return (ssock_); }
-	inline u_int32_t addr() const { return (addr_); }
-	inline u_int32_t interface() const { return (local_); }
+	inline const Address & addr() const { return (addr_); }
+	inline const Address & interface() const { return (local_); }
 	inline int port() const { return (port_); }
 	inline int ttl() const { return (ttl_); }
 	inline int noloopback_broken() const { return (noloopback_broken_); }
@@ -69,10 +92,11 @@ class Network : public TclObject {
 	inline Crypt* crypt() const { return (crypt_); }
     protected:
 	virtual void dosend(u_char* buf, int len, int fd);
-	virtual int dorecv(u_char* buf, int len, u_int32_t& from, int fd);
+        virtual int dorecv(u_char* buf, int len, u_int32_t& from, int fd);
+	virtual int dorecv(u_char* buf, int len, Address &from, int fd) {;}
 
-	u_int32_t addr_;
-	u_int32_t local_;
+	Address & addr_;
+	Address & local_;
 	u_short lport_;
 	u_short port_;
 	int ttl_;
@@ -88,5 +112,6 @@ class Network : public TclObject {
 	static void expand_wrkbuf(int len);
 	static int cpmsg(const msghdr& mh);
 };
+
 
 #endif

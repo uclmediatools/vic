@@ -46,11 +46,15 @@ static const char rcsid[] =
 #ifdef WIN32
 #include <winsock.h>
 #else
+#include <sys/param.h>
+#include <netdb.h>
 #include <sys/socket.h>
 #include <sys/uio.h>
 #endif
 #include "net.h"
 #include "crypt.h"
+
+#include "net-addr.h"
 
 /*
  * Linux does not have sendmsg
@@ -80,9 +84,48 @@ sendmsg(int s, struct msghdr* mh, int flags)
 }
 #endif
 
+
+/*
+ * Address::operator==() -- compare two addresses
+ */
+int Address::operator==(const Address & addr) const {
+	return (memcmp(*this, addr, length()) == 0);
+}
+
+/*
+ * Address::alloc() -- allocate address with type based upon name
+ */
+Address * Address::alloc(const char * name) {
+	return AddressType::alloc(name); 
+}
+
+/*
+ * Address::defautl_alloc() -- allocate address with default type
+ */
+Address * Address::default_alloc() {
+	char name[MAXHOSTNAMELEN];
+	gethostname(name, sizeof(name));
+	Address * result = alloc(name);
+	return (result ? result : new Address());
+}
+
+
 Network::Network() :
-	addr_(0),
-	local_(0),
+	addr_(*(Address::default_alloc())),
+	local_(*(Address::default_alloc())),
+	lport_(0),
+	port_(0),
+	ttl_(0),
+	rsock_(-1),
+	ssock_(-1),
+	noloopback_broken_(0),
+	crypt_(0)
+{
+}
+
+Network::Network(Address & addr, Address & local) :
+	addr_(addr),
+	local_(local),
 	lport_(0),
 	port_(0),
 	ttl_(0),
@@ -95,6 +138,8 @@ Network::Network() :
 
 Network::~Network()
 {
+	if (&addr_) delete &addr_; 
+	if (&local_) delete &local_;
 }
 
 int Network::command(int argc, const char*const* argv)
@@ -221,9 +266,7 @@ void Network::dosend(u_char* buf, int len, int fd)
 			break;
 
 		default:
-#ifndef WIN32
 			perror("send");
-#endif
 			return;
 		}
 	}
@@ -290,13 +333,13 @@ void Network::send(const msghdr& mh)
 			break;
 
 		default:
-#ifndef WIN32
 			perror("sendmsg");
-#endif
 			return;
 		}
 	}
 }
+
+
 
 int Network::dorecv(u_char* buf, int len, u_int32_t& from, int fd)
 {
@@ -310,11 +353,14 @@ int Network::dorecv(u_char* buf, int len, u_int32_t& from, int fd)
 		return (-1);
 	}
 	from = sfrom.sin_addr.s_addr;
-	if (noloopback_broken_ && from == local_ && sfrom.sin_port == lport_)
+	if (noloopback_broken_ &&  memcmp(local_, &from, fromlen) == 0
+	    && sfrom.sin_port == lport_)
 		return (0);
 
 	return (cc);
 }
+
+
 
 int Network::recv(u_char* buf, int len, u_int32_t& from)
 {
@@ -322,9 +368,19 @@ int Network::recv(u_char* buf, int len, u_int32_t& from)
 		if (len > wrkbuflen_)
 			expand_wrkbuf(len);
 		int cc = dorecv(wrkbuf_, len, from, rsock_);
-		if (cc!=0) {
-			return (crypt_->Decrypt(wrkbuf_, cc, buf));
-		} else return 0;
+		return (crypt_->Decrypt(wrkbuf_, cc, buf));
+	}
+	return (dorecv(buf, len, from, rsock_));
+}
+
+
+int Network::recv(u_char* buf, int len, Address & from)
+{
+	if (crypt_) {
+		if (len > wrkbuflen_)
+			expand_wrkbuf(len);
+		int cc = dorecv(wrkbuf_, len, from, rsock_);
+		return (crypt_->Decrypt(wrkbuf_, cc, buf));
 	}
 	return (dorecv(buf, len, from, rsock_));
 }
@@ -332,3 +388,4 @@ int Network::recv(u_char* buf, int len, u_int32_t& from)
 void Network::reset()
 {
 }
+

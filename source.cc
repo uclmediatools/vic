@@ -97,14 +97,14 @@ static int server_delay = 100;
 /*XXX*/
 PacketHandler::~PacketHandler() { }
 
-Source::Source(u_int32_t srcid, u_int32_t ssrc, u_int32_t addr)
+Source::Source(u_int32_t srcid, u_int32_t ssrc, Address &addr)
 	: TclObject(0),
 	  next_(0),
 	  hlink_(0),
 	  handler_(0),
 	  srcid_(srcid),
 	  ssrc_(ssrc),
-	  addr_(addr),
+	  addr_(*(addr.copy())),
 	  sts_data_(0),
 	  sts_ctrl_(0),
 	  map_rtp_time_(0), map_ntp_time_(0),	
@@ -164,6 +164,7 @@ Source::Source(u_int32_t srcid, u_int32_t ssrc, u_int32_t addr)
 
 Source::~Source()
 {
+	if (&addr_) delete &addr_;
 	if (handler_ != 0)
 		deactivate();
 	Tcl::instance().evalf("unregister %s", TclObject::name());
@@ -326,7 +327,8 @@ int Source::command(int argc, const char*const* argv)
 			return (TCL_OK);
 		}
 		if (strcmp(argv[1], "addr") == 0) {
-			tcl.result(InetNtoa(addr_), TCL_DYNAMIC);
+			strcpy(wrk, (const char *)addr_);
+		//	tcl.result(InetNtoa(addr_), TCL_DYNAMIC);
 			return (TCL_OK);
 		}
 		if (strcmp(argv[1], "srcid") == 0) {
@@ -704,9 +706,10 @@ int SourceManager::command(int argc, const char *const*argv)
 	} else if (argc == 4) {
 		if (strcmp(argv[1], "create-local") == 0) {
 			u_int32_t srcid = strtoul(argv[2], 0, 0);
+			Address * local;
+			local = Address::alloc(argv[3]);
 			srcid = htonl(srcid);
-			u_int32_t addr = inet_addr(argv[3]);
-			init(srcid, addr);
+			if (local) init(srcid, *local);
 			tcl.result(localsrc_->name());
 			return (TCL_OK);
 		}
@@ -725,7 +728,7 @@ void SourceManager::remove_from_hashtable(Source* s)
 	*p = (*p)->hlink_;
 }
 
-void SourceManager::init(u_int32_t localid, u_int32_t localaddr)
+void SourceManager::init(u_int32_t localid, Address & localaddr)
 {
 	/*
 	 * create the local object.  remove it from the hash
@@ -773,6 +776,7 @@ Source* SourceManager::consult(u_int32_t srcid)
 
 /*
  * Lookup the sources list for the source with the address 'addr'
+ * IPV6Q
  */
 Source* SourceManager::lookup(u_int32_t addr)
 {
@@ -785,7 +789,7 @@ Source* SourceManager::lookup(u_int32_t addr)
 }
 
 
-Source* SourceManager::lookup(u_int32_t srcid, u_int32_t ssrc, u_int32_t addr)
+Source* SourceManager::lookup(u_int32_t srcid, u_int32_t ssrc, Address &addr)
 {
 	Source* s = consult(srcid);
 	if (s == 0) {
@@ -799,7 +803,7 @@ Source* SourceManager::lookup(u_int32_t srcid, u_int32_t ssrc, u_int32_t addr)
 			s = lookup_duplicate(srcid, addr);
 
 		if (s == 0) {
-			s = new Source(srcid, ssrc, addr);
+			s = new Source(srcid, ssrc, *(addr.copy()));
 			enter(s);
 		}
 	}
@@ -812,14 +816,14 @@ Source* SourceManager::lookup(u_int32_t srcid, u_int32_t ssrc, u_int32_t addr)
  * packets.)  If we haven't seen this source yet, allocate it but
  * wait until we see two in-order packets accepting the flow.
  */
-Source* SourceManager::demux(u_int32_t srcid, u_int32_t addr, u_int16_t seq)
+Source* SourceManager::demux(u_int32_t srcid, Address &addr, u_int16_t seq)
 {
 	Source* s = consult(srcid);
 	if (s == 0) {
 		s = lookup_duplicate(srcid, addr);
 		if (s == 0) {
 			/* CSRC=SSRC for data stream */
-			s = new Source(srcid, srcid, addr);
+			s = new Source(srcid, srcid, *(addr.copy()));
 			enter(s);
 		}
 		/* it takes two in-seq packets to activate source */
@@ -833,7 +837,7 @@ Source* SourceManager::demux(u_int32_t srcid, u_int32_t addr, u_int16_t seq)
 		 *  - otherwise, don't believe the new guy if we've heard
 		 *    from the old guy 'recently'.
 		 */
-		if (s->addr() != addr) {
+		if (!(s->addr() == addr)) {
 			u_int32_t t = s->lts_done().tv_sec;
 			if (t == 0) {
 				t = s->lts_data().tv_sec;
@@ -873,7 +877,7 @@ Source* SourceManager::demux(u_int32_t srcid, u_int32_t addr, u_int16_t seq)
  * restart
  *
  */
-Source* SourceManager::lookup_duplicate(u_int32_t srcid, u_int32_t addr)
+Source* SourceManager::lookup_duplicate(u_int32_t srcid, Address &addr)
 {
 	/*XXX - should eventually be conditioned on cname not ipaddr */
 	/*

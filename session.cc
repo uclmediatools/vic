@@ -161,14 +161,17 @@ SessionManager::~SessionManager()
 		delete pktbuf_;
 }
 
-u_int32_t SessionManager::alloc_srcid(u_int32_t addr) const
+u_int32_t SessionManager::alloc_srcid(Address & addr) const
 {
 	timeval tv;
 	::gettimeofday(&tv, 0);
 	u_int32_t srcid = u_int32_t(tv.tv_sec + tv.tv_usec);
 	srcid += (u_int32_t)getuid();
 	srcid += (u_int32_t)getpid();
-	srcid += addr;
+/* __IPv6 changed srcid computation */
+	for(int i = 0; i < (addr.length() % sizeof(u_int32_t)); i++) {
+	  srcid += ((u_int32_t*)((const void*)addr))[i];
+	}
 	return (srcid);
 }
 
@@ -246,7 +249,11 @@ int SessionManager::command(int argc, const char*const* argv)
 			return (TCL_OK);
 		}
 		if (strcmp(argv[1], "random-srcid") == 0) {
-			sprintf(cp, "%u", alloc_srcid(inet_addr(argv[2])));
+			Address * addrp;
+			if (addrp = Address::alloc(argv[2])) {
+			  sprintf(cp, "%u", alloc_srcid(*addrp));
+			  delete addrp;
+			}
 			tcl.result(cp);
 			return (TCL_OK);
 		}
@@ -509,12 +516,12 @@ int SessionManager::build_bye(rtcphdr* rh, Source& ls)
 
 void SessionManager::recv(DataHandler* dh)
 {
-	u_int32_t addr;
+	Address * addrp;
 	/* leave room in case we need to expand rtpv1 into an rtpv2 header */
 	/* XXX the free mem routine didn't like it ... */
 	//u_char* bp = &pktbuf_[4];
 	u_char* bp = pktbuf_;
-	int cc = dh->recv(bp, 2 * RTP_MTU - 4, addr);
+	int cc = dh->recv(bp, 2 * RTP_MTU - 4, addrp);
 	if (cc <= 0)
 		return;
 
@@ -526,10 +533,10 @@ void SessionManager::recv(DataHandler* dh)
 	}
 	bp += sizeof(*rh);
 	cc -= sizeof(*rh);
-	demux(rh, bp, cc, addr);
+	demux(rh, bp, cc, *addrp);
 }
 
-void SessionManager::demux(rtphdr* rh, u_char* bp, int cc, u_int32_t addr)
+void SessionManager::demux(rtphdr* rh, u_char* bp, int cc, Address & addr)
 {
 	u_char *pkt = bp - sizeof(*rh);
 	if (cc < 0) {
@@ -655,15 +662,14 @@ void SessionManager::demux(rtphdr* rh, u_char* bp, int cc, u_int32_t addr)
 
 }
 
-
- void SessionManager::parse_rr_records(u_int32_t, rtcp_rr*, int,
-				      const u_char*, u_int32_t)
+void SessionManager::parse_rr_records(u_int32_t, rtcp_rr*, int,
+				      const u_char*, Address &)
 {
 }
 				      
 
 void SessionManager::parse_sr(rtcphdr* rh, int flags, u_char*ep,
-			      Source* ps, u_int32_t addr)
+			      Source* ps, Address & addr)
 {
 	rtcp_sr* sr = (rtcp_sr*)(rh + 1);
 	Source* s;
@@ -688,7 +694,7 @@ void SessionManager::parse_sr(rtcphdr* rh, int flags, u_char*ep,
 }
 
 void SessionManager::parse_rr(rtcphdr* rh, int flags, u_char* ep,
-			      Source* ps, u_int32_t addr)
+			      Source* ps, Address & addr)
 {
 	Source* s;
 	u_int32_t ssrc = rh->rh_ssrc;
@@ -703,7 +709,7 @@ void SessionManager::parse_rr(rtcphdr* rh, int flags, u_char* ep,
 }
 
 int SessionManager::sdesbody(u_int32_t* p, u_char* ep, Source* ps,
-			     u_int32_t addr, u_int32_t ssrc)
+			     Address & addr, u_int32_t ssrc)
 {
 	Source* s;
 	u_int32_t srcid = *p;
@@ -747,7 +753,7 @@ int SessionManager::sdesbody(u_int32_t* p, u_char* ep, Source* ps,
 }
 
 void SessionManager::parse_sdes(rtcphdr* rh, int flags, u_char* ep, Source* ps,
-				u_int32_t addr, u_int32_t ssrc)
+				Address & addr, u_int32_t ssrc)
 {
 	int cnt = flags >> 8 & 0x1f;
 	u_int32_t* p = (u_int32_t*)&rh->rh_ssrc;
@@ -787,8 +793,8 @@ void SessionManager::parse_bye(rtcphdr* rh, int flags, u_char* ep, Source* ps)
  */
 void SessionManager::recv(CtrlHandler* ch)
 {
-	u_int32_t src;
-	int cc = ch->recv(pktbuf_, 2 * RTP_MTU, src);
+	Address * srcp;
+	int cc = ch->recv(pktbuf_, 2 * RTP_MTU, srcp);
 	if (cc <= 0)
 		return;
 
@@ -820,7 +826,7 @@ void SessionManager::recv(CtrlHandler* ch)
 	 * size estimator.  Also, there's valid ssrc so charge errors to it
 	 */
 	rtcp_avg_size_ += RTCP_SIZE_GAIN * (double(cc + 28) - rtcp_avg_size_);
-	u_int32_t addr = src;
+	Address & addr = *srcp;
 
 	/*
 	 * First record in compount packet must be the ssrc of the

@@ -118,6 +118,7 @@ PacketData::construct(u_char *pkt, struct rtphdr* rh, u_char *vh,
 }
 
 
+#include "net.h"
 
 class SourceManager;
 
@@ -139,7 +140,7 @@ class PacketHandler : public TclObject {
 
 class Source : public TclObject, public Timer {
     public:
-	Source(u_int32_t srcid, u_int32_t ssrc, u_int32_t addr);
+	Source(u_int32_t srcid, u_int32_t ssrc, Address & addr);
 	virtual ~Source();
 
 	PacketHandler* activate(int format);
@@ -171,8 +172,8 @@ class Source : public TclObject, public Timer {
 
 	inline const char* sdes(int t) const { return (sdes_[t]); }
 	void sdes(int t, const char* value);
-	inline u_int32_t addr() const { return (addr_); }
-	inline void addr(u_int32_t a) { addr_ = a; }
+	inline Address const & addr() const { return (addr_); }
+	inline void addr(const Address & a) { addr_ = a; }
 	inline u_int32_t srcid() const { return (srcid_); }
 	inline void srcid(u_int32_t s) { srcid_ = s; }
 	inline u_int32_t ssrc() const { return (ssrc_); }
@@ -255,7 +256,7 @@ class Source : public TclObject, public Timer {
 
 	u_int32_t srcid_;	/* rtp global src id (CSRC), net order */
 	u_int32_t ssrc_;	/* rtp global sync src id (SSRC), net order) */
-	u_int32_t addr_;	/* address of sender (net order) */
+	Address & addr_;	/* address of sender (net order) */
 
 	int rtp2ntp_;		/* true if we've received a SR report */
 	u_int32_t sts_data_;	/* sndr ts from last data packet (net order) */
@@ -326,11 +327,11 @@ class SourceManager : public TclObject {
     public:
 	SourceManager();
 	static inline SourceManager& instance() { return (instance_); }
-	void init(u_int32_t localid, u_int32_t localaddr);
+	void init(u_int32_t localid, Address & localaddr);
 	virtual int command(int argc, const char*const* argv);
 	Source* lookup(u_int32_t addr);
-	Source* lookup(u_int32_t srcid, u_int32_t ssrc, u_int32_t addr);
-	Source* demux(u_int32_t srcid, u_int32_t addr, u_int16_t seq);
+	Source* lookup(u_int32_t srcid, u_int32_t ssrc, Address & addr);
+	Source* demux(u_int32_t srcid, Address & addr, u_int16_t seq);
 	Source* consult(u_int32_t srcid);
 	inline int nsources() const { return (nsources_); }
 	inline Source* sources() const { return (sources_); }
@@ -348,7 +349,7 @@ class SourceManager : public TclObject {
 	Source* enter(Source* s);
 	void remove_from_hashtable(Source* s);
 
-	Source* lookup_duplicate(u_int32_t srcid, u_int32_t addr);
+	Source* lookup_duplicate(u_int32_t srcid, Address & addr);
 
 	int nsources_;
 	Source* sources_;

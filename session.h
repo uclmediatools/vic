@@ -48,16 +48,18 @@ class SessionManager;
 
 class DataHandler : public IOHandler {
     public:
-	inline DataHandler(SessionManager& sm) : sm_(sm), net_(0) {}
+	inline DataHandler(SessionManager& sm) : sm_(sm), net_(0), addrp_(0) {}
 	virtual void dispatch(int mask);
 	inline Network* net() const { return (net_); }
 	inline void net(Network* net) {
 		unlink();
 		link(net->rchannel(), TK_READABLE);
 		net_ = net;
+		if (addrp_) delete addrp_;
+		addrp_ = net->addr().copy(); // get right type of address
 	}
-	inline int recv(u_char* bp, int len, u_int32_t& addr) {
-		return (net_->recv(bp, len, addr));
+	inline int recv(u_char* bp, int len, Address*& addrp) {
+		return (net_->recv(bp, len, *(addrp = addrp_)));
 	}
 	inline void send(u_char* bp, int len) {
 		net_->send(bp, len);
@@ -65,6 +67,7 @@ class DataHandler : public IOHandler {
     protected:
 	SessionManager& sm_;
 	Network* net_;
+	Address *addrp_;
 };
 
 class CtrlHandler : public DataHandler {
@@ -91,7 +94,7 @@ class SessionManager : public Transmitter, public MtuAlloc {
 	virtual void send_bye();
 	virtual void send_report();
     protected:
-	void demux(rtphdr* rh, u_char* bp, int cc, u_int32_t addr);
+	void demux(rtphdr* rh, u_char* bp, int cc, Address & addr);
 	virtual int check_format(int fmt) const = 0;
 	virtual void transmit(pktbuf* pb);
 	void send_report(int bye);
@@ -100,21 +103,21 @@ class SessionManager : public Transmitter, public MtuAlloc {
 	u_char* build_sdes_item(u_char* p, int code, Source&);
 
 	void parse_sr(rtcphdr* rh, int flags, u_char* ep,
-		      Source* ps, u_int32_t addr);
+		      Source* ps, Address & addr);
 	void parse_rr(rtcphdr* rh, int flags, u_char* ep,
-		      Source* ps, u_int32_t addr);
+		      Source* ps, Address & addr);
 	void parse_rr_records(u_int32_t ssrc, rtcp_rr* r, int cnt,
-			      const u_char* ep, u_int32_t addr);
+			      const u_char* ep, Address & addr);
 	int sdesbody(u_int32_t* p, u_char* ep, Source* ps,
-		     u_int32_t addr, u_int32_t ssrc);
+		     Address & addr, u_int32_t ssrc);
 	void parse_sdes(rtcphdr* rh, int flags, u_char* ep, Source* ps,
-			u_int32_t addr, u_int32_t ssrc);
+			Address & addr, u_int32_t ssrc);
 	void parse_bye(rtcphdr* rh, int flags, u_char* ep, Source* ps);
 
-	int parseopts(const u_char* bp, int cc, u_int32_t addr) const;
+	int parseopts(const u_char* bp, int cc, Address & addr) const;
 	int ckid(const char*, int len);
 
-	u_int32_t alloc_srcid(u_int32_t addr) const;
+	u_int32_t alloc_srcid(Address & addr) const;
 
 	char* stats(char* cp) const;
 
