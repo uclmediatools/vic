@@ -387,7 +387,7 @@ void udp_fd_zero(void)
 void udp_fd_set(socket_udp *s)
 {
 	FD_SET(s->fd, &rfd);
-	if (s->fd > max_fd) {
+	if (s->fd > (unsigned)max_fd) {
 		max_fd = s->fd;
 	}
 }
