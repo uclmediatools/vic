@@ -4,13 +4,13 @@ AC_INIT(base64.c)
 
 AC_CANONICAL_HOST
 
-dnl  UCL checked $host_os and exited if we didn't recognize it.
-dnl  Let's be more optimistic for now.
+#  UCL checked $host_os and exited if we didn't recognize it.
+#  Let's be more optimistic for now.
 
-dnl XXX
-dnl Backwards compatability to UCL's -D<ostype> for now
-dnl All references to an OS should be replaced by references
-dnl to features!
+# XXX
+# Backwards compatability to UCL's -D<ostype> for now
+# All references to an OS should be replaced by references
+# to features!
 
 case "$host_os" in
 
@@ -41,16 +41,29 @@ AC_TYPE_SIZE_T
 
 # Check for standard size types.  The defaults are only valid on some
 # systems so we hope that <inttypes.h> exists when they're wrong.
-AC_CHECK_TYPE(uint8_t,  unsigned char)
-if test $ac_cv_type_uint8_t = no; then
-	echo no
-fi
-AC_CHECK_TYPE(uint16_t, unsigned short)
-AC_CHECK_TYPE(uint32_t, unsigned int)
-AC_CHECK_TYPE(int8_t, signed char)
+AC_CHECK_TYPE(int8_t,  signed char)
 AC_CHECK_TYPE(int16_t, short)
 AC_CHECK_TYPE(int32_t, long)
 AC_CHECK_TYPE(int64_t, long long)
+
+# Some systems have these in <stdint.h>, just to be difficult...
+AC_MSG_CHECKING(for uint8_t in <stdint.h>)
+AC_EGREP_HEADER(uint8_t,
+		stdint.h,
+		[AC_MSG_RESULT(yes)],
+		[AC_MSG_RESULT(no) AC_CHECK_TYPE(uint8_t,  unsigned char)])
+
+AC_MSG_CHECKING(for uint16_t in <stdint.h>)
+AC_EGREP_HEADER(uint16_t,
+		stdint.h,
+		[AC_MSG_RESULT(yes)],
+		[AC_MSG_RESULT(no) AC_CHECK_TYPE(uint16_t,  unsigned char)])
+
+AC_MSG_CHECKING(for uint32_t in <stdint.h>)
+AC_EGREP_HEADER(uint32_t,
+		stdint.h,
+		[AC_MSG_RESULT(yes)],
+		[AC_MSG_RESULT(no) AC_CHECK_TYPE(uint32_t,  unsigned char)])
 
 # The following two macros cause autoconf to complain.
 AC_C_BIGENDIAN
@@ -65,18 +78,17 @@ then
 		CFLAGS="$CFLAGS -fsigned-char"
 	else
 		case "$host_os" in
-		dnl
-		dnl I don't know when "-signed" was added to IRIX CC
-		dnl so err on the side of using it.
+		# I don't know when "-signed" was added to IRIX CC
+		# so err on the side of using it.
 		irix*)	CFLAGS="$CFLAGS -signed"
 			;;
-		dnl need e.g. --force-signed-chars=-signed
+		# need e.g. --force-signed-chars=-signed
 		*)	AC_MSG_ERROR([I don't know how to force signed chars])
 			;;
 		esac
 	fi
 fi
-dnl  __CHAR_UNSIGNED__ will be defined; hope this is OK.
+#  __CHAR_UNSIGNED__ will be defined; hope this is OK.
 
 # GCC-specific warning flags
 if test "$GCC" = yes

@@ -73,3 +73,8 @@
 #ifndef WORDS_BIGENDIAN
 #define WORDS_SMALLENDIAN
 #endif
+
+#ifdef NEED_STDINT_H
+#include <stdint.h>
+#endif
+
