@@ -121,7 +121,7 @@ proc init_late {} {
 	set srcid [session random-srcid [$net addr]]
 
 	# create the local source object
-	set src [srctab create-local $srcid [$net interface]]
+	set src [srctab create-local $srcid [$net interface] $net]
 	
 	set cname [resource cname]
 	if { $cname == "" } {

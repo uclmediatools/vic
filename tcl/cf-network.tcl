@@ -37,7 +37,6 @@
 proc net_open_ip { sessionType session dst } {
 	global V numLayers
 	set c $V(class)
-
 	set dst [split $dst /]
 	set n [llength $dst]
 	if { $n < 2 } {
@@ -193,7 +192,6 @@ proc net_open_ip6 { sessionType session dst } {
 	global V numLayers 
 
 	set c $V(class)
-
 	set dst [split $dst /]
 	set n [llength $dst]
 	if { $n < 2 } {

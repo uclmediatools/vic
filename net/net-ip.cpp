@@ -80,7 +80,7 @@ private:
 
 static class IPAddressType : public AddressType {
 public:
-  virtual Address* resolve(const char* name) {
+  static Address* resolve(const char* name) {
     struct in_addr addr;
     IPAddress * result = 0;
     if((addr.s_addr = LookupHostAddr(name)) != 0) {
@@ -99,6 +99,7 @@ class IPNetwork : public Network {
 		IPNetwork() : Network(*(new IPAddress), *(new IPAddress)) {;}
 	virtual int command(int argc, const char*const* argv);
 	virtual void reset();
+	virtual Address* alloc(const char* name) { return (IPAddressType::resolve(name));}
     protected:
 	virtual int dorecv(u_char* buf, int len, Address &from, int fd);
 	int open(const char * host, int port, int ttl);

@@ -929,7 +929,7 @@ int SourceManager::command(int argc, const char *const*argv)
 				remove(s);
 			return (TCL_OK);
 		}
-	} else if (argc == 4) {
+	} else if (argc == 5) {
 	/*
 	* <otcl> SourceManager public create-local srcid addr
 	* Create a new Source object to represent the local
@@ -944,7 +944,7 @@ int SourceManager::command(int argc, const char *const*argv)
 		if (strcmp(argv[1], "create-local") == 0) {
 			u_int32_t srcid = strtoul(argv[2], 0, 0);
 			Address * local;
-			local = Address::alloc(argv[3]);
+			local = ((Network*)TclObject::lookup(argv[4]))->alloc(argv[3]);
 			srcid = htonl(srcid);
 			if (local) init(srcid, *local);
 			tcl.result(localsrc_->name());

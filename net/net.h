@@ -73,7 +73,7 @@ protected:
 };
 
 class Network : public TclObject {
-    public:
+public:
 	Network();
 	Network(Address & addr, Address & local);
 	virtual ~Network();
@@ -93,9 +93,11 @@ class Network : public TclObject {
 	virtual void reset();
 	static void nonblock(int fd);
 	inline Crypt* crypt() const { return (crypt_); }
-    protected:
+	virtual Address* alloc(const char* name) { return (0);}
+
+protected:
 	virtual void dosend(u_char* buf, int len, int fd);
-        virtual int dorecv(u_char* buf, int len, u_int32_t& from, int fd);
+    virtual int dorecv(u_char* buf, int len, u_int32_t& from, int fd);
 	virtual int dorecv(u_char* buf, int len, Address &from, int fd) {UNUSED(buf); UNUSED(len); UNUSED(from); UNUSED(fd); return (0);}
 
 	Address & addr_;

@@ -340,7 +340,7 @@ int SessionManager::command(int argc, const char*const* argv)
 		}
 		if (strcmp(argv[1], "random-srcid") == 0) {
 			Address * addrp;
-			if (addrp = Address::alloc(argv[2])) {
+			if (addrp = (dh_[0].net())->alloc(argv[2])) {
 			  sprintf(cp, "%u", alloc_srcid(*addrp));
 			  delete addrp;
 			}
