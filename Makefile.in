@@ -54,7 +54,7 @@ CCOPT = @V_CCOPT@
 INCLUDE_TK = @V_INCLUDE_TK@
 INCLUDE_TCL = @V_INCLUDE_TCL@
 INCLUDE_X11 = @V_INCLUDE_X11@
-INCLUDE_MISC = @V_INCLUDE@ -I. -Icodec/tmndec -Icodec/tmn-x -Icodec/h263 -Irtp -Irender -Inet -Ivideo -Icodec -I../common
+INCLUDE_MISC = @V_INCLUDE@ -I. -Icodec/tmndec -Icodec/tmn-x -Icodec/h263 -Irtp -Irender -Inet -Ivideo -Icodec -I../common/src
 
 STATIC = @V_STATIC@
 MKDEP = ./mkdep
@@ -85,7 +85,7 @@ SRC_GRABBER = $(OBJ_GRABBER:.o=.cpp)
 OBJ_XIL = @V_OBJ_XIL@
 OBJ_CRYPT = @V_OBJ_CRYPT@
 LIB = $(LIB_GRABBER) @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ \
-	codec/tmndec/libh263.a codec/tmn-x/libh263coder.a ../common/libuclmmbase.a -lm
+	codec/tmndec/libh263.a codec/tmn-x/libh263coder.a ../common/src/libuclmmbase.a -lm
 INCLUDE = $(INCLUDE_MISC) $(INCLUDE_GRABBER) $(INCLUDE_TK) $(INCLUDE_TCL) \
 	$(INCLUDE_X11) $(MD_INC) -Icodec/jpeg -Icodec/p64 -I.
 DEFINE = @V_DEFINE@ -DED_YBITS=$(ED_YBITS) -DSIGRET=@V_SIGRET@ -DNLAYER=8
