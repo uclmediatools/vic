@@ -173,9 +173,9 @@ static void remove_other_addr(struct mbus *m, char *a)
 
 	for (i = 0; i < m->num_other_addr; i++) {
 		if (mbus_addr_match(m->other_addr[i], a)) {
+			xfree(m->other_addr[i]);
+			xfree(m->other_hello[i]);
 			for (j = i+1; j < m->num_other_addr; j++) {
-			        xfree(m->other_addr[i]);
-			        xfree(m->other_hello[i]);
 				m->other_addr[j-1] = m->other_addr[j];
 				m->other_hello[j-1] = m->other_hello[j];
 			}
