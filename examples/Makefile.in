@@ -3,7 +3,7 @@
 # This probably requires GNU make.
 #
 
-SUBDIRS=src tests doc examples
+SUBDIRS=rtp
 
 all: all-recursive
 

@@ -337,7 +337,8 @@ v1.2.5	- More informative error message when the lock on the mbus configuration
 	- Move strfind to util.[ch] from mbus_addr.[ch].
 	- Fix CSRC handling (patch from Ivo Sedlacek <ivo.sedlacek@anfdata.cz>)
 	- Fix uninitialized field in SDES PRIV handling (Robert Olson)
-
+	- Documented debug.[ch], hmac.[ch], md5.[ch], memory.[ch], rtp.[ch].
+	- Added small rtp example. 
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
