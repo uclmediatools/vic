@@ -39,9 +39,12 @@
 #include "memory.h"
 #include "mbus_parser.h"
 
+#define MBUS_PARSER_MAGIC 0xbadface
+
 struct mbus_parser {
 	char	*buffer;	/* Temporary storage for parsing mbus commands 			*/
 	char	*bufend;	/* End of space allocated for parsing, to check for overflows 	*/
+	uint32_t magic;		/* For debugging...                                             */
 };
 
 struct mbus_parser *mbus_parse_init(char *str)
@@ -51,11 +54,13 @@ struct mbus_parser *mbus_parse_init(char *str)
 	m = (struct mbus_parser *) xmalloc(sizeof(struct mbus_parser));
 	m->buffer = str;
 	m->bufend = str + strlen(str);
+	m->magic  = MBUS_PARSER_MAGIC;
 	return m;
 }
 
 void mbus_parse_done(struct mbus_parser *m)
 {
+	assert(m->magic == MBUS_PARSER_MAGIC);
 	xfree(m);
 }
 
@@ -68,6 +73,8 @@ int mbus_parse_lst(struct mbus_parser *m, char **l)
 {
 	int instr = FALSE;
 	int inlst = FALSE;
+
+	assert(m->magic == MBUS_PARSER_MAGIC);
 
 	*l = m->buffer;
         while (isspace((unsigned char)*m->buffer)) {
@@ -103,6 +110,8 @@ int mbus_parse_lst(struct mbus_parser *m, char **l)
 
 int mbus_parse_str(struct mbus_parser *m, char **s)
 {
+	assert(m->magic == MBUS_PARSER_MAGIC);
+
         while (isspace((unsigned char)*m->buffer)) {
                 m->buffer++;
 		CHECK_OVERRUN;
@@ -126,6 +135,8 @@ int mbus_parse_str(struct mbus_parser *m, char **s)
 
 int mbus_parse_sym(struct mbus_parser *m, char **s)
 {
+	assert(m->magic == MBUS_PARSER_MAGIC);
+
         while (isspace((unsigned char)*m->buffer)) {
                 m->buffer++;
 		CHECK_OVERRUN;
@@ -147,6 +158,8 @@ int mbus_parse_sym(struct mbus_parser *m, char **s)
 int mbus_parse_int(struct mbus_parser *m, int *i)
 {
 	char	*p;
+
+	assert(m->magic == MBUS_PARSER_MAGIC);
 
         while (isspace((unsigned char)*m->buffer)) {
                 m->buffer++;
@@ -173,6 +186,8 @@ int mbus_parse_int(struct mbus_parser *m, int *i)
 int mbus_parse_flt(struct mbus_parser *m, double *d)
 {
 	char	*p;
+
+	assert(m->magic == MBUS_PARSER_MAGIC);
 
         while (isspace((unsigned char)*m->buffer)) {
                 m->buffer++;
