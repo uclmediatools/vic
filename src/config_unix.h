@@ -183,7 +183,6 @@ int	toupper(int c);
 #endif
 
 #ifdef IRIX
-#define NEED_INET_PTON
 #include <bstring.h>     /* Needed for FDZERO on IRIX only */
 int gethostname(char *name, int namelen);
 #endif
