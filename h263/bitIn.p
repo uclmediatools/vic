@@ -1,0 +1,28 @@
+/* bitIn.c */
+extern Byte *FindH263PictSync(Byte *start, Byte *end);
+extern Byte *FindPyraPictSync(Byte *start, Byte *end);
+extern Byte *FindH263Sync(Byte *start, Byte *end);
+extern Byte *FindPyraSync(Byte *start, Byte *end);
+extern int ShowH263TempRef(Byte *buffer);
+extern int ShowPyraTempRef(Byte *buffer);
+extern int ShowH263GOBnumber(Byte *buffer);
+extern int ShowPyraGOBnumber(Byte *buffer);
+extern int ShowH263PicSize(Byte *buffer);
+extern int ShowPyraPicSize(Byte *buffer);
+extern int ShowH263CodingType(Byte *buffer);
+extern int ShowPyraCodingType(Byte *buffer);
+extern int ShowH263GFID(Byte *buffer);
+extern int ShowPyraGFID(Byte *buffer);
+extern void CheckInBuffer(FILE *fp, Byte *buffer, int bufferSize, Byte **start_p, Byte **end_p);
+extern int ErrorProneCheckInBufferH263(FILE *fp, Byte *buffer, int bufferSize, Byte **start_p, Byte **end_p, int percentLoss, int *tr_p);
+extern int ErrorProneCheckInBufferPyra(FILE *fp, Byte *buffer, int bufferSize, Byte **start_p, Byte **end_p, int percentLoss, int *tr_p);
+extern int GetBits(Bitstream *bs, int n);
+extern int GetOneBit(Bitstream *bs);
+extern int ShowBits(Bitstream *bs, int n);
+extern void ConsumeBits(Bitstream *bs, int n);
+extern void InitStreamBuffer(Bitstream *bs, int alloc_f);
+extern void FreeStreamBuffer(Bitstream *bs);
+extern Byte *PassToStreamBufferH263(Bitstream *bs, Byte *bufstart, Byte *bufend);
+extern Byte *PassToStreamBufferPyra(Bitstream *bs, Byte *bufstart, Byte *bufend);
+extern void InitStreamParsingH263(Bitstream *bs);
+extern void InitStreamParsingPyra(Bitstream *bs);
