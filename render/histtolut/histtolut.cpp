@@ -43,7 +43,7 @@
  */
 
 #ifndef lint
-static char rcsid[] =
+static const char rcsid[] =
     "@(#) $Header$ (LBL)";
 #endif
 
@@ -52,7 +52,7 @@ static char rcsid[] =
 #include <unistd.h>
 #endif
 #include <stdio.h>
-#include <memory.h>
+#include <strings.h>
 #include <sys/types.h>
 #ifdef WIN32
 #include <winsock.h>
@@ -142,6 +142,7 @@ yuv_to_rgb(color& c)
  * For further details see "Introduction to Algorithms" by Carmen,
  * Lieserson and Rivest.
  */
+//extern void *memset(void *, int, size_t);
 
 /* XXX should pass backup array in as argument, that way can create it
    only once. */
@@ -150,10 +151,10 @@ void \
 rtn(histItem** h, int idx, int n) \
 { \
 	int aux[256]; \
-	memset(aux, 0, 256 * sizeof(int)); \
  \
 	register histItem** hist = &h[idx]; \
 	int j; \
+	memset((void *)aux, 0, 256 * sizeof(int)); \
 	for (j = 0; j < n; j++) \
 		aux[hist[j]->c.fld]++; \
 	 \
@@ -394,6 +395,9 @@ mediancut(u_char* cmap, histItem* hist[], int colors,
 		*cp++ = r;
 		*cp++ = g;
 		*cp++ = b;
+#else
+/*  UNUSED*/
+maxval=maxval;
 #endif /*REP_AVERAGE_PIXELS*/
 	}
 }
@@ -619,6 +623,9 @@ yuv_mediancut(u_char* cmap, histItem* hist[], int colors,
 		*cp++ = c.r;
 		*cp++ = c.g;
 		*cp++ = c.b;
+#else
+/*  UNUSED*/
+maxval=maxval;
 #endif /*REP_AVERAGE_PIXELS*/
 	}
 }
