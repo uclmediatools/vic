@@ -59,6 +59,10 @@
 const struct	in6_addr	in6addr_any = {IN6ADDR_ANY_INIT};
 #endif
 
+#ifdef WINXP_IPV6
+const struct	in6_addr	in6addr_any = {IN6ADDR_ANY_INIT};
+#endif
+
 /* This is pretty nasty but it's the simplest way to get round */
 /* the Detexis bug that means their MUSICA IPv6 stack uses     */
 /* IPPROTO_IP instead of IPPROTO_IPV6 in setsockopt calls      */

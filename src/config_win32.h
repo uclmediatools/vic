@@ -57,12 +57,16 @@
 #ifdef MUSICA_IPV6
 #include <winsock6.h>
 #else
+#ifdef WINXP_IPV6
+#include <ws2tcpip.h>
+#else
 #ifdef WIN2K_IPV6
 #include <ws2tcpip.h>
 #include <tpipv6.h>
 #else
 #include <ws2ip6.h>
 #include <ws2tcpip.h>
+#endif
 #endif
 #endif
 #endif
