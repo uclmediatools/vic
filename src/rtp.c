@@ -287,6 +287,10 @@ static uint32_t next_csrc(struct rtp *session)
 		for (s = session->db[chain]; s != NULL; s = s->next) {
 			if (s->should_advertise_sdes) {
 				if (cc == session->last_advertised_csrc) {
+                                        session->last_advertised_csrc++;
+                                        if (session->last_advertised_csrc == session->csrc_count) {
+                                                session->last_advertised_csrc = 0;
+                                        }
 					return s->ssrc;
 				} else {
 					cc++;
@@ -1797,6 +1801,9 @@ int rtp_del_csrc(struct rtp *session, uint32_t csrc)
 	check_source(s);
 	s->should_advertise_sdes = FALSE;
 	session->csrc_count--;
+	if (session->last_advertised_csrc >= session->csrc_count) {
+                session->last_advertised_csrc = 0;
+        }
 	return TRUE;
 }
 
