@@ -678,6 +678,7 @@ void VfwGrabber::start()
 	case Miro_dc20_95:
 	case Miro_dc20_NT:
 	case AV_Master:
+    case Generic:
 		if (caps_.fHasDlgVideoFormat)
 			if (caps_.fHasDlgVideoSource)
 				capDlgVideoSource(capwin_);
@@ -687,10 +688,6 @@ void VfwGrabber::start()
 				fmtsize_ = capGetVideoFormatSize(capwin_);
 				fmt_ = (LPBITMAPINFOHEADER) new u_char [fmtsize_];
 				capGetVideoFormat(capwin_, fmt_, fmtsize_);
-				if (fmt_->biWidth == 320 || fmt_->biWidth == 160 || fmt_->biWidth == 384 || fmt_->biWidth == 192)
-					break;
-				else
-					fprintf(stderr, "Selected image size not supported! Use 320x240 or 160x120.\n");
 			}
 		break;
 	case Intel_SVR3:
@@ -732,7 +729,6 @@ void VfwGrabber::start()
 			break;
 		debug_msg("SMII YUYV format failed!\n");
 		goto Generic;
-	case Generic:
 	Generic:
 	default:
 		/* Try to figure out what compression formats are supported. */
@@ -801,9 +797,11 @@ void VfwGrabber::start()
 				break;
 
 			default:
-				fprintf(stderr, "Cannot make any sence out of driver!\n");
-				stop();
-				abort();
+				fprintf(stderr, "Image dimensions not suitable.\n");
+				max_fps_ = 25;
+				basewidth_ = PAL_BASE_WIDTH;
+				baseheight_ = PAL_BASE_HEIGHT;
+				return;
 		}
 		decimate_ = basewidth_ / fmt_->biWidth;
 		setsize();
