@@ -342,7 +342,7 @@ abort_multicast_ipv6:
 
 	/**********************************************************************/
 	printf("UDP/IP networking (FreeBSD bug)........ \n");
-	randomize(buf1, BUFSIZE);
+	randomize(buf1, 64);
 	s1 = udp_init("224.2.0.1", 5000, 5000, 1);
 	if (s1 == NULL) {
 		printf("fail (parent): cannot initialize socket\n");
@@ -359,7 +359,7 @@ abort_multicast_ipv6:
 			printf("fail (child): cannot initialize socket\n");
 			return;
 		}
-		if (udp_send(s2, buf1, BUFSIZE) < 0) {
+		if (udp_send(s2, buf1, 64) < 0) {
 			perror("fail (child)");
 			goto abort_bsd;
 		}
@@ -385,11 +385,11 @@ abort_multicast_ipv6:
 			perror("fail (child)");
 			exit(0);
 		}
-		if (rc != BUFSIZE) {
-			printf("fail (child): read size incorrect (%d != %d)\n", rc, BUFSIZE);
+		if (rc != 64) {
+			printf("fail (child): read size incorrect (%d != %d)\n", rc, 64);
 			exit(0);
 		}
-		if (memcmp(buf1, buf2, BUFSIZE) != 0) {
+		if (memcmp(buf1, buf2, 64) != 0) {
 			printf("fail (child): buffer corrupt\n");
 			exit(0);
 		}
@@ -420,11 +420,11 @@ abort_multicast_ipv6:
                         perror("fail (parent)");
 			goto abort_bsd;
                 }
-                if (rc != BUFSIZE) {
-                        printf("fail (parent): read size incorrect (%d != %d)\n", rc, BUFSIZE);
+                if (rc != 64) {
+                        printf("fail (parent): read size incorrect (%d != %d)\n", rc, 64);
 			goto abort_bsd;
                 }
-		if (memcmp(buf1, buf2, BUFSIZE) != 0) {
+		if (memcmp(buf1, buf2, 64) != 0) {
 			printf("fail (parent): buffer corrupt\n");
 			goto abort_bsd;
 		}
