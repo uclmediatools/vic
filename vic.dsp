@@ -46,7 +46,7 @@ RSC=rc.exe
 # PROP Target_Dir ""
 vic=rc.exe
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /W3 /GX /O2 /I ".\\" /I "codec" /I "render" /I "rtp" /I "net" /I "win32" /I "video" /I "..\common" /I "..\tk-8.0\win" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\tcl-8.0\win" /I "..\tcl-8.0\generic" /I "codec\tmndec" /I "codec\tmn-x" /I "codec\jpeg" /I "codec\p64" /I "codec\h263" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "SASR" /D SIGRET=void /D SIGARGS=int /D ED_YBITS=4 /D "NEED_INET_PTON" /FR /YX /FD /c
+# ADD CPP /nologo /W3 /GX /O2 /I ".\\" /I "codec" /I "render" /I "rtp" /I "net" /I "win32" /I "video" /I "..\common" /I "..\tk-8.0\win" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\tcl-8.0\win" /I "..\tcl-8.0\generic" /I "codec\tmndec" /I "codec\tmn-x" /I "codec\jpeg" /I "codec\p64" /I "codec\h263" /D "NDEBUG" /D "_WINDOWS" /D "SASR" /D "WIN32" /D "NEED_INET_PTON" /D ED_YBITS=4 /D SIGRET=void /D SIGARGS=int /D NLAYER=8 /FR /YX /FD /c
 # SUBTRACT CPP /X
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
@@ -74,7 +74,7 @@ LINK32=link.exe
 # PROP Target_Dir ""
 vic=rc.exe
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I ".\\" /I "codec" /I "render" /I "rtp" /I "net" /I "win32" /I "video" /I "..\common" /I "..\tk-8.0\win" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\tcl-8.0\win" /I "..\tcl-8.0\generic" /I "codec\tmndec" /I "codec\tmn-x" /I "codec\jpeg" /I "codec\p64" /I "codec\h263" /D "_WINDOWS" /D "DEBUG" /D "SASR" /D "WIN32" /D "_DEBUG" /D ED_YBITS=4 /D SIGRET=void /D SIGARGS=int /D "_WIN95" /D "NEED_INET_PTON" /Fr /YX /FD /I ../common /c
+# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I ".\\" /I "codec" /I "render" /I "rtp" /I "net" /I "win32" /I "video" /I "..\common" /I "..\tk-8.0\win" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\tcl-8.0\win" /I "..\tcl-8.0\generic" /I "codec\tmndec" /I "codec\tmn-x" /I "codec\jpeg" /I "codec\p64" /I "codec\h263" /D "_WINDOWS" /D "DEBUG" /D "SASR" /D "_DEBUG" /D "_WIN95" /D "WIN32" /D "NEED_INET_PTON" /D ED_YBITS=4 /D SIGRET=void /D SIGARGS=int /D NLAYER=8 /Fr /YX /FD /I ../common /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x809 /d "_DEBUG"
@@ -103,7 +103,7 @@ LINK32=link.exe
 # PROP Target_Dir ""
 vic=rc.exe
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /I "c:\Program Files\Tcl\include" /I "c:\Program Files\Tcl\include\xlib" /I "c:\DDK\inc" /I "c:\src\msripv6\inc" /D "_WINDOWS" /D "DEBUG" /D "SASR" /D "WIN32" /D "_DEBUG" /D "HAVE_IPv6" /FR /YX /FD /c
-# ADD CPP /nologo /W3 /Gm /GX /Zi /Od /I ".\\" /I "codec" /I "render" /I "rtp" /I "net" /I "win32" /I "video" /I "..\common" /I "..\tk-8.0\win" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\tcl-8.0\win" /I "..\tcl-8.0\generic" /I "codec\tmndec" /I "codec\tmn-x" /I "codec\jpeg" /I "codec\p64" /I "codec\h263" /I "..\IPv6Kit\inc" /I "g:\DDK\inc" /D "WIN32" /D "DEBUG" /D "_DEBUG" /D "DEBUG_MEM" /D "HAVE_IPV6" /D "NEED_INET_PTON" /D "NEED_INET_NTOP" /D ED_YBITS=4 /D SIGRET=void /D SIGARGS=int /FR /YX /FD /I ../common /c
+# ADD CPP /nologo /W3 /Gm /GX /Zi /Od /I ".\\" /I "codec" /I "render" /I "rtp" /I "net" /I "win32" /I "video" /I "..\common" /I "..\tk-8.0\win" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\tcl-8.0\win" /I "..\tcl-8.0\generic" /I "codec\tmndec" /I "codec\tmn-x" /I "codec\jpeg" /I "codec\p64" /I "codec\h263" /I "..\IPv6Kit\inc" /I "g:\DDK\inc" /D "DEBUG" /D "_DEBUG" /D "DEBUG_MEM" /D "HAVE_IPV6" /D "NEED_INET_NTOP" /D "WIN32" /D "NEED_INET_PTON" /D ED_YBITS=4 /D SIGRET=void /D SIGARGS=int /D NLAYER=8 /FR /YX /FD /I ../common /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x809 /d "_DEBUG"
@@ -132,7 +132,7 @@ LINK32=link.exe
 # PROP Target_Dir ""
 vic=rc.exe
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /I "\src\common" /I "\src\tcl-8.0\generic" /I "\src\tk-8.0\generic" /I "\src\tk-8.0\xlib" /I "\src\tk-8.0\xlib\X11" /I "\DDK\inc" /I "\src\msripv6-1.2\inc" /D "_WINDOWS" /D "DEBUG" /D "SASR" /D "WIN32" /D "_DEBUG" /D "HAVE_IPv6" /D "NEED_INET_PTON" /D "NEED_INET_NTOP" /FR /YX /FD /I ../common /c
-# ADD CPP /nologo /W3 /Gm /GX /Zi /Od /I ".\\" /I "codec" /I "render" /I "rtp" /I "net" /I "win32" /I "video" /I "..\common" /I "..\tk-8.0\win" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\tcl-8.0\win" /I "..\tcl-8.0\generic" /I "codec\tmndec" /I "codec\tmn-x" /I "codec\jpeg" /I "codec\p64" /I "codec\h263" /I "..\MUSICA_420\WINSOCK6" /D "_WINDOWS" /D "DEBUG" /D "SASR" /D "WIN32" /D "_DEBUG" /D "HAVE_IPV6" /D "NEED_INET_PTON" /D "NEED_INET_NTOP" /D "MUSICA_IPV6" /D "_POSIX" /D "_WINNT" /D ED_YBITS=4 /D SIGRET=void /D SIGARGS=int /FR /YX /FD /I ../common /c
+# ADD CPP /nologo /W3 /Gm /GX /Zi /Od /I ".\\" /I "codec" /I "render" /I "rtp" /I "net" /I "win32" /I "video" /I "..\common" /I "..\tk-8.0\win" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\tcl-8.0\win" /I "..\tcl-8.0\generic" /I "codec\tmndec" /I "codec\tmn-x" /I "codec\jpeg" /I "codec\p64" /I "codec\h263" /I "..\MUSICA_420\WINSOCK6" /D "_WINDOWS" /D "DEBUG" /D "SASR" /D "_DEBUG" /D "HAVE_IPV6" /D "NEED_INET_NTOP" /D "MUSICA_IPV6" /D "_POSIX" /D "_WINNT" /D "WIN32" /D "NEED_INET_PTON" /D ED_YBITS=4 /D SIGRET=void /D SIGARGS=int /D NLAYER=8 /FR /YX /FD /I ../common /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x809 /d "_DEBUG"

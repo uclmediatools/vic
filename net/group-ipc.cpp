@@ -44,6 +44,7 @@ static const char rcsid[] =
 #include <string.h>
 #ifdef WIN32
 //#include <winsock.h>
+#include <io.h>
 #define close closesocket
 #else
 #include <sys/param.h>

@@ -54,16 +54,12 @@ typedef unsigned int   u_int32_t;
 #include <sys/types.h>
 #endif
 
-#ifdef sco
 typedef char int8_t;
-#else
-typedef signed char int8_t;
-#endif
-
 typedef short int16_t;
-typedef int   int32_t;
+typedef int   int32_t;//
 typedef unsigned char	u_int8_t;
 typedef unsigned short	u_int16_t;
+typedef unsigned short	uint16_t;
 typedef unsigned int	u_int32_t;
 #endif /*linux*/
 
@@ -92,24 +88,6 @@ long random(void);
 #include <time.h>		/* For clock_t */
 
 
-#ifndef WIN32
-#include <unistd.h>
-#if defined(__cplusplus)
-extern "C" {
-#endif
-#include <netinet/in.h>
-#include <arpa/inet.h>
-int		strcasecmp(const char *, const char *);
-clock_t clock(void);
-#if !defined(sco) && !defined(sgi) && !defined(__bsdi__) && !defined(__FreeBSD__) && !defined(sun) && !defined(__linux__)
-int		gethostid(void);
-#endif
-time_t	time(time_t *);
-char   *ctime(const time_t *);
-#if defined(__cplusplus)
-}
-#endif
-#endif /*ndef WIN32*/
 
 #if defined(NEED_SUNOS_PROTOS)
 #if defined(__cplusplus)
@@ -141,7 +119,27 @@ int strcasecmp(const char*, const char*);
 #endif
 #endif
 
-#ifdef WIN32
+#ifndef WIN32
+#include <unistd.h>
+#if defined(__cplusplus)
+extern "C" {
+#endif
+#include <netinet/in.h>
+#include <arpa/inet.h>
+int		strcasecmp(const char *, const char *);
+clock_t clock(void);
+#if !defined(sco) && !defined(sgi) && !defined(__bsdi__) && !defined(__FreeBSD__) && !defined(sun) && !defined(__linux__)
+int		gethostid(void);
+#endif
+time_t	time(time_t *);
+char   *ctime(const time_t *);
+#if defined(__cplusplus)
+}
+#endif
+#endif /*ndef WIN32*/
+
+
+#ifdef WIN32 
 //#include <windef.h>
 //#include <winbase.h>
 
