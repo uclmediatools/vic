@@ -49,12 +49,12 @@ static int do_test(int len)
 
 	input = (unsigned char *) xmalloc(len+1);
 	for (i = 0; i < len; i++) {
-		input[len] = lrand48() % 255;
+		input[i] = lrand48() % 255;
 	}
 	input[len] = '\0';
 
 	MD5Init(&context);
-	MD5Update(&context, input, strlen(input));
+	MD5Update(&context, input, len);
 	MD5Final(output, &context); 
 
 	xfree(input);
