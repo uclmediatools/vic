@@ -53,7 +53,7 @@ void _dprintf(const char *format, ...)
         va_list ap;
         
         va_start(ap, format);
-        vsprintf(msg, format, ap);	/* FIXME - this should be vsnprintf() */
+	_vsnprintf(msg, 65535, format, ap);
         va_end(ap);
         OutputDebugString(msg);
 #else 
