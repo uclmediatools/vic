@@ -175,7 +175,7 @@ struct rtp {
 	int		 ssrc_count;
 	int		 sender_count;
 	int		 initial_rtcp;
-	int		 avg_rtcp_size;
+	double		 avg_rtcp_size;
 	int		 we_sent;
 	double		 rtcp_bw;
 	struct timeval	 last_rtcp_send_time;
@@ -701,8 +701,8 @@ struct rtp *rtp_init(char *addr, u_int16 port, int ttl, double rtcp_bw, void (*c
 	srand48(time(NULL));
 
 	session = (struct rtp *) xmalloc(sizeof(struct rtp));
-	session->rtp_socket         = udp_init(addr, port,   port,   ttl);
-	session->rtcp_socket        = udp_init(addr, port+1, port+1, ttl);
+	session->rtp_socket         = udp_init(addr, port, port, ttl);
+	session->rtcp_socket        = udp_init(addr, (u_int16) (port+1), (u_int16) (port+1), ttl);
 	session->my_ssrc            = (u_int32) lrand48();
 	session->callback           = callback;
 	session->invalid_rtp_count  = 0;
@@ -710,7 +710,7 @@ struct rtp *rtp_init(char *addr, u_int16 port, int ttl, double rtcp_bw, void (*c
 	session->ssrc_count         = 0;
 	session->sender_count       = 0;
 	session->initial_rtcp       = TRUE;
-	session->avg_rtcp_size      = 70;	/* Guess for a sensible starting point... */
+	session->avg_rtcp_size      = 70.0;	/* Guess for a sensible starting point... */
 	session->we_sent            = FALSE;
 	session->rtcp_bw            = rtcp_bw;
 	session->sdes_count_pri     = 0;
@@ -1417,7 +1417,7 @@ static u_int8 *format_rtcp_sr(u_int8 *buffer, int buflen, struct rtp *session, u
 			}
 		}
 	}
-	packet->common.length = ntohs(6 + (packet->common.count * 6));
+	packet->common.length = ntohs((u_int16) (6 + (packet->common.count * 6)));
 	return buffer + 28 + (24 * packet->common.count);
 }
 
@@ -1488,7 +1488,7 @@ static u_int8 *format_rtcp_rr(u_int8 *buffer, int buflen, struct rtp *session)
 			}
 		}
 	}
-	packet->common.length = ntohs(1 + (packet->common.count * 6));
+	packet->common.length = ntohs((u_int16) (1 + (packet->common.count * 6)));
 	return buffer + 8 + (24 * packet->common.count);
 }
 
@@ -1595,7 +1595,7 @@ static u_int8 *format_rtcp_sdes(u_int8 *buffer, int buflen, u_int32 ssrc, struct
 		*packet++ = '\0';
 	}
 
-	common->length = htons(((int) (packet - buffer) / 4) - 1);
+	common->length = htons((u_int16) (((int) (packet - buffer) / 4) - 1));
 
 	return packet;
 }
