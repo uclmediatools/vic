@@ -1315,36 +1315,79 @@ int rtp_send_data(struct rtp *session, u_int32 ts, char pt, int m, int cc, u_int
 
 static u_int8 *format_rtcp_sr(u_int8 *buffer, int buflen, struct rtp *session, u_int32 ts)
 {
-	/* Write an RTCP SR header into buffer, returning a pointer */
-	/* to the next byte after the header we have just written.  */
-	u_int8		*packet = buffer;
-	rtcp_common	 common;
-	rtcp_sr		 sr;
+	/* Write an RTCP SR into buffer, returning a pointer to */
+	/* the next byte after the header we have just written. */
+	rtcp_t		*packet = (rtcp_t *) buffer;
+	source	 	*s;
+	int	 	 h;
+	int		 remaining_length;
 
-	assert(buflen > (int) (sizeof(rtcp_common) + sizeof(rtcp_sr)));
+	assert(buflen >= 28);	/* ...else there isn't space for the header and sender report */
 
-	common.version = 2;
-	common.p       = 0;
-	common.count   = 0;
-	common.pt      = RTCP_SR;
-	common.length  = 0;
+	packet->common.version = 2;
+	packet->common.p       = 0;
+	packet->common.count   = 0;
+	packet->common.pt      = RTCP_RR;
+	packet->common.length  = htons(1);
 
-	memcpy(packet, &common, sizeof(common)); 
-	packet += sizeof(common);
+	packet->r.sr.sr.ssrc          = htonl(rtp_my_ssrc(session));
+	packet->r.sr.sr.ntp_sec       = 0;
+	packet->r.sr.sr.ntp_frac      = 0;
+	packet->r.sr.sr.rtp_ts        = htonl(ts);
+	packet->r.sr.sr.sender_pcount = 0;
+	packet->r.sr.sr.sender_bcount = 0;
 
-	sr.ssrc          = htonl(rtp_my_ssrc(session));
-	sr.ntp_sec       = 0;
-	sr.ntp_frac      = 0;
-	sr.rtp_ts        = htonl(ts);
-	sr.sender_pcount = 0;
-	sr.sender_bcount = 0;
+	/* Add report blocks, until we either run out of senders */
+	/* to report upon or we run out of space in the buffer.  */
+	remaining_length = buflen - 8;
+	for (h = 0; h < RTP_DB_SIZE; h++) {
+		for (s = session->db[h]; s != NULL; s = s->next) {
+			if ((packet->common.count == 31) || (remaining_length < 24)) {
+				break; /* Insufficient space for more report blocks... */
+			}
+			if (s->sender) {
+				/* Much of this is taken from A.3 of draft-ietf-avt-rtp-new-01.txt */
+				int	extended_max      = s->cycles + s->max_seq;
+       				int	expected          = extended_max - s->base_seq + 1;
+       				int	lost              = expected - s->received;
+				int	expected_interval = expected - s->expected_prior;
+       				int	received_interval = s->received - s->received_prior;
+       				int 	lost_interval     = expected_interval - received_interval;
+				int	fraction;
+				u_int32	lsr;
 
-	memcpy(packet, &sr, sizeof(sr)); 
-	packet += sizeof(sr);
+       				s->expected_prior = expected;
+       				s->received_prior = s->received;
+       				if (expected_interval == 0 || lost_interval <= 0) {
+					fraction = 0;
+       				} else {
+					fraction = (lost_interval << 8) / expected_interval;
+				}
 
-	/* ...fill out the RRs... */
-
-	return packet;
+				if (s->sr == NULL) {
+					lsr = 0;
+				} else {
+					lsr = (s->sr->ntp_sec & 0x0000ffff) | ((s->sr->ntp_frac & 0xffff0000) >> 16);
+				}
+				packet->r.sr.rr[packet->common.count].ssrc       = htonl(s->ssrc);
+				packet->r.sr.rr[packet->common.count].fract_lost = fraction;
+				packet->r.sr.rr[packet->common.count].total_lost = lost & 0x00ffffff;
+				packet->r.sr.rr[packet->common.count].last_seq   = htonl(extended_max);
+				packet->r.sr.rr[packet->common.count].jitter     = htonl(s->jitter / 16);
+				packet->r.sr.rr[packet->common.count].lsr        = htonl(lsr);
+				packet->r.sr.rr[packet->common.count].dlsr       = 0;
+				s->sender = FALSE;
+				remaining_length -= 24;
+				packet->common.count++;
+				session->sender_count--;
+				if (session->sender_count == 0) {
+					break; /* No point continuing, since we've reported on all senders... */
+				}
+			}
+		}
+	}
+	packet->common.length = ntohs(6 + (packet->common.count * 6));
+	return buffer + 28 + (24 * packet->common.count);
 }
 
 static u_int8 *format_rtcp_rr(u_int8 *buffer, int buflen, struct rtp *session)
