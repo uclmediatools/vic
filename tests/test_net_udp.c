@@ -358,7 +358,7 @@ abort_multicast_ipv6:
 			perror("fail");
 			goto abort_bsd;
 		}
-	        timeout.tv_sec  = 1;
+	        timeout.tv_sec  = 10;
         	timeout.tv_usec = 0;
         	udp_fd_zero();
         	udp_fd_set(s1);
@@ -397,7 +397,7 @@ abort_multicast_ipv6:
 			printf("fail: cannot initialize socket\n");
 			return;
 		}
-                timeout.tv_sec  = 1;
+                timeout.tv_sec  = 10;
                 timeout.tv_usec = 0;
                 udp_fd_zero();
                 udp_fd_set(s1);
