@@ -58,6 +58,7 @@
 typedef struct {
         uint32_t key;   /* Original allocation number   */
         uint32_t size;  /* Size of allocation requested */
+        uint32_t pad;   /* Alignment padding to 8 bytes */
         uint32_t magic; /* Magic number                 */
 } chk_header;
 
