@@ -38,6 +38,7 @@ static char rcsid[] =
 #endif
 
 #include "transmitter.h"
+#include "pktbuf-rtp.h"
 #include "module.h"
 
 class JpegFramer : public TransmitterModule {
@@ -80,8 +81,8 @@ int JpegFramer::consume(const VideoFrame* vf)
 	int off = 0;
 	int payload = tx_->mtu() - HLEN;
 	while (off < p->len_) {
-		Transmitter::pktbuf* pb = tx_->alloch(p->ts_, RTP_PT_JPEG);
-		rtphdr* rh = (rtphdr*)pb->hdr;
+		pktbuf* pb = pool_->alloc(p->ts_, RTP_PT_JPEG);
+		rtphdr* rh = (rtphdr*)pb->dp;
 		jpeghdr* h = (jpeghdr*)(rh + 1);
 
 		/*XXX could maintain this as one 32-bit value */
@@ -97,10 +98,9 @@ int JpegFramer::consume(const VideoFrame* vf)
 			rh->rh_flags |= htons(RTP_M);
 
 		h->off = htonl(off);
-		pb->iov[0].iov_len = HLEN;
-		pb->iov[1].iov_base = (caddr_t)p->bp_ + off;
-		pb->iov[1].iov_len = cc;
-		/*XXX DEC C++ needs scope qualifier here */
+		pb->len = cc + HLEN;
+		/*XXX it'd be nice to avoid this copy */
+		memcpy(h + 1, (u_int8_t*)p->bp_ + off, cc);
 		tx_->send(pb);
 		tot += HLEN;
 		off += cc;

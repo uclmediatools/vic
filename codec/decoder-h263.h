@@ -37,7 +37,7 @@ public:
 	H263Decoder();
 	~H263Decoder();
 	int colorhist(u_int* hist) const;
-	virtual void recv(const rtphdr* rh, const u_char* bp, int cc);
+	virtual void recv(pktbuf*);
 	virtual void info(char* wrk) const;
 
 protected:
