@@ -322,6 +322,8 @@ v1.2.5	- More informative error message when the lock on the mbus configuration
 	- Add socket_error messages for gethostbyname failures.
 	- Include lower layer overhead when calculating average RTCP size
 	  (patch from Timur Friedman).
+	- Add support for SDES PRIV (the correct formatting of the PRIV item
+	  into prefix length, prefix and value is left to the caller).
 
 
 Still to do...

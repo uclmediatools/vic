@@ -145,6 +145,7 @@ typedef struct _source {
 	char		*loc;
 	char		*tool;
 	char		*note;
+	char		*priv;
 	rtcp_sr		*sr;
 	struct timeval	 last_sr;
 	struct timeval	 last_active;
@@ -1757,6 +1758,10 @@ int rtp_set_sdes(struct rtp *session, uint32_t ssrc, rtcp_sdes_type type, char *
 			if (s->note) xfree(s->note);
 			s->note = v; 
 			break;
+		case RTCP_SDES_PRIV:
+			if (s->priv) xfree(s->priv);
+			s->priv = v; 
+			break;
 		default :
 			debug_msg("Unknown SDES item (type=%d, value=%s)\n", type, v);
                         xfree(v);
@@ -1795,6 +1800,8 @@ const char *rtp_get_sdes(struct rtp *session, uint32_t ssrc, rtcp_sdes_type type
                 return s->tool;
         case RTCP_SDES_NOTE:
                 return s->note;
+	case RTCP_SDES_PRIV:
+		return s->priv;	
         default:
                 /* This includes RTCP_SDES_PRIV and RTCP_SDES_END */
                 debug_msg("Unknown SDES item (type=%d)\n", type);
@@ -2104,7 +2111,7 @@ static uint8_t *format_rtcp_sdes(uint8_t *buffer, int buflen, uint32_t ssrc, str
 			/* Note that the following is supposed to fall-through the cases */
 			/* until one is found to send... The lack of break statements in */
 			/* the switch is not a bug.                                      */
-			switch (session->sdes_count_ter % 4) {
+			switch (session->sdes_count_ter % 5) {
 			case 0: item = rtp_get_sdes(session, ssrc, RTCP_SDES_TOOL);
 				if ((item != NULL) && ((strlen(item) + (size_t) 2) <= remaining_len)) {
 					packet += add_sdes_item(packet, remaining_len, RTCP_SDES_TOOL, item);
@@ -2123,6 +2130,11 @@ static uint8_t *format_rtcp_sdes(uint8_t *buffer, int buflen, uint32_t ssrc, str
 			case 3: item = rtp_get_sdes(session, ssrc, RTCP_SDES_LOC);
 				if ((item != NULL) && ((strlen(item) + (size_t) 2) <= remaining_len)) {
 					packet += add_sdes_item(packet, remaining_len, RTCP_SDES_LOC, item);
+					break;
+				}
+			case 4: item = rtp_get_sdes(session, ssrc, RTCP_SDES_PRIV);
+				if ((item != NULL) && ((strlen(item) + (size_t) 2) <= remaining_len)) {
+					packet += add_sdes_item(packet, remaining_len, RTCP_SDES_PRIV, item);
 					break;
 				}
 			}
