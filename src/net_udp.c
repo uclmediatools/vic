@@ -45,6 +45,7 @@
 #include "memory.h"
 #include "inet_pton.h"
 #include "inet_ntop.h"
+#include "vsnprintf.h"
 #include "net_udp.h"
 
 #ifdef NEED_ADDRINFO_H
