@@ -405,7 +405,6 @@ proc init_network {} {
 	set numEncoderLayers $numLayers
 	set netType [resource network]
 	# Auto detect IPv6 addresses
-	puts "resource: [resource defaultHostSpec]"
 	if { [string first ":" [resource defaultHostSpec]] > 0 } {
 		set netType ip6
 	}
