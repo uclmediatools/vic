@@ -2,7 +2,7 @@
  * FILE:    mbus.c
  * AUTHORS: Colin Perkins
  * 
- * Copyright (c) 1997,1998 University College London
+ * Copyright (c) 1997-99 University College London
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -473,11 +473,17 @@ int mbus_recv(struct mbus *m, void *data)
 	while (1) {
 		memset(buffer, 0, MBUS_BUF_SIZE);
                 assert(m->s != NULL);
-		buffer_len = udp_recv(m->s, buffer, MBUS_BUF_SIZE, &t);
-		if (buffer_len > 0) {
-			rx = TRUE;
+		udp_fd_zero();
+		udp_fd_set(m->s);
+		if ((udp_select(&t) > 0) && udp_fd_isset(m->s)) {
+			buffer_len = udp_recv(m->s, buffer, MBUS_BUF_SIZE);
+			if (buffer_len > 0) {
+				rx = TRUE;
+			} else {
+				return rx;
+			}
 		} else {
-			return rx;
+			return FALSE;
 		}
 
 		mbus_parse_init(m, buffer);

@@ -2,7 +2,7 @@
  * FILE:    net_udp.c
  * AUTHORS: Colin Perkins
  * 
- * Copyright (c) 1998 University College London
+ * Copyright (c) 1998-99 University College London
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -356,27 +356,49 @@ int udp_send(socket_udp *s, char *buffer, int buflen)
 	return -1;
 }
 
-int udp_recv(socket_udp *s, char *buffer, int buflen, struct timeval *timeout)
+int udp_recv(socket_udp *s, char *buffer, int buflen)
 {
 	/* Reads data into the buffer, returning the number of bytes read.   */
 	/* If no data is available, this returns the value zero immediately. */
 	/* Note: since we don't care about the source address of the packet  */
 	/* we receive, this function becomes protocol independent.           */
-	fd_set		rfd;
 	int		len;
 
 	assert(buffer != NULL);
 	assert(buflen > 0);
 
-	FD_ZERO(&rfd);
-	FD_SET(s->fd, &rfd);
-	if (select(s->fd + 1, &rfd, NULL, NULL, timeout) > 0) {
-		len = recvfrom(s->fd, buffer, buflen, 0, 0, 0);
-		if (len > 0) {
-			return len;
-		}
-		socket_error("recvfrom");
+	len = recvfrom(s->fd, buffer, buflen, 0, 0, 0);
+	if (len > 0) {
+		return len;
 	}
+	socket_error("recvfrom");
 	return 0;
+}
+
+static fd_set	rfd;
+static int	max_fd;
+
+void udp_fd_zero(void)
+{
+	FD_ZERO(&rfd);
+	max_fd = 0;
+}
+
+void udp_fd_set(socket_udp *s)
+{
+	FD_SET(s->fd, &rfd);
+	if (s->fd > max_fd) {
+		max_fd = s->fd;
+	}
+}
+
+int udp_fd_isset(socket_udp *s)
+{
+	return FD_ISSET(s->fd, &rfd);
+}
+
+int udp_select(struct timeval *timeout)
+{
+	return select(max_fd + 1, &rfd, NULL, NULL, timeout);
 }
 

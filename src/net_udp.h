@@ -2,7 +2,7 @@
  * FILE:    net_udp.h
  * AUTHORS: Colin Perkins
  * 
- * Copyright (c) 1998 University College London
+ * Copyright (c) 1998-99 University College London
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,11 @@ typedef struct _socket_udp socket_udp;
 
 socket_udp *udp_init(char *addr, u_int16 port, int ttl);
 int         udp_send(socket_udp *s, char *buffer, int buflen);
-int         udp_recv(socket_udp *s, char *buffer, int buflen, struct timeval *timeout);
+int         udp_recv(socket_udp *s, char *buffer, int buflen);
+int         udp_select(struct timeval *timeout);
+void        udp_fd_zero(void);
+void        udp_fd_set(socket_udp *s);
+int         udp_fd_isset(socket_udp *s);
 
 #endif
 
