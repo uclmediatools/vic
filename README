@@ -3,3 +3,8 @@ UCL Common Code Library
 Routines common to a number of multimedia tools. This library is required
 to build RAT v3.2.7 or later, and may be needed for other UCL tools.
 
+To build library on UNIX:
+	./configure
+	cd src && gmake 
+
+To build library on Win32 open common.dsw and click "build".
