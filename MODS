@@ -149,6 +149,7 @@ v1.0.9	- Ignore ECONNREFUSED in net_udp.c
 	  instead.
 	- Delete RTP database entries which haven't been heard from for
   	  more than 5 times the RTCP reporting interval.
+	* 2 November 1999 [rat v4.1.1]
 
 
 Still to do...
