@@ -58,7 +58,7 @@ class CellBFramer : public TransmitterModule {
 	virtual int consume(const VideoFrame*);
 //	virtual int command(int argc,const char *const *argv);
  protected:
-	void send(Transmitter::pktbuf* pb, int sync,int x, int y, int cc);
+	void send(pktbuf* pb, int sync,int x, int y, int cc);
  	void size(int w,int h);
 	char	transmitter_;	// tclobject transmitter
 	int	nw_,nh_;
@@ -92,12 +92,14 @@ void CellBFramer::size(int w, int h)
 	nh_ = htons(h);
 }
 
-void CellBFramer::send(Transmitter::pktbuf* pb, int sync,
+void CellBFramer::send(pktbuf* pb, int sync,
                         int x, int y, int cc)
 {
-	pb->iov[0].iov_len = HLEN;
-	pb->iov[1].iov_len = cc;
-	rtphdr* rh = (rtphdr*)pb->hdr;
+	//pb->iov[0].iov_len = HLEN;
+	//pb->iov[1].iov_len = cc;
+	pb->len = cc+HLEN;
+	//rtphdr* rh = (rtphdr*)pb->hdr;
+	rtphdr* rh = (rtphdr*)pb->data;
 	if (sync)
 		rh->rh_flags |= htons(RTP_M);
 
@@ -117,7 +119,7 @@ int CellBFramer::consume(const VideoFrame* vf)
 	if (!samesize(vf))
 		size(vf->width_, vf->height_);
 	tx_->flush();
-	Transmitter::pktbuf* pb = tx_->alloc(p->ts_, RTP_PT_CELLB);
+	pktbuf* pb = pool_->alloc(p->ts_, RTP_PT_CELLB);
 
 	int	nb=0,i,thislen;
 	int	cc = p->len_;
@@ -156,13 +158,14 @@ int CellBFramer::consume(const VideoFrame* vf)
 		}
 		if (cursize+thislen>=wrapsize) {
 			// time to transmit
-			memcpy(pb->iov[1].iov_base,lastbp,cursize);
+			//memcpy(pb->iov[1].iov_base,lastbp,cursize);
+			memcpy(&pb->data[HLEN],lastbp,cursize);
 			lastbp=bp;
 			send(pb,0,x0,y0,cursize);
 			nb+=cursize+HLEN;
 			cc-=cursize;
 			cursize=0;
-			pb = tx_->alloc(p->ts_, RTP_PT_CELLB);
+			pb = pool_->alloc(p->ts_, RTP_PT_CELLB);
 			wrapsize = tx_->mtu()-HLEN;
 			x0=lastx;
 			y0=lasty;
@@ -170,7 +173,8 @@ int CellBFramer::consume(const VideoFrame* vf)
 		bp+=thislen;
 		cursize+=thislen;
 	}
-	memcpy(pb->iov[1].iov_base,bp-cursize,cursize);
+	//memcpy(pb->iov[1].iov_base,bp-cursize,cursize);
+	memcpy(&pb->data[HLEN],bp-cursize,cursize);
 	send(pb,1,x0,y0,cursize);
 	nb+=cursize+HLEN;
 	return nb;
