@@ -220,7 +220,7 @@ int IP6Network::command(int argc, const char*const* argv)
 	} else if (argc == 3) {
 		if (strcmp(argv[1], "loopback") == 0) {
 			char c = atoi(argv[2]);
-			if (setsockopt(ssock_, IPPROTO_IP, 
+			if (setsockopt(ssock_, IPPROTO_IPV6, 
 				       IPV6_MULTICAST_LOOP, &c, 1) < 0) {
 				/*
 				 * If we cannot turn off loopback (Like on the
