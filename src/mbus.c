@@ -85,7 +85,9 @@ struct mbus {
 	int		 hashkeylen;
 	char		*encrkey;
 	int		 encrkeylen;
-#ifndef WIN32
+#ifdef WIN32
+	HKEY		 cfgKey;
+#else
 	fd_t		 cfgfd;	  /* The file descriptor for the $HOME/.mbus config file, on Unix */
 #endif
 	int		 cfg_locked;
@@ -162,11 +164,52 @@ static char *mbus_new_hashkey(void)
 static void mbus_lock_config_file(struct mbus *m)
 {
 #ifdef WIN32
-	/* Do something complicated with the registry... */
+	/* Open the registry and create the mbus entries if they don't exist   */
+	/* already. The default contents of the registry are random encryption */
+	/* and authentication keys, and node local scope.                      */
+	HKEY			key    = HKEY_CURRENT_USER;
+	LPCTSTR			subKey = "Software\\Mbone Applications\\mbus";
+	DWORD			disp;
+	char			buffer[MBUS_BUF_SIZE];
+	LONG			status;
+
+	status = RegCreateKeyEx(key, subKey, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &(m->cfgKey), &disp);
+	if (status != ERROR_SUCCESS) {
+		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
+		debug_msg("Unable to open registry: %s\n", buffer);
+		abort();
+	}
+	if (disp == REG_CREATED_NEW_KEY) {
+		char	*hashkey = mbus_new_hashkey();
+		char	*encrkey = mbus_new_encrkey();
+		char	*scope   = "HOSTLOCAL";
+
+		status = RegSetValueEx(m->cfgKey, "HASHKEY", 0, REG_SZ, hashkey, strlen(hashkey) + 1);
+		if (status != ERROR_SUCCESS) {
+			FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
+			debug_msg("Unable to set hashkey: %s\n", buffer);
+			abort();
+		}	
+		status = RegSetValueEx(m->cfgKey, "ENCRYPTIONKEY", 0, REG_SZ, encrkey, strlen(encrkey) + 1);
+		if (status != ERROR_SUCCESS) {
+			FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
+			debug_msg("Unable to set encrkey: %s\n", buffer);
+			abort();
+		}	
+		status = RegSetValueEx(m->cfgKey, "SCOPE", 0, REG_SZ, scope, strlen(scope) + 1);
+		if (status != ERROR_SUCCESS) {
+			FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
+			debug_msg("Unable to set scope: %s\n", buffer);
+			abort();
+		}	
+		debug_msg("Created new registry entry...\n");
+	} else {
+		debug_msg("Opened existing registry entry...\n");
+	}
 #else
 	/* Obtain a valid lock on the mbus configuration file. This function */
 	/* creates the file, if one does not exist. The default contents of  */
-	/* this file are a random authentication key, no encryption and node */
+	/* this file are random authentication and encryption keys, and node */
 	/* local scope.                                                      */
 	struct flock	 l;
 	struct stat	 s;
@@ -246,7 +289,16 @@ static void mbus_lock_config_file(struct mbus *m)
 static void mbus_unlock_config_file(struct mbus *m)
 {
 #ifdef WIN32
-	/* Do something complicated with the registry... */
+	LONG status;
+	char buffer[MBUS_BUF_SIZE];
+	
+	status = RegCloseKey(m->cfgKey);
+	if (status != ERROR_SUCCESS) {
+		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
+		debug_msg("Unable to close registry: %s\n", buffer);
+		abort();
+	}
+	debug_msg("Closed registry entry...\n");
 #else
 	struct flock	l;
 
@@ -264,6 +316,7 @@ static void mbus_unlock_config_file(struct mbus *m)
 	m->cfg_locked = FALSE;
 }
 
+#ifndef WIN32
 static void mbus_get_key(struct mbus *m, struct mbus_key *key, char *id)
 {
 	struct stat	 s;
@@ -319,13 +372,45 @@ static void mbus_get_key(struct mbus *m, struct mbus_key *key, char *id)
 	xfree(buf);
 	xfree(line);
 }
-/*int base64decode(unsigned char *input, int input_length, unsigned char *output, int output_length)*/
+#endif
 
 static void mbus_get_encrkey(struct mbus *m, struct mbus_key *key)
 {
 	/* This MUST be called while the config file is locked! */
 #ifdef WIN32
-	/* Do something complicated with the registry... */
+	long	 status;
+	DWORD	 type;
+	char	*buffer;
+	int	 buflen = MBUS_BUF_SIZE;
+	char	*tmp;
+
+	assert(m->cfg_locked);
+	
+	/* Read the key from the registry... */
+	buffer = (char *) xmalloc(MBUS_BUF_SIZE);
+	status = RegQueryValueEx(m->cfgKey, "ENCRYPTIONKEY", 0, &type, buffer, &buflen);
+	if (status != ERROR_SUCCESS) {
+		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
+		debug_msg("Unable to get encrkey: %s\n", buffer);
+		abort();
+	}
+	assert(type == REG_SZ);
+	assert(buflen > 0);
+
+	/* Parse the key... */
+	key->algorithm   = strdup(strtok(buffer+1, ","));
+	key->expiry_time = atol(strtok(NULL  , ","));
+	key->key         = strtok(NULL  , ")");
+	key->key_len     = strlen(key->key);
+
+	debug_msg("alg=%s expiry_time=%d key=%s keylen=%d\n", key->algorithm, key->expiry_time, key->key, key->key_len);
+
+	/* Decode the key... */
+	tmp = (char *) xmalloc(key->key_len);
+	key->key_len = base64decode(key->key, key->key_len, tmp, key->key_len);
+	key->key = tmp;
+
+	xfree(buffer);
 #else
 	mbus_get_key(m, key, "ENCRYPTIONKEY=(");
 #endif
@@ -335,7 +420,39 @@ static void mbus_get_hashkey(struct mbus *m, struct mbus_key *key)
 {
 	/* This MUST be called while the config file is locked! */
 #ifdef WIN32
-	/* Do something complicated with the registry... */
+	long	 status;
+	DWORD	 type;
+	char	*buffer;
+	int	 buflen = MBUS_BUF_SIZE;
+	char	*tmp;
+
+	assert(m->cfg_locked);
+	
+	/* Read the key from the registry... */
+	buffer = (char *) xmalloc(MBUS_BUF_SIZE);
+	status = RegQueryValueEx(m->cfgKey, "HASHKEY", 0, &type, buffer, &buflen);
+	if (status != ERROR_SUCCESS) {
+		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
+		debug_msg("Unable to get encrkey: %s\n", buffer);
+		abort();
+	}
+	assert(type == REG_SZ);
+	assert(buflen > 0);
+
+	/* Parse the key... */
+	key->algorithm   = strdup(strtok(buffer+1, ","));
+	key->expiry_time = atol(strtok(NULL  , ","));
+	key->key         = strtok(NULL  , ")");
+	key->key_len     = strlen(key->key);
+
+	debug_msg("alg=%s expiry_time=%d key=%s keylen=%d\n", key->algorithm, key->expiry_time, key->key, key->key_len);
+
+	/* Decode the key... */
+	tmp = (char *) xmalloc(key->key_len);
+	key->key_len = base64decode(key->key, key->key_len, tmp, key->key_len);
+	key->key = tmp;
+
+	xfree(buffer);
 #else
 	mbus_get_key(m, key, "HASHKEY=(");
 #endif
