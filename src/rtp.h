@@ -131,26 +131,28 @@ typedef struct {
 	char            data[1];        /* variable length field  */
 } rtcp_app;
 
+/* rtp_event type values... use enum so compiler can check switch/if statements to see everything is covered */
+typedef enum {
+        RX_RTP,
+        RX_SR,
+        RX_RR,
+        RX_SDES,
+        RX_BYE,         /* Source is leaving the session, database entry is still valid */
+        SOURCE_CREATED,
+        SOURCE_DELETED, /* Source has been removed from the database                    */
+        RX_RR_EMPTY,    /* We've received an empty reception report block                                               */
+        RX_RTCP_START,  /* We're about to start processing a compound RTCP packet. The SSRC is not valid in this event. */
+        RX_RTCP_FINISH,	/* We've just finished processing a compound RTCP packet. The SSRC is not valid in this event.  */
+        RR_TIMEOUT,
+        RX_APP
+} rtp_event_type;
+
 typedef struct {
 	uint32_t	 ssrc;
-	int		 type;
+	rtp_event_type	 type;
 	void		*data;
 	struct timeval	*ts;
 } rtp_event;
-
-/* rtp_event type values... */
-#define RX_RTP  	100
-#define RX_SR		101
-#define RX_RR   	102
-#define RX_SDES 	103
-#define RX_BYE  	104	/* Source is leaving the session, database entry is still valid */
-#define SOURCE_DELETED	105	/* Source has been removed from the database                    */
-#define SOURCE_CREATED	106
-#define RX_RR_EMPTY	107	/* We've received an empty reception report block                                               */
-#define RX_RTCP_START	108	/* We're about to start processing a compound RTCP packet. The SSRC is not valid in this event. */
-#define RX_RTCP_FINISH	109	/* We've just finished processing a compound RTCP packet. The SSRC is not valid in this event.  */
-#define RR_TIMEOUT	110
-#define RX_APP  	111
 
 /* RTP options */
 #define RTP_OPT_PROMISC     	  1

@@ -256,6 +256,8 @@ v1.1.5	- Remove SunOS and Solaris defines from the configure script, they
 	- Remove most of the abort() statements from udp_init(), we now
 	  return NULL in most cases of an error.
 	- Fix header extension handling when padding bit set for RTP packets.
+	- Change RTP event type #defines into rtp_event_type so compiler can
+	  check all cases are covered in decision blocks.
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
