@@ -946,9 +946,28 @@ char *rtp_get_sdes(struct rtp *session, u_int32 ssrc, u_int8 type)
 
 rtcp_sr *rtp_get_sr(struct rtp *session, u_int32 ssrc)
 {
-	/* Return the last SR received from this ssrc */
-	UNUSED(session);
-	UNUSED(ssrc);
+	/* Return the last SR received from this ssrc. The */
+	/* caller MUST NOT free the memory returned to it. */
+	source	*s = get_source(session, ssrc);
+
+	if (s == NULL) {
+		return NULL;
+	} 
+	return s->sr;
+}
+
+rtcp_rr *rtp_get_rr(struct rtp *session, u_int32 reporter, u_int32 reportee)
+{
+	source		*s = get_source(session, reporter);
+	rtcp_rr_wrapper	*rr;
+
+	if (s != NULL) {
+		for (rr = s->rr; rr != NULL; rr++) {
+			if (rr->rr->ssrc == reportee) {
+				return rr->rr;
+			}
+		}
+	} 
 	return NULL;
 }
 
