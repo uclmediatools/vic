@@ -157,6 +157,7 @@ static void store_other_addr(struct mbus *m, char *a)
 	for (i = 0; i < m->num_other_addr; i++) {
 		if (mbus_addr_match(m->other_addr[i], a)) {
 			/* Already in the list... */
+			gettimeofday(m->other_hello[i],NULL);
 			return;
 		}
 	}
@@ -191,20 +192,6 @@ static void remove_other_addr(struct mbus *m, char *a)
 			m->other_addr[m->num_other_addr  - 1] = NULL;
 			m->other_hello[m->num_other_addr - 1] = NULL;
 			m->num_other_addr--;
-		}
-	}
-}
-
-static void mark_activ_other_addr(struct mbus *m, char *a){
-	int i;
-	struct timeval	 t;
-    
-	mbus_validate(m);
-
-	gettimeofday(&t, NULL);
-	for (i = 0; i < m->num_other_addr; i++) {
-		if (mbus_addr_match(m->other_addr[i], a)) {
-			m->other_hello[i]->tv_sec=t.tv_sec;
 		}
 	}
 }
@@ -866,7 +853,7 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 					} 
 					if (strcmp(cmd, "mbus.hello") == 0) {
 						/* Mark this source as activ. We remove dead sources in mbus_heartbeat */
-						mark_activ_other_addr(m, newsrc);
+						store_other_addr(m, newsrc);
 					}
 					m->cmd_handler(newsrc, cmd, param, data);
 					xfree(newsrc);
