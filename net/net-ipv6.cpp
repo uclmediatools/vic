@@ -404,8 +404,12 @@ int IP6Network::openrsock(Address & addr, u_short port, Address & local)
 		mr.ipv6mr_multiaddr = (IP6Address&)addr;
 #endif
 
+		int mreqsize = sizeof(mr);
+#ifdef WIN2K_IPV6
+		mreqsize += 4;
+#endif
 		if (setsockopt(fd, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, 
-			       (char *)&mr, sizeof(mr)) < 0) {
+			       (char *)&mr, mreqsize) < 0) {
 			perror("IPV6_ADD_MEMBERSHIP");
 			exit(1);
 		}
