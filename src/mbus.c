@@ -112,6 +112,7 @@ static char *mbus_new_encrkey(void)
 		random_string[i] = (lbl_random() | 0x000ff000) >> 24;
 	}
 	/* Step 2: base64 encode that string... */
+	memset(encoded_string, 0, (MBUS_ENCRKEY_LEN*4/3)+4);
 	encoded_length = base64encode(random_string, MBUS_ENCRKEY_LEN, encoded_string, (MBUS_ENCRKEY_LEN*4/3)+4);
 
 	/* Step 3: figure out the expiry time of the key, */
@@ -143,6 +144,7 @@ static char *mbus_new_hashkey(void)
 		random_string[i] = (lbl_random() | 0x000ff000) >> 24;
 	}
 	/* Step 2: base64 encode that string... */
+	memset(encoded_string, 0, (MBUS_HASHKEY_LEN*4/3)+4);
 	encoded_length = base64encode(random_string, MBUS_HASHKEY_LEN, encoded_string, (MBUS_HASHKEY_LEN*4/3)+4);
 
 	/* Step 3: figure out the expiry time of the key, */
@@ -220,6 +222,7 @@ static void mbus_lock_config_file(struct mbus *m)
 		xfree(buf);
 		free(hashkey);
 		xfree(encrkey);
+		debug_msg("Wrote config file\n");
 	} else {
 		/* Read in the contents of the config file... */
 		buf = (char *) xmalloc(s.st_size+1);
@@ -296,17 +299,26 @@ static void mbus_get_key(struct mbus *m, struct mbus_key *key, char *id)
 	while (pos < s.st_size) {
 		sscanf(buf+pos, "%s", line);
 		pos += strlen(line) + 1;
+		debug_msg("%s %d %d\n", line, pos, s.st_size);
 		if (strncmp(line, id, 9) == 0) {
+#ifdef NDEF
 			key->algorithm   = strdup(strtok(line+9, ","));
 			key->expiry_time =   atol(strtok(NULL  , ","));
 			key->key         = strdup(strtok(NULL  , ")"));
+#else			
+			key->algorithm   = NULL;
+			key->expiry_time = 0;
+			key->key         = NULL;
+			key->key_len     = 0;
+#endif
 			xfree(buf);
 			xfree(line);
+			return;
 		}
 	}
+	debug_msg("Unable to read hashkey from config file\n");
 	xfree(buf);
 	xfree(line);
-	debug_msg("Unable to read hashkey from config file\n");
 }
 
 static void mbus_get_encrkey(struct mbus *m, struct mbus_key *key)
