@@ -1,5 +1,5 @@
 %define name vic
-%define version 2.8ucl1.1.4
+%define version 2.8ucl1.1.5
 %define release ipv6
 
 Name: %{name}

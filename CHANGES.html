@@ -9,6 +9,15 @@
 
 <P><!-- @(#) $Header$ (LBL)--></P>
 <H1>vic: Change History</H1>
+<H3>v2.8ucl-1.1.5</H3><UL>
+<LI>Added generic case to vfw grabber that doesn't abort.
+<LI>Added support for Intel Smart Video Recorderer to vfw grabber.
+<LI>Fixed code in cf-network.tcl to handle ttl's greater than 16 and to do IPv6
+properly with layered streams.
+<LI>Added fix from Chris Greenhalgh <cmg@cs.nott.ac.uk> to syncronise the vfw
+callback thread with vic - stops frames being grabber before vic has finished
+processing them.   
+</UL> 
 <H3>v2.8ucl-1.1.4</H3><UL>
 <LI>Added check in configure to turn off optimisation in h261 decoder code if we're using GCC 2.96 (otherwise it crashes).
 <LI>Spec file for Linux RPMs
