@@ -185,10 +185,19 @@ int inet_aton(const char *name, struct in_addr *addr)
 #define IN6_IS_ADDR_UNSPECIFIED(addr) IS_UNSPEC_IN6_ADDR(*addr)
 #endif
 
-
 /*****************************************************************************/
 /* IPv4 specific functions...                                                */
 /*****************************************************************************/
+
+static int udp_addr_valid4(const char *dst)
+{
+        struct in_addr addr4;
+	if (inet_pton(AF_INET, dst, &addr4) || 
+            gethostbyname(dst) != NULL) {
+                return TRUE;
+        }
+        return FALSE;
+}
 
 static socket_udp *udp_init4(char *addr, uint16_t rx_port, uint16_t tx_port, int ttl)
 {
@@ -305,6 +314,26 @@ static char *udp_host_addr4(void)
 /*****************************************************************************/
 /* IPv6 specific functions...                                                */
 /*****************************************************************************/
+
+static int udp_addr_valid6(const char *dst)
+{
+#ifdef HAVE_IPv6
+        struct in6_addr addr6;
+	switch (inet_pton(AF_INET6, dst, &addr6)) {
+        case 1:  
+                return TRUE;
+                break;
+        case 0: 
+                return FALSE;
+                break;
+        case -1: 
+                debug_msg("inet_pton failed\n");
+                errno = 0;
+        }
+#endif /* HAVE_IPv6 */
+        UNUSED(dst);
+        return FALSE;
+}
 
 static socket_udp *udp_init6(char *addr, uint16_t rx_port, uint16_t tx_port, int ttl)
 {
@@ -507,6 +536,11 @@ static char *udp_host_addr6(socket_udp *s)
 /*****************************************************************************/
 /* Generic functions, which call the appropriate protocol specific routines. */
 /*****************************************************************************/
+
+int udp_addr_valid(const char *addr)
+{
+        return udp_addr_valid4(addr) | udp_addr_valid6(addr);
+}
 
 socket_udp *udp_init(char *addr, uint16_t rx_port, uint16_t tx_port, int ttl)
 {
