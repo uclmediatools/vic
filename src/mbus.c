@@ -74,8 +74,10 @@ struct mbus {
 	void (*err_handler)(int seqnum);
 	struct mbus_msg	*cmd_queue;
 	struct mbus_msg	*waiting_ack;
-	char		*authkey;
-	int		 authkeylen;
+	char		*hashkey;
+	int		 hashkeylen;
+	char		*encrkey;
+	int		 encrkeylen;
 #ifndef WIN32
 	fd_t		 cfgfd;		/* The file descriptor for the $HOME/.mbus config file, on Unix */
 #endif
@@ -112,7 +114,6 @@ static char *mbus_new_encrkey(void)
 	/* Step 4: put it all together to produce the key... */
 	key = (char *) xmalloc(encoded_length + 18);
 	sprintf(key, "(DES,%ld,%s)", expiry_time, encoded_string);
-	debug_msg("New encryption key = %s\n", key);
 
 	return key;
 }
@@ -144,7 +145,6 @@ static char *mbus_new_hashkey(void)
 	/* Step 4: put it all together to produce the key... */
 	key = (char *) xmalloc(encoded_length + 23);
 	sprintf(key, "(HMAC-MD5,%ld,%s)", expiry_time, encoded_string);
-	debug_msg("New hashkey = %s\n", key);
 
 	return key;
 }
@@ -189,12 +189,10 @@ static void mbus_lock_config_file(struct mbus *m)
 	l.l_start  = 0;
 	l.l_whence = SEEK_SET;
 	l.l_len    = 0;
-	debug_msg("Trying to lock mbus config file...\n");
 	if (fcntl(m->cfgfd, F_SETLKW, &l) == -1) {
 		perror("Unable to lock mbus configuration file");
 		abort();
 	}
-	debug_msg("...lock obtained!\n");
 
 	if (fstat(m->cfgfd, &s) != 0) {
 		perror("Unable to stat config file\n");
@@ -243,13 +241,33 @@ static void mbus_unlock_config_file(struct mbus *m)
 	l.l_start  = 0;
 	l.l_whence = SEEK_SET;
 	l.l_len    = 0;
-	debug_msg("Trying to unlock mbus config file...\n");
 	if (fcntl(m->cfgfd, F_SETLKW, &l) == -1) {
 		perror("Unable to unlock mbus configuration file");
 		abort();
 	}
-	debug_msg("...success!\n");
 	close(m->cfgfd);
+	m->cfgfd = -1;
+#endif
+}
+
+static char *mbus_get_encrkey(struct mbus *m, int *keylen)
+{
+#ifdef WIN32
+	/* Do something complicated with the registry... */
+#else
+	*keylen = 0;
+	return "";
+#endif
+}
+
+static char *mbus_get_hashkey(struct mbus *m, int *keylen)
+{
+#ifdef WIN32
+	/* Do something complicated with the registry... */
+#else
+	/* This MUST be called while the config file is locked! */
+	*keylen = 5;
+	return "Hello";
 #endif
 }
 
@@ -295,7 +313,7 @@ static void resend(struct mbus *m, struct mbus_msg *curr)
 	/* this message was first transmitted. If it was okay then, it's okay now.     */
 	memset(buffer, 0, MBUS_BUF_SIZE);
 	sprintf(bufp, "########################\nmbus/1.0 %6d %c (%s) %s ()\n", curr->seqnum, curr->reliable?'R':'U', m->addr[0], curr->dest);
-	hmac_md5(buffer+25, strlen(buffer)-25, m->authkey, m->authkeylen, digest);
+	hmac_md5(buffer+25, strlen(buffer)-25, m->hashkey, m->hashkeylen, digest);
 	base64encode(digest, 16, buffer, 24);
 	bufp += strlen(m->addr[0]) + strlen(curr->dest) + 50;
 	for (i = 0; i < curr->num_cmds; i++) {
@@ -376,8 +394,8 @@ struct mbus *mbus_init(unsigned short channel,
 	m->parse_depth  = 0;
 	m->cmd_queue	= NULL;
 	m->waiting_ack	= NULL;
-	m->authkey 	= "hello";		/* should fill this in with info from the config file... */
-	m->authkeylen   = 5;
+	m->hashkey 	= mbus_get_hashkey(m, &(m->hashkeylen));
+	m->encrkey      = mbus_get_encrkey(m, &(m->encrkeylen));
 	for (i = 0; i < MBUS_MAX_ADDR; i++) m->addr[i]         = NULL;
 	for (i = 0; i < MBUS_MAX_PD;   i++) m->parse_buffer[i] = NULL;
 	mbus_unlock_config_file(m);
@@ -426,7 +444,7 @@ void mbus_send(struct mbus *m)
 
 		/* Add an authentication header... this overwrites */
 		/* the string of #'s at the start of the message.  */
-		hmac_md5(buffer+25, strlen(buffer)-25, m->authkey, m->authkeylen, digest);
+		hmac_md5(buffer+25, strlen(buffer)-25, m->hashkey, m->hashkeylen, digest);
 		i = base64encode(digest, 16, buffer, 24);
 		
 		/* Send the message... */
@@ -681,7 +699,7 @@ int mbus_recv(struct mbus *m, void *data)
 			return FALSE;
 		}
 		/* Check that the packet authenticates correctly... */
-		hmac_md5(buffer + strlen(auth) + 1, buffer_len - strlen(auth) - 1, m->authkey, m->authkeylen, digest);
+		hmac_md5(buffer + strlen(auth) + 1, buffer_len - strlen(auth) - 1, m->hashkey, m->hashkeylen, digest);
 		base64encode(digest, 16, ackbuf, 24);
 		if ((strlen(auth) != 24) || (strncmp(auth, ackbuf, 24) != 0)) {
 			mbus_parse_done(m);
@@ -748,7 +766,7 @@ int mbus_recv(struct mbus *m, void *data)
 				if (strcmp(r, "R") == 0) {
 					sprintf(ackbuf, "########################\nmbus/1.0 %d U (%s) (%s) (%d)\n", ++m->seqnum, m->addr[0], src, seq);
 					assert(strlen(ackbuf)< MBUS_ACK_BUF_SIZE);
-					hmac_md5(ackbuf+25, strlen(ackbuf)-25, m->authkey, m->authkeylen, digest);
+					hmac_md5(ackbuf+25, strlen(ackbuf)-25, m->hashkey, m->hashkeylen, digest);
 					base64encode(digest, 16, ackbuf, 24);
 					udp_send(m->s, ackbuf, strlen(ackbuf));
 				}
