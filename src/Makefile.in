@@ -9,7 +9,7 @@ AR     = __AR__
 RANLIB = __RANLIB__
 
 OBJS = crypt_random.o debug.o mbus.o md5.o memory.o net_udp.o qfDES.o \
-       util.o hmac.o
+       util.o hmac.o base64.o
 
 libcommon.a: $(OBJS)
 	$(AR) r libcommon.a $(OBJS)

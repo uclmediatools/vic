@@ -1,0 +1,110 @@
+/*
+ * FILE:   base64.c
+ * AUTHOR: Colin Perkins
+ *
+ * MIME base64 encoder/decoder described in rfc1521. This code is derived
+ * from version 2.7 of the Bellcore metamail package.
+ *
+ * Copyright (c) 1998 University College London
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, is permitted provided that the following conditions 
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *      This product includes software developed by the Computer Science
+ *      Department at University College London
+ * 4. Neither the name of the University nor of the Department may be used
+ *    to endorse or promote products derived from this software without
+ *    specific prior written permission.
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHORS AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ * Copyright (c) 1991 Bell Communications Research, Inc. (Bellcore)
+ * 
+ * Permission to use, copy, modify, and distribute this material 
+ * for any purpose and without fee is hereby granted, provided 
+ * that the above copyright notice and this permission notice 
+ * appear in all copies, and that the name of Bellcore not be 
+ * used in advertising or publicity pertaining to this 
+ * material without the specific, prior written permission 
+ * of an authorized representative of Bellcore.  BELLCORE 
+ * MAKES NO REPRESENTATIONS ABOUT THE ACCURACY OR SUITABILITY 
+ * OF THIS MATERIAL FOR ANY PURPOSE.  IT IS PROVIDED "AS IS", 
+ * WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
+ * 
+ */
+
+#include "config_unix.h"
+#include "config_win32.h"
+#include "debug.h"
+#include "base64.h"
+
+static unsigned char basis_64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+int base64encode(unsigned char *input, int input_length, unsigned char *output, int output_length)
+{
+	int	i = 0, j = 0;
+	int	pad;
+
+	while ((i + 1) < input_length) {
+		if ((j + 3) >= output_length) {
+			debug_msg("Insufficient output space!\n");
+			return -1;
+		}
+		pad = 3 - (input_length - i);
+		output[j  ] = basis_64[input[i]>>2];
+		output[j+1] = basis_64[((input[i] & 0x03) << 4) | ((input[i+1] & 0xf0) >> 4)];
+		if (pad == 2) {
+			output[j+2] = '=';
+			output[j+3] = '=';
+		} else if (pad == 1) {
+			output[j+2] = basis_64[((input[i+1] & 0x0f) << 2) | ((input[i+2] & 0xc0) >> 6)];
+			output[j+3] = '=';
+		} else{
+			output[j+2] = basis_64[((input[i+1] & 0x0f) << 2) | ((input[i+2] & 0xc0) >> 6)];
+			output[j+3] = basis_64[input[i+2] & 0x3f];
+		}
+		i += 3;
+		j += 4;
+	}
+	return j;
+}
+
+#ifdef NDEF
+void base64decode(char *input, char *output, int length)
+{
+}
+#endif
+
+#ifdef TEST_BASE64
+int main() {
+	/* The string "Hello, world!" should encode as "SGVsbG8sIHdvcmxkI" */
+	char	*input = "Hello, world!";
+	char	 output[100];
+	int	 i;
+
+	for (i = 0; i < 100; i++) {
+		output[i] = '\0';
+	}
+	i = base64encode(input, strlen(input), output, 100);
+	printf("%d %s\n", i, output);
+	return 0;
+}
+#endif
+
