@@ -1020,11 +1020,13 @@ static void rtp_recv_data(struct rtp *session, uint32_t curr_time)
 	uint8_t		*buffer = ((uint8_t *) packet) + RTP_PACKET_HEADER_SIZE;
 	int		 buflen;
 	source		*s;
+	uint8_t 	 initVec[8] = {0,0,0,0,0,0,0,0};
 
 	buflen = udp_recv(session->rtp_socket, buffer, RTP_MAX_PACKET_LEN - RTP_PACKET_HEADER_SIZE);
 	if (buflen > 0) {
 		if (session->encryption_key != NULL) {
 			/* Decrypt the packet... */
+			qfDES_CBC_d(session->encryption_key, buffer, buflen, initVec);
 		}
 		/* Convert header fields to host byte order... */
 		packet->seq      = ntohs(packet->seq);
@@ -1374,11 +1376,15 @@ static void rtp_process_ctrl(struct rtp *session, uint8_t *buffer, int buflen)
 	rtp_event	 event;
 	struct timeval	 event_ts;
 	rtcp_t		*packet;
+	uint8_t 	 initVec[8] = {0,0,0,0,0,0,0,0};
 
 	gettimeofday(&event_ts, NULL);
 	if (buflen > 0) {
 		if (session->encryption_key != NULL) {
 			/* Decrypt the packet... */
+			qfDES_CBC_d(session->encryption_key, buffer, buflen, initVec);
+			buffer += 4;	/* Skip the random prefix... */
+			buflen -= 4;
 		}
 		if (validate_rtcp(buffer, buflen)) {
 			/* Signal that we're about to process a compound RTCP packet */
@@ -1894,7 +1900,6 @@ static void send_rtcp(struct rtp *session, uint32_t ts,
 	uint8_t   *lpt;		/* the last packet in the compound */
 	rtcp_app  *app;
 	uint8_t    initVec[8] = {0,0,0,0,0,0,0,0};
-	int        padlen;
 
 	/* If encryption is enabled, add a 32 bit random prefix to the packet */
 	if (session->encryption_key != NULL) {
@@ -1938,19 +1943,37 @@ static void send_rtcp(struct rtp *session, uint32_t ts,
 		}
 	}
 
-	/* And encrypt if necessary... */
+	/* And encrypt if desired... */
 	if (session->encryption_key != NULL) {
 		if (((ptr - buffer) % 8) != 0) {
 			/* Add padding to the last packet in the compound, if necessary. */
 			/* We don't have to worry about overflowing the buffer, since we */
 			/* intentionally allocated it 8 bytes longer to allow for this.  */
-			((rtcp_t *) lpt)->common.p = TRUE;
-			for (padlen = 8 - ((ptr - buffer) % 8); padlen > 0; padlen--) {
-				*ptr++ = '\0';
+			int	padlen = 8 - ((ptr - buffer) % 8);
+			int	i;
+
+			for (i = 0; i < padlen; i++) {
+				*(ptr++) = '\0';
 			}
 			*ptr = (uint8_t) padlen;
 			assert(((ptr - buffer) % 8) == 0); 
+
+			((rtcp_t *) lpt)->common.p = TRUE;
+			debug_msg("padding %d bytes\n", padlen);
+		} else {
+			debug_msg("no padding\n");
 		}
+#ifdef DEBUG
+		{
+			int i;
+			for (i = 0; i < ptr - buffer; i++) {
+				if ((i % 8) == 0) {
+					printf("\n");
+				}
+				printf("%02x ", buffer[i]);
+			}
+		}
+#endif
 		qfDES_CBC_e(session->encryption_key, buffer, ptr - buffer, initVec); 
 	}
 	udp_send(session->rtcp_socket, buffer, ptr - buffer);
