@@ -223,6 +223,12 @@ void test_des(void)
 			plain[j] = plain_data[i][j];
 			crypt[j] = crypt_data[i][j];
 		}
+		memcpy(buffer, crypt, 8);
+		qfDES_ECB_d(key, buffer, 8);
+		if (memcmp(buffer, plain, 8) != 0) {
+			printf("decrypt failed\n");
+			abort();
+		}
 		memcpy(buffer, plain, 8);
 		qfDES_ECB_e(key, buffer, 8);
 		if (memcmp(buffer, crypt, 8) != 0) {
