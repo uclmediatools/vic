@@ -39,4 +39,10 @@ Still to do...
 	  since it does a gethostbyname() and looks that up, yet that can
 	  return the IPv4 hostname only on some machines.
 	- Doesn't do DNS AAAA lookups when given a name rather than an IP address.
+	- "instance:pid" in mbus addresses?
+	- Timestamp should be added to mbus packet headers
+	- We use hmac_md5 and the mbus spec requires hmac_md5_96? Bug in
+	  the spec, since they both reference RFC2104?
+	- Should support encrypted mbus (preferably DES and 3DES)
+	- Fixed offsets in the mbus config file parser?
 
