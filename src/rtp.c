@@ -209,7 +209,7 @@ struct rtp {
 	int		 initial_rtcp;
 	double		 avg_rtcp_size;
 	int		 we_sent;
-	double		 rtcp_bw;
+	double		 rtcp_bw;			/* RTCP bandwidth fraction, in octets per second. */
 	struct timeval	 last_update;
 	struct timeval	 last_rtcp_send_time;
 	struct timeval	 next_rtcp_send_time;
@@ -577,7 +577,7 @@ static source *create_source(struct rtp *session, uint32_t ssrc)
 	session->ssrc_count++;
 	check_database(session);
 
-	debug_msg("Created database entry for ssrc 0x%08lx\n", ssrc);
+	debug_msg("Created database entry for ssrc 0x%08lx (%d valid sources)\n", ssrc, session->ssrc_count);
         if (ssrc != session->my_ssrc) {
                 /* Do not send during rtp_init since application cannot map the address */
                 /* of the rtp session to anything since rtp_init has not returned yet.  */
@@ -648,6 +648,8 @@ static void delete_source(struct rtp *session, uint32_t ssrc)
 	/* o  The value of pmembers is set equal to members.                      */
 	session->ssrc_count--;
 	if (session->ssrc_count < session->ssrc_count_prev) {
+		gettimeofday(&(session->next_rtcp_send_time), NULL);
+		gettimeofday(&(session->last_rtcp_send_time), NULL);
 		tv_add(&(session->next_rtcp_send_time), (session->ssrc_count / session->ssrc_count_prev) 
 						     * tv_diff(session->next_rtcp_send_time, event_ts));
 		tv_add(&(session->last_rtcp_send_time), - ((session->ssrc_count / session->ssrc_count_prev) 
@@ -1370,6 +1372,12 @@ static void process_rtcp_sr(struct rtp *session, rtcp_t *packet, struct timeval 
 		return;
 	}
 
+	/* Mark as an active sender, if we get a sender report... */
+	if (s->sender == FALSE) {
+		s->sender = TRUE;
+		session->sender_count++;
+	}
+
 	/* Process the SR... */
 	sr = (rtcp_sr *) xmalloc(sizeof(rtcp_sr));
 	sr->ssrc          = ssrc;
@@ -1470,7 +1478,7 @@ static void process_rtcp_sdes(struct rtp *session, rtcp_t *packet, struct timeva
 static void process_rtcp_bye(struct rtp *session, rtcp_t *packet, struct timeval *event_ts)
 {
 	int		 i;
-	uint32_t		 ssrc;
+	uint32_t	 ssrc;
 	rtp_event	 event;
 	source		*s;
 
@@ -1498,12 +1506,11 @@ static void process_rtcp_bye(struct rtp *session, rtcp_t *packet, struct timeval
 
 static void process_rtcp_app(struct rtp *session, rtcp_t *packet, struct timeval *event_ts)
 {
-	uint32_t          ssrc;
+	uint32_t         ssrc;
 	rtp_event        event;
 	rtcp_app        *app;
 	source          *s;
 	int              data_len;
-
 
 	/* Update the database for this source. */
 	ssrc = ntohl(packet->r.app.ssrc);
@@ -2306,8 +2313,8 @@ void rtp_update(struct rtp *session)
 
 	check_database(session);
 	gettimeofday(&curr_time, NULL);
-	if (tv_diff(curr_time, session->last_update) < session->rtcp_interval) {
-		/* We only cleanup once per RTCP reporting interval... */
+	if (tv_diff(curr_time, session->last_update) < 1.0) {
+		/* We only cleanup once per second... */
 		check_database(session);
 		return;
 	}
@@ -2329,11 +2336,13 @@ void rtp_update(struct rtp *session)
 			/* is to ensure that all delayed packets are received before */
 			/* the source is timed out.                                  */
 			if (s->got_bye && (delay > 2.0)) {
+				debug_msg("Deleting source 0x%08lx due to reception of BYE %f seconds ago...\n", s->ssrc, delay);
 				delete_source(session, s->ssrc);
 			}
 			/* If a source hasn't been heard from for more than 5 RTCP   */
 			/* reporting intervals, we delete it from our database...    */
 			if ((s->ssrc != rtp_my_ssrc(session)) && (delay > (session->rtcp_interval * 5))) {
+				debug_msg("Deleting source 0x%08lx due to timeout...\n", s->ssrc);
 				delete_source(session, s->ssrc);
 			}
 		}

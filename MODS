@@ -312,6 +312,12 @@ v1.2.5	- More informative error message when the lock on the mbus configuration
 	- rtp_init()/rtp_init_if() now take "const char *" for the address
 	- Fix expiration of our own SSRC from the RTP database, if filtering our
 	  packets.
+	- Mark entries in the RTP source database as active senders if we can an 
+	  SR packet from them.
+	- Cleanup RTP database once per second, rather than once per reporting 
+	  interval. This is needed to ensure that reverse reconsideration works
+	  correctly, and sources are correctly deleted after BYEs are received.
+	- Fix reverse reconsideration of the RTCP interval
 
 
 

@@ -317,6 +317,7 @@ static void udp_exit4(socket_udp *s)
 			socket_error("setsockopt IP_DROP_MEMBERSHIP");
 			abort();
 		}
+		debug_msg("Dropped membership of multicast group\n");
 	}
 	close(s->fd);
         free(s->addr);
