@@ -765,7 +765,6 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 		/* Sanity check that this is a vaguely sensible format message... Should prevent */
 		/* problems if we're fed complete garbage, but won't prevent determined hackers. */
 		if (strncmp(buffer + MBUS_AUTH_LEN + 1, "mbus/1.0", 8) != 0) {
-			debug_msg("Message did not correctly decrypt...\n");
 			continue;
 		}
 
