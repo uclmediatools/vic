@@ -418,6 +418,8 @@ main(int argc, const char** argv)
 	char buf[128], tmp[16];
 	const char *display=0, *use=0;
 	int op;
+	Display *testDisplay;
+
 	while ((op = getopt(argc, (char**)argv, (char*)options)) != -1) {
 		if (op == 'd') {
 			display = optarg;
@@ -439,10 +441,16 @@ main(int argc, const char** argv)
 #ifdef sgi
 	if (display == NULL) {
 		display=getenv("DISPLAY");
-      		if ((display != NULL) && (strcmp(display,":0.0") == 0)) {
-			strcpy(buf,"-name vic -display ");
-			gethostname(&buf[19],sizeof(buf)-19);
-			strcat(buf,":0");
+		/* check to see if we can open the display
+		   if we can't and it's set to just :0.0
+		   then set display to localhost:0.0
+		*/
+		if (XOpenDisplay(display)==NULL) {
+      			if ((display != NULL) && (strcmp(display,":0.0") == 0)) {
+				strcpy(buf,"-name vic -display ");
+				gethostname(&buf[19],sizeof(buf)-19);
+				strcat(buf,":0");
+			} else sprintf (buf, "-name vic");
 		} else sprintf (buf, "-name vic");
 	} else sprintf (buf, "-name vic -dispay %s", display);
 #else
