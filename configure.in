@@ -190,8 +190,15 @@ then
 		netdb.h,
 		# variant tests to go here
 		[AC_DEFINE(HAVE_IPv6) 
-		AC_MSG_RESULT(yes)
-		AC_CHECK_HEADERS(netinet6/in6.h)],
+		AC_MSG_RESULT(yes)],
+		[AC_MSG_RESULT(no) 
+		AC_MSG_WARN(IPv6 support not found.  Ignoring request.)])
+	AC_CHECK_HEADERS(netinet6/in6.h)
+	AC_MSG_CHECKING(for struct addrinfo)
+	AC_EGREP_HEADER(addrinfo,
+		netdb.h,
+		[AC_DEFINE(HAVE_ST_ADDRINFO)
+		AC_MSG_RESULT(yes)],
 		AC_MSG_RESULT(no))
 fi])
 

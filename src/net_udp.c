@@ -447,7 +447,7 @@ static char *udp_host_addr6(socket_udp *s)
 #if !defined(WIN32) || defined(MUSICA_IPV6)
 	int			 error_num;
 #endif
-#if defined(Linux) || defined(Solaris)
+#if HAVE_ST_ADDRINFO
 	int gai_err;
 	struct addrinfo hints, *ai;
 #endif
@@ -481,7 +481,7 @@ static char *udp_host_addr6(socket_udp *s)
 		assert(hent->h_addrtype == AF_INET6);
 		hname = xstrdup(inet6_ntoa((const struct in6_addr *) hent->h_addr_list[0]));
 #else
-#if defined(Linux) || defined(Solaris)
+#ifdef HAVE_ST_ADDRINFO
 		
 		memset(&hints, 0, sizeof(struct addrinfo));
 		
@@ -533,8 +533,8 @@ static char *udp_host_addr6(socket_udp *s)
 			debug_msg("inet_ntop: %s: \n", hname);
 			abort();
 		}
-#endif /*Linux || Solaris7 IPv6 */
-#endif /*MS_IPV6*/
+#endif /* HAVE_ST_ADDRINFO */
+#endif /* MS_IPV 6*/
 		return hname;
 	}
 	if (inet_ntop(AF_INET6, &local.sin6_addr, hname, MAXHOSTNAMELEN) == NULL) {

@@ -58,9 +58,6 @@ uint32_t
 lbl_random(void)
 {
 #ifdef HAVE_DEV_URANDOM
-	/* I don't trust the LBL random number generator, so if   */
-	/* we're on Linux we now use the random number generator  */
-	/* in the kernel which is cryptographically strong. [csp] */
 	int	fd, res, l;
 
 	fd = open("/dev/urandom", O_RDONLY);
