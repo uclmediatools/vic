@@ -49,8 +49,9 @@ for dir in $dirs; do
 done
 
 # always use -g with gcc during development (even with -O)
-if test "$CC" = gcc && test -f .devel ; then
-	V_CCOPT="$V_CCOPT -g -Wall"
+#if test "$CC" = gcc && test -f .devel ; then
+if test "$CC" = gcc  ; then
+	V_CCOPT="$V_CCOPT -g -W -Wall -Wno-implicit-int -Wno-return-type"
 	V_DEFINE="$V_DEFINE -fsigned-char"
 fi
 
