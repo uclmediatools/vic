@@ -494,7 +494,7 @@ void mbus_send(struct mbus *m)
 	}
 
 	while (curr != NULL) {
-		if (reliable && !mbus_addr_valid(m, curr->dest)) {
+		if (curr->reliable && !mbus_addr_valid(m, curr->dest)) {
 			debug_msg("Trying to send reliably to an unknown address...\n");
 			if (m->err_handler == NULL) {
 				abort();
