@@ -46,15 +46,15 @@
 #include "config_unix.h"
 #include "crypt_random.h"
 
-static u_int32_t randseed = 1;
+static uint32_t randseed = 1;
 
 void
-lbl_srandom(u_int32_t seed)
+lbl_srandom(uint32_t seed)
 {
 	randseed = seed;
 }
 
-u_int32_t
+uint32_t
 lbl_random(void)
 {
 #ifdef HAVE_DEV_URANDOM
@@ -76,8 +76,8 @@ lbl_random(void)
 	close(fd);
 	return res;
 #else
-	register u_int32_t x = randseed;
-	register u_int32_t hi, lo, t;
+	register uint32_t x = randseed;
+	register uint32_t hi, lo, t;
 
 	hi = x / 127773;
 	lo = x % 127773;

@@ -8,12 +8,12 @@
 #include "crypt_random.h"
 
 /* Global variables accessible inside this module only */
-static u_int  empty_key = TRUE;
+static uint  empty_key = TRUE;
 static u_char des_key[8];
 u_char        crypt_buffer[16532];
 u_char       *wrkbuf_ = crypt_buffer;
-static u_int  badpktlen_ = 0;
-static u_int  badpbit_ = 0;
+static uint  badpktlen_ = 0;
+static uint  badpbit_ = 0;
 
 int Null_Key(void)
 {
@@ -259,10 +259,10 @@ int Decrypt_Ctrl( const u_char* in, u_char* out, int* len)
 		rtcp_p->common.p = 0;
 		do {
 			current_p = rtcp_p;
-			rtcp_p    = (rtcp_t *) ((u_int32 *) rtcp_p + ntohs(rtcp_p->common.length) + 1);
+			rtcp_p    = (rtcp_t *) ((uint32 *) rtcp_p + ntohs(rtcp_p->common.length) + 1);
 			if (current_p->common.pt == RTCP_SDES) {
 				/* Sigh. Yet another vat bug... the length field in SDES packets is wrong, if encrypted */
-				current_p->common.length = (u_int16)htons((u_int16)(ntohs(current_p->common.length) + 1));
+				current_p->common.length = (uint16)htons((uint16)(ntohs(current_p->common.length) + 1));
 			}
 		} while (rtcp_p < (rtcp_t *) (out + *len) && rtcp_p->common.type == 2);
 		pad = out[*len - 1];
@@ -270,14 +270,14 @@ int Decrypt_Ctrl( const u_char* in, u_char* out, int* len)
 			++badpbit_;
 			return 0;
 		}
-		current_p->common.length = (u_int16)htons((u_int16)(((((ntohs(current_p->common.length)+1)*4)-pad)/4)-1));
+		current_p->common.length = (uint16)htons((uint16)(((((ntohs(current_p->common.length)+1)*4)-pad)/4)-1));
 		*len -= pad;
 		return pad+4;
 	} else {
 		/* Find the last packet, in this compound, and strip off the padding... */
 		do {
 			current_p = rtcp_p;
-			rtcp_p    = (rtcp_t *) ((u_int32 *) rtcp_p + ntohs(rtcp_p->common.length) + 1);
+			rtcp_p    = (rtcp_t *) ((uint32 *) rtcp_p + ntohs(rtcp_p->common.length) + 1);
 		} while (rtcp_p < (rtcp_t *) (out + *len) && rtcp_p->common.type == 2);
 		if (current_p->common.p == 1) {
 			current_p->common.p = 0;	/* Clear the padding bit. */
@@ -286,7 +286,7 @@ int Decrypt_Ctrl( const u_char* in, u_char* out, int* len)
 				++badpbit_;
 				return 0;
 			}
-			current_p->common.length = (u_int16)htons((u_int16)(((((ntohs(current_p->common.length)+1)*4)-pad)/4)-1));
+			current_p->common.length = (uint16)htons((uint16)(((((ntohs(current_p->common.length)+1)*4)-pad)/4)-1));
 			*len -= pad;
 		}
 		return pad+4;
@@ -351,13 +351,13 @@ u_char* Encrypt_Ctrl( u_char* in, int* len)
 		rtcp_p = (rtcp_t *) (wrkbuf_ + 4);
 		do {
 			current_p = rtcp_p;
-			rtcp_p = (rtcp_t *) ((u_int32 *) rtcp_p +
+			rtcp_p = (rtcp_t *) ((uint32 *) rtcp_p +
 				 ntohs(rtcp_p->common.length) + 1);
 		} while (rtcp_p < (rtcp_t *) (wrkbuf_ + *len) && 
 			 rtcp_p->common.type == 2);
 		current_p->common.p      = 1;	/* Set the padding bit. */
 		current_p->common.length = 
-				(u_int16)htons((u_int16)(((((ntohs(current_p->common.length)+1)*4)+
+				(uint16)htons((uint16)(((((ntohs(current_p->common.length)+1)*4)+
 				pad)/4)-1));
 
 		padding = (wrkbuf_ + *len);

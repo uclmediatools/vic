@@ -66,8 +66,8 @@ struct	in6_addr		in6addr_any = {IN6ADDR_ANY_INIT};
 struct _socket_udp {
 	int	 	 mode;	/* IPv4 or IPv6 */
 	char		*addr;
-	u_int16_t	 	 rx_port;
-	u_int16_t		 tx_port;
+	uint16_t	 	 rx_port;
+	uint16_t		 tx_port;
 	ttl_t	 	 ttl;
 	fd_t	 	 fd;
 	struct in_addr	 addr4;
@@ -186,7 +186,7 @@ int inet_aton(const char *name, struct in_addr *addr)
 /* IPv4 specific functions...                                                */
 /*****************************************************************************/
 
-static socket_udp *udp_init4(char *addr, u_int16_t rx_port, u_int16_t tx_port, int ttl)
+static socket_udp *udp_init4(char *addr, uint16_t rx_port, uint16_t tx_port, int ttl)
 {
 	int                 reuse = 1;
 	struct sockaddr_in  s_in;
@@ -306,7 +306,7 @@ static char *udp_host_addr4(void)
 /* IPv6 specific functions...                                                */
 /*****************************************************************************/
 
-static socket_udp *udp_init6(char *addr, u_int16_t rx_port, u_int16_t tx_port, int ttl)
+static socket_udp *udp_init6(char *addr, uint16_t rx_port, uint16_t tx_port, int ttl)
 {
 #ifdef HAVE_IPv6
 	int                 reuse = 1;
@@ -552,7 +552,7 @@ static char *udp_host_addr6(socket_udp *s)
 /* Generic functions, which call the appropriate protocol specific routines. */
 /*****************************************************************************/
 
-socket_udp *udp_init(char *addr, u_int16_t rx_port, u_int16_t tx_port, int ttl)
+socket_udp *udp_init(char *addr, uint16_t rx_port, uint16_t tx_port, int ttl)
 {
 	socket_udp *res;
 	

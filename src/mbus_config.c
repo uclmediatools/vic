@@ -468,7 +468,7 @@ void mbus_get_hashkey(struct mbus_config *m, struct mbus_key *key)
 #endif
 }
 
-void mbus_get_net_addr(struct mbus_config *m, char *net_addr, u_int16_t *net_port, int *net_scope)
+void mbus_get_net_addr(struct mbus_config *m, char *net_addr, uint16_t *net_port, int *net_scope)
 {
 #ifdef WIN32
 	/* TODO: get values out of registry */
@@ -485,7 +485,7 @@ void mbus_get_net_addr(struct mbus_config *m, char *net_addr, u_int16_t *net_por
 
 	int              scope;
 	char            *addr;
-	u_int16_t        port;
+	uint16_t        port;
 
 	assert(m->cfg_locked);
 

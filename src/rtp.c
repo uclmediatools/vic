@@ -89,7 +89,7 @@ typedef struct {
 	unsigned short  version:2;	/* packet type            */
 	unsigned short  pt:8;		/* payload type           */
 #endif
-	u_int16_t         length;		/* packet length          */
+	uint16_t         length;		/* packet length          */
 } rtcp_common;
 
 typedef struct {
@@ -100,21 +100,21 @@ typedef struct {
 			rtcp_rr       	rr[1];		/* variable-length list */
 		} sr;
 		struct {
-			u_int32_t         ssrc;		/* source this RTCP packet is coming from */
+			uint32_t         ssrc;		/* source this RTCP packet is coming from */
 			rtcp_rr       	rr[1];		/* variable-length list */
 		} rr;
 		struct rtcp_sdes_t {
-			u_int32_t		ssrc;
+			uint32_t		ssrc;
 			rtcp_sdes_item 	item[1];	/* list of SDES */
 		} sdes;
 		struct {
-			u_int32_t         ssrc[1];	/* list of sources */
+			uint32_t         ssrc[1];	/* list of sources */
 							/* can't express the trailing text... */
 		} bye;
 		struct {
-			u_int32_t         ssrc;           
-			u_int8_t          name[4];
-			u_int8_t          data[1];
+			uint32_t         ssrc;           
+			uint8_t          name[4];
+			uint8_t          data[1];
 		} app;
 	} r;
 } rtcp_t;
@@ -122,7 +122,7 @@ typedef struct {
 typedef struct _rtcp_rr_wrapper {
 	struct _rtcp_rr_wrapper	*next;
 	struct _rtcp_rr_wrapper	*prev;
-        u_int32_t                  reporter_ssrc;
+        uint32_t                  reporter_ssrc;
 	rtcp_rr			*rr;
 	struct timeval		*ts;	/* Arrival time of this RR */
 } rtcp_rr_wrapper;
@@ -135,7 +135,7 @@ typedef struct _rtcp_rr_wrapper {
 typedef struct _source {
 	struct _source	*next;
 	struct _source	*prev;
-	u_int32_t		 ssrc;
+	uint32_t		 ssrc;
 	char		*cname;
 	char		*name;
 	char		*email;
@@ -148,16 +148,16 @@ typedef struct _source {
 	struct timeval	 last_active;
 	int		 sender;
 	int		 got_bye;	/* TRUE if we've received an RTCP bye from this source */
-	u_int32_t		 base_seq;
-	u_int16_t		 max_seq;
-	u_int32_t		 bad_seq;
-	u_int32_t		 cycles;
+	uint32_t		 base_seq;
+	uint16_t		 max_seq;
+	uint32_t		 bad_seq;
+	uint32_t		 cycles;
 	int		 received;
 	int		 received_prior;
 	int		 expected_prior;
 	int		 probation;
-	u_int32_t		 jitter;
-	u_int32_t		 transit;
+	uint32_t		 jitter;
+	uint32_t		 transit;
 } source;
 
 /* The size of the hash table used to hold the source database. */
@@ -188,10 +188,10 @@ struct rtp {
 	socket_udp	*rtp_socket;
 	socket_udp	*rtcp_socket;
 	char		*addr;
-	u_int16_t		 rx_port;
-	u_int16_t		 tx_port;
+	uint16_t		 rx_port;
+	uint16_t		 tx_port;
 	int		 ttl;
-	u_int32_t		 my_ssrc;
+	uint32_t		 my_ssrc;
 	source		*db[RTP_DB_SIZE];
         rtcp_rr_wrapper  rr[RTP_DB_SIZE][RTP_DB_SIZE]; 	/* Indexed by [hash(reporter)][hash(reportee)] */
 	options		*opt;
@@ -212,9 +212,9 @@ struct rtp {
 	int		 sdes_count_pri;
 	int		 sdes_count_sec;
 	int		 sdes_count_ter;
-	u_int16_t		 rtp_seq;
-	u_int32_t		 rtp_pcount;
-	u_int32_t		 rtp_bcount;
+	uint16_t		 rtp_seq;
+	uint32_t		 rtp_pcount;
+	uint32_t		 rtp_bcount;
         char            *encryption_key;
 	void (*callback)(struct rtp *session, rtp_event *event);
 };
@@ -256,7 +256,7 @@ static int tv_gt(struct timeval a, struct timeval b)
 	return a.tv_usec > b.tv_usec;
 }
 
-static int ssrc_hash(u_int32_t ssrc)
+static int ssrc_hash(uint32_t ssrc)
 {
 	/* Hash from an ssrc to a position in the source database.   */
 	/* Assumes that ssrc values are uniformly distributed, which */
@@ -271,7 +271,7 @@ static int ssrc_hash(u_int32_t ssrc)
 	return ssrc % RTP_DB_SIZE;
 }
 
-static void insert_rr(struct rtp *session, u_int32_t reporter_ssrc, rtcp_rr *rr, struct timeval *ts)
+static void insert_rr(struct rtp *session, uint32_t reporter_ssrc, rtcp_rr *rr, struct timeval *ts)
 {
         /* Insert the reception report into the receiver report      */
         /* database. This database is a two dimensional table of     */
@@ -314,7 +314,7 @@ static void insert_rr(struct rtp *session, u_int32_t reporter_ssrc, rtcp_rr *rr,
         return;
 }
 
-static void remove_rr(struct rtp *session, u_int32_t ssrc)
+static void remove_rr(struct rtp *session, uint32_t ssrc)
 {
 	/* Remove any RRs from "s" which refer to "ssrc" as either   */
         /* reporter or reportee.                                     */
@@ -393,7 +393,7 @@ static void timeout_rr(struct rtp *session, struct timeval *curr_ts)
 	}
 }
 
-static const rtcp_rr* get_rr(struct rtp *session, u_int32_t reporter_ssrc, u_int32_t reportee_ssrc)
+static const rtcp_rr* get_rr(struct rtp *session, uint32_t reporter_ssrc, uint32_t reportee_ssrc)
 {
         rtcp_rr_wrapper *cur, *start;
 
@@ -461,7 +461,7 @@ static void check_database(struct rtp *session)
 #endif
 }
 
-static source *get_source(struct rtp *session, u_int32_t ssrc)
+static source *get_source(struct rtp *session, uint32_t ssrc)
 {
 	source *s;
 
@@ -474,7 +474,7 @@ static source *get_source(struct rtp *session, u_int32_t ssrc)
 	return NULL;
 }
 
-static source *create_source(struct rtp *session, u_int32_t ssrc)
+static source *create_source(struct rtp *session, uint32_t ssrc)
 {
 	/* Create a new source entry, and add it to the database.    */
 	/* The database is a hash table, using the separate chaining */
@@ -541,7 +541,7 @@ static source *create_source(struct rtp *session, u_int32_t ssrc)
 	return s;
 }
 
-static void delete_source(struct rtp *session, u_int32_t ssrc)
+static void delete_source(struct rtp *session, uint32_t ssrc)
 {
 	/* Remove a source from the RTP database... */
 	source		*s = get_source(session, ssrc);
@@ -611,7 +611,7 @@ static void delete_source(struct rtp *session, u_int32_t ssrc)
 	check_database(session);
 }
 
-static void init_seq(source *s, u_int16_t seq)
+static void init_seq(source *s, uint16_t seq)
 {
 	/* Taken from draft-ietf-avt-rtp-new-01.txt */
 	s->base_seq = seq;
@@ -623,10 +623,10 @@ static void init_seq(source *s, u_int16_t seq)
 	s->expected_prior = 0;
 }
 
-static int update_seq(source *s, u_int16_t seq)
+static int update_seq(source *s, uint16_t seq)
 {
 	/* Taken from draft-ietf-avt-rtp-new-01.txt */
-	u_int16_t udelta = seq - s->max_seq;
+	uint16_t udelta = seq - s->max_seq;
 
 	/*
 	 * Source is not valid until MIN_SEQUENTIAL packets with
@@ -783,7 +783,7 @@ static void init_opt(struct rtp *session)
 }
 
 
-struct rtp *rtp_init(char *addr, u_int16_t rx_port, u_int16_t tx_port, int ttl, double rtcp_bw, 
+struct rtp *rtp_init(char *addr, uint16_t rx_port, uint16_t tx_port, int ttl, double rtcp_bw, 
                      void (*callback)(struct rtp *session, rtp_event *e),
                      void *userdata)
 {
@@ -805,7 +805,7 @@ struct rtp *rtp_init(char *addr, u_int16_t rx_port, u_int16_t tx_port, int ttl, 
 	session->tx_port	= tx_port;
 	session->ttl		= ttl;
 	session->rtp_socket	= udp_init(addr, rx_port, tx_port, ttl);
-	session->rtcp_socket	= udp_init(addr, (u_int16_t) (rx_port+1), (u_int16_t) (tx_port+1), ttl);
+	session->rtcp_socket	= udp_init(addr, (uint16_t) (rx_port+1), (uint16_t) (tx_port+1), ttl);
 
 	init_opt(session);
 
@@ -814,7 +814,7 @@ struct rtp *rtp_init(char *addr, u_int16_t rx_port, u_int16_t tx_port, int ttl, 
 		return NULL;
 	}
 
-	session->my_ssrc            = (u_int32_t) lrand48();
+	session->my_ssrc            = (uint32_t) lrand48();
 	session->callback           = callback;
 	session->invalid_rtp_count  = 0;
 	session->invalid_rtcp_count = 0;
@@ -828,7 +828,7 @@ struct rtp *rtp_init(char *addr, u_int16_t rx_port, u_int16_t tx_port, int ttl, 
 	session->sdes_count_pri     = 0;
 	session->sdes_count_sec     = 0;
 	session->sdes_count_ter     = 0;
-	session->rtp_seq            = (u_int16_t) lrand48();
+	session->rtp_seq            = (uint16_t) lrand48();
 	session->rtp_pcount         = 0;
 	session->rtp_bcount         = 0;
 	gettimeofday(&(session->last_update), NULL);
@@ -861,10 +861,10 @@ struct rtp *rtp_init(char *addr, u_int16_t rx_port, u_int16_t tx_port, int ttl, 
 	return session;
 }
 
-int rtp_set_my_ssrc(struct rtp *session, u_int32_t ssrc)
+int rtp_set_my_ssrc(struct rtp *session, uint32_t ssrc)
 {
         source *s;
-        u_int32_t h;
+        uint32_t h;
         /* Sets my_ssrc when called immediately after rtp_init. */
         /* Returns TRUE on success, FALSE otherwise.  Needed to */
         /* co-ordinate SSRC's between LAYERED SESSIONS, SHOULD  */
@@ -925,7 +925,7 @@ void *rtp_get_userdata(struct rtp *session)
 	return session->userdata;
 }
 
-u_int32_t rtp_my_ssrc(struct rtp *session)
+uint32_t rtp_my_ssrc(struct rtp *session)
 {
 	assert(session != NULL);
 	return session->my_ssrc;
@@ -980,7 +980,7 @@ static int validate_rtp(rtp_packet *packet, int len)
 	return TRUE;
 }
 
-static void process_rtp(struct rtp *session, u_int32_t curr_time, rtp_packet *packet, source *s)
+static void process_rtp(struct rtp *session, uint32_t curr_time, rtp_packet *packet, source *s)
 {
 	int		 i, d, transit;
 	rtp_event	 event;
@@ -1013,11 +1013,11 @@ static void process_rtp(struct rtp *session, u_int32_t curr_time, rtp_packet *pa
 	session->callback(session, &event);
 }
 
-static void rtp_recv_data(struct rtp *session, u_int32_t curr_time)
+static void rtp_recv_data(struct rtp *session, uint32_t curr_time)
 {
 	/* This routine preprocesses an incoming RTP packet, deciding whether to process it. */
 	rtp_packet	*packet = (rtp_packet *) xmalloc(RTP_MAX_PACKET_LEN);
-	u_int8_t		*buffer = ((u_int8_t *) packet) + RTP_PACKET_HEADER_SIZE;
+	uint8_t		*buffer = ((uint8_t *) packet) + RTP_PACKET_HEADER_SIZE;
 	int		 buflen;
 	source		*s;
 
@@ -1029,7 +1029,7 @@ static void rtp_recv_data(struct rtp *session, u_int32_t curr_time)
 		packet->ssrc     = ntohl(packet->ssrc);
 		/* Setup internal pointers, etc... */
 		if (packet->cc) {
-			packet->csrc = (u_int32_t *)(buffer + 12);
+			packet->csrc = (uint32_t *)(buffer + 12);
 		} else {
 			packet->csrc = NULL;
 		}
@@ -1082,7 +1082,7 @@ static void rtp_recv_data(struct rtp *session, u_int32_t curr_time)
 	xfree(packet);
 }
 
-static int validate_rtcp(u_int8_t *packet, int len)
+static int validate_rtcp(uint8_t *packet, int len)
 {
 	/* Validity check for a compound RTCP packet. This function returns */
 	/* TRUE if the packet is okay, FALSE if the validity check fails.   */
@@ -1138,7 +1138,7 @@ static int validate_rtcp(u_int8_t *packet, int len)
 		}
 		if (r->common.p == 1) last = 1;
 		l += (ntohs(r->common.length) + 1) * 4;
-		r  = (rtcp_t *) (((u_int32_t *) r) + ntohs(r->common.length) + 1);
+		r  = (rtcp_t *) (((uint32_t *) r) + ntohs(r->common.length) + 1);
 	} while (r < end);
 
 	/* Check that the length of the packets matches the length of the UDP */
@@ -1151,7 +1151,7 @@ static int validate_rtcp(u_int8_t *packet, int len)
 	return TRUE;
 }
 
-static void process_report_blocks(struct rtp *session, rtcp_t *packet, u_int32_t ssrc, rtcp_rr *rrp, struct timeval *event_ts)
+static void process_report_blocks(struct rtp *session, rtcp_t *packet, uint32_t ssrc, rtcp_rr *rrp, struct timeval *event_ts)
 {
 	int i;
 	rtp_event	 event;
@@ -1193,7 +1193,7 @@ static void process_report_blocks(struct rtp *session, rtcp_t *packet, u_int32_t
 
 static void process_rtcp_sr(struct rtp *session, rtcp_t *packet, struct timeval *event_ts)
 {
-	u_int32_t		 ssrc;
+	uint32_t		 ssrc;
 	rtp_event	 event;
 	rtcp_sr		*sr;
 	source		*s;
@@ -1237,7 +1237,7 @@ static void process_rtcp_sr(struct rtp *session, rtcp_t *packet, struct timeval 
 
 static void process_rtcp_rr(struct rtp *session, rtcp_t *packet, struct timeval *event_ts)
 {
-	u_int32_t		 ssrc;
+	uint32_t		 ssrc;
 	source		*s;
 
 	ssrc = ntohl(packet->r.rr.ssrc);
@@ -1260,7 +1260,7 @@ static void process_rtcp_sdes(struct rtp *session, rtcp_t *packet, struct timeva
 	struct rtcp_sdes_t 	*sd   = &packet->r.sdes;
 	rtcp_sdes_item 		*rsp; 
 	rtcp_sdes_item		*rspn;
-	rtcp_sdes_item 		*end  = (rtcp_sdes_item *) ((u_int32_t *)packet + packet->common.length + 1);
+	rtcp_sdes_item 		*end  = (rtcp_sdes_item *) ((uint32_t *)packet + packet->common.length + 1);
 	source 			*s;
 	rtp_event		 event;
 
@@ -1291,7 +1291,7 @@ static void process_rtcp_sdes(struct rtp *session, rtcp_t *packet, struct timeva
 				}
 			}
 		}
-		sd = (struct rtcp_sdes_t *) ((u_int32_t *)sd + (((char *)rsp - (char *)sd) >> 2)+1);
+		sd = (struct rtcp_sdes_t *) ((uint32_t *)sd + (((char *)rsp - (char *)sd) >> 2)+1);
 	}
 	if (count >= 0) {
 		debug_msg("Invalid RTCP SDES packet, some items ignored.\n");
@@ -1301,7 +1301,7 @@ static void process_rtcp_sdes(struct rtp *session, rtcp_t *packet, struct timeva
 static void process_rtcp_bye(struct rtp *session, rtcp_t *packet, struct timeval *event_ts)
 {
 	int		 i;
-	u_int32_t		 ssrc;
+	uint32_t		 ssrc;
 	rtp_event	 event;
 	source		*s;
 
@@ -1326,7 +1326,7 @@ static void process_rtcp_bye(struct rtp *session, rtcp_t *packet, struct timeval
 
 static void process_rtcp_app(struct rtp *session, rtcp_t *packet, struct timeval *event_ts)
 {
-	u_int32_t          ssrc;
+	uint32_t          ssrc;
 	rtp_event        event;
 	rtcp_app        *app;
 	source          *s;
@@ -1365,7 +1365,7 @@ static void process_rtcp_app(struct rtp *session, rtcp_t *packet, struct timeval
 	session->callback(session, &event);
 }
 
-static void rtp_process_ctrl(struct rtp *session, u_int8_t *buffer, int buflen)
+static void rtp_process_ctrl(struct rtp *session, uint8_t *buffer, int buflen)
 {
 	/* This routine processes incoming RTCP packets */
 	rtp_event	 event;
@@ -1421,7 +1421,7 @@ static void rtp_process_ctrl(struct rtp *session, u_int8_t *buffer, int buflen)
 	}
 }
 
-int rtp_recv(struct rtp *session, struct timeval *timeout, u_int32_t curr_time)
+int rtp_recv(struct rtp *session, struct timeval *timeout, uint32_t curr_time)
 {
 	udp_fd_zero();
 	udp_fd_set(session->rtp_socket);
@@ -1431,7 +1431,7 @@ int rtp_recv(struct rtp *session, struct timeval *timeout, u_int32_t curr_time)
 			rtp_recv_data(session, curr_time);
 		}
 		if (udp_fd_isset(session->rtcp_socket)) {
-                        u_int8_t		 buffer[RTP_MAX_PACKET_LEN];
+                        uint8_t		 buffer[RTP_MAX_PACKET_LEN];
                         int		 buflen;
                         buflen = udp_recv(session->rtcp_socket, buffer, RTP_MAX_PACKET_LEN);
 			rtp_process_ctrl(session, buffer, buflen);
@@ -1441,14 +1441,14 @@ int rtp_recv(struct rtp *session, struct timeval *timeout, u_int32_t curr_time)
         return FALSE;
 }
 
-int rtp_add_csrc(struct rtp *session, u_int32_t csrc)
+int rtp_add_csrc(struct rtp *session, uint32_t csrc)
 {
 	UNUSED(session);
 	UNUSED(csrc);
 	return FALSE;
 }
 
-int rtp_set_sdes(struct rtp *session, u_int32_t ssrc, u_int8_t type, char *value, int length)
+int rtp_set_sdes(struct rtp *session, uint32_t ssrc, uint8_t type, char *value, int length)
 {
 	source	*s = get_source(session, ssrc);
 	char	*v;
@@ -1499,7 +1499,7 @@ int rtp_set_sdes(struct rtp *session, u_int32_t ssrc, u_int8_t type, char *value
 	return TRUE;
 }
 
-const char *rtp_get_sdes(struct rtp *session, u_int32_t ssrc, u_int8_t type)
+const char *rtp_get_sdes(struct rtp *session, uint32_t ssrc, uint8_t type)
 {
 	source	*s = get_source(session, ssrc);
 
@@ -1528,7 +1528,7 @@ const char *rtp_get_sdes(struct rtp *session, u_int32_t ssrc, u_int8_t type)
 	return NULL;
 }
 
-const rtcp_sr *rtp_get_sr(struct rtp *session, u_int32_t ssrc)
+const rtcp_sr *rtp_get_sr(struct rtp *session, uint32_t ssrc)
 {
 	/* Return the last SR received from this ssrc. The */
 	/* caller MUST NOT free the memory returned to it. */
@@ -1540,18 +1540,18 @@ const rtcp_sr *rtp_get_sr(struct rtp *session, u_int32_t ssrc)
 	return s->sr;
 }
 
-const rtcp_rr *rtp_get_rr(struct rtp *session, u_int32_t reporter, u_int32_t reportee)
+const rtcp_rr *rtp_get_rr(struct rtp *session, uint32_t reporter, uint32_t reportee)
 {
         return get_rr(session, reporter, reportee);
 }
 
-int rtp_send_data(struct rtp *session, u_int32_t ts, char pt, int m, int cc, u_int32_t csrc[], 
+int rtp_send_data(struct rtp *session, uint32_t ts, char pt, int m, int cc, uint32_t csrc[], 
                   char *data, int data_len, char *extn, int extn_len)
 {
 	int		 buffer_len, i, rc, pad, pad_len;
-	u_int8_t	*buffer;
+	uint8_t	*buffer;
 	rtp_packet	*packet;
-	u_int8_t 	 initVec[8] = {0,0,0,0,0,0,0,0};
+	uint8_t 	 initVec[8] = {0,0,0,0,0,0,0,0};
 
 	buffer_len = data_len + extn_len + 12 + (4 * cc);
 
@@ -1570,13 +1570,13 @@ int rtp_send_data(struct rtp *session, u_int32_t ts, char pt, int m, int cc, u_i
 
 	/* Allocate memory for the packet... */
 	buffer_len = buffer_len + pad_len;
-	buffer     = (u_int8_t *) xmalloc(buffer_len + RTP_PACKET_HEADER_SIZE);
+	buffer     = (uint8_t *) xmalloc(buffer_len + RTP_PACKET_HEADER_SIZE);
 	packet     = (rtp_packet *) buffer;
 
 	/* These are internal pointers into the buffer... */
-	packet->csrc = (u_int32_t *) (buffer + RTP_PACKET_HEADER_SIZE + 12);
-	packet->extn = (u_int8_t  *) (buffer + RTP_PACKET_HEADER_SIZE + 12 + (4 * cc));
-	packet->data = (u_int8_t  *) (buffer + RTP_PACKET_HEADER_SIZE + 12 + (4 * cc) + extn_len);
+	packet->csrc = (uint32_t *) (buffer + RTP_PACKET_HEADER_SIZE + 12);
+	packet->extn = (uint8_t  *) (buffer + RTP_PACKET_HEADER_SIZE + 12 + (4 * cc));
+	packet->data = (uint8_t  *) (buffer + RTP_PACKET_HEADER_SIZE + 12 + (4 * cc) + extn_len);
 	/* ...and the actual packet header... */
 	packet->v    = 2;
 	packet->p    = pad;
@@ -1642,8 +1642,8 @@ static int format_report_blocks(rtcp_rr *rrp, int remaining_length, struct rtp *
        				int	received_interval = s->received - s->received_prior;
        				int 	lost_interval     = expected_interval - received_interval;
 				int	fraction;
-				u_int32_t	lsr;
-				u_int32_t dlsr;
+				uint32_t	lsr;
+				uint32_t dlsr;
 
        				s->expected_prior = expected;
        				s->received_prior = s->received;
@@ -1681,14 +1681,14 @@ static int format_report_blocks(rtcp_rr *rrp, int remaining_length, struct rtp *
 	return nblocks;
 }
 
-static u_int8_t *format_rtcp_sr(u_int8_t *buffer, int buflen, struct rtp *session, u_int32_t ts)
+static uint8_t *format_rtcp_sr(uint8_t *buffer, int buflen, struct rtp *session, uint32_t ts)
 {
 	/* Write an RTCP SR into buffer, returning a pointer to */
 	/* the next byte after the header we have just written. */
 	rtcp_t		*packet = (rtcp_t *) buffer;
 	int		 remaining_length;
 	struct timeval	 curr_time;
-	u_int32_t		 ntp_sec, ntp_frac;
+	uint32_t		 ntp_sec, ntp_frac;
 
 	assert(buflen >= 28);	/* ...else there isn't space for the header and sender report */
 
@@ -1713,11 +1713,11 @@ static u_int8_t *format_rtcp_sr(u_int8_t *buffer, int buflen, struct rtp *sessio
 	/* to report upon or we run out of space in the buffer.  */
 	remaining_length = buflen - 28;
 	packet->common.count = format_report_blocks(packet->r.sr.rr, remaining_length, session);
-	packet->common.length = htons((u_int16_t) (6 + (packet->common.count * 6)));
+	packet->common.length = htons((uint16_t) (6 + (packet->common.count * 6)));
 	return buffer + 28 + (24 * packet->common.count);
 }
 
-static u_int8_t *format_rtcp_rr(u_int8_t *buffer, int buflen, struct rtp *session)
+static uint8_t *format_rtcp_rr(uint8_t *buffer, int buflen, struct rtp *session)
 {
 	/* Write an RTCP RR into buffer, returning a pointer to */
 	/* the next byte after the header we have just written. */
@@ -1737,11 +1737,11 @@ static u_int8_t *format_rtcp_rr(u_int8_t *buffer, int buflen, struct rtp *sessio
 	/* to report upon or we run out of space in the buffer.  */
 	remaining_length = buflen - 8;
 	packet->common.count = format_report_blocks(packet->r.rr.rr, remaining_length, session);
-	packet->common.length = htons((u_int16_t) (1 + (packet->common.count * 6)));
+	packet->common.length = htons((uint16_t) (1 + (packet->common.count * 6)));
 	return buffer + 8 + (24 * packet->common.count);
 }
 
-static int add_sdes_item(u_int8_t *buf, int type, const char *val)
+static int add_sdes_item(uint8_t *buf, int type, const char *val)
 {
 	/* Fill out an SDES item. It is assumed that the item is a NULL    */
 	/* terminated string.                                              */
@@ -1759,7 +1759,7 @@ static int add_sdes_item(u_int8_t *buf, int type, const char *val)
         return namelen + 2;
 }
 
-static u_int8_t *format_rtcp_sdes(u_int8_t *buffer, int buflen, u_int32_t ssrc, struct rtp *session)
+static uint8_t *format_rtcp_sdes(uint8_t *buffer, int buflen, uint32_t ssrc, struct rtp *session)
 {
         /* From draft-ietf-avt-profile-new-00:                             */
         /* "Applications may use any of the SDES items described in the    */
@@ -1771,7 +1771,7 @@ static u_int8_t *format_rtcp_sdes(u_int8_t *buffer, int buflen, u_int32_t ssrc, 
         /* specification. In other words, NAME is sent in RTCP packets 1,  */
         /* 4, 7, 10, 13, 16, 19, while, say, EMAIL is used in RTCP packet  */
         /* 22".                                                            */
-	u_int8_t		*packet = buffer;
+	uint8_t		*packet = buffer;
 	rtcp_common	*common = (rtcp_common *) buffer;
 	const char	*item;
 	size_t		 remaining_len;
@@ -1786,7 +1786,7 @@ static u_int8_t *format_rtcp_sdes(u_int8_t *buffer, int buflen, u_int32_t ssrc, 
 	common->length  = 0;
 	packet += sizeof(common);
 
-	*((u_int32_t *) packet) = htonl(ssrc);
+	*((uint32_t *) packet) = htonl(ssrc);
 	packet += 4;
 
 	remaining_len = buflen - (packet - buffer);
@@ -1846,12 +1846,12 @@ static u_int8_t *format_rtcp_sdes(u_int8_t *buffer, int buflen, u_int32_t ssrc, 
                *packet++ = RTCP_SDES_END;
         }
 
-	common->length = htons((u_int16_t) (((int) (packet - buffer) / 4) - 1));
+	common->length = htons((uint16_t) (((int) (packet - buffer) / 4) - 1));
 
 	return packet;
 }
 
-static u_int8_t *format_rtcp_app(u_int8_t *buffer, int buflen, u_int32_t ssrc, rtcp_app *app)
+static uint8_t *format_rtcp_app(uint8_t *buffer, int buflen, uint32_t ssrc, rtcp_app *app)
 {
 	/* Write an RTCP APP into the outgoing packet buffer. */
 	rtcp_app    *packet       = (rtcp_app *) buffer;
@@ -1875,22 +1875,22 @@ static u_int8_t *format_rtcp_app(u_int8_t *buffer, int buflen, u_int32_t ssrc, r
 	return buffer + pkt_octets;
 }
 
-static void send_rtcp(struct rtp *session, u_int32_t ts,
-		     rtcp_app *(*appcallback)(struct rtp *session, u_int32_t ts, int max_size))
+static void send_rtcp(struct rtp *session, uint32_t ts,
+		     rtcp_app *(*appcallback)(struct rtp *session, uint32_t ts, int max_size))
 {
 	/* Construct and send an RTCP packet. The order in which packets are packed into a */
 	/* compound packet is defined by section 6.1 of draft-ietf-avt-rtp-new-03.txt and  */
 	/* we follow the recommended order.                                                */
-	u_int8_t	   buffer[RTP_MAX_PACKET_LEN];
-	u_int8_t	  *ptr = buffer;
-	u_int8_t    *old_ptr;
-	u_int8_t    *lpt;		/* the last packet in the compound */
+	uint8_t	   buffer[RTP_MAX_PACKET_LEN];
+	uint8_t	  *ptr = buffer;
+	uint8_t    *old_ptr;
+	uint8_t    *lpt;		/* the last packet in the compound */
 	rtcp_app  *app;
-	u_int8_t 	   initVec[8] = {0,0,0,0,0,0,0,0};
+	uint8_t 	   initVec[8] = {0,0,0,0,0,0,0,0};
 
 	/* If encryption is enabled, add a 32 bit random prefix to the packet */
 	if (session->encryption_key != NULL) {
-		*((u_int32_t *) ptr) = lbl_random();
+		*((uint32_t *) ptr) = lbl_random();
 		ptr += 4;
 	}
 
@@ -1946,8 +1946,8 @@ static void send_rtcp(struct rtp *session, u_int32_t ts,
         rtp_process_ctrl(session, buffer, ptr - buffer);
 }
 
-void rtp_send_ctrl(struct rtp *session, u_int32_t ts,
-                   rtcp_app *(*appcallback)(struct rtp *session, u_int32_t ts, int max_size))
+void rtp_send_ctrl(struct rtp *session, uint32_t ts,
+                   rtcp_app *(*appcallback)(struct rtp *session, uint32_t ts, int max_size))
 {
 	/* Send an RTCP packet, if one is due... */
 	struct timeval	 curr_time;
@@ -2038,8 +2038,8 @@ void rtp_send_bye(struct rtp *session)
 	/* at present it either: a) sends a BYE packet immediately (if there are less than */
 	/* 50 members in the group), or b) returns without sending a BYE (if there are 50  */
 	/* or more members). See draft-ietf-avt-rtp-new-01.txt (section 6.3.7).            */
-	u_int8_t	 buffer[RTP_MAX_PACKET_LEN];
-	u_int8_t	*ptr = buffer;
+	uint8_t	 buffer[RTP_MAX_PACKET_LEN];
+	uint8_t	*ptr = buffer;
 	rtcp_common	*common;
 
 	if (session->encryption_key != NULL) {
@@ -2056,7 +2056,7 @@ void rtp_send_bye(struct rtp *session)
 		common->length  = ntohs(1);
 		ptr += sizeof(common);
 		
-		*((u_int32_t *) ptr) = htonl(session->my_ssrc);  
+		*((uint32_t *) ptr) = htonl(session->my_ssrc);  
 		ptr += sizeof(session->my_ssrc); 
 		
 		udp_send(session->rtcp_socket, buffer, ptr - buffer);
@@ -2163,12 +2163,12 @@ char *rtp_get_addr(struct rtp *session)
 	return session->addr;
 }
 
-u_int16_t rtp_get_rx_port(struct rtp *session)
+uint16_t rtp_get_rx_port(struct rtp *session)
 {
 	return session->rx_port;
 }
 
-u_int16_t rtp_get_tx_port(struct rtp *session)
+uint16_t rtp_get_tx_port(struct rtp *session)
 {
 	return session->tx_port;
 }

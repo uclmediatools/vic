@@ -37,13 +37,13 @@
  * If you don't have these types in <inttypes.h>, #define these to be
  * the types you do have.
  */
+#undef int8_t
 #undef int16_t
 #undef int32_t
 #undef int64_t
-#undef int8_t
-#undef u_int16_t
-#undef u_int32_t
-#undef u_int8_t
+#undef uint8_t
+#undef uint16_t
+#undef uint32_t
 
 /*
  * Debugging:

@@ -40,7 +40,7 @@
 #define __RTP_H__
 
 #define RTP_VERSION 2
-#define RTP_PACKET_HEADER_SIZE	((sizeof(char *) * 2) + sizeof(u_int32_t *) + (2 * sizeof(int)))
+#define RTP_PACKET_HEADER_SIZE	((sizeof(char *) * 2) + sizeof(uint32_t *) + (2 * sizeof(int)))
 #define RTP_MAX_PACKET_LEN 1500
 
 #if !defined(WORDS_BIGENDIAN) && !defined(WORDS_SMALLENDIAN)
@@ -56,7 +56,7 @@ typedef struct {
 	/* having to free the csrc, data and extn blocks separately.  */
 	/* WARNING: Don't change the size of the first portion of the */
 	/* struct without changing RTP_PACKET_HEADER_SIZE to match.   */
-	u_int32_t		*csrc;
+	uint32_t		*csrc;
 	char		*data;
 	int		 data_len;
 	char		*extn;
@@ -77,40 +77,40 @@ typedef struct {
 	unsigned short   pt:7;		/* payload type               */
 	unsigned short   m:1;		/* marker bit                 */
 #endif
-	u_int16_t          seq;		/* sequence number            */
-	u_int32_t          ts;		/* timestamp                  */
-	u_int32_t          ssrc;		/* synchronization source     */
+	uint16_t          seq;		/* sequence number            */
+	uint32_t          ts;		/* timestamp                  */
+	uint32_t          ssrc;		/* synchronization source     */
 	/* The csrc list, header extension and data follow, but can't */
 	/* be represented in the struct.                              */
 } rtp_packet;
 
 typedef struct {
-	u_int32_t         ssrc;
-	u_int32_t         ntp_sec;
-	u_int32_t         ntp_frac;
-	u_int32_t         rtp_ts;
-	u_int32_t         sender_pcount;
-	u_int32_t         sender_bcount;
+	uint32_t         ssrc;
+	uint32_t         ntp_sec;
+	uint32_t         ntp_frac;
+	uint32_t         rtp_ts;
+	uint32_t         sender_pcount;
+	uint32_t         sender_bcount;
 } rtcp_sr;
 
 typedef struct {
-	u_int32_t		ssrc;		/* The ssrc to which this RR pertains */
+	uint32_t		ssrc;		/* The ssrc to which this RR pertains */
 #ifdef WORDS_BIGENDIAN
-	u_int32_t		fract_lost:8;
-	u_int32_t		total_lost:24;
+	uint32_t		fract_lost:8;
+	uint32_t		total_lost:24;
 #else
-	u_int32_t		total_lost:24;
-	u_int32_t		fract_lost:8;
+	uint32_t		total_lost:24;
+	uint32_t		fract_lost:8;
 #endif	
-	u_int32_t		last_seq;
-	u_int32_t		jitter;
-	u_int32_t		lsr;
-	u_int32_t		dlsr;
+	uint32_t		last_seq;
+	uint32_t		jitter;
+	uint32_t		lsr;
+	uint32_t		dlsr;
 } rtcp_rr;
 
 typedef struct {
-	u_int8_t          type;		/* type of SDES item              */
-	u_int8_t          length;		/* length of SDES item (in bytes) */
+	uint8_t          type;		/* type of SDES item              */
+	uint8_t          length;		/* length of SDES item (in bytes) */
 	char            data[1];	/* text, not zero-terminated      */
 } rtcp_sdes_item;
 
@@ -125,14 +125,14 @@ typedef struct {
 	unsigned short  version:2;	/* RTP version            */
 #endif
 	unsigned short  pt:8;		/* packet type            */
-	u_int16_t         length;		/* packet length          */
-	u_int32_t         ssrc;
+	uint16_t         length;		/* packet length          */
+	uint32_t         ssrc;
 	char            name[4];        /* four ASCII characters  */
 	char            data[1];        /* variable length field  */
 } rtcp_app;
 
 typedef struct {
-	u_int32_t		 ssrc;
+	uint32_t		 ssrc;
 	int		 type;
 	void		*data;
 	struct timeval	*ts;
@@ -169,35 +169,35 @@ typedef struct {
 
 struct rtp;
 
-struct rtp	*rtp_init(char *addr, u_int16_t rx_port, u_int16_t tx_port, int ttl, double rtcp_bw, 
+struct rtp	*rtp_init(char *addr, uint16_t rx_port, uint16_t tx_port, int ttl, double rtcp_bw, 
 			  void (*callback)(struct rtp *session, rtp_event *e),
 			  void *user_data);
 int 		 rtp_setopt(struct rtp *session, int optname, int optval);
 int 		 rtp_getopt(struct rtp *session, int optname, int *optval);
 void 		*rtp_get_userdata(struct rtp *session);
-int 		 rtp_recv(struct rtp *session, struct timeval *timeout, u_int32_t curr_time);
-int 		 rtp_send_data(struct rtp *session, u_int32_t ts, char pt, int m, int cc, u_int32_t csrc[], 
+int 		 rtp_recv(struct rtp *session, struct timeval *timeout, uint32_t curr_time);
+int 		 rtp_send_data(struct rtp *session, uint32_t ts, char pt, int m, int cc, uint32_t csrc[], 
                                char *data, int data_len, char *extn, int extn_len);
-void 		 rtp_send_ctrl(struct rtp *session, u_int32_t ts, 
-			       rtcp_app *(*appcallback)(struct rtp *session, u_int32_t ts, int max_size));
+void 		 rtp_send_ctrl(struct rtp *session, uint32_t ts, 
+			       rtcp_app *(*appcallback)(struct rtp *session, uint32_t ts, int max_size));
 void 		 rtp_update(struct rtp *session);
 
-u_int32_t	 rtp_my_ssrc(struct rtp *session);
-int		 rtp_add_csrc(struct rtp *session, u_int32_t csrc);
-int		 rtp_valid_ssrc(struct rtp *session, u_int32_t ssrc);
-int		 rtp_set_sdes(struct rtp *session, u_int32_t ssrc, u_int8_t type, char *value, int length);
-const char	*rtp_get_sdes(struct rtp *session, u_int32_t ssrc, u_int8_t type);
-const rtcp_sr	*rtp_get_sr(struct rtp *session, u_int32_t ssrc);
-const rtcp_rr	*rtp_get_rr(struct rtp *session, u_int32_t reporter, u_int32_t reportee);
+uint32_t	 rtp_my_ssrc(struct rtp *session);
+int		 rtp_add_csrc(struct rtp *session, uint32_t csrc);
+int		 rtp_valid_ssrc(struct rtp *session, uint32_t ssrc);
+int		 rtp_set_sdes(struct rtp *session, uint32_t ssrc, uint8_t type, char *value, int length);
+const char	*rtp_get_sdes(struct rtp *session, uint32_t ssrc, uint8_t type);
+const rtcp_sr	*rtp_get_sr(struct rtp *session, uint32_t ssrc);
+const rtcp_rr	*rtp_get_rr(struct rtp *session, uint32_t reporter, uint32_t reportee);
 void		 rtp_send_bye(struct rtp *session);
 void		 rtp_done(struct rtp *session);
 int              rtp_set_encryption_key(struct rtp *session, const char *passphrase);
 
 char 		*rtp_get_addr(struct rtp *session);
-u_int16_t	 rtp_get_rx_port(struct rtp *session);
-u_int16_t	 rtp_get_tx_port(struct rtp *session);
+uint16_t	 rtp_get_rx_port(struct rtp *session);
+uint16_t	 rtp_get_tx_port(struct rtp *session);
 int		 rtp_get_ttl(struct rtp *session);
 
-int              rtp_set_my_ssrc(struct rtp *session, u_int32_t ssrc);
+int              rtp_set_my_ssrc(struct rtp *session, uint32_t ssrc);
 
 #endif /* __RTP_H__ */

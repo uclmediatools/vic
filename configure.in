@@ -41,9 +41,12 @@ AC_TYPE_SIZE_T
 
 # Check for standard size types.  The defaults are only valid on some
 # systems so we hope that <inttypes.h> exists when they're wrong.
-AC_CHECK_TYPE(u_int8_t,  uint8_t)
-AC_CHECK_TYPE(u_int16_t, uint16_t)
-AC_CHECK_TYPE(u_int32_t, uint32_t)
+AC_CHECK_TYPE(uint8_t,  unsigned char)
+if test $ac_cv_type_uint8_t = no; then
+	echo no
+fi
+AC_CHECK_TYPE(uint16_t, unsigned short)
+AC_CHECK_TYPE(uint32_t, unsigned int)
 AC_CHECK_TYPE(int8_t, signed char)
 AC_CHECK_TYPE(int16_t, short)
 AC_CHECK_TYPE(int32_t, long)

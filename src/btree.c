@@ -18,7 +18,7 @@
 #include "btree.h"
 
 typedef struct s_btree_node {
-        u_int32_t       key;
+        uint32_t       key;
         void         *data;
         struct s_btree_node *parent;
         struct s_btree_node *left;
@@ -76,7 +76,7 @@ btree_successor(btree_node_t *x)
 }
 
 static btree_node_t*
-btree_search(btree_node_t *x, u_int32_t key)
+btree_search(btree_node_t *x, uint32_t key)
 {
         while (x != NULL && key != x->key) {
                 if (key < x->key) {
@@ -181,7 +181,7 @@ btree_destroy(btree_t **tree)
 }
 
 int
-btree_find(btree_t *tree, u_int32_t key, void **d)
+btree_find(btree_t *tree, uint32_t key, void **d)
 {
         btree_node_t *x;
         x = btree_search(tree->root, key);
@@ -193,7 +193,7 @@ btree_find(btree_t *tree, u_int32_t key, void **d)
 }
 
 int 
-btree_add(btree_t *tree, u_int32_t key, void *data)
+btree_add(btree_t *tree, uint32_t key, void *data)
 {
         btree_node_t *x;
 
@@ -213,7 +213,7 @@ btree_add(btree_t *tree, u_int32_t key, void *data)
 }
 
 int
-btree_remove(btree_t *tree, u_int32_t key, void **data)
+btree_remove(btree_t *tree, uint32_t key, void **data)
 {
         btree_node_t *x;
 
@@ -239,7 +239,7 @@ btree_remove(btree_t *tree, u_int32_t key, void **data)
 }
 
 int 
-btree_get_min_key(btree_t *tree, u_int32_t *key)
+btree_get_min_key(btree_t *tree, uint32_t *key)
 {
         btree_node_t *x;
 
@@ -257,7 +257,7 @@ btree_get_min_key(btree_t *tree, u_int32_t *key)
 }
 
 int 
-btree_get_max_key(btree_t *tree, u_int32_t *key)
+btree_get_max_key(btree_t *tree, uint32_t *key)
 {
         btree_node_t *x;
 
@@ -275,7 +275,7 @@ btree_get_max_key(btree_t *tree, u_int32_t *key)
 }
 
 int
-btree_get_next_key(btree_t *tree, u_int32_t cur_key, u_int32_t *next_key)
+btree_get_next_key(btree_t *tree, uint32_t cur_key, uint32_t *next_key)
 {
         btree_node_t *x;
 
@@ -352,15 +352,15 @@ int
 main()
 {
         btree_t *b;
-        u_int32_t i, *x;
-        u_int32_t v[] = {15, 5, 16, 3, 12, 20, 10, 13, 18, 23, 6, 7}; 
-        u_int32_t nv = sizeof(v) / sizeof(v[0]);
+        uint32_t i, *x;
+        uint32_t v[] = {15, 5, 16, 3, 12, 20, 10, 13, 18, 23, 6, 7}; 
+        uint32_t nv = sizeof(v) / sizeof(v[0]);
 
         btree_create(&b);
 
         for(i = 0; i < nv; i++) {
-                x = (u_int32_t*)xmalloc(sizeof(u_int32_t));
-                *x = (u_int32_t)random();
+                x = (uint32_t*)xmalloc(sizeof(uint32_t));
+                *x = (uint32_t)random();
                 if (btree_add(b, v[i], (void*)x) != TRUE) {
                         printf("Fail Add %lu %lu\n", v[i], *x);
                 }
