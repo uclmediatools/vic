@@ -158,6 +158,10 @@ static void rewrite_config(struct mbus_config *m)
 	char	*encrkey = mbus_new_encrkey();
 	char	 buf[1024];
 
+	if (lseek(m->cfgfd, 0, SEEK_SET) == -1) {
+		perror("Can't seek to start of config file");
+		abort();
+	}
 	sprintf(buf, "[MBUS]\nCONFIG_VERSION=%d\nHASHKEY=%s\nENCRYPTIONKEY=%s\nSCOPE=%s\nADDRESS=%s\nPORT=%d\n", 
 		MBUS_CONFIG_VERSION, hashkey, encrkey, MBUS_DEFAULT_SCOPE_NAME, MBUS_DEFAULT_NET_ADDR, MBUS_DEFAULT_NET_PORT);
 	write(m->cfgfd, buf, strlen(buf));
@@ -189,6 +193,14 @@ void mbus_lock_config_file(struct mbus_config *m)
 		debug_msg("Created new registry entry...\n");
 	} else {
 		debug_msg("Opened existing registry entry...\n");
+		if (mbus_get_version(m) < MBUS_CONFIG_VERSION) {
+			rewrite_config(m);
+			debug_msg("Updated Mbus configuration database.\n");
+		}
+		if (mbus_get_version(m) > MBUS_CONFIG_VERSION) {
+			debug_msg("Mbus configuration database has later version number than expected.\n");
+			debug_msg("Continuing, in the hope that the extensions are backwards compatible.\n");
+		}
 	}
 #else
 	/* Obtain a valid lock on the mbus configuration file. This function */
@@ -274,6 +286,14 @@ void mbus_lock_config_file(struct mbus_config *m)
 		if (strncmp(buf, "[MBUS]", 6) != 0) {
 			debug_msg("Mbus config file has incorrect header\n");
 			abort();
+		}
+		if (mbus_get_version(m) < MBUS_CONFIG_VERSION) {
+			rewrite_config(m);
+			printf("Updated Mbus configuration database.\n");
+		}
+		if (mbus_get_version(m) > MBUS_CONFIG_VERSION) {
+			printf("Mbus configuration database has later version number than expected.\n");
+			printf("Continuing, in the hope that the extensions are backwards compatible.\n");
 		}
 		xfree(buf);
 	}
@@ -489,7 +509,7 @@ void mbus_get_net_addr(struct mbus_config *m, char *net_addr, uint16_t *net_port
 #ifdef WIN32
 	/* TODO: get values out of registry */
 	strcpy(net_addr, MBUS_DEFAULT_NET_ADDR);
-	*net_port = MBUS_DEFAULT_NET_PORT;
+	*net_port  = MBUS_DEFAULT_NET_PORT;
 	*net_scope = MBUS_DEFAULT_SCOPE;
 #else
 	struct stat	 s;
@@ -568,21 +588,83 @@ void mbus_get_net_addr(struct mbus_config *m, char *net_addr, uint16_t *net_port
 		    
 	}
 	/* If we did not find all values, fill in the default ones */
-	*net_port = (port>0)?port:MBUS_DEFAULT_NET_PORT;
+	*net_port  = (port>0)?port:MBUS_DEFAULT_NET_PORT;
 	*net_scope = (scope!=-1)?scope:MBUS_DEFAULT_SCOPE;
 	if (strlen(addr)>0) {
-	    strncpy(net_addr, addr, 16);
+		strncpy(net_addr, addr, 16);
 	} else {
-	    strcpy(net_addr, MBUS_DEFAULT_NET_ADDR);
+		strcpy(net_addr, MBUS_DEFAULT_NET_ADDR);
 	}
-        debug_msg("using Addr:%s Port:%d Scope:%s for MBUS\n", 
-		  net_addr, *net_port, 
-		  (*net_scope==0)?SCOPE_HOSTLOCAL_NAME:SCOPE_LINKLOCAL_NAME);
+	debug_msg("using Addr:%s Port:%d Scope:%s for MBUS\n", 
+		  net_addr, *net_port, (*net_scope==0)?SCOPE_HOSTLOCAL_NAME:SCOPE_LINKLOCAL_NAME);
 	xfree(buf);
 	xfree(line);
 	xfree(addr);
 #endif
-   
+}
+
+int mbus_get_version(struct mbus_config *m)
+{
+#ifdef WIN32
+	/* TODO: get values out of registry */
+	strcpy(net_addr, MBUS_DEFAULT_NET_ADDR);
+	*net_port  = MBUS_DEFAULT_NET_PORT;
+	*net_scope = MBUS_DEFAULT_SCOPE;
+#else
+	struct stat	 s;
+	char		*buf;
+	char		*line;
+	int		 pos;
+	int              pos2;
+        int              linepos;
+	int		 version = 0;
+
+	assert(m->cfg_locked);
+
+	if (lseek(m->cfgfd, 0, SEEK_SET) == -1) {
+		perror("Can't seek to start of config file");
+		abort();
+	}
+	if (fstat(m->cfgfd, &s) != 0) {
+		perror("Unable to stat config file\n");
+		abort();
+	}
+	/* Read in the contents of the config file... */
+	buf = (char *) xmalloc(s.st_size+1);
+	memset(buf, '\0', s.st_size+1);
+	if (read(m->cfgfd, buf, s.st_size) != s.st_size) {
+		perror("Unable to read config file\n");
+		abort();
+	}
+	
+	line = (char *) xmalloc(s.st_size+1);
+	sscanf(buf, "%s", line);
+	if (strcmp(line, "[MBUS]") != 0) {
+		debug_msg("Invalid .mbus file\n");
+		abort();
+	}
+	pos = strlen(line) + 1;
+	while (pos < s.st_size) {
+                /* get whole line and filter out spaces */
+                linepos=0;
+                do {
+			while((buf[pos+linepos]==' ')||(buf[pos+linepos]=='\n') ||(buf[pos+linepos]=='\t')) {
+				pos++;
+			}
+			sscanf(buf+pos+linepos, "%s", line+linepos);                
+			linepos = strlen(line);
+                } while((buf[pos+linepos]!='\n') && (s.st_size>(pos+linepos+1)));
+                pos += linepos + 1;     
+		if (strncmp(line, "CONFIG_VERSION", strlen("CONFIG_VERSION")) == 0) {
+		    pos2    = strlen("CONFIG_VERSION") + 1;
+		    version = atoi(line+pos2);
+		}
+		    
+	}
+	xfree(buf);
+	xfree(line);
+	return version;
+#endif
 }
 
 struct mbus_config *mbus_create_config(void)

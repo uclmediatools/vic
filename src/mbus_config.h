@@ -67,6 +67,7 @@ void mbus_unlock_config_file(struct mbus_config *m);
 void mbus_get_encrkey(struct mbus_config *m, struct mbus_key *key);
 void mbus_get_hashkey(struct mbus_config *m, struct mbus_key *key);
 void mbus_get_net_addr(struct mbus_config *m, char *net_addr, uint16_t *net_port, int *net_scope);
+int  mbus_get_version(struct mbus_config *m);
 struct mbus_config *mbus_create_config(void);
 
 #if defined(__cplusplus)
