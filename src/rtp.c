@@ -783,6 +783,9 @@ static char *get_cname(socket_udp *s)
         char                    *cname;
 #ifndef WIN32
         struct passwd           *pwent;
+#else
+        char *name;
+        int   namelen;
 #endif
 
         cname = (char *) xmalloc(MAXCNAMELEN + 1);
@@ -790,16 +793,33 @@ static char *get_cname(socket_udp *s)
 
         /* First, fill in the username... */
 #ifdef WIN32
-        uname = getenv("USER");
+        name = NULL;
+        namelen = 0;
+        GetUserName(NULL, &namelen);
+        if (namelen > 0) {
+                name = (char*)xmalloc(namelen+1);
+                GetUserName(name, &namelen);
+        } else {
+                uname = getenv("USER");
+                if (uname != NULL) {
+                        name = xstrdup(uname);
+                }
+        }
+        if (name != NULL) {
+                strncpy(cname, name, MAXCNAMELEN - 1);
+                strcat(cname, "@");
+                xfree(name);
+        }
 #else
         pwent = getpwuid(getuid());
         uname = pwent->pw_name;
-#endif
         if (uname != NULL) {
                 strncpy(cname, uname, MAXCNAMELEN - 1);
                 strcat(cname, "@");
         }
 
+#endif
+        
         /* Now the hostname. Must be dotted-quad IP address. */
         hname = udp_host_addr(s);
         strncpy(cname + strlen(cname), hname, MAXCNAMELEN - strlen(cname));

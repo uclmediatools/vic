@@ -233,6 +233,7 @@ v1.1.1	- Add extra debugging code
 
 v1.1.2	- Add routines for handling NTP format timestamps, in ntp.[ch]
 	- Add udp_addr_valid.
+        - Fix cname setup for Win32.
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
