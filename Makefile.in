@@ -48,8 +48,7 @@ all:	$(ALL)
 ED_YBITS = 4
 
 CC = @CC@
-#C++ = @CXX@
-C++ = @CC@
+C++ = @CXX@
 CCOPT = @V_CCOPT@
 
 INCLUDE_TK = @V_INCLUDE_TK@
@@ -405,8 +404,9 @@ fulltar: force
 	    "chmod 444 $$name.tar.gz" ; \
 	     chmod 444 $$name.tar.gz
 
-codec/tmndec/libh263.a:
-	(cd codec/tmndec; $(MAKE) -f Makefile.lib)
 
 codec/tmn-x/libh263coder.a:
-	(cd codec/tmn; $(MAKE))
+	(cd codec/tmn-x; $(MAKE) CC=$(CC) CCOPT="$(CCOPT)" )
+
+codec/tmndec/libh263.a:
+	(cd codec/tmndec; $(MAKE) CC=$(CC) CCOPT="$(CCOPT)" -f Makefile.lib)
