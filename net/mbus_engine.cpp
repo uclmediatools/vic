@@ -158,7 +158,7 @@ void MBusEngine::mbus_handler_engine(char *srce, char *cmnd, char *args, void *d
 	for (i=0; mbus_cmnd_to_func_table_[i].mbus_cmnd!=NULL; i++) {
 //		debug_msg(" vic mbus recv'd: %s(from %s)\n",cmnd, srce);
 		if (strcmp(mbus_cmnd_to_func_table_[i].mbus_cmnd, cmnd) == 0) {
-			debug_msg(" vic mbus recon'd: %s\n",mbus_cmnd_to_func_table_[i].mbus_cmnd);
+			//debug_msg(" vic mbus recon'd: %s\n",mbus_cmnd_to_func_table_[i].mbus_cmnd);
 			(this->*(mbus_cmnd_to_func_table_[i].mbus_func))(srce, args, (MBusHandler *) data);
 			return;
 		}
