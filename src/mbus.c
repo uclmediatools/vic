@@ -57,7 +57,8 @@ struct mbus_key{
 
 struct mbus_msg {
 	struct mbus_msg	*next;
-	struct timeval	time;
+	struct timeval	 time;	/* Time the message was sent, to trigger a retransmit */
+	struct timeval	 ts;	/* Time the message was composed, the timestamp in the packet header */
 	char		*dest;
 	int		 reliable;
 	int		 seqnum;
@@ -485,10 +486,11 @@ static void resend(struct mbus *m, struct mbus_msg *curr)
 	/* Don't need to check for buffer overflows: this was done in mbus_send() when */
 	/* this message was first transmitted. If it was okay then, it's okay now.     */
 	memset(buffer, 0, MBUS_BUF_SIZE);
-	sprintf(bufp, "########################\nmbus/1.0 %6d %c (%s) %s ()\n", curr->seqnum, curr->reliable?'R':'U', m->addr[0], curr->dest);
+	sprintf(bufp, "########################\nmbus/1.0 %6d %9d %c (%s) %s ()\n", 
+		curr->seqnum, curr->ts.tv_sec, curr->reliable?'R':'U', m->addr[0], curr->dest);
 	hmac_md5(buffer+25, strlen(buffer)-25, m->hashkey, m->hashkeylen, digest);
 	base64encode(digest, 16, buffer, 24);
-	bufp += strlen(m->addr[0]) + strlen(curr->dest) + 50;
+	bufp += strlen(m->addr[0]) + strlen(curr->dest) + 60;
 	for (i = 0; i < curr->num_cmds; i++) {
 		sprintf(bufp, "%s (%s)\n", curr->cmd_list[i], curr->arg_list[i]);
 		bufp += strlen(curr->cmd_list[i]) + strlen(curr->arg_list[i]) + 4;
@@ -658,8 +660,9 @@ void mbus_send(struct mbus *m)
 		/* Create the message... */
 		bufp = buffer;
 		memset(buffer, 0, MBUS_BUF_SIZE);
-		sprintf(bufp, "########################\nmbus/1.0 %6d %c (%s) %s ()\n", curr->seqnum, curr->reliable?'R':'U', m->addr[0], curr->dest);
-		bufp += strlen(m->addr[0]) + strlen(curr->dest) + 50;
+		sprintf(bufp, "########################\nmbus/1.0 %6d %9d %c (%s) %s ()\n", 
+			curr->seqnum, curr->ts.tv_sec, curr->reliable?'R':'U', m->addr[0], curr->dest);
+		bufp += strlen(m->addr[0]) + strlen(curr->dest) + 60;
 		for (i = 0; i < curr->num_cmds; i++) {
 			int cmdlen = strlen(curr->cmd_list[i]) + strlen(curr->arg_list[i]) + 4;
 			assert((bufp + cmdlen - buffer) < MBUS_BUF_SIZE);
@@ -717,7 +720,7 @@ void mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, i
 	curr->next             = NULL;
 	curr->dest             = xstrdup(dest);
 	curr->retransmit_count = 0;
-	curr->message_size     = alen + 50 + strlen(dest) + strlen(m->addr[0]);
+	curr->message_size     = alen + 60 + strlen(dest) + strlen(m->addr[0]);
 	curr->seqnum           = m->seqnum++;
 	curr->reliable         = reliable;
 	curr->num_cmds         = 1;
@@ -728,6 +731,8 @@ void mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, i
 	} else {
 		prev->next = curr;
 	}
+	gettimeofday(&(curr->time), NULL);
+	gettimeofday(&(curr->ts),   NULL);
 }
 
 void mbus_parse_init(struct mbus *m, char *str)
@@ -818,6 +823,9 @@ int mbus_parse_int(struct mbus *m, int *i)
 {
 	char	*p;
 	*i = strtol(m->parse_buffer[m->parse_depth], &p, 10);
+	if (errno == ERANGE) {
+		debug_msg("integer out of range\n");
+	}
 
 	if (p == m->parse_buffer[m->parse_depth]) {
 		return FALSE;
@@ -892,7 +900,7 @@ int mbus_recv(struct mbus *m, void *data)
 {
 	char	*auth, *ver, *src, *dst, *ack, *r, *cmd, *param;
 	char	 buffer[MBUS_BUF_SIZE];
-	int	 buffer_len, seq, i, a, rx;
+	int	 buffer_len, seq, i, a, rx, ts;
 	char	 ackbuf[MBUS_ACK_BUF_SIZE];
 	char	 digest[16];
 	struct timeval	t;
@@ -946,27 +954,32 @@ int mbus_recv(struct mbus *m, void *data)
 		}
 		if (!mbus_parse_int(m, &seq)) {
 			mbus_parse_done(m);
-			debug_msg("Parser failed seq: %s\n", seq);
+			debug_msg("Parser failed seq\n");
+			return FALSE;
+		}
+		if (!mbus_parse_int(m, &ts)) {
+			mbus_parse_done(m);
+			debug_msg("Parser failed ts\n");
 			return FALSE;
 		}
 		if (!mbus_parse_sym(m, &r)) {
 			mbus_parse_done(m);
-			debug_msg("Parser failed reliable: %s\n", seq);
+			debug_msg("Parser failed reliable\n");
 			return FALSE;
 		}
 		if (!mbus_parse_lst(m, &src)) {
 			mbus_parse_done(m);
-			debug_msg("Parser failed seq: %s\n", src);
+			debug_msg("Parser failed src\n");
 			return FALSE;
 		}
 		if (!mbus_parse_lst(m, &dst)) {
 			mbus_parse_done(m);
-			debug_msg("Parser failed dst: %s\n", dst);
+			debug_msg("Parser failed dst\n");
 			return FALSE;
 		}
 		if (!mbus_parse_lst(m, &ack)) {
 			mbus_parse_done(m);
-			debug_msg("Parser failed ack: %s\n", ack);
+			debug_msg("Parser failed ack\n");
 			return FALSE;
 		}
 
@@ -990,7 +1003,9 @@ int mbus_recv(struct mbus *m, void *data)
 				mbus_parse_done(m);
 				/* ...if an ACK was requested, send one... */
 				if (strcmp(r, "R") == 0) {
-					sprintf(ackbuf, "########################\nmbus/1.0 %d U (%s) (%s) (%d)\n", ++m->seqnum, m->addr[0], src, seq);
+					gettimeofday(&t, NULL);
+					sprintf(ackbuf, "########################\nmbus/1.0 %d %d U (%s) (%s) (%d)\n", 
+					        ++m->seqnum, t.tv_sec, m->addr[0], src, seq);
 					assert(strlen(ackbuf)< MBUS_ACK_BUF_SIZE);
 					hmac_md5(ackbuf+25, strlen(ackbuf)-25, m->hashkey, m->hashkeylen, digest);
 					base64encode(digest, 16, ackbuf, 24);
