@@ -50,6 +50,7 @@ class ConfBus : public TclObject, public IPCHandler {
 	int command(int argc, const char*const* argv);
 	GroupIPC* ipc_;
 	char* callback_;
+	int value1, value2;
 };
 
 static class ConfBusMatcher : public Matcher {
@@ -63,6 +64,8 @@ static class ConfBusMatcher : public Matcher {
 ConfBus::ConfBus(int channel)
 	: TclObject(0), IPCHandler(~0), ipc_(0)
 {
+	value1=0;
+	value2=0;
 	callback_ = 0;
 	ipc_ = new GroupIPC(channel);
 	ipc_->attach(this);
@@ -76,6 +79,7 @@ ConfBus::~ConfBus()
 
 void ConfBus::ipc_input(int, int, u_char* msg, int cc)
 {
+	int value1, value2;
 	if (cc <= 0 || callback_ == 0)
 		return;
 
@@ -92,6 +96,17 @@ void ConfBus::ipc_input(int, int, u_char* msg, int cc)
 		u_int32_t addr = *(u_int32_t*)msg;
 		sprintf((char*)msg, "focus %s", InetNtoa(addr));
 	}
+
+	/* if this is a power message then compare it with the last 
+	message and if the value is not significantly different then return */
+	if (sscanf((char*)msg, "relate_power %*s %d",&value1)!=0) {
+		if (value1<value2  && value1!=0) {
+			if (value1+10>=value2) return;
+		} else
+			if (value1-10<=value2) return;
+		value2=value1;
+	}
+
 	Tcl& tcl = Tcl::instance();
 	/*
 	 * make sure message is null terminated and check that

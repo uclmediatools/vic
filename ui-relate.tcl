@@ -55,12 +55,8 @@ proc relate_quit msg {
 set cb_dispatch(relate_power) relate_power
 proc relate_power msg {
 	foreach s [session active] {
-		#
-		# look up the site by cname.  (for backward compat
-		# with old vat's, try the IP address too)
-		#
-		set ipmsg [lindex $msg 0]
-		if { [$s addr] == $ipmsg || [$s sdes cname] == $ipmsg } {
+		set ipaddr [lindex $msg 0]
+		if { [$s sdes cname] == $ipaddr } {
 			service_audio_power $s [lindex $msg 1]
 			return
 		}
@@ -175,6 +171,7 @@ proc deactivate_relate src {
 	unset bpshat($src)
 	unset lhat($src)
 	unset shat($src)
+	after 500 {repack_relate}
 }
 
 # -------------------------------------------------
