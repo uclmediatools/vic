@@ -1284,7 +1284,7 @@ rtcp_rr *rtp_get_rr(struct rtp *session, u_int32 reporter, u_int32 reportee)
 	rtcp_rr_wrapper	*rr;
 
 	if (s != NULL) {
-		for (rr = s->rr; rr != NULL; rr++) {
+		for (rr = s->rr; rr != NULL; rr = rr->next) {
 			if (rr->rr->ssrc == reportee) {
 				return rr->rr;
 			}
@@ -1354,7 +1354,7 @@ static u_int8 *format_rtcp_sr(u_int8 *buffer, int buflen, struct rtp *session, u
 	packet->common.version = 2;
 	packet->common.p       = 0;
 	packet->common.count   = 0;
-	packet->common.pt      = RTCP_RR;
+	packet->common.pt      = RTCP_SR;
 	packet->common.length  = htons(1);
 
 	gettimeofday(&curr_time, NULL);
@@ -1526,6 +1526,7 @@ static u_int8 *format_rtcp_sdes(u_int8 *buffer, int buflen, u_int32 ssrc, struct
 	rtcp_common	*common = (rtcp_common *) buffer;
 	const char	*item;
 	size_t		 remaining_len;
+        int              pad;
 
 	assert(buflen > (int) sizeof(rtcp_common));
 
@@ -1591,9 +1592,10 @@ static u_int8 *format_rtcp_sdes(u_int8 *buffer, int buflen, u_int32 ssrc, struct
 	session->sdes_count_pri++;
 
 	/* Pad to a multiple of 4 bytes... */
-	while ((((int) (packet - buffer)) % 4) != 0) {
-		*packet++ = '\0';
-	}
+        pad = 4 - ((packet - buffer) & 0x3);
+        while (pad--) {
+               *packet++ = RTCP_SDES_END;
+        }
 
 	common->length = htons((u_int16) (((int) (packet - buffer) / 4) - 1));
 
