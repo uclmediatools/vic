@@ -1,6 +1,6 @@
 /*
- * FILE:    test.c
- * AUTHORS: Colin Perkins
+ * FILE:    test_memory.h
+ * AUTHORS: Orion Hodson
  * 
  * Copyright (c) 1999-2000 University College London
  * All rights reserved.
@@ -33,44 +33,5 @@
  * SUCH DAMAGE.
  */
 
-#include "config_unix.h"
-#include "config_win32.h"
-#include "debug.h"
-#include "version.h"
-#include "test_base64.h"
-#include "test_des.h"
-#include "test_md5.h"
-#include "test_memory.h"
-#include "test_net_udp.h"
-
-#ifdef WIN32
-#define WS_VERSION_ONE MAKEWORD(1,1)
-#define WS_VERSION_TWO MAKEWORD(2,2)
-#endif
-
-int main(int argc, char *argv[])
-{
-#ifdef WIN32
-	WSADATA WSAdata;
-	if (WSAStartup(WS_VERSION_TWO, &WSAdata) != 0 && WSAStartup(WS_VERSION_ONE, &WSAdata) != 0) {
-    		printf("Windows Socket initialization failed.\n");
-		return 1;
-	}
-	debug_msg("WSAStartup OK: %sz\nStatus:%s\n", WSAdata.szDescription, WSAdata.szSystemStatus);
-#endif
-
-	UNUSED(argc);
-	UNUSED(argv);
-	printf("Testing common multimedia library %s\n", CCL_VERSION);
-	test_base64();
-	test_des();
-	test_md5();
-        test_memory();
-	test_net_udp();
-#ifdef WIN32
-	Sleep(2000);
-	WSACleanup();
-#endif
-	return 0;
-}
+void test_memory(void);
 

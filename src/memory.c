@@ -1,8 +1,8 @@
 /*
  * FILE:    memory.c
- * PROGRAM: RAT
- * AUTHOR:  Isidor Kouvelas + Colin Perkins + Mark Handley + Orion Hodson
- * 
+ *
+ * AUTHORS:  Isidor Kouvelas / Colin Perkins / Mark Handley / Orion Hodson
+ *
  * $Revision$
  * $Date$
  *
@@ -44,66 +44,139 @@
 #include "util.h"
 
 #ifdef DEBUG_MEM
-#define MAX_ADDRS 65536
+
+/* Custom memory routines are here, down to #else, defaults follow */
+
+#define MAX_ADDRS         65536
+#define MAGIC_MEMORY      0xdeadbeef
+#define MAGIC_MEMORY_SIZE 4
+
+/* Allocated block format is:
+ * <chk_header> <memory chunk...> <trailing magic number>
+ */
+
+typedef struct {
+        uint32_t key;   /* Original allocation number   */
+        uint32_t size;  /* Size of allocation requested */
+        uint32_t magic; /* Magic number                 */
+} chk_header;
 
 typedef struct s_alloc_blk {
-    int  	*addr;    /* address */
-    char 	*filen;   /* file where allocated */
-    int   	 line;    /* line where allocated */
-    size_t  	 length;  /* size of allocation   */
-    int   	 blen;    /* size passed to block_alloc (if relevent) */
-    int   	 est;     /* order in all allocation's */
+        uint32_t    key;     /* Key in table (ascending) */
+        chk_header *addr;
+        char       *filen;   /* file where allocated     */
+        int         line;    /* line where allocated     */
+        size_t      length;  /* size of allocation       */
+        int         blen;    /* size passed to block_alloc (if relevent) */
+        int         est;     /* time last touched in order of all allocation and reclaims */
 } alloc_blk;
 
+/* Table is ordered by key */
 static alloc_blk mem_item[MAX_ADDRS];
 
-static int   naddr = 0;
-static int   tick  = 0;
+static int   naddr = 0; /* number of allocations */
+static int   tick  = 1; /* xmemchk assumes this is one, do not change without checking why */
 static int   init  = 0;
-#endif
 
 void xdoneinit(void) 
 {
-#ifdef DEBUG_MEM
 	init = tick++;
-#endif
-}
-	
-void xmemchk(void)
-{
-#ifdef DEBUG_MEM
-	int i,j;
-	if (naddr > MAX_ADDRS) {
-		printf("ERROR: Too many addresses for xmemchk()!\n");
-		abort();
-	}
-	for (i=0; i<naddr; i++) {
-		assert(mem_item[i].addr != NULL);
-		assert((size_t) strlen(mem_item[i].filen) == mem_item[i].length);
-		if (*mem_item[i].addr != *(mem_item[i].addr + (*mem_item[i].addr / 4) + 2)) {
-			printf("Memory check failed!\n");
-			j = i;
-			for (i=0; i<naddr; i++) {
-				if (i==j) {                        /* Because occasionally you can't spy the */
-					printf("* ");              /* deviant block, we'll highlight it.     */
-				} else {
-					printf("  ");
-				}
-				printf("addr: %p", mem_item[i].addr);                                           fflush(stdout);
-				printf("  size: %6d", *mem_item[i].addr);                                       fflush(stdout);
-				printf("  size: %6d", *(mem_item[i].addr + (*mem_item[i].addr / 4) + 2));	fflush(stdout);
-                                printf("  age: %6d", tick - mem_item[i].est);                                   fflush(stdout);
-				printf("  file: %s", mem_item[i].filen);					fflush(stdout);
-				printf("  line: %d", mem_item[i].line);   					fflush(stdout);
-				printf("\n");
-			}
-			abort();
-		}
-	}
-#endif
 }
 
-#ifdef DEBUG_MEM
+static int chk_header_okay(const chk_header *ch)
+{
+        const void *tm; /* tail magic */
+        assert(ch != NULL);
+
+        if (ch->key == MAGIC_MEMORY) {
+                fprintf(stderr, "ERROR: freed unit being checked\n");
+                abort();
+        }
+
+        tm = (const void*)ch;
+        tm += sizeof(chk_header) + ch->size;
+
+        if (ch->magic != MAGIC_MEMORY) {
+                fprintf(stderr, "ERROR: memory underrun\n");
+                abort();
+                return FALSE;
+        } else if (memcmp(tm, &ch->magic, MAGIC_MEMORY_SIZE)) {
+                fprintf(stderr, "ERROR: memory overrun\n");
+                abort();
+                return FALSE;
+        }
+
+        return TRUE;
+}
+
+static int mem_key_cmp(const void *a, const void *b) {
+        const alloc_blk *g, *h;
+        g = (const alloc_blk*)a;
+        h = (const alloc_blk*)b;
+        if (g->key < h->key) {
+                return -1;
+        } else if (g->key > h->key) {
+                return +1;
+        }
+        return 0;
+}
+
+static alloc_blk *mem_item_find(uint32_t key) {
+        void      *p;
+        alloc_blk  t;
+        t.key = key;
+        p = bsearch((const void*)&t, mem_item, naddr, sizeof(alloc_blk), mem_key_cmp);
+        return (alloc_blk*)p;
+}
+
+void xmemchk(void)
+{
+        uint32_t    last_key;
+        chk_header *ch;
+        int         i;
+
+	if (naddr > MAX_ADDRS) {
+		fprintf(stderr, "ERROR: Too many addresses for xmemchk()!\n");
+		abort();
+	}
+
+        last_key = 0;
+	for (i = 0; i < naddr; i++) {
+                /* Check for table corruption */
+                if (mem_item[i].key  < last_key) {
+                        fprintf(stderr, "Memory table keys out of order - fatal error");
+                        abort();
+                }
+                last_key = mem_item[i].key;
+                if (mem_item[i].addr == NULL) {
+                        fprintf(stderr, "Memory table entry reference null block - fatal error");
+                        abort();
+                }
+                if (mem_item[i].filen == NULL) {
+                        fprintf(stderr, "Memory table filename missing - fatal error");
+                        abort();
+                }
+                if ((size_t) strlen(mem_item[i].filen) != mem_item[i].length) {
+                        fprintf(stderr, "Memory table filename length corrupted - fatal error");
+                        abort();
+                }
+                
+                /* Check memory */
+                ch = mem_item[i].addr;
+                if (chk_header_okay(ch) == FALSE) {
+                        /* Chk header display which side has gone awry */
+			fprintf(stderr, "Memory check failed!\n");
+			fprintf(stderr, "addr: %p", mem_item[i].addr);
+                        fprintf(stderr, "  size: %6d", ch->size);
+                        fprintf(stderr, "  age: %6d", tick - mem_item[i].est);
+                        fprintf(stderr, "  file: %s", mem_item[i].filen);
+                        fprintf(stderr, "  line: %d", mem_item[i].line);
+                        fprintf(stderr, "\n");
+                        abort();
+                }
+        }
+}
+
 static int 
 alloc_blk_cmp_origin(const void *vab1, const void *vab2)
 {
@@ -153,75 +226,74 @@ alloc_blk_cmp_est(const void *vab1, const void *vab2)
                 return -1;
         }
 }
-#endif /* DEBUG_MEM */
 
-void xmemdmp(void)
+void 
+xmemdmp(void)
 {
-#ifdef DEBUG_MEM
 	int i;
         block_release_all();
 	if (naddr > MAX_ADDRS) {
-		printf("ERROR: Too many addresses for xmemchk()!\n");
+		printf("ERROR: Too many addresses for xmemdmp()!\n");
 		abort();
 	}
 
         qsort(mem_item, naddr, sizeof(mem_item[0]), alloc_blk_cmp_est);
 
         for (i=0; i<naddr; i++) {
-            printf("%5d",i);                              fflush(stdout);
-            printf("  addr: %p", mem_item[i].addr);       fflush(stdout);
-            printf("  size: %5d", *mem_item[i].addr);     fflush(stdout);
-            printf("  age: %6d", tick - mem_item[i].est); fflush(stdout);
-            printf("  file: %s", mem_item[i].filen);      fflush(stdout);
-            printf(":%d", mem_item[i].line);              fflush(stdout);
-            if (mem_item[i].blen != 0) { 
-                printf("  \tblen %d", mem_item[i].blen);   
-                fflush(stdout);
-            }
-            printf("\n");
+                printf("%5d",i);                               fflush(stdout);
+                printf("  addr: %p", mem_item[i].addr);        fflush(stdout);
+                printf("  size: %5d", mem_item[i].addr->size); fflush(stdout);
+                printf("  age: %6d", tick - mem_item[i].est);  fflush(stdout);
+                printf("  file: %s", mem_item[i].filen);       fflush(stdout);
+                printf(":%d", mem_item[i].line);               fflush(stdout);
+                if (mem_item[i].blen != 0) { 
+                        printf("  \tblen %d", mem_item[i].blen);   
+                        fflush(stdout);
+                }
+                printf("\n");
         }
 	printf("Program initialisation finished at age %6d\n", tick-init);
-#endif
+        qsort(mem_item, naddr, sizeof(mem_item[0]), mem_key_cmp);
 }
 
 
 /* Because block_alloc recycles blocks we need to know which code
  * fragment takes over responsibility for the memory.  */
-void xclaim(void *addr, const char *filen, int line)
+void 
+xclaim(void *addr, const char *filen, int line)
 {
-#ifdef DEBUG_MEM
-        int i;
+        alloc_blk *m;
+        chk_header *ch;
+        
+        ch = (chk_header*)(addr - sizeof(chk_header));
+        m  = mem_item_find(ch->key); 
 
-        char *x = (char*)addr - 8;
-        addr    = (int*)x;
-
-        for (i = 0; i < naddr; i++) {
-                if (mem_item[i].addr == addr) {
-                        free(mem_item[i].filen);
-                        mem_item[i].filen  = (char*)strdup(filen);
-                        mem_item[i].length = strlen(filen);
-                        mem_item[i].line   = line;
-                        mem_item[i].est    = tick++;
-                        return;
-                }
+        if (chk_header_okay(ch) == FALSE) {
+                fprintf(stderr, "xclaim: memory corrupted\n");
+                abort();
         }
 
-        assert(i != naddr); /* Not found */
-#else
-        UNUSED(addr);
-        UNUSED(filen);
-        UNUSED(line);
-#endif /* DEBUG_MEM */
-} 
+        if (m == NULL) {
+                fprintf(stderr, "xclaim: block not found\n");
+                abort();
+        }
 
+        free(m->filen);
+        m->filen  = strdup(filen);
+        m->length = strlen(filen);
+        m->line   = line;
+        m->est    = tick++;
+}
 
 void 
 xmemdist(FILE *fp)
 {
-#ifdef DEBUG_MEM
         int i, last_line=-1, cnt=0, entry=0;
         char *last_filen = NULL;
-        
+
+        /* This is painful...I don't actually envisage running beyond this dump :-)
+         * 2 sorts are needed, one into order by file, and then back to key order.
+         */
         qsort(mem_item, naddr, sizeof(mem_item[0]), alloc_blk_cmp_origin);
         fprintf(fp, "# Distribution of memory allocated\n# <idx> <file> <line> <allocations>\n");
         for(i = 0; i < naddr; i++) {
@@ -240,118 +312,163 @@ xmemdist(FILE *fp)
                 cnt++;
         }
         fprintf(fp, "% 3d\n", cnt);
-#endif /* DEBUG_MEM */
-        UNUSED(fp);
+        /* Restore order */
+        qsort(mem_item, naddr, sizeof(mem_item[0]), mem_key_cmp);
 }
 
-void xfree(void *y)
+void 
+xfree(void *p)
 {
-#ifdef DEBUG_MEM
-	char	*x = (char *) y;
-	int	 i, j;
-	int	*a, *b, *c;
+        alloc_blk  *m;
+        chk_header *ch;
+        uint32_t size, delta, magic, idx;
 
-	if (x == NULL) {
+	if (p == NULL) {
 		printf("ERROR: Attempt to free NULL pointer!\n");
 		abort();
 	}
+        ch = (chk_header*)(p - sizeof(chk_header));
 
-	j = 0;
-	c = (int *) (x - 8);
-	for (i = 0; i < naddr - j; i++) {
-		if (mem_item[i].addr == c) {
-			if (j != 0) {
-				printf("ERROR: Attempt to free memory twice! (addr=%p)\n", y);
-				abort();
-			}
-			j = 1;
-			/* Trash the contents of the memory we're about to free... */
-			b = (int *) (x + *((int *)(x-8)));
-			for (a = (int *) (x-8); a < b; a++) {
-				*a = 0xdeadbeef;
-			}
-			/* ...and free it! */
-			free(x - 8);
-			free(mem_item[i].filen);
-		}
-                memmove(mem_item+i,mem_item+i+j,sizeof(alloc_blk));
-	}
-	if (j != 1) {
-		printf("ERROR: Attempt to free memory which was never allocated! (addr=%p)\n", y);
-		abort();
-	}
-	naddr -= j;
-	xmemchk();
-#else
-	free(y);
-#endif
+        /* Validate entry  */
+        if (chk_header_okay(ch) == FALSE) {
+                printf("ERROR: Freeing corrupted block\n");
+                abort();
+        }
+
+        /* Locate in table */
+        m = mem_item_find(ch->key);
+        if (m == NULL) {
+                printf("ERROR: Freeing unallocated or already free'd block\n");
+                abort();
+        }
+
+        /* Trash memory of allocated block, maybe noticed by apps when    
+         * deref'ing free'd */
+        size  = ch->size + sizeof(chk_header) + MAGIC_MEMORY_SIZE;
+        magic = MAGIC_MEMORY;
+        p     = (void*)ch;
+        while (size > 0) {
+                delta = min(size, 4);
+                memcpy(p, &magic, delta);
+                p    += delta;
+                size -= delta;
+        }
+
+        /* Free memory     */
+        free(ch);
+        free(m->filen);
+
+        /* Remove from table */
+        idx = m - mem_item;
+        if (naddr - idx > 0) {
+                memmove(&mem_item[idx], 
+                        &mem_item[idx + 1], 
+                        (naddr - idx - 1) * sizeof(alloc_blk));
+        }
+        naddr--;
+        xmemchk();
 }
 
 void *
 _xmalloc(unsigned size, const char *filen, int line)
 {
-#ifdef DEBUG_MEM
-	int  s = (((size + 7)/8)*8) + 8;
-	int *p = (int *) malloc(s + 16);
-	int  q;
+        uint32_t   *j;
+        void       *p;
+        uint8_t    *t;
+        chk_header *ch;
+
+        p = (void*) malloc(size + sizeof(chk_header) + MAGIC_MEMORY_SIZE);
 
 	assert(p     != NULL);
 	assert(filen != NULL);
-	*p = s;
-	*(p+(s/4)+2) = s;
-	for (q = 0; q < s/4; q++) {
-		*(p+q+2) = rand();
-	}
+
+        /* Fix block header */
+        ch = (chk_header*)p;
+        ch->key   = tick++;
+        ch->size  = size;
+        ch->magic = MAGIC_MEMORY;
+
+        /* Fill allocated memory with random numbers */
+        for (j = (uint32_t*)(p + sizeof(chk_header)); size > 4; size -= 4) {
+                *j++ = rand();
+        }
+        for (t = (uint8_t*)j; size > 0; size--) { 
+                *t++ = (uint8_t)(rand());
+        }
+        
+        /* Fix block tail */
+        memcpy(t, &ch->magic, MAGIC_MEMORY_SIZE);
+
+        /* Check set up okay */
+        if (chk_header_okay(ch) == FALSE) {
+                fprintf(stderr, "Implementation Error\n");
+                abort();
+        }
+
+        /* Add table entry */
+        mem_item[naddr].key    = ch->key;
 	mem_item[naddr].addr   = p;
-	mem_item[naddr].filen  = (char *) strdup(filen);
+	mem_item[naddr].filen  = (char *)strdup(filen);
 	mem_item[naddr].line   = line;
 	mem_item[naddr].length = strlen(filen);
-        mem_item[naddr].est    = tick++;
-        
-	if (++naddr >= MAX_ADDRS) {
-		printf("ERROR: Allocated too much! Table overflow in xmalloc()\n");
-		printf("       Do you really need to allocate more than %d items?\n", MAX_ADDRS);
+        mem_item[naddr].blen   = 0;        /* block_alloc'ed len when appropriate     */
+        mem_item[naddr].est    = ch->key;  /* changes when block_alloc recycles block */
+        naddr ++;
+
+	if (naddr >= MAX_ADDRS) {
+		fprintf(stderr, "ERROR: Allocated too much! Table overflow in xmalloc()\n");
+		fprintf(stderr, "       Do you really need to allocate more than %d items?\n", MAX_ADDRS);
 		abort();
 	}
-
-	xmemchk();
-	assert(((char *) (p+2)) != NULL);
-	return (void *) (p+2);
-#else
-        UNUSED(filen);
-        UNUSED(line);
-	return (void *) malloc(size);
-#endif
+        
+        if (chk_header_okay(ch) == FALSE) {
+                fprintf(stderr, "Implementation Error\n");
+                abort();
+        }
+        
+        return p + sizeof(chk_header);
 }
 
-void *_xrealloc(void *p, unsigned size, const char *filen, int line)
+void *
+_xrealloc(void *p, unsigned size, const char *filen, int line)
 {
-#ifdef DEBUG_MEM
-	int  	 s = (((size + 7)/8)*8) + 8;
-	int	*q = (int *) p - 2;
-	int	 i;
+        alloc_blk  *m;
+        chk_header *ch;
+        uint8_t    *t;
+       
+        assert(p     != NULL);
+        assert(filen != NULL);
 	
-	for (i = 0; i < naddr; i++) {
-		if (mem_item[i].addr == q) {
-			xfree(mem_item[naddr].filen);
-			mem_item[naddr].addr   = realloc(q, s);
-			mem_item[naddr].filen  = (char *) strdup(filen);
-			mem_item[naddr].line   = line;
-			mem_item[naddr].length = strlen(filen);
-			mem_item[naddr].est    = tick++;
-			*q = s;
-			*(q+(s/4)+2) = s;
-			return (void *) (q + 2);
-		}
+        ch = (chk_header*)(p - sizeof(chk_header));
+        m  = mem_item_find(ch->key);
+        if (m != NULL) {
+                /* Attempt reallocation */
+                m->addr = realloc((void*)ch, size + sizeof(chk_header) + MAGIC_MEMORY_SIZE);
+                if (m->addr == NULL) {
+                        debug_msg("realloc failed\n");
+                        return NULL;
+                }
+                /* Update table */
+                free(m->filen);
+                m->filen  = (char *) strdup(filen);
+                m->line   = line;
+                m->length = strlen(filen);
+                m->est    = tick++;
+                /* Fix chunk header */
+                ch->size  = size;
+                /* Fix trailer */
+                t = (uint8_t*)p + size;
+                memcpy(t, &ch->magic, MAGIC_MEMORY_SIZE);
+                /* Check block is okay */
+                if (chk_header_okay(ch) == FALSE) {
+                        fprintf(stderr, "Implementation Error\n");
+                        abort();
+                }
+                return p;
 	}
 	debug_msg("Trying to xrealloc() memory not which is not allocated\n");
 	abort();
         return 0;
-#else
-        UNUSED(filen);
-        UNUSED(line);
-	return (void *) realloc(p, size);
-#endif
 }
 
 char *_xstrdup(const char *s1, const char *filen, int line)
@@ -359,7 +476,43 @@ char *_xstrdup(const char *s1, const char *filen, int line)
 	char 	*s2;
   
 	s2 = (char *) _xmalloc(strlen(s1)+1, filen, line);
-	if (s2 != NULL)
+	if (s2 != NULL) {
 		strcpy(s2, s1);
+        }
 	return (s2);
 }
+#else
+
+void xdoneinit (void) { return; }
+void xmemchk   (void) { return; }
+void xmemdmp   (void) { return; }
+
+void xclaim    (void *p, const char *filen, int line)
+{
+        UNUSED(p);
+        UNUSED(filen);
+        UNUSED(line);
+        return;
+}
+
+void xmemdist (FILE *f) { UNUSED(f); }
+void xfree    (void *x) { free(x); }
+
+void *_xmalloc(unsigned int size, const char *filen, int line) {
+        UNUSED(filen);
+        UNUSED(line);
+        return malloc(size);
+}
+
+void *_xrealloc(void *p, unsigned int size,const char *filen,int line) {
+        UNUSED(filen);
+        UNUSED(line);
+        return realloc(p, size);
+}
+char *_xstrdup(const char *s1, const char *filen, int line) {
+        UNUSED(filen);
+        UNUSED(line);
+        return strdup(s1);
+}
+
+#endif /* DEBUG_MEM */
