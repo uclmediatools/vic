@@ -62,6 +62,7 @@
 #include <ctype.h>
 
 #include <stdio.h>
+#include <stddef.h>
 #include <stdarg.h>
 #include <memory.h>
 #include <errno.h>

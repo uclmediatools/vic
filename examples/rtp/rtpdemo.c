@@ -61,14 +61,14 @@ sdes_print(struct rtp *session, uint32_t ssrc, rtcp_sdes_type stype) {
 static void
 packet_print(struct rtp *session, rtp_packet *p) 
 {
-	printf("Received data (payload %d timestamp %06d size %d) ", p->pt, p->ts, p->data_len);
+        printf("Received data (payload %d timestamp %06d size %d) ", p->fields.pt, p->fields.ts, p->meta.data_len);
 
-	if (p->ssrc == rtp_my_ssrc(session)) {
+        if (p->fields.ssrc == rtp_my_ssrc(session)) {
 		/* Unless filtering is enabled we are likely to see
 		   out packets if sending to a multicast group. */
 		printf("that I just sent.\n");
 	} else {
-		printf("from SSRC 0x%08x\n", p->ssrc); 
+                printf("from SSRC 0x%08x\n", p->fields.ssrc);
 	} 
 }
 

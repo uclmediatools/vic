@@ -1254,9 +1254,9 @@ static void process_rtp(struct rtp *session, uint32_t curr_rtp_ts, rtp_packet *p
 	rtp_event	 event;
 	struct timeval	 event_ts;
 
-	if (packet->cc > 0) {
-		for (i = 0; i < packet->cc; i++) {
-			create_source(session, packet->csrc[i], FALSE);
+        if (packet->fields.cc > 0) {
+                for (i = 0; i < packet->fields.cc; i++) {
+                        create_source(session, packet->meta.csrc[i], FALSE);
 		}
 	}
 	/* Update the source database... */
@@ -1264,7 +1264,7 @@ static void process_rtp(struct rtp *session, uint32_t curr_rtp_ts, rtp_packet *p
 		s->sender = TRUE;
 		session->sender_count++;
 	}
-	transit    = curr_rtp_ts - packet->ts;
+        transit    = curr_rtp_ts - packet->fields.ts;
 	d      	   = transit - s->transit;
 	s->transit = transit;
 	if (d < 0) {
@@ -1273,9 +1273,9 @@ static void process_rtp(struct rtp *session, uint32_t curr_rtp_ts, rtp_packet *p
 	s->jitter += d - ((s->jitter + 8) / 16);
 	
 	/* Callback to the application to process the packet... */
-	if (!filter_event(session, packet->ssrc)) {
+        if (!filter_event(session, packet->fields.ssrc)) {
 		gettimeofday(&event_ts, NULL);
-		event.ssrc = packet->ssrc;
+                event.ssrc = packet->fields.ssrc;
 		event.type = RX_RTP;
 		event.data = (void *) packet;	/* The callback function MUST free this! */
 		event.ts   = &event_ts;
@@ -1287,32 +1287,32 @@ static int validate_rtp2(rtp_packet *packet, int len)
 {
 	/* Check for valid payload types..... 72-76 are RTCP payload type numbers, with */
 	/* the high bit missing so we report that someone is running on the wrong port. */
-	if (packet->pt >= 72 && packet->pt <= 76) {
+        if (packet->fields.pt >= 72 && packet->fields.pt <= 76) {
 		debug_msg("rtp_header_validation: payload-type invalid");
-		if (packet->m) {
+                if (packet->fields.m) {
 			debug_msg(" (RTCP packet on RTP port?)");
 		}
 		debug_msg("\n");
 		return FALSE;
 	}
 	/* Check that the length of the packet is sensible... */
-	if (len < (12 + (4 * packet->cc))) {
+        if (len < (12 + (4 * packet->fields.cc))) {
 		debug_msg("rtp_header_validation: packet length is smaller than the header\n");
 		return FALSE;
 	}
 	/* Check that the amount of padding specified is sensible. */
 	/* Note: have to include the size of any extension header! */
-	if (packet->p) {
-		int	payload_len = len - 12 - (packet->cc * 4);
-                if (packet->x) {
+        if (packet->fields.p) {
+                int     payload_len = len - 12 - (packet->fields.cc * 4);
+                if (packet->fields.x) {
                         /* extension header and data */
-                        payload_len -= 4 * (1 + packet->extn_len);
+                        payload_len -= 4 * (1 + packet->meta.extn_len);
                 }
-                if (packet->data[packet->data_len - 1] > payload_len) {
+                if (packet->meta.data[packet->meta.data_len - 1] > payload_len) {
                         debug_msg("rtp_header_validation: padding greater than payload length\n");
                         return FALSE;
                 }
-                if (packet->data[packet->data_len - 1] < 1) {
+                if (packet->meta.data[packet->meta.data_len - 1] < 1) {
 			debug_msg("rtp_header_validation: padding zero\n");
 			return FALSE;
 		}
@@ -1328,7 +1328,7 @@ validate_rtp(struct rtp *session, rtp_packet *packet, int len)
 	/* See Appendix A.1 of the RTP specification.                        */
 
 	/* We only accept RTPv2 packets... */
-	if (packet->v != 2) {
+        if (packet->fields.v != 2) {
 		debug_msg("rtp_header_validation: v != 2\n");
 		return FALSE;
 	}
@@ -1352,55 +1352,55 @@ rtp_recv_data(struct rtp *session, uint32_t curr_rtp_ts)
 
 	if (!session->opt->reuse_bufs || (packet == NULL)) {
 		packet   = (rtp_packet *) xmalloc(RTP_MAX_PACKET_LEN);
-		buffer   = ((uint8_t *) packet) + RTP_PACKET_HEADER_SIZE;
+                buffer   = ((uint8_t *) packet) + offsetof(rtp_packet, fields);
 		buffer12 = buffer + 12;
 	}
 
-	buflen = udp_recv(session->rtp_socket, buffer, RTP_MAX_PACKET_LEN - RTP_PACKET_HEADER_SIZE);
+        buflen = udp_recv(session->rtp_socket, buffer, RTP_MAX_PACKET_LEN - offsetof(rtp_packet, fields));
 	if (buflen > 0) {
 		if (session->encryption_enabled) {
 			uint8_t 	 initVec[8] = {0,0,0,0,0,0,0,0};
 			(session->decrypt_func)(session, buffer, buflen, initVec);
 		}
 		/* Convert header fields to host byte order... */
-		packet->seq      = ntohs(packet->seq);
-		packet->ts       = ntohl(packet->ts);
-		packet->ssrc     = ntohl(packet->ssrc);
+                packet->fields.seq      = ntohs(packet->fields.seq);
+                packet->fields.ts       = ntohl(packet->fields.ts);
+                packet->fields.ssrc     = ntohl(packet->fields.ssrc);
 		/* Setup internal pointers, etc... */
-		if (packet->cc) {
+                if (packet->fields.cc) {
 			int	i;
-			packet->csrc = (uint32_t *)(buffer12);
-			for (i = 0; i < packet->cc; i++) {
-				packet->csrc[i] = ntohl(packet->csrc[i]);
-			}
-		} else {
-			packet->csrc = NULL;
-		}
-		if (packet->x) {
-			packet->extn      = buffer12 + (packet->cc * 4);
-			packet->extn_len  = (packet->extn[2] << 8) | packet->extn[3];
-			packet->extn_type = (packet->extn[0] << 8) | packet->extn[1];
-		} else {
-			packet->extn      = NULL;
-			packet->extn_len  = 0;
-			packet->extn_type = 0;
-		}
-		packet->data     = buffer12 + (packet->cc * 4);
-		packet->data_len = buflen -  (packet->cc * 4) - 12;
-		if (packet->extn != NULL) {
-			packet->data += ((packet->extn_len + 1) * 4);
-			packet->data_len -= ((packet->extn_len + 1) * 4);
+                        packet->meta.csrc = (uint32_t *)(buffer12);
+                        for (i = 0; i < packet->fields.cc; i++) {
+                                packet->meta.csrc[i] = ntohl(packet->meta.csrc[i]);
+                        }
+                } else {
+                        packet->meta.csrc = NULL;
+                }
+                if (packet->fields.x) {
+                        packet->meta.extn      = buffer12 + (packet->fields.cc * 4);
+                        packet->meta.extn_len  = (packet->meta.extn[2] << 8) | packet->meta.extn[3];
+                        packet->meta.extn_type = (packet->meta.extn[0] << 8) | packet->meta.extn[1];
+                } else {
+                        packet->meta.extn      = NULL;
+                        packet->meta.extn_len  = 0;
+                        packet->meta.extn_type = 0;
+                }
+                packet->meta.data     = buffer12 + (packet->fields.cc * 4);
+                packet->meta.data_len = buflen -  (packet->fields.cc * 4) - 12;
+                if (packet->meta.extn != NULL) {
+                        packet->meta.data += ((packet->meta.extn_len + 1) * 4);
+                        packet->meta.data_len -= ((packet->meta.extn_len + 1) * 4);
 		}
 		if (validate_rtp(session, packet, buflen)) {
 			if (session->opt->wait_for_rtcp) {
-				s = create_source(session, packet->ssrc, TRUE);
+                                s = create_source(session, packet->fields.ssrc, TRUE);
 			} else {
-				s = get_source(session, packet->ssrc);
+                                s = get_source(session, packet->fields.ssrc);
 			}
 			if (session->opt->promiscuous_mode) {
 				if (s == NULL) {
-					create_source(session, packet->ssrc, FALSE);
-					s = get_source(session, packet->ssrc);
+                                        create_source(session, packet->fields.ssrc, FALSE);
+                                        s = get_source(session, packet->fields.ssrc);
 				}
 				process_rtp(session, curr_rtp_ts, packet, s);
 				return; /* We don't free "packet", that's done by the callback function... */
@@ -1408,9 +1408,9 @@ rtp_recv_data(struct rtp *session, uint32_t curr_rtp_ts)
 			if (s != NULL) {
 				if (s->probation == -1) {
 					s->probation = MIN_SEQUENTIAL;
-					s->max_seq   = packet->seq - 1;
+                                        s->max_seq   = packet->fields.seq - 1;
 				}
-				if (update_seq(s, packet->seq)) {
+                                if (update_seq(s, packet->fields.seq)) {
 					process_rtp(session, curr_rtp_ts, packet, s);
 					return;	/* we don't free "packet", that's done by the callback function... */
 				} else {
@@ -2186,57 +2186,57 @@ int rtp_send_data(struct rtp *session, uint32_t rtp_ts, char pt, int m,
 	}
 
 	/* Allocate memory for the packet... */
-	buffer     = (uint8_t *) xmalloc(buffer_len + RTP_PACKET_HEADER_SIZE);
+        buffer     = (uint8_t *) xmalloc(buffer_len + offsetof(rtp_packet, fields));
 	packet     = (rtp_packet *) buffer;
 
 	/* These are internal pointers into the buffer... */
-	packet->csrc = (uint32_t *) (buffer + RTP_PACKET_HEADER_SIZE + 12);
-	packet->extn = (uint8_t  *) (buffer + RTP_PACKET_HEADER_SIZE + 12 + (4 * cc));
-	packet->data = (uint8_t  *) (buffer + RTP_PACKET_HEADER_SIZE + 12 + (4 * cc));
+        packet->meta.csrc = (uint32_t *) (buffer + offsetof(rtp_packet, fields) + 12);
+        packet->meta.extn = (uint8_t  *) (buffer + offsetof(rtp_packet, fields) + 12 + (4 * cc));
+        packet->meta.data = (uint8_t  *) (buffer + offsetof(rtp_packet, fields) + 12 + (4 * cc));
 	if (extn != NULL) {
-		packet->data += (extn_len + 1) * 4;
+                packet->meta.data += (extn_len + 1) * 4;
 	}
 	/* ...and the actual packet header... */
-	packet->v    = 2;
-	packet->p    = pad;
-	packet->x    = (extn != NULL);
-	packet->cc   = cc;
-	packet->m    = m;
-	packet->pt   = pt;
-	packet->seq  = htons(session->rtp_seq++);
-	packet->ts   = htonl(rtp_ts);
-	packet->ssrc = htonl(rtp_my_ssrc(session));
+        packet->fields.v    = 2;
+        packet->fields.p    = pad;
+        packet->fields.x    = (extn != NULL);
+        packet->fields.cc   = cc;
+        packet->fields.m    = m;
+        packet->fields.pt   = pt;
+        packet->fields.seq  = htons(session->rtp_seq++);
+        packet->fields.ts   = htonl(rtp_ts);
+        packet->fields.ssrc = htonl(rtp_my_ssrc(session));
 	/* ...now the CSRC list... */
 	for (i = 0; i < cc; i++) {
-		packet->csrc[i] = htonl(csrc[i]);
+                packet->meta.csrc[i] = htonl(csrc[i]);
 	}
 	/* ...a header extension? */
 	if (extn != NULL) {
-		/* We don't use the packet->extn_type field here, that's for receive only... */
-		uint16_t *base = (uint16_t *) packet->extn;
+                /* We don't use the packet->fields.extn_type field here, that's for receive only... */
+                uint16_t *base = (uint16_t *) packet->meta.extn;
 		base[0] = htons(extn_type);
 		base[1] = htons(extn_len);
-		memcpy(packet->extn + 4, extn, extn_len * 4);
+                memcpy(packet->meta.extn + 4, extn, extn_len * 4);
 	}
 	/* ...and the media data... */
-	memcpy(packet->data, data, data_len);
+        memcpy(packet->meta.data, data, data_len);
 	/* ...and any padding... */
 	if (pad) {
 		for (i = 0; i < pad_len; i++) {
-			buffer[buffer_len + RTP_PACKET_HEADER_SIZE - pad_len + i] = 0;
+                        buffer[buffer_len + offsetof(rtp_packet, fields) - pad_len + i] = 0;
 		}
-		buffer[buffer_len + RTP_PACKET_HEADER_SIZE - 1] = (char) pad_len;
+                buffer[buffer_len + offsetof(rtp_packet, fields) - 1] = (char) pad_len;
 	}
 	
 	/* Finally, encrypt if desired... */
 	if (session->encryption_enabled)
 	{
 		assert((buffer_len % session->encryption_pad_length) == 0);
-		(session->encrypt_func)(session, buffer + RTP_PACKET_HEADER_SIZE,
+                (session->encrypt_func)(session, buffer + offsetof(rtp_packet, fields),
 					buffer_len, initVec); 
 	}
 
-	rc = udp_send(session->rtp_socket, buffer + RTP_PACKET_HEADER_SIZE, buffer_len);
+        rc = udp_send(session->rtp_socket, buffer + offsetof(rtp_packet, fields), buffer_len);
 	xfree(buffer);
 
 	/* Update the RTCP statistics... */
@@ -2271,43 +2271,43 @@ int rtp_send_data_iov(struct rtp *session, uint32_t rtp_ts, char pt, int m, int 
 	}
 
 	/* Allocate memory for the packet... */
-	buffer     = (uint8_t *) xmalloc(buffer_len + RTP_PACKET_HEADER_SIZE);
+        buffer     = (uint8_t *) xmalloc(buffer_len + offsetof(rtp_packet, fields));
 	packet     = (rtp_packet *) buffer;
 
 	/* These are internal pointers into the buffer... */
-	packet->csrc = (uint32_t *) (buffer + RTP_PACKET_HEADER_SIZE + 12);
-	packet->extn = (uint8_t  *) (buffer + RTP_PACKET_HEADER_SIZE + 12 + (4 * cc));
-	packet->data = (uint8_t  *) (buffer + RTP_PACKET_HEADER_SIZE + 12 + (4 * cc));
+        packet->meta.csrc = (uint32_t *) (buffer + offsetof(rtp_packet, fields) + 12);
+        packet->meta.extn = (uint8_t  *) (buffer + offsetof(rtp_packet, fields) + 12 + (4 * cc));
+        packet->meta.data = (uint8_t  *) (buffer + offsetof(rtp_packet, fields) + 12 + (4 * cc));
 	if (extn != NULL) {
-		packet->data += (extn_len + 1) * 4;
+                packet->meta.data += (extn_len + 1) * 4;
 	}
 	/* ...and the actual packet header... */
-	packet->v    = 2;
-	packet->p    = 0;
-	packet->x    = (extn != NULL);
-	packet->cc   = cc;
-	packet->m    = m;
-	packet->pt   = pt;
-	packet->seq  = htons(session->rtp_seq++);
-	packet->ts   = htonl(rtp_ts);
-	packet->ssrc = htonl(rtp_my_ssrc(session));
+        packet->fields.v    = 2;
+        packet->fields.p    = 0;
+        packet->fields.x    = (extn != NULL);
+        packet->fields.cc   = cc;
+        packet->fields.m    = m;
+        packet->fields.pt   = pt;
+        packet->fields.seq  = htons(session->rtp_seq++);
+        packet->fields.ts   = htonl(rtp_ts);
+        packet->fields.ssrc = htonl(rtp_my_ssrc(session));
 	/* ...now the CSRC list... */
 	for (i = 0; i < cc; i++) {
-		packet->csrc[i] = htonl(csrc[i]);
+                packet->meta.csrc[i] = htonl(csrc[i]);
 	}
 	/* ...a header extension? */
 	if (extn != NULL) {
-		/* We don't use the packet->extn_type field here, that's for receive only... */
-		uint16_t *base = (uint16_t *) packet->extn;
+                /* We don't use the packet->fields.extn_type field here, that's for receive only... */
+                uint16_t *base = (uint16_t *) packet->meta.extn;
 		base[0] = htons(extn_type);
 		base[1] = htons(extn_len);
-		memcpy(packet->extn + 4, extn, extn_len * 4);
+                memcpy(packet->meta.extn + 4, extn, extn_len * 4);
 	}
 
 	/* Add the RTP packet header to the beginning of the iov list */
 	my_iov = (struct iovec*)xmalloc(my_iov_count * sizeof(struct iovec));
 
-	my_iov[0].iov_base = buffer + RTP_PACKET_HEADER_SIZE;
+        my_iov[0].iov_base = buffer + offsetof(rtp_packet, fields);
 	my_iov[0].iov_len = buffer_len;
 
 	for (i = 1; i < my_iov_count; i++) {

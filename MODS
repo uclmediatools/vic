@@ -408,6 +408,16 @@ v1.2.5	- More informative error message when the lock on the mbus configuration
 1.2.16  - Fix compilation with gcc33 (uint8_t value compared against 255).
 	- Fix compilation on MacOS X 10.3.4
 	- Fix crash if getpwuid() fails (Grant Likely)
+        - Fix RTP packet structures.  The struct used to decode RTP had 
+          the 'interesting' implementation feature of putting a bunch of
+          management variables at the front and calculating the offset in
+          memory to the actual data. Unfortunately this completely failed
+          to take account of such things and pointer alignments and structure
+          padding, and only worked in 32 bits by coincidence.  It completely 
+          fails when compiled for 64-bit.  Reworked this to be a bit more 
+          explicit about what it's doing and using the standard offsetof 
+          macro to calculate offsets. Patch from Steve Smith at the 
+          University of Sydney <ssmith@vislab.usyd.edu.au>
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,

@@ -40,7 +40,6 @@
 #define __RTP_H__
 
 #define RTP_VERSION 2
-#define RTP_PACKET_HEADER_SIZE	((sizeof(char *) * 2) + sizeof(uint32_t *) + (2 * sizeof(int)))
 #define RTP_MAX_PACKET_LEN 1500
 
 #if !defined(WORDS_BIGENDIAN) && !defined(WORDS_SMALLENDIAN)
@@ -62,12 +61,16 @@ typedef struct {
 	/* having to free the csrc, data and extn blocks separately.  */
 	/* WARNING: Don't change the size of the first portion of the */
 	/* struct without changing RTP_PACKET_HEADER_SIZE to match.   */
+    struct _meta {
 	uint32_t	*csrc;
 	char		*data;
 	int		 data_len;
 	unsigned char	*extn;
 	uint16_t	 extn_len;	/* Size of the extension in 32 bit words minus one */
 	uint16_t	 extn_type;	/* Extension type field in the RTP packet header   */
+    } meta;
+
+    struct _fields {
 	/* The following map directly onto the RTP packet header...   */
 #ifdef WORDS_BIGENDIAN
 	unsigned short   v:2;		/* packet type                */
@@ -89,6 +92,8 @@ typedef struct {
 	uint32_t          ssrc;		/* synchronization source     */
 	/* The csrc list, header extension and data follow, but can't */
 	/* be represented in the struct.                              */
+    } fields;
+
 } rtp_packet;
 
 typedef struct {
