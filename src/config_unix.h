@@ -123,8 +123,10 @@ typedef int	fd_t;
 #endif /* FreeBSD */
 
 #ifdef Solaris
+#ifndef HAVE_IPv6
 #define NEED_INET_ATON
 #define NEED_INET_PTON
+#endif
 #include <fcntl.h>
 #include <sys/sockio.h>
 #ifdef __cplusplus

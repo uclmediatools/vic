@@ -129,10 +129,12 @@ static int inet_pton(int family, const char *name, void *addr)
 #endif
 
 #ifdef NEED_IN6_IS_ADDR_MULTICAST
-static int IN6_IS_ADDR_MULTICAST(unsigned char addr[16])
-{
-	return addr[0] == 0xff;
-}
+/*static int IN6_IS_ADDR_MULTICAST(unsigned char addr[16])
+ *{
+ *	return addr[0] == 0xff;
+ *}
+ */
+#define IN6_IS_ADDR_MULTICAST(addr) ((addr)->s6_addr[0] == 0xffU)
 #endif
 
 
@@ -231,7 +233,9 @@ static socket_udp *udp_init6(char *addr, u_int16 port, int ttl)
 {
 #ifdef HAVE_IPv6
 	int                 reuse = 1;
+#ifdef WIN32
 	struct in6_addr     in6addr_any = {0};
+#endif
 	struct sockaddr_in6 s_in;
 	socket_udp         *s = (socket_udp *) malloc(sizeof(socket_udp));
 	s->mode  = IPv6;
@@ -273,8 +277,10 @@ static socket_udp *udp_init6(char *addr, u_int16 port, int ttl)
              }
         }
 
-	if (IN6_IS_ADDR_MULTICAST(s->addr6.s6_addr)) {
+	if (IN6_IS_ADDR_MULTICAST(&(s->addr6))) {
+#if 0
 		char              loop = 1;
+#endif
 		struct ipv6_mreq  imr;
 		imr.ipv6mr_multiaddr = s->addr6;
 		imr.ipv6mr_interface = 0;
@@ -288,11 +294,11 @@ static socket_udp *udp_init6(char *addr, u_int16 port, int ttl)
 			socket_error("setsockopt IPV6_MULTICAST_LOOP");
 			abort();
 		}
-#endif
-		if (setsockopt(s->fd, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, (char *) &s->ttl, sizeof(s->ttl)) != 0) {
+		if (setsockopt(s->fd, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, (unsigned char *) &s->ttl, sizeof(s->ttl)) != 0) {
 			socket_error("setsockopt IPV6_MULTICAST_HOPS");
 			abort();
 		}
+#endif
 	}
 	assert(s != NULL);
 	return s;
