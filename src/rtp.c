@@ -1793,7 +1793,7 @@ static int format_report_blocks(rtcp_rr *rrp, int remaining_length, struct rtp *
 					dlsr = 0;
 				} else {
 					lsr = ((s->sr->ntp_sec & 0x0000ffff) << 16) | ((s->sr->ntp_frac & 0xffff0000) >> 16);
-					dlsr = tv_diff(now, s->last_sr) * 65536;
+					dlsr = (uint32_t)(tv_diff(now, s->last_sr) * 65536);
 				}
 				rrp->ssrc       = htonl(s->ssrc);
 				rrp->fract_lost = fraction;
@@ -2082,7 +2082,7 @@ static void send_rtcp(struct rtp *session, uint32_t ts,
 			assert(((ptr - buffer) % 8) == 0); 
 
 			((rtcp_t *) lpt)->common.p = TRUE;
-			((rtcp_t *) lpt)->common.length = htons(((ptr - lpt) / 4) - 1);
+			((rtcp_t *) lpt)->common.length = htons((int16_t)(((ptr - lpt) / 4) - 1));
 		}
 		qfDES_CBC_e(session->encryption_key, buffer, ptr - buffer, initVec); 
 	}
@@ -2233,7 +2233,7 @@ void rtp_send_bye(struct rtp *session)
 				*ptr = (uint8_t) padlen;
 
 				common->p      = TRUE;
-				common->length = htons(((ptr - (uint8_t *) common) / 4) - 1);
+				common->length = htons((int16_t)(((ptr - (uint8_t *) common) / 4) - 1));
 			}
 			assert(((ptr - buffer) % 8) == 0); 
 			qfDES_CBC_e(session->encryption_key, buffer, ptr - buffer, initVec); 
