@@ -494,6 +494,13 @@ void mbus_send(struct mbus *m)
 	}
 
 	while (curr != NULL) {
+		if (reliable && !mbus_addr_valid(m, curr->dest)) {
+			debug_msg("Trying to send reliably to an unknown address...\n");
+			if (m->err_handler == NULL) {
+				abort();
+			}
+			m->err_handler(curr->seqnum, MBUS_DESTINATION_UNKNOWN);
+		}
 		/* Create the message... */
 		mb_header(curr->seqnum, curr->ts.tv_sec, (char)(curr->reliable?'R':'U'), m->addr[0], curr->dest, -1);
 		for (i = 0; i < curr->num_cmds; i++) {
@@ -528,23 +535,11 @@ void mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, i
 	struct mbus_msg	*prev = NULL;
 	int		 alen = strlen(cmnd) + strlen(args) + 4;
 
-	if (reliable && !mbus_addr_valid(m, dest)) {
-		debug_msg("Trying to send reliably to an unknown address...\n");
-		if (m->err_handler == NULL) {
-			abort();
-		}
-		m->err_handler(curr->seqnum, MBUS_DESTINATION_UNKNOWN);
-	}
-
 	while (curr != NULL) {
 		if ((!curr->complete)
 		&& mbus_addr_match(curr->dest, dest) 
 		&& (curr->num_cmds < MBUS_MAX_QLEN) 
 		&& ((curr->message_size + alen) < (MBUS_BUF_SIZE - 8))) {
-			/* Slots message in if it fits, but this breaks ordering.  Msg
-		         * X+1 maybe shorter than X that is in next packet, so X+1 jumps
-		         * ahead.
-		         */
 			curr->num_cmds++;
 			curr->reliable |= reliable;
 			curr->cmd_list[curr->num_cmds-1] = xstrdup(cmnd);
@@ -575,6 +570,7 @@ void mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, i
 	}
 	gettimeofday(&(curr->time), NULL);
 	gettimeofday(&(curr->ts),   NULL);
+
 }
 
 void mbus_qmsgf(struct mbus *m, char *dest, int reliable, const char *cmnd, const char *format, ...)
