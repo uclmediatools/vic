@@ -264,7 +264,7 @@ proc set_numDecoderLayers { src value } {
 }
 
 
-proc create_decoder_control_window src { 
+proc create_decoder_control_window src {
 	if { "[$src handler]" != "" } {
 		set w .decoder_control$src
 
@@ -280,7 +280,6 @@ proc create_decoder_control_window src {
 		label $w.title.main -borderwidth 0 -anchor w -text "Decoder Control"
 		label $w.title.name -borderwidth 0 -anchor w \
 			-textvariable src_nickname($src)
-		frame $w.tb -borderwidth 2 -relief groove
 
 		pack $w.title.name -anchor w
 		pack $w.title.main -anchor w
@@ -294,6 +293,8 @@ proc create_decoder_control_window src {
 		if { $fmt == "pvh" } {
 
 			global numDecoderLayers numLayers decoderLayerValue
+
+			frame $w.tb -borderwidth 2 -relief groove
 
 			if ![info exists numDecoderLayers($src)] {
 				set numDecoderLayers($src) $numLayers
@@ -313,8 +314,8 @@ proc create_decoder_control_window src {
 
 			pack $w.tb.scale -side left -fill x -expand 1
 			pack $w.tb.value -side left
+			pack $w.tb -fill x -padx 6 -side left -expand 1
 		}
-		pack $w.tb -fill x -padx 6 -side left -expand 1
 
 		button $w.dismiss -relief raised -font $f \
 			-command "destroy $w" -text Dismiss
@@ -324,6 +325,7 @@ proc create_decoder_control_window src {
 		open_dialog "Decoder not initialised yet"
 	}
 }
+
 proc create_stats_window { w src titleText method } {
 
 	if [winfo exists $w] {

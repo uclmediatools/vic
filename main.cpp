@@ -121,17 +121,37 @@ extern "C" int gethostname(char* name, int len);
 #endif
  
 static void
-usage()
+usage(char *szOffending)
 {
-	fprintf(stderr, "\
-Usage: vic [-HPs] [-A nv|ivs|rtp] [-B maxbps] [-C conf]\n\
+#ifdef WIN32
+char win_usage[] = "\
+VIC is a multicast (or unicast) video tool. It is best to start it\n\
+using a multicast directory tool, like sdr or multikit. If desired VIC\n\
+can be launched from the command line using:\n\n\
+vic <address>/<port>\n\n\
+where <address> is machine name, or a multicast IP address, and <port> is\n\
+the connection identifier (an even number between 1024-65536).\n\n\
+For more details see:\n\n\
+http://www-mice.cs.ucl.ac.uk/multimedia/software/vic/faq.html\n\
+Options: vic [-HPs] [-A nv|ivs|rtp] [-B maxbps] [-C conf]\n\
 \t[-c ed|gray|od|quantize] [-D device] [-d display]\n\
 \t[-f bvc|cellb|h261|jpeg|nv] [-F maxfps] [-I channel]\n\
 \t[-K key ] [-L flowLabel (ip6 only)] [-l (creates log file)]\n\
 \t[-M colormap] [-m mtu] [-N session] [-n atm|ip|ip6|rtip]\n\
 \t[-o clipfile] [-t ttl] [-U interval] [-u script]\n\
-\t[-V visual] [-X resource=value] [-j numlayers] dest/port[/fmt/ttl]\n"
-	);
+\t[-V visual] [-X resource=value] [-j numlayers] dest/port[/fmt/ttl]\n";
+
+if (szOffending == NULL) {
+        szOffending = win_usage;
+}
+
+MessageBox(NULL, szOffending, "VIC Usage", MB_ICONINFORMATION | MB_OK);
+#else
+printf(win_usage);
+if (szOffending) {
+        printf(szOffending);
+}
+#endif
 	exit(1);
 }
 
@@ -141,7 +161,7 @@ public:
 	int command(int argc, const char*const* argv) {
 		UNUSED(argc);
 		UNUSED(argv);
-		usage();
+		usage(NULL);
 		/*NOTREACHED*/
 		return (0);
 	}
@@ -447,7 +467,7 @@ main(int argc, const char** argv)
 			use= optarg;
 		}
 		else if (op == '?')
-			usage();
+			usage(NULL);
 	}
 
 	Tcl::init("vic");
@@ -508,7 +528,7 @@ main(int argc, const char** argv)
 		switch (op) {
 
 		default:
-			usage();
+			usage(NULL);
 
 		case 'A':
 			tcl.add_option("sessionType", optarg);
@@ -666,8 +686,7 @@ main(int argc, const char** argv)
 			exit(1);
 		}
 	} else if ((dst = tcl.attr("defaultHostSpec")) == 0) {
-		fprintf(stderr, "vic: destination address required\n");
-		exit(1);
+		usage("vic: destination address required\n");
 	}
 	tcl.add_option("defaultHostSpec", dst);
 #ifdef notdef

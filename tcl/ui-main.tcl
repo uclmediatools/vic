@@ -665,6 +665,54 @@ proc really_activate src {
 proc update_decoder src {
 	set_rate_vars $src
 	update_source_info $src
+
+	# check for Decoder control window
+	set w .decoder_control$src
+	puts "src-start: $src"
+	if [winfo exists $w] {
+#		destroy $w	
+
+		#update
+		set fmt [rtp_format $src]
+		if [winfo exists $w.tb] {
+
+			if { $fmt != "pvh" } { 
+				pack forget $w.tb
+			} else {
+				pack $w.tb -before $w.dismiss  -fill x
+			}
+		} else {
+			if { $fmt == "pvh" } { 
+
+				global numDecoderLayers numLayers decoderLayerValue
+
+				frame $w.tb
+				set f [smallfont]
+
+				if ![info exists numDecoderLayers($src)] {
+					set numDecoderLayers($src) $numLayers
+				}
+
+				label $w.tb.value -text 0 -font $f -width 3
+				scale $w.tb.scale -font $f -orient horizontal \
+					-showvalue 0 -from 0 -to $numLayers \
+					-variable numDecoderLayers($src) \
+					-width 12 -relief groove \
+					-command "set_numDecoderLayers $src"
+
+
+				set decoderLayerValue($src) $w.tb.value
+
+				$decoderLayerValue($src) configure -text $numDecoderLayers($src)
+
+				pack $w.tb.scale -side left -fill x -expand 1
+				pack $w.tb.value -side left
+				pack $w.tb -before $w.dismiss  -fill x
+				#create_decoder_control_window $src
+			}
+		}
+	}
+
 }
 
 proc change_format src {
