@@ -33,8 +33,6 @@
 # K.Hasler.  01/03/98
 # Note: Procedures based on original VIC procedures are appended with 'relate'
 
-set updated 0
-
 # -------------------------------------------------
 # relate_quit --
 #	Setup the conference bus to receive a quit
