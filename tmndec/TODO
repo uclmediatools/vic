@@ -1,0 +1,32 @@
+		          TODO version 3.1
+		     ===========================
+
+		       Suggestions are welcome.
+
+1.0  (Annex O) Rate control cannot be used with temporal scalability (True-B
+pictures).  Currently the number of frames between successive P pictures and
+between successive B-pictures must be constant.
+
+2.0  (Annex O) The reconstructed sequence (out.raw) at the encoder
+must be written in display order.  Currently, the frames are written in
+encoding order.
+
+3.0  (Annex I) Intra Mode selection is based on TMN-8 rev.0 and will
+not yield optimal compression.  
+
+4.0  (Annex K) not yet implemented.
+
+5.0  (Annex L) not yet implemented.
+
+6.0  (Annex N) not yet implemented.
+
+7.0  (Annex P) not yet implemented.
+
+8.0  (Annex Q) not yet implemented.
+
+9.0  (Annex R) not yet implemented.
+
+10.0  Rounding Type supported at the decoder but not implemented at the
+encoder.
+
+Contributions are also welcomed.

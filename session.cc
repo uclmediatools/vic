@@ -76,6 +76,7 @@ int VideoSessionManager::check_format(int fmt) const
 	case RTP_PT_H261:
 	case RTP_PT_BVC:
 	case RTP_PT_H261_COMPAT:/*XXX*/
+	case RTP_PT_H263:
 		return (1);
 	}
 	return (0);

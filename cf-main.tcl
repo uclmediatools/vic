@@ -40,6 +40,7 @@ set rtp_type(29) picw
 set rtp_type(30) cpv
 set rtp_type(31) h261
 set rtp_type(32) mpeg
+set rtp_type(42) h263
 set rtp_type(127) h261v1
 
 proc vic_main {} {

@@ -1,0 +1,181 @@
+			        tmn
+                                ===
+
+		      Version 3.0, May 27, 1997
+
+	(C) Department of Electrical Engineering
+    	    University of British Columbia CANADA.
+	    Michael Gallant <mikeg@ee.ubc.ca>, Guy Cote <guyc@ee.ubc.ca>, 
+            Berna Erol <bernae@ee.ubc.ca>, Faouzi Kossentini <faouzi@ee.ubc.ca>
+
+	    (Based on Telenor's tmn version 2.0)          
+				   
+
+tmn is a very low bitrate video encoder producing H.263 bitstreams.
+
+Compatibility
+=============
+
+This H.263+ encoder is believed to be compatible with the description
+of the H.263+ standard, draft 20. All the H.263 negotiable coding
+modes are supported: the Unrestricted Motion Vector mode, 
+the Syntax-based Arithmetic Coding mode, the
+Advanced Prediction mode and the PB-frames mode. 
+At this moment, the following H.263+ negotiable coding modes are
+supported: Advanced Intra Coding mode, Deblocking Filter mode,
+Improved PB-frames mode, Scalability mode, 
+Alternative Inter VLC mode, and Modified Quantization mode. 
+See the CHANGES file for changes since the last version. 
+See the TODO file for items not included in this version.
+ 
+TMN was the Test Model Near-term for the ITU-LBC group working towards
+a standard for video telephony on normal analogue telephone lines.
+This standard is now called H.263+ and the current TMN is TMN-8. 
+
+
+Installation
+============
+
+This software should work on most 32 bit systems. It has been tested
+with OSF/1, SunOS-4.1.3, Linux, Win32 (Visual C++ 2.x/Windows NT/95).
+To build the encoder with Visual C++ 2.x, start a new project of type
+"console application", add all c-files to the project, and choose
+"build".
+
+You can change the default filenames in config.h to suit your
+site. Check the Makefile for a couple of defines you can use to change
+the coding behavior. These can also be defined in sim.h.
+
+
+Usage
+=====
+
+tmn [options] -i <filename> [more options] 
+
+tmn is controlled by options on the command line. The only required
+parameter is '-i <filename>'. Typing just 'tmn -i <filename>' will
+encode one image of the sequence 'filename' with every parameter set
+at the default value. Change the defaults with the options below.
+        
+Options:
+        -i <filename> original sequence [required parameter]
+        -o <filename> reconstructed frames [./out.raw]
+        -B <filename> filename for bitstream [./stream.263]
+        -a <n> image to start at [0]
+        -b <n> image to stop at [0]
+        -x <n> (<pels> <lines>) coding format [2]
+               n=1: SQCIF n=2: QCIF n=3: CIF n=4: 4CIF n=5: 16CIF  n=6:  Custom (12:11 PAR)
+                   128x96   176x144  352x288   704x576  1408x1152  pels x lines
+        -s <n> (0..15) integer pel search window [15]
+        -q <n> (1..31) quantization parameter QP [13]
+        -A <n> (1..31) QP for first frame [13]
+        -r <n> target bitrate in bits/s, default is variable bitrate
+        -C <n> Rate control method [3]
+        -k <n> frames to skip between each encoded frame [2]
+        -Z <n> reference frame rate (25 or 30 fps) [30.0]
+        -l <n> frames skipped in original compared to reference frame rate [0]
+        -e <n> original sequence has n bytes header [0]
+        -g <n> insert sync after each n GOB (slice) [0]
+               zero above means no extra syncs inserted
+        -w write difference image to file "./diff.raw" [OFF]
+        -m write repeated reconstructed frames to disk [OFF]
+        -t write trace to tracefile trace.enc [OFF]
+        -D <n> use unrestricted motion vector mode (annex D) [OFF]
+               n=1: H.263 n=2: H.263+
+        -E use syntax-based arithmetic coding (annex E) [OFF]
+        -F use advanced prediction mode (annex F) [OFF]
+        -G use PB-frames (annex G) [OFF]
+           -U <n> (0..3) BQUANT parameter [2]
+        -M use improved PB-frames (annex M) [OFF]
+        -I use advanced intra coding mode (annex I) [OFF]
+        -J use deblocking filter (annex J) [OFF]
+        -c <n> frames to select number of true B pictures between P
+               pictures (annex O) [0]
+        -d <n> to set QP for true B pictures (annex O) [13]
+        -i <filename> enhancement layer sequence
+        -u <n> to select SNR or spatial scalability mode (annex O) [OFF]
+               n=1: SNR n=3: SPATIAL(horiz) n=5: SPATIAL(vert)
+               n=7: SPATIAL(both)
+        -v <n> to set QP for enhancement layer (annex O) [13]
+        -O <filename> input sequence for spatial scalability,
+                      factor in 2 in both dimensions (annex O)
+        -S use alternative inter vlc mode (annex S) [OFF]
+        -T use modified quantization mode (annex T) [OFF]
+        -h Prints help
+ 
+        Default filenames and other options in square brackets 
+        are chosen in config.h
+
+
+If you have questions, please read the H.263+ and TMN-8 documents 
+available from the WWW page listed below, as well as the source code itself. 
+If you still have questions, please feel free to contact any of the
+persons listed in the source code headers.
+
+
+File format
+===========
+
+The input (original) sequence format is as follows.
+QCIF = 176x144 luma resolution with 4:1:1 chroma subsampling.
+
+           176
+     +-------------+
+     |             |
+     |     Y       | 144
+     |             |
+     |             |
+     +-------------+
+     |  U   |
+     |  88  |72
+     +------+
+     |  V   |
+     |  88  |72
+     +------+
+
+Each component is raster-scanned from the top left corner down to the
+bottom right corner. The Y, U and V components are then concatenated
+together for each frame. 
+
+In the qcif format, all frames in the sequence are 
+concatenated in one big file. 
+
+You can also read yuv format, where each frame has its own file. 
+(See io.c)
+
+The output file format is the same as the qcif input format. All the
+standard test sequences are available in this format from monet.ee.ubc.ca
+in /pub/tmn/qcif_source/.
+
+Contact guyc@ee.ubc.ca if you have trouble using this software or
+find any bugs. For the latest information on new versions and H.263
+docs, check our WWW page at http://www.ee.ubc.ca/image/h263plus/.
+
+
+CREDITS
+=======
+
+Anurag Bist at Rockwell International did most of the TMN5 rate
+control in version 1.1.
+
+Patrick Mulroy and Wayne Ellis at BT Labs did most of the SAC work
+included in version 1.4.
+
+The bitstream routines and VLC functions in version 1.7 were written
+by Robert Danielsen at Telenor R&D. They are based on ideas from the
+MPEG-2 Software Simulation Group work. 
+
+Karl Olav Lillevold of Telenor's R&D was the former maintainer of the code
+and wrote most of the code as well as the documentation and this README 
+file.
+
+H.263+ coder and options were implemented by Guy Cote, Berna Erol and Micheal
+Gallant of the University of British Columbia (UBC):
+Annex I implemented by guyc@ee.ubc.ca
+Annex J implemented by guyc@ee.ubc.ca
+Annex M implemented by bernae@ee.ubc.ca
+Annex O implemented by mikeg@ee.ubc.ca
+Annex S implemented by guyc@ee.ubc.ca
+Annex T implemented by bernae@ee.ubc.ca
+
+

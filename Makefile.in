@@ -54,7 +54,7 @@ CCOPT = @V_CCOPT@
 INCLUDE_TK = @V_INCLUDE_TK@
 INCLUDE_TCL = @V_INCLUDE_TCL@
 INCLUDE_X11 = @V_INCLUDE_X11@
-INCLUDE_MISC = @V_INCLUDE@
+INCLUDE_MISC = @V_INCLUDE@ -Itmndec -Itmn-x
 
 STATIC = @V_STATIC@
 MKDEP = ./mkdep
@@ -84,7 +84,8 @@ OBJ_GRABBER = @V_OBJ_GRABBER@
 SRC_GRABBER = $(OBJ_GRABBER:.o=.cc) 
 OBJ_XIL = @V_OBJ_XIL@
 OBJ_CRYPT = @V_OBJ_CRYPT@
-LIB = $(LIB_GRABBER) @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ -lm
+LIB = $(LIB_GRABBER) @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ \
+	tmndec/libh263.a tmn-x/libh263coder.a -lm
 INCLUDE = $(INCLUDE_MISC) $(INCLUDE_GRABBER) $(INCLUDE_TK) $(INCLUDE_TCL) \
 	$(INCLUDE_X11) $(MD_INC) -I./jpeg -I./p64 -I.
 DEFINE = @V_DEFINE@ -DED_YBITS=$(ED_YBITS) -DSIGRET=@V_SIGRET@
@@ -114,9 +115,9 @@ OBJ2 =	main.o net.o net-ip.o source.o \
 	session.o session-rtpv1.o session-nv.o session-ivs.o \
 	decoder.o decoder-jpeg.o decoder-nv.o \
 	decoder-h261.o decoder-h261v1.o \
-	decoder-cellb.o mbus.o mbus_engine.o \
+	decoder-cellb.o decoder-h263v2.o mbus.o mbus_engine.o \
 	device.o grabber.o vw.o Tcl.o Tcl2.o module.o transmitter.o \
-	encoder-nv.o encoder-cellb.o encoder-h261.o \
+	encoder-h263v2.o encoder-nv.o encoder-cellb.o encoder-h261.o \
 	transcoder-jpeg.o framer-jpeg.o \
 	group-ipc.o confbus.o renderer.o renderer-window.o \
 	color.o color-true.o color-pseudo.o color-dither.o color-ed.o \
@@ -166,7 +167,7 @@ OBJ_H261DUMP = h261_dump.o p64/p64.o p64/p64dump.o huffcode.o dct.o bv.o
 #	rm -f $@
 #	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(LIB) $(STATIC)
 
-vic: $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)
+vic: tmndec/libh263.a tmn-x/libh263coder.a $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)
 	rm -f $@
 	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(OBJ_CRYPT) $(LIB) $(STATIC)
 
@@ -317,6 +318,9 @@ clean:
 		vic vic.dyn vic.xil h261_play h261_dump jpeg_play cb_wish \
 		mkcube rgb-cube.ppm yuv-map.ppm cm0.c cm1.c ppmtolut \
 		config.cache config.log domake.* dotar.*
+	cd tmn && make clean
+	cd tmndec && make clean
+	rm -f tmn-x/*.o tmn-x/*.a
 
 realclean:
 	$(MAKE) clean
@@ -374,4 +378,10 @@ fulltar: force
 	    echo \
 	    "chmod 444 $$name.tar.gz" ; \
 	     chmod 444 $$name.tar.gz
+
+tmndec/libh263.a:
+	(cd tmndec; make -f Makefile.lib)
+
+tmn-x/libh263coder.a:
+	(cd tmn; make)
 

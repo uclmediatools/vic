@@ -1,0 +1,370 @@
+
+coder.c,711
+void CodeOneOrTwo(84,3032
+PictImage *CodeOneIntra(816,24997
+void CodeOneTrueB(979,29840
+void CodeOneEI(1315,39905
+ void CodeOneEP(1589,47914
+int *MB_Encode(1937,58086
+int MB_Decode(1992,59500
+void FillLumBlock(2082,61531
+void FillChromBlock(2108,62254
+void FillDiffLumBlock(2143,63082
+void FillDiffChromBlock(2169,63807
+void ZeroMBlock(2205,64586
+void ReconImage 2235,65320
+void ReconDiffImage 2274,66368
+unsigned char *InterpolateImage(2314,67499
+void MotionEstimatePicture(2376,69619
+void MakeEdgeImage(2620,76742
+void Clip(2699,78585
+void StoreDirectModeVectors(2731,79406
+void InitializeMV(2785,81466
+void GenerateFrameAndInterpolatedImages(2814,82190
+int Get_restricted_MQ(2886,84882
+
+config.h,1391
+#define YES 55,2050
+#define NO 56,2064
+#define DEF_UMV_MODE 63,2248
+#define DEF_SAC_MODE 66,2351
+#define DEF_ADV_MODE 69,2443
+#define DEF_PBF_MODE 72,2525
+#define DEF_AIC_MODE 77,2635
+#define DEF_DF_MODE 80,2714
+#define DEF_SS_MODE 83,2790
+#define DEF_IM_PBF_MODE 86,2880
+#define DEF_RPS_MODE 90,2973
+#define DEF_SNR_SPAT_SCAL_MODE 93,3058
+#define DEF_TEMP_SCAL 96,3151
+#define DEF_RPR_MODE 99,3243
+#define DEF_RRU_MODE 102,3324
+#define DEF_ISD_MODE 105,3418
+#define DEF_AIV_MODE 108,3501
+#define DEF_MQ_MODE 111,3584
+#define DEF_CODING_FORMAT 117,3777
+#define DEF_STREAMNAME 125,3987
+#define DEF_OUTFILENAME 129,4112
+#define DEF_OUTFILENAME_ENHANCE 132,4220
+#define DEF_WRITE_DIFF 135,4328
+#define DEF_DIFFILENAME 138,4418
+#define DEF_REF_FRAME_RATE 147,4640
+#define DEF_ORIG_SKIP 153,4940
+#define DEF_FRAMESKIP 159,5218
+#define DEF_RC_METHOD 162,5306
+#define DEF_SEEK_DIST 170,5510
+#define DEF_8X8_WIN 177,5847
+#define DEF_PBDELTA_WIN 181,5950
+#define DEF_START_FRAME 189,6170
+#define DEF_STOP_FRAME 192,6260
+#define DEF_INTER_QUANT 200,6464
+#define DEF_INTRA_QUANT 203,6560
+#define DEF_TRUE_B_QUANT 206,6657
+#define DEF_EI_EP_QUANT 209,6754
+#define DEF_BQUANT 220,6959
+#define DEF_WRITE_REPEATED 230,7254
+#define DEF_WRITE_TRACE 234,7367
+#define DEF_START_RATE_CONTROL 238,7534
+#define DEF_HEADERLENGTH 243,7811
+#define DEF_INSERT_SYNC 247,7954
+
+countbit.c,657
+void CountBitsMB 81,2965
+void CountBitsScalMB 283,7608
+void Count_sac_BitsMB 512,12533
+int CountBitsSlice 668,16839
+void CountBitsCoeff 732,18477
+int CodeCoeff 777,19495
+void Count_sac_BitsCoeff 1117,29501
+int Code_sac_Coeff 1164,30561
+int CodeTCoef 1343,35500
+int FindCBP 1401,36732
+void CountBitsVectors 1464,38131
+void Count_sac_BitsVectors 2042,54718
+void FindPMV 2213,59170
+void ZeroBits 2351,62243
+void ZeroRes 2370,62573
+void AddBits 2377,62714
+void AddRes 2396,63240
+void AddBitsPicture 2405,63440
+void ZeroVec 2420,63661
+void MarkVec 2428,63770
+void CopyVec 2437,63890
+int EqualVec 2446,64055
+int CountBitsPicture 2476,64910
+
+dct.c,176
+#  define PI 71,2513
+#  define PI 73,2538
+int Dct 121,3890
+void Scan 228,6731
+void DeScan 273,8006
+int idct 334,9758
+void init_idctref 449,12028
+void idctref 464,12347
+
+filter.c,85
+void EdgeFilter 66,2514
+void HorizEdgeFilter 87,3046
+void VertEdgeFilter 151,5115
+
+h263coder.h,41
+struct ENCODER_STATE ENCODER_STATE6,61
+
+indices.h,0
+
+intra_pred.c,244
+int Choose_Intra_Mode 63,2278
+void Intra_AC_DC_Encode 202,6983
+void fill_null 325,10868
+void fill_A 337,10997
+void fill_B 348,11284
+void Intra_AC_DC_Decode 376,12028
+int oddifyclipDC 494,16580
+int clipAC 502,16705
+int clipDC 515,16866
+
+io.c,126
+ ReadImage 76,2658
+ FillImage 159,4887
+ WriteImage 189,5594
+ InitImage 237,6932
+ FreeImage 279,8013
+ StripName 303,8550
+
+macros.h,195
+#define sign(sign56,2049
+#define Int(Int57,2091
+#define mnint(mnint58,2151
+#define mfloor(mfloor59,2212
+#define mmax(mmax60,2274
+#define mmin(mmin61,2324
+#define limit(limit62,2374
+
+main.c,407
+h263_init_encoder_1(54,1949
+h263_init_encoder_2(88,2964
+h263_encode_one_frame(153,5034
+h263_cleanup(566,17272
+main(623,18325
+Help(773,23772
+PrintResult(878,28972
+PrintSNR(903,30068
+InitializeCoder(913,30340
+ProcessArguments(1004,33033
+DeterminePictureType(1308,40578
+CalculateStatistics(1391,43540
+UpsampleReferenceLayerPicture(1502,45716
+UpsampleComponent(1537,46867
+FrameLayerRC(1658,49734
+
+main.h,0
+
+mot_est.c,243
+void MotionEstimation 81,3109
+void MotionEstimationBackward 491,15486
+unsigned char *LoadArea 713,21630
+int SAD_Macroblock 751,22532
+int SAD_Block 779,23412
+int SAD_MB_Bidir 803,23989
+int SAD_MB_integer 839,25333
+void FindMB 878,26572
+
+pred.c,983
+MB_Structure *Predict_P 74,2739
+MB_Structure *Predict_B 170,6222
+MB_Structure *Predict_EI(509,17883
+MB_Structure *MB_Recon_EI(584,19842
+MB_Structure *Predict_True_B 639,21463
+MB_Structure *MB_Recon_True_B 962,32472
+MB_Structure *MB_Recon_B 1153,39255
+MB_Structure *MB_Reconstruct 1292,44754
+MB_Structure *Predict_EP(1326,45895
+MB_Structure *MB_Recon_EP(1537,52416
+void FindForwLumPredPB 1657,56144
+void FindForwLumPredDirectTrueB 1699,57362
+void FindBackwLumPredDirectTrueB 1736,58463
+void FindBiDirLumPredPB 1776,59595
+void FindBiDirChrPredPB 1811,60708
+void FindBiDirLimits 1827,61198
+void FindBiDirChromaLimits 1838,61432
+void BiDirPredBlock 1849,61642
+void DoPredChrom_P 1927,63905
+void FindHalfPel 2059,67583
+void FindPred 2161,69998
+void FindPredOBMC 2206,71086
+MB_Structure *MB_Recon_P 2477,77909
+void ReconLumBlock_P 2589,82632
+void ReconChromBlock_P 2627,83597
+void FindChromBlock_P 2746,86345
+int ChooseMode 2869,89140
+int ModifyMode 2899,89722
+
+putbits.c,119
+ initbits 79,2732
+ putbits 88,2843
+sacPutbits 131,3568
+ alignbits 148,3875
+ bitcount 163,4129
+ BitPrint 170,4220
+
+putvlc.c,246
+ put_mv 71,2396
+ put_cbpcm_intra 94,2712
+ put_cbpcm_inter 106,2930
+ put_cbpy 119,3142
+ put_coeff 136,3465
+ put_intra_coeff 180,4474
+ show_inter_coeff 225,5656
+ show_intra_coeff 260,6494
+int show_inter_run 295,7398
+int put_rvlc(335,8325
+
+putvlc.h,0
+
+quant.c,47
+void Quant_blk 75,2536
+void Dequant 166,5030
+
+ratectrl.c,263
+int FrameUpdateQP 98,3824
+void InitializeRateControl 173,5947
+void UpdateRateControl(179,6038
+void InitializeRateControlMB(197,6562
+int Compute_QP(296,9833
+void UpdateRateControlMB(327,10772
+int InitializeQuantizer 358,11820
+int UpdateQuantizer 434,14332
+
+sac.c,220
+#define   q1 66,2376
+#define   q2 67,2398
+#define   q3 68,2420
+#define   top 69,2442
+int AR_Encode 93,3259
+int bit_opp_bits 128,3921
+int encoder_flush 161,4750
+int bit_in_psc_layer 202,5555
+int indexfn 245,6426
+
+sactbls.h,0
+
+sim.h,3669
+#define MB_SIZE 90,3218
+#define BLOCK_SIZE 91,3237
+#define BLOCKS_MB 92,3258
+#define MBC 123,3890
+#define MBR 124,3907
+#define PREF_NULL_VEC 127,3951
+#define PREF_16_VEC 128,3977
+#define PREF_PBDELTA_NULL_VEC 129,4001
+#define PSC 170,4979
+#define PSC_LENGTH 171,5000
+#define ESCAPE 173,5030
+#define PCT_INTRA 175,5076
+#define PCT_INTER 176,5118
+#define PCT_IPB 177,5160
+#define PCT_B 178,5202
+#define PCT_EI 179,5244
+#define PCT_EP 180,5286
+#define PCT_PB	181,5328
+#define ON 183,5364
+#define OFF 184,5406
+#define P_PICTURE_ESTIMATION 187,5473
+#define PB_PICTURE_ESTIMATION 188,5515
+#define B_PICTURE_ESTIMATION 189,5557
+#define EI_EP_PICTURE_ESTIMATION 190,5599
+#define SF_SQCIF 192,5642
+#define SF_QCIF 193,5695
+#define SF_CIF 194,5748
+#define SF_4CIF 195,5801
+#define SF_16CIF 196,5854
+#define SF_CUSTOM 197,5907
+#define SF_EPTYPE 198,5960
+#define PB_FRAMES 201,6051
+#define IM_PB_FRAMES 202,6093
+#define FORWARD_PREDICTION 205,6173
+#define BACKWARD_PREDICTION 206,6215
+#define BIDIRECTIONAL_PREDICTION 207,6257
+#define DIRECT_PREDICTION 208,6299
+#define UPWARD_PREDICTION 209,6341
+#define INTRA_PREDICTION 210,6383
+#define B_DIRECT_PREDICTION 213,6470
+#define B_FORWARD_PREDICTION 214,6514
+#define B_BACKWARD_PREDICTION 215,6558
+#define B_BIDIRECTIONAL_PREDICTION 216,6602
+#define B_INTRA_PREDICTION 217,6646
+#define EP_FORWARD_PREDICTION 219,6691
+#define EP_UPWARD_PREDICTION 220,6735
+#define EP_BIDIRECTIONAL_PREDICTION 221,6779
+#define EP_INTRA_PREDICTION 222,6823
+#define EI_UPWARD_PREDICTION 224,6868
+#define EI_INTRA_PREDICTION 225,6912
+#define PAR_0 228,7008
+#define PAR_SQUARE 229,7062
+#define PAR_CIF 230,7116
+#define PAR_525 231,7170
+#define PAR_CIF_STRETCHED 232,7224
+#define PAR_525_STRETCHED 233,7278
+#define PAR_EXTENDED 234,7332
+#define CCC_1000 236,7387
+#define CCC_1001 237,7458
+#define MF_NO_ACK_NACK 241,7550
+#define MF_ACK 242,7626
+#define MF_NACK 243,7701
+#define MF_ACK_NACK 244,7777
+#define MODE_INTER 246,7839
+#define MODE_INTER_Q 247,7881
+#define MODE_INTER4V 248,7923
+#define MODE_INTRA 249,7965
+#define MODE_INTRA_Q 250,8007
+#define MODE_INTER4V_Q 251,8049
+#define PBMODE_NORMAL 254,8093
+#define PBMODE_MVDB 255,8135
+#define PBMODE_CBPB_MVDB 256,8177
+#define PBMODE_BIDIR_PRED 258,8220
+#define PBMODE_CBPB_BIDIR_PRED 259,8262
+#define PBMODE_FRW_PRED 260,8304
+#define PBMODE_CBPB_FRW_PRED 261,8346
+#define PBMODE_BCKW_PRED 262,8389
+#define PBMODE_CBPB_BCKW_PRED 263,8432
+#define SNR_SCALABILITY	265,8476
+#define SPATIAL_SCALABILITY_H	266,8518
+#define SPATIAL_SCALABILITY_V 267,8558
+#define SPATIAL_SCALABILITY_HV 268,8600
+#define INTRA_MODE_DC 271,8691
+#define INTRA_MODE_VERT_AC 272,8733
+#define INTRA_MODE_HORI_AC 273,8775
+#define BASE_LAYER_NUM 276,8858
+#define ENHANCEMENT_LAYER_NUM 277,8900
+#define OFFLINE_RC 280,8970
+#define TMN5_RC 281,9012
+#define TMN8_RC 282,9054
+#define NO_VEC 284,9098
+typedef struct motionvector motionvector287,9172
+} MotionVector;MotionVector294,9544
+typedef struct point point298,9584
+} Point;Point301,9625
+typedef struct pict_image pict_image305,9668
+} PictImage;PictImage309,9854
+typedef struct diff_image diff_image311,9868
+} DiffImage;DiffImage315,9930
+typedef struct pict pict321,10005
+} Pict;Pict370,12400
+typedef struct slice slice374,12432
+} Slice;Slice377,12580
+typedef struct macroblock macroblock381,12618
+} Macroblock;Macroblock386,12845
+typedef struct mb_structure mb_structure390,12897
+} MB_Structure;MB_Structure394,12978
+typedef struct bits_counted bits_counted399,13030
+} Bits;Bits417,13409
+typedef struct results results424,13539
+} Results;Results429,13728
+
+snr.c,25
+void ComputeSNR 74,2463
+
+vlc.h,54
+} VLCtable;VLCtable70,2481
+} VLCtab;VLCtab74,2527
