@@ -484,6 +484,7 @@ void XILGrabber::stop()
 
 void XILGrabber::dispatch(int mask)
 {
+	UNUSED(mask);
 	double now = gettimeofday();
 	if (nextframetime_ > now) {
 #if 0
@@ -787,8 +788,6 @@ XILCodecGrabber::~XILCodecGrabber()
 }
 
 void XILCodecGrabber::update_grabber_panel() {
-	char	buf[20];
-	Tcl &tcl = Tcl::instance();
 
 	XILGrabber::update_grabber_panel();
 }
@@ -1030,7 +1029,6 @@ u_char* XILp64Grabber::capture(int& length)
 
 	u_char *p = NULL;
 	int cc, nf;
-	static incis = 0;
 
 	update_grabber_panel();
 
