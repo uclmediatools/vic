@@ -57,7 +57,7 @@ MBusEngine::MBusEngine() {
 		{"audio.output.powermeter",	&MBusEngine::rx_powermeter},
 		{"audio.input.powermeter",	&MBusEngine::rx_powermeter},
 		{"mbus.hello",				&MBusEngine::rx_mbus_hello},
-		{"",NULL}
+		{NULL,NULL}
 	};
 	mbus_cmnd_to_func_table_=mbus_cmnd_to_func_table;
 }
