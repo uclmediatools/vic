@@ -44,7 +44,9 @@ v1.0.2	- Assorted fixes to RTP library
 	* 14 May 1999 [rat v4.0.1]
 
 v1.0.3	- Fix inet_aton() in net_udp.c
+	* 15 May 1999 [rat v4.0.2]
 
+v1.0.4	- 
 
 
 Still to do...
