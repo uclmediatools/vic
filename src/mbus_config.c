@@ -129,12 +129,21 @@ char *mbus_new_hashkey(void)
 static void rewrite_config(struct mbus_config *m)
 {
 #ifdef WIN32
-	char	*hashkey = mbus_new_hashkey();
-	char	*encrkey = mbus_new_encrkey();
-	char	*scope   = MBUS_DEFAULT_SCOPE_NAME;
-	char			buffer[MBUS_BUF_SIZE];
-	LONG			status;
+	char		*hashkey = mbus_new_hashkey();
+	char		*encrkey = mbus_new_encrkey();
+	char		*scope   = MBUS_DEFAULT_SCOPE_NAME;
+	const uint32_t	 cver    = MBUS_CONFIG_VERSION;
+	const uint32_t	 port    = MBUS_DEFAULT_NET_PORT;
+	char		*addr    = xstrdup(MBUS_DEFAULT_NET_ADDR);
+	char		 buffer[MBUS_BUF_SIZE];
+	LONG		 status;
 
+	status = RegSetValueEx(m->cfgKey, "CONFIG_VERSION", 0, REG_DWORD, (const uint8_t *) &cver, sizeof(cver));
+	if (status != ERROR_SUCCESS) {
+		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
+		debug_msg("Unable to set version: %s\n", buffer);
+		abort();
+	}
 	status = RegSetValueEx(m->cfgKey, "HASHKEY", 0, REG_SZ, hashkey, strlen(hashkey) + 1);
 	if (status != ERROR_SUCCESS) {
 		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
@@ -153,6 +162,19 @@ static void rewrite_config(struct mbus_config *m)
 		debug_msg("Unable to set scope: %s\n", buffer);
 		abort();
 	}	
+	status = RegSetValueEx(m->cfgKey, "ADDRESS", 0, REG_SZ, addr, strlen(addr) + 1);
+	if (status != ERROR_SUCCESS) {
+		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
+		debug_msg("Unable to set address: %s\n", buffer);
+		abort();
+	}	
+	status = RegSetValueEx(m->cfgKey, "PORT", 0, REG_DWORD, (const uint8_t *) &port, sizeof(port));
+	if (status != ERROR_SUCCESS) {
+		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
+		debug_msg("Unable to set port: %s\n", buffer);
+		abort();
+	}	
+	xfree(addr);
 #else
 	char	*hashkey = mbus_new_hashkey();
 	char	*encrkey = mbus_new_encrkey();
@@ -499,10 +521,60 @@ void mbus_get_hashkey(struct mbus_config *m, struct mbus_key *key)
 void mbus_get_net_addr(struct mbus_config *m, char *net_addr, uint16_t *net_port, int *net_scope)
 {
 #ifdef WIN32
-	/* TODO: get values out of registry */
-	strcpy(net_addr, MBUS_DEFAULT_NET_ADDR);
-	*net_port  = MBUS_DEFAULT_NET_PORT;
-	*net_scope = MBUS_DEFAULT_SCOPE;
+	long	 status;
+	DWORD	 type;
+	char	*buffer;
+	int	 buflen = MBUS_BUF_SIZE;
+	uint32_t port;
+
+	assert(m->cfg_locked);
+	
+	/* Read the key from the registry... */
+	buffer = (char *) xmalloc(MBUS_BUF_SIZE);
+	status = RegQueryValueEx(m->cfgKey, "ADDRESS", 0, &type, buffer, &buflen);
+	if (status != ERROR_SUCCESS) {
+		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
+		debug_msg("Unable to get address: %s\n", buffer);
+		strcpy(net_addr, MBUS_DEFAULT_NET_ADDR);
+	} else {
+		assert(type == REG_SZ);
+		assert(buflen > 0);
+		strncpy(net_addr, buffer, buflen);
+		xfree(buffer);
+	}
+
+	buflen = MBUS_BUF_SIZE;
+	status = RegQueryValueEx(m->cfgKey, "PORT", 0, &type, (uint8_t *) &port, &buflen);
+	if (status != ERROR_SUCCESS) {
+		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
+		debug_msg("Unable to get port: %s\n", buffer);
+		*net_port  = MBUS_DEFAULT_NET_PORT;
+	} else {
+		assert(type == REG_DWORD);
+		assert(buflen == 4);
+		*net_port = (uint16_t) port;
+	}
+
+	buffer = (char *) xmalloc(MBUS_BUF_SIZE);
+	buflen = MBUS_BUF_SIZE;
+	status = RegQueryValueEx(m->cfgKey, "ADDRESS", 0, &type, buffer, &buflen);
+	if (status != ERROR_SUCCESS) {
+		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
+		debug_msg("Unable to get scope: %s\n", buffer);
+		*net_scope = MBUS_DEFAULT_SCOPE;
+	} else {
+		assert(type == REG_SZ);
+		assert(buflen > 0);
+		if (strncmp(buffer, SCOPE_HOSTLOCAL_NAME, strlen(SCOPE_HOSTLOCAL_NAME)) == 0) {
+			*net_scope = SCOPE_HOSTLOCAL;
+		} else if (strncmp(buffer, SCOPE_LINKLOCAL_NAME, strlen(SCOPE_LINKLOCAL_NAME)) == 0) {
+			*net_scope = SCOPE_LINKLOCAL;
+		} else {
+			debug_msg("Unrecognized scope: %s\n", buffer);
+			*net_scope = MBUS_DEFAULT_SCOPE;
+		}
+		xfree(buffer);
+	}
 #else
 	struct stat	 s;
 	char		*buf;
@@ -598,10 +670,24 @@ void mbus_get_net_addr(struct mbus_config *m, char *net_addr, uint16_t *net_port
 int mbus_get_version(struct mbus_config *m)
 {
 #ifdef WIN32
-	/* TODO: get values out of registry */
-	strcpy(net_addr, MBUS_DEFAULT_NET_ADDR);
-	*net_port  = MBUS_DEFAULT_NET_PORT;
-	*net_scope = MBUS_DEFAULT_SCOPE;
+	long		status;
+	DWORD		type;
+	uint32_t	cver;
+	int		verl;
+	char		buffer[MBUS_BUF_SIZE];
+
+	assert(m->cfg_locked);
+	
+	/* Read the key from the registry... */
+	status = RegQueryValueEx(m->cfgKey, "CONFIG_VERSION", 0, &type, (uint8_t *) &cver, &verl);
+	if (status != ERROR_SUCCESS) {
+		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
+		debug_msg("Unable to get version: %s\n", buffer);
+		return 0;
+	}
+	assert(type == REG_DWORD);
+	assert(verl == 4);
+	return cver;
 #else
 	struct stat	 s;
 	char		*buf;
