@@ -873,8 +873,10 @@ void rtp_setopt(struct rtp *session, int optname, int optval)
 	switch (optname) {
 		case RTP_OPT_WEAK_VALIDATION:
 			session->opt->wait_for_rtcp = optval;
+			break;
 	        case RTP_OPT_PROMISC:
 			session->opt->promiscuous_mode = optval;
+			break;
         	default:
 			debug_msg("Ignoring unknown option (%d) in call to rtp_setopt().\n", optname);
 			abort();
