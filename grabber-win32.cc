@@ -478,9 +478,9 @@ int VfwDevice::command(int argc, const char*const* argv)
 	if ((argc == 3) && (strcmp(argv[1], "open") == 0)) {
 		TclObject* o = 0;
 		if (strcmp(argv[2], "422") == 0)
-			o = new Vfw422Grabber(vfwdev_);
+			o = grabber_ = new Vfw422Grabber(vfwdev_);
 		else if (strcmp(argv[2], "cif") == 0)
-			o = new VfwCIFGrabber(vfwdev_);
+			o = grabber_ = new VfwCIFGrabber(vfwdev_);
 		if (o != 0)
 			Tcl::instance().result(o->name());
 		return (TCL_OK);
@@ -502,8 +502,8 @@ VfwGrabber::VfwGrabber(const int dev) : dev_(dev), connected_(0),
 	devtype_ = get_device_type(deviceName);
 	setport("external");
 	if (is_pal()) {
-		basewidth_ = PAL_BASE_WIDTH;
-		baseheight_ = PAL_BASE_HEIGHT;
+		basewidth_ = CIF_BASE_WIDTH;
+		baseheight_ = CIF_BASE_HEIGHT;
 	} else {
 		basewidth_ = NTSC_BASE_WIDTH;
 		baseheight_ = NTSC_BASE_HEIGHT;
@@ -512,12 +512,18 @@ VfwGrabber::VfwGrabber(const int dev) : dev_(dev), connected_(0),
 
 VfwGrabber::~VfwGrabber()
 {
+	dprintf("~VfwGrabber\n");
 	if (capwin_) {
 		if (capturing_) {
+			dprintf("stopping...\n");
 			capCaptureStop(capwin_);
+			ReleaseSemaphore(frame_sem_, 1, NULL);
+			CloseHandle(frame_sem_);
 			capturing_ = 0;
+			capture_=0;
 		}
 		if (connected_) {
+			dprintf("disconnecting...\n");
 			capDriverDisconnect(capwin_);
 			connected_ = 0;
 		}
