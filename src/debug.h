@@ -49,7 +49,13 @@ extern "C" {
 
 void _dprintf(const char *format, ...);
 void debug_dump(void*lp, long len);
-void debug_set_core_dir(const char *argv0);
+
+#ifdef DEBUG
+void _debug_set_core_dir(const char *argv0);
+#define debug_set_core_dir(x) _debug_set_core_dir(x)
+#else 
+#define debug_set_core_dir(x)
+#endif
 
 #if defined(__cplusplus)
 }

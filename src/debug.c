@@ -137,7 +137,7 @@ void debug_dump(void*lp, long len)
    }
 }
 
-void debug_set_core_dir(const char *argv0)
+void _debug_set_core_dir(const char *argv0)
 {
 #if defined(DEBUG) && !defined(WIN32)
         struct stat s;
@@ -151,7 +151,7 @@ void debug_set_core_dir(const char *argv0)
                 appname = appname + 1;
         }
 
-        /* Should check length of appname, but this is debug code...*/
+        /* Should check length of appname, but this is debug code   */
         /* and developers should know better than to have 64 char   */
         /* app name.                                                */
         sprintf(coredir, "core-%s\n", appname);
@@ -171,4 +171,5 @@ void debug_set_core_dir(const char *argv0)
         }
         chdir(coredir);
 #endif /* DEBUG */
+        UNUSED(argv0);
 }
