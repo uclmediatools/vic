@@ -376,7 +376,7 @@ int XILGrabber::command(int argc, const char*const* argv)
 		if (strcmp(argv[1],"get")==0) {
 			if (strcmp(argv[1], "vformat") == 0) {	
 				Tcl& tcl = Tcl::instance();
-				fprintf (stderr,"%s: vformat: %d",__FUNCTION__,vformat_);
+//				fprintf (stderr,"%s: vformat: %d",__FUNCTION__,vformat_);
 				switch (vformat_) {
 					case 1:	tcl.resultf("%s","pal");
 						break;
@@ -434,7 +434,6 @@ int XILGrabber::command(int argc, const char*const* argv)
 				if (running_) {
 					stop();
 				}
-				fprintf (stderr,"%s: set vformat: %d",__FUNCTION__,vformat_);
 				attr("FORMAT_V", vformat_);
 				/* video format may have changed when port changed */
 				xil_get_info(source_, &basewidth_, &baseheight_,
