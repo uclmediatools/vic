@@ -41,6 +41,7 @@ v1.0.2	- Assorted fixes to RTP library
 	- Mbus error function now takes a "type of error" argument
 	- Added xrealloc()
 	- Fix reordering of mbus messages
+	* 14 May 1999 [rat v4.0.1]
 
 
 Still to do...
