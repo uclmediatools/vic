@@ -418,6 +418,9 @@ v1.2.5	- More informative error message when the lock on the mbus configuration
           explicit about what it's doing and using the standard offsetof 
           macro to calculate offsets. Patch from Steve Smith at the 
           University of Sydney <ssmith@vislab.usyd.edu.au>
+	- Update AES code code to rijndael-fst-3.0.zip, taken from:
+	    http://www.esat.kuleuven.ac.be/~rijmen/rijndael/
+	  This now passes the official NIST AES test suite (included).
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
