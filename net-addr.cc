@@ -60,11 +60,11 @@ AddressType::AddressType() {
 Address* AddressType::alloc(const char* name) {
   Address * result = 0;
 
-  printf("looking up %s.\n", name);
+  /*printf("looking up %s.\n", name);*/
 
   for (AddressType *p = all_; p != 0; p = p->next_) {
     if((result = p->resolve(name)) != 0) {
-      printf("found %s.\n", name);
+      /*printf("found %s.\n", name);*/
       return result;
     }
   }

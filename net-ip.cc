@@ -130,11 +130,13 @@ Address * IPAddress::copy() const {
 int IPAddress::operator=(const char* text) {
   addr_.s_addr = LookupHostAddr(text);
   strcpy(text_, intoa(addr_.s_addr));
+  return (0);
 }
 
 int IPAddress::operator=(const struct in_addr& addr) {
   memcpy(&addr_, &addr, sizeof(addr));
   strcpy(text_, intoa(addr_.s_addr));
+  return (0);
 }
 
 int IPNetwork::command(int argc, const char*const* argv)

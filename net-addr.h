@@ -48,7 +48,7 @@ public:
   static Address* alloc(const char* name);
 protected:
   AddressType();
-  virtual Address* resolve(const char* name) {;}
+  virtual Address* resolve(const char* name) {return (0);}
 private:
   static AddressType* all_;
   AddressType* next_;

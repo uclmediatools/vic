@@ -137,9 +137,9 @@ H263_OBJS = h263/h263rtp.obj h263/h263dec.obj h263/bitIn.obj h263/input.obj h263
 
 OBJ0 =	getopt.obj win32.obj win32X.obj
 OBJ1 =	inet.obj cellb_tables.obj tkStripchart.obj md5c.obj random.obj
-OBJ2 =	main.obj net.obj net-ip.obj source.obj \
+OBJ2 =	main.obj net.obj net-ip.obj net-ipv6.obj source.obj \
 	iohandler.obj timer.obj idlecallback.obj media-timer.obj \
-	session.obj session-rtpv1.obj session-nv.obj session-ivs.obj \
+	session.obj net-addr.obj inet6.obj \
 	decoder.obj decoder-jpeg.obj decoder-nv.obj decoder-raw.obj \
 	decoder-h261.obj decoder-h261v1.obj decoder-bvc.obj  \
 	decoder-cellb.obj mbus_engine.obj mbus.obj \

@@ -56,7 +56,7 @@ public:
 	Address() : text_(0) {;}
 	virtual ~Address() { if (text_) delete text_; }
 
-	virtual int operator=(const char*) {;}
+	virtual int operator=(const char*) {return (0);}
 	virtual Address* copy() const { return (0); }
 	virtual size_t length() const { return (0); }
 	virtual operator const void*() const { return (0); }
@@ -93,7 +93,7 @@ class Network : public TclObject {
     protected:
 	virtual void dosend(u_char* buf, int len, int fd);
         virtual int dorecv(u_char* buf, int len, u_int32_t& from, int fd);
-	virtual int dorecv(u_char* buf, int len, Address &from, int fd) {;}
+	virtual int dorecv(u_char* buf, int len, Address &from, int fd) {return (0);}
 
 	Address & addr_;
 	Address & local_;
