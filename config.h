@@ -89,11 +89,12 @@ long random(void);
 #endif
 
 #include "debug.h"
-#include <malloc.h>
 #include <stdlib.h>
 #include <time.h>		/* For clock_t */
 
-
+#ifdef HAVE_MALLOC_H
+#include <malloc.h>
+#endif /* HAVE_MALLOC_H */
 
 #if defined(NEED_SUNOS_PROTOS)
 #if defined(__cplusplus)

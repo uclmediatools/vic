@@ -292,6 +292,7 @@ if test -f codec/encoder-bvc.cpp ; then
 	V_OBJ="$V_OBJ codec/encoder-bvc.o codec/decoder-bvc.o"
 fi
 
+
 AC_SUBST(V_INCLUDE_GRABBER)
 AC_SUBST(V_LIB_GRABBER)
 AC_SUBST(V_OBJ_GRABBER)
