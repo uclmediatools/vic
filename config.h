@@ -133,7 +133,6 @@ extern "C" {
 #endif
 #include <netinet/in.h>
 #include <arpa/inet.h>
-int		strcasecmp(const char *, const char *);
 clock_t clock(void);
 #if !defined(sco) && !defined(sgi) && !defined(__bsdi__) && !defined(__FreeBSD__) && !defined(sun) && !defined(__linux__)
 int		gethostid(void);
