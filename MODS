@@ -214,4 +214,5 @@ Still to do...
 	- rtp_recv should split into rtp_select and rtp_recv. Jitter issues
 	  otherwise, as pointed out by Orion.
 	- Allow a callback for background processing during mbus_rendezvous_*()
+	- mbus_exit() queues an mbus.bye() message, but that never gets sent.
 
