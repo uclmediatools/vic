@@ -401,7 +401,9 @@ v1.2.5	- More informative error message when the lock on the mbus configuration
         * 30 April 2003
 
 1.2.15  - Added SAP/SDP support from Ivan Judson <judson@mcs.anl.gov>
-        * 05 June 2003 
+        - Removed changes to mreq (see 1.2.14) - bug fixed in XP
+        - Added code in mbus_recv function to ignore duplicate reliable messages
+        * 19 June 2003 
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
