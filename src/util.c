@@ -311,6 +311,8 @@ int strfind(const char *haystack, const char *needle_start, const char *needle_e
 #ifdef DEBUG
 	/* Paranoia check that memory between needle_start and needle_end */
 	/* is a valid string, and doesn't contain a zero byte.            */
+	/* check that start is before end */
+	assert(needle_start < needle_end);
 	for (n = needle_start; n != needle_end; n++) {
 		assert(*n != '\0');
 	}
