@@ -112,6 +112,7 @@ typedef struct _source {
 	char		*loc;
 	char		*tool;
 	char		*note;
+	rtcp_sr		*sr;
 } source;
 
 /*
@@ -231,7 +232,6 @@ static int validate_rtp(rtp_packet *packet, int len)
 		debug_msg("rtp_header_validation: v != 2\n");
 		return FALSE;
 	}
-
 	/* Check for valid payload types..... 72-76 are RTCP payload type numbers, with */
 	/* the high bit missing so we report that someone is running on the wrong port. */
 	if (packet->pt >= 72 && packet->pt <= 76) {
@@ -242,13 +242,11 @@ static int validate_rtp(rtp_packet *packet, int len)
 		debug_msg("\n");
 		return FALSE;
 	}
-
 	/* Check that the length of the packet is sensible... */
 	if (len < (12 + (4 * packet->cc))) {
 		debug_msg("rtp_header_validation: packet length is smaller than the header\n");
 		return FALSE;
 	}
-
 	/* Check that the length of any header extension is sensible... */
         if (packet->x) {
 		if (packet->extn_len > (len - 12 - (4 * packet->cc) - packet->p?packet->data[packet->data_len-1]:0)) {
@@ -256,11 +254,11 @@ static int validate_rtp(rtp_packet *packet, int len)
 			return FALSE;
 		}
         }
-
 	/* Check that the amount of padding specified is sensible. */
 	/* Note: have to include the size of any extension header! */
 	if (packet->p) {
-                if (packet->data[packet->data_len-1] > (len - 12 - (packet->cc * 4) - (packet->extn_len * 4) - packet->extn_len>0?4:0)) {
+		int	payload_len = len - 12 - (packet->cc * 4) - (packet->extn_len * 4) - packet->extn_len>0?4:0;
+                if (packet->data[packet->data_len-1] > payload_len) {
                         debug_msg("rtp_header_validation: padding greater than payload length\n");
                         return FALSE;
                 }
@@ -269,11 +267,10 @@ static int validate_rtp(rtp_packet *packet, int len)
 			return FALSE;
 		}
         }
-
 	return TRUE;
 }
 
-void rtp_recv_data(struct rtp *session)
+static void rtp_recv_data(struct rtp *session)
 {
 	/* This routine processes incoming RTP packets */
 	rtp_packet	*packet = (rtp_packet *) xmalloc(RTP_MAX_PACKET_LEN);
@@ -389,25 +386,36 @@ static int validate_rtcp(u_int8 *packet, int len)
 
 static void process_rtcp_sr(struct rtp *session, rtcp_t *packet)
 {
+	u_int32		 ssrc;
 	rtp_event	 event;
+	rtcp_sr		*sr;
+	source		*s;
 
-	packet->r.sr.sr.ssrc          = ntohl(packet->r.sr.sr.ssrc);
-	packet->r.sr.sr.ntp_sec       = ntohl(packet->r.sr.sr.ntp_sec);
-	packet->r.sr.sr.ntp_frac      = ntohl(packet->r.sr.sr.ntp_frac);
-	packet->r.sr.sr.rtp_ts        = ntohl(packet->r.sr.sr.rtp_ts);
-	packet->r.sr.sr.sender_pcount = ntohl(packet->r.sr.sr.sender_pcount);
-	packet->r.sr.sr.sender_bcount = ntohl(packet->r.sr.sr.sender_bcount);
-
-	if (!rtp_valid_ssrc(session, packet->r.sr.sr.ssrc)) {
-		create_source(session, packet->r.sr.sr.ssrc);
+	ssrc = ntohl(packet->r.sr.sr.ssrc);
+	if (!rtp_valid_ssrc(session, ssrc)) {
+		create_source(session, ssrc);
+	}
+	s = get_source(session, ssrc);
+	if (s == NULL) {
+		debug_msg("Source 0x%08x invalid, skipping...\n", ssrc);
+		return;
 	}
 
-	event.ssrc = packet->r.sr.sr.ssrc;
-	event.type = RX_SR;
-	event.data = (void *) &(packet->r.sr.sr);
-	session->callback(session, &event);
+	/* Process the SR... */
+	sr = (rtcp_sr *) xmalloc(sizeof(rtcp_sr));
+	sr->ssrc          = ntohl(packet->r.sr.sr.ssrc);
+	sr->ntp_sec       = ntohl(packet->r.sr.sr.ntp_sec);
+	sr->ntp_frac      = ntohl(packet->r.sr.sr.ntp_frac);
+	sr->rtp_ts        = ntohl(packet->r.sr.sr.rtp_ts);
+	sr->sender_pcount = ntohl(packet->r.sr.sr.sender_pcount);
+	sr->sender_bcount = ntohl(packet->r.sr.sr.sender_bcount);
 
-	/* ...process SR...  */
+	event.ssrc = ntohl(packet->r.sr.sr.ssrc);
+	event.type = RX_SR;
+	event.data = (void *) sr;
+	session->callback(session, &event);
+	s->sr = sr;
+
 	/* ...convert RRs to native byte order... */
 	/* ...process RRs... */
 }
@@ -475,7 +483,7 @@ static void process_rtcp_bye(struct rtp *session, rtcp_t *packet)
 	debug_msg("Got RTCP BYE\n");
 }
 
-void rtp_recv_ctrl(struct rtp *session)
+static void rtp_recv_ctrl(struct rtp *session)
 {
 	/* This routine processes incoming RTCP packets */
 	u_int8	buffer[RTP_MAX_PACKET_LEN];
@@ -508,6 +516,21 @@ void rtp_recv_ctrl(struct rtp *session)
 		} else {
 			debug_msg("Invalid RTCP packet discarded\n");
 			session->invalid_rtcp++;
+		}
+	}
+}
+
+void rtp_recv(struct rtp *session, struct timeval *timeout)
+{
+	udp_fd_zero();
+	udp_fd_set(session->rtp_socket);
+	udp_fd_set(session->rtcp_socket);
+	if (udp_select(timeout) > 0) {
+		if (udp_fd_isset(session->rtp_socket)) {
+			rtp_recv_data(session);
+		}
+		if (udp_fd_isset(session->rtcp_socket)) {
+			rtp_recv_ctrl(session);
 		}
 	}
 }

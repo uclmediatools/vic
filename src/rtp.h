@@ -125,8 +125,7 @@ typedef struct {
 struct rtp;
 
 struct rtp	*rtp_init(char *addr, u_int16 port, int ttl, void (*callback)(struct rtp *session, rtp_event *e));
-void		 rtp_recv_data(struct rtp *session);
-void		 rtp_recv_ctrl(struct rtp *session);
+void 		 rtp_recv(struct rtp *session, struct timeval *timeout);
 int		 rtp_send_data(struct rtp *session, u_int32 ts, char pt, int m, int cc, u_int32 csrc[16], char *data, int data_len);
 int		 rtp_send_ctrl(struct rtp *session, u_int32 ts);
 

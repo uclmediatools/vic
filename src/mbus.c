@@ -79,7 +79,7 @@ struct mbus {
 	char		*encrkey;
 	int		 encrkeylen;
 #ifndef WIN32
-	fd_t		 cfgfd;		/* The file descriptor for the $HOME/.mbus config file, on Unix */
+	fd_t		 cfgfd;	  /* The file descriptor for the $HOME/.mbus config file, on Unix */
 #endif
 };
 
@@ -125,7 +125,7 @@ static char *mbus_new_hashkey(void)
 	struct timeval	 curr_time;
 	u_int32		 expiry_time;
 	char		 random_string[MBUS_HASHKEY_LEN];
-	char		 encoded_string[(MBUS_HASHKEY_LEN*4/3)+1];
+	char		 encoded_string[(MBUS_HASHKEY_LEN*4/3)+4];
 	int		 encoded_length;
 	int		 i;
 	char		*key;
@@ -135,7 +135,7 @@ static char *mbus_new_hashkey(void)
 		random_string[i] = (lbl_random() | 0x000ff000) >> 24;
 	}
 	/* Step 2: base64 encode that string... */
-	encoded_length = base64encode(random_string, MBUS_HASHKEY_LEN, encoded_string, (MBUS_HASHKEY_LEN*4/3)+1);
+	encoded_length = base64encode(random_string, MBUS_HASHKEY_LEN, encoded_string, (MBUS_HASHKEY_LEN*4/3)+4);
 
 	/* Step 3: figure out the expiry time of the key, */
 	/*         we use a value one week from now.      */
@@ -255,6 +255,8 @@ static char *mbus_get_encrkey(struct mbus *m, int *keylen)
 #ifdef WIN32
 	/* Do something complicated with the registry... */
 #else
+	/* This MUST be called while the config file is locked! */
+	UNUSED(m);
 	*keylen = 0;
 	return "";
 #endif
@@ -266,6 +268,7 @@ static char *mbus_get_hashkey(struct mbus *m, int *keylen)
 	/* Do something complicated with the registry... */
 #else
 	/* This MUST be called while the config file is locked! */
+	UNUSED(m);
 	*keylen = 5;
 	return "Hello";
 #endif
