@@ -1647,37 +1647,33 @@ void rtp_send_ctrl(struct rtp *session, u_int32 ts)
 	} 
 }
 
-static void expire_source(struct rtp *session, source *s, struct timeval curr_time)
-{
-	/* Expire sources which haven't been heard from for a long time.   */
-	/* Section 6.2.1 of the RTP specification details the timers used. */
-	double	delay = tv_diff(s->last_active, curr_time);
-
-	/* Check if we've received a BYE packet from this source.    */
-	/* If we have, and it was received more than 2 seconds ago   */
-	/* then the source is deleted. The arbitrary 2 second delay  */
-	/* is to ensure that all delayed packets are received before */
-	/* the source is timed out.                                  */
-	if (s->got_bye && (delay > 2.0)) {
-		delete_source(session, s->ssrc);
-	}
-	/* If a source hasn't been heard from for more than 5 RTCP   */
-	/* reporting intervals, we mark the source as inactive.      */
-
-}
-
 void rtp_update(struct rtp *session)
 {
 	/* Perform housekeeping on the source database... */
 	int	 	 h;
 	source	 	*s;
 	struct timeval	 curr_time;
+	double		 delay;
 
 	gettimeofday(&curr_time, NULL);
 
 	for (h = 0; h < RTP_DB_SIZE; h++) {
 		for (s = session->db[h]; s != NULL; s = s->next) {
-			expire_source(session, s, curr_time);
+			/* Expire sources which haven't been heard from for a long time.   */
+			/* Section 6.2.1 of the RTP specification details the timers used. */
+			delay = tv_diff(s->last_active, curr_time);
+
+			/* Check if we've received a BYE packet from this source.    */
+			/* If we have, and it was received more than 2 seconds ago   */
+			/* then the source is deleted. The arbitrary 2 second delay  */
+			/* is to ensure that all delayed packets are received before */
+			/* the source is timed out.                                  */
+			if (s->got_bye && (delay > 2.0)) {
+				delete_source(session, s->ssrc);
+			}
+			/* If a source hasn't been heard from for more than 5 RTCP   */
+			/* reporting intervals, we mark the source as inactive.      */
+			/* TO BE DONE */
 		}
 	}
 }
