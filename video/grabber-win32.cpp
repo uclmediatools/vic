@@ -679,8 +679,10 @@ void VfwGrabber::start()
 	case Miro_dc20_NT:
 	case AV_Master:
     case Generic:
-        if (caps_.fHasDlgVideoFormat) capDlgVideoFormat(capwin_);
-		if (caps_.fHasDlgVideoSource) capDlgVideoSource(capwin_);
+  		if (useconfig_) {
+			if (caps_.fHasDlgVideoFormat) capDlgVideoFormat(capwin_);
+			if (caps_.fHasDlgVideoSource) capDlgVideoSource(capwin_);
+		}
 		delete [] fmt_;
 		fmtsize_ = capGetVideoFormatSize(capwin_);
 		fmt_ = (LPBITMAPINFOHEADER) new u_char [fmtsize_];
