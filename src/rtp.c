@@ -1451,6 +1451,7 @@ static u_int8 *format_rtcp_sdes(u_int8 *buffer, int buflen, u_int32 ssrc, struct
 	u_int8		*packet = buffer;
 	rtcp_common	*common = (rtcp_common *) buffer;
 	char		*item;
+	size_t		 remaining_len;
 
 	assert(buflen > (int) sizeof(rtcp_common));
 
@@ -1463,36 +1464,41 @@ static u_int8 *format_rtcp_sdes(u_int8 *buffer, int buflen, u_int32 ssrc, struct
 
 	*((u_int32 *) packet) = htonl(ssrc);
 	packet += 4;
+
+	remaining_len = buflen - (packet - buffer);
 	item = rtp_get_sdes(session, ssrc, RTCP_SDES_CNAME);
-	if (item != NULL) {
+	if ((item != NULL) && ((strlen(item) + 2) <= remaining_len)) {
 		packet += add_sdes_item(packet, RTCP_SDES_CNAME, item);
 	}
+
+	remaining_len = buflen - (packet - buffer);
 	item = rtp_get_sdes(session, ssrc, RTCP_SDES_NOTE);
-	if (item != NULL) {
+	if ((item != NULL) && ((strlen(item) + 2) <= remaining_len)) {
 		packet += add_sdes_item(packet, RTCP_SDES_NOTE, item);
 	}
 
+	remaining_len = buflen - (packet - buffer);
 	if ((session->sdes_count_pri % 3) == 0) {
 		session->sdes_count_sec++;
 		if ((session->sdes_count_sec % 8) == 0) {
 			switch (session->sdes_count_ter % 4) {
 			case 0: item = rtp_get_sdes(session, ssrc, RTCP_SDES_EMAIL);
-				if (item != NULL) {
+				if ((item != NULL) && ((strlen(item) + 2) <= remaining_len)) {
 					packet += add_sdes_item(packet, RTCP_SDES_EMAIL, item);
 					break;
 				}
 			case 1: item = rtp_get_sdes(session, ssrc, RTCP_SDES_PHONE);
-				if (item != NULL) {
+				if ((item != NULL) && ((strlen(item) + 2) <= remaining_len)) {
 					packet += add_sdes_item(packet, RTCP_SDES_PHONE, item);
 					break;
 				}
 			case 2: item = rtp_get_sdes(session, ssrc, RTCP_SDES_LOC);
-				if (item != NULL) {
+				if ((item != NULL) && ((strlen(item) + 2) <= remaining_len)) {
 					packet += add_sdes_item(packet, RTCP_SDES_LOC, item);
 					break;
 				}
 			case 3: item = rtp_get_sdes(session, ssrc, RTCP_SDES_TOOL);
-				if (item != NULL) {
+				if ((item != NULL) && ((strlen(item) + 2) <= remaining_len)) {
 					packet += add_sdes_item(packet, RTCP_SDES_TOOL, item);
 					break;
 				}
@@ -1519,16 +1525,26 @@ static u_int8 *format_rtcp_sdes(u_int8 *buffer, int buflen, u_int32 ssrc, struct
 
 static void send_rtcp(struct rtp *session, u_int32 ts)
 {
+	/* Construct and send an RTCP packet. The order in which packets are packed into a */
+	/* compound packet is defined by section 6.1 of draft-ietf-avt-rtp-new-03.txt and  */
+	/* we follow the recommended order.                                                */
 	u_int8	 buffer[RTP_MAX_PACKET_LEN];
 	u_int8	*ptr = buffer;
 
-	/* It's possible that there are more than 31 senders, so we should loop round */
-	/* here if they don't all fit into a single sender/receiver report packet...  */
+	/* The first RTCP packet in the compound packet MUST always be a report packet...  */
 	if (session->we_sent) {
 		ptr = format_rtcp_sr(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), session, ts);
 	} else {
 		ptr = format_rtcp_rr(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), session);
 	}
+	/* Following that, additional RR packets SHOULD follow if there are more than 31   */
+	/* senders (such that the reports do not fit into the initial packet. We give up   */
+	/* if there is insufficient space in the buffer: this is bad, since we always drop */
+	/* the reports from the same sources (those at the end of the hash table).         */
+	while ((session->sender_count > 0)  && ((RTP_MAX_PACKET_LEN - (ptr - buffer)) > 0)) {
+		ptr = format_rtcp_rr(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), session);
+	}
+
 	ptr = format_rtcp_sdes(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), rtp_my_ssrc(session), session);
 	udp_send(session->rtcp_socket, buffer, ptr - buffer);
 }
