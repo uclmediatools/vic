@@ -40,6 +40,7 @@ static char rcsid[] =
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
+#include "color.h"
 #ifndef WIN32
 #include <sys/wait.h>
 #include <sys/file.h>
@@ -47,17 +48,10 @@ static char rcsid[] =
 #if defined(sun) && defined(__svr4__)
 #include <fcntl.h>
 #endif
-/*extern "C" {
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-}*/
 #include <string.h>
 
 #ifdef WIN32
-//#undef Status
-//#include <windows.h>
-//#include <tk.h>
-#include "color.h"
+#include <tk.h>
 
 struct TkWinColormap {
 	HPALETTE palette;	/* Palette handle used when drawing. */
