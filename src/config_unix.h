@@ -81,6 +81,12 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
+#ifdef __APPLE__
+#define NEED_DRAND48
+#define srand48 srand
+#define lrand48 rand() * rand
+#endif
+
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
 #endif
@@ -140,15 +146,21 @@
 typedef u_char	ttl_t;
 typedef int	fd_t;
 
-#ifndef TRUE
+#ifndef FALSE
 #define FALSE	0
+#endif
+#ifndef TRUE
 #define	TRUE	1
 #endif /* TRUE */
 
 #define USERNAMELEN	8
 
+#ifndef max
 #define max(a, b)	(((a) > (b))? (a): (b))
+#endif
+#ifndef min
 #define min(a, b)	(((a) < (b))? (a): (b))
+#endif
 
 #ifdef NDEBUG
 #define assert(x) if ((x) == 0) fprintf(stderr, "%s:%u: failed assertion\n", __FILE__, __LINE__)

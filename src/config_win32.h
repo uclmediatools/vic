@@ -88,12 +88,13 @@ typedef unsigned int	fd_t;
  * the definitions below are valid for 32-bit architectures and will have to
  * be adjusted for 16- or 64-bit architectures
  */
-typedef u_char		uint8_t;
-typedef u_short		uint16_t;
-typedef u_long		uint32_t;
-typedef char		int8_t;
-typedef short		int16_t;
-typedef long		int32_t;
+typedef unsigned __int8		uint8_t;
+typedef unsigned __int16	uint16_t;
+typedef unsigned __int32	uint32_t;
+typedef unsigned __int64    uint64_t;
+typedef __int8		int8_t;
+typedef __int16		int16_t;
+typedef __int32		int32_t;
 typedef __int64		int64_t;
 typedef unsigned long	in_addr_t;
 
@@ -179,16 +180,15 @@ extern "C" {
 
 int uname(struct utsname *);
 int getopt(int, char * const *, const char *);
-int strncasecmp(const char *, const char*, int len);
 int srandom(int);
 int random(void);
 int gethostid(void);
 int getuid(void);
 int getgid(void);
-int getpid(void);
+#define getpid _getpid
 int nice(int);
 int usleep(unsigned int);
-time_t time(time_t *);
+
 
 const char * w32_make_version_info(char * rat_verion);
 

@@ -377,6 +377,8 @@ v1.2.5	- More informative error message when the lock on the mbus configuration
 1.2.11	- Fix _xrealloc() in debug mode (Chris Greenhalgh)
 	- Update configure script to better support IPv6 (Suzuki Shinsuke)
 	- Fix count of CSRCs in mixer
+	- Fixes for MacOS X and Win32 (Bill May)
+
 
 
 Still to do...
