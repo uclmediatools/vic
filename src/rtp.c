@@ -532,7 +532,7 @@ static source *get_source(struct rtp *session, uint32_t ssrc)
 	return NULL;
 }
 
-static source *create_source(struct rtp *session, uint32_t ssrc)
+static source *create_source(struct rtp *session, uint32_t ssrc, int probation)
 {
 	/* Create a new source entry, and add it to the database.    */
 	/* The database is a hash table, using the separate chaining */
@@ -556,7 +556,13 @@ static source *create_source(struct rtp *session, uint32_t ssrc)
 	s->magic          = 0xc001feed;
 	s->next           = session->db[h];
 	s->ssrc           = ssrc;
-	s->probation      = -1;
+	if (probation) {
+		/* This is a probationary source, which only counts as */
+		/* valid once several consecutive packets are received */
+		s->probation = -1;
+	} else {
+		s->probation = 0;
+	}
 
 	gettimeofday(&(s->last_active), NULL);
 	/* Now, add it to the database... */
@@ -1039,7 +1045,7 @@ struct rtp *rtp_init_if(const char *addr, char *iface,
         }
 
 	/* Create a database entry for ourselves... */
-	create_source(session, session->my_ssrc);
+	create_source(session, session->my_ssrc, FALSE);
 	cname = get_cname(session->rtp_socket);
 	rtp_set_sdes(session, session->my_ssrc, RTCP_SDES_CNAME, cname, strlen(cname));
 	xfree(cname);	/* cname is copied by rtp_set_sdes()... */
@@ -1228,7 +1234,7 @@ static void process_rtp(struct rtp *session, uint32_t curr_rtp_ts, rtp_packet *p
 
 	if (packet->cc > 0) {
 		for (i = 0; i < packet->cc; i++) {
-			create_source(session, packet->csrc[i]);
+			create_source(session, packet->csrc[i], FALSE);
 		}
 	}
 	/* Update the source database... */
@@ -1304,12 +1310,12 @@ static void rtp_recv_data(struct rtp *session, uint32_t curr_rtp_ts)
 			if (weak) {
 				s = get_source(session, packet->ssrc);
 			} else {
-				s = create_source(session, packet->ssrc);
+				s = create_source(session, packet->ssrc, TRUE);
 			}
                         rtp_get_option(session, RTP_OPT_PROMISC, &promisc);
 			if (promisc) {
 				if (s == NULL) {
-					create_source(session, packet->ssrc);
+					create_source(session, packet->ssrc, FALSE);
 					s = get_source(session, packet->ssrc);
 				}
 				process_rtp(session, curr_rtp_ts, packet, s);
@@ -1442,7 +1448,7 @@ static void process_report_blocks(struct rtp *session, rtcp_t *packet, uint32_t 
 			rr->dlsr          = ntohl(rrp->dlsr);
 
 			/* Create a database entry for this SSRC, if one doesn't already exist... */
-			create_source(session, rr->ssrc);
+			create_source(session, rr->ssrc, FALSE);
 
 			/* Store the RR for later use... */
 			insert_rr(session, ssrc, rr, event_ts);
@@ -1467,7 +1473,7 @@ static void process_rtcp_sr(struct rtp *session, rtcp_t *packet, struct timeval 
 	source		*s;
 
 	ssrc = ntohl(packet->r.sr.sr.ssrc);
-	s = create_source(session, ssrc);
+	s = create_source(session, ssrc, FALSE);
 	if (s == NULL) {
 		debug_msg("Source 0x%08x invalid, skipping...\n", ssrc);
 		return;
@@ -1517,7 +1523,7 @@ static void process_rtcp_rr(struct rtp *session, rtcp_t *packet, struct timeval 
 	source		*s;
 
 	ssrc = ntohl(packet->r.rr.ssrc);
-	s = create_source(session, ssrc);
+	s = create_source(session, ssrc, FALSE);
 	if (s == NULL) {
 		debug_msg("Source 0x%08x invalid, skipping...\n", ssrc);
 		return;
@@ -1546,7 +1552,7 @@ static void process_rtcp_sdes(struct rtp *session, rtcp_t *packet, struct timeva
 			break;
 		}
 		sd->ssrc = ntohl(sd->ssrc);
-		s = create_source(session, sd->ssrc);
+		s = create_source(session, sd->ssrc, FALSE);
 		if (s == NULL) {
 			debug_msg("Can't get valid source entry for 0x%08x, skipping...\n", sd->ssrc);
 		} else {
@@ -1588,7 +1594,7 @@ static void process_rtcp_bye(struct rtp *session, rtcp_t *packet, struct timeval
 		/* This is kind-of strange, since we create a source we are about to delete. */
 		/* This is done to ensure that the source mentioned in the event which is    */
 		/* passed to the user of the RTP library is valid, and simplify client code. */
-		create_source(session, ssrc);
+		create_source(session, ssrc, FALSE);
 		/* Call the event handler... */
 		if (!filter_event(session, ssrc)) {
 			event.ssrc = ssrc;
@@ -1616,7 +1622,7 @@ static void process_rtcp_app(struct rtp *session, rtcp_t *packet, struct timeval
 
 	/* Update the database for this source. */
 	ssrc = ntohl(packet->r.app.ssrc);
-	create_source(session, ssrc);
+	create_source(session, ssrc, FALSE);
 	s = get_source(session, ssrc);
 	if (s == NULL) {
 	        /* This should only occur in the event of database malfunction. */
@@ -1814,7 +1820,7 @@ int rtp_add_csrc(struct rtp *session, uint32_t csrc)
 	check_database(session);
 	s = get_source(session, csrc);
 	if (s == NULL) {
-		s = create_source(session, csrc);
+		s = create_source(session, csrc, FALSE);
 		debug_msg("Created source 0x%08x as CSRC\n", csrc);
 	}
 	check_source(s);
