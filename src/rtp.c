@@ -2644,28 +2644,3 @@ int rtp_get_ttl(struct rtp *session)
 	check_database(session);
 	return session->ttl;
 }
-
-/* XXX gtkdoc doesn't seem to like documentation in the .h,
- * so these can't be near their definitions. */
-/**
- * rtp_callback:
- * @session: The RTP Session
- * @e: The RTP Event information.
- *
- * Handles RTP events in an application-specific way.
- * See #rtp_event for a description of the possible events and
- * how rtp_callback() should handle each.
- * XXX How to add text for type rtp_event?
- */
-/**
- * rtcp_app_callback:
- * @session: the session pointer (returned by rtp_init())
- * @rtp_ts: the current time expressed in units of the media timestamp.
- * @max_size: the max allowed size of an APP packet.
- *
- * This callback function crafts an RTCP APP packet to be sent with
- * an RTCP RR.
- *
- * Returns: A fully-formed RTCP APP packet as an rtcp_app, or NULL (???)
- * if no APP packet needs to be sent at this time.
- */

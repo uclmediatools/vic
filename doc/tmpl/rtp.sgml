@@ -50,6 +50,37 @@ of audio, video, and other real-time data across IP capable networks.
 
 
 
+<!-- ##### FUNCTION rtp_init ##### -->
+<para>
+
+</para>
+
+@addr: 
+@rx_port: 
+@tx_port: 
+@ttl: 
+@rtcp_bw: 
+@callback: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_init_if ##### -->
+<para>
+
+</para>
+
+@addr: 
+@iface: 
+@rx_port: 
+@tx_port: 
+@ttl: 
+@rtcp_bw: 
+@callback: 
+@user_data: 
+@Returns: 
+
+
 <!-- ##### TYPEDEF rtp_packet ##### -->
 <para>
 
@@ -82,46 +113,78 @@ of audio, video, and other real-time data across IP capable networks.
 
 <!-- ##### USER_FUNCTION rtcp_app_callback ##### -->
 <para>
-
+This callback function crafts an RTCP APP packet to be sent with
+an RTCP RR.
 </para>
 
-@session: 
-@rtp_ts: 
-@max_size: 
-@Returns: 
+@session: the session pointer (returned by rtp_init())
+@rtp_ts: the current time expressed in units of the media timestamp.
+@max_size: the max allowed size of an APP packet.
+@Returns: A fully-formed RTCP APP packet as an #rtcp_app, or NULL (???)
+if no APP packet needs to be sent at this time.
 
 
 <!-- ##### ENUM rtp_event_type ##### -->
 <para>
-
+The possible values for the type field in #rtp_event.
+Each value represents an event in RTP or RTCP processing.
 </para>
 
-@RX_RTP: 
-@RX_SR: 
-@RX_RR: 
-@RX_SDES: 
-@RX_BYE: 
-@SOURCE_CREATED: 
-@SOURCE_DELETED: 
-@RX_RR_EMPTY: 
-@RX_RTCP_START: 
-@RX_RTCP_FINISH: 
-@RR_TIMEOUT: 
-@RX_APP: 
+@RX_RTP: An RTP data packet was received.
+The ssrc field contains the RTP data packet's SSRC.
+The data field points to the RTP data packet (full header?)
+The callback must free the data packet when it's done with it.
+@RX_SR: An RTCP SR packet was received.
+The ssrc field contains the SR packet's SSRC.
+The data field points to an #rtcp_sr.
+@RX_RR: An RTCP RR packet was received.
+The ssrc field contains the RR packet's SSRC.
+The data field points to an #rtcp_rr.
+@RX_SDES: An RTCP SDES packet was received.
+The ssrc field contains the SDES packet's SSRC.
+The data field points to an #rtcp_sdes_item.
+@RX_BYE: An RTCP BYE packet was received.
+The ssrc field contains the BYE packet's SSRC.
+@SOURCE_CREATED: A new session participant was heard from.
+The ssrc field contains the new participant's SSRC.
+@SOURCE_DELETED: A source was deleted from the database.
+The ssrc field contains the ex-participant's SSRC.
+@RX_RR_EMPTY: An RTCP RR packet with no sources listed was received.
+The ssrc field contains the RR packet's SSRC.
+@RX_RTCP_START: Called at the start of parsing an RTCP packet.
+Neither the ssrc nor data fields are valid.
+@RX_RTCP_FINISH: Called at the end of parsing an RTCP packet.
+Neither the ssrc nor data fields are valid.
+@RR_TIMEOUT: An RR from the given receiver has not been refreshed recently enough.
+The ssrc field contains the RR packet's SSRC.
+The data field points to the expiring #rtcp_rr.
+@RX_APP: An APP packet was received.
+The ssrc field contains the APP packet's SSRC.
+The data field points to an #rtcp_app.
+The callback must free the app packet when it's done with it.
 
 <!-- ##### TYPEDEF rtp_event ##### -->
 <para>
-
+The event structure as passed to rtp_callback().
+The callback type is carried in the type field; see #rtp_event_type
+for a description of each callback.
+Unless otherwise noted, the ssrc field contains the SSRC of the participant
+triggering this callback.  The data field points to any data contained in
+this callback; it must be cast to the appropriate type.  The ts field
+contains the timestamp of the packet reception that caused this event.
 </para>
 
 
 <!-- ##### USER_FUNCTION rtp_callback ##### -->
 <para>
+Handles RTP events in an application-specific way.
+See #rtp_event for a description of the possible events and
+how rtp_callback() should handle each.
 
 </para>
 
-@session: 
-@e: 
+@session: The RTP Session.
+@e: The RTP Event information.  See #rtp_event.
 
 
 <!-- ##### ENUM rtp_option ##### -->
@@ -223,9 +286,9 @@ of audio, video, and other real-time data across IP capable networks.
 
 @session: 
 @rtp_ts: 
-@callback: 
-<!-- # Unused Parameters # -->
 @appcallback: 
+<!-- # Unused Parameters # -->
+@callback: 
 
 
 <!-- ##### FUNCTION rtp_update ##### -->
