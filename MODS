@@ -231,7 +231,8 @@ v1.1.0  - Changed autoconf generated header to uclconf.h.
 v1.1.1	- Add extra debugging code
 	* 1 February 2000
 
-v1.1.2	- 
+v1.1.2	- Add routines for handling NTP format timestamps, in ntp.[ch]
+
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,

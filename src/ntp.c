@@ -5,6 +5,9 @@
  * NTP utility functions to make rtp and rtp round time calculation
  * a little less painful.
  *
+ * Copyright (c) 2000 University College London
+ * All rights reserved.
+ *
  * $Id$
  */
 
