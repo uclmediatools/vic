@@ -62,6 +62,7 @@ enum device_type_e {
 	Miro_dc20_95,
 	Miro_dc20_NT,
 	AV_Master,
+    Intel_SVR3,
 };
 
 static device_type_e
@@ -95,7 +96,10 @@ get_device_type(const char *deviceName)
 		debug_msg("Device=AV_Master\n");
 		return (AV_Master);
 	}
-
+	if (!strncmp(deviceName, "ISVR III", 8)) {
+		debug_msg("Device=ISVR III\n");
+		return (Intel_SVR3);
+    }
 	debug_msg("Device=Generic: %s\n", deviceName);
 	return (Generic);
 }
@@ -688,6 +692,19 @@ void VfwGrabber::start()
 				else
 					fprintf(stderr, "Selected image size not supported! Use 320x240 or 160x120.\n");
 			}
+		break;
+	case Intel_SVR3:
+		/* the driver does not like to generic query much
+		 * just use yuv9 */
+		fmt_->biCompression = mmioFOURCC('Y','V','U','9');
+		fmt_->biBitCount = 9;
+		fmt_->biSizeImage = fmt_->biWidth * fmt_->biHeight * fmt_->biPlanes * fmt_->biBitCount / 8;
+		if (!capSetVideoFormat(capwin_, fmt_, fmtsize_)) {
+			debug_msg("Intel SVR3 format failed!\n");
+			fprintf(stderr, "Unable to set SVR3 to YUV9 format!\n");
+			stop();
+			abort();
+		}
 		break;
 	case gray_QuickCam_95:
 		/* We cannot use Generic as QuickCam says YES to anything
