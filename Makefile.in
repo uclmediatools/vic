@@ -114,10 +114,11 @@ OBJ2 =	main.o net.o net-ip.o source.o \
 	iohandler.o timer.o idlecallback.o media-timer.o \
 	session.o session-rtpv1.o session-nv.o session-ivs.o \
 	decoder.o decoder-jpeg.o decoder-nv.o \
-	decoder-h261.o decoder-h261v1.o \
+	decoder-h261.o decoder-h261v1.o decoder-raw.o \
 	decoder-cellb.o decoder-h263v2.o mbus.o mbus_engine.o \
 	device.o grabber.o vw.o Tcl.o Tcl2.o module.o transmitter.o \
 	encoder-h263v2.o encoder-nv.o encoder-cellb.o encoder-h261.o \
+	encoder-jpeg.o enocder-raw.o \
 	transcoder-jpeg.o framer-jpeg.o \
 	group-ipc.o confbus.o renderer.o renderer-window.o \
 	color.o color-true.o color-pseudo.o color-dither.o color-ed.o \

@@ -1065,7 +1065,7 @@ proc nvdct_setq value {
 }
 
 proc raw_setq value {
-	set value [expr int((1 - $value / 100.) * 29) + 1]
+	set value 1
 	if [have grabber] {
 		encoder q $value
 	}

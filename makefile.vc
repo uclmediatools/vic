@@ -134,10 +134,11 @@ OBJ2 =	main.obj net.obj net-ip.obj source.obj \
 	iohandler.obj timer.obj idlecallback.obj media-timer.obj \
 	session.obj session-rtpv1.obj session-nv.obj session-ivs.obj \
 	decoder.obj decoder-jpeg.obj decoder-nv.obj \
-	decoder-h261.obj decoder-h261v1.obj \
+	decoder-h261.obj decoder-h261v1.obj decoder-raw.obj \
 	decoder-cellb.obj mbus.obj mbus_engine.obj\
 	device.obj grabber.obj vw.obj Tcl.obj Tcl2.obj module.obj transmitter.obj \
 	encoder-nv.obj encoder-cellb.obj encoder-h261.obj \
+	encoder-jpeg.obj encoder-raw.obj \
 	transcoder-jpeg.obj framer-jpeg.obj \
 	group-ipc.obj confbus.obj renderer.obj renderer-window.obj \
 	color.obj $(COLOR_OBJS) $(QFDES_OBJS) \
