@@ -356,24 +356,21 @@ int udp_send(socket_udp *s, char *buffer, int buflen)
 	return -1;
 }
 
-int udp_recv(socket_udp *s, char *buffer, int buflen)
+int udp_recv(socket_udp *s, char *buffer, int buflen, struct timeval *timeout)
 {
 	/* Reads data into the buffer, returning the number of bytes read.   */
 	/* If no data is available, this returns the value zero immediately. */
 	/* Note: since we don't care about the source address of the packet  */
 	/* we receive, this function becomes protocol independent.           */
 	fd_set		rfd;
-	struct timeval	t;
 	int		len;
 
 	assert(buffer != NULL);
 	assert(buflen > 0);
 
-	t.tv_sec  = 0;
-	t.tv_usec = 0;
 	FD_ZERO(&rfd);
 	FD_SET(s->fd, &rfd);
-	if (select(s->fd + 1, &rfd, NULL, NULL, &t) > 0) {
+	if (select(s->fd + 1, &rfd, NULL, NULL, timeout) > 0) {
 		len = recvfrom(s->fd, buffer, buflen, 0, 0, 0);
 		if (len > 0) {
 			return len;

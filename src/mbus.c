@@ -462,12 +462,16 @@ int mbus_recv(struct mbus *m, void *data)
 	char	 buffer[MBUS_BUF_SIZE];
 	int	 buffer_len, seq, i, a, rx;
 	char	 ackbuf[96];
+	struct timeval	t;
+
+	t.tv_sec  = 0;
+	t.tv_usec = 0;
 
 	rx = FALSE;
 	while (1) {
 		memset(buffer, 0, MBUS_BUF_SIZE);
                 assert(m->s != NULL);
-		buffer_len = udp_recv(m->s, buffer, MBUS_BUF_SIZE);
+		buffer_len = udp_recv(m->s, buffer, MBUS_BUF_SIZE, &t);
 		if (buffer_len > 0) {
 			rx = TRUE;
 		} else {
