@@ -30,4 +30,5 @@ Still to do...
 	  since it does a gethostbyname() and looks that up, yet that can
 	  return the IPv4 hostname only on some machines.
 	- Doesn't do DNS AAAA lookups when given a name rather than an IP address.
+	- Remove channel ID from mbus code.
 

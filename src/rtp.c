@@ -1128,6 +1128,46 @@ int rtp_send_data(struct rtp *session, u_int32 ts, char pt, int m, int cc, u_int
 	return TRUE;
 }
 
+#ifdef NDEF
+static u_int8 *format_rtcp_sr(u_int8 *buffer, struct rtp *session, u_int32 ts)
+{
+	/* Write an RTCP SR header into buffer, returning a pointer */
+	/* to the next byte after the header we have just written.  */
+	return buffer;
+}
+
+static u_int8 *format_rtcp_rr(u_int8 *buffer, struct rtp *session, u_int32 ts)
+{
+	/* Write an RTCP RR header into buffer, returning a pointer */
+	/* to the next byte after the header we have just written.  */
+	return buffer;
+}
+
+static u_int8 *format_rtcp_sdes(u_int8 *buffer, struct rtp *session)
+{
+	return buffer;
+}
+#endif
+
+static void send_rtcp(struct rtp *session, u_int32 ts)
+{
+#ifdef NDEF
+	u_int8	 buffer[RTP_MAX_PACKET_LEN];
+	u_int8	*ptr = buffer;
+
+	if (session->we_sent) {
+		ptr = format_rtcp_sr(ptr, session, ts);
+	} else {
+		ptr = format_rtcp_rr(ptr, session, ts);
+	}
+	ptr = format_rtcp_sdes(ptr, session);
+	udp_send(session->rtcp_socket, buffer, ptr - buffer);
+#else
+	UNUSED(session);
+	UNUSED(ts);
+#endif
+}
+
 int rtp_send_ctrl(struct rtp *session, u_int32 ts)
 {
 	/* Send an RTCP packet, if one is due... */
@@ -1137,19 +1177,18 @@ int rtp_send_ctrl(struct rtp *session, u_int32 ts)
 
 	gettimeofday(&curr_time, NULL);
 	if (tv_gt(curr_time, session->next_rtcp_send_time)) {
-		/* The RTCP transmission timer has expired, the following */
+		/* The RTCP transmission timer has expired. The following */
 		/* implements draft-ietf-avt-rtp-new-02.txt section 6.3.6 */
 		int		 h;
 		source		*s;
 		struct timeval	 new_send_time;
 		double		 new_interval;
-		
+
 		new_interval  = rtcp_interval(session, TRUE);
 		new_send_time = session->last_rtcp_send_time;
 		tv_add(&new_send_time, new_interval);
 		if (tv_gt(curr_time, new_send_time)) {
-			/* Send the packet... */
-			debug_msg("Should send RTCP\n");
+			send_rtcp(session, ts);
 			session->last_rtcp_send_time = curr_time;
 			session->next_rtcp_send_time = curr_time; tv_add(&(session->next_rtcp_send_time), new_interval);
 			session->initial_rtcp = FALSE;
