@@ -59,8 +59,5 @@ int btree_get_max_key (btree_t *tree, u_int32 *key);
 
 int btree_get_next_key (btree_t *tree, u_int32 cur_key, u_int32 *next_key);
 
-/* btree_get_element_count returns numver of nodes on tree                   */
-int btree_get_element_count(btree_t *tree);
-
 #endif /* __BTREE_H__ */
 

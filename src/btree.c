@@ -27,7 +27,6 @@ typedef struct s_btree_node {
 
 struct s_btree {
         btree_node_t   *root;
-        int             cnt;
 };
 
 /*****************************************************************************/
@@ -160,7 +159,6 @@ btree_create(btree_t **tree)
         btree_t *t = (btree_t*)xmalloc(sizeof(btree_t));
         if (t) {
                 t->root = NULL;
-                t->cnt  = 0;
                 *tree = t;
                 return TRUE;
         }
@@ -210,7 +208,6 @@ btree_add(btree_t *tree, u_int32 key, void *data)
         x->data = data;
         x->parent = x->left = x->right = NULL;
         btree_insert_node(tree, x);
-        tree->cnt++;
 
         return TRUE;
 }
@@ -237,7 +234,6 @@ btree_remove(btree_t *tree, u_int32 key, void **data)
         *data = x->data;
         x = btree_delete_node(tree, x);
         xfree(x);
-        tree->cnt--;
 
         return TRUE;
 }
@@ -295,12 +291,6 @@ btree_get_next_key(btree_t *tree, u_int32 cur_key, u_int32 *next_key)
         
         *next_key = x->key;
         return TRUE;
-}
-
-int 
-btree_get_element_count(btree_t *tree)
-{
-        return tree->cnt;
 }
 
 /*****************************************************************************/
