@@ -51,6 +51,7 @@
 #include "net_udp.h"
 #include "crypt_random.h"
 #include "drand48.h"
+#include "gettimeofday.h"
 #include "rtp.h"
 
 #define SECS_BETWEEN_1900_1970 2208988800u

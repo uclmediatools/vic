@@ -151,6 +151,10 @@ SOURCE=.\drand48.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\gettimeofday.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\hmac.c
 # End Source File
 # Begin Source File
@@ -220,6 +224,10 @@ SOURCE=.\debug.h
 # Begin Source File
 
 SOURCE=.\drand48.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\gettimeofday.h
 # End Source File
 # Begin Source File
 

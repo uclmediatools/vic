@@ -75,6 +75,7 @@
 #include <process.h>
 #include <fcntl.h>
 #include <time.h>
+#include <sys/timeb.h>
 
 typedef int		ttl_t;
 typedef u_int		fd_t;
@@ -103,6 +104,7 @@ typedef unsigned long	in_addr_t;
 #define DIFF_BYTE_ORDER	1
 #define NEED_INET_ATON
 #define NEED_DRAND48
+#define NEED_GETTIMEOFDAY
 
 #ifdef NDEBUG
 #define assert(x) if ((x) == 0) fprintf(stderr, "%s:%u: failed assertion\n", __FILE__, __LINE__)
@@ -176,7 +178,6 @@ int getopt(int, char * const *, const char *);
 int strncasecmp(const char *, const char*, int len);
 int srandom(int);
 int random(void);
-int gettimeofday(struct timeval *p, struct timezone *z);
 int gethostid(void);
 int getuid(void);
 int getgid(void);
