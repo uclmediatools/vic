@@ -226,6 +226,8 @@ proc init_gui {} {
 	#
 	set geom [option get . geometry Vic]
 	wm withdraw .
+	# added to catch window close action
+	wm protocol . WM_DELETE_WINDOW adios
 	wm geometry . $geom
 	update idletasks
 	set minwidth [winfo reqwidth .]
