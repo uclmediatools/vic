@@ -124,6 +124,7 @@ TCL_VIC = ui-ctrlmenu.tcl ui-main.tcl ui-resource.tcl ui-relate.tcl\
 BROKEN_OBJ = strtol.obj strtoul.obj
 COLOR_OBJS = color-true.obj color-pseudo.obj color-dither.obj color-ed.obj \
 	color-hi.obj color-quant.obj color-gray.obj color-mono.obj color-hist.obj
+QFDES_OBJS = qfDES.obj qfDES_key.obj qfDES_memory.obj
 
 OBJ0 =	getopt.obj win32.obj win32X.obj
 OBJ1 =	inet.obj cellb_tables.obj tkStripchart.obj md5c.obj random.obj
@@ -137,9 +138,9 @@ OBJ2 =	main.obj net.obj net-ip.obj source.obj \
 	encoder-nv.obj encoder-cellb.obj encoder-h261.obj \
 	transcoder-jpeg.obj framer-jpeg.obj \
 	group-ipc.obj confbus.obj renderer.obj renderer-window.obj \
-	color.obj $(COLOR_OBJS) \
+	color.obj $(COLOR_OBJS) $(QFDES_OBJS) \
 	rgb-converter.obj jpeg.obj p64.obj dct.obj \
-	compositor.obj rate-variable.obj crypt.obj crypt-dull.obj \
+	compositor.obj rate-variable.obj crypt.obj crypt-des.obj \
 	grabber-still.obj
 OBJ3 =	cm0.obj cm1.obj huffcode.obj version.obj bv.obj \
 	$(TCL_VIC:.tcl=.obj) tk.obj
@@ -362,6 +363,10 @@ p64dump.obj: p64/p64dump.cc
 
 jpeg.obj: jpeg/jpeg.cc
 	$(cc32) $(cdebug) $(cflags) $(cvars) $(CFLAGS) -o $@ -FR$*.sbr -Tp jpeg/jpeg.cc
+
+# qfdes doesn't like MSVC optimisations.... 
+qfdes.obj: qfdes.c
+	$(cc32) $(cdebug) /Od $(cflags) $(cvars) $(CFLAGS) -o $@ -FR$*.sbr -Tp qfdes.c
 
 tk.res:
 	$(rc32) -fo $@ -r -i $(GENERICDIR) $(RCDIR)/tk.rc
