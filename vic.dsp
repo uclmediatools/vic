@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Application" 0x0101
 
-CFG=vic - Win32 Release IPv6 Win2000
+CFG=vic - Win32 Release IPv6 XP
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,7 +13,7 @@ CFG=vic - Win32 Release IPv6 Win2000
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "vic.mak" CFG="vic - Win32 Release IPv6 Win2000"
+!MESSAGE NMAKE /f "vic.mak" CFG="vic - Win32 Release IPv6 XP"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
@@ -23,6 +23,7 @@ CFG=vic - Win32 Release IPv6 Win2000
 !MESSAGE "vic - Win32 Debug IPv6 Win2000" (based on "Win32 (x86) Application")
 !MESSAGE "vic - Win32 Debug IPv6 MSR" (based on "Win32 (x86) Application")
 !MESSAGE "vic - Win32 Release IPv6 Win2000" (based on "Win32 (x86) Application")
+!MESSAGE "vic - Win32 Release IPv6 XP" (based on "Win32 (x86) Application")
 !MESSAGE 
 
 # Begin Project
@@ -210,6 +211,38 @@ LINK32=link.exe
 # ADD LINK32 tklib.lib tcllib.lib uclmm.lib winmm.lib wsock32.lib Ws2_32.lib msacm32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib vfw32.lib /nologo /subsystem:windows /pdb:none /machine:I386 /libpath:"..\tcl-8.0\win\Release" /libpath:"..\tk-8.0\win\Release" /libpath:"..\common\src\Release_IPv6" /libpath:"codec\tmndec" /libpath:"codec\tmn-x"
 # SUBTRACT LINK32 /map /debug /force
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "vic___Win32_Release_IPv6_XP"
+# PROP BASE Intermediate_Dir "vic___Win32_Release_IPv6_XP"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "Release_IPv6_XP"
+# PROP Intermediate_Dir "Release_IPv6_XP"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+vic=rc.exe
+# ADD BASE CPP /nologo /ML /W3 /GX /O2 /I ".\\" /I "render" /I "rtp" /I "net" /I "win32" /I "video" /I "codec" /I "codec\tmndec" /I "codec\tmn-x" /I "codec\jpeg" /I "codec\p64" /I "codec\h263" /I "codec\mpeg" /I "..\common\src" /I "..\tk-8.0\win" /I "..\tcl-8.0\win" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\tcl-8.0\generic" /I "..\IPv6Kit\inc" /I "mst_wm\incls" /D "NDEBUG" /D "_NDEBUG" /D "WIN32" /D SIGRET=void /D SIGARGS=int /D NLAYER=8 /D ED_YBITS=4 /D "VIC" /D "USE_TIME" /D "WINDOWS" /D "HAVE_IPV6" /D "NEED_INET_NTOP" /D "NEED_INET_PTON" /D "WIN2K_IPV6" /YX /FD /c
+# SUBTRACT BASE CPP /X /Fr
+# ADD CPP /nologo /ML /W3 /GX /O2 /I ".\\" /I "render" /I "rtp" /I "net" /I "win32" /I "video" /I "codec" /I "codec\tmndec" /I "codec\tmn-x" /I "codec\jpeg" /I "codec\p64" /I "codec\h263" /I "codec\mpeg" /I "..\common\src" /I "..\tk-8.0\win" /I "..\tcl-8.0\win" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\tcl-8.0\generic" /I "mst_wm\incls" /I "\Program Files\Microsoft SDK\include" /D "NDEBUG" /D "_NDEBUG" /D "WIN32" /D SIGRET=void /D SIGARGS=int /D NLAYER=8 /D ED_YBITS=4 /D "VIC" /D "USE_TIME" /D "WINDOWS" /D "HAVE_IPV6" /D "NEED_INET_NTOP" /D "NEED_INET_PTON" /D "WINXP_IPV6" /YX /FD /c
+# SUBTRACT CPP /X /Fr
+# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
+# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
+# ADD BASE RSC /l 0x809 /d "NDEBUG"
+# ADD RSC /l 0x809 /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 tklib.lib tcllib.lib uclmm.lib winmm.lib wsock32.lib Ws2_32.lib msacm32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib vfw32.lib /nologo /subsystem:windows /pdb:none /machine:I386 /libpath:"..\tcl-8.0\win\Release" /libpath:"..\tk-8.0\win\Release" /libpath:"..\common\src\Release_IPv6" /libpath:"codec\tmndec" /libpath:"codec\tmn-x"
+# SUBTRACT BASE LINK32 /map /debug /force
+# ADD LINK32 tklib.lib tcllib.lib uclmm.lib winmm.lib wsock32.lib Ws2_32.lib msacm32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib vfw32.lib /nologo /subsystem:windows /pdb:none /machine:I386 /libpath:"..\tcl-8.0\win\Release" /libpath:"..\tk-8.0\win\Release" /libpath:"..\common\src\Release_IPv6" /libpath:"codec\tmndec" /libpath:"codec\tmn-x"
+# SUBTRACT LINK32 /map /debug /force
+
 !ENDIF 
 
 # Begin Target
@@ -220,6 +253,7 @@ LINK32=link.exe
 # Name "vic - Win32 Debug IPv6 Win2000"
 # Name "vic - Win32 Debug IPv6 MSR"
 # Name "vic - Win32 Release IPv6 Win2000"
+# Name "vic - Win32 Release IPv6 XP"
 # Begin Group "Tcl/Tk Scripts"
 
 # PROP Default_Filter ".tcl"
@@ -378,6 +412,17 @@ InputName=cf-confbus
 
 # End Custom Build
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# Begin Custom Build
+InputPath=".\tcl\cf-confbus.tcl"
+InputName=cf-confbus
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
 !ENDIF 
 
 # End Source File
@@ -442,6 +487,17 @@ InputName=cf-main
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\cf-main.tcl"
+InputName=cf-main
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
 
 # Begin Custom Build
 InputPath=".\tcl\cf-main.tcl"
@@ -526,6 +582,17 @@ InputName=cf-network
 
 # End Custom Build
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# Begin Custom Build
+InputPath=".\tcl\cf-network.tcl"
+InputName=cf-network
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
 !ENDIF 
 
 # End Source File
@@ -590,6 +657,17 @@ InputName=cf-tm
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\cf-tm.tcl"
+InputName=cf-tm
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
 
 # Begin Custom Build
 InputPath=".\tcl\cf-tm.tcl"
@@ -674,6 +752,17 @@ InputName=cf-util
 
 # End Custom Build
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# Begin Custom Build
+InputPath=".\tcl\cf-util.tcl"
+InputName=cf-util
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
 !ENDIF 
 
 # End Source File
@@ -738,6 +827,17 @@ InputName=entry
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=.\tcl\entry.tcl
+InputName=entry
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
 
 # Begin Custom Build
 InputPath=.\tcl\entry.tcl
@@ -822,6 +922,17 @@ InputName=tkerror
 
 # End Custom Build
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# Begin Custom Build
+InputPath=.\tcl\tkerror.tcl
+InputName=tkerror
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
 !ENDIF 
 
 # End Source File
@@ -886,6 +997,17 @@ InputName=ui-ctrlmenu
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-ctrlmenu.tcl"
+InputName=ui-ctrlmenu
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
 
 # Begin Custom Build
 InputPath=".\tcl\ui-ctrlmenu.tcl"
@@ -970,6 +1092,17 @@ InputName=ui-extout
 
 # End Custom Build
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-extout.tcl"
+InputName=ui-extout
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
 !ENDIF 
 
 # End Source File
@@ -1034,6 +1167,17 @@ InputName=ui-grabber
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-grabber.tcl"
+InputName=ui-grabber
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
 
 # Begin Custom Build
 InputPath=".\tcl\ui-grabber.tcl"
@@ -1118,6 +1262,17 @@ InputName=ui-help
 
 # End Custom Build
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-help.tcl"
+InputName=ui-help
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
 !ENDIF 
 
 # End Source File
@@ -1182,6 +1337,17 @@ InputName=ui-main
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-main.tcl"
+InputName=ui-main
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
 
 # Begin Custom Build
 InputPath=".\tcl\ui-main.tcl"
@@ -1266,6 +1432,17 @@ InputName=ui-relate
 
 # End Custom Build
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-relate.tcl"
+InputName=ui-relate
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
 !ENDIF 
 
 # End Source File
@@ -1330,6 +1507,17 @@ InputName=ui-resource
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-resource.tcl"
+InputName=ui-resource
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
 
 # Begin Custom Build
 InputPath=".\tcl\ui-resource.tcl"
@@ -1414,6 +1602,17 @@ InputName=ui-srclist
 
 # End Custom Build
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-srclist.tcl"
+InputName=ui-srclist
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
 !ENDIF 
 
 # End Source File
@@ -1478,6 +1677,17 @@ InputName=ui-stats
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-stats.tcl"
+InputName=ui-stats
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
 
 # Begin Custom Build
 InputPath=".\tcl\ui-stats.tcl"
@@ -1562,6 +1772,17 @@ InputName=ui-switcher
 
 # End Custom Build
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-switcher.tcl"
+InputName=ui-switcher
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
 !ENDIF 
 
 # End Source File
@@ -1626,6 +1847,17 @@ InputName=ui-util
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-util.tcl"
+InputName=ui-util
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
 
 # Begin Custom Build
 InputPath=".\tcl\ui-util.tcl"
@@ -1710,6 +1942,17 @@ InputName=ui-win32
 
 # End Custom Build
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-win32.tcl"
+InputName=ui-win32
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
 !ENDIF 
 
 # End Source File
@@ -1774,6 +2017,17 @@ InputName=ui-windows
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
+
+# Begin Custom Build
+InputPath=".\tcl\ui-windows.tcl"
+InputName=ui-windows
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
 
 # Begin Custom Build
 InputPath=".\tcl\ui-windows.tcl"
@@ -1884,6 +2138,8 @@ SOURCE=.\net\inet6.c
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 MSR"
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
 
 !ENDIF 
 
@@ -2214,6 +2470,11 @@ SOURCE=.\codec\tmndec\config.h
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
 # PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
 !ENDIF 
 
 # End Source File
@@ -2242,6 +2503,11 @@ SOURCE=.\codec\tmndec\getvlc.h
 # PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
+
+# PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
 
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
 # PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
@@ -2278,6 +2544,11 @@ SOURCE=.\codec\tmndec\global.h
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
 # PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
 !ENDIF 
 
 # End Source File
@@ -2306,6 +2577,11 @@ SOURCE=.\codec\tmndec\indices.h
 # PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
+
+# PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
 
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
 # PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
@@ -2342,6 +2618,11 @@ SOURCE=.\codec\tmndec\libh263.h
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
 # PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
 !ENDIF 
 
 # End Source File
@@ -2370,6 +2651,11 @@ SOURCE=.\codec\tmndec\sactbls.h
 # PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
+
+# PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
 
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
 # PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
@@ -2406,6 +2692,11 @@ SOURCE=.\codec\tmndec\tmndec.h
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
 # PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
 !ENDIF 
 
 # End Source File
@@ -2434,6 +2725,11 @@ SOURCE=.\codec\tmndec\win.h
 # PROP Intermediate_Dir "Debug_IPv6_MSR\tmndec"
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
+
+# PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+# PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
 
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
 # PROP Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
@@ -2472,6 +2768,13 @@ SOURCE=.\codec\tmndec\display.c
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
 # SUBTRACT CPP /Fr
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# SUBTRACT BASE CPP /Fr
+# SUBTRACT CPP /Fr
+
 !ENDIF 
 
 # End Source File
@@ -2503,6 +2806,13 @@ SOURCE=.\codec\tmndec\dither.c
 
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# SUBTRACT CPP /Fr
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# SUBTRACT BASE CPP /Fr
 # SUBTRACT CPP /Fr
 
 !ENDIF 
@@ -2538,6 +2848,13 @@ SOURCE=.\codec\tmndec\getbits.c
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
 # SUBTRACT CPP /Fr
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# SUBTRACT BASE CPP /Fr
+# SUBTRACT CPP /Fr
+
 !ENDIF 
 
 # End Source File
@@ -2569,6 +2886,13 @@ SOURCE=.\codec\tmndec\getblk.c
 
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# SUBTRACT CPP /Fr
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# SUBTRACT BASE CPP /Fr
 # SUBTRACT CPP /Fr
 
 !ENDIF 
@@ -2604,6 +2928,13 @@ SOURCE=.\codec\tmndec\gethdr.c
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
 # SUBTRACT CPP /Fr
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# SUBTRACT BASE CPP /Fr
+# SUBTRACT CPP /Fr
+
 !ENDIF 
 
 # End Source File
@@ -2635,6 +2966,13 @@ SOURCE=.\codec\tmndec\getpic.c
 
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# SUBTRACT CPP /Fr
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# SUBTRACT BASE CPP /Fr
 # SUBTRACT CPP /Fr
 
 !ENDIF 
@@ -2670,6 +3008,13 @@ SOURCE=.\codec\tmndec\getvlc.c
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
 # SUBTRACT CPP /Fr
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# SUBTRACT BASE CPP /Fr
+# SUBTRACT CPP /Fr
+
 !ENDIF 
 
 # End Source File
@@ -2701,6 +3046,13 @@ SOURCE=.\codec\tmndec\idct.c
 
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# SUBTRACT CPP /Fr
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# SUBTRACT BASE CPP /Fr
 # SUBTRACT CPP /Fr
 
 !ENDIF 
@@ -2736,6 +3088,13 @@ SOURCE=.\codec\tmndec\idctref.c
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
 # SUBTRACT CPP /Fr
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# SUBTRACT BASE CPP /Fr
+# SUBTRACT CPP /Fr
+
 !ENDIF 
 
 # End Source File
@@ -2767,6 +3126,13 @@ SOURCE=.\codec\tmndec\recon.c
 
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# SUBTRACT CPP /Fr
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# SUBTRACT BASE CPP /Fr
 # SUBTRACT CPP /Fr
 
 !ENDIF 
@@ -2802,6 +3168,13 @@ SOURCE=.\codec\tmndec\sac.c
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
 # SUBTRACT CPP /Fr
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# SUBTRACT BASE CPP /Fr
+# SUBTRACT CPP /Fr
+
 !ENDIF 
 
 # End Source File
@@ -2833,6 +3206,13 @@ SOURCE=.\codec\tmndec\store.c
 
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# SUBTRACT CPP /Fr
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# SUBTRACT BASE CPP /Fr
 # SUBTRACT CPP /Fr
 
 !ENDIF 
@@ -2868,6 +3248,13 @@ SOURCE=.\codec\tmndec\tmndec.c
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
 # SUBTRACT CPP /Fr
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# SUBTRACT BASE CPP /Fr
+# SUBTRACT CPP /Fr
+
 !ENDIF 
 
 # End Source File
@@ -2899,6 +3286,13 @@ SOURCE=.\codec\tmndec\win.c
 
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# SUBTRACT CPP /Fr
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# SUBTRACT BASE CPP /Fr
 # SUBTRACT CPP /Fr
 
 !ENDIF 
@@ -2934,6 +3328,13 @@ SOURCE=.\codec\tmndec\yuv2rgb.c
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
 # SUBTRACT CPP /Fr
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# SUBTRACT BASE CPP /Fr
+# SUBTRACT CPP /Fr
+
 !ENDIF 
 
 # End Source File
@@ -2965,6 +3366,13 @@ SOURCE=.\codec\tmndec\yuvrgb24.c
 
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmndec"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# SUBTRACT CPP /Fr
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmndec"
+# SUBTRACT BASE CPP /Fr
 # SUBTRACT CPP /Fr
 
 !ENDIF 
@@ -3006,6 +3414,11 @@ SOURCE=.\config.h
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+
 !ENDIF 
 
 # End Source File
@@ -3036,6 +3449,11 @@ SOURCE=.\h263coder.h
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
 
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 
 !ENDIF 
@@ -3070,6 +3488,11 @@ SOURCE=.\indices.h
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+
 !ENDIF 
 
 # End Source File
@@ -3100,6 +3523,11 @@ SOURCE=.\macros.h
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
 
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 
 !ENDIF 
@@ -3134,6 +3562,11 @@ SOURCE=.\main.h
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+
 !ENDIF 
 
 # End Source File
@@ -3164,6 +3597,11 @@ SOURCE=.\putvlc.h
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
 
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 
 !ENDIF 
@@ -3198,6 +3636,11 @@ SOURCE=.\sactbls.h
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+
 !ENDIF 
 
 # End Source File
@@ -3230,6 +3673,11 @@ SOURCE=.\sim.h
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+
 !ENDIF 
 
 # End Source File
@@ -3260,6 +3708,11 @@ SOURCE=.\vlc.h
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
 
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 
 !ENDIF 
@@ -3295,6 +3748,11 @@ SOURCE=".\codec\tmn-x\coder.c"
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+
 !ENDIF 
 
 # End Source File
@@ -3325,6 +3783,11 @@ SOURCE=".\codec\tmn-x\countbit.c"
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
 
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 
 !ENDIF 
@@ -3359,6 +3822,11 @@ SOURCE=".\codec\tmn-x\dct.c"
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+
 !ENDIF 
 
 # End Source File
@@ -3389,6 +3857,11 @@ SOURCE=".\codec\tmn-x\filter.c"
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
 
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 
 !ENDIF 
@@ -3423,6 +3896,11 @@ SOURCE=".\codec\tmn-x\intra_pred.c"
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+
 !ENDIF 
 
 # End Source File
@@ -3453,6 +3931,11 @@ SOURCE=".\codec\tmn-x\io.c"
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
 
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 
 !ENDIF 
@@ -3487,6 +3970,11 @@ SOURCE=".\codec\tmn-x\main.c"
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+
 !ENDIF 
 
 # End Source File
@@ -3517,6 +4005,11 @@ SOURCE=".\codec\tmn-x\malloc_debug.c"
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
 
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 
 !ENDIF 
@@ -3551,6 +4044,11 @@ SOURCE=".\codec\tmn-x\mot_est.c"
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+
 !ENDIF 
 
 # End Source File
@@ -3581,6 +4079,11 @@ SOURCE=".\codec\tmn-x\pred.c"
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
 
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 
 !ENDIF 
@@ -3615,6 +4118,11 @@ SOURCE=".\codec\tmn-x\putbits.c"
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+
 !ENDIF 
 
 # End Source File
@@ -3645,6 +4153,11 @@ SOURCE=".\codec\tmn-x\putvlc.c"
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
 
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 
 !ENDIF 
@@ -3679,6 +4192,11 @@ SOURCE=".\codec\tmn-x\quant.c"
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+
 !ENDIF 
 
 # End Source File
@@ -3709,6 +4227,11 @@ SOURCE=".\codec\tmn-x\ratectrl.c"
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
 
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 
 !ENDIF 
@@ -3743,6 +4266,11 @@ SOURCE=".\codec\tmn-x\sac.c"
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+
 !ENDIF 
 
 # End Source File
@@ -3773,6 +4301,11 @@ SOURCE=".\codec\tmn-x\snr.c"
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
 
 # PROP BASE Intermediate_Dir "Debug_IPv6_Win2000\tmn-x"
+# PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+# PROP BASE Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 # PROP Intermediate_Dir "Release_IPv6_Win2000\tmn-x"
 
 !ENDIF 
@@ -4261,6 +4794,17 @@ InputPath=.\cm170.ppm
 
 # End Custom Build
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+USERDEP__CM170="render\mkbv\mkbv.exe"	
+# Begin Custom Build
+InputPath=.\cm170.ppm
+
+"codec\bv.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	render\mkbv\mkbv > codec\bv.c
+
+# End Custom Build
+
 !ENDIF 
 
 # End Source File
@@ -4364,6 +4908,25 @@ BuildCmds= \
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
+
+USERDEP__RGB_C="render\ppmtolut\ppmtolut.exe"	"render\mkcube\mkcube.exe"	
+# Begin Custom Build
+InputPath=".\rgb-cube.ppm"
+
+BuildCmds= \
+	render\mkcube\mkcube rgb > $(InputPath) \
+	render\ppmtolut\ppmtolut -n cube rgb-cube.ppm > render\cm0.c \
+	render\ppmtolut\ppmtolut -n jv_cube jv-cube-128.ppm >> render\cm0.c \
+	
+
+"$(InputPath)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+
+"render\cm0.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
 
 USERDEP__RGB_C="render\ppmtolut\ppmtolut.exe"	"render\mkcube\mkcube.exe"	
 # Begin Custom Build
@@ -4495,6 +5058,23 @@ InputPath=.\Version
 	
 # End Custom Build
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
+
+USERDEP__VERSI="win32\echo.txt"	"win32\set.txt"	"win32\null.txt"	
+# Begin Custom Build - Generating "version.c".
+InputPath=.\Version
+
+"version.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	copy win32\set.txt + VERSION win32\vergen.bat 
+	copy win32\vergen.bat + win32\null.txt win32\vergen.bat 
+	copy win32\vergen.bat + win32\echo.txt win32\vergen.bat 
+	win32\vergen.bat 
+	move win32\version.c version.c 
+	erase win32\version.c 
+	erase win32\vergen.bat 
+	
+# End Custom Build
+
 !ENDIF 
 
 # End Source File
@@ -4604,6 +5184,26 @@ BuildCmds= \
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 Win2000"
+
+USERDEP__YUV_M="render\ppmtolut\ppmtolut.exe"	"render\mkcube\mkcube.exe"	
+# Begin Custom Build
+InputPath=".\yuv-map.ppm"
+
+BuildCmds= \
+	set ED_YBITS=4 \
+	render\mkcube\mkcube -Y $ED_YBITS -U 45 -V 45 yuv >  $(InputPath) \
+	render\ppmtolut\ppmtolut -n quant cm170.ppm > render\cm1.c \
+	render\ppmtolut\ppmtolut -Y $ED_YBITS -n ed -e yuv-map.ppm >> render\cm1.c \
+	
+
+"$(InputPath)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+
+"render\cm1.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Release IPv6 XP"
 
 USERDEP__YUV_M="render\ppmtolut\ppmtolut.exe"	"render\mkcube\mkcube.exe"	
 # Begin Custom Build

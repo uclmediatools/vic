@@ -166,12 +166,16 @@ char   *ctime(const time_t *);
 
 #if !defined(MUSICA_IPV6) && defined(WIN32) /* MS_IPV6 */
 
+#ifdef WINXP_IPV6
+#include <ws2tcpip.h>
+#else
 #ifdef WIN2K_IPV6
 #include <ws2tcpip.h>
 #include <tpipv6.h>
 #else
 #include <ws2ip6.h>
 #include <ws2tcpip.h>
+#endif
 #endif
 
 #define IN6_ARE_ADDR_EQUAL IN6_ADDR_EQUAL
@@ -197,8 +201,10 @@ char   *ctime(const time_t *);
 #define IN6_IS_ADDR_MULTICAST(addr) \
         ((addr)->s6_addr[0] == 0xffU)
 
+#ifndef INET6_ADDRSTRLEN
 #define INET6_ADDRSTRLEN        46      /* max len of IPv6 addr in ascii */
-                                        /* standard colon-hex notation. */ 
+#endif                                  /* standard colon-hex notation. */ 
+
 #define EAFNOSUPPORT -1
 //#define IP_MULTICAST_LOOP       0x12    /* set/get IP multicast loopback   */
 
