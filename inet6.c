@@ -64,16 +64,17 @@ inet6_LookupHostAddr(struct in6_addr *addr, const char* s) {
 
 int 
 inet6_LookupLocalAddr(struct in6_addr *addr) {
-  static int once = 0;
-  struct in6_addr local_addr;
+  static int once = 0, len;
+  static struct in6_addr local_addr;
 
   if (!once) {
     char name[MAXHOSTNAMELEN];
-    gethostname(name, sizeof(name));
+    int gh=gethostname(name, sizeof(name));
     if (inet6_LookupHostAddr(&local_addr, name) != 0)
       return (-1);
     once++;
   }
+  len=sizeof(local_addr.s6_addr);
   memcpy(addr->s6_addr, local_addr.s6_addr, sizeof(local_addr.s6_addr));
   return (0);
 }
