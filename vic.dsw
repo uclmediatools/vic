@@ -191,6 +191,9 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name tcl2cpp
     End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name tcl2c
+    End Project Dependency
 }}}
 
 ###############################################################################

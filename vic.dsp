@@ -1322,6 +1322,14 @@ SOURCE=.\net\net.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\net\pktbuf.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\pkttbl.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\net\rt.h
 # End Source File
 # End Group
@@ -1393,6 +1401,14 @@ SOURCE=".\net\net-ipv6.cpp"
 # Begin Source File
 
 SOURCE=.\net\net.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\pktbuf.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\pkttbl.cpp
 # End Source File
 # End Group
 # Begin Group "codec"
@@ -1625,6 +1641,18 @@ SOURCE=".\codec\encoder-h263.h"
 
 SOURCE=".\codec\framer-h261.h"
 # End Source File
+# Begin Source File
+
+SOURCE=.\codec\tmn\h263coder.h
+# End Source File
+# Begin Source File
+
+SOURCE=".\codec\pvh-huff.h"
+# End Source File
+# Begin Source File
+
+SOURCE=.\codec\pvh.h
+# End Source File
 # End Group
 # Begin Source File
 
@@ -1676,6 +1704,10 @@ SOURCE=".\codec\decoder-nv.cpp"
 # End Source File
 # Begin Source File
 
+SOURCE=".\codec\decoder-pvh.cpp"
+# End Source File
+# Begin Source File
+
 SOURCE=".\codec\decoder-raw.cpp"
 # End Source File
 # Begin Source File
@@ -1712,6 +1744,10 @@ SOURCE=".\codec\encoder-nv.cpp"
 # End Source File
 # Begin Source File
 
+SOURCE=".\codec\encoder-pvh.cpp"
+# End Source File
+# Begin Source File
+
 SOURCE=".\codec\encoder-raw.cpp"
 # End Source File
 # Begin Source File
@@ -1729,6 +1765,10 @@ SOURCE=.\codec\jpeg\jpeg.cpp
 # Begin Source File
 
 SOURCE=.\codec\p64\p64.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=".\codec\pvh-huff.c"
 # End Source File
 # Begin Source File
 
@@ -1851,6 +1891,10 @@ SOURCE=".\rtp\ntp-time.h"
 # End Source File
 # Begin Source File
 
+SOURCE=".\rtp\pktbuf-rtp.h"
+# End Source File
+# Begin Source File
+
 SOURCE=.\rtp\rtp.h
 # End Source File
 # Begin Source File
@@ -1866,6 +1910,10 @@ SOURCE=.\rtp\source.h
 SOURCE=.\rtp\transmitter.h
 # End Source File
 # End Group
+# Begin Source File
+
+SOURCE=".\rtp\pktbuf-rtp.cpp"
+# End Source File
 # Begin Source File
 
 SOURCE=.\rtp\session.cpp
