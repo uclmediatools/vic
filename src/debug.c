@@ -169,7 +169,7 @@ void _debug_set_core_dir(const char *argv0)
                 debug_msg("Cannot write in or change to %s\n", coredir);
                 return;
         }
-        if (!chdir(coredir)) {
+        if (chdir(coredir)) {
                 perror(coredir);
         }
 #endif /* DEBUG */
