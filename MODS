@@ -356,6 +356,7 @@ v1.2.5	- More informative error message when the lock on the mbus configuration
           by Robert Olson <olson@mcs.anl.gov>.
 	- Fix IPv6 support on Linux
     - Add configuration for Windows 2000 IPv6 stack
+    - Connect/disconnect to socket before/after getsockname call to make it work
 
 
 
