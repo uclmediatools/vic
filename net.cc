@@ -221,7 +221,9 @@ void Network::dosend(u_char* buf, int len, int fd)
 			break;
 
 		default:
+#ifndef WIN32
 			perror("send");
+#endif
 			return;
 		}
 	}
@@ -288,7 +290,9 @@ void Network::send(const msghdr& mh)
 			break;
 
 		default:
+#ifndef WIN32
 			perror("sendmsg");
+#endif
 			return;
 		}
 	}
