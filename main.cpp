@@ -127,9 +127,10 @@ usage()
 Usage: vic [-HPs] [-A nv|ivs|rtp] [-B maxbps] [-C conf]\n\
 \t[-c ed|gray|od|quantize] [-D device] [-d display]\n\
 \t[-f bvc|cellb|h261|jpeg|nv] [-F maxfps] [-I channel]\n\
-\t[-K key ] [-L flowLabel (ip6 only)] [-M colormap] [-m mtu] [-N session]\n\
-\t[-n atm|ip|rtip] [-o clipfile] [-t ttl] [-U interval]\n\
-\t[-u script] [-V visual] [-X resource=value] dest/port[/fmt/ttl]\n"
+\t[-K key ] [-L flowLabel (ip6 only)] [-l (creates log file)]\n\
+\t[-M colormap] [-m mtu] [-N session] [-n atm|ip|ip6|rtip]\n\
+\t[-o clipfile] [-t ttl] [-U interval] [-u script]\n\
+\t[-V visual] [-X resource=value] [-z numlayers] dest/port[/fmt/ttl]\n"
 	);
 	exit(1);
 }
@@ -422,7 +423,7 @@ main(int argc, const char** argv)
 #endif
 	// Option list; If letter is followed by ':' then it takes an argument
 	const char* options = 
-		"A:B:C:c:D:d:f:F:HI:K:lL:M:m:N:n:o:Pq:re:sST:t:U:u:V:w:X:yy:";
+		"A:B:C:c:D:d:f:F:HI:K:lL:M:m:N:n:o:Pq:re:sST:t:U:u:V:w:X:yy:z:";
 	/* process display and window (-use) options before initialising tcl/tk */
 	char buf[128], tmp[16];
 	const char *display=0, *use=0;
@@ -634,6 +635,9 @@ main(int argc, const char** argv)
 			{
 				tcl.add_option("bw_control", "true");
 			}
+			break;
+		case 'z':
+			tcl.add_option("numLayers", optarg);
 			break;
 		}
 	}
