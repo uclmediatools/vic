@@ -62,6 +62,8 @@ v1.0.5	- Add ability to send to one port whilst receiving on another,
 	- Compilation fixes for Irix 6.5 contributed by Bob Olson.
 	- Add extra sanity checking to mbus_recv()
 	- Add extra sanity checking to mbus_parse_*
+	- Fix source address passed to mbus_recv() callback - was missing
+	  the "(" and ")" around it.
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,

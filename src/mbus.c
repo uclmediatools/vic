@@ -1261,7 +1261,9 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 				/* ...and process the commands contained in the message */
 				while (mbus_parse_sym(m, &cmd)) {
 					if (mbus_parse_lst(m, &param)) {
-						m->cmd_handler(src, cmd, param, data);
+						char 		*newsrc = (char *) xmalloc(strlen(src) + 3);
+						sprintf(newsrc, "(%s)", src);	/* Yes, this is a kludge. */
+						m->cmd_handler(newsrc, cmd, param, data);
 					} else {
 						debug_msg("Unable to parse mbus command:\n");
 						debug_msg("cmd = %s\n", cmd);
