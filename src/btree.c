@@ -1,7 +1,8 @@
 /*
- * FILE:    btree.c
- * PROGRAM: RAT
- * AUTHOR:  O.Hodson
+ * FILE:     btree.c
+ * PROGRAM:  RAT
+ * AUTHOR:   O.Hodson
+ * MODIFIED: C.Perkins
  * 
  * Binary tree implementation - Mostly verbatim from:
  *
@@ -12,22 +13,60 @@
 
 #include "config_unix.h"
 #include "config_win32.h"
-
 #include "debug.h"
 #include "memory.h"
 #include "btree.h"
 
 typedef struct s_btree_node {
-        uint32_t       key;
-        void         *data;
-        struct s_btree_node *parent;
-        struct s_btree_node *left;
-        struct s_btree_node *right;
+        uint32_t       		 key;
+        void         		*data;
+        struct s_btree_node 	*parent;
+        struct s_btree_node 	*left;
+        struct s_btree_node 	*right;
+	uint32_t		 magic;
 } btree_node_t;
 
 struct s_btree {
         btree_node_t   *root;
+	uint32_t	magic;
+	int		count;
 };
+
+/*****************************************************************************/
+/* Debugging functions...                                                    */
+/*****************************************************************************/
+
+#define BTREE_MAGIC      0x10101010
+#define BTREE_NODE_MAGIC 0x01010101
+
+static int btree_count;
+
+static void
+btree_validate_node(btree_node_t *node, btree_node_t *parent)
+{
+	assert(node->magic  == BTREE_NODE_MAGIC);
+	assert(node->parent == parent);
+	btree_count++;
+	if (node->left != NULL) {
+		btree_validate_node(node->left, node);
+	}
+	if (node->right != NULL) {
+		btree_validate_node(node->right, node);
+	}
+}
+
+static void
+btree_validate(btree_t *t)
+{
+	assert(t->magic == BTREE_MAGIC);
+#ifdef DEBUG
+	btree_count = 0;
+	if (t->root != NULL) {
+		btree_validate_node(t->root, NULL);
+	}
+	assert(btree_count == t->count);
+#endif
+}
 
 /*****************************************************************************/
 /* Utility functions                                                         */
@@ -92,6 +131,7 @@ static void
 btree_insert_node(btree_t *tree, btree_node_t *z) {
         btree_node_t *x, *y;
 
+	btree_validate(tree);
         y = NULL;
         x = tree->root;
         while (x != NULL) {
@@ -112,6 +152,8 @@ btree_insert_node(btree_t *tree, btree_node_t *z) {
         } else {
                 y->right = z;
         }
+	tree->count++;
+	btree_validate(tree);
 }
 
 static btree_node_t*
@@ -119,6 +161,7 @@ btree_delete_node(btree_t *tree, btree_node_t *z)
 {
         btree_node_t *x, *y;
 
+	btree_validate(tree);
         if (z->left == NULL || z->right == NULL) {
                 y = z;
         } else {
@@ -146,6 +189,9 @@ btree_delete_node(btree_t *tree, btree_node_t *z)
         z->key  = y->key;
         z->data = y->data;
 
+	tree->count--;
+
+	btree_validate(tree);
         return y;
 }
 
@@ -158,7 +204,9 @@ btree_create(btree_t **tree)
 {
         btree_t *t = (btree_t*)xmalloc(sizeof(btree_t));
         if (t) {
-                t->root = NULL;
+		t->count = 0;
+		t->magic = BTREE_MAGIC;
+                t->root  = NULL;
                 *tree = t;
                 return TRUE;
         }
@@ -170,6 +218,7 @@ btree_destroy(btree_t **tree)
 {
         btree_t *t = *tree;
 
+	btree_validate(t);
         if (t->root != NULL) {
                 debug_msg("Tree not empty - cannot destroy\n");
                 return FALSE;
@@ -184,6 +233,8 @@ int
 btree_find(btree_t *tree, uint32_t key, void **d)
 {
         btree_node_t *x;
+
+	btree_validate(tree);
         x = btree_search(tree->root, key);
         if (x != NULL) {
                 *d = x->data;
@@ -197,6 +248,7 @@ btree_add(btree_t *tree, uint32_t key, void *data)
 {
         btree_node_t *x;
 
+	btree_validate(tree);
         x = btree_search(tree->root, key);
         if (x != NULL) {
                 debug_msg("Item already exists - key %ul\n", key);
@@ -204,9 +256,12 @@ btree_add(btree_t *tree, uint32_t key, void *data)
         }
 
         x = (btree_node_t *)xmalloc(sizeof(btree_node_t));
-        x->key  = key;
-        x->data = data;
-        x->parent = x->left = x->right = NULL;
+        x->key    = key;
+        x->data   = data;
+        x->parent = NULL;
+	x->left   = NULL;
+	x->right  = NULL;
+	x->magic  = BTREE_NODE_MAGIC;
         btree_insert_node(tree, x);
 
         return TRUE;
@@ -217,6 +272,7 @@ btree_remove(btree_t *tree, uint32_t key, void **data)
 {
         btree_node_t *x;
 
+	btree_validate(tree);
         x = btree_search(tree->root, key);
         if (x == NULL) {
                 debug_msg("Item not on tree - key %ul\n", key);
@@ -243,6 +299,7 @@ btree_get_min_key(btree_t *tree, uint32_t *key)
 {
         btree_node_t *x;
 
+	btree_validate(tree);
         if (tree->root == NULL) {
                 return FALSE;
         }
@@ -261,6 +318,7 @@ btree_get_max_key(btree_t *tree, uint32_t *key)
 {
         btree_node_t *x;
 
+	btree_validate(tree);
         if (tree->root == NULL) {
                 return FALSE;
         }
@@ -279,6 +337,7 @@ btree_get_next_key(btree_t *tree, uint32_t cur_key, uint32_t *next_key)
 {
         btree_node_t *x;
 
+	btree_validate(tree);
         x = btree_search(tree->root, cur_key);
         if (x == NULL) {
                 return FALSE;
