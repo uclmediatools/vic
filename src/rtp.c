@@ -178,6 +178,7 @@ struct rtp {
 	int		 sdes_count_pri;
 	int		 sdes_count_sec;
 	int		 sdes_count_ter;
+	u_int16		 rtp_seq;
 	void (*callback)(struct rtp *session, rtp_event *event);
 };
 
@@ -696,6 +697,7 @@ struct rtp *rtp_init(char *addr, u_int16 port, int ttl, double rtcp_bw, void (*c
 	session->sdes_count_pri     = 0;
 	session->sdes_count_sec     = 0;
 	session->sdes_count_ter     = 0;
+	session->rtp_seq            = (u_int16) lrand48();
 	gettimeofday(&(session->last_rtcp_send_time), NULL);
 	gettimeofday(&(session->next_rtcp_send_time), NULL);
 
@@ -1270,18 +1272,45 @@ rtcp_rr *rtp_get_rr(struct rtp *session, u_int32 reporter, u_int32 reportee)
 	return NULL;
 }
 
-int rtp_send_data(struct rtp *session, u_int32 ts, char pt, int m, int cc, u_int32 csrc[16], char *data, int data_len)
+int rtp_send_data(struct rtp *session, u_int32 ts, char pt, int m, int cc, u_int32 csrc[16], 
+                  char *data, int data_len, char *extn, int extn_len)
 {
+	int		 buffer_len, i, rc;
+	u_int8		*buffer;
+	rtp_packet	*packet;
+
+	buffer_len = data_len + extn_len + 12 + (4 * cc);
+	buffer     = (u_int8 *) xmalloc(buffer_len + RTP_PACKET_HEADER_SIZE);
+	packet     = (rtp_packet *) buffer;
+
+	/* These are internal pointers into the buffer... */
+	packet->csrc = (u_int32 *) (buffer + RTP_PACKET_HEADER_SIZE + 12);
+	packet->extn = (u_int8  *) (buffer + RTP_PACKET_HEADER_SIZE + 12 + (4 * cc));
+	packet->data = (u_int8  *) (buffer + RTP_PACKET_HEADER_SIZE + 12 + (4 * cc) + extn_len);
+	/* ...and the actual packet header... */
+	packet->v    = 2;
+	packet->p    = 0;
+	packet->x    = (extn == NULL);
+	packet->cc   = cc;
+	packet->m    = m;
+	packet->pt   = pt;
+	packet->seq  = htons(session->rtp_seq++);
+	packet->ts   = htonl(ts);
+	packet->ssrc = htonl(rtp_my_ssrc(session));
+	/* ...now the CSRC list... */
+	for (i = 0; i < cc; i++) {
+		packet->csrc[i] = htonl(csrc[i]);
+	}
+	/* ...a header extension? */
+	memcpy(packet->extn, extn, extn_len);
+	/* ...finally the data itself... */
+	memcpy(packet->data, data, data_len);
+
+	rc = udp_send(session->rtp_socket, buffer + RTP_PACKET_HEADER_SIZE, buffer_len);
+	xfree(buffer);
+
 	session->we_sent = TRUE;
-	UNUSED(session);
-	   UNUSED(ts);
-	UNUSED(pt);
-	UNUSED(m);
-	UNUSED(cc);
-	UNUSED(csrc);
-	UNUSED(data);
-	UNUSED(data_len);
-	return TRUE;
+	return rc;
 }
 
 static u_int8 *format_rtcp_sr(u_int8 *buffer, int buflen, struct rtp *session, u_int32 ts)
@@ -1504,7 +1533,7 @@ static void send_rtcp(struct rtp *session, u_int32 ts)
 	udp_send(session->rtcp_socket, buffer, ptr - buffer);
 }
 
-int rtp_send_ctrl(struct rtp *session, u_int32 ts)
+void rtp_send_ctrl(struct rtp *session, u_int32 ts)
 {
 	/* Send an RTCP packet, if one is due... */
 	struct timeval	 curr_time;
@@ -1541,7 +1570,6 @@ int rtp_send_ctrl(struct rtp *session, u_int32 ts)
 			tv_add(&(session->next_rtcp_send_time), new_interval);
 		}
 	} 
-	return 0;
 }
 
 static void expire_source(struct rtp *session, source *s, struct timeval curr_time)
