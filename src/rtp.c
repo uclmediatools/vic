@@ -902,8 +902,11 @@ static char *get_cname(socket_udp *s)
                 xfree(name);
         }
 #else
+	uname = NULL;
         pwent = getpwuid(getuid());
-        uname = pwent->pw_name;
+	if (pwent != NULL) {
+		uname = pwent->pw_name;
+	}
         if (uname != NULL) {
                 strncpy(cname, uname, MAXCNAMELEN - 1);
                 strcat(cname, "@");
