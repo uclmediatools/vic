@@ -2276,8 +2276,8 @@ fi
 ###############################################################################
 # Check whether gtk-doc is installed
 
-# Extract the first word of "xgtkdoc-scan", so it can be a program name with args.
-set dummy xgtkdoc-scan; ac_word=$2
+# Extract the first word of "gtkdoc-scan", so it can be a program name with args.
+set dummy gtkdoc-scan; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
 echo "configure:2283: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_GTKDOC'+set}'`\" = set"; then
