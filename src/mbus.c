@@ -560,8 +560,6 @@ void mbus_heartbeat(struct mbus *m, int interval)
 
 	gettimeofday(&curr_time, NULL);
 
-	interval += (lrand48() % (interval / 2)) - (interval / 2);
-
 	if (curr_time.tv_sec - m->last_heartbeat.tv_sec > interval) {
 		mbus_qmsg(m, "(* * * *)", "mbus.hello", "", FALSE);
 		m->last_heartbeat = curr_time;
