@@ -33,13 +33,15 @@
  * @(#) $Header$ (LBL)
  */
 
-#ifndef vic_sessioh_h
-#define vic_sessioh_h
+#ifndef vic_session_h
+#define vic_session_h
 
 #include "net.h"
 #include "transmitter.h"
 #include "timer.h"
 #include "iohandler.h"
+#include "source.h"
+#include "mbus.h"
 
 class Source;
 class SessionManager;
@@ -79,7 +81,7 @@ class ReportTimer : public Timer {
 	SessionManager& sm_;
 };
 
-class SessionManager : public Transmitter {
+class SessionManager : public Transmitter, public MtuAlloc {
     public:
 	SessionManager();
 	virtual ~SessionManager();
@@ -119,6 +121,7 @@ class SessionManager : public Transmitter {
 	DataHandler dh_;
 	CtrlHandler ch_;
 	ReportTimer rt_;
+	MBusHandler mb_;
 
 	/*XXX cleanup*/
 	u_int badversion_;
