@@ -102,6 +102,7 @@ static class SourceLayerMatcher : public Matcher {
     public:
 		SourceLayerMatcher() : Matcher("SourceLayer") {}
 		TclObject* match(const char* id) {
+			UNUSED(id);
 			return (new Source::Layer());
 		}
 } SourceLayer_matcher;
