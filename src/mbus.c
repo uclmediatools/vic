@@ -358,7 +358,6 @@ static void mb_send(struct mbus *m)
 	len = mb_bufpos - mb_buffer;
 	assert(len < MBUS_BUF_SIZE);
 	assert(strlen(mb_buffer) < MBUS_BUF_SIZE);
-	debug_msg("%d %s", len, mb_buffer);
 
 	if (m->hashkey != NULL) {
 		/* Authenticate... */
@@ -599,7 +598,6 @@ void mbus_send(struct mbus *m)
 	int		 i;
 
 	if (m->waiting_ack != NULL) {
-		debug_msg("Not sending - waiting for ACK %d\n", m->waiting_ack->seqnum);
 		return;
 	}
 
@@ -1040,7 +1038,6 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 				/* ...if so, process any ACKs received... */
 				mbus_parse_init(m, ack);
 				while (mbus_parse_int(m, &a)) {
-					debug_msg("Got ACK for %d\n", a);
 					if (mbus_waiting_ack(m)) {
 						if (m->waiting_ack->seqnum == a) {
 							while (m->waiting_ack->num_cmds > 0) {
@@ -1051,7 +1048,6 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 							xfree(m->waiting_ack->dest);
 							xfree(m->waiting_ack);
 							m->waiting_ack = NULL;
-							debug_msg("Accepted ACK for %d\n", a);
 						} else {
 							debug_msg("Got ACK %d but wanted %d\n", a, m->waiting_ack->seqnum);
 						}
@@ -1069,7 +1065,6 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 					gettimeofday(&t, NULL);
 					mb_header(++m->seqnum, (int) t.tv_sec, 'U', m->addr[0], newsrc, seq);
 					mb_send(m);
-					debug_msg("Sent ACK %s %d\n", newsrc, seq);
 					xfree(newsrc);
 				} else if (strcmp(r, "U") == 0) {
 					/* Unreliable message.... not need to do anything */
@@ -1090,7 +1085,6 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 							/* Mark this source as activ. We remove dead sources in mbus_heartbeat */
 							mark_activ_other_addr(m, newsrc);
 						}
-						debug_msg("Rx %s %d\n", cmd, seq);
 						m->cmd_handler(newsrc, cmd, param, data);
 						xfree(newsrc);
 					} else {
