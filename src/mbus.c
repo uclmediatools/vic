@@ -171,66 +171,66 @@ int mbus_addr_valid(struct mbus *m, char *addr)
 	return FALSE;
 }
 
-/* The tx_* functions are used to build an mbus message up in the */
-/* tx_buffer, and to add authentication and encryption before the */
+/* The mb_* functions are used to build an mbus message up in the */
+/* mb_buffer, and to add authentication and encryption before the */
 /* message is sent.                                               */
-static char	 tx_cryptbuf[MBUS_BUF_SIZE];
-static char	 tx_buffer[MBUS_BUF_SIZE];
-static char	*tx_bufpos;
+static char	 mb_cryptbuf[MBUS_BUF_SIZE];
+static char	 mb_buffer[MBUS_BUF_SIZE];
+static char	*mb_bufpos;
 
 #define MBUS_AUTH_LEN 16
 
-static void tx_header(int seqnum, int ts, char reliable, char *src, char *dst, int ackseq)
+static void mb_header(int seqnum, int ts, char reliable, char *src, char *dst, int ackseq)
 {
-	memset(tx_buffer,   0, MBUS_BUF_SIZE);
-	memset(tx_buffer, ' ', MBUS_AUTH_LEN);
-	tx_bufpos = tx_buffer + MBUS_AUTH_LEN;
-	sprintf(tx_bufpos, "\nmbus/1.0 %6d %9d %c (%s) %s ", seqnum, ts, reliable, src, dst);
-	tx_bufpos += 33 + strlen(src) + strlen(dst);
+	memset(mb_buffer,   0, MBUS_BUF_SIZE);
+	memset(mb_buffer, ' ', MBUS_AUTH_LEN);
+	mb_bufpos = mb_buffer + MBUS_AUTH_LEN;
+	sprintf(mb_bufpos, "\nmbus/1.0 %6d %9d %c (%s) %s ", seqnum, ts, reliable, src, dst);
+	mb_bufpos += 33 + strlen(src) + strlen(dst);
 	if (ackseq == -1) {
-		sprintf(tx_bufpos, "()\n");
-		tx_bufpos += 3;
+		sprintf(mb_bufpos, "()\n");
+		mb_bufpos += 3;
 	} else {
-		sprintf(tx_bufpos, "(%6d)\n", ackseq);
-		tx_bufpos += 9;
+		sprintf(mb_bufpos, "(%6d)\n", ackseq);
+		mb_bufpos += 9;
 	}
 }
 
-static void tx_add_command(char *cmnd, char *args)
+static void mb_add_command(char *cmnd, char *args)
 {
-	sprintf(tx_bufpos, "%s (%s)\n", cmnd, args);
-	tx_bufpos += strlen(cmnd) + strlen(args) + 4;
+	sprintf(mb_bufpos, "%s (%s)\n", cmnd, args);
+	mb_bufpos += strlen(cmnd) + strlen(args) + 4;
 }
 
-static void tx_send(struct mbus *m)
+static void mb_send(struct mbus *m)
 {
 	char		digest[16];
 	int		len;
 	unsigned char	initVec[8] = {0,0,0,0,0,0,0,0};
 
-	while (((tx_bufpos - tx_buffer) % 8) != 0) {
+	while (((mb_bufpos - mb_buffer) % 8) != 0) {
 		/* Pad to a multiple of 8 bytes, so the encryption can work... */
-		*(tx_bufpos++) = '\0';
+		*(mb_bufpos++) = '\0';
 	}
-	*tx_bufpos = '\0';
-	len = tx_bufpos - tx_buffer;
+	*mb_bufpos = '\0';
+	len = mb_bufpos - mb_buffer;
 
 	if (m->hashkey != NULL) {
 		/* Authenticate... */
-		hmac_md5(tx_buffer + MBUS_AUTH_LEN+1, strlen(tx_buffer) - (MBUS_AUTH_LEN+1), m->hashkey, m->hashkeylen, digest);
-		base64encode(digest, 12, tx_buffer, MBUS_AUTH_LEN);
+		hmac_md5(mb_buffer + MBUS_AUTH_LEN+1, strlen(mb_buffer) - (MBUS_AUTH_LEN+1), m->hashkey, m->hashkeylen, digest);
+		base64encode(digest, 12, mb_buffer, MBUS_AUTH_LEN);
 	}
 	if (m->encrkey != NULL) {
 		/* Encrypt... */
-		memset(tx_cryptbuf, 0, MBUS_BUF_SIZE);
-		memcpy(tx_cryptbuf, tx_buffer, len);
+		memset(mb_cryptbuf, 0, MBUS_BUF_SIZE);
+		memcpy(mb_cryptbuf, mb_buffer, len);
 		assert((len % 8) == 0);
 		assert(len < MBUS_BUF_SIZE);
 		assert(m->encrkeylen == 8);
-		qfDES_CBC_e(m->encrkey, tx_cryptbuf, len, initVec);
-		memcpy(tx_buffer, tx_cryptbuf, len);
+		qfDES_CBC_e(m->encrkey, mb_cryptbuf, len, initVec);
+		memcpy(mb_buffer, mb_cryptbuf, len);
 	}
-	udp_send(m->s, tx_buffer, len);
+	udp_send(m->s, mb_buffer, len);
 }
 
 static void resend(struct mbus *m, struct mbus_msg *curr) 
@@ -239,11 +239,11 @@ static void resend(struct mbus *m, struct mbus_msg *curr)
 	/* this message was first transmitted. If it was okay then, it's okay now.     */
 	int	 i;
 
-	tx_header(curr->seqnum, curr->ts.tv_sec, (char)(curr->reliable?'R':'U'), m->addr[0], curr->dest, -1);
+	mb_header(curr->seqnum, curr->ts.tv_sec, (char)(curr->reliable?'R':'U'), m->addr[0], curr->dest, -1);
 	for (i = 0; i < curr->num_cmds; i++) {
-		tx_add_command(curr->cmd_list[i], curr->arg_list[i]);
+		mb_add_command(curr->cmd_list[i], curr->arg_list[i]);
 	}
-	tx_send(m);
+	mb_send(m);
 	curr->retransmit_count++;
 }
 
@@ -424,11 +424,11 @@ void mbus_send(struct mbus *m)
 
 	while (curr != NULL) {
 		/* Create the message... */
-		tx_header(curr->seqnum, curr->ts.tv_sec, (char)(curr->reliable?'R':'U'), m->addr[0], curr->dest, -1);
+		mb_header(curr->seqnum, curr->ts.tv_sec, (char)(curr->reliable?'R':'U'), m->addr[0], curr->dest, -1);
 		for (i = 0; i < curr->num_cmds; i++) {
-			tx_add_command(curr->cmd_list[i], curr->arg_list[i]);
+			mb_add_command(curr->cmd_list[i], curr->arg_list[i]);
 		}
-		tx_send(m);
+		mb_send(m);
 		
 		m->cmd_queue = curr->next;
 		if (curr->reliable) {
@@ -756,10 +756,10 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 				debug_msg("Encrypted message not a multiple of 8 bytes in length\n");
 				continue;
 			}
-			memcpy(tx_cryptbuf, buffer, buffer_len);
+			memcpy(mb_cryptbuf, buffer, buffer_len);
 			memset(initVec, 0, 8);
-			qfDES_CBC_d(m->encrkey, tx_cryptbuf, buffer_len, initVec);
-			memcpy(buffer, tx_cryptbuf, buffer_len);
+			qfDES_CBC_d(m->encrkey, mb_cryptbuf, buffer_len, initVec);
+			memcpy(buffer, mb_cryptbuf, buffer_len);
 		}
 
 		/* Sanity check that this is a vaguely sensible format message... Should prevent */
@@ -860,8 +860,8 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 
 					sprintf(newsrc, "(%s)", src);	/* Yes, this is a kludge. */
 					gettimeofday(&t, NULL);
-					tx_header(++m->seqnum, (int) t.tv_sec, 'U', m->addr[0], newsrc, seq);
-					tx_send(m);
+					mb_header(++m->seqnum, (int) t.tv_sec, 'U', m->addr[0], newsrc, seq);
+					mb_send(m);
 					xfree(newsrc);
 				}
 				/* ...and process the commands contained in the message */
