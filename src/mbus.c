@@ -70,7 +70,6 @@ struct mbus_msg {
 
 struct mbus {
 	socket_udp	*s;
-	unsigned short	 channel;
 	int		 num_addr;
 	char		*addr[MBUS_MAX_ADDR];
 	char		*parse_buffer[MBUS_MAX_PD];
@@ -558,8 +557,7 @@ int mbus_waiting_ack(struct mbus *m)
 	return m->waiting_ack != NULL;
 }
 
-struct mbus *mbus_init(unsigned short channel, 
-                       void  (*cmd_handler)(char *src, char *cmd, char *arg, void *dat), 
+struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, void *dat), 
 		       void  (*err_handler)(int seqnum))
 {
 	struct mbus	*m;
@@ -573,8 +571,7 @@ struct mbus *mbus_init(unsigned short channel,
 	}
 
 	mbus_lock_config_file(m);
-	m->s		= udp_init("224.255.222.239", (u_int16) (47000 + channel), 0);
-	m->channel	= channel;
+	m->s		= udp_init("224.255.222.239", (u_int16) 47000, 0);
 	m->seqnum       = 0;
 	m->cmd_handler  = cmd_handler;
 	m->err_handler	= err_handler;

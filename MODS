@@ -23,6 +23,8 @@ v1.0.1	- Added HMAC authentication code
 	  of the entity receiving that message then the message is accepted. An
 	  empty set is a valid destination address for a message, and that will
 	  be accepted by all receivers (ie: a wildcard).
+	- Remove channel ID from mbus code.
+
 
 Still to do...
 	- Mbus code doesn't support encryption
@@ -30,5 +32,4 @@ Still to do...
 	  since it does a gethostbyname() and looks that up, yet that can
 	  return the IPv4 hostname only on some machines.
 	- Doesn't do DNS AAAA lookups when given a name rather than an IP address.
-	- Remove channel ID from mbus code.
 
