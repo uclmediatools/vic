@@ -177,6 +177,13 @@ AC_ARG_ENABLE(ipv6,
 	[if test $enableval = yes
 	then
 		AC_DEFINE(HAVE_IPv6)
+		case "$host_os" in
+		# FreeBSD Kame uses seperate libinet6
+		freebsd*)	
+			LIBS="$LIBS -L/usr/local/v6/lib -linet6"
+			;;
+		*)	;;
+		esac
 	fi])
 
 # Test below are IPv6 specific.  Their result has no bearing if HAVE_IPv6 is
