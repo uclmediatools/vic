@@ -44,7 +44,7 @@ case $OSTYPE in
                            ;;
   HP-UX                  ) OSTYPE=HPUX
                            ;;
-  Linux | IRIX | FreeBSD | NetBSD ) 
+  Linux | IRIX | IRIX64 | FreeBSD | NetBSD ) 
                            ;;
   *                      ) echo "$OSTYPE not supported. Sorry."
                            exit
@@ -80,7 +80,7 @@ case $OSTYPE in
 	    PROFILE="-pg"
 	    ECHO=/usr/bin/echo
             ;;
-  IRIX    ) CC="cc"
+  IRIX | IRIX64 ) CC="cc"
             WFLAGS="-fullwarn -w2"
 	    INCLUDE=""
 	    LDLIBS="-lm"
