@@ -1,38 +1,38 @@
 /*
-* FILE:     net_udp.c
-* AUTHOR:   Colin Perkins 
-* MODIFIED: Orion Hodson & Piers O'Hanlon
-* 
-* Copyright (c) 1998-2000 University College London
-* All rights reserved.
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, is permitted provided that the following conditions 
-* are met:
-* 1. Redistributions of source code must retain the above copyright
-*    notice, this list of conditions and the following disclaimer.
-* 2. Redistributions in binary form must reproduce the above copyright
-*    notice, this list of conditions and the following disclaimer in the
-*    documentation and/or other materials provided with the distribution.
-* 3. All advertising materials mentioning features or use of this software
-*    must display the following acknowledgement:
-*      This product includes software developed by the Computer Science
-*      Department at University College London
-* 4. Neither the name of the University nor of the Department may be used
-*    to endorse or promote products derived from this software without
-*    specific prior written permission.
-* THIS SOFTWARE IS PROVIDED BY THE AUTHORS AND CONTRIBUTORS ``AS IS'' AND
-* ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-* ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-* OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-* HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-* LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-* OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-* SUCH DAMAGE.
-*/
+ * FILE:     net_udp.c
+ * AUTHOR:   Colin Perkins 
+ * MODIFIED: Orion Hodson & Piers O'Hanlon
+ * 
+ * Copyright (c) 1998-2000 University College London
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, is permitted provided that the following conditions 
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *      This product includes software developed by the Computer Science
+ *      Department at University College London
+ * 4. Neither the name of the University nor of the Department may be used
+ *    to endorse or promote products derived from this software without
+ *    specific prior written permission.
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHORS AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
 
 /* If this machine supports IPv6 the symbol HAVE_IPv6 should */
 /* be defined in either config_unix.h or config_win32.h. The */
@@ -199,11 +199,12 @@ static int udp_addr_valid4(const char *dst)
         return FALSE;
 }
 
-static socket_udp *udp_init4(char *addr, uint16_t rx_port, uint16_t tx_port, int ttl)
+static socket_udp *udp_init4(char *addr, char *iface, uint16_t rx_port, uint16_t tx_port, int ttl)
 {
-	int                 reuse = 1;
-	struct sockaddr_in  s_in;
-	socket_udp         *s = (socket_udp *) malloc(sizeof(socket_udp));
+	int                 	 reuse = 1;
+	struct sockaddr_in  	 s_in;
+	struct in_addr		 iface_addr;
+	socket_udp         	*s = (socket_udp *) malloc(sizeof(socket_udp));
 	s->mode    = IPv4;
 	s->addr    = addr;
 	s->rx_port = rx_port;
@@ -215,6 +216,14 @@ static socket_udp *udp_init4(char *addr, uint16_t rx_port, uint16_t tx_port, int
 			return NULL;
 		}
 		memcpy(&(s->addr4), h->h_addr_list[0], sizeof(s->addr4));
+	}
+	if (iface != NULL) {
+		if (inet_pton(AF_INET, iface, &iface_addr) != 1) {
+			debug_msg("Illegal interface specification\n");
+			return NULL;
+		}
+	} else {
+		iface_addr.s_addr = 0;
 	}
 	s->fd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (s->fd < 0) {
@@ -243,7 +252,7 @@ static socket_udp *udp_init4(char *addr, uint16_t rx_port, uint16_t tx_port, int
 		struct ip_mreq  imr;
 		
 		imr.imr_multiaddr.s_addr = s->addr4.s_addr;
-		imr.imr_interface.s_addr = INADDR_ANY;
+		imr.imr_interface.s_addr = iface_addr.s_addr;
 		
 		if (SETSOCKOPT(s->fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *) &imr, sizeof(struct ip_mreq)) != 0) {
 			socket_error("setsockopt IP_ADD_MEMBERSHIP");
@@ -258,6 +267,12 @@ static socket_udp *udp_init4(char *addr, uint16_t rx_port, uint16_t tx_port, int
 		if (SETSOCKOPT(s->fd, IPPROTO_IP, IP_MULTICAST_TTL, (char *) &s->ttl, sizeof(s->ttl)) != 0) {
 			socket_error("setsockopt IP_MULTICAST_TTL");
 			abort();
+		}
+		if (iface_addr.s_addr != 0) {
+			if (SETSOCKOPT(s->fd, IPPROTO_IP, IP_MULTICAST_IF, (char *) &iface_addr, sizeof(iface_addr)) != 0) {
+				socket_error("setsockopt IP_MULTICAST_IF");
+				abort();
+			}
 		}
 	}
 	return s;
@@ -335,7 +350,7 @@ static int udp_addr_valid6(const char *dst)
         return FALSE;
 }
 
-static socket_udp *udp_init6(char *addr, uint16_t rx_port, uint16_t tx_port, int ttl)
+static socket_udp *udp_init6(char *addr, char *iface, uint16_t rx_port, uint16_t tx_port, int ttl)
 {
 #ifdef HAVE_IPv6
 	int                 reuse = 1;
@@ -347,6 +362,11 @@ static socket_udp *udp_init6(char *addr, uint16_t rx_port, uint16_t tx_port, int
 	s->tx_port = tx_port;
 	s->ttl     = ttl;
 	
+	if (iface != NULL) {
+		debug_msg("Not yet implemented\n");
+		abort();
+	}
+
 	if (inet_pton(AF_INET6, addr, &s->addr6) != 1) {
 		/* We should probably try to do a DNS lookup on the name */
 		/* here, but I'm trying to get the basics going first... */
@@ -414,6 +434,7 @@ static socket_udp *udp_init6(char *addr, uint16_t rx_port, uint16_t tx_port, int
 	return s;
 #else
 	UNUSED(addr);
+	UNUSED(iface);
 	UNUSED(rx_port);
 	UNUSED(tx_port);
 	UNUSED(ttl);
@@ -544,12 +565,17 @@ int udp_addr_valid(const char *addr)
 
 socket_udp *udp_init(char *addr, uint16_t rx_port, uint16_t tx_port, int ttl)
 {
+	return udp_init_if(addr, NULL, rx_port, tx_port, ttl);
+}
+
+socket_udp *udp_init_if(char *addr, char *iface, uint16_t rx_port, uint16_t tx_port, int ttl)
+{
 	socket_udp *res;
 	
 	if (strchr(addr, ':') == NULL) {
-		res = udp_init4(addr, rx_port, tx_port, ttl);
+		res = udp_init4(addr, iface, rx_port, tx_port, ttl);
 	} else {
-		res = udp_init6(addr, rx_port, tx_port, ttl);
+		res = udp_init6(addr, iface, rx_port, tx_port, ttl);
 	}
 	return res;
 }

@@ -234,6 +234,8 @@ v1.1.1	- Add extra debugging code
 v1.1.2	- Add routines for handling NTP format timestamps, in ntp.[ch]
 	- Add udp_addr_valid.
         - Fix cname setup for Win32.
+	- Add udp_init_if() call, to open a UDP/IP socket bound to a
+	  specific interface
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
