@@ -256,6 +256,9 @@ static socket_udp *udp_init4(const char *addr, const char *iface, uint16_t rx_po
 	int                 	 reuse = 1, udpbufsize=1048576;
 	struct sockaddr_in  	 s_in;
 	struct in_addr		 iface_addr;
+#ifdef WIN32
+      int recv_buf_size = 65536;
+#endif
 	socket_udp         	*s = (socket_udp *)malloc(sizeof(socket_udp));
 	s->mode    = IPv4;
 	s->addr    = NULL;
@@ -375,6 +378,7 @@ udp_send4(socket_udp *s, char *buffer, int buflen)
 	return sendto(s->fd, buffer, buflen, 0, (struct sockaddr *) &s_in, sizeof(s_in));
 }
 
+#ifndef WIN32
 static inline int 
 udp_sendv4(socket_udp *s, struct iovec *vector, int count)
 {
@@ -397,6 +401,7 @@ udp_sendv4(socket_udp *s, struct iovec *vector, int count)
 	msg.msg_flags      = 0;
 	return sendmsg(s->fd, &msg, 0);
 }
+#endif
 
 static const char *udp_host_addr4(void)
 {
@@ -587,6 +592,7 @@ static int udp_send6(socket_udp *s, char *buffer, int buflen)
 #endif
 }
 
+#ifndef WIN32
 static int 
 udp_sendv6(socket_udp *s, struct iovec *vector, int count)
 {
@@ -619,6 +625,7 @@ udp_sendv6(socket_udp *s, struct iovec *vector, int count)
 	return -1;
 #endif
 }
+#endif
 
 static const char *udp_host_addr6(socket_udp *s)
 {
@@ -783,6 +790,7 @@ int udp_send(socket_udp *s, char *buffer, int buflen)
 }
 
 
+#ifndef WIN32
 int         
 udp_sendv(socket_udp *s, struct iovec *vector, int count)
 {
@@ -793,6 +801,7 @@ udp_sendv(socket_udp *s, struct iovec *vector, int count)
 	}
 	return -1;
 }
+#endif
 
 /**
  * udp_recv:

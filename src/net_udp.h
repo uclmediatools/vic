@@ -49,7 +49,9 @@ void        udp_exit(socket_udp *s);
 
 int         udp_recv(socket_udp *s, char *buffer, int buflen);
 int         udp_send(socket_udp *s, char *buffer, int buflen);
+#ifndef WIN32
 int	    udp_sendv(socket_udp *s, struct iovec *vector, int count);
+#endif
 
 const char *udp_host_addr(socket_udp *s);
 int         udp_fd(socket_udp *s);
