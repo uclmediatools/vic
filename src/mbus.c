@@ -882,7 +882,7 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 				char 		*newsrc = (char *) xmalloc(strlen(src) + 3);
 				struct timeval	 t;
 
-			debug_msg("received relieable msg %d, sending ACK\n", seq);
+			debug_msg("received reliable msg %d, sending ACK\n", seq);
 			
 				sprintf(newsrc, "(%s)", src);	/* Yes, this is a kludge. */
 				gettimeofday(&t, NULL);
