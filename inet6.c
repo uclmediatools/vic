@@ -42,19 +42,35 @@ static const char rcsid[] =
 #include "inet6.h"
 
 int 
-inet6_LookupHostAddr(struct in6_addr *addr, const char* s) {
-  if (inet_pton(AF_INET6, s, addr->s6_addr) != 1) {
+inet6_LookupHostAddr(struct in6_addr *addr, const char* hostname) {
+  if (inet_pton(AF_INET6, hostname, addr->s6_addr) != 1) {
     struct hostent *hp;
-#ifdef SOLARIS7_IPV6
+#ifdef SOLARIS7_IPV6_OLD
     int error_num;
-    hp = getipnodebyname(s, AF_INET6, AI_DEFAULT, &error_num);
+    hp = getipnodebyname(hostname, AF_INET6, AI_DEFAULT, &error_num);
+#else
+#if  defined(LINUX_IPV6) ||  defined(SOLARIS7_IPV6)
+    struct addrinfo hints, *ai, *ai2;
+    int i;
+    memset(&hints, 0, sizeof(struct addrinfo));
+
+    hints.ai_family = AF_INET6;
+    hints.ai_socktype = SOCK_DGRAM;
+
+    if (i = getaddrinfo(hostname, NULL, &hints, &ai)) {
+      fprintf(stderr, "vic: getaddrinfo: %s: %s\n", hostname, gai_strerror(i));
+      return (-1);
+    }
+    memcpy(addr->s6_addr, &(((struct sockaddr_in6 *)(ai->ai_addr))->sin6_addr),  sizeof(struct in6_addr));
+    return (0);
 #else
 #ifdef DAS_IPV6
-    hp = gethostbyname2(s, AF_INET6);
+    hp = gethostbyname2(hostname, AF_INET6);
 #else
-    hp = getnodebyname(s, AF_INET6,0);
-#endif
-#endif
+    hp = getnodebyname(hostname, AF_INET6,0);
+#endif /*DAS_IPV6*/
+#endif /*LINUX_IPV6*/
+#endif /*SOLARIS7_IPV6*/
     if (hp == 0)  return (-1);
     memcpy(addr->s6_addr, *(hp->h_addr_list), hp->h_length);
   }

@@ -131,9 +131,13 @@ static class IP6NetworkMatcher : public Matcher {
 } nm_ip6;
 
 int IP6Address::operator=(const char* text)  {
-  inet6_LookupHostAddr(&addr_, text);
-  return ((inet_ntop(AF_INET6, &addr_, text_, INET6_ADDRSTRLEN) != 0) ?
+  if (!inet6_LookupHostAddr(&addr_, text)) 
+  	return ((inet_ntop(AF_INET6, &addr_, text_, INET6_ADDRSTRLEN) != 0) ?
 	  (0) : (1));
+  else {
+	fprintf(stderr,"Error looking up: %s\n",text);
+	exit(1);
+  }
 }
 
 Address * IP6Address::copy() const {
@@ -346,11 +350,10 @@ int IP6Network::openrsock(Address & addr, u_short port, Address & local)
 		 * to fix this for the 4.4bsd release.  We're all waiting
 		 * with bated breath.
 		 */
-#if defined(__sun__) || defined(WIN32)
-                struct ipv6_mreq mr;
-#endif
 #if defined(__FreeBSD__)
                 struct oipv6_mreq mr;
+#else
+                struct ipv6_mreq mr;
 #endif
 
 /* __IPV6 memcopy address */
