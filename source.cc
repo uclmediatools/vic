@@ -475,12 +475,15 @@ void Source::adapt(u_int32_t arr_ts, u_int32_t ts, int flag)
 	int delta = delta_;
 	delta_ = d;
 
-#define FUDGE int(100 * 65.536) /* XXX platform specific delay, need to work out on this [dm] */
-
+#ifdef WIN32
+#define FUDGE int(300 * 65.536) /* XXX platform specific delay, need to work out on this [dm] */
+#else
+#define FUDGE int(100 * 65.536)
+#endif
         if (adapt_init_ == 0) {
                 if (flag) {
                         adapt_init_ = 1;
-                        pdelay_ = /*FUDGE + */ delay_ + int(3. * dvar_);
+                        pdelay_ = FUDGE +  delay_ + int(3. * dvar_);
                 }
                 return;
         }
@@ -492,7 +495,7 @@ void Source::adapt(u_int32_t arr_ts, u_int32_t ts, int flag)
         dvar_ += DGAIN * (double(d) - dvar_);
 
         if (flag) {
-		pdelay_ = /*FUDGE + */delay_ + int(3. * dvar_); 
+		pdelay_ = FUDGE + delay_ + int(3. * dvar_); 
 		if (pending_) {
 			/* prepare mbus msg and send it to mbus, if we have to ... */
 			sprintf(arg, "%s %d", mbus_->mbus_encode_str(sdes_[RTCP_SDES_CNAME]), pdelay_); 	
@@ -504,7 +507,6 @@ void Source::adapt(u_int32_t arr_ts, u_int32_t ts, int flag)
 				pdelay_ = apdelay_;
 #else
 				pdelay_ = apdelay_;
-				/*pdelay_ += (apdelay_ - pdelay_) >> 2;*/
 #endif
 			/*printf("act del= %d\n", pdelay_);*/
 		}
