@@ -399,7 +399,7 @@ proc build.bar.relate { w } {
 	button $w.bar.release -font [smallfont] -text "Stop" -borderwidth 2 \
 		-relief raised -command release_device
 
-	menubutton $w.bar.mb -menu $w.bar.mb.m -text Participants -relief raised
+	menubutton $w.bar.mb -menu $w.bar.mb.m -font [smallfont] -text Participants -relief raised
 	menu $w.bar.mb.m 
 	$w.bar.mb.m add checkbutton -label "four" -command four_windows -variable winstate
 	$w.bar.mb.m add checkbutton -label "eight" -command eight_windows -onvalue 0 -offvalue 1 -variable winstate
