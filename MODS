@@ -281,7 +281,7 @@ v1.2.0	- Add udp_fd() function, to retrieve the underlying file descriptor.
 	- Fix reception of packets with RTP header extension.
 	* 16 May 2000
 
-v1.2.1	* 16 June 2000 [rat 4.2.5]
+v1.2.1	* 16 June 2000 [rat v4.2.5]
 
 v1.2.2	- Fix bug in mbus transmit code which caused messages to have the same sequence
 	  number as the preceeding ack.
@@ -295,6 +295,8 @@ v1.2.2	- Fix bug in mbus transmit code which caused messages to have the same se
 	- Fix validation of RTCP packets with padding (reported by Vladimir Brauner).
 	- Fix padding octet count in RTCP packets sent with padding (Vladimir Brauner).
 	- Fix RTCP timer reconsideration (Vladimir Brauner).
+	* 22 August 2000 [rat v4.2.8]
+
 
 
 Still to do...
