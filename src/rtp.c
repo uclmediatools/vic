@@ -901,14 +901,14 @@ static void init_rng(const char *s)
 	}
 }
 
-struct rtp *rtp_init(char *addr, uint16_t rx_port, uint16_t tx_port, int ttl, double rtcp_bw, 
+struct rtp *rtp_init(const char *addr, uint16_t rx_port, uint16_t tx_port, int ttl, double rtcp_bw, 
                      void (*callback)(struct rtp *session, rtp_event *e),
                      void *userdata)
 {
 	return rtp_init_if(addr, NULL, rx_port, tx_port, ttl, rtcp_bw, callback, userdata);
 }
 
-struct rtp *rtp_init_if(char *addr, char *iface, uint16_t rx_port, uint16_t tx_port, int ttl, double rtcp_bw, 
+struct rtp *rtp_init_if(const char *addr, char *iface, uint16_t rx_port, uint16_t tx_port, int ttl, double rtcp_bw, 
                         void (*callback)(struct rtp *session, rtp_event *e),
                         void *userdata)
 {

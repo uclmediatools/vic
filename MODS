@@ -309,6 +309,7 @@ v1.2.4	- Implement rtp_add_csrc() and rtp_del_csrc().
 
 v1.2.5	- More informative error message when the lock on the mbus configuration 
 	  file cannot be gained.
+	- rtp_init()/rtp_init_if() now take "const char *" for the address
 
 
 
