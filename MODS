@@ -354,6 +354,7 @@ v1.2.5	- More informative error message when the lock on the mbus configuration
 
 1.2.7	- Add support for Rijndael encryption to the RTP library, contributed
           by Robert Olson <olson@mcs.anl.gov>.
+	- Fix IPv6 support on Linux
 
 
 
