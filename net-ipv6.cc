@@ -293,7 +293,7 @@ int IP6Network::openrsock(Address & addr, u_short port, Address & local)
 	int fd;
 	struct sockaddr_in6 sin;
 
-	fd = socket(PF_INET6, SOCK_DGRAM, 0);
+	fd = socket(AF_INET6, SOCK_DGRAM, 0);
 	if (fd < 0) {
 		perror("socket");
 		exit(1);
@@ -340,7 +340,7 @@ int IP6Network::openrsock(Address & addr, u_short port, Address & local)
 		 * to fix this for the 4.4bsd release.  We're all waiting
 		 * with bated breath.
 		 */
-#if defined(__sun__)
+#if defined(__sun__) || defined(WIN32)
                 struct ipv6_mreq mr;
 #endif
 #if defined(__FreeBSD__)
@@ -348,9 +348,13 @@ int IP6Network::openrsock(Address & addr, u_short port, Address & local)
 #endif
 
 /* __IPV6 memcopy address */
+#ifdef DAS_IPV6
+		mr.i6mr_interface = vic_in6addr_any;
+		mr.i6mr_multiaddr = (IP6Address&)addr;
+#else
 		mr.ipv6mr_multiaddr = (IP6Address&)addr;
-		//mr.ipv6mr_interface = vic_in6addr_any;
 		mr.ipv6mr_interface = 0;
+#endif
 
 		if (setsockopt(fd, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, 
 			       (char *)&mr, sizeof(mr)) < 0) {
@@ -412,7 +416,7 @@ int IP6Network::openssock(Address & addr, u_short port, int ttl)
 	struct sockaddr_in6 sin;
 
 
-	fd = socket(PF_INET6, SOCK_DGRAM, 0);
+	fd = socket(AF_INET6, SOCK_DGRAM, 0);
 	if (fd < 0) {
 		perror("socket");
 		exit(1);
@@ -455,14 +459,14 @@ int IP6Network::openssock(Address & addr, u_short port, int ttl)
 				noloopback_broken_ = 1;
 		}
 		/* set the multicast TTL */
-#ifdef WIN32||SOLARIS7_IPV6
+#if defined(SOLARIS7_IPV6) || defined(WIN32) && !defined(DAS_IPV6)
 		u_int t;
 #else
 		u_char t;
 #endif
 		t = (ttl > 255) ? 255 : (ttl < 0) ? 0 : ttl;
 		if (setsockopt(fd, IPPROTO_IPV6, IPV6_MULTICAST_HOPS,
-			       t, sizeof(t)) < 0) {
+			       (const char*)&t, sizeof(t)) < 0) {
 			       //(char*)&t, sizeof(t)) < 0) {
 			perror("IPV6_MULTICAST_HOPS");
 			//exit(1);
