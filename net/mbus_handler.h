@@ -48,8 +48,8 @@
 #include "mbus_engine.h"
 
 #include "memory.h"
-#include "mbus_config.h"
 #include "mbus.h"
+#include "mbus_config.h"
 
 
 #ifdef WIN32

@@ -72,6 +72,12 @@ static const char rcsid[] =
 struct	in6_addr		in6addr_any = {IN6ADDR_ANY_INIT};
 #endif
 
+#if defined(FreeBSD)
+#ifndef IPV6_ADD_MEMBERSHIP
+#define IPV6_ADD_MEMBERSHIP	IPV6_JOIN_GROUP
+#endif
+#endif
+
 #ifndef INET6_ADDRSTRLEN
 #define INET6_ADDRSTRLEN (46)
 #endif
@@ -386,18 +392,14 @@ int IP6Network::openrsock(Address & addr, u_short port, Address & local)
 		 * to fix this for the 4.4bsd release.  We're all waiting
 		 * with bated breath.
 		 */
-#if defined(__FreeBSD__)
-                struct oipv6_mreq mr;
-#else
                 struct ipv6_mreq mr;
-#endif
 
 /* __IPV6 memcopy address */
 #ifdef MUSICA_IPV6
-		mr.i6mr_interface = ifIndex_;
+		mr.i6mr_interface = (ifIndex_<0)?0:ifIndex_;
 		mr.i6mr_multiaddr = (IP6Address&)addr;
 #else
-		mr.ipv6mr_interface = ifIndex_;
+		mr.ipv6mr_interface = (ifIndex_<0)?0:ifIndex_;
 		mr.ipv6mr_multiaddr = (IP6Address&)addr;
 #endif
 
@@ -514,10 +516,12 @@ int IP6Network::openssock(Address & addr, u_short port, int ttl)
 			perror("IPV6_MULTICAST_HOPS");
 			exit(1);
 		}
-		if (setsockopt(fd, IPPROTO_IPV6, IPV6_MULTICAST_IF,
-			       (const char*)&ifIndex_, sizeof(ifIndex_)) < 0) {
-			perror("IPV6_MULTICAST_IF");
-			exit(1);
+		if (ifIndex_!=-1) {
+			if (setsockopt(fd, IPPROTO_IPV6, IPV6_MULTICAST_IF,
+				       (const char*)&ifIndex_, sizeof(ifIndex_)) < 0) {
+				perror("IPV6_MULTICAST_IF");
+				exit(1);
+			}
 		}
 #else
 		fprintf(stderr, "\
