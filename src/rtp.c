@@ -14,7 +14,7 @@
  * $Revision$ 
  * $Date$
  * 
- * Copyright (c) 1998-2000 University College London
+ * Copyright (c) 1998-2001 University College London
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -2333,7 +2333,7 @@ void rtp_update(struct rtp *session)
 			}
 			/* If a source hasn't been heard from for more than 5 RTCP   */
 			/* reporting intervals, we delete it from our database...    */
-			if (delay > (session->rtcp_interval * 5)) {
+			if ((s->ssrc != rtp_my_ssrc(session)) && (delay > (session->rtcp_interval * 5))) {
 				delete_source(session, s->ssrc);
 			}
 		}
