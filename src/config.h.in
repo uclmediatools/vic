@@ -41,7 +41,7 @@
 /*
  * Define these if your C library is missing some functions...
  */
-#undef NEED_VSNPRINTF
+#undef HAVE_VSNPRINTF
 #undef NEED_INET_PTON
 #undef NEED_INET_NTOP
 
