@@ -41,6 +41,7 @@
 #include "hmac.h"
 #include "base64.h"
 #include "crypt_random.h"
+#include "qfDES.h"
 #include "mbus.h"
 
 #define MBUS_BUF_SIZE	  1500
@@ -362,12 +363,14 @@ static void mbus_get_key(struct mbus *m, struct mbus_key *key, char *id)
 static void mbus_get_encrkey(struct mbus *m, struct mbus_key *key)
 {
 	/* This MUST be called while the config file is locked! */
+	unsigned char	*des_key;
+	int		 i, j, k;
 #ifdef WIN32
-	long	 status;
-	DWORD	 type;
-	char	*buffer;
-	int	 buflen = MBUS_BUF_SIZE;
-	char	*tmp;
+	long		 status;
+	DWORD		 type;
+	char		*buffer;
+	int	 	 buflen = MBUS_BUF_SIZE;
+	char		*tmp;
 
 	assert(m->cfg_locked);
 	
@@ -398,6 +401,36 @@ static void mbus_get_encrkey(struct mbus *m, struct mbus_key *key)
 #else
 	mbus_get_key(m, key, "ENCRYPTIONKEY=(");
 #endif
+	assert(key->key_len == 7);
+	/* Take the first 56-bits of the input key and spread it across   */
+	/* the 64-bit DES key space inserting a bit-space of garbage      */
+	/* (for parity) every 7 bits. The garbage will be taken care of   */
+	/* below. The library we're using expects the key and parity bits */
+	/* in the following MSB order: K0 K1...K6 P0 K8 K9...K14 P1...    */
+	des_key = (unsigned char *) xmalloc(8);
+	des_key[0] = key->key[0];
+	des_key[1] = key->key[0] << 7 | key->key[1] >> 1;
+	des_key[2] = key->key[1] << 6 | key->key[2] >> 2;
+	des_key[3] = key->key[2] << 5 | key->key[3] >> 3;
+	des_key[4] = key->key[3] << 4 | key->key[4] >> 4;
+	des_key[5] = key->key[4] << 3 | key->key[5] >> 5;
+	des_key[6] = key->key[5] << 2 | key->key[6] >> 6;
+	des_key[7] = key->key[6] << 1;
+
+	/* fill in parity bits to make DES library happy */
+	for (i = 0; i < 8; ++i) 
+	{
+		k = des_key[i] & 0xfe;
+		j = k;
+		j ^= j >> 4;
+		j ^= j >> 2;
+		j ^= j >> 1;
+		j = (j & 1) ^ 1;
+		des_key[i] = k | j;
+	}
+	xfree(key->key);
+	key->key     = des_key;
+	key->key_len = 8;
 }
 
 static void mbus_get_hashkey(struct mbus *m, struct mbus_key *key)
@@ -479,6 +512,7 @@ static int mbus_addr_match(char *a, char *b)
 /* The tx_* functions are used to build an mbus message up in the */
 /* tx_buffer, and to add authentication and encryption before the */
 /* message is sent.                                               */
+static char	 tx_cryptbuf[MBUS_BUF_SIZE];
 static char	 tx_buffer[MBUS_BUF_SIZE];
 static char	*tx_bufpos;
 
@@ -508,11 +542,28 @@ static void tx_add_command(char *cmnd, char *args)
 
 static void tx_send(struct mbus *m)
 {
-	char	 digest[16];
+	char		digest[16];
+	int		len = tx_bufpos - tx_buffer;
+	unsigned char	initVec[8] = {0,0,0,0,0,0,0,0};
 
-	hmac_md5(tx_buffer + MBUS_AUTH_LEN, strlen(tx_buffer) - MBUS_AUTH_LEN, m->hashkey, m->hashkeylen, digest);
-	base64encode(digest, 16, tx_buffer, MBUS_AUTH_LEN - 1);
-	udp_send(m->s, tx_buffer, tx_bufpos - tx_buffer);
+	if (m->hashkey != NULL) {
+		/* Authenticate... */
+		hmac_md5(tx_buffer + MBUS_AUTH_LEN, strlen(tx_buffer) - MBUS_AUTH_LEN, m->hashkey, m->hashkeylen, digest);
+		base64encode(digest, 16, tx_buffer, MBUS_AUTH_LEN - 1);
+	}
+	if (m->encrkey != NULL) {
+		/* Encrypt... */
+		memset(tx_cryptbuf, 0, MBUS_BUF_SIZE);
+		memcpy(tx_cryptbuf, tx_buffer, len);
+		while ((len % 8) != 0) {
+			len++;
+		}
+		assert(len < MBUS_BUF_SIZE);
+		assert(m->encrkeylen == 8);
+		qfDES_CBC_e(m->encrkey, tx_cryptbuf, len, initVec);
+		memcpy(tx_buffer, tx_cryptbuf, len);
+	}
+	udp_send(m->s, tx_buffer, len);
 }
 
 static void resend(struct mbus *m, struct mbus_msg *curr) 
@@ -925,12 +976,13 @@ char *mbus_encode_str(const char *s)
 
 int mbus_recv(struct mbus *m, void *data)
 {
-	char	*auth, *ver, *src, *dst, *ack, *r, *cmd, *param;
-	char	 buffer[MBUS_BUF_SIZE];
-	int	 buffer_len, seq, i, a, rx, ts;
-	char	 ackbuf[MBUS_ACK_BUF_SIZE];
-	char	 digest[16];
+	char		*auth, *ver, *src, *dst, *ack, *r, *cmd, *param;
+	char	 	buffer[MBUS_BUF_SIZE];
+	int	 	buffer_len, seq, i, a, rx, ts;
+	char	 	ackbuf[MBUS_ACK_BUF_SIZE];
+	char	 	digest[16];
 	struct timeval	t;
+	unsigned char	initVec[8] = {0,0,0,0,0,0,0,0};
 
 	t.tv_sec  = 0;
 	t.tv_usec = 0;
@@ -952,11 +1004,22 @@ int mbus_recv(struct mbus *m, void *data)
 			return FALSE;
 		}
 
+		if (m->encrkey != NULL) {
+			/* Decrypt the message... */
+			if ((buffer_len % 8) != 0) {
+				debug_msg("Encrypted message not a multiple of 8 bytes in length\n");
+				return FALSE;
+			}
+			memcpy(tx_cryptbuf, buffer, buffer_len);
+			qfDES_CBC_d(m->encrkey, tx_cryptbuf, buffer_len, initVec);
+			memcpy(buffer, tx_cryptbuf, buffer_len);
+		}
+
 		mbus_parse_init(m, buffer);
 		/* Parse the authentication header */
 		if (!mbus_parse_sym(m, &auth)) {
 			mbus_parse_done(m);
-			debug_msg("Parser failed authentication header\n");
+			debug_msg("Failed to authenticate message\n");
 			return FALSE;
 		}
 		/* Check that the packet authenticates correctly... */

@@ -34,6 +34,7 @@ v1.0.2	- Assorted fixes to RTP library
 	- Add timestamp to mbus packet headers.
 	- Add mbus_qmsgf()
 	- Cleanup mbus transmission path
+	- Add support for DES encryption to the mbus
 
 
 Still to do...
@@ -44,7 +45,6 @@ Still to do...
 	- "instance:pid" in mbus addresses?
 	- We use hmac_md5 and the mbus spec requires hmac_md5_96? Bug in
 	  the spec, since they both reference RFC2104?
-	- Mbus should support encryption (preferably DES and 3DES)
 	- Fixed offsets in the mbus config file parser?
 	- Mbus code should check timestamp in received headers, and discard
 	  messages if it decreases, as a hinderance to replay attacks.
