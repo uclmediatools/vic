@@ -3,7 +3,7 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "H263v2 Dec_tmndec"=".\codec\tmndec\H263v2 Dec_tmndec.dsp" - Package Owner=<4>
+Project: "H263v2 Enc_tmnx"=".\codec\tmn-x\H263v2 Enc_tmnx.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -15,7 +15,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "H263v2 Enc_tmnx"=".\codec\tmn-x\H263v2 Enc_tmnx.dsp" - Package Owner=<4>
+Project: "H263v2 Dec_tmndec"=".\codec\tmndec\H263v2 Dec_tmndec.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{

@@ -37,6 +37,9 @@
 */
 
 #include <stdio.h>
+
+#include "mbus_parser.h"
+
 #include "mbus_handler.h"
 #include "mbus_engine.h"
 
@@ -69,32 +72,34 @@ void MBusEngine::rx_mbus_hello(char *srce, char *args, MBusHandler *mb)
 
 void MBusEngine::rx_source_cname(char *srce, char *args, MBusHandler *mb)
 {
-	char *cname, *ssrc_str;
+	struct mbus_parser *mp;
+        char *cname, *ssrc_str;
 	u_int32_t	ssrc;
 	
-	mbus_parse_init(mb->m(), args);
+	mp = mbus_parse_init(args);
 	
-	if (mbus_parse_str(mb->m(), &ssrc_str)) {
+	if (mbus_parse_str(mp, &ssrc_str)) {
 		ssrc = strtoul(mbus_decode_str(ssrc_str), NULL, 16);
 		int h = SHASH(ssrc);
 		if (cname_hash_table[h].cname==NULL) {
 			// If ssrc doesn't exist - Add new entry to Hash Table
-			mbus_parse_str(mb->m(), &cname);
+			mbus_parse_str(mp, &cname);
 			cname_hash_table[h].cname=strdup(mbus_decode_str(cname));
 			debug_msg("MBus: New ssrc: %s(%u), Cname: %s\n",ssrc_str,ssrc,cname_hash_table[h].cname);
 		} 
 	}
-	mbus_parse_done(mb->m());
+	mbus_parse_done(mp);
 }
 
 void MBusEngine::rx_source_playout(char *srce, char *args, MBusHandler *mb)
 {
-	int		playout;
+	struct  mbus_parser *mp;
+        int	playout;
 	char	*ssrc_str;
 	unsigned long	ssrc;
 	
-	mbus_parse_init(mb->m(), args);
-	if (mbus_parse_str(mb->m(), &ssrc_str) && mbus_parse_int(mb->m(), &playout)) {
+	mp = mbus_parse_init(args);
+	if (mbus_parse_str(mp, &ssrc_str) && mbus_parse_int(mp, &playout)) {
 		ssrc = strtoul(mbus_decode_str(ssrc_str), NULL, 16);
 		int h = SHASH(ssrc);
 		if (cname_hash_table[h].source!=NULL) {
@@ -121,35 +126,37 @@ void MBusEngine::rx_source_playout(char *srce, char *args, MBusHandler *mb)
 	} else {
 		debug_msg("mbus: usage \"source_playout <ssrc> <playout_delay>\"\n");
 	}
-	mbus_parse_done(mb->m());
+	mbus_parse_done(mp);
 }
 
 void MBusEngine::rx_powermeter(char *srce, char *args, MBusHandler *mb)
 {
 	int value;
-	
-	mbus_parse_init(mb->m(), args);
-	if (mbus_parse_int(mb->m(), &value)) {
+	struct mbus_parser *mp;
+
+	mp = mbus_parse_init(args);
+	if (mbus_parse_int(mp, &value)) {
 		if (strcmp(mb->name, "") == 1) {
 			Tcl::instance().evalf("catch {relate_power {%s %i}}", mb->name, value);
 		}
 	} else {
 		debug_msg("mbus: usage \"powermeter <value>\"\n");
 	}
-	mbus_parse_done(mb->m());
+	mbus_parse_done(mp);
 }
 
 void MBusEngine::rx_source_active(char *srce, char *args, MBusHandler *mb)
 {
 	char *cname;
+	struct mbus_parser *mp;
 	
-	mbus_parse_init(mb->m(), args);
-	if (mbus_parse_str(mb->m(), &cname)) {
+        mp = mbus_parse_init(args);
+	if (mbus_parse_str(mp, &cname)) {
 		strcpy(mb->name, mbus_decode_str(cname));
 	} else {
 		debug_msg("mbus: usage \"source_active_now <cname>\"\n");
 	}
-	mbus_parse_done(mb->m());
+	mbus_parse_done(mp);
 }
 
 void MBusEngine::mbus_handler_engine(char *srce, char *cmnd, char *args, void *data)

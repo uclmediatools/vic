@@ -61,23 +61,15 @@
   */
 #include "mbus_handler.h"
 
-
-
-
 MBusHandler::MBusHandler(void (*cmd_handler)(char *src, char *cmd, char *arg, void *dat), 
 		       void (*err_handler)(int seqnum, int reason))
 {
 	char mbus_vic_addr[100];
 
-	mbusp_ = mbus_init(cmd_handler, err_handler);
+        sprintf(mbus_vic_addr, "(media:video module:engine app:vic instance:%lu)", (u_int32_t) getpid());
+	mbusp_ = mbus_init(cmd_handler, err_handler, mbus_vic_addr);
 	//unlink();
 
-	// Attach mbus fd so dispatch() gets called when a new message arrives
-	// Not at 
-	// link(mbus_fd, TK_READABLE);
-	sprintf(mbus_vic_addr, "(media:video module:engine app:vic instance:%lu)", (u_int32_t) getpid());
-	mbus_addr(mbusp_, mbus_vic_addr);
-	
 	// Schedule a heartbeat
 	msched(50);
 }

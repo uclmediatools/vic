@@ -38,13 +38,14 @@ static const char rcsid[] =
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <fcntl.h>
+
+#include "mbus_parser.h"
+
 #include "sys-time.h"
 #include "source.h"
 #include "ntp-time.h"
 #include "mbus_handler.h"
-
-#include <fcntl.h>
-/* This bit for playout buffer as was in playout.cc */
 
 char *MtuAlloc::blk_list_;
 
@@ -630,7 +631,7 @@ nrunt_ = 0;
 
 void Source::adapt(u_int32_t arr_ts, u_int32_t ts, int flag)
 {
-	char *arg;
+	char *arg = NULL;
 	
 	int d = delay_ = arr_ts - ts; 
 	
