@@ -324,7 +324,7 @@ proc net_open_ip6 { sessionType session dst } {
 				default { set maxbw 71 }
 			}
 		} else {
-			if { $ttl <= 16 || ![in_multicast [$dn addr]] } {
+			if { $ttl <= 16 || ![in6_multicast [$dn addr]] } {
 				set maxbw 3072
 			} elseif { $ttl <= 64 } {
 				set maxbw 1024
@@ -405,6 +405,7 @@ proc init_network {} {
 	set numEncoderLayers $numLayers
 	set netType [resource network]
 	# Auto detect IPv6 addresses
+	puts "resource: [resource defaultHostSpec]"
 	if { [string first ":" [resource defaultHostSpec]] > 0 } {
 		set netType ip6
 	}
