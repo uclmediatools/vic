@@ -425,7 +425,7 @@ main(int argc, const char** argv)
 	const char* options = 
 		"A:B:C:c:D:d:f:F:HI:K:lL:M:m:N:n:o:Pq:re:sST:t:U:u:V:w:X:yy:z:";
 	/* process display and window (-use) options before initialising tcl/tk */
-	char buf[128], tmp[16];
+	char buf[256], tmp[256];
 	const char *display=0, *use=0;
 	int op;
 	//UNUSED Display *testDisplay;
