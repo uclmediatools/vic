@@ -169,13 +169,13 @@ AC_ARG_ENABLE(bounds,
 # -DDEBUG_MEM
 # -DNDEBUG
 AC_ARG_ENABLE(debug,
-	[  --enable-debug	   enable debug messages and code],
+	[  --enable-debug          enable debug messages and code],
 	[if test $enableval = yes
 	then
 		AC_DEFINE(DEBUG)
 	fi])
 AC_ARG_ENABLE(debug-mem,
-	[  --enable-debug-mem	   enable memory debugging code],
+	[  --enable-debug-mem      enable memory debugging code],
 	[if test $enableval = yes
 	then
 		AC_DEFINE(DEBUG_MEM)

@@ -16,9 +16,9 @@ ac_help="$ac_help
 ac_help="$ac_help
   --enable-bounds         enable bounds checking"
 ac_help="$ac_help
-  --enable-debug	   enable debug messages and code"
+  --enable-debug          enable debug messages and code"
 ac_help="$ac_help
-  --enable-debug-mem	   enable memory debugging code"
+  --enable-debug-mem      enable memory debugging code"
 ac_help="$ac_help
   --enable-ipv6           enable ipv6"
 
