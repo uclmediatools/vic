@@ -122,6 +122,7 @@ typedef struct {
 #define RX_SDES 	103
 #define RX_BYE  	104	/* Source is leaving the session, database entry is still valid */
 #define SOURCE_DELETED	105	/* Source has been removed from the database                    */
+#define SOURCE_CREATED	106
 
 /* SDES packet types... */
 #define RTCP_SDES_END   0

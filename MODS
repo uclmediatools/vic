@@ -106,6 +106,7 @@ v1.0.8	- Add mbus_sent_all()
 	  source. Patch from Bill Fenner.
 	- Changes to the probation code in rtp.c from Bill Fenner.
 	- Fix types in the RTP source struct.
+	- Add a SOURCE_CREATED event to the RTP callback.
 
 
 Still to do...
