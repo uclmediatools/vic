@@ -52,7 +52,8 @@ v1.0.4  - Fix compilation with Microsoft IPv6 stack
 	  Reported by Holger Wirtz.
 	- Added mbus_addr_valid()
 	- Added timeout to mbus_recv()
-
+	- Fixes to mbus code from Dirk Kutscher
+	* 2 June 1999 [rat v4.0.3]
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
