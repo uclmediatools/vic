@@ -33,6 +33,8 @@
  * SUCH DAMAGE.
  */
 
+#define MBUS_ENCRYPT_BY_DEFAULT
+
 #include "config_unix.h"
 #include "config_win32.h"
 #include "debug.h"
@@ -1029,6 +1031,7 @@ int mbus_recv(struct mbus *m, void *data)
 				return FALSE;
 			}
 			memcpy(tx_cryptbuf, buffer, buffer_len);
+			memset(initVec, 0, 8);
 			qfDES_CBC_d(m->encrkey, tx_cryptbuf, buffer_len, initVec);
 			memcpy(buffer, tx_cryptbuf, buffer_len);
 		}
@@ -1044,7 +1047,9 @@ int mbus_recv(struct mbus *m, void *data)
 		hmac_md5(buffer + strlen(auth) + 1, buffer_len - strlen(auth) - 1, m->hashkey, m->hashkeylen, digest);
 		base64encode(digest, 16, ackbuf, 24);
 		if ((strlen(auth) != 24) || (strncmp(auth, ackbuf, 24) != 0)) {
-			debug_msg("Failed to authenticate message\n");
+			debug_msg("Failed to authenticate message...\n");
+			debug_msg("Digest in message = %s\n", auth);
+			debug_msg("Calculated digest = %s\n", ackbuf);
 			mbus_parse_done(m);
 			return FALSE;
 		}
