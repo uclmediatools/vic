@@ -501,7 +501,11 @@ static char *udp_host_addr6(socket_udp *s)
 		UNUSED(error_num);
 		UNUSED(hent);
 #else /* HAVE_ST_ADDRINFO */
+#ifdef MUSICA_IPV6
+		hent = gethostbyname2(hname, AF_INET6);
+#else
 		hent = getipnodebyname(hname, AF_INET6, AI_DEFAULT, &error_num);
+#endif /*MUSICA_IPV6*/
 		if (hent == NULL) {
 			switch (error_num) {
 			case HOST_NOT_FOUND:
