@@ -54,7 +54,7 @@ CCOPT = @V_CCOPT@
 INCLUDE_TK = @V_INCLUDE_TK@
 INCLUDE_TCL = @V_INCLUDE_TCL@
 INCLUDE_X11 = @V_INCLUDE_X11@
-INCLUDE_MISC = @V_INCLUDE@ -Itmndec -Itmn-x
+INCLUDE_MISC = @V_INCLUDE@ -Itmndec -Itmn-x -Ih263
 
 STATIC = @V_STATIC@
 MKDEP = ./mkdep
@@ -181,9 +181,11 @@ vic.dyn: $(OBJ) $(OBJ_GRABBER) $(JV_LIB)
 	rm -f $@
 	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(LIB)
 
-vic.xil: $(OBJ) $(OBJ_XIL)
-	rm -f $@
-	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_XIL) $(LIB) @V_LIB_XIL@
+# XIL support now in standard vic - if available
+#
+#vic.xil: $(OBJ) $(OBJ_XIL)
+#	rm -f $@
+#	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_XIL) $(LIB) @V_LIB_XIL@
 
 histtolut: histtolut.cc convex_hull.o
 	rm -f $@
