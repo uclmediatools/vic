@@ -52,7 +52,7 @@ void dprintf(const char *fmt, ...)
     va_end (ap);
 }
 
-int capture_=0;
+int capture_;
 
 static const int NTSC_BASE_WIDTH  = 640;
 static const int NTSC_BASE_HEIGHT = 480;
@@ -60,7 +60,6 @@ static const int PAL_BASE_WIDTH  = 768;
 static const int PAL_BASE_HEIGHT = 568;
 static const int CIF_BASE_WIDTH  = 704;
 static const int CIF_BASE_HEIGHT = 576;
-/* CIF: 352 * 288 */
 
 static int bit_options[] = { 16, 24, 32, 8, 4, 1, 0 };
 
@@ -338,6 +337,8 @@ class VfwGrabber : public Grabber {
 	inline void converter(Converter* v) { converter_ = v; }
 	void capture(VfwGrabber *gw, LPBYTE);
 	inline int is_pal() const { return (max_fps_ == 25); }
+	int capturing_;
+
  protected:
 	virtual void start();
 	virtual void stop();
@@ -350,7 +351,6 @@ class VfwGrabber : public Grabber {
 
 	int dev_;
 	int connected_;
-	int capturing_;
 	u_int max_fps_;
 	int basewidth_;
 	int baseheight_;
@@ -376,6 +376,7 @@ class VfwCIFGrabber : public VfwGrabber
 {
  public:
 	VfwCIFGrabber(const int dev);
+	~VfwCIFGrabber();
  protected:
 	virtual void start();
 	virtual void setsize();
@@ -385,6 +386,7 @@ class Vfw422Grabber : public VfwGrabber
 {
  public:
 	Vfw422Grabber(const int dev);
+	~Vfw422Grabber();
  protected:
 	virtual void start();
 	virtual void setsize();
@@ -537,11 +539,20 @@ VfwCIFGrabber::VfwCIFGrabber(const int dev) : VfwGrabber(dev)
 	dprintf("VfwCIFGrabber\n");
 }
 
+VfwCIFGrabber::~VfwCIFGrabber()
+{
+	dprintf("~VfwCIFGrabber\n");
+}
+
 Vfw422Grabber::Vfw422Grabber(const int dev) : VfwGrabber(dev)
 {
 	dprintf("Vfw422Grabber\n");
 }
 
+Vfw422Grabber::~Vfw422Grabber()
+{
+	dprintf("~Vfw422Grabber\n");
+}
 void Vfw422Grabber::setsize()
 {
 	int w = basewidth_ / decimate_;
@@ -794,7 +805,7 @@ void VfwGrabber::start()
 	/*1e6 / double(max_fps_);*/
 	/*(DWORD)frametime_*/
 	parms_.dwRequestMicroSecPerFrame = 1e6 / double(50);
-	parms_.wPercentDropForError = 90;
+	parms_.wPercentDropForError = 100;
 	parms_.fUsingDOSMemory = FALSE;
 	parms_.wNumVideoRequested = 3;
 	parms_.fYield = TRUE;
@@ -805,6 +816,7 @@ void VfwGrabber::start()
 	parms_.fAbortRightMouse = FALSE;
 	parms_.fLimitEnabled = FALSE;
 	parms_.fMCIControl = FALSE;
+	parms_.wStepCaptureAverageFrames=1;
 
 	if (!capCaptureSetSetup(capwin_, &parms_, sizeof(parms_))) {
 		fprintf(stderr, "capCaptureSetSetup: failed - %lu\n", GetLastError());
