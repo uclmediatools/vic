@@ -120,7 +120,7 @@ static void
 socket_error(const char *msg, ...)
 {
 	char		buffer[255];
-	u_int32_t	blen = sizeof(buffer) / sizeof(buffer[0]);
+	uint32_t	blen = sizeof(buffer) / sizeof(buffer[0]);
 	va_list		ap;
 
 #ifdef WIN32
