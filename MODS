@@ -225,6 +225,7 @@ v1.0.10 - Mbus updates from Markus Germeier, which fix compatibility with
 	- Rewrite mbus code: mbus_parser.[ch] exist now, and include routines moved from the
 	  main mbus.[ch] files. Note that the interface to the mbus_parse_*() functions has
 	  now changed and is not backwards compatible.
+	- Remove the mbus_addr() function, add an extra parameter to mbus_init() instead.
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,

@@ -85,8 +85,7 @@ struct mbus_msg {
 
 struct mbus {
 	socket_udp	 	 *s;
-	int		 	  num_addr;
-	char		 	*addr[MBUS_MAX_ADDR];		/* Addresses we respond to. 					*/
+	char		 	 *addr;				/* Addresses we respond to. 					*/
 	int		 	  max_other_addr;
 	int		 	  num_other_addr;
 	char			**other_addr;			/* Addresses of other entities on the mbus. 			*/
@@ -109,14 +108,6 @@ static void mbus_validate(struct mbus *m)
 {
 #ifdef DEBUG
 	int	i;
-
-	assert((m->num_addr < MBUS_MAX_ADDR)  && (m->num_addr >= 0));
-	for (i = 0; i < m->num_addr; i++) {
-		assert(m->addr[i] != NULL);
-	}
-	for (i = m->num_addr + 1; i < MBUS_MAX_ADDR; i++) {
-		assert(m->addr[i] == NULL);
-	}
 
 	assert(m->num_other_addr <= m->max_other_addr);
 	assert(m->num_other_addr >= 0);
@@ -447,7 +438,7 @@ static void resend(struct mbus *m, struct mbus_msg *curr)
 
 	mbus_validate(m);
 
-	mb_header(curr->seqnum, curr->ts.tv_sec, (char)(curr->reliable?'R':'U'), m->addr[0], curr->dest, -1);
+	mb_header(curr->seqnum, curr->ts.tv_sec, (char)(curr->reliable?'R':'U'), m->addr, curr->dest, -1);
 	for (i = 0; i < curr->num_cmds; i++) {
 		mb_add_command(curr->cmd_list[i], curr->arg_list[i]);
 	}
@@ -518,7 +509,7 @@ void mbus_heartbeat(struct mbus *m, int interval)
 
 	gettimeofday(&curr_time, NULL);
 	if (curr_time.tv_sec - m->last_heartbeat.tv_sec >= interval) {
-		mb_header(++m->seqnum, (int) curr_time.tv_sec, 'U', m->addr[0], "()", -1);
+		mb_header(++m->seqnum, (int) curr_time.tv_sec, 'U', m->addr, "()", -1);
 		mb_add_command("mbus.hello", "");
 		mb_send(m);
 
@@ -542,7 +533,8 @@ int mbus_sent_all(struct mbus *m)
 }
 
 struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, void *dat), 
-		       void  (*err_handler)(int seqnum, int reason))
+		       void  (*err_handler)(int seqnum, int reason),
+		       char  *addr)
 {
 	struct mbus	*m;
 	struct mbus_key	 k;
@@ -562,10 +554,10 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 	net_addr = (char *) xmalloc(20);
 	mbus_get_net_addr(m->cfg, net_addr, &net_port, &net_scope);
 	m->s		  = udp_init(net_addr, net_port, net_port, net_scope);	
+	m->addr           = xstrdup(addr);
 	m->seqnum         = 0;
 	m->cmd_handler    = cmd_handler;
 	m->err_handler	  = err_handler;
-	m->num_addr       = 0;
 	m->num_other_addr = 0;
 	m->max_other_addr = 10;
 	m->other_addr     = (char **) xmalloc(sizeof(char *) * 10);
@@ -588,7 +580,6 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 	m->hashkey    = k.key;
 	m->hashkeylen = k.key_len;
 
-	for (i = 0; i < MBUS_MAX_ADDR; i++) m->addr[i]         = NULL;
 	mbus_unlock_config_file(m->cfg);
 
 	xfree(net_addr);
@@ -654,19 +645,6 @@ void mbus_exit(struct mbus *m)
         xfree(m);
 }
 
-void mbus_addr(struct mbus *m, char *addr)
-{
-	struct mbus_parser	*mp;
-
-	mbus_validate(m);
-	assert(m->num_addr < MBUS_MAX_ADDR);
-	mp = mbus_parse_init(xstrdup(addr));
-	if (mbus_parse_lst(mp, &(m->addr[m->num_addr]))) {
-		m->num_addr++;
-	}
-	mbus_parse_done(mp);
-}
-
 void mbus_send(struct mbus *m)
 {
 	/* Send one, or more, messages previosly queued with mbus_qmsg(). */
@@ -707,7 +685,7 @@ void mbus_send(struct mbus *m)
 			}
 		}
 		/* Create the message... */
-		mb_header(curr->seqnum, curr->ts.tv_sec, (char)(curr->reliable?'R':'U'), m->addr[0], curr->dest, -1);
+		mb_header(curr->seqnum, curr->ts.tv_sec, (char)(curr->reliable?'R':'U'), m->addr, curr->dest, -1);
 		for (i = 0; i < curr->num_cmds; i++) {
 			mb_add_command(curr->cmd_list[i], curr->arg_list[i]);
 		}
@@ -771,7 +749,7 @@ void mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, i
 	curr->next             = NULL;
 	curr->dest             = xstrdup(dest);
 	curr->retransmit_count = 0;
-	curr->message_size     = alen + 60 + strlen(dest) + strlen(m->addr[0]);
+	curr->message_size     = alen + 60 + strlen(dest) + strlen(m->addr);
 	curr->seqnum           = m->seqnum++;
 	curr->reliable         = reliable;
 	curr->complete         = FALSE;
@@ -816,7 +794,7 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 {
 	char			*auth, *ver, *src, *dst, *ack, *r, *cmd, *param, *npos;
 	char	 		 buffer[MBUS_BUF_SIZE];
-	int	 		 buffer_len, seq, i, a, rx, ts, authlen, loop_count;
+	int	 		 buffer_len, seq, a, rx, ts, authlen, loop_count;
 	char	 		 ackbuf[MBUS_ACK_BUF_SIZE];
 	char	 		 digest[16];
 	unsigned char		 initVec[8] = {0,0,0,0,0,0,0,0};
@@ -931,66 +909,64 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 		store_other_addr(m, src);
 
 		/* Check if the message was addressed to us... */
-		for (i = 0; i < m->num_addr; i++) {
-			if (mbus_addr_match(m->addr[i], dst)) {
-				/* ...if so, process any ACKs received... */
-				mp2 = mbus_parse_init(ack);
-				while (mbus_parse_int(mp2, &a)) {
-					if (mbus_waiting_ack(m)) {
-						if (m->waiting_ack->seqnum == a) {
-							while (m->waiting_ack->num_cmds > 0) {
-								m->waiting_ack->num_cmds--;
-								xfree(m->waiting_ack->cmd_list[m->waiting_ack->num_cmds]);
-								xfree(m->waiting_ack->arg_list[m->waiting_ack->num_cmds]);
-							}
-							xfree(m->waiting_ack->dest);
-							xfree(m->waiting_ack);
-							m->waiting_ack = NULL;
-						} else {
-							debug_msg("Got ACK %d but wanted %d\n", a, m->waiting_ack->seqnum);
+		if (mbus_addr_match(m->addr, dst)) {
+			/* ...if so, process any ACKs received... */
+			mp2 = mbus_parse_init(ack);
+			while (mbus_parse_int(mp2, &a)) {
+				if (mbus_waiting_ack(m)) {
+					if (m->waiting_ack->seqnum == a) {
+						while (m->waiting_ack->num_cmds > 0) {
+							m->waiting_ack->num_cmds--;
+							xfree(m->waiting_ack->cmd_list[m->waiting_ack->num_cmds]);
+							xfree(m->waiting_ack->arg_list[m->waiting_ack->num_cmds]);
 						}
+						xfree(m->waiting_ack->dest);
+						xfree(m->waiting_ack);
+						m->waiting_ack = NULL;
 					} else {
-						debug_msg("Got ACK %d but wasn't expecting it\n", a);
+						debug_msg("Got ACK %d but wanted %d\n", a, m->waiting_ack->seqnum);
 					}
-				}
-				mbus_parse_done(mp2);
-				/* ...if an ACK was requested, send one... */
-				if (strcmp(r, "R") == 0) {
-					char 		*newsrc = (char *) xmalloc(strlen(src) + 3);
-					struct timeval	 t;
-
-					sprintf(newsrc, "(%s)", src);	/* Yes, this is a kludge. */
-					gettimeofday(&t, NULL);
-					mb_header(++m->seqnum, (int) t.tv_sec, 'U', m->addr[0], newsrc, seq);
-					mb_send(m);
-					xfree(newsrc);
-				} else if (strcmp(r, "U") == 0) {
-					/* Unreliable message.... not need to do anything */
 				} else {
-					debug_msg("Message with invalid reliability field \"%s\" ignored\n", r);
+					debug_msg("Got ACK %d but wasn't expecting it\n", a);
 				}
-				/* ...and process the commands contained in the message */
-				while (mbus_parse_sym(mp, &cmd)) {
-					if (mbus_parse_lst(mp, &param)) {
-						char 		*newsrc = (char *) xmalloc(strlen(src) + 3);
-						sprintf(newsrc, "(%s)", src);	/* Yes, this is a kludge. */
-						/* Finally, we snoop on the message we just passed to the application, */
-						/* to do housekeeping of our list of known mbus sources...             */
-						if (strcmp(cmd, "mbus.bye") == 0) {
-							remove_other_addr(m, newsrc);
-						} 
-						if (strcmp(cmd, "mbus.hello") == 0) {
-							/* Mark this source as activ. We remove dead sources in mbus_heartbeat */
-							mark_activ_other_addr(m, newsrc);
-						}
-						m->cmd_handler(newsrc, cmd, param, data);
-						xfree(newsrc);
-					} else {
-						debug_msg("Unable to parse mbus command:\n");
-						debug_msg("cmd = %s\n", cmd);
-						debug_msg("arg = %s\n", param);
-						break;
+			}
+			mbus_parse_done(mp2);
+			/* ...if an ACK was requested, send one... */
+			if (strcmp(r, "R") == 0) {
+				char 		*newsrc = (char *) xmalloc(strlen(src) + 3);
+				struct timeval	 t;
+
+				sprintf(newsrc, "(%s)", src);	/* Yes, this is a kludge. */
+				gettimeofday(&t, NULL);
+				mb_header(++m->seqnum, (int) t.tv_sec, 'U', m->addr, newsrc, seq);
+				mb_send(m);
+				xfree(newsrc);
+			} else if (strcmp(r, "U") == 0) {
+				/* Unreliable message.... not need to do anything */
+			} else {
+				debug_msg("Message with invalid reliability field \"%s\" ignored\n", r);
+			}
+			/* ...and process the commands contained in the message */
+			while (mbus_parse_sym(mp, &cmd)) {
+				if (mbus_parse_lst(mp, &param)) {
+					char 		*newsrc = (char *) xmalloc(strlen(src) + 3);
+					sprintf(newsrc, "(%s)", src);	/* Yes, this is a kludge. */
+					/* Finally, we snoop on the message we just passed to the application, */
+					/* to do housekeeping of our list of known mbus sources...             */
+					if (strcmp(cmd, "mbus.bye") == 0) {
+						remove_other_addr(m, newsrc);
+					} 
+					if (strcmp(cmd, "mbus.hello") == 0) {
+						/* Mark this source as activ. We remove dead sources in mbus_heartbeat */
+						mark_activ_other_addr(m, newsrc);
 					}
+					m->cmd_handler(newsrc, cmd, param, data);
+					xfree(newsrc);
+				} else {
+					debug_msg("Unable to parse mbus command:\n");
+					debug_msg("cmd = %s\n", cmd);
+					debug_msg("arg = %s\n", param);
+					break;
 				}
 			}
 		}
