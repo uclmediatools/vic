@@ -349,6 +349,7 @@ int MBusHandler::mbus_send(char *dest, char *cmnd, char *args, int reliable)
 	assert(cmnd != NULL);
 	assert(args != NULL);
 	assert(strlen(cmnd) != 0);
+	int port=MBUS_PORT+m_->channel;
 
 	m_->seqnum++;
 
@@ -358,7 +359,7 @@ int MBusHandler::mbus_send(char *dest, char *cmnd, char *args, int reliable)
 
 	memcpy((char *) &saddr.sin_addr.s_addr, (char *) &addr, sizeof(addr));
 	saddr.sin_family = AF_INET;
-	saddr.sin_port = htons(MBUS_PORT+m_->channel);
+	saddr.sin_port = htons(port);
 	buffer = (char *) malloc(strlen(dest) + strlen(cmnd) + strlen(args) + strlen(m_->addr[0]) + 80);
 	sprintf(buffer, "mbus/1.0 %d %c (%s) %s ()\n%s (%s)\n", m_->seqnum, reliable?'R':'U', m_->addr[0], dest, cmnd, args);
 	if ((sendto(m_->fd, buffer, strlen(buffer), 0, (struct sockaddr *) &saddr, sizeof(saddr))) < 0) {
@@ -533,6 +534,7 @@ void MBusHandler::mbus_recv(void *data)
 	}
 	msgs++;
 	mbus_parse_init(buffer);
+
 	/* Parse the header */
 	if (!mbus_parse_sym(&ver) || (strcmp(ver, "mbus/1.0") != 0)) {
 		mbus_parse_done();
