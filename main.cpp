@@ -138,7 +138,7 @@ Options: vic [-HPs] [-A nv|ivs|rtp] [-B maxbps] [-C conf]\n\
 \t[-f bvc|cellb|h261|jpeg|nv] [-F maxfps] [-I channel]\n\
 \t[-K key ] [-L flowLabel (ip6 only)] [-l (creates log file)]\n\
 \t[-M colormap] [-m mtu] [-N session] [-n atm|ip|ip6|rtip]\n\
-\t[-o clipfile] [-t ttl] [-U interval] [-u script]\n\
+\t[-o clipfile] [-t ttl] [-U interval] [-u script] [-v version]\n\
 \t[-V visual] [-X resource=value] [-j numlayers] dest/port[/fmt/ttl]\n";
 
 if (szOffending == NULL) {
@@ -647,6 +647,10 @@ main(int argc, const char** argv)
 
 		case 'U':
 			tcl.add_option("stampInterval", optarg);
+			break;
+
+		case 'v':
+            printf("VIC %s\n", version);
 			break;
 
 		case 'V':
