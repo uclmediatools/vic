@@ -700,7 +700,7 @@ extern "C" {
 extern void VidUtil_Init(Display *dpy);
 extern void VidUtil_DestroyXImage(Display *dpy, ximage_t *ximage);
 
-#ifdef UNUSED /* not yet... */
+#ifdef UNUSED__ /* not yet... */
 static int
 ErrHandler1(ClientData clientData, XErrorEvent *errevp)
 {
@@ -824,7 +824,7 @@ X11Grab_FollowWindow(void)
 #endif /* UNUSED ... */
 
 
-#ifdef UNUSED
+#ifdef UNUSED__
 /*ARGSUSED*/
 static int
 X11Grab_SetXCmd(ClientData clientData, Tcl_Interp *interp,
