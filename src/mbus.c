@@ -125,6 +125,7 @@ static void mbus_validate(struct mbus *m)
 	}
 #endif
 	assert(m->magic == MBUS_MAGIC);
+	xmemchk();
 }
 
 static void mbus_msg_validate(struct mbus_msg *m)
@@ -302,11 +303,13 @@ static void mb_send(struct mbus *m)
 	assert(len < MBUS_BUF_SIZE);
 	assert(strlen(mb_buffer) < MBUS_BUF_SIZE);
 
+	xmemchk();
 	if (m->hashkey != NULL) {
 		/* Authenticate... */
 		hmac_md5(mb_buffer + MBUS_AUTH_LEN+1, strlen(mb_buffer) - (MBUS_AUTH_LEN+1), m->hashkey, m->hashkeylen, digest);
 		base64encode(digest, 12, mb_buffer, MBUS_AUTH_LEN);
 	}
+	xmemchk();
 	if (m->encrkey != NULL) {
 		/* Encrypt... */
 		memset(mb_cryptbuf, 0, MBUS_BUF_SIZE);
@@ -314,9 +317,12 @@ static void mb_send(struct mbus *m)
 		assert((len % 8) == 0);
 		assert(len < MBUS_BUF_SIZE);
 		assert(m->encrkeylen == 8);
+		xmemchk();
 		qfDES_CBC_e(m->encrkey, mb_cryptbuf, len, initVec);
+		xmemchk();
 		memcpy(mb_buffer, mb_cryptbuf, len);
 	}
+	xmemchk();
 	udp_send(m->s, mb_buffer, len);
 	xfree(mb_buffer);
 }
