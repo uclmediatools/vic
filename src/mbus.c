@@ -56,7 +56,7 @@
 int vsnprintf(char *s, int buf_size, const char *format, va_list ap)
 {
 	/* Quick hack replacement for vsnprintf... note that this */
-	/* doesm't check for buffer overflows, and so it open to  */
+	/* doesn't check for buffer overflows, and so is open to  */
 	/* many really nasty attacks!                             */
         return vsprintf(s,format,ap);
 }
@@ -86,17 +86,18 @@ struct mbus_msg {
 struct mbus {
 	socket_udp	 *s;
 	int		  num_addr;
-	char		 *addr[MBUS_MAX_ADDR];	/* Addresses we respond to. 			*/
+	char		 *addr[MBUS_MAX_ADDR];		/* Addresses we respond to. 					*/
 	int		  max_other_addr;
 	int		  num_other_addr;
-	char		**other_addr;		/* Addresses of other entities on the mbus. 	*/
-	char		 *parse_buffer[MBUS_MAX_PD];
+	char		**other_addr;			/* Addresses of other entities on the mbus. 			*/
+	char		 *parse_buffer[MBUS_MAX_PD];	/* Temporary storage for parsing mbus commands 			*/
+	char		 *parse_bufend[MBUS_MAX_PD];	/* End of space allocated for parsing, to check for overflows 	*/
 	int		  parse_depth;
 	int		  seqnum;
 	void (*cmd_handler)(char *src, char *cmd, char *arg, void *dat);
 	void (*err_handler)(int seqnum, int reason);
-	struct mbus_msg	 *cmd_queue;		/* Queue of messages waiting to be sent */
-	struct mbus_msg	 *waiting_ack;		/* The last reliable message sent, if we have not yet got the ACK */
+	struct mbus_msg	 *cmd_queue;			/* Queue of messages waiting to be sent */
+	struct mbus_msg	 *waiting_ack;			/* The last reliable message sent, if we have not yet got the ACK */
 	char		 *hashkey;
 	int		  hashkeylen;
 	char		 *encrkey;
@@ -104,10 +105,10 @@ struct mbus {
 #ifdef WIN32
 	HKEY		  cfgKey;
 #else
-	fd_t		  cfgfd;  		/* The file descriptor for the $HOME/.mbus config file, on Unix */
+	fd_t		  cfgfd;  			/* The file descriptor for the $HOME/.mbus config file, on Unix */
 #endif
 	int		  cfg_locked;
-	struct timeval	  last_heartbeat;	/* Last time we sent a heartbeat message */
+	struct timeval	  last_heartbeat;		/* Last time we sent a heartbeat message */
 };
 
 #define SECS_PER_WEEK    604800
@@ -745,6 +746,7 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 
 	for (i = 0; i < MBUS_MAX_ADDR; i++) m->addr[i]         = NULL;
 	for (i = 0; i < MBUS_MAX_PD;   i++) m->parse_buffer[i] = NULL;
+	for (i = 0; i < MBUS_MAX_PD;   i++) m->parse_bufend[i] = NULL;
 	mbus_unlock_config_file(m);
 
 	return m;
@@ -778,6 +780,8 @@ void mbus_exit(struct mbus *m)
 
         while(m->parse_depth--) {
                 xfree(m->parse_buffer[m->parse_depth]);
+		m->parse_buffer[m->parse_depth] = NULL;
+		m->parse_bufend[m->parse_depth] = NULL;
         }
 
         mbus_flush_msgs(m->cmd_queue);
@@ -920,13 +924,22 @@ void mbus_qmsgf(struct mbus *m, char *dest, int reliable, const char *cmnd, cons
 void mbus_parse_init(struct mbus *m, char *str)
 {
 	assert(m->parse_depth < (MBUS_MAX_PD - 1));
-	m->parse_buffer[++m->parse_depth] = str;
+	m->parse_depth++;
+	m->parse_buffer[m->parse_depth] = str;
+	m->parse_bufend[m->parse_depth] = str + strlen(str);
 }
 
 void mbus_parse_done(struct mbus *m)
 {
+	m->parse_buffer[m->parse_depth] = NULL;
+	m->parse_bufend[m->parse_depth] = NULL;
 	m->parse_depth--;
 	assert(m->parse_depth >= 0);
+}
+
+#define CHECK_OVERRUN if (m->parse_buffer[m->parse_depth] > m->parse_bufend[m->parse_depth]) {\
+	debug_msg("parse buffer overflow\n");\
+	return FALSE;\
 }
 
 int mbus_parse_lst(struct mbus *m, char **l)
@@ -937,6 +950,7 @@ int mbus_parse_lst(struct mbus *m, char **l)
 	*l = m->parse_buffer[m->parse_depth];
         while (isspace((unsigned char)*m->parse_buffer[m->parse_depth])) {
                 m->parse_buffer[m->parse_depth]++;
+		CHECK_OVERRUN;
         }
 	if (*m->parse_buffer[m->parse_depth] != '(') {
 		return FALSE;
@@ -955,10 +969,12 @@ int mbus_parse_lst(struct mbus *m, char **l)
 			} else {
 				*m->parse_buffer[m->parse_depth] = '\0';
 				m->parse_buffer[m->parse_depth]++;
+				CHECK_OVERRUN;
 				return TRUE;
 			}
 		}
 		m->parse_buffer[m->parse_depth]++;
+		CHECK_OVERRUN;
 	}
 	return FALSE;
 }
@@ -967,6 +983,7 @@ int mbus_parse_str(struct mbus *m, char **s)
 {
         while (isspace((unsigned char)*m->parse_buffer[m->parse_depth])) {
                 m->parse_buffer[m->parse_depth]++;
+		CHECK_OVERRUN;
         }
 	if (*m->parse_buffer[m->parse_depth] != '"') {
 		return FALSE;
@@ -980,6 +997,7 @@ int mbus_parse_str(struct mbus *m, char **s)
 			return TRUE;
 		}
 		m->parse_buffer[m->parse_depth]++;
+		CHECK_OVERRUN;
 	}
 	return FALSE;
 }
@@ -988,6 +1006,7 @@ static int mbus_parse_sym(struct mbus *m, char **s)
 {
         while (isspace((unsigned char)*m->parse_buffer[m->parse_depth])) {
                 m->parse_buffer[m->parse_depth]++;
+		CHECK_OVERRUN;
         }
 	if (!isgraph((unsigned char)*m->parse_buffer[m->parse_depth])) {
 		return FALSE;
@@ -995,9 +1014,11 @@ static int mbus_parse_sym(struct mbus *m, char **s)
 	*s = m->parse_buffer[m->parse_depth]++;
 	while (!isspace((unsigned char)*m->parse_buffer[m->parse_depth]) && (*m->parse_buffer[m->parse_depth] != '\0')) {
 		m->parse_buffer[m->parse_depth]++;
+		CHECK_OVERRUN;
 	}
 	*m->parse_buffer[m->parse_depth] = '\0';
 	m->parse_buffer[m->parse_depth]++;
+	CHECK_OVERRUN;
 	return TRUE;
 }
 
@@ -1007,6 +1028,7 @@ int mbus_parse_int(struct mbus *m, int *i)
 
         while (isspace((unsigned char)*m->parse_buffer[m->parse_depth])) {
                 m->parse_buffer[m->parse_depth]++;
+		CHECK_OVERRUN;
         }
 
 	*i = strtol(m->parse_buffer[m->parse_depth], &p, 10);
@@ -1022,6 +1044,7 @@ int mbus_parse_int(struct mbus *m, int *i)
 		return FALSE;
 	}
 	m->parse_buffer[m->parse_depth] = p;
+	CHECK_OVERRUN;
 	return TRUE;
 }
 
@@ -1030,6 +1053,7 @@ int mbus_parse_flt(struct mbus *m, double *d)
 	char	*p;
         while (isspace((unsigned char)*m->parse_buffer[m->parse_depth])) {
                 m->parse_buffer[m->parse_depth]++;
+		CHECK_OVERRUN;
         }
 
 	*d = strtod(m->parse_buffer[m->parse_depth], &p);
@@ -1045,6 +1069,7 @@ int mbus_parse_flt(struct mbus *m, double *d)
 		return FALSE;
 	}
 	m->parse_buffer[m->parse_depth] = p;
+	CHECK_OVERRUN;
 	return TRUE;
 }
 
