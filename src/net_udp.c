@@ -1,7 +1,7 @@
 /*
  * FILE:     net_udp.c
  * AUTHOR:   Colin Perkins 
- * MODIFIED: Orion Hodson & Piers O'Hanlon
+ * MODIFIED: Orion Hodson, Piers O'Hanlon, Kristian Hasler
  * 
  * Copyright (c) 1998-2000 University College London
  * All rights reserved.
@@ -503,7 +503,7 @@ static socket_udp *udp_init6(const char *addr, const char *iface, uint16_t rx_po
 	}
 	
 	if (IN6_IS_ADDR_MULTICAST(&(s->addr6))) {
-		unsigned int      loop = 1, mreqsize = 0;
+		unsigned int      loop = 1;
 		struct ipv6_mreq  imr;
 #ifdef MUSICA_IPV6
 		imr.i6mr_interface = 1;
@@ -513,11 +513,7 @@ static socket_udp *udp_init6(const char *addr, const char *iface, uint16_t rx_po
 		imr.ipv6mr_interface = 0;
 #endif
 		
-		mreqsize = sizeof(imr);
-#ifdef WIN2K_IPV6
-		mreqsize += 4;
-#endif
-		if (SETSOCKOPT(s->fd, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, (char *) &imr, mreqsize) != 0) {
+		if (SETSOCKOPT(s->fd, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, (char *) &imr, sizeof(imr)) != 0) {
 			socket_error("setsockopt IPV6_ADD_MEMBERSHIP");
 			return NULL;
 		}
