@@ -329,30 +329,38 @@ proc select_thumbnail { w src } {
 }
 
 proc update_source_info src {
-	global src_info src_nickname src_name
+	global src_info src_nickname src_name numLayers numDecoderLayers
 	#
 	# Figure out best presentation from available information.
 	#
 	set name [$src sdes name]
 	set cname [$src sdes cname]
 	set addr [$src addr]
+	set fmt [rtp_format $src]
+	if { $fmt == "pvh" } {
+		if [info exists numDecoderLayers($src)] {
+			set fmt $fmt\($numDecoderLayers($src)\)
+		} else {
+			set fmt $fmt\($numLayers\)
+		}
+	}
 	if { $name == "" } {
 		if { $cname == "" } {
 			set src_nickname($src) $addr
-			set info $addr/[rtp_format $src]
+			set info $addr/$fmt
 
 		} else {
 			set src_nickname($src) $cname
-			set info "$addr/[rtp_format $src]"
+			set info "$addr/$fmt"
 		}
 	} elseif [cname_redundant $name $cname] {
 		set src_nickname($src) $name
-		set info $addr/[rtp_format $src]
+		set info $addr/$fmt
 	} else {
 		set src_nickname($src) $name
-		set info $cname/[rtp_format $src]
+		set info $cname/$fmt
 	}
-		set src_info($src) $cname/[rtp_format $src]
+		set src_info($src) $cname/$fmt
 
 	set msg [$src sdes note]
 	if { $msg != "" } {

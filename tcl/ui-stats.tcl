@@ -259,6 +259,7 @@ proc set_numDecoderLayers { src value } {
 	set d [$src handler]
 	if { "$d" != "" } {
 		$d maxChannel $numDecoderLayers($src)
+		update_source_info $src
 	}
 }
 
