@@ -297,7 +297,7 @@ int IP6Network::localname(sockaddr_in6* p) {
 
   memset((char *)p, 0, sizeof(*p));
   p->sin6_family = AF_INET6;
-  int len = sizeof(*p), result = 0;
+  socklen_t len = sizeof(*p), result = 0;
 
   if ((result = getsockname(ssock_, (struct sockaddr *)p, &len)) < 0) {
     perror("getsockname");
@@ -552,7 +552,7 @@ you must specify a unicast destination\n");
 int IP6Network::dorecv(u_char* buf, int len, Address& from, int fd)
 {
 	sockaddr_in6 sfrom;
-	int fromlen = sizeof(sfrom);
+	socklen_t fromlen = sizeof(sfrom);
 	int cc = ::recvfrom(fd, (char*)buf, len, 0,
 			    (sockaddr*)&sfrom, &fromlen);
 	if (cc < 0) {
