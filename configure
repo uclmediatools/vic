@@ -1158,9 +1158,9 @@ fi
 
 # Check for standard size types.  The defaults are only valid on some
 # systems so we hope that <inttypes.h> exists when they're wrong.
-echo $ac_n "checking for uint8_t""... $ac_c" 1>&6
-echo "configure:1163: checking for uint8_t" >&5
-if eval "test \"`echo '$''{'ac_cv_type_uint8_t'+set}'`\" = set"; then
+echo $ac_n "checking for u_int8_t""... $ac_c" 1>&6
+echo "configure:1163: checking for u_int8_t" >&5
+if eval "test \"`echo '$''{'ac_cv_type_u_int8_t'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
@@ -1173,27 +1173,27 @@ else
 #endif
 EOF
 if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  egrep "(^|[^a-zA-Z_0-9])uint8_t[^a-zA-Z_0-9]" >/dev/null 2>&1; then
+  egrep "(^|[^a-zA-Z_0-9])u_int8_t[^a-zA-Z_0-9]" >/dev/null 2>&1; then
   rm -rf conftest*
-  ac_cv_type_uint8_t=yes
+  ac_cv_type_u_int8_t=yes
 else
   rm -rf conftest*
-  ac_cv_type_uint8_t=no
+  ac_cv_type_u_int8_t=no
 fi
 rm -f conftest*
 
 fi
-echo "$ac_t""$ac_cv_type_uint8_t" 1>&6
-if test $ac_cv_type_uint8_t = no; then
+echo "$ac_t""$ac_cv_type_u_int8_t" 1>&6
+if test $ac_cv_type_u_int8_t = no; then
   cat >> confdefs.h <<\EOF
-#define uint8_t unsigned char
+#define u_int8_t unsigned char
 EOF
 
 fi
 
-echo $ac_n "checking for uint16_t""... $ac_c" 1>&6
-echo "configure:1196: checking for uint16_t" >&5
-if eval "test \"`echo '$''{'ac_cv_type_uint16_t'+set}'`\" = set"; then
+echo $ac_n "checking for u_int16_t""... $ac_c" 1>&6
+echo "configure:1196: checking for u_int16_t" >&5
+if eval "test \"`echo '$''{'ac_cv_type_u_int16_t'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
@@ -1206,27 +1206,27 @@ else
 #endif
 EOF
 if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  egrep "(^|[^a-zA-Z_0-9])uint16_t[^a-zA-Z_0-9]" >/dev/null 2>&1; then
+  egrep "(^|[^a-zA-Z_0-9])u_int16_t[^a-zA-Z_0-9]" >/dev/null 2>&1; then
   rm -rf conftest*
-  ac_cv_type_uint16_t=yes
+  ac_cv_type_u_int16_t=yes
 else
   rm -rf conftest*
-  ac_cv_type_uint16_t=no
+  ac_cv_type_u_int16_t=no
 fi
 rm -f conftest*
 
 fi
-echo "$ac_t""$ac_cv_type_uint16_t" 1>&6
-if test $ac_cv_type_uint16_t = no; then
+echo "$ac_t""$ac_cv_type_u_int16_t" 1>&6
+if test $ac_cv_type_u_int16_t = no; then
   cat >> confdefs.h <<\EOF
-#define uint16_t unsigned short
+#define u_int16_t unsigned short
 EOF
 
 fi
 
-echo $ac_n "checking for uint32_t""... $ac_c" 1>&6
-echo "configure:1229: checking for uint32_t" >&5
-if eval "test \"`echo '$''{'ac_cv_type_uint32_t'+set}'`\" = set"; then
+echo $ac_n "checking for u_int32_t""... $ac_c" 1>&6
+echo "configure:1229: checking for u_int32_t" >&5
+if eval "test \"`echo '$''{'ac_cv_type_u_int32_t'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
@@ -1239,20 +1239,20 @@ else
 #endif
 EOF
 if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  egrep "(^|[^a-zA-Z_0-9])uint32_t[^a-zA-Z_0-9]" >/dev/null 2>&1; then
+  egrep "(^|[^a-zA-Z_0-9])u_int32_t[^a-zA-Z_0-9]" >/dev/null 2>&1; then
   rm -rf conftest*
-  ac_cv_type_uint32_t=yes
+  ac_cv_type_u_int32_t=yes
 else
   rm -rf conftest*
-  ac_cv_type_uint32_t=no
+  ac_cv_type_u_int32_t=no
 fi
 rm -f conftest*
 
 fi
-echo "$ac_t""$ac_cv_type_uint32_t" 1>&6
-if test $ac_cv_type_uint32_t = no; then
+echo "$ac_t""$ac_cv_type_u_int32_t" 1>&6
+if test $ac_cv_type_u_int32_t = no; then
   cat >> confdefs.h <<\EOF
-#define uint32_t unsigned long
+#define u_int32_t unsigned long
 EOF
 
 fi

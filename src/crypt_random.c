@@ -46,15 +46,15 @@
 #include "config_unix.h"
 #include "crypt_random.h"
 
-static u_int32 randseed = 1;
+static u_int32_t randseed = 1;
 
 void
-lbl_srandom(u_int32 seed)
+lbl_srandom(u_int32_t seed)
 {
 	randseed = seed;
 }
 
-u_int32
+u_int32_t
 lbl_random(void)
 {
 #ifdef HAVE_DEV_URANDOM

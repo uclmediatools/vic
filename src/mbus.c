@@ -393,7 +393,7 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 	struct mbus_key	 k;
 	int		 i;
 	char            *net_addr;
-	u_int16          net_port;
+	u_int16_t        net_port;
 	int              net_scope;
 
 	m = (struct mbus *) xmalloc(sizeof(struct mbus));

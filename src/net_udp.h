@@ -42,7 +42,7 @@ typedef struct _socket_udp socket_udp;
 extern "C" {
 #endif
 
-socket_udp *udp_init(char *addr, u_int16 rx_port, u_int16 tx_port, int ttl);
+socket_udp *udp_init(char *addr, u_int16_t rx_port, u_int16_t tx_port, int ttl);
 void        udp_exit(socket_udp *s);
 int         udp_send(socket_udp *s, char *buffer, int buflen);
 int         udp_recv(socket_udp *s, char *buffer, int buflen);

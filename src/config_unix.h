@@ -82,15 +82,6 @@ extern int h_errno;
 
 typedef unsigned char	byte;
 
-/* Typedefs from standard types to ours */
-typedef uint8_t		u_int8;
-typedef uint16_t	u_int16;
-typedef uint32_t	u_int32;
-typedef int8_t		int8;
-typedef	int16_t		int16;
-typedef int32_t		int32;
-typedef int64_t		int64;
-
 typedef u_char	ttl_t;
 typedef int	fd_t;
 
@@ -158,15 +149,6 @@ long	strtol(char *str, char **ptr, int base);
 int	toupper(int c);
 #define	memmove(dst, src, len)	bcopy((char *) src, (char *) dst, len)
 #endif
-
-#ifdef HPUX
-int gethostname(char *hostname, size_t size);
-#endif
-
-#ifdef Linux
-void *memcpy(void *dest, const void *src, size_t n);
-int   memcmp(const void *s1, const void *s2, size_t n);
-#endif /* Linux */
 
 #endif /* _CONFIG_UNIX_H_ */
 #endif /* WIN32 */

@@ -64,7 +64,7 @@ char *mbus_new_encrkey(void)
 
 	/* Step 1: generate a random string for the key... */
 	for (i = 0; i < MBUS_ENCRKEY_LEN; i++) {
-		random_string[i] = ((int32)lbl_random() | 0x000ff000) >> 24;
+		random_string[i] = ((int32_t)lbl_random() | 0x000ff000) >> 24;
 	}
 
 	/* Step 2: fill in parity bits to make DES library happy */
@@ -104,7 +104,7 @@ char *mbus_new_hashkey(void)
 
 	/* Step 1: generate a random string for the key... */
 	for (i = 0; i < MBUS_HASHKEY_LEN; i++) {
-		random_string[i] = ((int32)lbl_random() | 0x000ff000) >> 24;
+		random_string[i] = ((int32_t)lbl_random() | 0x000ff000) >> 24;
 	}
 	/* Step 2: base64 encode that string... */
 	memset(encoded_string, 0, (MBUS_HASHKEY_LEN*4/3)+4);
@@ -468,12 +468,13 @@ void mbus_get_hashkey(struct mbus_config *m, struct mbus_key *key)
 #endif
 }
 
-void mbus_get_net_addr(struct mbus_config *m, char *net_addr, u_int16 *net_port, int *net_scope){
+void mbus_get_net_addr(struct mbus_config *m, char *net_addr, u_int16_t *net_port, int *net_scope)
+{
 #ifdef WIN32
-    /* TODO: get values out of registry */
-    strcpy(net_addr, MBUS_DEFAULT_NET_ADDR);
-    *net_port = MBUS_DEFAULT_NET_PORT;
-    *net_scope = MBUS_DEFAULT_SCOPE;
+	/* TODO: get values out of registry */
+	strcpy(net_addr, MBUS_DEFAULT_NET_ADDR);
+	*net_port = MBUS_DEFAULT_NET_PORT;
+	*net_scope = MBUS_DEFAULT_SCOPE;
 #else
 	struct stat	 s;
 	char		*buf;
@@ -484,7 +485,7 @@ void mbus_get_net_addr(struct mbus_config *m, char *net_addr, u_int16 *net_port,
 
 	int              scope;
 	char            *addr;
-	u_int16          port;
+	u_int16_t        port;
 
 	assert(m->cfg_locked);
 

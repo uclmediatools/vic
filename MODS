@@ -165,17 +165,28 @@ v1.0.10	- Mbus updates from Markus Germeier, which fix compatibility with
 		  which mislead the UCL Mbus to dump core. Allow Spaces in .mbus
 		- Address must be unique
 		- Delete failed reliable messages if err_handler is present
-	GNU autoconf modifications from Bill Fenner
+	- Fix uninitialized use of session->last_update in RTP code
+	- Fix assertion failures in RTP library when sending RTCP packets
+	- Recognize, but ignore, profile specific extensions to RTCP SR/RR packets
+	- Update RTCP reporting interval calculation
+	- Implement reverse reconsideration of RTCP reporting interval
+	- Fix tv_diff in rtp.c to handle negative results
+	- Remove rtp_get_encryption_key(), the user of the library is assumed to 
+	  remember the passphrase used and doesn't need access to the internal
+	  form of the key.
+	- GNU autoconf modifications from Bill Fenner
+	- Global change of integer types, and removal of compatibility defines:
+		u_int8	-> u_int8_t
+		u_int16	-> u_int16_t
+		u_int32	-> u_int32_t
+	  and the same for the signed varients.
+
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
 	  since it does a gethostbyname() and looks that up, yet that can
 	  return the IPv4 hostname only on some machines.
 	- Doesn't do DNS AAAA lookups when given a name rather than an IP address.
-	- "instance:pid" in mbus addresses?
-	- We use hmac_md5 and the mbus spec requires hmac_md5_96? Bug in
-	  the spec, since they both reference RFC2104?
-	- Fixed offsets in the mbus config file parser?
 	- Mbus code should check timestamp in received headers, and discard
 	  messages if it decreases, as a hinderance to replay attacks.
 	- Mbus code should be more paranoid about handling garbage inputs, we
@@ -183,6 +194,8 @@ Still to do...
 	  into it.
 	- rtp_recv should split into rtp_select and rtp_recv. Jitter issues
 	  otherwise, as pointed out by Orion.
-	- version number in mbus config file
-	- allow a callback for background processing during mbus_rendezvous_...()
+	- Add a version number to the mbus config file
+	- Allow a callback for background processing during mbus_rendezvous_*()
 	- move completely away from OS-based #ifdef's
+	- Implement encryption in the RTP code
+

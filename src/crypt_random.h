@@ -42,6 +42,6 @@
  * Communications of the ACM, Jan 1990, Vol 33 No 1.
  */
 
-void    lbl_srandom(u_int32 seed);
-u_int32 lbl_random(void);
+void      lbl_srandom(u_int32_t seed);
+u_int32_t lbl_random(void);
 
