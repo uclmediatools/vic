@@ -515,26 +515,26 @@ Word ror[16][3] =
 #define ROTATE_RIGHT(v, rot) \
 v = ((v & rot[0]) << rot[1]) | v >> rot[2]
 
-#define K_ENCRYPT(regC, regD, ik) \
-{ \
-    register int z; \
-    register Word *rl, *k = ik; \
-    for(rl = rol[z = 0]; z < 16; rl = rol[++z], k += 2) { \
-        ROTATE_LEFT(regC, rl); \
-        ROTATE_LEFT(regD, rl); \
-        PC2(regC, regD, k); \
-    } \
+static void K_ENCRYPT(Word regC, Word regD, Word *ik)
+{
+    register int z; 
+    register Word *rl, *k = ik; 
+    for(rl = rol[z = 0]; z < 16; rl = rol[++z], k += 2) { 
+        ROTATE_LEFT(regC, rl); 
+        ROTATE_LEFT(regD, rl);
+        PC2(regC, regD, k); 
+    } 
 }
 
-#define K_DECRYPT(regC, regD, ik) \
-{ \
-    register int z; \
-    register Word *rr, *k = ik; \
-    for(rr = ror[z = 0]; z < 16; rr = ror[++z], k += 2) { \
-        ROTATE_RIGHT(regC, rr); \
-        ROTATE_RIGHT(regD, rr); \
-        PC2(regC, regD, k); \
-    } \
+static void K_DECRYPT(Word regC, Word regD, Word *ik)
+{ 
+    register int z; 
+    register Word *rr, *k = ik; 
+    for(rr = ror[z = 0]; z < 16; rr = ror[++z], k += 2) { 
+        ROTATE_RIGHT(regC, rr); 
+        ROTATE_RIGHT(regD, rr);
+        PC2(regC, regD, k); 
+    } 
 }
 
 /*
