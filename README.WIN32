@@ -1,8 +1,14 @@
-Before Compiling VIC, you should have tcl/tk8.0p2 installed.
+Building VIC on Windows platforms
+---------------------------------
 
-Compiling VIC using Visual Studio 5:-
+The VIC distribution contains a MS Visual Studio workspace for building various
+releases.  The following project configurations are available from the
+build->'set active configuration' menu item: 
 
-- Rename makefile.vc to makefile.mak
-- Open makefile.mak as a new workspace.  MSVC will then create a wrapper workspace around the makefile.
-- Change paths in makefile if necessary.
-- Compile!
+vic win32 release              - Non debug IPv4 build
+vic win32 debug ipv6 musica    - Debug build for use with Musica IPv6 stack
+vic win32 debug                - Debug IPv4 build
+vic win32 debug ipv6 win2000   - Debug IPv6 build for Windows 2000
+vic win32 debug ipv6 msr       - Debug IPv6 build for MS research IPv6 stack
+vic win32 release ipv6 win2000 - Release IPv6 build for Windows 2000
+
