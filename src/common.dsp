@@ -348,17 +348,17 @@ SOURCE=.\version.h
 # End Group
 # Begin Source File
 
-SOURCE=.\VERSION
+SOURCE=..\VERSION
 
 !IF  "$(CFG)" == "common - Win32 Release"
 
 !ELSEIF  "$(CFG)" == "common - Win32 Debug IPv6"
 
 # Begin Custom Build
-InputPath=.\VERSION
+InputPath=..\VERSION
 
 "version.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	copy win32\set.txt + VERSION win32\vergen.bat 
+	copy win32\set.txt + ..\VERSION win32\vergen.bat 
 	copy win32\vergen.bat + win32\null.txt win32\vergen.bat 
 	copy win32\vergen.bat + win32\echo.txt win32\vergen.bat 
 	win32\vergen.bat 
@@ -373,10 +373,10 @@ InputPath=.\VERSION
 !ELSEIF  "$(CFG)" == "common - Win32 Debug"
 
 # Begin Custom Build
-InputPath=.\VERSION
+InputPath=..\VERSION
 
 "version.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	copy win32\set.txt + VERSION win32\vergen.bat 
+	copy win32\set.txt + ..\VERSION win32\vergen.bat 
 	copy win32\vergen.bat + win32\null.txt win32\vergen.bat 
 	copy win32\vergen.bat + win32\echo.txt win32\vergen.bat 
 	win32\vergen.bat 

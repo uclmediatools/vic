@@ -2183,7 +2183,7 @@ static uint8_t *format_rtcp_app(uint8_t *buffer, int buflen, uint32_t ssrc, rtcp
 }
 
 static void send_rtcp(struct rtp *session, uint32_t rtp_ts,
-		     rtcp_app *(*appcallback)(struct rtp *session, uint32_t rtp_ts, int max_size))
+		     rtcp_app_callback *appcallback)
 {
 	/* Construct and send an RTCP packet. The order in which packets are packed into a */
 	/* compound packet is defined by section 6.1 of draft-ietf-avt-rtp-new-03.txt and  */
@@ -2273,7 +2273,7 @@ static void send_rtcp(struct rtp *session, uint32_t rtp_ts,
 }
 
 void rtp_send_ctrl(struct rtp *session, uint32_t rtp_ts,
-                   rtcp_app *(*appcallback)(struct rtp *session, uint32_t rtp_ts, int max_size))
+                   rtcp_app_callback *appcallback)
 {
 	/* Send an RTCP packet, if one is due... */
 	struct timeval	 curr_time;

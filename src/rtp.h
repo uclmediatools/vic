@@ -206,7 +206,7 @@ int 		 rtp_send_data(struct rtp *session,
                                char *data, int data_len, 
 			       char *extn, uint16_t extn_len, uint16_t extn_type);
 void 		 rtp_send_ctrl(struct rtp *session, uint32_t rtp_ts, 
-			       rtcp_app_callback);
+			       rtcp_app_callback *callback);
 void 		 rtp_update(struct rtp *session);
 
 uint32_t	 rtp_my_ssrc(struct rtp *session);
