@@ -440,7 +440,7 @@ main(int argc, const char** argv)
 			strcpy(buf,"-name vic -display ");
 			gethostname(&buf[19],sizeof(buf)-19);
 			strcat(buf,":0");
-		} else sprintf (buf, "-name vic -dispay %s", display);
+		} else sprintf (buf, "-name vic");
 	} else sprintf (buf, "-name vic -dispay %s", display);
 #else
    	sprintf(buf,display?
