@@ -88,7 +88,7 @@ Transmitter::Transmitter() :
 	head_(0),
 	tail_(0),
 	loop_layer_(1000),
-	loopback_(1)
+	loopback_(0)
 {
 	memset((char*)&mh_, 0, sizeof(mh_));
 	mh_.msg_iovlen = 2;

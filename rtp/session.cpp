@@ -706,7 +706,17 @@ void SessionManager::recv(DataHandler* dh)
 		pb->release();
 		return;
 	}
-	
+
+    // Ignore loopback packets
+	if (!loopback_) {
+		rtphdr* rh = (rtphdr*)pb->data;
+		SourceManager& sm = SourceManager::instance();
+		if (rh->rh_ssrc == (*sm.localsrc()).srcid()) {
+			pb->release();
+			return;
+		}
+	}
+
 	//rtphdr* rh = (rtphdr*)pb->data;
 	int version = pb->data[0] >> 6;
 	//int version = *(u_char*)rh >> 6;
@@ -1039,6 +1049,14 @@ void SessionManager::recv(CtrlHandler* ch)
 		return;
 
 	rtcphdr* rh = (rtcphdr*)pktbuf_;
+
+    // Ignore loopback packets
+	if (!loopback_) {
+		SourceManager& sm = SourceManager::instance();
+		if (rh->rh_ssrc == (*sm.localsrc()).srcid())
+			return;
+	}
+
 	if (cc < int(sizeof(*rh))) {
 		++nrunt_;
 		return;
