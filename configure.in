@@ -120,6 +120,8 @@ if test $ucl_cv_inet_ntop_in_inet_h = "no"
 then
 	AC_DEFINE(NEED_INET_NTOP)
 	LIBOBJS="$LIBOBJS inet_ntop.o"
+else
+	AC_DEFINE(HAVE_INET_NTOP)
 fi
 AC_SUBST(LIBOBJS)
 
