@@ -307,6 +307,11 @@ v1.2.4	- Implement rtp_add_csrc() and rtp_del_csrc().
 	  Stovenour <michael.stovenour@lucent.com>.
 	* 1 November 2000 [rat v4.2.10]
 
+v1.2.5	- More informative error message when the lock on the mbus configuration 
+	  file cannot be gained.
+
+
+
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
 	  since it does a gethostbyname() and looks that up, yet that can
