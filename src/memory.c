@@ -265,7 +265,7 @@ xclaim(void *addr, const char *filen, int line)
         alloc_blk *m;
         chk_header *ch;
         
-        ch = (chk_header*)((uint8_t*)addr - sizeof(chk_header));
+        ch = ((chk_header *)addr) - 1;
         m  = mem_item_find(ch->key); 
 
         if (chk_header_okay(ch) == FALSE) {
@@ -327,7 +327,7 @@ xfree(void *p)
 		printf("ERROR: Attempt to free NULL pointer!\n");
 		abort();
 	}
-        ch = (chk_header*)((uint8_t*)p - sizeof(chk_header));
+        ch = ((chk_header*)p) - 1;
 
         /* Validate entry  */
         if (chk_header_okay(ch) == FALSE) {
@@ -389,7 +389,7 @@ _xmalloc(unsigned size, const char *filen, int line)
         ch->magic = MAGIC_MEMORY;
 
         /* Fill allocated memory with random numbers */
-        for (j = (uint32_t*)((uint8_t*)p + sizeof(chk_header)); size > 4; size -= 4) {
+        for (j = (uint32_t*)((chk_header *)p + 1); size > 4; size -= 4) {
                 *j++ = rand();
         }
         for (t = (uint8_t*)j; size > 0; size--) { 
@@ -439,7 +439,7 @@ _xrealloc(void *p, unsigned size, const char *filen, int line)
         assert(p     != NULL);
         assert(filen != NULL);
 	
-        ch = (chk_header*)((uint8_t*)p - sizeof(chk_header));
+        ch = ((chk_header*) p) - 1;
         m  = mem_item_find(ch->key);
         if (m != NULL) {
                 /* Attempt reallocation */
