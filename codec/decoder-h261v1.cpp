@@ -41,13 +41,14 @@ static const char rcsid[] =
 #include "rtp.h"
 #include "decoder.h"
 #include "p64.h"
+#include "pktbuf.h"
 
 class RTPv1H261Decoder : public Decoder {
 public:
 	RTPv1H261Decoder();
 	~RTPv1H261Decoder();
 	int colorhist(u_int* hist) const;
-	virtual void recv(const rtphdr* rh, const u_char* bp, int cc);
+	virtual void recv(pktbuf*);
 	void stats(char* wrk);
 protected:
 	const u_char* reassemble(const u_char* bp, int& cc, u_int& seqno,
@@ -260,8 +261,10 @@ RTPv1H261Decoder::reassemble(const u_char* bp, int& cc,
 	return (bp);
 }
 
-void RTPv1H261Decoder::recv(const rtphdr* rh, const u_char* bp, int cc)
+void RTPv1H261Decoder::recv(pktbuf* pb)
 {	
+	rtphdr* rh = (rtphdr*)pb->dp;
+	u_int8_t* vh = (u_int8_t*)(rh + 1);
 	/*
 	 * if the packet has a non-zero sbit but no SOG or
 	 * a non-zero ebit but no EOG, toss it.
@@ -269,7 +272,7 @@ void RTPv1H261Decoder::recv(const rtphdr* rh, const u_char* bp, int cc)
 	 * just render it.  Otherwise we wait until we get the
 	 * start and end markers and all the packets in between.
 	 */
-	u_int v = ntohs(*(u_short*)(rh + 1));
+	u_int v = ntohs(*(u_int16_t*)vh);
 	u_int flags = v >> 8;
 	if (((flags & 0x70) != 0 && (flags & 0x80) == 0) ||
 	    ((flags & 0x07) != 0 && (flags & 0x08) == 0)) {
@@ -277,6 +280,8 @@ void RTPv1H261Decoder::recv(const rtphdr* rh, const u_char* bp, int cc)
 		return;
 	}
 
+	int cc = pb->len - (sizeof(*rh) + 2);
+	const u_int8_t* bp = vh + 2;
 	u_int seqno = ntohs(rh->rh_seqno);
 	bp = reassemble(bp, cc, seqno, flags);
 	if (bp == 0)
@@ -315,6 +320,7 @@ void RTPv1H261Decoder::recv(const rtphdr* rh, const u_char* bp, int cc)
 		render_frame(codec_->frame());
 		codec_->resetndblk();
 	}
+	pb->release();
 }
 
 int RTPv1H261Decoder::colorhist(u_int* hist) const

@@ -44,6 +44,7 @@ static const char rcsid[] =
 #include "vic_tcl.h"
 #include "jpeg/jpeg.h"
 #include "renderer.h"
+#include "pktbuf.h"
 
 class JpegReassembler {
 public:
@@ -117,7 +118,7 @@ JpegReassembler::JpegReassembler()
 
 JpegReassembler::~JpegReassembler()
 {
-	delete rb0_.bp;
+	delete[] rb0_.bp;
 }
 
 /*
@@ -152,7 +153,7 @@ u_char* JpegReassembler::reassemble(const rtphdr* rh, const u_char* bp, int& len
 		u_char* p = new u_char[2 * nsize];
 		memcpy(p, rb0_.bp, rbsize_);
 		memcpy(p + nsize, rb1_.bp, rbsize_);
-		delete rb0_.bp;
+		delete[] rb0_.bp;
 		rb0_.bp = p;
 		rb1_.bp = p + nsize;
 		rbsize_ = nsize;
@@ -239,7 +240,7 @@ public:
 	int colorhist(u_int* hist) const;
 	virtual void stats(char* wrk);
 protected:
-	virtual void recv(const struct rtphdr*, const u_char* data, int len);
+	virtual void recv(pktbuf*);
 	virtual void redraw();
 
 	int inq_;		/* input quantization */
@@ -338,8 +339,9 @@ int MotionJpegDecoder::colorhist(u_int* hist) const
 	return (1);
 }
 
-void MotionJpegDecoder::recv(const rtphdr* rh, const u_char* bp, int cc)
+void MotionJpegDecoder::recv(pktbuf* pb)
 {	
+	rtphdr* rh = (rtphdr*)pb->dp;
 	const jpeghdr* p = (const jpeghdr*)(rh + 1);
 	int needConfig = 0;
 	if (p->q != inq_ || p->type != type_) {
@@ -356,6 +358,8 @@ void MotionJpegDecoder::recv(const rtphdr* rh, const u_char* bp, int cc)
 	if (needConfig)
 		configure();
 
+	u_int8_t* bp = (u_int8_t*)(p + 1);
+	int cc = pb->len - (sizeof(*rh) + sizeof(*p));
 	bp = reasm_.reassemble(rh, bp, cc);
 	if (bp != 0) {
 		/*
@@ -381,6 +385,7 @@ void MotionJpegDecoder::recv(const rtphdr* rh, const u_char* bp, int cc)
 			codec_->resetndblk();
 		}
 	}
+	pb->release();
 }
 
 void MotionJpegDecoder::redraw()

@@ -332,12 +332,18 @@ copy_to_h263rtpheader( h263rtpheader_B *h263rh, const u_char *bp) {
  * Gets RTP packets from the VIC networking layer, reassembles them to GOB 
  * sequences, decodes them and displays the result. (and more magic ;)
  */
-void H263Decoder::recv(const rtphdr* rh, const u_char* bp, int cc)
+void H263Decoder::recv(pktbuf* pb)
  {
+	rtphdr* rh = (rtphdr*)pb->dp;
+	int hdrsize = sizeof(rtphdr) + hdrlen();
+	u_char* bp = pb->dp + hdrsize;
+	int cc = pb->len - hdrsize;
+
 	u_int	k,newsrcformat;
-	int	targetcc,i,seq,disp,gobbytes,gobnr;
+	int		targetcc, i, seq, disp, gobbytes, gobnr;
 	u_char	*targetbp,*next;
-	int	ismodeB,offset,l = ntohs(rh->rh_seqno) & H263_SLOTMASK;
+	int		ismodeB, offset;
+	int		l = ntohs(rh->rh_seqno) & H263_SLOTMASK;
 	h263rtpheader_B h263rhb;
 
 	ismodeB = copy_to_h263rtpheader(&h263rhb,bp);
@@ -385,8 +391,10 @@ void H263Decoder::recv(const rtphdr* rh, const u_char* bp, int cc)
 		/* 0000 0000 0000 0000 100000  == 0x00008000 */
 		u_char *p = slot_[l].bp;
 		long firstlong = (p[0]<<24)+(p[1]<<16)+(p[2]<<8)+p[3];
-		if ((firstlong & 0xfffffe00) != 0x00008000)
+		if ((firstlong & 0xfffffe00) != 0x00008000) {
+			pb->release();
 			return;
+		}
 		srcformat_ = newsrcformat;
 		backframe_ = NULL;
 		resize(inw_,inh_);
@@ -460,6 +468,8 @@ void H263Decoder::recv(const rtphdr* rh, const u_char* bp, int cc)
 	backframe_ = h263decoder->newframe[0];
 	if (backframe_)
 		render_frame(backframe_);
+	
+	pb->release();
 }
 
 void H263Decoder::redraw() {

@@ -48,7 +48,7 @@ class H261Decoder : public Decoder {
 	H261Decoder();
 	virtual ~H261Decoder();
 	virtual void info(char* wrk) const;
-	virtual void recv(const rtphdr* rh, const u_char* bp, int cc);
+	virtual void recv(pktbuf*);
 	int colorhist(u_int* hist) const;
 	virtual void stats(char* wrk);
     protected:
@@ -133,18 +133,50 @@ int H261Decoder::colorhist(u_int* hist) const
 }
 
 
-void H261Decoder::recv(const rtphdr* rh, const u_char* bp, int cc)
+#ifdef CR_STATS
+u_char shadow[640*480/64];
+
+void dumpShadow(u_int32_t ts, u_char* p, int nblk)
+{
+	ts &= 0x7fffffff;
+	static u_int32_t lastTS = 0;
+	if (ts != lastTS) {
+		printf("ts %u\n", ts);
+		lastTS = ts;
+	}
+	int left = -1;
+	for (int i = 0; i < nblk; ++i) {
+		if (shadow[i] != p[i]) {
+			if (left < 0) {
+				left = i;
+			}
+		} else {
+			if (left > 0)
+				printf("b %d %d\n", left, i - 1);
+			left = -1;
+		}
+	}
+	if (left > 0)
+		printf("b %d %d\n", left, i - 1);
+}
+#endif
+
+void H261Decoder::recv(pktbuf* pb)
 {	
+	rtphdr* rh = (rtphdr*)pb->dp;
+	u_int8_t* vh = (u_int8_t*)(rh + 1);
 	if (codec_ == 0) {
-		u_char* vh = (u_char*)(rh + 1);
 		if ((vh[0] & 2) != 0)
 			codec_ = new IntraP64Decoder();
 		else
 			codec_ = new FullP64Decoder();
 		codec_->marks(rvts_);
 	}
+#ifdef CR_STATS
+	memcpy(shadow, rvts_, nblk_);
+#endif
 	/*XXX*/
-	u_int v = ntohl(*(u_int*)(rh + 1));
+	u_int v = ntohl(*(u_int32_t*)vh);
 	int sbit = v >> 29;
 	int ebit = (v >> 26) & 7;
 	int quant = (v >> 10) & 0x1f;
@@ -177,10 +209,16 @@ void H261Decoder::recv(const rtphdr* rh, const u_char* bp, int cc)
 
 	if (gob > 12) {
 		count(STAT_BAD_HEADER);
+		pb->release();
 		return;
 	}
+	int cc = pb->len - (sizeof(*rh) + 4);
 	codec_->mark(now_);
-	(void)codec_->decode(bp, cc, sbit, ebit, mba, gob, quant, mvdh, mvdv);
+	(void)codec_->decode(vh + 4, cc, sbit, ebit,
+			     mba, gob, quant, mvdh, mvdv);
+#ifdef CR_STATS
+	dumpShadow(ntohl(rh->rh_ts), rvts_, nblk_);
+#endif
 	/*
 	 * If the stream changes format, issue a resize.
 	 */
@@ -197,6 +235,7 @@ void H261Decoder::recv(const rtphdr* rh, const u_char* bp, int cc)
 		render_frame(codec_->frame());
 		codec_->resetndblk();
 	}
+	pb->release();
 }
 
 void H261Decoder::redraw()

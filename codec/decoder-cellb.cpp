@@ -58,12 +58,13 @@ static const char rcsid[] =
 #include "rtp.h"
 #include "decoder.h"
 #include "bsd-endian.h"
+#include "pktbuf.h"
 
 class CellbDecoder : public PlaneDecoder {
 public:
 	CellbDecoder();
 protected:
-	virtual void recv(const struct rtphdr*, const u_char* data, int len);
+	virtual void recv(pktbuf*);
 	void decode(const u_char*, int cc, int x, int y, int w, int h);
 };
 
@@ -212,8 +213,9 @@ void CellbDecoder::decode(const u_char* p, int cc, int cellx, int celly,
 	}
 }
 
-void CellbDecoder::recv(const rtphdr* rh, const u_char* bp, int cc)
+void CellbDecoder::recv(pktbuf* pb)
 {
+	rtphdr* rh = (rtphdr*)pb->dp;
 	cellbhdr* ph = (cellbhdr*)(rh + 1);
 	int w = ntohs(ph->width) & 0x7fff;
 	int h = ntohs(ph->height);
@@ -226,9 +228,11 @@ void CellbDecoder::recv(const rtphdr* rh, const u_char* bp, int cc)
 		}
 		resize(w, h);
 	}
-	decode(bp, cc, ntohs(ph->x), ntohs(ph->y), w, h);
+	int cc = pb->len - (sizeof(*rh) + sizeof(*ph));
+	decode((u_char*)(ph + 1), cc, ntohs(ph->x), ntohs(ph->y), w, h);
 	if (ntohs(rh->rh_flags) & RTP_M) {
 		render_frame(frm_);
 		resetndblk();
 	}
+	pb->release();
 }

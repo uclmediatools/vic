@@ -52,7 +52,7 @@ public:
 	int colorhist(u_int* hist) const;
 	virtual void stats(char* wrk);
 protected:
-	virtual void recv(const struct rtphdr*, const u_char* data, int len);
+	virtual void recv(pktbuf* pb);
 	virtual void redraw();
 
 	int inq_;		/* input quantization */
@@ -106,8 +106,13 @@ int RawDecoder::colorhist(u_int* hist) const
 	return 1;
 }
 
-void RawDecoder::recv(const rtphdr* rh, const u_char* bp, int cc)
+void RawDecoder::recv(pktbuf* pb)
 {	
+	rtphdr* rh = (rtphdr*)pb->dp;
+	int hdrsize = sizeof(rtphdr) + hdrlen();
+	u_char* bp = pb->dp + hdrsize;
+	int cc = pb->len - hdrsize;
+
 	/* using jpeg header */
 	const jpeghdr* p = (const jpeghdr*)(rh + 1);
 
@@ -127,6 +132,7 @@ void RawDecoder::recv(const rtphdr* rh, const u_char* bp, int cc)
 	if (bp != 0) {
 		render_frame(bp);
 	}
+	pb->release();
 }
 
 void RawDecoder::redraw()

@@ -62,13 +62,14 @@ static const char rcsid[] =
 #include "inet.h"
 #include "rtp.h"
 #include "decoder.h"
+#include "pktbuf.h"
 
 class NvDecoder : public PlaneDecoder {
 public:
 	NvDecoder();
 protected:
 	void info(char* wrk) const;
-	virtual void recv(const struct rtphdr*, const u_char* data, int len);
+	virtual void recv(pktbuf*);
 	const u_char* decode_run(const u_char* data, const u_char* end,
 				 int color);
 	void VidTransform_Rev(u_int* inp, u_char* yp, char* up, char* vp,
@@ -615,8 +616,9 @@ const u_char* NvDecoder::decode_run(const u_char* data, const u_char* end,
 	return (data);
 }
 
-void NvDecoder::recv(const rtphdr* rh, const u_char* bp, int cc)
+void NvDecoder::recv(pktbuf* pb)
 {
+	rtphdr* rh = (rtphdr*)pb->dp;
 	const nvhdr* ph = (nvhdr*)(rh + 1);
 	int h = ntohs(ph->height);
 	int w = ntohs(ph->width);
@@ -644,7 +646,8 @@ void NvDecoder::recv(const rtphdr* rh, const u_char* bp, int cc)
 		}
 		resize(w, h);
 	}
-	const u_char* end = bp + cc;
+	const u_int8_t* end = &pb->dp[pb->len];
+	const u_int8_t* bp = (u_int8_t*)(ph + 1);
 	while (bp < end)
 		bp = decode_run(bp, end, color);
 
@@ -652,4 +655,5 @@ void NvDecoder::recv(const rtphdr* rh, const u_char* bp, int cc)
 		render_frame(frm_);
 		resetndblk();
 	}
+	pb->release();
 }

@@ -330,7 +330,8 @@ public:
 	NullDecoder() : Decoder(0) {}
 	int colorhist(u_int* histogram) const { return (0); }
 	void redraw() {}
-	virtual void recv(const struct rtphdr*, const u_char* data, int len) {}
+//	virtual void recv(const struct rtphdr*, const u_char* data, int len) {}
+	virtual void recv(pktbuf* pb) { pb->release();}
 };
 
 static class NullDecoderMatcher : public Matcher {
