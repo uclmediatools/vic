@@ -53,7 +53,7 @@ inet6_LookupHostAddr(struct in6_addr *addr, const char* hostname) {
     int i;
     memset(&hints, 0, sizeof(struct addrinfo));
 	
-	hints.ai_protocol  = IPPROTO_IPV6;
+	hints.ai_protocol  = 0;
 	//hints.ai_flags   = AI_CANONNAME;
 	hints.ai_flags     = 0;
 	hints.ai_family    = AF_INET6;

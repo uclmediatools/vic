@@ -93,7 +93,7 @@ public:
 	virtual void reset();
 	static void nonblock(int fd);
 	inline Crypt* crypt() const { return (crypt_); }
-	virtual Address* alloc(const char* name) { return (0);}
+	virtual Address* alloc(const char* name) { UNUSED(name); return (0);}
 
 protected:
 	virtual void dosend(u_char* buf, int len, int fd);

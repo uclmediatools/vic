@@ -80,7 +80,7 @@ private:
 
 static class IPAddressType : public AddressType {
 public:
-  static Address* resolve(const char* name) {
+  virtual Address* resolve(const char* name) {
     struct in_addr addr;
     IPAddress * result = 0;
     if((addr.s_addr = LookupHostAddr(name)) != 0) {
@@ -99,7 +99,17 @@ class IPNetwork : public Network {
 		IPNetwork() : Network(*(new IPAddress), *(new IPAddress)) {;}
 	virtual int command(int argc, const char*const* argv);
 	virtual void reset();
-	virtual Address* alloc(const char* name) { return (IPAddressType::resolve(name));}
+	virtual Address* alloc(const char* name) { 
+    		struct in_addr addr;
+    		IPAddress * result = 0;
+    		if((addr.s_addr = LookupHostAddr(name)) != 0) {
+    		  result = new IPAddress;
+    		  *result = addr;
+    		} else {
+    		  result = 0;
+    		}
+    		return (result);
+  	}
     protected:
 	virtual int dorecv(u_char* buf, int len, Address &from, int fd);
 	int open(const char * host, int port, int ttl);
@@ -261,14 +271,15 @@ int IPNetwork::localname(sockaddr_in* p)
 		p->sin_addr.s_addr = 0;
 		p->sin_port = 0;
 	}
+	// Use Local interface name if already set via command line
+	if (((const char*)local_)[0]!='\0') {
+		p->sin_addr.s_addr=(IPAddress&)local_;
+		return (0);
+	}
 
 	if (p->sin_addr.s_addr == 0) {
 		p->sin_addr.s_addr = LookupLocalAddr();
 		result = ((p->sin_addr.s_addr != 0) ? (0) : (-1));
-	}
-	// Use Local interface name if already set via command line
-	if (((const char*)local_)[0]!='\0') {
-		p->sin_addr.s_addr=(IPAddress&)local_;
 	}
 
 	return (result);

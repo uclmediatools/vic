@@ -97,7 +97,7 @@ class IP6Address : public Address {
 
 static class IP6AddressType : public AddressType {
 public:
-  static Address* resolve(const char* name) {
+  virtual Address* resolve(const char* name) {
   struct in6_addr addr;
     IP6Address * result = 0;
     if (inet6_LookupHostAddr(&addr, name) >= 0) {
@@ -116,7 +116,17 @@ class IP6Network : public Network {
 	  IP6Network() : Network(*(new IP6Address), *(new IP6Address))  {;}
 	virtual int command(int argc, const char*const* argv);
 	virtual void reset();
-	virtual Address* alloc(const char* name) { return (IP6AddressType::resolve(name));}
+	virtual Address* alloc(const char* name) { 
+  		struct in6_addr addr;
+    		IP6Address * result = 0;
+    		if (inet6_LookupHostAddr(&addr, name) >= 0) {
+    		  result = new IP6Address;
+    		  *result = addr;
+    		} else {
+    		  result = 0;
+    		}
+    		return (result);
+  	}
   protected:
 	virtual int dorecv(u_char* buf, int len, Address& from, int fd);
 	int open(const char * host, int port, int ttl);
