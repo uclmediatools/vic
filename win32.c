@@ -109,10 +109,10 @@ uname(struct utsname *ub)
 int gettimeofday(struct timeval *p, struct timezone *z)
 {
     if (p) {
-	extern void TclGetTime(Tcl_Time*);
+	extern void TclpGetTime(Tcl_Time*);
 	Tcl_Time tt;
 
-	TclGetTime(&tt);
+	TclpGetTime(&tt);
         p->tv_sec = tt.sec;
 	p->tv_usec = tt.usec;
     }
@@ -285,12 +285,9 @@ perror(const char *msg)
 }
 
 int
-WinPutsCmd(clientData, interp, argc, argv)
-    ClientData clientData;		/* ConsoleInfo pointer. */
-    Tcl_Interp *interp;			/* Current interpreter. */
-    int argc;				/* Number of arguments. */
-    char **argv;			/* Argument strings. */
+WinPutsCmd(ClientData clientData, Tcl_Interp *interp, int argc, char **argv)
 {
+    FILE *f;
     int i, newline;
     char *fileId;
 
@@ -328,8 +325,7 @@ WinPutsCmd(clientData, interp, argc, argv)
 
     if (strcmp(fileId, "stdout") == 0 || strcmp(fileId, "stderr") == 0) {
 	char *result;
-	int level;
-	
+
 	if (newline) {
 	    int len = strlen(argv[i]);
 	    result = ckalloc(len+2);
@@ -339,22 +335,23 @@ WinPutsCmd(clientData, interp, argc, argv)
 	} else {
 	    result = argv[i];
 	}
-	if (strcmp(fileId, "stdout") == 0) {
-	    level = MB_ICONINFORMATION;
-	} else {
-	    level = MB_ICONERROR;
-	}
 	OutputDebugString(result);
-	ShowMessage(level, result);
 	if (newline)
 	    ckfree(result);
-	return TCL_OK;
     } else {
-	extern int Tcl_PutsCmd(ClientData clientData, Tcl_Interp *interp,
-			       int argc, char **argv);
-
-	return (Tcl_PutsCmd(clientData, interp, argc, argv));
+	return TCL_OK;
+	clearerr(f);
+	fputs(argv[i], f);
+	if (newline) {
+	    fputc('\n', f);
+	}
+	if (ferror(f)) {
+	    Tcl_AppendResult(interp, "error writing \"", fileId,
+		    "\": ", Tcl_PosixError(interp), (char *) NULL);
+	    return TCL_ERROR;
+	}
     }
+    return TCL_OK;
 }
 
 int
@@ -391,112 +388,89 @@ regroot(root)
 	return NULL;
 }
 
-int
-WinGetRegistry(clientData, interp, argc, argv)
-    ClientData clientData;
-    Tcl_Interp *interp;			/* Current interpreter. */
-    int argc;				/* Number of arguments. */
-    char **argv;			/* Argument strings. */
-{
-    HKEY hKey, hRootKey;
-    DWORD dwType;
-    DWORD len, retCode;
-    CHAR *regRoot, *regPath, *keyValue, *keyData;
-    int retval = TCL_ERROR;
-    
-    if (argc != 3) {
-	Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
-		"key value\"", (char *) NULL);
-	return TCL_ERROR;
-    }
-    regRoot = argv[1];
-    keyValue = argv[2];
 
-    regPath = strchr(regRoot, '\\');
-    *regPath++ = '\0';
-    
-    if ((hRootKey = regroot(regRoot)) == NULL) {
-	Tcl_AppendResult(interp, "Unknown registry root \"",
-			 regRoot, "\"", NULL);
-	return (TCL_ERROR);
-    }
-    
-    retCode = RegOpenKeyEx(hRootKey, regPath, 0,
-			   KEY_READ, &hKey);
-    if (retCode == ERROR_SUCCESS) {
-	retCode = RegQueryValueEx(hKey, keyValue, NULL, &dwType,
-				  NULL, &len);
-	if (retCode == ERROR_SUCCESS &&
-	    dwType == REG_SZ && len) {
-	    keyData = (CHAR *) ckalloc(len);
-	    retCode = RegQueryValueEx(hKey, keyValue, NULL, NULL,
-				      keyData, &len);
-	    if (retCode == ERROR_SUCCESS) {
-		Tcl_AppendResult(interp, keyData, NULL);
-		free(keyData);
-		retval = TCL_OK;
-	    }
+int 
+WinReg(ClientData clientdata, Tcl_Interp *interp, int argc, char **argv)
+{
+	static char szBuf[255], szOutBuf[255];
+        char *szRegRoot = NULL, *szRegPath = NULL, *szValueName;
+        int cbOutBuf = 255;
+        HKEY hKey, hKeyResult;
+        DWORD dwDisp;
+
+        if (argc < 4 || argc > 5) {
+                Tcl_AppendResult(interp, "wrong number of args\n", szBuf, NULL);
+                return TCL_ERROR;
+        }
+	
+        strcpy(szBuf, argv[2]);
+        szValueName = argv[3];
+        szRegRoot   = szBuf;
+        szRegPath   = strchr(szBuf, '\\');
+
+        if (szRegPath == NULL || szValueName == NULL) {
+                Tcl_AppendResult(interp, "registry path is wrongly written\n", szBuf, NULL);
+                return TCL_ERROR;
+        }
+        
+        *szRegPath = '\x0';
+        szRegPath++;
+
+        hKey = regroot(szRegRoot);
+        
+        if (hKey == (HKEY)-1) {
+                Tcl_AppendResult(interp, "root not found %s", szRegRoot, NULL);
+                return TCL_ERROR;
+        }
+
+        if (ERROR_SUCCESS != RegCreateKeyEx(hKey, szRegPath, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &hKeyResult, &dwDisp)) {
+                Tcl_AppendResult(interp, "Could not open key", szRegRoot, szRegPath, NULL);
+                return TCL_ERROR;
+        }
+
+	if (argc == 4 && !strcmp(argv[1],"get")) {
+                DWORD dwType = REG_SZ;
+                if (ERROR_SUCCESS != RegQueryValueEx(hKeyResult, szValueName, 0, &dwType, szOutBuf, &cbOutBuf)) {
+                        RegCloseKey(hKeyResult);
+                        Tcl_AppendResult(interp, "Could not set value", szValueName, NULL);
+                        return TCL_ERROR;       
+                }
+                Tcl_SetResult(interp, szOutBuf, TCL_STATIC);	
+        } else if (argc == 5 && !strcmp(argv[1], "set")) {
+                if (ERROR_SUCCESS != RegSetValueEx(hKeyResult, szValueName, 0, REG_SZ, argv[4], strlen(argv[4]))) {
+                        RegCloseKey(hKeyResult);
+                        Tcl_AppendResult(interp, "Could not set value", szValueName, argv[4], NULL);
+                        return TCL_ERROR;
+                }
 	}
-	RegCloseKey(hKey);
-    }
-    if (retval == TCL_ERROR) {
-	Tcl_AppendResult(interp, "Cannot find registry entry \"", regRoot,
-			 "\\", regPath, "\\", keyValue, "\"", NULL);
-    }
-    return (retval);
+        RegCloseKey(hKeyResult);
+        return TCL_OK;
 }
 
 int
-WinPutRegistry(clientData, interp, argc, argv)
-    ClientData clientData;
-    Tcl_Interp *interp;			/* Current interpreter. */
-    int argc;				/* Number of arguments. */
-    char **argv;			/* Argument strings. */
+RegGetValue(HKEY* key, char *subkey, char *value, char *dst, int dlen)
 {
-    HKEY hKey, hRootKey;
-    DWORD retCode;
-    CHAR *regRoot, *regPath, *keyValue, *keyData;
-    DWORD new;
-    int result = TCL_OK;
-    
-    if (argc != 4) {
-	Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
-		"key value data\"", (char *) NULL);
-	return TCL_ERROR;
-    }
-    regRoot = argv[1];
-    keyValue = argv[2];
-    keyData = argv[3];
-    
-    regPath = strchr(regRoot, '\\');
-    *regPath++ = '\0';
-    
-    if ((hRootKey = regroot(regRoot)) == NULL) {
-	Tcl_AppendResult(interp, "Unknown registry root \"",
-			 regRoot, "\"", NULL);
-	return (TCL_ERROR);
-    }
-
-    retCode = RegCreateKeyEx(hRootKey, regPath, 0,
-			     "",
-			     REG_OPTION_NON_VOLATILE,
-			     KEY_ALL_ACCESS,
-			     NULL,
-			     &hKey, &new);
-    if (retCode == ERROR_SUCCESS) {
-	retCode = RegSetValueEx(hKey, keyValue, 0, REG_SZ, keyData, strlen(keyData));
-	if (retCode != ERROR_SUCCESS) {
-	    Tcl_AppendResult(interp, "unable to set key \"", regRoot, "\\",
-			     regPath, "\" with value \"", keyValue, "\"",
-			     (char *) NULL);
-	    result = TCL_ERROR;
-	}
-	RegCloseKey(hKey);
-    }
-    else {
-	Tcl_AppendResult(interp, "unable to create key \"", regRoot, "\\",
-			 regPath, "\"", (char *) NULL);
-	result = TCL_ERROR;
-    }
-    return (result);
+        HKEY lkey;      
+        LONG r;
+        LONG len;
+        DWORD type;
+ 
+        r = RegOpenKeyEx(*key, subkey, 0, KEY_READ, &lkey);
+ 
+        if (ERROR_SUCCESS == r) {
+                r = RegQueryValueEx(lkey, value, 0, &type, NULL, &len);
+                if (ERROR_SUCCESS == r && len <= dlen && type == REG_SZ) {
+                        type = REG_SZ;
+                        r = RegQueryValueEx(lkey, value, 0, &type, dst, &len);
+                } else {
+                        SetLastError(r);
+                        perror("");
+                }
+        } else {
+                SetLastError(r);
+                perror("");
+                return FALSE;
+        }
+        RegCloseKey(lkey);
+        return TRUE;
 }

@@ -483,6 +483,15 @@ void VideoWindow::clear()
 	}
 }
 
+int VideoWindow::bpp()
+{
+    // XXX
+    StandardVideoImage* vi = StandardVideoImage::allocate(tk_, 1, 1);
+    int bpp = vi->ximage()->bits_per_pixel;
+    delete vi;
+    return bpp;
+}
+
 void VideoWindow::dim()
 {
 	if (!callback_pending_) {

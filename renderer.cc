@@ -127,6 +127,10 @@ int BlockRenderer::consume(const VideoFrame* vf)
 	}
 	int immed = bcnt < irthresh_;
 
+#ifdef WIN32
+	immed = 0;
+#endif
+
 	int ymin = height_;
 	int ymax = 0;
 	ts = p->crvec_;

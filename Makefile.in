@@ -94,7 +94,7 @@ CFLAGS = $(CCOPT) $(BFLAGS)
 #
 # Remember to add a dependency if you add any tcl sources here.
 #
-TCL_VIC = ui-ctrlmenu.tcl ui-main.tcl ui-resource.tcl \
+TCL_VIC = ui-ctrlmenu.tcl ui-main.tcl ui-resource.tcl ui-relate.tcl \
 	ui-srclist.tcl ui-stats.tcl ui-util.tcl ui-windows.tcl \
 	ui-switcher.tcl ui-extout.tcl ui-grabber.tcl ui-unix.tcl \
 	cf-main.tcl cf-tm.tcl cf-confbus.tcl cf-network.tcl cf-util.tcl \
@@ -114,7 +114,7 @@ OBJ2 =	main.o net.o net-ip.o source.o \
 	session.o session-rtpv1.o session-nv.o session-ivs.o \
 	decoder.o decoder-jpeg.o decoder-nv.o \
 	decoder-h261.o decoder-h261v1.o \
-	decoder-cellb.o \
+	decoder-cellb.o mbus.o mbus_engine.o \
 	device.o grabber.o vw.o Tcl.o Tcl2.o module.o transmitter.o \
 	encoder-nv.o encoder-cellb.o encoder-h261.o \
 	transcoder-jpeg.o framer-jpeg.o \
@@ -122,7 +122,7 @@ OBJ2 =	main.o net.o net-ip.o source.o \
 	color.o color-true.o color-pseudo.o color-dither.o color-ed.o \
 	color-quant.o color-hi.o color-gray.o color-mono.o color-hist.o \
 	rgb-converter.o jpeg/jpeg.o p64/p64.o dct.o \
-	compositor.o rate-variable.o crypt.o crypt-dull.o \
+	compositor.o rate-variable.o crypt.o crypt-des.o \
 	grabber-still.o @V_OBJ@
 OBJ3 =	cm0.o cm1.o huffcode.o version.o bv.o \
 	$(TCL_VIC:.tcl=.o) tk.o
@@ -161,11 +161,12 @@ OBJ_CB = cbAppInit.o cb.o confbus.o group-ipc.o iohandler.o \
 
 OBJ_H261DUMP = h261_dump.o p64/p64.o p64/p64dump.o huffcode.o dct.o bv.o
 
-vic:	$(OBJ) $(OBJ_GRABBER) $(JV_LIB)
-	rm -f $@
-	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(LIB) $(STATIC)
+# Don't allow building of the non-DES version...
+#vic:	$(OBJ) $(OBJ_GRABBER) $(JV_LIB)
+#	rm -f $@
+#	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(LIB) $(STATIC)
 
-vic.des: $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)
+vic: $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)
 	rm -f $@
 	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(OBJ_CRYPT) $(LIB) $(STATIC)
 
@@ -249,6 +250,7 @@ tkerror.o: tkerror.tcl
 entry.o: entry.tcl
 ui-vdd.o: ui-vdd.tcl
 ui-h261_play.o: ui-h261_play.tcl
+ui-relate.o: ui-relate.tcl
 
 version.c: VERSION
 	rm -f version.c

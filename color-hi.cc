@@ -86,6 +86,10 @@ mtos(int mask)
 	return (shift);
 }
 
+#if defined(_WIN32) && defined(_MSC_VER)
+#pragma optimize("g", off)
+#endif
+
 int HiColorModel::alloc_grays()
 {
 	return (0);
@@ -95,9 +99,15 @@ int HiColorModel::alloc_grays()
 
 int HiColorModel::alloc_colors()
 {
+#ifndef WIN32
 	u_int rmask = visual_->red_mask;
 	u_int gmask = visual_->green_mask;
 	u_int bmask = visual_->blue_mask;
+#else /* WIN32: tcl/tk uses a different bit mask in images and visuals */
+	u_int rmask   = 0x7c00;
+	u_int gmask   = 0x03e0;
+	u_int bmask   = 0x001f; 
+#endif /* WIN32 */
 	/* XXX
 	 * we would expect the masks we get back from the server to
 	 * reflect the byte position of the color *from the server's

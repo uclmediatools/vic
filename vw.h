@@ -160,7 +160,7 @@ class VideoWindow : public BareWindow {
 
 	inline void voff(int v) { voff_ = v; }
 	inline void hoff(int v) { hoff_ = v; }
-
+	int bpp();
 	/*
 	 * Return the VideoWindow object associated with
 	 * the tk window identified by name.  Name has the

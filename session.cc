@@ -49,6 +49,10 @@ extern "C" int getpid();
 #include "ntp-time.h"
 #include "session.h"
 
+/* added to support the mbus */
+#include "mbus.h"
+
+
 static class SessionMatcher : public Matcher {
     public:
 	SessionMatcher() : Matcher("session") {}
@@ -90,6 +94,7 @@ int AudioSessionManager::check_format(int fmt) const
 	return (0);
 }
 
+
 static SessionManager* manager;
 
 void
@@ -116,12 +121,13 @@ void CtrlHandler::dispatch(int)
 }
 
 SessionManager::SessionManager()
-	: dh_(*this), ch_(*this), rt_(*this),
+	: dh_(*this), ch_(*this), rt_(*this), 
+	  mb_(1, mbus_handler_engine, NULL),
 	  badversion_(0), badoptions_(0), badfmt_(0), badext_(0), nrunt_(0),
 	  last_np_(0),
 	  sdes_seq_(0),
 	  rtcp_inv_bw_(0.),
-	  rtcp_avg_size_(128.),
+	  rtcp_avg_size_(128.), 
 	  confid_(-1)
 {
 	/*XXX*/
@@ -148,7 +154,8 @@ SessionManager::SessionManager()
 
 SessionManager::~SessionManager()
 {
-	delete pktbuf_;
+	if (pktbuf_) 
+		delete pktbuf_;
 }
 
 u_int32_t SessionManager::alloc_srcid(u_int32_t addr) const
@@ -501,7 +508,9 @@ void SessionManager::recv(DataHandler* dh)
 {
 	u_int32_t addr;
 	/* leave room in case we need to expand rtpv1 into an rtpv2 header */
-	u_char* bp = &pktbuf_[4];
+	/* XXX the free mem routine didn't like it ... */
+	//u_char* bp = &pktbuf_[4];
+	u_char* bp = pktbuf_;
 	int cc = dh->recv(bp, 2 * RTP_MTU - 4, addr);
 	if (cc <= 0)
 		return;
@@ -519,6 +528,7 @@ void SessionManager::recv(DataHandler* dh)
 
 void SessionManager::demux(rtphdr* rh, u_char* bp, int cc, u_int32_t addr)
 {
+	u_char *pkt = bp - sizeof(*rh);
 	if (cc < 0) {
 		++nrunt_;
 		return;
@@ -555,6 +565,9 @@ void SessionManager::demux(rtphdr* rh, u_char* bp, int cc, u_int32_t addr)
 		 * stream of garbage packets.
 		 */
 		return;
+
+	/* inform this source of the mbus */
+	s->mbus(&mb_);
 	
 	timeval now = unixtime();
 	s->lts_data(now);
@@ -577,47 +590,75 @@ void SessionManager::demux(rtphdr* rh, u_char* bp, int cc, u_int32_t addr)
 	} else
 		s->action();
 
-	/*
-	 * This is a data packet.  If the source needs activation,
-	 * or the packet format has changed, deal with this.
-	 * Then, hand the packet off to the packet handler.
-	 * XXX might want to be careful about flip-flopping
-	 * here when format changes due to misordered packets
-	 * (easy solution -- keep rtp seqno of last fmt change).
-	 */
-	PacketHandler* h = s->handler();
-	if (h == 0)
-		h = s->activate(fmt);
-	else if (s->format() != fmt)
-		h = s->change_format(fmt);
+	if (s->sync()) {  
+		/*
+		 * Synchronisation is enabled; video packets have to 
+		 * be buffered, their playout point scheduled, and the 
+		 * playout delays communicated with the audio tool ...
+		 */ 
 
-	/*
-	 * XXX bit rate doesn't include rtpv1 options;
-	 * but v1 is going away anyway.
-	 */
-	int dup = s->cs(seqno);
-	s->np(1);
-	s->nb(cc + sizeof(*rh));
-	if (dup)
-		return;
-	if (flags & RTP_M)
-		s->nf(1);
+		/*
+		 * XXX bit rate doesn't include rtpv1 options;
+		 * but v1 is going away anyway.
+		 */
+		int dup = s->cs(seqno);
+		s->np(1);
+		s->nb(cc + sizeof(*rh));
+		if (dup)
+			return;
+		if (flags & RTP_M) // chack if reach frame boundaries
+			s->nf(1);
+	
+		s->recv(pkt, rh, bp, cc); // this should invoke Source::recv and buffer
+		pktbuf_ = (u_char*)new_blk(); 
+	} /* synced */
 
-	int hlen = h->hdrlen();
-	cc -= hlen;
-	if (cc < 0) {
-		s->runt(1);
-		return;
-	}
-	if (!s->mute())
-		h->recv(rh, bp + hlen, cc);
+	else { /* ... playout video packets as they arrive */
+	        /*
+       	 	 * This is a data packet.  If the source needs activation,
+	         * or the packet format has changed, deal with this.
+		 * Then, hand the packet off to the packet handler.
+	         * XXX might want to be careful about flip-flopping
+	         * here when format changes due to misordered packets
+	         * (easy solution -- keep rtp seqno of last fmt change).
+	         */
+		PacketHandler* h = s->handler();
+	        if (h == 0)
+	                h = s->activate(fmt);
+	        else if (s->format() != fmt)
+	                h = s->change_format(fmt);
+
+	        /*
+	         * XXX bit rate doesn't include rtpv1 options;
+	         * but v1 is going away anyway.
+	         */
+	        int dup = s->cs(seqno);
+	        s->np(1);
+	        s->nb(cc + sizeof(*rh));
+	        if (dup)
+	                return;
+	        if (flags & RTP_M)
+	                s->nf(1);
+
+	        int hlen = h->hdrlen();
+	        cc -= hlen;
+	        if (cc < 0) {
+	                s->runt(1);
+ 	               return;
+	        }
+	        if (!s->mute())
+	                h->recv(rh, bp + hlen, cc);
+	} /* not sync-ed */
+
 }
 
-void SessionManager::parse_rr_records(u_int32_t, rtcp_rr*, int,
+
+ void SessionManager::parse_rr_records(u_int32_t, rtcp_rr*, int,
 				      const u_char*, u_int32_t)
 {
 }
 				      
+
 void SessionManager::parse_sr(rtcphdr* rh, int flags, u_char*ep,
 			      Source* ps, u_int32_t addr)
 {
@@ -628,10 +669,16 @@ void SessionManager::parse_sr(rtcphdr* rh, int flags, u_char*ep,
 		s = SourceManager::instance().lookup(ssrc, ssrc, addr);
 	else
 		s = ps;
-
-	s->lts_ctrl(unixtime());
+	timeval now = unixtime();
+	s->lts_ctrl(now);
 	s->sts_ctrl(ntohl(sr->sr_ntp.upper) << 16 |
 		    ntohl(sr->sr_ntp.lower) >> 16);
+	s->rtp_ctrl(ntohl(sr->sr_ts));
+	u_int32_t t = ntptime(now);
+	s->map_ntp_time(t);
+	s->map_rtp_time(s->convert_time(t));
+	s->rtp2ntp(1);
+	//printf("Got SR\n");
 
 	int cnt = flags >> 8 & 0x1f;
 	parse_rr_records(ssrc, (rtcp_rr*)(sr + 1), cnt, ep, addr);
@@ -826,3 +873,4 @@ void SessionManager::recv(CtrlHandler* ch)
 		rh = (rtcphdr*)ep;
 	}
 }
+

@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 1996 Isidor Kouvelas (University College London)
  * Copyright (c) 1995 The Regents of the University of California.
  * All rights reserved.
  * 
@@ -38,29 +39,72 @@
 
 #include "config.h"
 
-class RGB_Converter {
+class Converter {
 public:
-	RGB_Converter();
-	virtual void convert(u_int8_t* rgb, int w, int h, u_int8_t* frm) = 0;
+	virtual void convert(u_int8_t* in, int inw, int inh, u_int8_t* frm, int outw, int outh, int invert)= 0;
+};
+
+class RGB_Converter;
+
+typedef void (RGB_Converter::*ConvertMethod)(u_int8_t* rgb, int w, int h, u_int8_t* frm, int outw, int outh, int invert);
+
+class RGB_Converter : public Converter {
+public:
+	RGB_Converter(int bpp, u_int8_t* map, int ncol);
+	~RGB_Converter();
+	virtual void convert(u_int8_t* rgb, int w, int h, u_int8_t* frm, int outw = 0, int outh = 0, int invert = 0);
 protected:
+	virtual void convert32(u_int8_t* rgb, int w, int h, u_int8_t* frm, int outw, int outh, int invert) = 0;
+	virtual void convert24(u_int8_t* rgb, int w, int h, u_int8_t* frm, int outw, int outh, int invert) = 0;
+	virtual void convert16(u_int8_t* rgb, int w, int h, u_int8_t* frm, int outw, int outh, int invert) = 0;
+	virtual void convert8(u_int8_t* rgb, int w, int h, u_int8_t* frm, int outw, int outh, int invert) = 0;
+	virtual void convert4(u_int8_t* rgb, int w, int h, u_int8_t* frm, int outw, int outh, int invert) = 0;
+	virtual void convert1(u_int8_t* rgb, int w, int h, u_int8_t* frm, int outw, int outh, int invert) = 0;
+
 	static u_int32_t r2yuv_[256];
 	static u_int32_t g2yuv_[256];
 	static u_int32_t b2yuv_[256];
+
+	int bpp_;
+	int ncol_;
+	u_int8_t *ymap_;
+	u_int8_t *umap_;
+	u_int8_t *vmap_;
+
+	ConvertMethod method_;
 };
 
 class RGB_Converter_422 : public RGB_Converter {
 public:
-	virtual void convert(u_int8_t* rgb, int w, int h, u_int8_t* frm);
+	RGB_Converter_422(int bpp = 32, u_int8_t* map = NULL, int ncol = 0) :
+		RGB_Converter(bpp, map, ncol) {}
 	static RGB_Converter* instance() { return (&instance_); }
 protected:
+	virtual void convert32(u_int8_t* rgb, int w, int h, u_int8_t* frm, int outw, int outh, int invert);
+	virtual void convert24(u_int8_t* rgb, int w, int h, u_int8_t* frm, int outw, int outh, int invert);
+	virtual void convert16(u_int8_t* rgb, int w, int h, u_int8_t* frm, int outw, int outh, int invert);
+	virtual void convert8(u_int8_t* rgb, int w, int h, u_int8_t* frm, int outw, int outh, int invert);
+	virtual void convert4(u_int8_t* rgb, int w, int h, u_int8_t* frm, int outw, int outh, int invert);
+	virtual void convert1(u_int8_t* rgb, int w, int h, u_int8_t* frm, int outw, int outh, int invert);
+
+	/* Backwards compatibility :-) */
 	static RGB_Converter_422 instance_;
 };
 
 class RGB_Converter_411 : public RGB_Converter {
 public:
-	virtual void convert(u_int8_t* rgb, int w, int h, u_int8_t* frm);
+	RGB_Converter_411(int bpp = 32, u_int8_t* map = NULL, int ncol = 0) :
+		RGB_Converter(bpp, map, ncol) {}
 	static RGB_Converter* instance() { return (&instance_); }
 protected:
+	virtual void convert32(u_int8_t* rgb, int w, int h, u_int8_t* frm, int outw, int outh, int invert);
+	virtual void convert24(u_int8_t* rgb, int w, int h, u_int8_t* frm, int outw, int outh, int invert);
+	virtual void convert16(u_int8_t* rgb, int w, int h, u_int8_t* frm, int outw, int outh, int invert);
+	virtual void convert8(u_int8_t* rgb, int w, int h, u_int8_t* frm, int outw, int outh, int invert);
+	virtual void convert4(u_int8_t* rgb, int w, int h, u_int8_t* frm, int outw, int outh, int invert);
+	virtual void convert1(u_int8_t* rgb, int w, int h, u_int8_t* frm, int outw, int outh, int invert);
+
+	/* Backwards compatibility :-) */
 	static RGB_Converter_411 instance_;
 };
 

@@ -44,6 +44,52 @@ static const char rcsid[] =
 #include "Tcl.h"
 #include "ntp-time.h"
 
+#include <fcntl.h>
+/* This bit for playout buffer as was in playout.cc */
+
+
+char *MtuAlloc::blk_list_;
+
+MtuAlloc::MtuAlloc()
+{
+}
+
+/* When does this get called? */
+MtuAlloc::~MtuAlloc()
+{
+        char **p;
+
+        while ((p = (char**)blk_list_) != NULL) {
+                blk_list_ = *p;
+                delete p;
+        }
+}
+PacketData::PacketData(u_char *pkt, struct rtphdr* rh, u_char *vh,
+                       int len, u_int playout)
+        : pkt_(pkt), rh_(rh), vh_(vh), len_(len), playout_(playout), next_(0)
+{
+}
+
+PacketData::~PacketData()
+{
+        /* RTPv1 */
+        if ((u_char*)rh_ != pkt_) {
+#ifdef not_done
+                printf("Delete rh!\n");
+                delete rh_;
+#endif
+        }
+//        rh_ = 0;
+
+        if (pkt_) {
+		//pkt_ -= 4;
+                delete_blk((char*)pkt_);
+                pkt_ = 0;
+        }
+}
+
+static int server_delay = 100;
+
 /* gray out src if no ctrl msgs for this many consecutive update intervals */
 #define CTRL_IDLE 8.
 
@@ -62,6 +108,7 @@ Source::Source(u_int32_t srcid, u_int32_t ssrc, u_int32_t addr)
 	  addr_(addr),
 	  sts_data_(0),
 	  sts_ctrl_(0),
+	  map_rtp_time_(0), map_ntp_time_(0),	
 	  fs_(0),
 	  cs_(0),
 	  np_(0),
@@ -81,7 +128,13 @@ Source::Source(u_int32_t srcid, u_int32_t ssrc, u_int32_t addr)
 	  mute_(0),
 	  lost_(0),
 	  busy_(0),
-	  ismixer_(0)
+	  ismixer_(0),
+	  sync_(0), rtp2ntp_(0),
+	  skew_(0), delta_(0), delay_(0), dvar_(80. * 90.), pdelay_(0),  
+	  adapt_init_(0), count_(0), late_(0), apdelay_(0), pending_(0), 
+	  head_(0), tail_(0), free_(0), 
+	  now_(0), dtskew_(0), elastic_(1),
+	  mbus_(0)
 {
 	lts_data_.tv_sec = 0;
 	lts_data_.tv_usec = 0;
@@ -99,9 +152,16 @@ Source::Source(u_int32_t srcid, u_int32_t ssrc, u_int32_t addr)
 
 	for (i = 0; i <= RTCP_SDES_MAX; ++i)
 		sdes_[i] = 0;
+	//DMIRAS: was in ElasticBuffer constructor, ignore it for the moment...
+/*        char    *p;
+
+        if (p = getenv("SDEL"))
+                server_delay = atoi(p);
+*/
 
 	Tcl::instance().evalf("register %s", TclObject::name());
 }
+
 
 Source::~Source()
 {
@@ -111,6 +171,22 @@ Source::~Source()
 	int i;
 	for (i = 0; i <= RTCP_SDES_MAX; ++i)
 		delete sdes_[i];
+	// Destructor from ElasticBuffer, releases alloc-ed mem
+	register PacketData *pkt;
+
+        while (head_) {
+                pkt = head_;
+                head_ = head_->next_;
+                delete pkt;
+        }
+
+        while (free_) {
+                pkt = free_;
+                free_ = free_->next_;
+                delete pkt;
+        }
+
+        cancel();
 }
 
 void Source::set_busy()
@@ -383,6 +459,194 @@ void Source::clear_counters()
 	lts_done_.tv_usec = 0;
 }
 
+
+
+
+/* DMIRAS: Extra functions to implement the buffer */
+
+void Source::adapt(u_int32_t arr_ts, u_int32_t ts, int flag)
+{
+	char arg[500];
+		
+	int d = delay_ = arr_ts - ts; 
+
+	int delta = delta_;
+	delta_ = d;
+
+#define FUDGE int(100 * 65.536) /* XXX platform specific delay, need to work out on this [dm] */
+
+        if (adapt_init_ == 0) {
+                if (flag) {
+                        adapt_init_ = 1;
+                        pdelay_ = FUDGE + delay_ + int(3. * dvar_);
+                }
+                return;
+        }
+
+        d -= delta;
+        if (d < 0)
+                d = -d;
+#define DGAIN (1./16.)
+        dvar_ += DGAIN * (double(d) - dvar_);
+
+        if (flag) {
+		pdelay_ = FUDGE + delay_ + int(3. * dvar_); 
+		if (pending_) {
+			/* prepare mbus msg and send it to mbus, if we have to ... */
+			sprintf(arg, "%s %d", mbus_->mbus_encode_str(sdes_[RTCP_SDES_CNAME]), pdelay_); 	
+			mbus_->mbus_send(mbus_->mbus_audio_addr, "source.playout", arg, 0);
+			pending_ = 0;
+			/* set to the max between the audio & video playout delays */
+			//printf("ad = %d\tvd= %d\t", apdelay_, pdelay_);
+			if (pdelay_ < apdelay_) 
+				pdelay_ = apdelay_;
+			//printf("act del= %d\n", pdelay_);
+		}
+	}
+}
+
+
+void 
+Source::add(u_char *pkt, struct rtphdr* rh, u_char *vh,
+                        int len, u_int playout)
+{
+        PacketData *packet;
+        if (free_) {
+                packet = free_;
+                free_ = free_->next_;
+                packet->construct(pkt, rh, vh, len, playout);
+        } else {
+                packet = new PacketData(pkt, rh, vh, len, playout);
+        }
+
+        if (tail_) {
+                tail_->next_ = packet;
+                tail_ = packet;
+        } else {
+                head_ = tail_ = packet;
+                /* No need to check for RTP_M */
+                /* No need to update now_ as it was done by source... */
+                schedule();
+        }
+}
+
+
+void 
+Source::schedule()
+{
+        if (head_ == 0)
+                return;
+
+        u_int playout = head_->playout();
+
+        if (playout <= now_ || elastic_ == 0) {
+                timeout();
+        } else {
+                msched(int((playout - now_) / 65.536));
+        }
+}
+
+
+void 
+Source::timeout()
+{
+        u_int start = ntptime();
+        /* Process all packets with this playout point */
+        u_int playout = head_->playout();
+	u_int32_t ts = head_->rtp_hdr()->rh_ts;
+        
+	do {
+                PacketData *pkt = head_;
+                head_ = head_->next_;
+                if (head_ == 0)
+                        tail_ = 0;
+		process((struct rtphdr*)pkt->rtp_hdr(), (u_char*)pkt->video_data(), (int)pkt->data_length());
+		
+                pkt->~PacketData();
+                pkt->next_ = free_;
+                free_ = pkt;
+        } while (head_ && head_->playout() <= playout); // && head_->rtp_hdr()->rh_ts == ts);
+        now_ = ntptime();    /* Needed for schedule */
+
+        /* Calculate running average of render time */
+        int dt = now_ - start;
+        dtskew_ += (dt - int(dtskew_)) >> 6;
+	//dtskew_ = .998002*dtskew_ + .75*(dt-dtskew_);
+        if (head_)
+                schedule();
+}
+
+
+void 
+Source::process(struct rtphdr* rh, u_char *bp, int len)
+{
+        int flags = ntohs(rh->rh_flags);
+        int fmt = flags & 0x7f;
+        
+	if (handler_ == 0)
+                handler_ = activate(fmt);
+        else if (format_ != fmt)
+                handler_ = change_format(fmt);
+
+        int hlen = handler_->hdrlen();
+        int cc = len - hlen;
+        if (cc < 0) {
+                runt(1);
+                return;
+        }
+        if (!mute()) {
+                handler_->recv(rh, bp + hlen, cc);
+	}
+}
+
+
+u_int32_t 
+Source::convert_time(u_int32_t ts)
+{
+	u_int32_t t = ts;
+	t += (ts >> 2) + (ts >> 3) - (ts >> 9) + (ts >> 12);
+	return (t);
+}
+
+
+void
+Source::recv(u_char *pkt, struct rtphdr* rh, u_char *vh, int cc)
+{
+	u_int32_t sendtime, when;
+        int flags = ntohs(rh->rh_flags);
+
+        u_int32_t ts = rh->rh_ts;
+        NTOHL(ts);
+	// should get a sr first; we need the rtp<->ntp mapping 
+	if (rtp2ntp_ == 0) { 
+		delete pkt;
+                return;
+	}
+
+	now_ = ntptime();
+	/* calculate the real send time */ 
+	if (ts >= rtp_ctrl_) 
+		sendtime = sts_ctrl_ + (((ts - rtp_ctrl_) << 12) / 5625);  
+	else
+		sendtime = sts_ctrl_ - (((rtp_ctrl_ - ts) << 12) / 5625);
+        adapt(now_, sendtime, flags & RTP_M);
+        if (adapt_init_ == 0) {
+                /* XXX */
+                delete pkt;
+                return ;
+        }
+
+//#define DISP_TIME (server_delay * 65536 / 1000) 
+
+	when = sendtime + pdelay_ - int(dtskew_);	
+        if (when < now_) 
+              late(1);
+	
+	/* add the packet to the playout buffer */
+        add(pkt, rh, vh, cc, when);
+}
+
+
 SourceManager SourceManager::instance_;
 
 SourceManager::SourceManager() :
@@ -501,6 +765,21 @@ Source* SourceManager::consult(u_int32_t srcid)
 	}
 	return (0);
 }
+
+
+/*
+ * Lookup the sources list for the source with the address 'addr'
+ */
+Source* SourceManager::lookup(u_int32_t addr)
+{
+	Source *s;
+	for (s = sources_; s != 0; s = s->next_) {
+		if (s && s!=localsrc_)  //proswrino  (addr == s->addr())
+			return s;
+	}
+	return (0);
+}
+
 
 Source* SourceManager::lookup(u_int32_t srcid, u_int32_t ssrc, u_int32_t addr)
 {
@@ -746,3 +1025,5 @@ void SourceManager::sortactive(char* cp) const
 	/* nuke trailing space */
 	cp[-1] = 0;
 }
+
+

@@ -94,7 +94,7 @@ extern const char* intoa(u_int32_t addr);
 #define INADDR_LOOPBACK (u_int32_t)0x7F000001
 #endif
 
-#if defined(__linux__) || defined(WIN32)
+#if defined(WIN32)
 struct msghdr {
 	caddr_t	msg_name;		/* optional address */
 	u_int	msg_namelen;		/* size of address */

@@ -43,17 +43,24 @@ set rtp_type(32) mpeg
 set rtp_type(127) h261v1
 
 proc vic_main {} {
-	global V
+	global V tcl_platform
 	set V(class) Vic    
 	set V(app) vic
 	set V(media) video
 	init_local
 	init_confbus
 	init_network
-	init_gui
+	if [yesno relateInterface] {
+		if {$tcl_platform(platform) == "windows"} {
+			after 9000
+		}
+		build.new.interface
+	} else {
+		init_gui
+	}
 	init_late
-        if [yesno transmitOnStartup] {
-		build.menu
+	build.menu
+    if [yesno transmitOnStartup] {
 		global transmitButton
 		$transmitButton invoke
 	}

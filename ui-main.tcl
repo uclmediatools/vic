@@ -252,7 +252,7 @@ proc add_active src {
 proc rm_active src {
 	global active V
 	unset active($src)
-	if { [array size active] == 0 } {
+	if { ![yesno relateInterface] && [array size active] == 0 } {
 		pack forget $V(grid)
 		destroy $V(grid)
 		pack .top.label -before .top.bar -anchor c -expand 1
@@ -510,7 +510,7 @@ proc build.src { w src color } {
 
 	pack $w.r.ctrl.mute -side left -fill x -expand 1
 	pack $w.r.ctrl.color -side left -fill x -expand 1
-	pack $w.r.ctrl.info -side left -fill x -expand 1
+	pack $w.r.ctrl.info -side left -fill x -fill y -expand 1
 #	pack $w.r.ctrl.options -side left -fill x -expand 1
 
 	global colorbutton
@@ -576,7 +576,11 @@ proc set_busy src {}
 # the video stream.
 #
 proc activate src {
-	create_decoder $src
+	if [yesno relateInterface] {
+		create_decoder $src
+		after idle "really_activate_relate $src"
+	} else {
+		create_decoder $src
 	#
 	# give decoder a chance see a packet so it can
 	# determine the output geometry and color decimation.
@@ -585,7 +589,8 @@ proc activate src {
 	# decoders can't trigger a renderer realloation
 	# when the decimation changes.XXX fix this
 	#
-	after idle "really_activate $src"
+		after idle "really_activate $src"
+	}
 }
 
 proc really_activate src {
@@ -702,6 +707,8 @@ proc change_name src {
 proc deactivate src {
 	global ftext btext ltext fpshat bpshat lhat shat win_list V
 
+	#catch this if using relate interface
+	if [yesno relateInterface] {deactivate_relate $src} else {
 	if [info exists win_list($src)] {
 		foreach w $win_list($src) {
 			if [viewing_window $w] {
@@ -732,6 +739,7 @@ proc deactivate src {
 	unset bpshat($src)
 	unset lhat($src)
 	unset shat($src)
+	}
 }
 
 proc update_rate src {

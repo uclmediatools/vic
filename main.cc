@@ -177,7 +177,7 @@ public:
 		else {
 			Tk_Window tk = t.tkmain();
 			Tk_Uid uid = Tk_GetUid((char*)argv[1]);
-			XFontStruct* p = Tk_GetFontStruct(t.interp(), tk, uid);
+			Tk_Font p = Tk_GetFont(t.interp(), tk, uid);
 			t.result(p != 0 ? "1" : "0");
 		}
 		return (TCL_OK);
@@ -395,8 +395,7 @@ extern "C" int Tk_StripchartCmd(ClientData, Tcl_Interp*, int ac, char** av);
 #ifdef WIN32
 extern "C" int WinPutsCmd(ClientData, Tcl_Interp*, int ac, char** av);
 extern "C" int WinGetUserName(ClientData, Tcl_Interp*, int ac, char** av);
-extern "C" int WinPutRegistry(ClientData, Tcl_Interp*, int ac, char** av);
-extern "C" int WinGetRegistry(ClientData, Tcl_Interp*, int ac, char** av);
+extern "C" int WinReg(ClientData, Tcl_Interp *, int, char **);
 #endif
 
 extern "C" {
@@ -426,13 +425,13 @@ main(int argc, const char** argv)
 	signal(SIGINT, ciao);
 	signal(SIGTERM, ciao);
 
-#ifdef WIN32
+#ifdef WIN32_NOT
 	TkSetPlatformInit(TkPlatformInit);
 #endif
 
 	opterr = 0;
 	const char* options = 
-		"A:B:C:c:D:d:f:F:HI:K:M:m:N:n:o:Pq:sT:t:U:u:V:X:";
+		"A:B:C:c:D:d:f:F:HI:K:M:m:N:n:o:Pq:re:sT:t:U:u:V:X:";
 	const char* display = disparg(argc, (const char**)argv, options);
 
 	Tcl::init("vic");
@@ -459,8 +458,7 @@ main(int argc, const char** argv)
 #ifdef WIN32
 	tcl.CreateCommand("puts", WinPutsCmd, (ClientData)tk);
 	tcl.CreateCommand("getusername", WinGetUserName, (ClientData)tk);
-	tcl.CreateCommand("putregistry", WinPutRegistry, (ClientData)tk);
-	tcl.CreateCommand("getregistry", WinGetRegistry, (ClientData)tk);
+	tcl.CreateCommand("registry", WinReg, (ClientData)tk);
 #endif
 	EmbeddedTcl::init();
 	tcl.evalc("init_resources");
@@ -546,6 +544,10 @@ main(int argc, const char** argv)
 
 		case 'q':
 			tcl.add_option("jpegQfactor", optarg);
+			break;
+
+		case 'r':
+			tcl.add_option("relateInterface","true");
 			break;
 
 		case 's':
