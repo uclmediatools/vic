@@ -49,10 +49,11 @@ void test_mbus_addr(void)
 	const char	needle_3[] = "The";
 	const char	needle_4[] = "dog";
 	const char	a1[] = "()";
-	const char	a2[] = "(one two three)";
-	const char	a3[] = "(four five six)";
+	const char	a2[] = "( one  two three)";
+	const char	a3[] = " ( four five six)";
 	const char	a4[] = "six four";
-	const char	a5[] = "three one two";
+	const char	a5[] = " three one two";
+	const char	a6[] = "";
 
 	printf("Mbus addr (strfind).................... "); fflush(stdout);
 	if (!strfind(haystack, needle_1, needle_1 + strlen(needle_1) - 1)) {
@@ -89,6 +90,14 @@ match:
 	}
 	if (!mbus_addr_match(a3, a4)) {
 		printf("fail (3)\n");
+		goto identical;
+	}
+	if (!mbus_addr_match(a3, a6)) {
+		printf("fail (4)\n");
+		goto identical;
+	}
+	if (mbus_addr_match(a6, a3)) {
+		printf("fail (5)\n");
 		goto identical;
 	}
 	printf("pass\n");

@@ -85,12 +85,70 @@ fail:
 static void test_parsing(void)
 {
 	struct mbus_parser	*p;
-	char			*str1 = xstrdup("1234 567.89 Symbol \"String\"");
+	char			*str1 = xstrdup("1234 567.89  Symbol \"String\"  (a b c) ()");
+	int			 i;
+	double			 d;
+	char			*s;
 
 	printf("Mbus parser (parsing).................. "); fflush(stdout);
 	p = mbus_parse_init(str1);
+	if (!mbus_parse_int(p, &i)) {
+		printf("fail (1)\n");
+		goto done;
+	}
+	if (i != 1234) {
+		printf("fail (2)\n");
+		goto done;
+	}
+
+	if (!mbus_parse_flt(p, &d)) {
+		printf("fail (3)\n");
+		goto done;
+	}
+	if (d != 567.89) {
+		printf("fail (4)\n");
+		goto done;
+	}
+
+	if (!mbus_parse_sym(p, &s)) {
+		printf("fail (5)\n");
+		goto done;
+	}
+	if (strcmp(s, "Symbol") != 0) {
+		printf("fail (6)\n");
+		goto done;
+	}
+
+	if (!mbus_parse_str(p, &s)) {
+		printf("fail (7)\n");
+		goto done;
+	}
+	if (strcmp(s, "\"String\"") != 0) {
+		printf("fail (8)\n");
+		goto done;
+	}
+
+	if (!mbus_parse_lst(p, &s)) {
+		printf("fail (9)\n");
+		goto done;
+	}
+	if (strcmp(s, "a b c") != 0) {
+		printf("fail (10)\n");
+		goto done;
+	}
+
+	if (!mbus_parse_lst(p, &s)) {
+		printf("fail (11)\n");
+		goto done;
+	}
+	if (strcmp(s, "") != 0) {
+		printf("fail (12)\n");
+		goto done;
+	}
+
+	printf("pass\n");
+done:
 	mbus_parse_done(p);
-	printf("fail\n");
 }
 
 void test_mbus_parser(void)

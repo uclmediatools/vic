@@ -76,7 +76,6 @@ int mbus_parse_lst(struct mbus_parser *m, char **l)
 
 	assert(m->magic == MBUS_PARSER_MAGIC);
 
-	*l = m->buffer;
         while (isspace((unsigned char)*m->buffer)) {
                 m->buffer++;
 		CHECK_OVERRUN;
@@ -84,7 +83,8 @@ int mbus_parse_lst(struct mbus_parser *m, char **l)
 	if (*m->buffer != '(') {
 		return FALSE;
 	}
-	*(m->buffer) = ' ';
+	m->buffer++;
+	*l = m->buffer;
 	while (*m->buffer != '\0') {
 		if ((*m->buffer == '"') && (*(m->buffer-1) != '\\')) {
 			instr = !instr;

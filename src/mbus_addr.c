@@ -78,17 +78,10 @@ int mbus_addr_match(const char *a, const char *b)
 	/* surrounded by "(" and ")" and may have an arbitrary amount */
 	/* of white space between components of the addresses. There  */
 	/* is a match if every word of address b is in address a.     */
-	/* NOTE: The strings passed to this function are stored for   */
-	/* later use and MUST NOT be modified by this routine.        */
 	const char	*y = NULL; 
 
 	assert(a != NULL);
 	assert(b != NULL);
-
-	if ((*a == '\0') || (*b == '\0')) {
-		/* Unspecified addresses never match... */
-		return FALSE;
-	}
 
 	/* Skip leading whitespace and '('... */
 	while (isspace((unsigned char)*a) || (*a == '(')) a++;
