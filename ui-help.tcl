@@ -80,7 +80,7 @@ speakers.  See the man page for more details."
 	helpitem $p "If the user interface looks peculiar, you might \
 have X resources that conflict with tk.  A common problem is \
 defining ``*background'' and/or ``*foreground''."
-	helpitem $p "Bugs and suggestions to vic@ee.lbl.gov.  Thanks."
+	helpitem $p "Bugs and suggestions to vic@cs.ucl.ac.uk.  Thanks."
 
 	button $w.frame.ok -text " Dismiss " -borderwidth 2 -relief raised \
 		-command "wm withdraw $w" -font [mediumfont] 

@@ -45,7 +45,7 @@ proc tkerror { msg } {
 	puts $info
 	puts \
 "Please mail this error message and, if possible, an explanation\
-\nof what user-action caused it to $V(app)@ee.lbl.gov."
+\nof what user-action caused it to $V(app)@cs.ucl.ac.uk."
 }
 
 proc "" args {
@@ -56,5 +56,5 @@ proc "" args {
 	puts $info
 	puts \
 "Please mail this error message and, if possible, an explanation\
-\nof what user-action caused it to $V(app)@ee.lbl.gov."
+\nof what user-action caused it to $V(app)@cs.ucl.ac.uk."
 }
