@@ -10,8 +10,11 @@
 #include "net.h"
 #include "rtp.h"
 #include "crdef.h"
+#include "pktbuf-rtp.h"
 #include "module.h"
 #include "transmitter.h"
+
+#define HDRSIZE (sizeof(rtphdr) + sizeof(bvchdr))
 
 class BvcEncoder : public TransmitterModule {
  public:
@@ -21,8 +24,8 @@ class BvcEncoder : public TransmitterModule {
 	virtual int command(int argc, const char*const* argv);
  protected:
 	void size(int w, int h);
-	Transmitter::pktbuf* getpkt(u_int32_t ts, int layer);
-	int flush(Transmitter::pktbuf* pb, int sync);
+	pktbuf* getpkt(u_int32_t ts, int layer);
+	int flush(pktbuf* pb, int sync);
 	void quantizer(int n, int q);
 	void encode_sbc(const u_char* blk);
 	void encode_block(const u_char* blk);
@@ -104,12 +107,13 @@ BvcEncoder::~BvcEncoder()
 }
 
 /*XXX share with h261*/
-int BvcEncoder::flush(Transmitter::pktbuf* pb, int sync)
+int BvcEncoder::flush(pktbuf* pb, int sync)
 {
 	/* flush bit buffer */
 	STORE_BITS(bs_, bb_);
 
-	int cc = bs_ - (u_char*)pb->iov[1].iov_base;
+	//int cc = bs_ - (u_char*)pb->iov[1].iov_base;
+	int cc = bs_ - (u_char*)&pb->data[HDRSIZE];
 	cc += nbb_ >> 3;
 	int nbit = nbb_ & 7;
 	if (nbit != 0)
@@ -120,9 +124,11 @@ int BvcEncoder::flush(Transmitter::pktbuf* pb, int sync)
 	if (cc == 0 && sync == 0)
 		abort();
 
-	pb->iov[0].iov_len = sizeof(rtphdr) + sizeof(bvchdr);
-	pb->iov[1].iov_len = cc;
-	rtphdr* rh = (rtphdr*)pb->iov[0].iov_base;
+	//pb->iov[0].iov_len = sizeof(rtphdr) + sizeof(bvchdr);
+	//pb->iov[1].iov_len = cc;
+	pb->len = cc + HDRSIZE;
+	//rtphdr* rh = (rtphdr*)pb->iov[0].iov_base;
+	rtphdr* rh = (rtphdr*)pb->data;
 	if (sync)
 		rh->rh_flags |= htons(RTP_M);
 
@@ -130,7 +136,7 @@ int BvcEncoder::flush(Transmitter::pktbuf* pb, int sync)
 
 	tx_->send(pb);
 
-	return (cc + sizeof(rtphdr) + sizeof(bvchdr));
+	return (cc + HDRSIZE);
 }
 
 /*XXX*/
@@ -735,13 +741,13 @@ void BvcEncoder::encode_color(const u_char* in)
 	encode_sbc((u_int8_t*)out);
 }
 
-#define HDRSIZE (sizeof(rtphdr) + sizeof(bvchdr))
-
-Transmitter::pktbuf* BvcEncoder::getpkt(u_int32_t ts, int layer)
+pktbuf* BvcEncoder::getpkt(u_int32_t ts, int layer)
 {
-	Transmitter::pktbuf* pb = tx_->alloc(ts, RTP_PT_BVC);
+	//Transmitter::pktbuf* pb = tx_->alloc(ts, RTP_PT_BVC);
+	pktbuf* pb = pool_->alloc(ts, RTP_PT_BVC);
 	pb->layer = layer;
-	rtphdr* rh = (rtphdr*)pb->iov[0].iov_base;
+	//rtphdr* rh = (rtphdr*)pb->iov[0].iov_base;
+	rtphdr* rh = (rtphdr*)pb->data;
 	bvchdr* bh = (bvchdr*)(rh + 1);
 	bh->version = 0;
 	bh->pad = 0;
@@ -749,7 +755,8 @@ Transmitter::pktbuf* BvcEncoder::getpkt(u_int32_t ts, int layer)
 	bh->height = height_ >> 3;
 	bh->quant = htonl(quant_);
 	bh->blkno = htons(blkno_);
-	bs_ = (u_char*)pb->iov[1].iov_base;
+	//bs_ = (u_char*)pb->iov[1].iov_base;
+	bs_ = (u_char*)&pb->data[HDRSIZE];
 	es_ = bs_ + tx_->mtu() - HDRSIZE;
 	bb_ = 0;
 	nbb_ = 0;
@@ -768,16 +775,17 @@ int BvcEncoder::consume(const VideoFrame* vf)
 	u_char* frm = (u_char*)p->bp_;
 	const u_char* chm = frm + framesize_;
 	blkno_ = -1;
-	Transmitter::pktbuf* pb = getpkt(p->ts_, layer);
+	pktbuf* pb = getpkt(p->ts_, layer);
 	const u_int8_t* crv = p->crvec_;
-memset(&b, 0, sizeof(b));
+	memset(&b, 0, sizeof(b));
+
 #ifdef SBC_STAT
-if (f[0] == 0) {
-	f[0] = fopen("sbc0", "w");
-	f[1] = fopen("sbc1", "w");
-	f[2] = fopen("sbc2", "w");
-	f[3] = fopen("sbc3", "w");
-}
+	if (f[0] == 0) {
+		f[0] = fopen("sbc0", "w");
+		f[1] = fopen("sbc1", "w");
+		f[2] = fopen("sbc2", "w");
+		f[3] = fopen("sbc3", "w");
+	}
 #endif
 	int cc = 0;
 	int blkw = width_ >> 4;

@@ -13,7 +13,7 @@ class BvcDecoder : public Decoder {
  public:
 	BvcDecoder();
 	~BvcDecoder();
-	virtual void recv(const struct rtphdr*, const u_char* data, int len);
+	virtual void recv(pktbuf* pb);
 	void resize(int width, int height);
 	int colorhist(u_int* hist) const;
  protected:
@@ -812,8 +812,13 @@ void BvcDecoder::decode(const u_char* bp, int cc, int blkno)
 #endif
 }
 
-void BvcDecoder::recv(const rtphdr* rh, const u_char* bp, int cc)
+void BvcDecoder::recv(pktbuf* pb)
 {
+	rtphdr* rh = (rtphdr*)pb->dp;
+	int hdrsize = sizeof(rtphdr) + hdrlen();
+	u_char* bp = pb->dp + hdrsize;
+	int cc = pb->len - hdrsize;
+
 	const bvchdr* ph = (bvchdr*)(rh + 1);
 	int w = ph->width << 3;
 	int h = ph->height << 3;
@@ -839,6 +844,7 @@ void BvcDecoder::recv(const rtphdr* rh, const u_char* bp, int cc)
 		render_frame(frm_);
 		resetndblk();
 	}
+	pb->release();
 }
 
 void BvcDecoder::sync()
