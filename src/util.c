@@ -301,19 +301,3 @@ overlapping_words(const char *s1, const char *s2, int max_words)
         return nover;
 }
 
-const char*
-get_appname(const char *argv0) {
-        const char *l;   /* Pointer to last separator */
-        char        sep; /* Separator character */
-        
-#ifdef WIN32
-        sep = '\\';
-#else
-        sep = '/';
-#endif
-        l = strrchr(argv0, sep);
-        if (l != NULL) {
-                return (l + 1);
-        }
-        return argv0;
-}

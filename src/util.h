@@ -59,9 +59,6 @@ void purge_chars(char *src, char *to_go);
 /* overlapping_words: returns how many words match in two strings */
 int overlapping_words(const char *s1, const char *s2, int max_words);
 
-/* appname: strips path from argv[0] */
-const char *get_appname(const char *argv0);
-
 #if defined(__cplusplus)
 }
 #endif
