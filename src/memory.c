@@ -210,13 +210,8 @@ _xmalloc(unsigned size, const char *filen, int line)
 	int *p = (int *) malloc(s + 16);
 	int  q;
 
-#ifdef NDEF
-printf("malloc %d %s %d\n", size, filen, line);
-#endif
-
 	assert(p     != NULL);
 	assert(filen != NULL);
-/*	assert(strlen(filen) != 0); */
 	*p = s;
 	*(p+(s/4)+2) = s;
 	for (q = 0; q < s/4; q++) {
@@ -247,6 +242,24 @@ printf("malloc %d %s %d\n", size, filen, line);
 void *_xrealloc(void *p, unsigned size, const char *filen, int line)
 {
 #ifdef DEBUG_MEM
+	int  	 s = (((size + 7)/8)*8) + 8;
+	int	*q = (int *) p - 2;
+	int	 i;
+	
+	for (i = 0; i < naddr; i++) {
+		if (mem_item[i].addr == q) {
+			xfree(mem_item[naddr].filen);
+			mem_item[naddr].addr   = realloc(q, s);
+			mem_item[naddr].filen  = (char *) strdup(filen);
+			mem_item[naddr].line   = line;
+			mem_item[naddr].length = strlen(filen);
+			mem_item[naddr].est    = tick++;
+			*q = s;
+			*(q+(s/4)+2) = s;
+			return (void *) (q + 2);
+		}
+	}
+	debug_msg("Trying to xrealloc() memory not which is not allocated\n");
 	abort();
 #else
         UNUSED(filen);

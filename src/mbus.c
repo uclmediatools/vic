@@ -549,7 +549,6 @@ static void store_other_addr(struct mbus *m, char *a)
 		m->other_addr = (char **) xrealloc(m->other_addr, m->max_other_addr * sizeof(char *));
 	}
 	m->other_addr[m->num_other_addr++] = xstrdup(a);
-	debug_msg("Added (%s) to list of known mbus entities\n", a);
 }
 
 static int addr_known(struct mbus *m, char *a)
