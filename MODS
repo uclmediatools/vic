@@ -324,7 +324,10 @@ v1.2.5	- More informative error message when the lock on the mbus configuration
 	  (patch from Timur Friedman).
 	- Add support for SDES PRIV (the correct formatting of the PRIV item
 	  into prefix length, prefix and value is left to the caller).
-
+	- Change xmalloc to fill allocated buffer with dummy value when DEBUG 
+	  is defined.  Change DEBUG_MEM version to use same dummy value rather
+	  than a random value, reduces chances of uninitialized pointers 
+	  trashing data before crashing.
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,

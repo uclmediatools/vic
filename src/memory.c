@@ -372,12 +372,11 @@ xfree(void *p)
 void *
 _xmalloc(unsigned size, const char *filen, int line)
 {
-        uint32_t   *j;
+        uint32_t   *data;
         void       *p;
-        uint8_t    *t;
         chk_header *ch;
 
-        p = (void*) malloc(size + sizeof(chk_header) + MAGIC_MEMORY_SIZE);
+        p = (void*) malloc (size + sizeof(chk_header) + MAGIC_MEMORY_SIZE);
 
 	assert(p     != NULL);
 	assert(filen != NULL);
@@ -388,16 +387,11 @@ _xmalloc(unsigned size, const char *filen, int line)
         ch->size  = size;
         ch->magic = MAGIC_MEMORY;
 
-        /* Fill allocated memory with random numbers */
-        for (j = (uint32_t*)((chk_header *)p + 1); size > 4; size -= 4) {
-                *j++ = rand();
-        }
-        for (t = (uint8_t*)j; size > 0; size--) { 
-                *t++ = (uint8_t)(rand());
-        }
+	data = (uint32_t*)((chk_header *)p + 1);
+	memset((void*)data, 0xf0, size);
         
         /* Fix block tail */
-        memcpy(t, &ch->magic, MAGIC_MEMORY_SIZE);
+        memcpy(((uint8_t*)data) + size, &ch->magic, MAGIC_MEMORY_SIZE);
 
         /* Check set up okay */
         if (chk_header_okay(ch) == FALSE) {
@@ -499,9 +493,18 @@ void xmemdist (FILE *f) { UNUSED(f); }
 void xfree    (void *x) { free(x); }
 
 void *_xmalloc(unsigned int size, const char *filen, int line) {
-        UNUSED(filen);
-        UNUSED(line);
-        return malloc(size);
+	void	*m;
+
+	m = malloc(size);
+
+#ifdef DEBUG
+	/* This is just to check initialization errors in allocated structs */
+	memset(m, 0xf0, size);
+#endif
+	UNUSED(filen);
+	UNUSED(line);
+
+	return m;
 }
 
 void *_xrealloc(void *p, unsigned int size,const char *filen,int line) {
