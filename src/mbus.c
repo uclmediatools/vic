@@ -53,7 +53,6 @@ struct mbus_key{
 	char	*algorithm;
 	char	*key;
 	int	 key_len;
-	u_int32	 expiry_time;
 };
 
 struct mbus_msg {
@@ -101,9 +100,7 @@ struct mbus {
 static char *mbus_new_encrkey(void)
 {
 	/* Create a new key, for use by the hashing routines. Returns */
-	/* a key of the form (DES,946080000,MTIzMTU2MTg5MTEyMQ==)     */
-	struct timeval	 curr_time;
-	u_int32		 expiry_time;
+	/* a key of the form (DES,MTIzMTU2MTg5MTEyMQ==)               */
 	char		 random_string[MBUS_ENCRKEY_LEN];
 	char		 encoded_string[(MBUS_ENCRKEY_LEN*4/3)+4];
 	int		 encoded_length;
@@ -118,14 +115,9 @@ static char *mbus_new_encrkey(void)
 	memset(encoded_string, 0, (MBUS_ENCRKEY_LEN*4/3)+4);
 	encoded_length = base64encode(random_string, MBUS_ENCRKEY_LEN, encoded_string, (MBUS_ENCRKEY_LEN*4/3)+4);
 
-	/* Step 3: figure out the expiry time of the key, */
-	/*         we use a value one week from now.      */
-	gettimeofday(&curr_time, NULL);
-	expiry_time = curr_time.tv_sec + SECS_PER_WEEK;
-
-	/* Step 4: put it all together to produce the key... */
+	/* Step 3: put it all together to produce the key... */
 	key = (char *) xmalloc(encoded_length + 18);
-	sprintf(key, "(DES,%ld,%s)", expiry_time, encoded_string);
+	sprintf(key, "(DES,%s)", encoded_string);
 
 	return key;
 }
@@ -133,9 +125,7 @@ static char *mbus_new_encrkey(void)
 static char *mbus_new_hashkey(void)
 {
 	/* Create a new key, for use by the hashing routines. Returns  */
-	/* a key of the form (HMAC-MD5,946080000,MTIzMTU2MTg5MTEyMQ==) */
-	struct timeval	 curr_time;
-	u_int32		 expiry_time;
+	/* a key of the form (HMAC-MD5,MTIzMTU2MTg5MTEyMQ==)           */
 	char		 random_string[MBUS_HASHKEY_LEN];
 	char		 encoded_string[(MBUS_HASHKEY_LEN*4/3)+4];
 	int		 encoded_length;
@@ -150,14 +140,9 @@ static char *mbus_new_hashkey(void)
 	memset(encoded_string, 0, (MBUS_HASHKEY_LEN*4/3)+4);
 	encoded_length = base64encode(random_string, MBUS_HASHKEY_LEN, encoded_string, (MBUS_HASHKEY_LEN*4/3)+4);
 
-	/* Step 3: figure out the expiry time of the key, */
-	/*         we use a value one week from now.      */
-	gettimeofday(&curr_time, NULL);
-	expiry_time = curr_time.tv_sec + SECS_PER_WEEK;
-
-	/* Step 4: put it all together to produce the key... */
+	/* Step 3: put it all together to produce the key... */
 	key = (char *) xmalloc(encoded_length + 23);
-	sprintf(key, "(HMAC-MD5,%ld,%s)", expiry_time, encoded_string);
+	sprintf(key, "(HMAC-MD5,%s)", encoded_string);
 
 	return key;
 }
@@ -356,7 +341,6 @@ static void mbus_get_key(struct mbus *m, struct mbus_key *key, char *id)
 		pos += strlen(line) + 1;
 		if (strncmp(line, id, 9) == 0) {
 			key->algorithm   = strdup(strtok(line+9, ","));
-			key->expiry_time = atol(strtok(NULL  , ","));
 			key->key         = strtok(NULL  , ")");
 			key->key_len     = strlen(key->key);
 
@@ -400,7 +384,6 @@ static void mbus_get_encrkey(struct mbus *m, struct mbus_key *key)
 
 	/* Parse the key... */
 	key->algorithm   = strdup(strtok(buffer+1, ","));
-	key->expiry_time = atol(strtok(NULL  , ","));
 	key->key         = strtok(NULL  , ")");
 	key->key_len     = strlen(key->key);
 

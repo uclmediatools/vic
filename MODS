@@ -15,11 +15,13 @@ v1.0.1	- Added HMAC authentication code
 	  a socket is bound.
 	- Set IPv6 ttl and loopback state correctly on Solaris
 	- Move mbus hearbeat code into this library
+	- Remove key expiry from the mbus code, since it created race
+	  conditions when multiple tools for a single conference were
+	  started either side of the expiry time.
 
 Still to do...
 	- Mbus still uses old-style addressing scheme
 	- Mbus code doesn't support encryption
-	- Resolve issues with expiry of encryption keys in the mbus
 	- IPv6 code sometimes doesn't get the correct interface address,
 	  since it does a gethostbyname() and looks that up, yet that can
 	  return the IPv4 hostname only on some machines.
