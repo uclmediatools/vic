@@ -581,7 +581,7 @@ static char	 tx_cryptbuf[MBUS_BUF_SIZE];
 static char	 tx_buffer[MBUS_BUF_SIZE];
 static char	*tx_bufpos;
 
-#define MBUS_AUTH_LEN 25
+#define MBUS_AUTH_LEN 16
 
 static void tx_header(int seqnum, int ts, char reliable, char *src, char *dst, int ackseq)
 {
@@ -613,15 +613,15 @@ static void tx_send(struct mbus *m)
 
 	while (((tx_bufpos - tx_buffer) % 8) != 0) {
 		/* Pad to a multiple of 8 bytes, so the encryption can work... */
-		*(tx_bufpos++) = ' ';
+		*(tx_bufpos++) = '\0';
 	}
 	*tx_bufpos = '\0';
 	len = tx_bufpos - tx_buffer;
 
 	if (m->hashkey != NULL) {
 		/* Authenticate... */
-		hmac_md5(tx_buffer + MBUS_AUTH_LEN, strlen(tx_buffer) - MBUS_AUTH_LEN, m->hashkey, m->hashkeylen, digest);
-		base64encode(digest, 16, tx_buffer, MBUS_AUTH_LEN - 1);
+		hmac_md5(tx_buffer + MBUS_AUTH_LEN+1, strlen(tx_buffer) - (MBUS_AUTH_LEN+1), m->hashkey, m->hashkeylen, digest);
+		base64encode(digest, 12, tx_buffer, MBUS_AUTH_LEN);
 	}
 	if (m->encrkey != NULL) {
 		/* Encrypt... */
@@ -1089,7 +1089,7 @@ char *mbus_encode_str(const char *s)
 
 int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 {
-	char		*auth, *ver, *src, *dst, *ack, *r, *cmd, *param;
+	char		*auth, *ver, *src, *dst, *ack, *r, *cmd, *param, *npos;
 	char	 	buffer[MBUS_BUF_SIZE];
 	int	 	buffer_len, seq, i, a, rx, ts, authlen;
 	char	 	ackbuf[MBUS_ACK_BUF_SIZE];
@@ -1130,6 +1130,11 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 		}
 
 		mbus_parse_init(m, buffer);
+		/* remove trailing 0 bytes */
+		npos=strchr(buffer,'\0');
+		if(npos!=NULL) {
+			buffer_len=npos-buffer;
+		}
 		/* Parse the authentication header */
 		if (!mbus_parse_sym(m, &auth)) {
 			debug_msg("Failed to parse authentication header\n");
@@ -1140,8 +1145,8 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 		/* Check that the packet authenticates correctly... */
 		authlen = strlen(auth);
 		hmac_md5(buffer + authlen + 1, buffer_len - authlen - 1, m->hashkey, m->hashkeylen, digest);
-		base64encode(digest, 16, ackbuf, 24);
-		if ((strlen(auth) != 24) || (strncmp(auth, ackbuf, 24) != 0)) {
+		base64encode(digest, 12, ackbuf, 16);
+		if ((strlen(auth) != 16) || (strncmp(auth, ackbuf, 16) != 0)) {
 			debug_msg("Failed to authenticate message...\n");
 			mbus_parse_done(m);
 			continue;
