@@ -718,7 +718,9 @@ void mbus_exit(struct mbus *m)
         mbus_flush_msgs(m->cmd_queue);
         mbus_flush_msgs(m->waiting_ack);
 
-        xfree(m->encrkey);
+        if (m->encrkey != NULL) {
+                xfree(m->encrkey);
+        }
         xfree(m->hashkey);
         xfree(m);
 }
@@ -1001,16 +1003,15 @@ int mbus_recv(struct mbus *m, void *data)
 	struct timeval	t;
 	unsigned char	initVec[8] = {0,0,0,0,0,0,0,0};
 
-	t.tv_sec  = 0;
-	t.tv_usec = 0;
-
 	rx = FALSE;
 	while (1) {
 		memset(buffer, 0, MBUS_BUF_SIZE);
                 assert(m->s != NULL);
 		udp_fd_zero();
 		udp_fd_set(m->s);
-		if ((udp_select(&t) > 0) && udp_fd_isset(m->s)) {
+                t.tv_sec  = 0; /* timeout appears to get corrupted on w32 */
+	        t.tv_usec = 0; /* sometimes, reset to zero everytime.     */ 
+                if ((udp_select(&t) > 0) && udp_fd_isset(m->s)) {
 			buffer_len = udp_recv(m->s, buffer, MBUS_BUF_SIZE);
 			if (buffer_len > 0) {
 				rx = TRUE;
