@@ -160,7 +160,7 @@ typedef void (*rtp_callback)(struct rtp *session, rtp_event *e);
 typedef rtcp_app* (*rtcp_app_callback)(struct rtp *session, uint32_t rtp_ts, int max_size);
 
 /* SDES packet types... */
-typedef enum {
+typedef enum  {
         RTCP_SDES_END   = 0,
         RTCP_SDES_CNAME = 1,
         RTCP_SDES_NAME  = 2,
@@ -173,7 +173,7 @@ typedef enum {
 } rtcp_sdes_type;
 
 typedef struct {
-	rtcp_sdes_type	type;		/* type of SDES item              */
+	uint8_t		type;		/* type of SDES item              */
 	uint8_t		length;		/* length of SDES item (in bytes) */
 	char		data[1];	/* text, not zero-terminated      */
 } rtcp_sdes_item;
