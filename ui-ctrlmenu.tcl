@@ -694,7 +694,7 @@ proc format_col { w n0 n1 n2 } {
 proc build.format w {
 	format_col $w.p0 nv nvdct cellb 
 	format_col $w.p1 jpeg h261 bvc
-	format_col $w.p2 h263+ h263 ""
+	format_col $w.p2 h263+ h263 raw
 
 	set f [smallfont]
 

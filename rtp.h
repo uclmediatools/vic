@@ -40,6 +40,7 @@
 #endif
 #include "sys-time.h"
 
+#define RTP_PT_RAW		21	/* XXX */
 #define RTP_PT_BVC		22	/* Berkeley video codec */
 
 /* RTP standard content encodings for video */

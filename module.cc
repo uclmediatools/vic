@@ -46,6 +46,7 @@ char* Module::fttoa(int ft)
 	case FT_YUV_CIF:  return ("cif");
 	case FT_JPEG:	  return ("jpeg");
 	case FT_DCT:	  return ("dct");
+	case FT_RAW:	  return ("raw");
 	}
 	return ("");
 }
@@ -62,6 +63,8 @@ int Module::atoft(const char* s)
 		return FT_JPEG;
 	if (strcasecmp(s, "dct") == 0)
 		return FT_DCT;
+	if (strcasecmp(s, "raw") == 0)
+		return FT_RAW;
 	return (-1);
 }
 
