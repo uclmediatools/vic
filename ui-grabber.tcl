@@ -367,27 +367,27 @@ grabber set CONTRAST "
 
 	set xhue [resource hue]
 	if { $xhue != 0 } {
-		$w.f.left.hue.scale set $xhue
+		$w.f.hue.scale set $xhue
 	}
-	set xchromau [resource chromau]
-	if { $xchromau != 0} {
-		$w.f.left.chromau.scale  set $xchromau
-	}
+	#set xchromau [resource chromau]
+	#if { $xchromau != 0} {
+	#	$w.f.left.chromau.scale  set $xchromau
+	#}
 	set xsaturation [resource saturation]
 	if { $xsaturation != 0 }  {
-		$w.f.left.saturation.scale  set $xsaturation
+		$w.f.saturation.scale  set $xsaturation
 	}
-	set xchromav [resource chromav]
-	if { $xchromav }  {
-		$w.f.left.chromav.scale  set $xchromav
-	}
+	#set xchromav [resource chromav]
+	#if { $xchromav }  {
+	#	$w.f.left.chromav.scale  set $xchromav
+	#}
 	set xbrightness [resource brightness]
 	if { $xbrightness!=0 } {
-		$w.f.right.brightness.scale  set $xbrightness
+		$w.f.brightness.scale  set $xbrightness
 	}
 	set xcontrast [resource contrast]
 	if { $xcontrast != 0 } {
-		$w.f.right.contrast.scale  set $xcontrast
+		$w.f.contrast.scale  set $xcontrast
 	}
 }
 
