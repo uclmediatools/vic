@@ -427,6 +427,7 @@ proc init_network {} {
 		warn "'$sessionType' not a recognized session type"
 		exit 1
 	}
+	$V(session) mtu [resource mtu]
 	net_open_$netType $sessionType $V(session) [resource defaultHostSpec]
 
 
