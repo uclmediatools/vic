@@ -82,11 +82,19 @@
 #endif /* HAVE_IN6_H */
 
 #ifndef IPV6_ADD_MEMBERSHIP
+#ifdef  IPV6_JOIN_GROUP
 #define IPV6_ADD_MEMBERSHIP IPV6_JOIN_GROUP
-#endif  /* IPV6_ADD_MEMBERSHIP */
+#else
+#error  No definition of IPV6_ADD_MEMBERSHIP, please report to mm-tools@cs.ucl.ac.uk.
+#endif /* IPV6_JOIN_GROUP     */
+#endif /* IPV6_ADD_MEMBERSHIP */
 
 #ifndef IPV6_DROP_MEMBERSHIP
+#ifdef  IPV6_LEAVE_GROUP
 #define IPV6_DROP_MEMBERSHIP IPV6_LEAVE_GROUP
+#else
+#error  No definition of IPV6_LEAVE_GROUP, please report to mm-tools@cs.ucl.ac.uk.
+#endif  /* IPV6_LEAVE_GROUP     */
 #endif  /* IPV6_DROP_MEMBERSHIP */
 
 #endif /* HAVE_IPv6 */
