@@ -360,6 +360,10 @@ v1.2.5	- More informative error message when the lock on the mbus configuration
 	  it work
 	* 18 May 2001 [rat v4.2.17]
 
+1.2.8   - Created a new socket for use for getsockname - there were too
+          many bugs with disconnecting an IPv6 connected socket.
+    - Fixed include ordering for Win2k.
+    * 25 May 2001 [rat v4.2.18] [nte v2.2]
 
 
 Still to do...
