@@ -16,7 +16,7 @@ clean-recursive:
 	for s in $(SUBDIRS) ; do (cd $$s && $(MAKE) clean) ; done
 
 distclean: distclean-recursive
-	rm -f Makefile
+	rm -f Makefile config.cache config.log
 
 distclean-recursive:
 	for s in $(SUBDIRS) ; do (cd $$s && $(MAKE) distclean) ; done
