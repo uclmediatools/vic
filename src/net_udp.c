@@ -60,7 +60,7 @@ struct _socket_udp {
 	struct in_addr	 addr4;
 #ifdef HAVE_IPv6
 	struct in6_addr	 addr6;
-#endif
+#endif /* HAVE_IPv6 */
 };
 
 /*****************************************************************************/
@@ -118,7 +118,7 @@ static int inet_pton(int family, const char *name, void *addr)
 			return 1;
 		}
 		return 0;
-#ifdef HAVE_IPv6
+#if defined (NEED_INET_PTON) && defined(HAVE_IPv6)
 	} else if (family == AF_INET6) {
 		return inet6_addr(name, addr);
 #endif
@@ -423,6 +423,7 @@ static char *udp_host_addr4(void)
 	return hname;
 }
 
+#ifdef HAVE_IPv6
 static char *udp_host_addr6(void)
 {
 	char	       		*hname;
@@ -464,12 +465,15 @@ static char *udp_host_addr6(void)
 	}
 	return hname;
 }
+#endif /* HAVE_IPv6 */
 
 char *udp_host_addr(socket_udp *s)
 {
 	switch (s->mode) {
 		case IPv4 : return udp_host_addr4();
+#ifdef HAVE_IPv6
 		case IPv6 : return udp_host_addr6();
+#endif /* HAVE_IPv6 */
 		default   : abort();
 	}
 	return NULL;

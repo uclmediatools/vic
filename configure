@@ -155,6 +155,16 @@ else
 	${ECHO} "yes"
 fi
 
+${ECHO} "Searching for getipnodebyname in <netdb.h>... \c"
+T1=`grep -c getipnodebyname /usr/include/netdb.h`
+if [ $T1 = 0 ]; then
+	${ECHO} "no"
+else 
+	DEFS="$DEFS -DHAVE_IPv6"
+	${ECHO} "yes"
+fi
+
+
 # Process options to the configure script...
 DEBUG2=""
 OPTIMIZE2=""
