@@ -743,7 +743,7 @@ void VfwGrabber::start()
 			case 192:
 				max_fps_ = 25;
 				basewidth_ = PAL_BASE_WIDTH;
-				baseheight_ = CIF_BASE_HEIGHT;
+				baseheight_ = PAL_BASE_HEIGHT;
 				break;
 
 			default:
