@@ -64,4 +64,5 @@ tar:		$(SRCS) $(HDRS)
 		mv TMN.tar.gz TMN-3.0.tgz
 
 copy:
+	chmod +x copyit
 	./copyit
