@@ -97,6 +97,8 @@ extern const char* intoa(u_int32_t addr);
 #define INADDR_LOOPBACK (u_int32_t)0x7F000001
 #endif
 
+#if defined(WIN32)
+
 /* XXX winsock.h should have these !! */
 /* winsock2.h does have these */
 #ifndef _WINSOCK2API_
@@ -108,7 +110,6 @@ extern const char* intoa(u_int32_t addr);
 #define	IN_CLASSD_HOST		((u_long)0x0fffffff)/* routing needn't know.  */
 #endif
 
-#if defined(WIN32)
 #define	IN_MULTICAST(i)		IN_CLASSD(i)
 struct msghdr {
 	caddr_t	msg_name;		/* optional address */
