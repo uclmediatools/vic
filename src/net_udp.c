@@ -53,8 +53,10 @@
 /* This is pretty nasty but it's the simplest way to get round */
 /* the Detexis bug that means their MUSICA IPv6 stack uses     */
 /* IPPROTO_IP instead of IPPROTO_IPV6 in setsockopt calls      */
-#ifdef MUSICA_IPV6
-#define IPPROTO_IPV6 IPPROTO_IP
+/* We also need to define in6addr_any */
+#ifdef  MUSICA_IPV6
+#define	IPPROTO_IPV6	IPPROTO_IP
+struct	in6_addr		in6addr_any = {IN6ADDR_ANY_INIT};
 #endif
 
 #ifndef INADDR_NONE
