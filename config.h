@@ -78,6 +78,10 @@ long random(void);
 #include <math.h>
 #endif
 
+#ifdef __linux__
+#define DEFINED_ERRLIST
+#endif
+
 #include <stdlib.h>
 #include <time.h>		/* For clock_t */
 #ifndef WIN32

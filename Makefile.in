@@ -40,10 +40,10 @@ ALL = @V_ALL@ histtolut
 all:	$(ALL)
 
 .cc.o:
-	rm -f $@; $(C++) -o $@ -c $(CFLAGS) $*.cc
+	$(C++) -o $@ -c $(CFLAGS) $*.cc
 
 .c.o:
-	rm -f $@; $(CC) -o $@ -c $(CFLAGS) $*.c
+	$(CC) -o $@ -c $(CFLAGS) $*.c
 
 ED_YBITS = 4
 
