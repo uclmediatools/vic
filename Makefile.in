@@ -196,7 +196,7 @@ vic.dyn: $(OBJ) $(OBJ_GRABBER) $(JV_LIB)
 #
 vic.xil: codec/tmndec/libh263.a codec/tmn-x/libh263coder.a $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)  $(OBJ_XIL)
 	rm -f $@
-	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(OBJ_XIL) $(OBJ_CRYPT) $(LIB) $(STATIC) @V_LIB_XIL@
+	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_XIL) $(OBJ_GRABBER) $(OBJ_CRYPT) $(LIB) $(STATIC) @V_LIB_XIL@
 
 histtolut: render/histtolut/histtolut.cpp render/histtolut/convex_hull.o
 	rm -f $@
