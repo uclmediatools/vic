@@ -119,21 +119,45 @@ typedef struct _source {
  * The "struct rtp" defines an RTP session.
  */
 
-#define RTP_DB_SIZE	1024	/* Maximum number of participants */
-
 struct rtp {
 	socket_udp	*rtp_socket;
 	socket_udp	*rtcp_socket;
 	u_int32		 my_ssrc;
 	source		*db;
-	void (*callback)(struct rtp *session, rtp_event *event);
 	int		 invalid_rtp;
 	int		 invalid_rtcp;
+	int		 ssrc_count;
+	void (*callback)(struct rtp *session, rtp_event *event);
 };
+
+static source *get_source(struct rtp *session, u_int32 ssrc)
+{
+	source	*curr = session->db;
+
+	while (curr != NULL) {
+		if (curr->ssrc == ssrc) {
+			return curr;
+		}
+		if (curr->ssrc < ssrc) {
+			curr = curr->l_link;
+		}
+		if (curr->ssrc > ssrc) {
+			curr = curr->r_link;
+		}
+	}
+	return NULL;
+}
 
 static void create_source(struct rtp *session, u_int32 ssrc)
 {
-	source	*new_source = (source *) xmalloc(sizeof(source));
+	/* Create a new source in the database, if that source doesn't exist already. */
+	/* If the source is pre-existing, then we do nothing.                         */
+	source	*new_source ;
+
+	if (get_source(session, ssrc) != NULL) {
+		return;
+	}
+	new_source = (source *) xmalloc(sizeof(source));
 	if (new_source == NULL) {
 		debug_msg("Unable to create source 0x%08x, insufficient memory\n", ssrc);
 		return;
@@ -149,11 +173,11 @@ static void create_source(struct rtp *session, u_int32 ssrc)
 	new_source->loc    = NULL;
 	new_source->tool   = NULL;
 	new_source->note   = NULL;
-	/* Add the new_source to the database... We first make sure that the source  */
-	/* isn't already in the database, and then build up a binary tree of sources */
-	/* indexed by ssrc.  This is likely to work, on average, since ssrc values   */
-	/* are chosen at random, but has really bad worst case behaviour.            */
-	assert(!rtp_valid_ssrc(session,rc));
+	new_source->sr     = NULL;
+	/* Add the new_source to the database. We build up a binary tree of sources */
+	/* indexed by ssrc.  This is likely to work, on average, since ssrc values  */
+	/* are chosen at random, but has really bad worst case behaviour.           */
+	session->ssrc_count++;
 	if (session->db == NULL) {
 		session->db = new_source;
 		return;
@@ -179,24 +203,6 @@ static void create_source(struct rtp *session, u_int32 ssrc)
 	}
 }
 
-static source *get_source(struct rtp *session, u_int32 ssrc)
-{
-	source	*curr = session->db;
-
-	while (curr != NULL) {
-		if (curr->ssrc == ssrc) {
-			return curr;
-		}
-		if (curr->ssrc < ssrc) {
-			curr = curr->l_link;
-		}
-		if (curr->ssrc > ssrc) {
-			curr = curr->r_link;
-		}
-	}
-	return NULL;
-}
-
 struct rtp *rtp_init(char *addr, u_int16 port, int ttl, void (*callback)(struct rtp *session, rtp_event *e))
 {
 	struct rtp *session;
@@ -212,6 +218,7 @@ struct rtp *rtp_init(char *addr, u_int16 port, int ttl, void (*callback)(struct 
 	session->callback     = callback;
 	session->invalid_rtp  = 0;
 	session->invalid_rtcp = 0;
+	session->ssrc_count   = 1;
 	return session;
 }
 
@@ -302,7 +309,7 @@ static void rtp_recv_data(struct rtp *session)
 		/* Check that this packet is valid, and comes from a known source...  */
 		/* This implies that we discard RTP packets from a source until we've */
 		/* received a valid RTCP packet from that source.                  */
-		if (validate_rtp(packet, buflen) && rtp_valid_ssrc(session, packet->ssrc)) {
+		if (validate_rtp(packet, buflen) && (get_source(session, packet->ssrc) != NULL)) {
 			event.ssrc = packet->ssrc;
 			event.type = RX_RTP;
 			event.data = (void *) packet;	/* The callback function MUST free this! */
@@ -392,9 +399,7 @@ static void process_rtcp_sr(struct rtp *session, rtcp_t *packet)
 	source		*s;
 
 	ssrc = ntohl(packet->r.sr.sr.ssrc);
-	if (!rtp_valid_ssrc(session, ssrc)) {
-		create_source(session, ssrc);
-	}
+	create_source(session, ssrc);
 	s = get_source(session, ssrc);
 	if (s == NULL) {
 		debug_msg("Source 0x%08x invalid, skipping...\n", ssrc);
@@ -414,18 +419,20 @@ static void process_rtcp_sr(struct rtp *session, rtcp_t *packet)
 	event.type = RX_SR;
 	event.data = (void *) sr;
 	session->callback(session, &event);
+
+	/* Store the SR for later retrieval... */
+	if (s->sr != NULL) {
+		xfree(s->sr);
+	}
 	s->sr = sr;
 
-	/* ...convert RRs to native byte order... */
 	/* ...process RRs... */
 }
 
 static void process_rtcp_rr(struct rtp *session, rtcp_t *packet)
 {
-	packet->r.rr.ssrc = ntohl(packet->r.rr.ssrc);
-	if (!rtp_valid_ssrc(session, packet->r.rr.ssrc)) {
-		create_source(session, packet->r.rr.ssrc);
-	}
+	UNUSED(session);
+	UNUSED(packet);
 	/* ...convert RRs to native byte order... */
 	/* ...process RRs... */
 }
@@ -446,9 +453,7 @@ static void process_rtcp_sdes(struct rtp *session, rtcp_t *packet)
 			break;
 		}
 		sd->ssrc = ntohl(sd->ssrc);
-		if (!rtp_valid_ssrc(session, sd->ssrc)) {
-			create_source(session, sd->ssrc);
-		}
+		create_source(session, sd->ssrc);
 		s = get_source(session, sd->ssrc);
 		if (s == NULL) {
 			debug_msg("Can't get valid source entry for 0x%08x, skipping...\n", sd->ssrc);
@@ -535,25 +540,11 @@ void rtp_recv(struct rtp *session, struct timeval *timeout)
 	}
 }
 
-int rtp_send_ctrl(struct rtp *session, u_int32 ts)
-{
-	/* Send an RTCP packet, if one is due... */
-	/* Expire sources which we haven't heard from for a while... */
-	UNUSED(session);
-	UNUSED(ts);
-	return -1;
-}
-
 int rtp_add_csrc(struct rtp *session, u_int32 csrc)
 {
 	UNUSED(session);
 	UNUSED(csrc);
 	return FALSE;
-}
-
-int rtp_valid_ssrc(struct rtp *session, u_int32 ssrc)
-{
-	return get_source(session, ssrc) != NULL;
 }
 
 int rtp_set_sdes(struct rtp *session, u_int32 ssrc, u_int8 type, char *value, int length)
@@ -636,6 +627,14 @@ char *rtp_get_sdes(struct rtp *session, u_int32 ssrc, u_int8 type)
 	return NULL;
 }
 
+rtcp_sr *rtp_get_sr(struct rtp *session, u_int32 ssrc)
+{
+	/* Return the last SR received from this ssrc */
+	UNUSED(session);
+	UNUSED(ssrc);
+	return NULL;
+}
+
 int rtp_send_data(struct rtp *session, u_int32 ts, char pt, int m, int cc, u_int32 csrc[16], char *data, int data_len)
 {
 	UNUSED(session);
@@ -647,6 +646,15 @@ int rtp_send_data(struct rtp *session, u_int32 ts, char pt, int m, int cc, u_int
 	UNUSED(data);
 	UNUSED(data_len);
 	return TRUE;
+}
+
+int rtp_send_ctrl(struct rtp *session, u_int32 ts)
+{
+	/* Expire sources which we haven't heard from for a while   ... */
+	/* Send an RTCP packet, if one is due... */
+	UNUSED(session);
+	UNUSED(ts);
+	return -1;
 }
 
 void rtp_send_bye(struct rtp *session)

@@ -85,7 +85,8 @@ typedef struct {
 } rtcp_sr;
 
 typedef struct {
-	u_int32		ssrc;
+	u_int32		reporter_ssrc;	/* The ssrc which sent this RR        */
+	u_int32		ssrc;		/* The ssrc to which this RR pertains */
 	u_int32		fract_lost:8;
 	u_int32		total_lost:24;
 	u_int32		last_seq;
@@ -134,6 +135,7 @@ int		 rtp_add_csrc(struct rtp *session, u_int32 csrc);
 int		 rtp_valid_ssrc(struct rtp *session, u_int32 ssrc);
 int		 rtp_set_sdes(struct rtp *session, u_int32 ssrc, u_int8 type, char *value, int length);
 char		*rtp_get_sdes(struct rtp *session, u_int32 ssrc, u_int8 type);
+rtcp_sr		*rtp_get_sr(struct rtp *session, u_int32 ssrc);
 void		 rtp_send_bye(struct rtp *session);
 int		 rtp_sent_bye(struct rtp *session);
 void		 rtp_done(struct rtp *session);
