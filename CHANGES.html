@@ -9,6 +9,51 @@
 
 <P><!-- @(#) $Header$ (LBL)--></P>
 <H1>vic: Change History</H1>
+<H3>v2.8ucl-1.1.4</H3><UL>
+<LI>Added check in configure to turn off optimisation in h261 decoder code if we're using GCC 2.96 (otherwise it crashes).
+<LI>Spec file for Linux RPMs
+<LI>Added loopback fixes
+<LI>Added win2k debug and release builds.
+<LI>Increase size of ipv6_mreq struct by 4 bytes on win2k because of bug in MS v6 library
+</UL>
+<H3>v2.8ucl-1.1.3</H3><UL>
+<LI>Updated so a new menu item is added to each decode window allowing users to select number of layers to receive on a layered feed. The Encode layers slider used to attempt do this but didn't work with more than one layered feed.
+<LI>Added number of layers indicator to info field on decoded feeds
+<li>Added windows dialog for display of usage info.
+<LI>Tweaked decoder control so it changes when ecnoding changes
+<LI>Added -v option to ouput version number.
+<LI>Added command line options to specify interface (-i addr) and IPv6 interface index (-x index)
+<LI>Updated to use getaddrinfo for name lookup - using the supplementary function included into common library when using MUSICA IPv6.
+<LI>Re-enabled the fprintf to print warnings u as dialogue boxes under Windows.
+<LI>Altered the way the addresses are allocated - Now referenced through the network object (Before they were allocated by stepping thru all available address types untill one address type resolved - Which could have caused some problems - also generated errors from the failed resolve attempts)
+<LI>Tweaked IPv6 address allocation functions to compile on gcc-2.9
+<LI>Corrected the positioning of the padding bit in the rtcp header. Retained some compatibility with old version which used to put it in first packet. Also the length in the rtcp packet did not include the padding - it now does. It doesn't appear to break when interworking with the older version so far....
+<LI>Corrected bug which meant vic attempte to delete it's local src from the list of sources when it appears to go idle for a long time - happens when vic gets suspended for a while.
+<LI>Altered net-ipv6 so the IPv6 interface index is not used IPV6_MULTICAST_IF unless set on the command line as it seems to cause problems for FreeBSD. It is now set to -1 in the resourses to indicate its uninitialised state. 
+<LI>Tweaked config.h to include some defines needed by FreeBSD 2.2.8
+<LI>corrected IPPROTO_IP used in net-ipv6 loopback command to use IPPROTO_IPV6
+<LI>Tweaked so the send socket binds to command line specified -i interface, if specified, otherwise it binds to in6addr_any 
+<LI>Corrected bug in IPv6 when TTL is set on Command line - it was calling the ipv4 proc to check for multicast - now calls in6_multicast
+<LI>Enabled -m (mtu) option on command line - Use with care as not all codecs will behave correctly. (it's default is 1024).
+</UL>
+<H3>v2.8ucl-1.1.2</H3><UL>
+<LI>Fixed RTCP bug - The SSRC wasn't being set when transmitting (well it was always -1)
+<LI>Introduced factor of 2 into the PKTBUF_SIZE as the H261 codec seems to over-run the buffer a bit - causing random errors.
+<LI>Disabled mbus recognised message - No longer crash when we receive an unknown mbus command.
+<LI>Increase heartbeat rate to comply with latest spec
+<LI>Added codec/h263/*.o to clean directive.
+<LI>Changed name of UCL's common library to new name: libuclmmbase.a (from old libcommon.a)
+<LI>Updates for the mbus parser..
+<LI>Changed to make x11 grabber last choice by popular demand
+</UL>
+<H3>v2.8ucl-1.1.1</H3><UL>
+<LI>Tidied up command line option specification string
+<LI>Updated for new common library
+<LI>Updated to keep gcc-2.95 happy
+<LI>updated for Solaris 8 'OBSOLETE' XIL headers so it will still use them -DSUNXIL_WARNING_DISABLE
+<LI>Altered configure so it now _compiles_ with Sun's compiler. Plus I've updated
+<LI>the tmn H.263v2 stuff so it uses the CC discovered by configure when building.
+</UL>
 <H3>v2.8ucl-1.1.0</H3><UL>
 <LI>Expermental first release of layered support taken from MASH project vic.
 <LI>Creates seperate network objects for each layer and sends seperate RTCP
