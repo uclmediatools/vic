@@ -180,6 +180,10 @@ proc create_help_window { w items } {
 	}
 	button $w.frame.ok -text " Dismiss " -borderwidth 2 -relief raised \
 		-command "wm withdraw $w" -font [mediumfont] 
+
+	# added to catch window close action
+	wm protocol $w WM_DELETE_WINDOW "wm withdraw $w"
+
 	pack $w.frame.ok -pady 6 -padx 6 -anchor e
 	pack $w.frame -expand 1 -fill both
 }

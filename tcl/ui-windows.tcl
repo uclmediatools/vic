@@ -279,6 +279,9 @@ proc open_window src {
 	bind $w <q> "destroy_userwin $v"
 	$w.bar.dismiss configure -command "destroy_userwin $v"
 
+	# added to catch window close action
+	wm protocol $w WM_DELETE_WINDOW "destroy_userwin $v"
+
 	bind $w <Return> "switcher_next $v"
 	bind $w <space> "switcher_next $v"
 	bind $w <greater> "switcher_next $v"

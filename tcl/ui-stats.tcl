@@ -319,6 +319,10 @@ proc create_decoder_control_window src {
 
 		button $w.dismiss -relief raised -font $f \
 			-command "destroy $w" -text Dismiss
+
+		# added to catch window close action
+		wm protocol $w WM_DELETE_WINDOW "destroy $w"
+
 		pack $w.dismiss -anchor c -pady 4
 
 	} else {
@@ -360,6 +364,10 @@ proc create_stats_window { w src titleText method } {
 
 	button $w.dismiss -relief raised -font $f \
 		-command "stat_destroy $w" -text Dismiss
+
+    # added to catch window close action
+	wm protocol $w WM_DELETE_WINDOW "stat_destroy $w"
+
 	pack $w.dismiss -anchor c -pady 4
 }
 

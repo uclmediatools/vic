@@ -139,6 +139,9 @@ proc build.menu { } {
 		-relief raised -anchor c \
 		-command "toggle_window $w" -font [mediumfont]
 
+	# added to catch window close action
+	wm protocol $w WM_DELETE_WINDOW "toggle_window $w"
+
 	pack $w.cb $w.encoder $w.decoder $w.session -padx 6 -fill x
 	pack $w.dismiss -anchor c -pady 4
 
