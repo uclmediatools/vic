@@ -78,8 +78,10 @@ class BufferPool : public TclObject {
 /*XXX*/
 #define MAXHDR 128
 #define PKTBUF_PAD 256
-/* Introduced factor of 2 as the H261 codec seems to over-run the buffer a bit*/
-#define PKTBUF_SIZE (MAXHDR + 2 * 1024 + PKTBUF_PAD)
+#define RTP_MTU 1024
+/* Introduced factor of 2 as the H261 codec seems to over-run the buffer a bit
+#define PKTBUF_SIZE (MAXHDR + 1024 + PKTBUF_PAD) from MASH */
+#define PKTBUF_SIZE (2 * RTP_MTU)
 
 class pktbuf : public Buffer {
 public:
