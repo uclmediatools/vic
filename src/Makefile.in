@@ -3,7 +3,8 @@
 # This probably requires GNU make.
 #
 
-CFLAGS = __WFLAGS__ __INCLUDE__ __DEBUG__ __CHAR__ __PROFILE__ __OPTIMIZE__ __CHECK_FLAG__ __DEFS__ -D__OSTYPE__ 
+CFLAGS = __WFLAGS__ __DEBUG__ __CHAR__ __PROFILE__ __OPTIMIZE__ __CHECK_FLAG__ __DEFS__ -D__OSTYPE__ 
+INC    = __INCLUDE__
 CC     = __CC__
 AR     = __AR__
 RANLIB = __RANLIB__
@@ -11,12 +12,14 @@ RANLIB = __RANLIB__
 OBJS = crypt_random.o debug.o mbus.o md5.o memory.o net_udp.o qfDES.o \
        util.o hmac.o base64.o rtp.o
 
+SRCS := $(OBJS:%.o=%.c)
+
 libcommon.a: $(OBJS)
 	$(AR) r libcommon.a $(OBJS)
 	$(RANLIB) libcommon.a
 
-%.o: %.c config_unix.h config_win32.h
-	$(CC) $(CFLAGS) -c $*.c
+.c.o:
+	$(CC) $(CFLAGS) $(INC) -c $<
 
 clean:
 	-rm -f $(OBJS) version.h Makefile libcommon.a tags
@@ -30,3 +33,5 @@ ctags:
 release:
 	cvs tag release-`cat VERSION | sed "s/\./-/g"`
 
+depend: $(SRCS)
+	makedepend $(INC) $(SRCS)
