@@ -10,7 +10,8 @@
 <P><!-- @(#) $Header$ (LBL)--></P>
 <H1>vic: Change History</H1>
 <H3>v2.8ucl5</H3><UL>
-<LI>fixed -l option so it instead generates a filename automatically of the form: {timestamp -seconds}-{local IP addr}-{username}. It now works under Windows and UNIX. (Under Windows the tcl command 'puts' had been redefined so that it did not write to a file at all (only to stdout/stderr) - I added the necessary code).
+<LI>Fixed -l option so it instead generates a filename automatically of the form: "vic-{timestamp -seconds}-{local IP addr}-{username}". It now works under Windows and UNIX. (Under Windows the tcl command 'puts' had been redefined so that it did not write to a file at all (only to stdout/stderr) - I added the necessary code). The output is of the form:<br>
+Cname timestamp framerate bps loss
 <LI>Fixed mtrace calling and cname disappearance problem
 </UL>
 <H3>v2.8ucl4</H3><UL>
