@@ -179,6 +179,10 @@ SOURCE=.\mbus_config.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\mbus_parser.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\md5.c
 # End Source File
 # Begin Source File
@@ -256,6 +260,10 @@ SOURCE=.\mbus.h
 # Begin Source File
 
 SOURCE=.\mbus_config.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\mbus_parser.h
 # End Source File
 # Begin Source File
 
