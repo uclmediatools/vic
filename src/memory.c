@@ -198,13 +198,14 @@ void xclaim(void *addr, const char *filen, int line)
         for (i = 0; i < naddr; i++) {
                 if (mem_item[i].addr == addr) {
                         free(mem_item[i].filen);
-                        mem_item[i].filen  = strdup(filen);
+                        mem_item[i].filen  = (char*)strdup(filen);
                         mem_item[i].length = strlen(filen);
                         mem_item[i].line   = line;
                         mem_item[i].est    = tick++;
-                        break;
+                        return;
                 }
         }
+
         assert(i != naddr); /* Not found */
 #else
         UNUSED(addr);
@@ -345,6 +346,7 @@ void *_xrealloc(void *p, unsigned size, const char *filen, int line)
 	}
 	debug_msg("Trying to xrealloc() memory not which is not allocated\n");
 	abort();
+        return 0;
 #else
         UNUSED(filen);
         UNUSED(line);
