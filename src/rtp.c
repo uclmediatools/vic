@@ -164,6 +164,83 @@ struct rtp {
 	void (*callback)(struct rtp *session, rtp_event *event);
 };
 
+static void insert_rr(source *s, rtcp_rr *rr)
+{
+	/* Insert the reception report into the source database... */
+	/* The wrappers are used to ensure that the routines using */
+	/* the RTP library have no way of accessing the internal   */
+	/* database. This routine is rather inefficient when there */
+	/* are many active sources, since we maintain linked lists */
+	/* of RRs and do linear traversal of them. A hash table    */
+	/* would probably be better...                             */
+	rtcp_rr_wrapper	*new_wrapper;
+	rtcp_rr_wrapper	*curr;
+	rtcp_rr_wrapper	*prev;
+
+	assert(s  != NULL);
+	assert(rr != NULL);
+
+	if (s->rr == NULL) {
+		new_wrapper = (rtcp_rr_wrapper *) xmalloc(sizeof(rtcp_rr_wrapper));
+		new_wrapper->next = NULL;
+		new_wrapper->prev = NULL;
+		new_wrapper->rr   = rr;
+		s->rr = new_wrapper;
+		debug_msg("Created new rr entry for 0x%08lx in source 0x%08lx\n", rr->ssrc, s->ssrc);
+	} else {
+		prev = NULL;
+		for (curr = s->rr; curr != NULL; curr = curr->next) {
+			if (curr->rr->ssrc == rr->ssrc) {
+				/* Found an existing entry for this rr, replace with newly received version. */
+				debug_msg("Replaced rr entry for 0x%08lx in source 0x%08lx\n", rr->ssrc, s->ssrc);
+				xfree(curr->rr);
+				curr->rr = rr;
+				return;
+			}
+			prev = curr;
+		}
+		assert(curr == NULL);
+		assert(prev != NULL);
+		assert(prev->next == NULL);
+		/* If we get here, we know the rr isn't in the database... */
+		/* prev points to the last entry in the list, so we insert */
+		/* the rr after that.                                      */
+		new_wrapper = (rtcp_rr_wrapper *) xmalloc(sizeof(rtcp_rr_wrapper));
+		new_wrapper->next = NULL;
+		new_wrapper->prev =ev;
+		new_wrapper->rr   = rr;
+		prev->next = new_wrapper;
+		debug_msg("Created new rr entry at list end for 0x%08lx in source 0x%08lx\n", rr->ssrc, s->ssrc);
+	}
+}
+
+static void remove_rr(source *s, u_int32 ssrc)
+{
+	/* Remove any RRs from "s" which refer to "ssrc" */
+	rtcp_rr_wrapper		*curr;
+	rtcp_rr_wrapper		*next;
+
+	assert(s != NULL);
+
+	curr = s->rr;
+	while (curr != NULL) {
+		next = curr->next;
+		if (curr->rr->ssrc == ssrc) {
+			xfree(curr->rr);
+			if (curr->prev == NULL) {
+				s->rr = curr->next;
+			} else {
+				curr->prev->next = curr->next;
+			}
+			if (curr->next != NULL) {
+				curr->next->prev = curr->prev;
+			}
+			xfree(curr);
+		}
+		curr = next;
+	}
+}
+
 static int ssrc_hash(u_int32 ssrc)
 {
 	/* Hash from an ssrc to a position in the source database.   */
@@ -307,56 +384,6 @@ static void create_source(struct rtp *session, u_int32 ssrc)
 	check_database(session);
 }
 
-static void free_source(source *s)
-{
-	/* Free the memory allocated to a source... */
-	rtcp_rr_wrapper	*curr_rr;
-	rtcp_rr_wrapper *next_rr;
-
-	if (s->cname != NULL) xfree(s->cname);
-	if (s->name  != NULL) xfree(s->name);
-	if (s->email != NULL) xfree(s->email);
-	if (s->phone != NULL) xfree(s->phone);
-	if (s->loc   != NULL) xfree(s->loc);
-	if (s->tool  != NULL) xfree(s->tool);
-	if (s->note  != NULL) xfree(s->note);
-	if (s->sr    != NULL) xfree(s->sr);
-	curr_rr = s->rr;
-	while (curr_rr != NULL) {
-		next_rr = curr_rr->next;
-		xfree(curr_rr->rr);
-		xfree(curr_rr);
-		curr_rr = next_rr;
-	}
-}
-
-static void remove_rr(source *s, u_int32 ssrc)
-{
-	/* Remove any RRs from "s" which refer to "ssrc" */
-	rtcp_rr_wrapper		*curr;
-	rtcp_rr_wrapper		*next;
-
-	assert(s != NULL);
-
-	curr = s->rr;
-	while (curr != NULL) {
-		next = curr->next;
-		if (curr->rr->ssrc == ssrc) {
-			xfree(curr->rr);
-			if (curr->prev == NULL) {
-				s->rr = curr->next;
-			} else {
-				curr->prev->next = curr->next;
-			}
-			if (curr->next != NULL) {
-				curr->next->prev = curr->prev;
-			}
-			xfree(curr);
-		}
-		curr = next;
-	}
-}
-
 static void delete_source(struct rtp *session, u_int32 ssrc)
 {
 	/* Remove a source from the RTP database... */
@@ -364,6 +391,8 @@ static void delete_source(struct rtp *session, u_int32 ssrc)
 	int		 h = ssrc_hash(ssrc);
 	rtp_event	 event;
 	struct timeval	 event_ts;
+	rtcp_rr_wrapper	*curr_rr;
+	rtcp_rr_wrapper *next_rr;
 
 	assert(s != NULL);	/* Deleting a source which doesn't exist is an error... */
 
@@ -381,7 +410,22 @@ static void delete_source(struct rtp *session, u_int32 ssrc)
 			s->next->prev = s->prev;
 		}
 	}
-	free_source(s);
+	/* Free the memory allocated to a source... */
+	if (s->cname != NULL) xfree(s->cname);
+	if (s->name  != NULL) xfree(s->name);
+	if (s->email != NULL) xfree(s->email);
+	if (s->phone != NULL) xfree(s->phone);
+	if (s->loc   != NULL) xfree(s->loc);
+	if (s->tool  != NULL) xfree(s->tool);
+	if (s->note  != NULL) xfree(s->note);
+	if (s->sr    != NULL) xfree(s->sr);
+	curr_rr = s->rr;
+	while (curr_rr != NULL) {
+		next_rr = curr_rr->next;
+		xfree(curr_rr->rr);
+		xfree(curr_rr);
+		curr_rr = next_rr;
+	}
 	/* Loop through all the sources, removing RRs which point to the source we are deleting... */
 	for (h = 0; h < RTP_DB_SIZE; h++) {
 		for (s = session->db[h]; s != NULL; s = s->next) {
@@ -399,57 +443,7 @@ static void delete_source(struct rtp *session, u_int32 ssrc)
 	check_database(session);
 }
 
-static void insert_rr(source *s, rtcp_rr *rr)
-{
-	/* Insert the reception report into the source database... */
-	/* The wrappers are used to ensure that the routines using */
-	/* the RTP library have no way of accessing the internal   */
-	/* database. This routine is rather inefficient when there */
-	/* are many active sources, since we maintain linked lists */
-	/* of RRs and do linear traversal of them. A hash table    */
-	/* would probably be better...                             */
-	rtcp_rr_wrapper	*new_wrapper;
-	rtcp_rr_wrapper	*curr;
-	rtcp_rr_wrapper	*prev;
-
-	assert(s  != NULL);
-	assert(rr != NULL);
-
-	if (s->rr == NULL) {
-		new_wrapper = (rtcp_rr_wrapper *) xmalloc(sizeof(rtcp_rr_wrapper));
-		new_wrapper->next = NULL;
-		new_wrapper->prev = NULL;
-		new_wrapper->rr   = rr;
-		s->rr = new_wrapper;
-		debug_msg("Created new rr entry for 0x%08lx in source 0x%08lx\n", rr->ssrc, s->ssrc);
-	} else {
-		prev = NULL;
-		for (curr = s->rr; curr != NULL; curr = curr->next) {
-			if (curr->rr->ssrc == rr->ssrc) {
-				/* Found an existing entry for this rr, replace with newly received version. */
-				debug_msg("Replaced rr entry for 0x%08lx in source 0x%08lx\n", rr->ssrc, s->ssrc);
-				xfree(curr->rr);
-				curr->rr = rr;
-				return;
-			}
-			prev = curr;
-		}
-		assert(curr == NULL);
-		assert(prev != NULL);
-		assert(prev->next == NULL);
-		/* If we get here, we know the rr isn't in the dbase... */
-		/* prev points to the last entry in the list, so we insert */
-		/* the rr after that.                                      */
-		new_wrapper = (rtcp_rr_wrapper *) xmalloc(sizeof(rtcp_rr_wrapper));
-		new_wrapper->next = NULL;
-		new_wrapper->prev = prev;
-		new_wrapper->rr   = rr;
-		prev->next = new_wrapper;
-		debug_msg("Created new rr entry at list end for 0x%08lx in source 0x%08lx\n", rr->ssrc, s->ssrc);
-	}
-}
-
-static double rtcp_interval(struct rtp *session)
+static double rtcp_interval(struct rtp *session, int reconsider)
 {
 	/* Minimum average time between RTCP packets from this site (in   */
 	/* seconds).  This time prevents the reports from `clumping' when */
@@ -470,6 +464,10 @@ static double rtcp_interval(struct rtp *session)
 	double rtcp_min_time = RTCP_MIN_TIME;
 	int n;			        /* no. of members for computation */
 	double rtcp_bw = session->rtcp_bw;
+
+	if (reconsider) {
+		rtcp_bw *= 1.21828;
+	}
 
 	/* Very first call at application start-up uses half the min      */
 	/* delay for quicker notification while still allowing some time  */
@@ -516,7 +514,6 @@ static double rtcp_interval(struct rtp *session)
 static double tv_diff(struct timeval curr_time, struct timeval prev_time)
 {
 	/* Return curr_time - prev_time */
-	debug_msg("FIXME\n");
 	UNUSED(curr_time);
 	UNUSED(prev_time);
 	return 0.0;
@@ -525,9 +522,15 @@ static double tv_diff(struct timeval curr_time, struct timeval prev_time)
 static void tv_add(struct timeval *ts, double offset)
 {
 	/* Add offset seconds to ts */
-	UNUSED(ts);
-	UNUSED(offset);
-	debug_msg("FIXME\n");
+	double offset_sec, offset_usec;
+
+	offset_usec = modf(offset, &offset_sec) * 1000000;
+	ts->tv_sec  += (long) offset_sec;
+	ts->tv_usec += (long) offset_usec;
+	if (ts->tv_usec > 1000000) {
+		ts->tv_sec++;
+		ts->tv_usec -= 1000000;
+	}
 }
 
 static int tv_gt(struct timeval a, struct timeval b)
@@ -539,6 +542,7 @@ static int tv_gt(struct timeval a, struct timeval b)
 	if (a.tv_sec < b.tv_sec) {
 		return FALSE;
 	}
+	assert(a.tv_sec == b.tv_sec);
 	return a.tv_usec > b.tv_usec;
 }
 
@@ -562,16 +566,14 @@ struct rtp *rtp_init(char *addr, u_int16 port, int ttl, double rtcp_bw, void (*c
 	session->ssrc_count         = 0;
 	session->sender_count       = 0;
 	session->initial_rtcp       = TRUE;
-	session->avg_rtcp_size      = 0;
+	session->avg_rtcp_size      = 70;	/* Guess for a sensible starting point... */
 	session->we_sent            = FALSE;
 	session->rtcp_bw            = rtcp_bw;
 	gettimeofday(&(session->last_rtcp_send_time), NULL);
 	gettimeofday(&(session->next_rtcp_send_time), NULL);
 
 	/* Calculate when we're supposed to send our first RTCP packet... */
-	tv_add(&(session->next_rtcp_send_time), rtcp_interval(session));
-	debug_msg("Current time  %lu.%06lu\n", session->last_rtcp_send_time.tv_sec, session->last_rtcp_send_time.tv_usec);
-	debug_msg("Initial RTCP  %lu.%06lu\n", session->next_rtcp_send_time.tv_sec, session->next_rtcp_send_time.tv_usec);
+	tv_add(&(session->next_rtcp_send_time), rtcp_interval(session, FALSE));
 
 	/* Initialise the source database... */
 	for (i = 0; i < RTP_DB_SIZE; i++) {
@@ -974,7 +976,8 @@ static void rtp_recv_ctrl(struct rtp *session)
 				}
 				packet = (rtcp_t *) ((char *) packet + (4 * (ntohs(packet->common.length) + 1)));
 			}
-			debug_msg("FIXME: should update session->avg_rtcp_size\n");
+			/* The constants here are 1/16 and 15/16 (section 6.3.3 of draft-ietf-avt-rtp-new-02.txt) */
+			session->avg_rtcp_size = (0.0625 * buflen) + (0.9375 * session->avg_rtcp_size);
 		} else {
 			debug_msg("Invalid RTCP packet discarded\n");
 			session->invalid_rtcp_count++;
@@ -1125,13 +1128,52 @@ int rtp_send_data(struct rtp *session, u_int32 ts, char pt, int m, int cc, u_int
 	return TRUE;
 }
 
+int rtp_send_ctrl(struct rtp *session, u_int32 ts)
+{
+	/* Send an RTCP packet, if one is due... */
+	struct timeval	 curr_time;
+
+	UNUSED(ts);
+
+	gettimeofday(&curr_time, NULL);
+	if (tv_gt(curr_time, session->next_rtcp_send_time)) {
+		/* The RTCP transmission timer has expired, the following */
+		/* implements draft-ietf-avt-rtp-new-02.txt section 6.3.6 */
+		int		 h;
+		source		*s;
+		struct timeval	 new_send_time;
+		double		 new_interval;
+		
+		new_interval  = rtcp_interval(session, TRUE);
+		new_send_time = session->last_rtcp_send_time;
+		tv_add(&new_send_time, new_interval);
+		if (tv_gt(curr_time, new_send_time)) {
+			/* Send the packet... */
+			debug_msg("Should send RTCP\n");
+			session->last_rtcp_send_time = curr_time;
+			session->next_rtcp_send_time = curr_time; tv_add(&(session->next_rtcp_send_time), new_interval);
+			session->initial_rtcp = FALSE;
+			session->we_sent      = FALSE;
+			session->sender_count = 0;
+			for (h = 0; h < RTP_DB_SIZE; h++) {
+				for (s = session->db[h]; s != NULL; s = s->next) {
+					s->sender = FALSE;
+				}
+			}
+		} else {
+			session->next_rtcp_send_time = session->last_rtcp_send_time; 
+			tv_add(&(session->next_rtcp_send_time), new_interval);
+		}
+	} 
+	return 0;
+}
+
 static void expire_source(struct rtp *session, source *s, struct timeval curr_time)
 {
 	/* Expire sources which haven't been heard from for a long time.   */
 	/* Section 6.2.1 of the RTP specification details the timers used. */
 	double	delay = tv_diff(s->last_active, curr_time);
 
-debug_msg("Source 0x%08lx delay %f\n", s->ssrc, delay);
 	/* Check if we've received a BYE packet from this source.    */
 	/* If we have, and it was received more than 2 seconds ago   */
 	/* then the source is deleted. The arbitrary 2 second delay  */
@@ -1147,35 +1189,20 @@ debug_msg("Source 0x%08lx delay %f\n", s->ssrc, delay);
 	/* we delete that source.                                    */
 }
 
-int rtp_send_ctrl(struct rtp *session, u_int32 ts)
+void rtp_update(struct rtp *session)
 {
+	/* Perform housekeeping on the source database... */
 	int	 	 h;
 	source	 	*s;
 	struct timeval	 curr_time;
 
 	gettimeofday(&curr_time, NULL);
 
-	UNUSED(ts);
-
-	/* Send an RTCP packet, if one is due... */
-	if (tv_gt(curr_time, session->next_rtcp_send_time)) {
-		debug_msg("Sending RTCP packet...\n");
-		/* send packet...*/
-		session->initial_rtcp = FALSE;
-		session->we_sent      = FALSE;
-		session->sender_count = 0;
-		/* calculate new send time... */
-	}
-
-	/* Perform housekeeping on the source database... */
 	for (h = 0; h < RTP_DB_SIZE; h++) {
 		for (s = session->db[h]; s != NULL; s = s->next) {
 			expire_source(session, s, curr_time);
-			s->sender = FALSE;
 		}
 	}
-
-	return -1;
 }
 
 void rtp_send_bye(struct rtp *session)

@@ -137,6 +137,7 @@ struct rtp	*rtp_init(char *addr, u_int16 port, int ttl, double rtcp_bw, void (*c
 void 		 rtp_recv(struct rtp *session, struct timeval *timeout);
 int		 rtp_send_data(struct rtp *session, u_int32 ts, char pt, int m, int cc, u_int32 csrc[16], char *data, int data_len);
 int		 rtp_send_ctrl(struct rtp *session, u_int32 ts);
+void 		 rtp_update(struct rtp *session);
 
 u_int32		 rtp_my_ssrc(struct rtp *session);
 int		 rtp_add_csrc(struct rtp *session, u_int32 csrc);
