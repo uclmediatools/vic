@@ -26,6 +26,9 @@ v1.0.1	- Added HMAC authentication code
 	- Remove channel ID from mbus code.
 	- Fix configure script to work with solaris 2.7 where inet_aton() and 
 	  inet_pton() have prototypes but no implementation.
+	* 31 March 1999 [rat v4.0.0]
+
+v1.0.2	- Assorted fixes to RTP library
 
 
 Still to do...
