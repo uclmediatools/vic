@@ -51,8 +51,6 @@
 #include <string.h>
 #include <winsock2.h>
 
-#include "audio_types.h"
-
 #ifdef HAVE_IPv6
 #include <ws2ip6.h>
 #endif
