@@ -127,12 +127,12 @@ class JpegEncoder : public TransmitterModule {
     void size(int w, int h);
     int consume(const VideoFrame*);
 
-  protected:
     struct huffentry {
 	u_short val;
 	u_short nb;
     };
 
+  protected:
     int command(int argc, const char*const* argv);
 
     int flush(pktbuf* pb, int nbit, pktbuf* npb);
