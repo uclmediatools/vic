@@ -46,6 +46,11 @@ AC_CHECK_TYPE(int16_t, short)
 AC_CHECK_TYPE(int32_t, long)
 AC_CHECK_TYPE(int64_t, long long)
 
+AC_CHECK_HEADER(stdint.h,
+		AC_DEFINE(HAVE_STDINT_H))
+AC_CHECK_HEADER(inttypes.h,
+		AC_DEFINE(HAVE_INTTYPES_H))
+
 # Some systems have these in <stdint.h>, just to be difficult...
 AC_MSG_CHECKING(for uint8_t in <stdint.h>)
 AC_EGREP_HEADER(uint8_t,

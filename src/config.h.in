@@ -41,6 +41,9 @@
 #undef HAVE_STROPTS_H
 #undef HAVE_FILIO_H
 
+#undef HAVE_STDINT_H
+#undef HAVE_INTTYPES_H
+
 /*
  * If you don't have these types in <inttypes.h>, #define these to be
  * the types you do have.
@@ -52,6 +55,7 @@
 #undef uint8_t
 #undef uint16_t
 #undef uint32_t
+#undef u_int8_t
 
 /*
  * Debugging:
@@ -82,8 +86,14 @@
 #define WORDS_SMALLENDIAN
 #endif
 
-#ifdef NEED_STDINT_H
+#include <sys/types.h>
+
+#ifdef HAVE_STDINT_H
 #include <stdint.h>
+#endif
+
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
 #endif
 
 #ifdef HAVE_IPv6
