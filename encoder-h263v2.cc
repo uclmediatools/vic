@@ -92,7 +92,7 @@ static class H263plusEncoderMatcher : public Matcher {
 			return (new H263plusEncoder);
 		return (0);
 	}
-} encoder_matcher_h263;
+} encoder_matcher_h263plus;
 
 
 H263plusEncoder::H263plusEncoder() : TransmitterModule(FT_YUV_CIF)
@@ -204,7 +204,7 @@ int H263plusEncoder::consume(const VideoFrame *vf)
     h263_encode_one_frame(state,i++,((vf->ts_ - start_ts)/3000) & 0xff);
 
     for (n = 2; n < h263_streamcount; n += ps) {
-	pb = tx_->alloc(vf->ts_, 42);
+	pb = tx_->alloc(vf->ts_, RTP_PT_H263P);
 	rh = (rtphdr*)pb->iov[0].iov_base;
 	
 	*(u_int*)(rh + 1) = 0;

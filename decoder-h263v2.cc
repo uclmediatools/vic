@@ -45,7 +45,7 @@ static class H263plusDecoderMatcher : public Matcher {
 			return (new H263plusDecoder());
 		return (0);
 	}
-} dm_h263;
+} dm_h263plus;
 
 #define STAT_BAD_PSC	0
 #define STAT_BAD_GOB	1

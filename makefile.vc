@@ -55,10 +55,10 @@ all:	vic
 .SUFFIXES : .cc
 
 .cc.obj:
-	$(cc32) $(cdebug) $(cflags) $(cvars) $(CFLAGS) -o $@ -FR$*.sbr -Tp $<
+	$(cc32) $(cdebug) $(cflags) $(cvars) $(CFLAGS) -Fo$@ -FR$*.sbr -Tp $<
 
 .c.obj:
-	$(cc32) $(cdebug) $(cflags) $(cvars) $(CFLAGS) -o $@ -FR$*.sbr $<
+	$(cc32) $(cdebug) $(cflags) $(cvars) $(CFLAGS) -Fo$@ -FR$*.sbr $<
 
 ED_YBITS = 4
 

@@ -530,7 +530,7 @@ proc device_formats device {
 		set fmtList "$fmtList bvc"
 	}
 	if [inList cif $sizes] {
-		set fmtList "$fmtList h261 h263+"
+		set fmtList "$fmtList h261 h263+ h263"
 	}
 	if [inList jpeg $formats] {
 		set fmtList "$fmtList jpeg"
@@ -1051,6 +1051,15 @@ proc h263+_setq value {
 	$qvalue configure -text $value
 }
 
+proc h263_setq value {
+	set value [expr int((1 - $value / 100.) * 29) + 1]
+	if [have grabber] {
+		encoder q $value
+	}
+	global qvalue
+	$qvalue configure -text $value
+}
+
 proc nv_setq value {
 	set value [expr (100 - $value) / 10]
 	if [have grabber] {
@@ -1135,6 +1144,7 @@ proc enable_large_button { } {
 
 set qscale_val(h261) 68
 set qscale_val(h263) 68
+set qscale_val(h263+) 68
 set qscale_val(nv) 80
 set qscale_val(nvdct) 80
 set qscale_val(bvc) 60

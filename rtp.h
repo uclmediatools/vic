@@ -55,7 +55,8 @@
 #define RTP_PT_H261		31	/* ITU H.261 */
 #define RTP_PT_MPEG		32 	/* MPEG-I & MPEG-II */
 #define RTP_PT_MP2T		33 	/* MPEG-II either audio or video */
-#define RTP_PT_H263		42	/* ITU H.263 */
+#define RTP_PT_H263P	42	/* ITU H.263 */
+#define RTP_PT_H263		34 	/* ITU H.263 */
 
 /* backward compat hack for decoding RTPv1 ivs streams */
 #define RTP_PT_H261_COMPAT 127
