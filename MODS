@@ -3,7 +3,7 @@ Common Code Library: Modification history
 v1.0.0  - Initial version, based on RAT v3.2.7
 	* 14 November 1998
 
-v1.0.1	- Added HMAC authentication code
+v1.0.1  - Added HMAC authentication code
 	- Added timeout to udp_recv()
 	- Added authentication of Mbus messages
 	- Added RTP library
@@ -28,7 +28,7 @@ v1.0.1	- Added HMAC authentication code
 	  inet_pton() have prototypes but no implementation.
 	* 31 March 1999 [rat v4.0.0]
 
-v1.0.2	- Assorted fixes to RTP library
+v1.0.2  - Assorted fixes to RTP library
 	- Fix bounds overruns in memory.c - will now run with -DDEBUG_MEM
 	  with the bounds checker on.
 	- Add timestamp to mbus packet headers.
@@ -43,10 +43,10 @@ v1.0.2	- Assorted fixes to RTP library
 	- Fix reordering of mbus messages
 	* 14 May 1999 [rat v4.0.1]
 
-v1.0.3	- Fix inet_aton() in net_udp.c
+v1.0.3  - Fix inet_aton() in net_udp.c
 	* 15 May 1999 [rat v4.0.2]
 
-v1.0.4	- 
+v1.0.4  - Fix compilation with Microsoft IPv6 stack
 
 
 Still to do...

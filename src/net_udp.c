@@ -190,11 +190,6 @@ int inet_pton(int family, const char *name, void *addr)
 #endif
 
 #ifdef NEED_IN6_IS_ADDR_MULTICAST
-/*static int IN6_IS_ADDR_MULTICAST(unsigned char addr[16])
- *{
- *	return addr[0] == 0xff;
- *}
- */
 #define IN6_IS_ADDR_MULTICAST(addr) ((addr)->s6_addr[0] == 0xffU)
 #endif
 
@@ -348,11 +343,11 @@ static socket_udp *udp_init6(char *addr, u_int16 port, int ttl)
 			socket_error("setsockopt IPV6_ADD_MEMBERSHIP");
 			abort();
 		}
-		if (SETSOCKOPT(s->fd, IPPROTO_IPV6, IPV6_MULTICAST_LOOP, &loop, sizeof(loop)) != 0) {
+		if (SETSOCKOPT(s->fd, IPPROTO_IPV6, IPV6_MULTICAST_LOOP, (char *) &loop, sizeof(loop)) != 0) {
 			socket_error("setsockopt IPV6_MULTICAST_LOOP");
 			abort();
 		}
-		if (SETSOCKOPT(s->fd, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, (int *) &ttl, sizeof(ttl)) != 0) {
+		if (SETSOCKOPT(s->fd, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, (char *) &ttl, sizeof(ttl)) != 0) {
 			socket_error("setsockopt IPV6_MULTICAST_HOPS");
 			abort();
 		}
@@ -488,7 +483,9 @@ static char *udp_host_addr6(void)
 {
 	char	       		*hname;
 	struct hostent 		*hent;
+#ifndef WIN32
 	int			 error_num;
+#endif
 
 	hname = (char *) xmalloc(MAXHOSTNAMELEN);
 	if (gethostname(hname, MAXHOSTNAMELEN) != 0) {
@@ -497,6 +494,9 @@ static char *udp_host_addr6(void)
 	}
 	debug_msg("%s\n", hname);
 
+#ifdef WIN32
+	hent = getnodebyname(hname, AF_INET6, AI_DEFAULT);
+#else
 	hent = getipnodebyname(hname, AF_INET6, AI_DEFAULT, &error_num);
 	if (hent == NULL) {
 		switch (error_num) {
@@ -518,11 +518,16 @@ static char *udp_host_addr6(void)
 		}
 		abort();
 	}
+#endif
 	assert(hent->h_addrtype == AF_INET6);
 
+#ifdef WIN32
+	hname = xstrdup(inet6_ntoa((const struct in6_addr *) hent->h_addr));
+#else
 	if (inet_ntop(AF_INET6, hent->h_addr, hname, MAXHOSTNAMELEN) == NULL) {
 		abort();
 	}
+#endif
 	return hname;
 }
 #endif /* HAVE_IPv6 */
