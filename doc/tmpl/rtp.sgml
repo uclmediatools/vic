@@ -36,13 +36,6 @@ of audio, video, and other real-time data across IP capable networks.
 
 
 
-<!-- ##### MACRO RTP_PACKET_HEADER_SIZE ##### -->
-<para>
-
-</para>
-
-
-
 <!-- ##### MACRO RTP_MAX_PACKET_LEN ##### -->
 <para>
 
@@ -61,7 +54,7 @@ of audio, video, and other real-time data across IP capable networks.
 @ttl: 
 @rtcp_bw: 
 @callback: 
-@user_data: 
+@userdata: 
 @Returns: 
 
 
@@ -77,14 +70,30 @@ of audio, video, and other real-time data across IP capable networks.
 @ttl: 
 @rtcp_bw: 
 @callback: 
-@user_data: 
+@userdata: 
 @Returns: 
 
 
 <!-- ##### TYPEDEF rtp_packet ##### -->
 <para>
-
+The struct begins with pointers to the data in the packet as
+it came off the wire. The packet is read in such that the
+header maps onto the latter part of this struct, and the
+fields in this first part of the struct point into it. The
+entire packet can be freed by freeing this struct, without
+having to free the csrc, data and extn blocks separately.
+WARNING: Don't change the size of the first portion of the
+struct without changing RTP_PACKET_HEADER_SIZE to match.
 </para>
+
+
+<!-- ##### MACRO RTP_PACKET_HEADER_SIZE ##### -->
+<para>
+This macro MUST resolve to the offset of the first packet
+field in the #rtp_packet struct, including all padding.
+If you change rtp_packet, make sure to change this too.
+</para>
+
 
 
 <!-- ##### TYPEDEF rtcp_sr ##### -->
@@ -98,6 +107,21 @@ of audio, video, and other real-time data across IP capable networks.
 
 </para>
 
+
+<!-- ##### ENUM rtcp_sdes_type ##### -->
+<para>
+
+</para>
+
+@RTCP_SDES_END: 
+@RTCP_SDES_CNAME: 
+@RTCP_SDES_NAME: 
+@RTCP_SDES_EMAIL: 
+@RTCP_SDES_PHONE: 
+@RTCP_SDES_LOC: 
+@RTCP_SDES_TOOL: 
+@RTCP_SDES_NOTE: 
+@RTCP_SDES_PRIV: 
 
 <!-- ##### TYPEDEF rtcp_sdes_item ##### -->
 <para>
@@ -132,8 +156,8 @@ Each value represents an event in RTP or RTCP processing.
 
 @RX_RTP: An RTP data packet was received.
 The ssrc field contains the RTP data packet's SSRC.
-The data field points to the RTP data packet (full header?)
-The callback must free the data packet when it's done with it.
+The data field points to a #rtp_packet containing the RTP data packet.
+The callback must free the rtp_packet when it's done with it.
 @RX_SR: An RTCP SR packet was received.
 The ssrc field contains the SR packet's SSRC.
 The data field points to an #rtcp_sr.
@@ -187,30 +211,6 @@ how rtp_callback() should handle each.
 @e: The RTP Event information.  See #rtp_event.
 
 
-<!-- ##### ENUM rtp_option ##### -->
-<para>
-
-</para>
-
-@RTP_OPT_PROMISC: 
-@RTP_OPT_WEAK_VALIDATION: 
-@RTP_OPT_FILTER_MY_PACKETS: 
-
-<!-- ##### ENUM rtcp_sdes_type ##### -->
-<para>
-
-</para>
-
-@RTCP_SDES_END: 
-@RTCP_SDES_CNAME: 
-@RTCP_SDES_NAME: 
-@RTCP_SDES_EMAIL: 
-@RTCP_SDES_PHONE: 
-@RTCP_SDES_LOC: 
-@RTCP_SDES_TOOL: 
-@RTCP_SDES_NOTE: 
-@RTCP_SDES_PRIV: 
-
 <!-- ##### FUNCTION rtp_send_bye ##### -->
 <para>
 
@@ -226,6 +226,15 @@ how rtp_callback() should handle each.
 
 @session: 
 
+
+<!-- ##### ENUM rtp_option ##### -->
+<para>
+
+</para>
+
+@RTP_OPT_PROMISC: 
+@RTP_OPT_WEAK_VALIDATION: 
+@RTP_OPT_FILTER_MY_PACKETS: 
 
 <!-- ##### FUNCTION rtp_set_option ##### -->
 <para>
@@ -287,8 +296,6 @@ how rtp_callback() should handle each.
 @session: 
 @rtp_ts: 
 @appcallback: 
-<!-- # Unused Parameters # -->
-@callback: 
 
 
 <!-- ##### FUNCTION rtp_update ##### -->

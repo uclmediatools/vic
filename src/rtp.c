@@ -899,7 +899,8 @@ static void init_rng(const char *s)
  * @rtcp_bw: The total bandwidth (in units of ___) that is
  * allocated to RTCP.
  * @callback: See section on #rtp_callback.
- * @user_data: Opaque data passed to the callback function.
+ * @userdata: Opaque data associated with the session.  See
+ * rtp_get_userdata().
  *
  * See rtp_init_if(); calling rtp_init() is just like calling
  * rtp_init_if() with a NULL interface argument.
@@ -931,7 +932,8 @@ struct rtp *rtp_init(const char *addr,
  * @rtcp_bw: The total bandwidth (in units of ___) that is
  * allocated to RTCP.
  * @callback: See section on #rtp_callback.
- * @user_data: Opaque data passed to the callback function.
+ * @userdata: Opaque data associated with the session.  See
+ * rtp_get_userdata().
  *
  * Creates and initializes an RTP session.
  *
@@ -1064,6 +1066,17 @@ int rtp_set_my_ssrc(struct rtp *session, uint32_t ssrc)
         return TRUE;
 }
 
+/**
+ * rtp_set_option:
+ * @session: The RTP session.
+ * @optname: The option name, see #rtp_option.
+ * @optval: The value to set.
+ *
+ * Sets the value of a session option.  See #rtp_option for
+ * documentation on the options and their legal values.
+ *
+ * Returns: TRUE on success, else FALSE.
+ */
 int rtp_set_option(struct rtp *session, rtp_option optname, int optval)
 {
 	assert((optval == TRUE) || (optval == FALSE));
@@ -1085,6 +1098,17 @@ int rtp_set_option(struct rtp *session, rtp_option optname, int optval)
         return TRUE;
 }
 
+/**
+ * rtp_get_option:
+ * @session: The RTP session.
+ * @optname: The option name, see #rtp_option.
+ * @optval: The return value.
+ *
+ * Retrieves the value of a session option.  See #rtp_option for
+ * documentation on the options and their legal values.
+ *
+ * Returns: TRUE and the value of the option in optval on success, else FALSE.
+ */
 int rtp_get_option(struct rtp *session, rtp_option optname, int *optval)
 {
 	switch (optname) {
@@ -1105,6 +1129,17 @@ int rtp_get_option(struct rtp *session, rtp_option optname, int *optval)
         return TRUE;
 }
 
+/**
+ * rtp_get_userdata:
+ * @session: The RTP session.
+ *
+ * This function returns the userdata pointer that was passed to the
+ * rtp_init() or rtp_init_if() function when creating this session.
+ * XXX (Note that gtkdoc thinks that it returns void, not void*, so
+ * ignores the "Returns:" block here)
+ * Returns: The userdata pointer that was passed to the rtp_init() or
+ * rtp_init_if() function when creating this session.
+ */
 void *rtp_get_userdata(struct rtp *session)
 {
 	check_database(session);
@@ -2511,7 +2546,8 @@ void rtp_send_bye(struct rtp *session)
  * rtp_done:
  * @session: the RTP session to finish
  *
- * Frees state associated with given RTP session
+ * Frees state associated with given RTP session.  Does not send
+ * any packets (e.g. BYE).
  */
 void rtp_done(struct rtp *session)
 {
@@ -2545,19 +2581,32 @@ void rtp_done(struct rtp *session)
 	xfree(session);
 }
 
+/**
+ * rtp_set_encryption_key:
+ * @session: The RTP session.
+ * @passphrase: The user-provided "pass phrase" to map to an encryption key.
+ *
+ * Converts the user supplied key into a form suitable for use with RTP
+ * and install it as the active key. Passing in NULL as the passphrase
+ * disables encryption. The passphrase is converted into a DES key as
+ * specified in RFC1890, that is:
+ * 
+ *   - convert to canonical form
+ * 
+ *   - derive an MD5 hash of the canonical form
+ * 
+ *   - take the first 56 bits of the MD5 hash
+ * 
+ *   - add parity bits to form a 64 bit key
+ * 
+ * Note that versions of rat prior to 4.1.2 do not convert the passphrase
+ * to canonical form before taking the MD5 hash, and so will
+ * not be compatible for keys which are non-invarient under this step.
+ *
+ * Returns: TRUE on success, FALSE on failure.
+ */
 int rtp_set_encryption_key(struct rtp* session, const char *passphrase)
 {
-	/* Convert the user supplied key into a form suitable for use with RTP */
-	/* and install it as the active key. Passing in NULL as the passphrase */
-	/* disables encryption. The passphrase is converted into a DES key as  */
-	/* specified in RFC1890, that is:                                      */
-	/*   - convert to canonical form                                       */
-	/*   - derive an MD5 hash of the canonical form                        */
-	/*   - take the first 56 bits of the MD5 hash                          */
-	/*   - add parity bits to form a 64 bit key                            */
-	/* Note that versions of rat prior to 4.1.2 do not convert the pass-   */
-	/* phrase to canonical form before taking the MD5 hash, and so will    */
-	/* not be compatible for keys which are non-invarient under this step. */
 	char	*canonical_passphrase;
 	u_char	 hash[16];
 	MD5_CTX	 context;
@@ -2621,24 +2670,52 @@ int rtp_set_encryption_key(struct rtp* session, const char *passphrase)
 	return TRUE;
 }
 
+/**
+ * rtp_get_addr:
+ * @session: The RTP Session.
+ *
+ * Returns: The session's destination address, as set when creating the
+ * session with rtp_init() or rtp_init_if().
+ */
 char *rtp_get_addr(struct rtp *session)
 {
 	check_database(session);
 	return session->addr;
 }
 
+/**
+ * rtp_get_rx_port:
+ * @session: The RTP Session.
+ *
+ * Returns: The UDP port to which this session is bound, as set when
+ * creating the session with rtp_init() or rtp_init_if().
+ */
 uint16_t rtp_get_rx_port(struct rtp *session)
 {
 	check_database(session);
 	return session->rx_port;
 }
 
+/**
+ * rtp_get_tx_port:
+ * @session: The RTP Session.
+ *
+ * Returns: The UDP port to which RTP packets are transmitted, as set
+ * when creating the session with rtp_init() or rtp_init_if().
+ */
 uint16_t rtp_get_tx_port(struct rtp *session)
 {
 	check_database(session);
 	return session->tx_port;
 }
 
+/**
+ * rtp_get_ttl:
+ * @session: The RTP Session.
+ *
+ * Returns: The session's TTL, as set when creating the session with
+ * rtp_init() or rtp_init_if().
+ */
 int rtp_get_ttl(struct rtp *session)
 {
 	check_database(session);

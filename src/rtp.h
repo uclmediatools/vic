@@ -189,12 +189,12 @@ rtp_t		rtp_init(const char *addr,
 			  uint16_t rx_port, uint16_t tx_port, 
 			  int ttl, double rtcp_bw, 
 			  rtp_callback callback,
-			  void *user_data);
+			  void *userdata);
 rtp_t		rtp_init_if(const char *addr, char *iface, 
 			     uint16_t rx_port, uint16_t tx_port, 
 			     int ttl, double rtcp_bw, 
 			     rtp_callback callback,
-			     void *user_data);
+			     void *userdata);
 
 void		 rtp_send_bye(struct rtp *session);
 void		 rtp_done(struct rtp *session);
