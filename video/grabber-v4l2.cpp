@@ -149,7 +149,7 @@ V4l2Device::V4l2Device(const char *dev, const char *name, char *attr) : InputDev
 {
         dev_ = dev;
         attributes_ = attr;
-        fprintf(stderr,"V4l2:  ==> %s\n",attr);
+        debug_msg("V4l2:  ==> %s\n",attr);
 }
 
 int V4l2Device::command(int argc, const char*const* argv)
@@ -190,13 +190,13 @@ V4l2Scanner::V4l2Scanner(const char **dev)
         char *nick, *attr;
 
         for (i = 0; dev[i] != NULL; i++) {
-                fprintf(stderr,"V4l2: trying %s... ",dev[i]);
+                debug_msg("V4l2: trying %s... ",dev[i]);
                 if (-1 == (fd = open(dev[i],O_RDWR))) {
-                        perror("open");
+			perror("V4l2: open" );
                         continue;
                 }
                 if (-1 == ioctl(fd,VIDIOC_QUERYCAP,&capability)) {
-                        perror("ioctl VIDIOC_QUERYCAP");
+                        perror("V4l2: ioctl VIDIOC_QUERYCAP");
                         close(fd);
                         continue;
                 }
@@ -205,12 +205,6 @@ V4l2Scanner::V4l2Scanner(const char **dev)
                         close(fd);
                         continue;
                 }
-                /*fprintf(stderr,"ok, %s\nV4l2:   %s; size: %dx%d => %dx%d\n",
-                        capability.driver,
-                        "color",
-                        capability.minwidth,capability.minheight,
-                        capability.maxwidth,capability.maxheight);
-		*/
                 attr = new char[512];
                 strcpy(attr,"format { 411 422 cif } ");
 
@@ -222,7 +216,7 @@ V4l2Scanner::V4l2Scanner(const char **dev)
                         strcat(attr,"size { small cif } ");
                 }*/
 
-                fprintf(stderr,"V4l2:   ports:");
+                debug_msg("V4l2:   ports:");
                 strcat(attr,"port { ");
                 for (j = 0; j < 16; j++) {
                         if (-1 == ioctl(fd,VIDIOC_S_INPUT,&j)) {
@@ -231,11 +225,11 @@ V4l2Scanner::V4l2Scanner(const char **dev)
                         } else {
                                 input.index=j;
                                 if (-1 == ioctl(fd,VIDIOC_ENUMINPUT,&input)) {
-					fprintf(stderr,"VIDIOC_ENUMINPUT:%d\n",j);
+					debug_msg("VIDIOC_ENUMINPUT:%d\n",j);
                                         perror("ioctl VIDIOC_ENUMINPUT");
 				break;
                                 } else {
-                                        fprintf(stderr," %s: ",input.name);
+                                        debug_msg(" %s: ",input.name);
                                         for (unsigned int s=0 ; s<strlen((const char*)input.name) ; s++)
                                                 if (input.name[s]==' ') input.name[s]='-';
                                         strcat(attr,(const char*)input.name);
@@ -246,13 +240,13 @@ V4l2Scanner::V4l2Scanner(const char **dev)
 				pixfmt.type=V4L2_BUF_TYPE_VIDEO_CAPTURE;
                                 if (-1 == ioctl(fd,VIDIOC_ENUM_FMT,&pixfmt)) {
                                         perror("ioctl VIDIOC_ENUM_FMT");
-                                } else fprintf(stderr, "%s ",pixfmt.description);
+                                } else debug_msg("%s ",pixfmt.description);
                         }
                 }
-                fprintf(stderr,"\n");
+                debug_msg("\n");
                 strcat(attr,"} ");
 
-		fprintf(stderr,"V4l2:   norms: ");
+		debug_msg("V4l2:   norms: ");
                 strcat(attr,"type { ");
 		
 		for (k = 0, err = 0; err == 0; ++k)
@@ -263,16 +257,17 @@ V4l2Scanner::V4l2Scanner(const char **dev)
                 	if (!err) {
 				strcat(attr, (const char*)estd.name);
 				strcat(attr," ");           
-				fprintf(stderr,"%s ", estd.name);
+				debug_msg("%s ", estd.name);
 			}     	
         	}
-                fprintf(stderr,"\n");
+                debug_msg("\n");
 
 		strcat(attr,"} ");
 
                 nick = new char[strlen((const char*)capability.card)+6];
                 sprintf(nick,"v4l- %s",capability.card);
                 new V4l2Device(dev[i],nick,attr);
+		fprintf(stderr,"Attached to V4l2 device: %s\n",nick);
 
                 close(fd);
         }
@@ -764,15 +759,15 @@ void V4l2Grabber::format()
 
                                                 switch(decimate_) {
                                                 case 2:
-                                                        fprintf(stderr,"v4l2: trying resolution under ...\n");
+                                                        debug_msg("v4l2: trying resolution under ...\n");
                                                         decimate_ = 4;
                                                         break;
                                                 case 1:
-                                                        fprintf(stderr,"v4l2: trying resolution under ...\n");
+                                                        debug_msg("v4l2: trying resolution under ...\n");
                                                         decimate_ = 2;
                                                         break;
                                                 default:
-                                                        fprintf(stderr,"v4l2: giving up ...\n");
+                                                        debug_msg("v4l2: giving up ...\n");
                                                         format_ok = 1;
                                                 }
 

@@ -51,8 +51,8 @@ done
 # always use -g with gcc during development (even with -O)
 #if test "$CC" = gcc && test -f .devel ; then
 if test "$CC" = gcc  ; then
-	V_CCOPT="$V_CCOPT -g -W -Wall -Wno-implicit-int -Wno-return-type"
-	V_CCOPT_H261="$V_CCOPT_H261 -g -W -Wall -Wno-implicit-int -Wno-return-type"
+	V_CCOPT="$V_CCOPT -g -W -Wall -Wno-return-type"
+	V_CCOPT_H261="$V_CCOPT_H261 -g -W -Wall -Wno-return-type"
 	V_DEFINE="$V_DEFINE -fsigned-char"
 fi
 
