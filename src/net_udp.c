@@ -47,6 +47,10 @@
 #include "inet_ntop.h"
 #include "net_udp.h"
 
+#ifdef NEED_ADDRINFO_H
+#include "addrinfo.h"
+#endif
+
 #define IPv4	4
 #define IPv6	6
 
@@ -57,6 +61,28 @@
 #ifdef  MUSICA_IPV6
 #define	IPPROTO_IPV6	IPPROTO_IP
 struct	in6_addr	in6addr_any = {IN6ADDR_ANY_INIT};
+
+/* These DEF's are required as MUSICA's winsock6.h causes a clash with some of the 
+ * standard ws2tcpip.h definitions (eg struct in_addr6).
+ * Note: winsock6.h defines AF_INET6 as 24 NOT 23 as in winsock2.h - I have left it
+ * set to the MUSICA value as this is used in some of their function calls. 
+ */
+//#define AF_INET6        23
+#define IP_MULTICAST_LOOP      11 /*set/get IP multicast loopback */
+#define	IP_MULTICAST_IF		9 /* set/get IP multicast i/f  */
+#define	IP_MULTICAST_TTL       10 /* set/get IP multicast ttl */
+#define	IP_MULTICAST_LOOP      11 /*set/get IP multicast loopback */
+#define	IP_ADD_MEMBERSHIP      12 /* add an IP group membership */
+#define	IP_DROP_MEMBERSHIP     13/* drop an IP group membership */
+
+#define IN6_IS_ADDR_UNSPECIFIED(a) (((a)->s6_addr32[0] == 0) && \
+									((a)->s6_addr32[1] == 0) && \
+									((a)->s6_addr32[2] == 0) && \
+									((a)->s6_addr32[3] == 0))
+struct ip_mreq {
+	struct in_addr imr_multiaddr;	/* IP multicast address of group */
+	struct in_addr imr_interface;	/* local IP address of interface */
+};
 #endif
 
 #ifndef INADDR_NONE
@@ -184,6 +210,7 @@ int inet_aton(const char *name, struct in_addr *addr)
 #if defined(NEED_IN6_IS_ADDR_UNSPECIFIED) && defined(MUSICA_IPV6)
 #define IN6_IS_ADDR_UNSPECIFIED(addr) IS_UNSPEC_IN6_ADDR(*addr)
 #endif
+
 
 /*****************************************************************************/
 /* IPv4 specific functions...                                                */
@@ -527,8 +554,8 @@ static const char *udp_host_addr6(socket_udp *s)
 		}
 		
 		hints.ai_protocol  = IPPROTO_IPV6;
-		hints.ai_flags     = AI_CANONNAME;
-		hints.ai_family    = PF_INET;
+		hints.ai_flags     = 0;
+		hints.ai_family    = AF_INET6;
 		hints.ai_socktype  = SOCK_DGRAM;
 		hints.ai_protocol  = IPPROTO_IPV6;
 		hints.ai_addrlen   = 0;

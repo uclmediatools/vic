@@ -89,7 +89,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Debug_IPv6_Musica"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /I "\src\tcl-8.0\generic" /I "\src\tk-8.0\generic" /I "\src\tk-8.0\xlib" /I "\DDK\inc" /I "\src\MSR_IPv6_1.3\inc" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "DEBUG" /D "DEBUG_MEM" /D "HAVE_IPv6" /D "BUILD_tcl" /D "BUILD_tk" /FR /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GX /Zi /Od /I "..\tcl-8.0\generic" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "\DDK\inc" /I "..\IPv6Kit\inc" /I "..\MUSICA\WINSOCK6" /D "_MBCS" /D "_LIB" /D "DEBUG_MEM" /D "BUILD_tcl" /D "BUILD_tk" /D "DEBUG" /D "WIN32" /D "_DEBUG" /D "HAVE_IPv6" /D "MUSICA_IPV6" /D "_WINNT" /D "_POSIX" /FR /YX /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GX /Zi /Od /I "..\tcl-8.0\generic" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\MUSICA\WINSOCK6" /D "_MBCS" /D "_LIB" /D "DEBUG_MEM" /D "BUILD_tcl" /D "BUILD_tk" /D "DEBUG" /D "WIN32" /D "_DEBUG" /D "HAVE_IPv6" /D "MUSICA_IPV6" /D "_WINNT" /D "_POSIX" /D "NEED_ADDRINFO_H" /D "NEED_IN_EXPERIMENTAL" /D "NEED_IN6_IS_ADDR_V4MAPPED" /FR /YX /FD /GZ /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -155,7 +155,43 @@ SOURCE=.\drand48.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\getaddrinfo.c
+
+!IF  "$(CFG)" == "common - Win32 Release"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "common - Win32 Debug IPv6"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "common - Win32 Debug IPv6 Musica"
+
+# ADD CPP /D "INET6" /D "HAVE_GETHOSTBYNAME2"
+
+!ELSEIF  "$(CFG)" == "common - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
 SOURCE=.\gettimeofday.c
+
+!IF  "$(CFG)" == "common - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "common - Win32 Debug IPv6"
+
+!ELSEIF  "$(CFG)" == "common - Win32 Debug IPv6 Musica"
+
+# ADD CPP /W4
+
+!ELSEIF  "$(CFG)" == "common - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 

@@ -49,9 +49,9 @@
 #include <math.h>
 #include <stdlib.h>   /* abs() */
 #include <string.h>
-#ifndef MUSICA_IPV6
+//#ifndef MUSICA_IPV6
 #include <winsock2.h>
-#endif
+//#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -60,11 +60,8 @@
 #include <winsock6.h>
 #else
 #include <ws2ip6.h>
-#endif
-#endif
-
-#ifndef MUSICA_IPV6
 #include <ws2tcpip.h>
+#endif
 #endif
 
 #include <mmreg.h>
