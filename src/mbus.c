@@ -1007,7 +1007,7 @@ static void rz_handler(char *src, char *cmd, char *args, void *data)
 		mp = mbus_parse_init(args);
 		mbus_parse_str(mp, &t);
 		if (strcmp(mbus_decode_str(t), r->token) == 0) {
-                        assert(r->peer == NULL);
+                        if (r->peer != NULL) xfree(r->peer);
 			r->peer = xstrdup(src);
 		}
 		mbus_parse_done(mp);
@@ -1017,7 +1017,7 @@ static void rz_handler(char *src, char *cmd, char *args, void *data)
 		mp = mbus_parse_init(args);
 		mbus_parse_str(mp, &t);
 		if (strcmp(mbus_decode_str(t), r->token) == 0) {
-                        assert(r->peer == NULL);
+                        if (r->peer != NULL) xfree(r->peer);
 			r->peer = xstrdup(src);
 		}
 		mbus_parse_done(mp);
@@ -1048,7 +1048,7 @@ char *mbus_rendezvous_waiting(struct mbus *m, char *addr, char *token, void *dat
 	token_e        = mbus_encode_str(token);
 	while (r->peer == NULL) {
 		timeout.tv_sec  = 0;
-		timeout.tv_usec = 250000;
+		timeout.tv_usec = 100000;
 		mbus_heartbeat(m, 1);
 		mbus_qmsgf(m, addr, FALSE, "mbus.waiting", "%s", token_e);
 		mbus_send(m);
@@ -1084,7 +1084,7 @@ char *mbus_rendezvous_go(struct mbus *m, char *token, void *data)
 	token_e        = mbus_encode_str(token);
 	while (r->peer == NULL) {
 		timeout.tv_sec  = 0;
-		timeout.tv_usec = 10000;
+		timeout.tv_usec = 100000;
 		mbus_heartbeat(m, 1);
 		mbus_send(m);
 		mbus_recv(m, r, &timeout);
@@ -1097,7 +1097,7 @@ char *mbus_rendezvous_go(struct mbus *m, char *token, void *data)
 		mbus_retransmit(m);
 		mbus_send(m);
 		timeout.tv_sec  = 0;
-		timeout.tv_usec = 10000;
+		timeout.tv_usec = 100000;
 		mbus_recv(m, r, &timeout);
 	} while (!mbus_sent_all(m));
 
