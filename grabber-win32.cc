@@ -982,13 +982,7 @@ VfwGrabber::ErrorHandler(HWND hwnd, int id, LPCSTR err)
 LRESULT CALLBACK
 VfwGrabber::VideoHandler(HWND hwnd, LPVIDEOHDR vh)
 {
-	static int set = 0;
 	static int not_done = 0;
-
-	if (set == 0) {
-		SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_BELOW_NORMAL);
-		set = 1;
-	}
 
 	VfwGrabber *gp = (VfwGrabber*)capGetUserData(hwnd);
 #ifdef DEBUG	
