@@ -750,6 +750,11 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 	return m;
 }
 
+void mbus_cmd_handler(struct mbus *m, void  (*cmd_handler)(char *src, char *cmd, char *arg, void *dat))
+{
+	m->cmd_handler = cmd_handler;
+}
+
 static void mbus_flush_msgs(struct mbus_msg *queue)
 {
         struct mbus_msg *curr, *next;
