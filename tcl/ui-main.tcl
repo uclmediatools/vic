@@ -668,7 +668,6 @@ proc update_decoder src {
 
 	# check for Decoder control window
 	set w .decoder_control$src
-	puts "src-start: $src"
 	if [winfo exists $w] {
 #		destroy $w	
 
