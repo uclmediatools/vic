@@ -176,6 +176,7 @@ socket_error(const char *msg, ...)
 
 /* winsock_versions_setsockopt tries 1 winsock version of option 
 * optname and then winsock 2 version if that failed.
+* note: setting the TTL never fails, so we have to try both.
 */
 
 static int
@@ -188,6 +189,7 @@ winsock_versions_setsockopt(SOCKET s, int level, int optname, const char FAR * o
 		break;
 	case IP_MULTICAST_TTL:
 		success = setsockopt(s, level, WS1_IP_MULTICAST_TTL, optval, optlen);
+		success = setsockopt(s, level, optname, optval, optlen);
 		break;
 	case IP_MULTICAST_LOOP:
 		success = setsockopt(s, level, WS1_IP_MULTICAST_LOOP, optval, optlen);
