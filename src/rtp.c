@@ -50,6 +50,8 @@
 #include "crypt_random.h"
 #include "rtp.h"
 
+#define SECS_BETWEEN_1900_1970 2208988800u
+
 #define MAX_DROPOUT    3000
 #define MAX_MISORDER   100
 #define MIN_SEQUENTIAL 2
@@ -179,6 +181,8 @@ struct rtp {
 	int		 sdes_count_sec;
 	int		 sdes_count_ter;
 	u_int16		 rtp_seq;
+	u_int32		 rtp_pcount;
+	u_int32		 rtp_bcount;
 	void (*callback)(struct rtp *session, rtp_event *event);
 };
 
@@ -698,6 +702,8 @@ struct rtp *rtp_init(char *addr, u_int16 port, int ttl, double rtcp_bw, void (*c
 	session->sdes_count_sec     = 0;
 	session->sdes_count_ter     = 0;
 	session->rtp_seq            = (u_int16) lrand48();
+	session->rtp_pcount         = 0;
+	session->rtp_bcount         = 0;
 	gettimeofday(&(session->last_rtcp_send_time), NULL);
 	gettimeofday(&(session->next_rtcp_send_time), NULL);
 
@@ -1309,7 +1315,11 @@ int rtp_send_data(struct rtp *session, u_int32 ts, char pt, int m, int cc, u_int
 	rc = udp_send(session->rtp_socket, buffer + RTP_PACKET_HEADER_SIZE, buffer_len);
 	xfree(buffer);
 
-	session->we_sent = TRUE;
+	/* Update the RTCP statistics... */
+	session->we_sent     = TRUE;
+	session->rtp_pcount += 1;
+	session->rtp_bcount += buffer_len;
+
 	return rc;
 }
 
@@ -1321,6 +1331,8 @@ static u_int8 *format_rtcp_sr(u_int8 *buffer, int buflen, struct rtp *session, u
 	source	 	*s;
 	int	 	 h;
 	int		 remaining_length;
+	struct timeval	 curr_time;
+	u_int32		 ntp_sec, ntp_frac;
 
 	assert(buflen >= 28);	/* ...else there isn't space for the header and sender report */
 
@@ -1330,12 +1342,16 @@ static u_int8 *format_rtcp_sr(u_int8 *buffer, int buflen, struct rtp *session, u
 	packet->common.pt      = RTCP_RR;
 	packet->common.length  = htons(1);
 
+	gettimeofday(&curr_time, NULL);
+	ntp_sec  = curr_time.tv_sec + SECS_BETWEEN_1900_1970;
+	ntp_frac = (curr_time.tsec << 12) + (curr_time.tv_usec << 8) - ((curr_time.tv_usec * 3650) >> 6);
+
 	packet->r.sr.sr.ssrc          = htonl(rtp_my_ssrc(session));
-	packet->r.sr.sr.ntp_sec       = 0;
-	packet->r.sr.sr.ntp_frac      = 0;
+	packet->r.sr.sr.ntp_sec       = htonl(ntp_sec);
+	packet->r.sr.sr.ntp_frac      = htonl(ntp_frac);
 	packet->r.sr.sr.rtp_ts        = htonl(ts);
-	packet->r.sr.sr.sender_pcount = 0;
-	packet->r.sr.sr.sender_bcount = 0;
+	packet->r.sr.sr.sender_pcount = htonl(session->rtp_pcount);
+	packet->r.sr.sr.sender_bcount = htonl(session->rtp_bcount);
 
 	/* Add report blocks, until we either run out of senders */
 	/* to report upon or we run out of space in the buffer.  */
