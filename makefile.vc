@@ -69,6 +69,8 @@ INCLUDE_TK = -I$(TK_DIR)/win -I$(TK_DIR)/generic
 INCLUDE_TCL = -I$(TCL_DIR)/win -I$(TCL_DIR)/generic
 INCLUDE_X11 = -I$(TK_DIR)/xlib
 INCLUDE_MISC = 
+GENERICDIR	= $(TK_DIR)\generic
+RCDIR		= $(TK_DIR)\win\rc
 
 LIB_TK = $(TK_DIR)/win/tk80vc.lib
 LIB_TCL = $(TCL_DIR)/win/tcl80vc.lib
@@ -263,7 +265,7 @@ h261tortp.exe: h261tortp.cc
 tk.obj: $(TK_LIBRARY_FILES) tcl2c++.exe
 	-del $@
 	.\tcl2c++ 1 $(TK_LIBRARY_FILES) > tk.cc
-	$(cc32) $(cdebug) $(cflags) $(cvars) -o $@ -FR$*.sbr -c $(CFLAGS) -Tp $(@:.obj=).cc
+	$(cc32) /Zm500 $(cdebug) $(cflags) $(cvars) -o $@ -FR$*.sbr -c $(CFLAGS) -Tp $(@:.obj=).cc
 	del $(@:.obj=).cc
 
 #
