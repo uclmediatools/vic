@@ -290,14 +290,14 @@ static socket_udp *udp_init4(const char *addr, const char *iface, uint16_t rx_po
 	s->fd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (s->fd < 0) {
 		socket_error("socket");
+		return NULL;
+	}
 	if (SETSOCKOPT(s->fd, SOL_SOCKET, SO_SNDBUF, (char *) &udpbufsize, sizeof(udpbufsize)) != 0) {
 		socket_error("setsockopt SO_SNDBUF");
 		return NULL;
 	}
 	if (SETSOCKOPT(s->fd, SOL_SOCKET, SO_RCVBUF, (char *) &udpbufsize, sizeof(udpbufsize)) != 0) {
 		socket_error("setsockopt SO_RCVBUF");
-		return NULL;
-	}
 		return NULL;
 	}
 	if (SETSOCKOPT(s->fd, SOL_SOCKET, SO_REUSEADDR, (char *) &reuse, sizeof(reuse)) != 0) {
