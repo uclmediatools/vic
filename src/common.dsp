@@ -66,7 +66,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Debug_IPv6"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /I "\src\tcl-8.0\generic" /I "\src\tk-8.0\generic" /I "\src\tk-8.0\xlib" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "DEBUG" /D "DEBUG_MEM" /FR /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GX /Zi /Od /I "\src\tcl-8.0\generic" /I "\src\tk-8.0\generic" /I "\src\tk-8.0\xlib" /I "\DDK\inc" /I "\src\IPv6Kit\inc" /I "..\tcl-8.0\generic" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\ipv6kit\inc" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "DEBUG" /D "DEBUG_MEM" /D "HAVE_IPv6" /D "BUILD_tcl" /D "BUILD_tk" /D "NEED_IN6_IS_ADDR_MULTICAST" /D "HAVE_INET_PTON" /D "HAVE_INET_NTOP" /FR /YX /FD /GZ  /GZ /c
+# ADD CPP /nologo /W3 /Gm /GX /Zi /Od /I "\src\tcl-8.0\generic" /I "\src\tk-8.0\generic" /I "\src\tk-8.0\xlib" /I "\DDK\inc" /I "\src\IPv6Kit\inc" /I "..\tcl-8.0\generic" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\ipv6kit\inc" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "DEBUG" /D "DEBUG_MEM" /D "HAVE_IPv6" /D "BUILD_tcl" /D "BUILD_tk" /D "NEED_IN6_IS_ADDR_MULTICAST" /D "HAVE_INET_PTON" /D "HAVE_INET_NTOP" /FR /YX /FD /GZ /GZ /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -281,6 +281,39 @@ SOURCE=.\rtp.h
 
 SOURCE=.\util.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\version.h
+# End Source File
 # End Group
+# Begin Source File
+
+SOURCE=.\VERSION
+
+!IF  "$(CFG)" == "common - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "common - Win32 Debug IPv6"
+
+!ELSEIF  "$(CFG)" == "common - Win32 Debug IPv6 Musica"
+
+!ELSEIF  "$(CFG)" == "common - Win32 Debug"
+
+# Begin Custom Build
+InputPath=.\VERSION
+
+"version.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	copy win32\set.txt + VERSION win32\vergen.bat 
+	copy win32\vergen.bat + win32\null.txt win32\vergen.bat 
+	copy win32\vergen.bat + win32\echo.txt win32\vergen.bat 
+	win32\vergen.bat 
+	move win32\version.h version.h 
+	erase win32\version.h 
+	erase win32\vergen.bat 
+	
+# End Custom Build
+
+!ENDIF 
+
+# End Source File
 # End Target
 # End Project

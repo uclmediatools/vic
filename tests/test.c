@@ -42,8 +42,22 @@
 #include "test_md5.h"
 #include "test_net_udp.h"
 
+#ifdef WIN32
+#define WS_VERSION_ONE MAKEWORD(1,1)
+#define WS_VERSION_TWO MAKEWORD(2,2)
+#endif
+
 int main(int argc, char *argv[])
 {
+#ifdef WIN32
+	WSADATA WSAdata;
+	if (WSAStartup(WS_VERSION_TWO, &WSAdata) != 0 && WSAStartup(WS_VERSION_ONE, &WSAdata) != 0) {
+    		printf("Windows Socket initialization failed.\n");
+		return 1;
+	}
+	debug_msg("WSAStartup OK: %sz\nStatus:%s\n", WSAdata.szDescription, WSAdata.szSystemStatus);
+#endif
+
 	UNUSED(argc);
 	UNUSED(argv);
 	printf("Testing common multimedia library %s\n", CCL_VERSION);
@@ -51,6 +65,10 @@ int main(int argc, char *argv[])
 	test_des();
 	test_md5();
 	test_net_udp();
+#ifdef WIN32
+	Sleep(50000);
+	WSACleanup();
+#endif
 	return 0;
 }
 

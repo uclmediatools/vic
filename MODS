@@ -219,6 +219,8 @@ v1.0.10 - Mbus updates from Markus Germeier, which fix compatibility with
 		  implementation.
 	  versions of MSR IPv6 prior to 1.4 are no longer supported.
 	- Update IPv6 support for Red Hat Linux 6.1
+	- Fix generation of version.h on Win32
+	- Add VC++ project file to build the test suite under Win32
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
