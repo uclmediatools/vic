@@ -504,7 +504,7 @@ static Word ROTATE_RIGHT(Word x)
 ** a 8x6bit form because of the modified permuation PC2 used.
 */
 
-#if defined(DIFF_BYTE_ORDER)
+#if !defined(WORDS_BIGENDIAN)
 
 #define DES(t, ik) \
 { \
@@ -536,7 +536,7 @@ static Word ROTATE_RIGHT(Word x)
     for(z = 0; z < l; ++z) tp[z] = htonl(tp[z]); \
 }
 
-#else /* DIFF_BYTE_ORDER */
+#else /* WORDS_BIGENDIAN */
 
 #define DES(t, ik) \
 { \
@@ -560,7 +560,7 @@ static Word ROTATE_RIGHT(Word x)
     FINAL_PERMUTATION(r, l, t); \
 }
 
-#endif /* DIFF_BYTE_ORDER */
+#endif /* WORDS_BIGENDIAN */
 
 int
 qfDES(unsigned char	*key,
@@ -582,7 +582,7 @@ const QFDES_mode   	 mode,
          		*cb     = (Word *) b0,  /* the chained block in CBC mode */
          		*cb1    = (Word *) b1;  /* a copy for use when decrypting */
 
-#if defined(DIFF_BYTE_ORDER)
+#if !defined(WORDS_BIGENDIAN)
     unsigned int origSize = size;
     MAKE_LITTLE_ENDIAN(key, 8);
     MAKE_LITTLE_ENDIAN(data, origSize);
@@ -654,7 +654,7 @@ const QFDES_mode   	 mode,
             cb[0] = 0;
 	    cb[1] = 0;
 	}
-#if defined(DIFF_BYTE_ORDER)
+#if !defined(WORDS_BIGENDIAN)
         MAKE_LITTLE_ENDIAN(cb, 8);
 #endif
     }
@@ -797,14 +797,14 @@ _initVec_:
         ((Word *) initVec)[0] = cb[0];
         ((Word *) initVec)[1] = cb[1];
 
-#if defined(DIFF_BYTE_ORDER)
+#if !defined(WORDS_BIGENDIAN)
         MAKE_LITTLE_ENDIAN(initVec, 8);
 #endif
     }
 
 _exit_qfDES_:
 
-#if defined(DIFF_BYTE_ORDER)
+#if !defined(WORDS_BIGENDIAN)
     MAKE_LITTLE_ENDIAN(key, 8);
     MAKE_LITTLE_ENDIAN(data, origSize);
 #endif

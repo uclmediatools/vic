@@ -58,7 +58,7 @@ typedef struct {
 	char		*extn;
 	int		 extn_len;
 	/* The following map directly onto the RTP packet header...   */
-#ifndef DIFF_BYTE_ORDER
+#ifdef WORDS_BIGENDIAN
 	unsigned short   v:2;		/* packet type                */
 	unsigned short   p:1;		/* padding flag               */
 	unsigned short   x:1;		/* header extension flag      */
@@ -91,7 +91,7 @@ typedef struct {
 
 typedef struct {
 	u_int32		ssrc;		/* The ssrc to which this RR pertains */
-#ifndef DIFF_BYTE_ORDER
+#ifdef WORDS_BIGENDIAN
 	u_int32		fract_lost:8;
 	u_int32		total_lost:24;
 #else
@@ -111,7 +111,7 @@ typedef struct {
 } rtcp_sdes_item;
 
 typedef struct {
-#ifndef DIFF_BYTE_ORDER
+#ifdef WORDS_BIGENDIAN
 	unsigned short  version:2;	/* RTP version            */
 	unsigned short  p:1;		/* padding flag           */
 	unsigned short  subtype:5;	/* application dependent  */

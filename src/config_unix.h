@@ -41,6 +41,10 @@
 #ifndef _CONFIG_UNIX_H
 #define _CONFIG_UNIX_H
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <limits.h>
 #include <sys/types.h>
 #include <sys/time.h>
@@ -50,9 +54,6 @@
 #include <signal.h>
 #include <ctype.h>
 
-#if !defined(__FreeBSD__) && !defined(__OpenBSD__)
-#include <malloc.h>
-#endif
 #include <stdio.h>
 #include <stdarg.h>
 #include <memory.h>
@@ -60,12 +61,12 @@
 #include <math.h>
 #include <stdlib.h>   /* abs() */
 #include <string.h>
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
 #include <netinet/in.h>
-#include <sys/time.h>
 #include <unistd.h>
 #include <sys/param.h>
 #include <sys/fcntl.h>
@@ -81,19 +82,16 @@ extern int h_errno;
 
 typedef unsigned char	byte;
 
-/*
- * the definitions below are valid for 32-bit architectures and will have to
- * be adjusted for 16- or 64-bit architectures
- */
-typedef u_char  u_int8;
-typedef u_short u_int16;
-typedef u_long  u_int32;
-typedef char	int8;
-typedef short	int16;
-typedef long	int32;
-typedef long long int64;
+/* Typedefs from standard types to ours */
+typedef uint8_t		u_int8;
+typedef uint16_t	u_int16;
+typedef uint32_t	u_int32;
+typedef int8_t		int8;
+typedef	int16_t		int16;
+typedef int32_t		int32;
+typedef int64_t		int64;
 
-typedef char	ttl_t;
+typedef u_char	ttl_t;
 typedef int	fd_t;
 
 #ifndef TRUE
@@ -106,30 +104,13 @@ typedef int	fd_t;
 #define max(a, b)	(((a) > (b))? (a): (b))
 #define min(a, b)	(((a) < (b))? (a): (b))
 
-#ifdef NEED_IN_ADDR_T
-typedef unsigned long   in_addr_t;
-#endif
-
 #ifdef NDEBUG
 #define assert(x) if ((x) == 0) fprintf(stderr, "%s:%u: failed assertion\n", __FILE__, __LINE__)
 #else
 #include <assert.h>
 #endif
 
-#ifdef __NetBSD__
-#include <fcntl.h>
-#include <sys/audioio.h>
-#endif
-
-#ifdef FreeBSD
-#include <unistd.h>
-#include <stdlib.h>
-#define DIFF_BYTE_ORDER  1
-#endif /* FreeBSD */
-
 #ifdef Solaris
-#include <fcntl.h>
-#include <sys/sockio.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -141,16 +122,11 @@ int gethostname(char *name, int namelen);
 #endif
 
 #ifdef SunOS
-#define NEED_INET_PTON
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 7
-#include <ctype.h>
-#include <string.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/time.h>
-#include <sys/socket.h>
-#include <memory.h>
+#endif
+
+#ifndef STDC_HEADERS
 int 	gethostname(char *name, int namelen);
 int 	gettimeofday(struct timeval *tp, struct timezone *tzp);
 double	drand48();
@@ -183,20 +159,11 @@ int	toupper(int c);
 #define	memmove(dst, src, len)	bcopy((char *) src, (char *) dst, len)
 #endif
 
-#ifdef IRIX
-#include <bstring.h>     /* Needed for FDZERO on IRIX only */
-#include <fcntl.h>
-#endif
-
 #ifdef HPUX
-#define NEED_INET_PTON
-#include <unistd.h>
 int gethostname(char *hostname, size_t size);
 #endif
 
 #ifdef Linux
-#define DIFF_BYTE_ORDER  1
-#include <fcntl.h>
 void *memcpy(void *dest, const void *src, size_t n);
 int   memcmp(const void *s1, const void *s2, size_t n);
 #endif /* Linux */

@@ -57,7 +57,7 @@ lbl_srandom(u_int32 seed)
 u_int32
 lbl_random(void)
 {
-#if defined (Linux) || defined(FreeBSD)
+#ifdef HAVE_DEV_URANDOM
 	/* I don't trust the LBL random number generator, so if   */
 	/* we're on Linux we now use the random number generator  */
 	/* in the kernel which is cryptographically strong. [csp] */

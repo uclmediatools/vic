@@ -76,7 +76,7 @@
 #define RTCP_APP  204
 
 typedef struct {
-#ifndef DIFF_BYTE_ORDER
+#ifdef WORDS_BIGENDIAN
 	unsigned short  version:2;	/* packet type            */
 	unsigned short  p:1;		/* padding flag           */
 	unsigned short  count:5;	/* varies by payload type */

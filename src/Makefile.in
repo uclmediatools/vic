@@ -3,35 +3,42 @@
 # This probably requires GNU make.
 #
 
-CFLAGS = __WFLAGS__ __DEBUG__ __CHAR__ __PROFILE__ __OPTIMIZE__ \
-         __CHECK_FLAG__ __DEFS__ -D__OSTYPE__ 
-INC    = __INCLUDE__
-CC     = __CC__
-AR     = __AR__
-RANLIB = __RANLIB__
+DEFS   = @DEFS@
+CFLAGS = @CFLAGS@ $(DEFS)
+LIBS   = @LIBS@
+CC     = @CC@
+AR     = ar
+RANLIB = @RANLIB@
+HOST   = @host@
 
 OBJS = crypt_random.o debug.o mbus.o mbus_config.o md5.o memory.o net_udp.o \
-       qfDES.o util.o hmac.o base64.o rtp.o inet_ntop.o inet_pton.o drand48.o \
-       gettimeofday.o btree.o
+       qfDES.o util.o hmac.o base64.o rtp.o drand48.o \
+       btree.o @LIBOBJS@
 
 TEST_OBJS = test_base64.o test_des.o test_md5.o test.o
 
 SRCS = $(OBJS:%.o=%.c)
 
-all: libcommon.a test-libcommon
+all: version.h libcommon.a test-libcommon
 
 test-libcommon: $(TEST_OBJS) libcommon.a
-	$(CC) $(TEST_OBJS) $(CFLAGS) __LDLIBS__ __PROFILE__ __OPTIMIZE__ __CHECK_LIB__ -o test-libcommon libcommon.a
+	$(CC) $(TEST_OBJS) $(CFLAGS) $(LIBS) -o test-libcommon libcommon.a
 	
 libcommon.a: $(OBJS)
 	$(AR) r libcommon.a $(OBJS)
 	$(RANLIB) libcommon.a
 
+version.h:	VERSION
+	sed -e 's/.*/#define CCL_VERSION "CCL v& $(HOST)"/' VERSION > version.h
+
 .c.o:
 	$(CC) $(CFLAGS) $(INC) -c $<
 
 clean:
-	-rm -f $(OBJS) $(TEST_OBJS) version.h Makefile Makefile.sed libcommon.a tags test-libcommon
+	-rm -f $(OBJS) $(TEST_OBJS) version.h libcommon.a tags test-libcommon
+
+distclean:	clean
+	-rm -f Makefile config.status config.cache config.h
 
 etags:
 	etags *.[ch]

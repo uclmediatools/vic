@@ -165,6 +165,7 @@ v1.0.10	- Mbus updates from Markus Germeier, which fix compatibility with
 		  which mislead the UCL Mbus to dump core. Allow Spaces in .mbus
 		- Address must be unique
 		- Delete failed reliable messages if err_handler is present
+	GNU autoconf modifications from Bill Fenner
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
@@ -184,3 +185,4 @@ Still to do...
 	  otherwise, as pointed out by Orion.
 	- version number in mbus config file
 	- allow a callback for background processing during mbus_rendezvous_...()
+	- move completely away from OS-based #ifdef's

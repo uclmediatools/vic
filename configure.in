@@ -1,0 +1,152 @@
+dnl Process this file with autoconf to produce a configure script.
+
+AC_INIT(base64.c)
+
+AC_CANONICAL_HOST
+
+dnl  UCL checked $host_os and exited if we didn't recognize it.
+dnl  Let's be more optimistic for now.
+
+dnl XXX
+dnl Backwards compatability to UCL's -D<ostype> for now
+dnl All references to an OS should be replaced by references
+dnl to features!
+
+case "$host_os" in
+
+linux*)
+	AC_DEFINE(Linux)
+	;;
+
+sunos*)
+	AC_DEFINE(SunOS)
+	;;
+
+solaris*)
+	AC_DEFINE(Solaris)
+	;;
+
+hpux*)
+	AC_DEFINE(HPUX)
+	;;
+esac
+
+
+
+AC_PROG_CC
+AC_PROG_CPP
+AC_PROG_RANLIB
+
+AC_HEADER_STDC
+AC_C_CONST
+AC_TYPE_SIZE_T
+
+# Check for standard size types.  The defaults are only valid on some
+# systems so we hope that <inttypes.h> exists when they're wrong.
+AC_CHECK_TYPE(uint8_t, unsigned char)
+AC_CHECK_TYPE(uint16_t, unsigned short)
+AC_CHECK_TYPE(uint32_t, unsigned long)
+AC_CHECK_TYPE(int8_t, signed char)
+AC_CHECK_TYPE(int16_t, short)
+AC_CHECK_TYPE(int32_t, long)
+AC_CHECK_TYPE(int64_t, long long)
+
+# The following two macros cause autoconf to complain.
+AC_C_BIGENDIAN
+AC_C_CHAR_UNSIGNED
+#
+# The (?which?) library does not work with unsigned characters.
+# Force the compiler to use signed chars.
+if test $ac_cv_c_char_unsigned = yes
+then
+	if test "$GCC" = yes
+	then
+		CFLAGS="$CFLAGS -fsigned-char"
+	else
+		case "$host_os" in
+		dnl
+		dnl I don't know when "-signed" was added to IRIX CC
+		dnl so err on the side of using it.
+		irix*)	CFLAGS="$CFLAGS -signed"
+			;;
+		dnl need e.g. --force-signed-chars=-signed
+		*)	AC_MSG_ERROR([I don't know how to force signed chars])
+			;;
+		esac
+	fi
+fi
+dnl  __CHAR_UNSIGNED__ will be defined; hope this is OK.
+
+# GCC-specific warning flags
+if test "$GCC" = yes
+then
+        CFLAGS="$CFLAGS -W -Wall -Wbad-function-cast -Wmissing-prototypes"
+        if test -f .devel
+        then
+                CFLAGS="$CFLAGS -Werror"
+        fi
+fi
+
+# The following causes autoconf to complain.
+AC_CHECK_FILE(/dev/urandom,AC_DEFINE(HAVE_DEV_URANDOM))
+
+# If more files than mbus.c use vsnprintf, split it out into
+# vsnprintf.c and add it to AC_REPLACE_FUNCS
+AC_CHECK_FUNC(vsnprintf,,AC_DEFINE(NEED_VSNPRINTF))
+
+# If inet_aton is actually needed somewhere, split it out into
+# inet_aton.c and add it to AC_REPLACE_FUNCS
+
+AC_REPLACE_FUNCS(inet_pton inet_ntop)
+
+# define HAVE_IPv6 if we find getipnodebyname
+AC_CACHE_CHECK(whether to include IPv6 support,
+		ac_cv_ucl_has_ipv6,
+		AC_EGREP_HEADER(getipnodebyname,
+				netdb.h,
+				ac_cv_ucl_has_ipv6=yes,
+				ac_cv_ucl_has_ipv6=no))
+if test $ac_cv_ucl_has_ipv6 = yes
+then
+        AC_DEFINE(HAVE_IPv6)
+fi
+
+AC_SEARCH_LIBS(socket, socket)
+AC_SEARCH_LIBS(inet_addr, nsl)
+
+# configure defaults CFLAGS to -g -O2
+# so a debug flag would have to fail to remove -g
+# and the optimize would have to modify or add the -O
+# flags:
+#  -debug:
+#       DEBUG2=$DEBUG
+#       AC_DEFINE(DEBUG)
+#  -optimize
+#       OPTIMIZE2=$OPTIMIZE
+#       AC_DEFINE(NDEBUG)
+#  -profile
+AC_ARG_ENABLE(profile,
+	[  --enable-profile        enable profiling],
+	[if test $enableval = yes
+	then
+		if test "$GCC" = yes
+		then
+			CFLAGS="$CFLAGS -pg"
+		else
+			AC_ERROR([Don't know how to enable profiling for $CC])
+		fi
+	fi])
+#  -bounds
+#       add -fbounds-checking to CFLAGS
+#       add -lcheck to LIBS
+#  others
+#       add as compile flag
+# also:
+# MBUS_ENCRYPT_BY_DEFAULT
+# -DDEBUG
+# -DDEBUG_MEM
+# -DNDEBUG
+
+AC_CONFIG_HEADER(config.h)
+
+AC_OUTPUT(Makefile)
