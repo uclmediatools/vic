@@ -126,6 +126,48 @@ char *mbus_new_hashkey(void)
 	return key;
 }
 
+static void rewrite_config(struct mbus_config *m)
+{
+#ifdef WIN32
+	char	*hashkey = mbus_new_hashkey();
+	char	*encrkey = mbus_new_encrkey();
+	char	*scope   = MBUS_DEFAULT_SCOPE_NAME;
+
+	status = RegSetValueEx(m->cfgKey, "HASHKEY", 0, REG_SZ, hashkey, strlen(hashkey) + 1);
+	if (status != ERROR_SUCCESS) {
+		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
+		debug_msg("Unable to set hashkey: %s\n", buffer);
+		abort();
+	}	
+	status = RegSetValueEx(m->cfgKey, "ENCRYPTIONKEY", 0, REG_SZ, encrkey, strlen(encrkey) + 1);
+	if (status != ERROR_SUCCESS) {
+		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
+		debug_msg("Unable to set encrkey: %s\n", buffer);
+		abort();
+	}	
+	status = RegSetValueEx(m->cfgKey, "SCOPE", 0, REG_SZ, scope, strlen(scope) + 1);
+	if (status != ERROR_SUCCESS) {
+		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
+		debug_msg("Unable to set scope: %s\n", buffer);
+		abort();
+	}	
+#else
+	char	*hashkey = mbus_new_hashkey();
+	char	*encrkey = mbus_new_encrkey();
+	char	*scope   = "HOSTLOCAL";
+	int	 len;
+	char	*buf;
+
+	len = strlen(hashkey) + strlen(encrkey) + strlen(scope) + 39;
+	buf = (char *) xmalloc(len);
+	sprintf(buf, "[MBUS]\nHASHKEY=%s\nENCRYPTIONKEY=%s\nSCOPE=%s\n", hashkey, encrkey, scope);
+	write(m->cfgfd, buf, strlen(buf));
+	xfree(buf);
+	free(hashkey);
+	xfree(encrkey);
+#endif
+}
+
 void mbus_lock_config_file(struct mbus_config *m)
 {
 #ifdef WIN32
@@ -145,28 +187,7 @@ void mbus_lock_config_file(struct mbus_config *m)
 		abort();
 	}
 	if (disp == REG_CREATED_NEW_KEY) {
-		char	*hashkey = mbus_new_hashkey();
-		char	*encrkey = mbus_new_encrkey();
-		char	*scope   = SCOPE_HOSTLOCAL_NAME;
-
-		status = RegSetValueEx(m->cfgKey, "HASHKEY", 0, REG_SZ, hashkey, strlen(hashkey) + 1);
-		if (status != ERROR_SUCCESS) {
-			FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
-			debug_msg("Unable to set hashkey: %s\n", buffer);
-			abort();
-		}	
-		status = RegSetValueEx(m->cfgKey, "ENCRYPTIONKEY", 0, REG_SZ, encrkey, strlen(encrkey) + 1);
-		if (status != ERROR_SUCCESS) {
-			FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
-			debug_msg("Unable to set encrkey: %s\n", buffer);
-			abort();
-		}	
-		status = RegSetValueEx(m->cfgKey, "SCOPE", 0, REG_SZ, scope, strlen(scope) + 1);
-		if (status != ERROR_SUCCESS) {
-			FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
-			debug_msg("Unable to set scope: %s\n", buffer);
-			abort();
-		}	
+		rewrite_config(m);
 		debug_msg("Created new registry entry...\n");
 	} else {
 		debug_msg("Opened existing registry entry...\n");
@@ -241,19 +262,7 @@ void mbus_lock_config_file(struct mbus_config *m)
 	}
 	if (s.st_size == 0) {
 		/* Empty file, create with sensible defaults... */
-		char	*hashkey = mbus_new_hashkey();
-		char	*encrkey = mbus_new_encrkey();
-		char	*scope   = "HOSTLOCAL";
-		int	 len;
-
-		len = strlen(hashkey) + strlen(encrkey) + strlen(scope) + 39;
-		buf = (char *) xmalloc(len);
-		sprintf(buf, "[MBUS]\nHASHKEY=%s\nENCRYPTIONKEY=%s\nSCOPE=%s\n", hashkey, encrkey, scope);
-		write(m->cfgfd, buf, strlen(buf));
-		xfree(buf);
-		free(hashkey);
-		xfree(encrkey);
-		debug_msg("Wrote config file\n");
+		rewrite_config(m);
 	} else {
 		/* Read in the contents of the config file... */
 		buf = (char *) xmalloc(s.st_size+1);
