@@ -1,6 +1,8 @@
 /*
- * FILE:   rtp.c
- * AUTHOR: Colin Perkins <c.perkins@cs.ucl.ac.uk>
+ * FILE:     rtp.c
+ * AUTHOR:   Colin Perkins <c.perkins@cs.ucl.ac.uk>
+ * MODIFIED: Orion Hodson <o.hodson@cs.ucl.ac.uk>
+ *           Markus Germeier <mager@tzi.de>
  *
  * The routines in this file implement the Real-time Transport Protocol,
  * RTP, as specified in RFC1889 with current updates under discussion in
@@ -610,10 +612,21 @@ static double rtcp_interval(struct rtp *session, int reconsider)
 
 static double tv_diff(struct timeval curr_time, struct timeval prev_time)
 {
-	/* Return curr_time - prev_time */
-	UNUSED(curr_time);
-	UNUSED(prev_time);
-	return 0.0;
+    /* Return curr_time - prev_time */
+    double sec;
+    double usec;
+
+    sec = curr_time.tv_sec - prev_time.tv_sec ;
+    usec = curr_time.tv_usec - prev_time.tv_usec ;
+
+    assert(sec >= 0);
+    if (usec < 0 ) {
+	assert(sec > 0);
+	sec--;
+	usec += 1000000;
+    }
+
+    return (sec+(usec/1000000));
 }
 
 static void tv_add(struct timeval *ts, double offset)
@@ -1296,7 +1309,7 @@ int rtp_send_data(struct rtp *session, u_int32 ts, char pt, int m, int cc, u_int
 	/* ...and the actual packet header... */
 	packet->v    = 2;
 	packet->p    = 0;
-	packet->x    = (extn == NULL);
+	packet->x    = (extn != NULL);
 	packet->cc   = cc;
 	packet->m    = m;
 	packet->pt   = pt;
@@ -1665,8 +1678,8 @@ void rtp_update(struct rtp *session)
 		for (s = session->db[h]; s != NULL; s = s->next) {
 			/* Expire sources which haven't been heard from for a long time.   */
 			/* Section 6.2.1 of the RTP specification details the timers used. */
-			delay = tv_diff(s->last_active, curr_time);
-
+			delay = tv_diff(curr_time, s->last_active);
+			
 			/* Check if we've received a BYE packet from this source.    */
 			/* If we have, and it was received more than 2 seconds ago   */
 			/* then the source is deleted. The arbitrary 2 second delay  */
@@ -1684,17 +1697,47 @@ void rtp_update(struct rtp *session)
 
 void rtp_send_bye(struct rtp *session)
 {
-	UNUSED(session);
-}
+	/* The function sends an RTCP BYE packet. It should implement BYE reconsideration, */
+	/* at present it either: a) sends a BYE packet immediately (if there are less than */
+	/* 50 members in the group), or b) returns without sending a BYE (if there are 50  */
+	/* or more members). See draft-ietf-avt-rtp-new-01.txt (section 6.3.7).            */
+	u_int8	 buffer[RTP_MAX_PACKET_LEN];
+	u_int8	*ptr = buffer;
+	rtcp_common	*common;
 
-int rtp_sent_bye(struct rtp *session)
-{
-	UNUSED(session);
-	return TRUE;
+	if (session->ssrc_count < 50) {
+		ptr = format_rtcp_rr(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), session);    
+		common = (rtcp_common *) ptr;
+		
+		common->version = 2;
+		common->p       = 0;
+		common->count   = 1;
+		common->pt      = RTCP_BYE;
+		common->length  = ntohs(1);
+		ptr += sizeof(common);
+		
+		*((u_int32 *) ptr) = htonl(session->my_ssrc);  
+		ptr += sizeof(session->my_ssrc); 
+		
+		udp_send(session->rtcp_socket, buffer, ptr - buffer);
+	}
 }
 
 void rtp_done(struct rtp *session)
 {
-	UNUSED(session);
+	int i ;
+
+	for (i = 0; i < RTP_DB_SIZE; i++) {
+	if (session->db[i] != NULL) {
+	    if (session->db[i]->ssrc != session->my_ssrc) {
+		delete_source(session,session->db[i]->ssrc);	    
+	    }
+	}
+	}
+	delete_source(session, session->my_ssrc);
+
+	udp_exit(session->rtp_socket);
+	udp_exit(session->rtcp_socket);
+	xfree(session);
 }
 

@@ -84,6 +84,8 @@ v1.0.7  - Add udp_exit to close sockets and leave multicast groups if necessary.
 	  the reason. We could specify an interface explicitly, but which one to
 	  pick?
 	- Updates to the IPv6 code for the Detexis Musica IPv6 stack
+	- Updates to the RTP code from Markus Germeier: time-out and delete sources,
+	  fix X but in RTP header, add support for sending BYE packets.
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
