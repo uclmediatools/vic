@@ -9,7 +9,38 @@
 
 <P><!-- @(#) $Header$ (LBL)--></P>
 <H1>vic: Change History</H1>
-<H3>v2.8ucl5</H3><UL>
+<H3>v2.8ucl-1.0</H3><UL>
+<LI>Reorganised code into directory structure reflecting the functionality of
+the different modules of vic - in a style not disimilar to
+<a href="http://mash.cs.berkeley.edu/mash/index.html">MASH</a>.
+<LI>Moved vic over to use <b>UCL's version's of tcl/tk</b> - this is due to a
+number of problems we have encountered here; 
+The variety of versions of tcl/tk installed on target machines can be very
+wide and therefore provides us with a multitude of bugs and 'problems' that are
+not related to our code. We now ship the code now with UCL statically linkable
+version of tcl/tk (which also uses compiled in versions of the 'init' scripts
+as opposed to system installed which also lead to trouble) to minimise such
+problems. It is still possible to get vic to use the standard libraries by
+specifying -without-ucltk, and/or -without-ucltcl (though we cannot offer
+much help with problems created by different tcl/tk versions).
+<LI>Moved vic over to use <b>UCL's common library</b> so it shares the codebase 
+provided by rat - where possible; It now uses common DES code and Mbus code -
+so both the DES and Mbus sections have been re-written.
+<LI>The meteor grabber has been fixed (using the source from the freeBSD version) for FreeBSD and vic now compiles under FreeBSD.
+<LI>A number of useful fixes for the video4linux grabber plus new control panel
+from <a href="mailto:jmo@medialab.chalmers.se">Jean-Marc Orliaguet</a>
+<LI><b>IPv6 support under UNIX and WIN32</b>. Under UNIX this enabled by specifiying
+the --enable-ipv6 directive to configure. We have tested it with
+Solaris 7 ipv6, Linux 2.2.5 ipv6 kernel support.
+<LI>Created an MS Visual C++ 6.0 project for compilation of vic under win32
+environments - this also, unfortunately, meant we had to rename all C++ files
+from .cc to .cpp. The project has a number of different configuration choices;
+Debug, Release, Debug_IPv6 (Microsoft research's IPv6 - requiring NT 4.0, 
+<a href="http://www.research.microsoft.com/msripv6">MS ipv6</a> version 1.3 and
+MS DDK), Debug_IPv6-Musica (a non-free ipv6 implementation from Thompson-CSF).
+<LI>Now IPv6 host addresses and multicast addresses are automatically
+recognised and vic will attempt to use IPv6 (if compiled in).
+</UL><H3>v2.8ucl5</H3><UL>
 <LI>Fixed -l option so it instead generates a filename automatically of the form: "vic-{timestamp -seconds}-{local IP addr}-{username}". It now works under Windows and UNIX. (Under Windows the tcl command 'puts' had been redefined so that it did not write to a file at all (only to stdout/stderr) - I added the necessary code). The output is of the form:<br>
 Cname timestamp framerate bps loss
 <LI>Fixed mtrace calling and cname disappearance problem
