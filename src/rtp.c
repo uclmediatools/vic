@@ -2446,7 +2446,7 @@ static uint8_t *format_rtcp_app(uint8_t *buffer, int buflen, uint32_t ssrc, rtcp
 	int          data_octets  =  pkt_octets - 12;
 
 	assert(data_octets >= 0);          /* ...else not a legal APP packet.               */
-	assert(buflen      >  pkt_octets); /* ...else there isn't space for the APP packet. */
+	assert(buflen      >= pkt_octets); /* ...else there isn't space for the APP packet. */
 
 	/* Copy one APP packet from "app" to "packet". */
 	packet->version        =   RTP_VERSION;
