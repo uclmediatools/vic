@@ -1127,11 +1127,14 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 			memcpy(tx_cryptbuf, buffer, buffer_len);
 			memset(initVec, 0, 8);
 			qfDES_CBC_d(m->encrkey, tx_cryptbuf, buffer_len, initVec);
-			if (strncmp(tx_cryptbuf + MBUS_AUTH_LEN + 1, "mbus/1.0", 8) != 0) {
-				/* Message did not correctly decrypt... */
-				continue;
-			}
 			memcpy(buffer, tx_cryptbuf, buffer_len);
+		}
+
+		/* Sanity check that this is a vaguely sensible format message... Should prevent */
+		/* problems if we're fed complete garbage, but won't prevent determined hackers. */
+		if (strncmp(buffer + MBUS_AUTH_LEN + 1, "mbus/1.0", 8) != 0) {
+			debug_msg("Message did not correctly decrypt...\n");
+			continue;
 		}
 
 		mbus_parse_init(m, buffer);
