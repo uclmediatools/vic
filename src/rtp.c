@@ -126,6 +126,7 @@ typedef struct _source {
 	rtcp_sr		*sr;
 	rtcp_rr_wrapper	*rr;
 	struct timeval	 last_active;
+	int		 sender;
 	int		 got_bye;	/* TRUE if we've received an RTCP bye from this source */
 } source;
 
@@ -155,6 +156,9 @@ struct rtp {
 	int		 sender_count;
 	int		 initial_rtcp;
 	int		 avg_rtcp_size;
+	int		 we_sent;
+	struct timeval	 last_rtcp_send_time;
+	struct timeval	 next_rtcp_send_time;
 	void (*callback)(struct rtp *session, rtp_event *event);
 };
 
@@ -287,6 +291,7 @@ static void create_source(struct rtp *session, u_int32 ssrc)
 	s->sr      = NULL;
 	s->rr      = NULL;
 	s->got_bye = FALSE;
+	s->sender  = FALSE;
 	gettimeofday(&(s->last_active), NULL);
 	/* Now, add it to the database... */
 	if (session->db[h] != NULL) {
@@ -459,6 +464,9 @@ struct rtp *rtp_init(char *addr, u_int16 port, int ttl, void (*callback)(struct 
 	session->sender_count       = 0;
 	session->initial_rtcp       = TRUE;
 	session->avg_rtcp_size      = 0;
+	session->we_sent            = FALSE;
+	gettimeofday(&(session->last_rtcp_send_time), NULL);
+	gettimeofday(&(session->next_rtcp_send_time), NULL);
 	for (i = 0; i < RTP_DB_SIZE; i++) {
 		session->db[i] = NULL;
 	}
@@ -530,6 +538,7 @@ static void rtp_recv_data(struct rtp *session)
 	rtp_event	 event;
 	struct timeval	 event_ts;
 	int		 i;
+	source		*s;
 
 	buflen = udp_recv(session->rtp_socket, buffer, RTP_MAX_PACKET_LEN - RTP_PACKET_HEADER_SIZE);
 	if (buflen > 0) {
@@ -559,6 +568,13 @@ static void rtp_recv_data(struct rtp *session)
 					create_source(session, packet->csrc[i]);
 				}
 			}
+			/* Update the source database... */
+			s = get_source(session, packet->ssrc);
+			if (s->sender == FALSE) {
+				s->sender = TRUE;
+				session->sender_count++;
+			}
+			/* Callback to the application to process the packet... */
 			gettimeofday(&event_ts, NULL);
 			event.ssrc = packet->ssrc;
 			event.type = RX_RTP;
@@ -990,6 +1006,7 @@ rtcp_rr *rtp_get_rr(struct rtp *session, u_int32 reporter, u_int32 reportee)
 
 int rtp_send_data(struct rtp *session, u_int32 ts, char pt, int m, int cc, u_int32 csrc[16], char *data, int data_len)
 {
+	session->we_sent = TRUE;
 	UNUSED(session);
 	   UNUSED(ts);
 	UNUSED(pt);
@@ -1010,39 +1027,30 @@ static void calc_ts_diff(struct timeval curr_time, struct timeval prev_time, str
 	debug_msg("FIXME...\n");
 }
 
-static void expire_sources(struct rtp *session)
+static void expire_source(struct rtp *session, source *s, struct timeval curr_time)
 {
 	/* Expire sources which haven't been heard from for a long time.   */
 	/* Section 6.2.1 of the RTP specification details the timers used. */
-	int	 	 h;
-	source	 	*s;
-	struct timeval	 curr_time;
 	struct timeval	 ts_diff;
 
-	gettimeofday(&curr_time, NULL);
-
-	for (h = 0; h < RTP_DB_SIZE; h++) {
-		for (s = session->db[h]; s != NULL; s = s->next) {
-			calc_ts_diff(s->last_active, curr_time, &ts_diff);
-			/* Check if we've received a BYE packet from this source.    */
-			/* If we have, and it was received more than 2 seconds ago   */
-			/* then the source is deleted. The arbitrary 2 second delay  */
-			/* is to ensure that all delayed packets are received before */
-			/* the source is timed out.                                  */
-			if (s->got_bye && (ts_diff.tv_sec > 2)) {
-				delete_source(session, s->ssrc);
-			}
-			/* If a source hasn't been heard from for more than 5 RTCP   */
-			/* reporting intervals, we mark the source as inactive.      */
-
-			/* If a source hasn't been heard from for more than 30 mins, */
-			/* we delete that source.                                    */
-		}
+	calc_ts_diff(s->last_active, curr_time, &ts_diff);
+	/* Check if we've received a BYE packet from this source.    */
+	/* If we have, and it was received more than 2 seconds ago   */
+	/* then the source is deleted. The arbitrary 2 second delay  */
+	/* is to ensure that all delayed packets are received before */
+	/* the source is timed out.                                  */
+	if (s->got_bye && (ts_diff.tv_sec > 2)) {
+		delete_source(session, s->ssrc);
 	}
+	/* If a source hasn't been heard from for more than 5 RTCP   */
+	/* reporting intervals, we mark the source as inactive.      */
+
+	/* If a source hasn't been heard from for more than 30 mins, */
+	/* we delete that source.                                    */
 }
 
 #ifdef NDEF
-static double rtcp_interval(struct rtp *session, double rtcp_bw, int we_sent)
+static double rtcp_interval(struct rtp *session, double rtcp_bw)
 {
 	/* Minimum average time between RTCP packets from this site (in   */
 	/* seconds).  This time prevents the reports from `clumping' when */
@@ -1050,7 +1058,7 @@ static double rtcp_interval(struct rtp *session, double rtcp_bw, int we_sent)
 	/* to smooth out the traffic.  It also keeps the report interval  */
 	/* from becoming ridiculously small during transient outages like */
 	/* a network partition.                                           */
-	double const RTCP_MIN_TIME = 5.;
+	double const RTCP_MIN_TIME = 5.0;
 	/* Fraction of the RTCP bandwidth to be shared among active       */
 	/* senders.  (This fraction was chosen so that in a typical       */
 	/* session with one or two active senders, the computed report    */
@@ -1077,7 +1085,7 @@ static double rtcp_interval(struct rtp *session, double rtcp_bw, int we_sent)
 	/* the RTCP bandwidth equally.                                    */
 	n = session->ssrc_count;
 	if (session->sender_count > 0 && session->sender_count < session->ssrc_count * RTCP_SENDER_BW_FRACTION) {
-		if (we_sent) {
+		if (session->we_sent) {
 			rtcp_bw *= RTCP_SENDER_BW_FRACTION;
 			n = session->sender_count;
 		} else {
@@ -1094,27 +1102,49 @@ static double rtcp_interval(struct rtp *session, double rtcp_bw, int we_sent)
 	/* time interval we send one report so this time is also our      */
 	/* average time between reports.                                  */
 	t = session->avg_rtcp_size * n / rtcp_bw;
-	if (t < rtcp_min_time) t = rtcp_min_time;
-
+	if (t < rtcp_min_time) {
+		t = rtcp_min_time;
+	}
+	return t;
+#ifdef NDEF
 	/* To avoid traffic bursts from unintended synchronization with   */
 	/* other sites, we then pick our actual next report interval as a */
 	/* random number uniformly distributed between 0.5*t and 1.5*t.   */
 	return t * (drand48() + 0.5);
+#endif
 }
 #endif
 
 int rtp_send_ctrl(struct rtp *session, u_int32 ts)
 {
-	expire_sources(session);
+	int	 	 h;
+	source	 	*s;
+	struct timeval	 curr_time;
+
+	gettimeofday(&curr_time, NULL);
 
 	UNUSED(ts);
+
+	debug_msg("ssrc_count=%d sender_count=%d avg_rtcp_size=%d we_sent=%d\n", 
+	           sess   ion->ssrc_count, session->sender_count, session->avg_rtcp_size, session->we_sent);
+
 	/* Send an RTCP packet, if one is due... */
 /*
 	if (packet_due) {
 		send packet()
 		session->initial_rtcp = FALSE;
+		session->we_sent      = FALSE;
+		session->sender_count = 0;
 	}
 */
+	/* Perform housekeeping on the source database... */
+	for (h = 0; h < RTP_DB_SIZE; h++) {
+		for (s = session->db[h]; s != NULL; s = s->next) {
+			expire_source(session, s, curr_time);
+			s->sender = FALSE;
+		}
+	}
+
 	return -1;
 }
 
