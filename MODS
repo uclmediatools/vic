@@ -55,10 +55,10 @@ v1.0.4  - Fix compilation with Microsoft IPv6 stack
 	- Fixes to mbus code from Dirk Kutscher
 	* 2 June 1999 [rat v4.0.3]
 
-v1.0.5	- Not quite sure what happened with this version, but if you have
-          it it's probably not a good idea to use it! :-)
+v1.0.5  - Not quite sure what happened with this version, but if you have
+	  it it's probably not a good idea to use it! :-)
 
-v1.0.6	- Add ability to send to one port whilst receiving on another, 
+v1.0.6  - Add ability to send to one port whilst receiving on another, 
 	  requested by Henning Schulzrinne.
 	- Add mbus_cmd_handler() to change the function handling the
 	  reception of mbus commands.
@@ -92,7 +92,7 @@ v1.0.7  - Add udp_exit to close sockets and leave multicast groups if necessary.
 	- Add drand48() workaround for win32
 	* Released 20 August 1999
 
-v1.0.8	- Add mbus_sent_all()
+v1.0.8  - Add mbus_sent_all()
 	- Add loop count to mbus_recv(), so it will always return after 10
 	  packets have been received. The prevents a denial of service attack
 	  if packets are sent faster than the timeout period.
@@ -141,17 +141,17 @@ v1.0.8	- Add mbus_sent_all()
 		- Split rtp_recv_data() into two functions.
 	* 5 October 1999
 
-v1.0.9	- Ignore ECONNREFUSED in net_udp.c
+v1.0.9  - Ignore ECONNREFUSED in net_udp.c
 	- Add mbus_rendezvous_waiting() and mbus_rendezvous_go() to enable
 	  easy rendezvous between multiple processes.
 	- Change rtp_setopt() and rtp_getopt() to take boolean options only.
 	- Remove rtp_weak_validation(), use rtp_setopt(RTP_OPT_WEAK_VALIDATION)
 	  instead.
 	- Delete RTP database entries which haven't been heard from for
-  	  more than 5 times the RTCP reporting interval.
+	  more than 5 times the RTCP reporting interval.
 	* 2 November 1999 [rat v4.1.1]
 
-v1.0.10	- Mbus updates from Markus Germeier, which fix compatibility with
+v1.0.10 - Mbus updates from Markus Germeier, which fix compatibility with
 	  the Uni Bremen implementation:
 		- mbus.bye() signals an entity when it leaves. (mbus.quit commands
 		  an entity to leave)
@@ -176,9 +176,9 @@ v1.0.10	- Mbus updates from Markus Germeier, which fix compatibility with
 	  form of the key.
 	- GNU autoconf modifications from Bill Fenner
 	- Global change of integer types, and removal of compatibility defines:
-		u_int8	-> u_int8_t
-		u_int16	-> u_int16_t
-		u_int32	-> u_int32_t
+		u_int8  -> u_int8_t
+		u_int16 -> u_int16_t
+		u_int32 -> u_int32_t
 	  and the same for the signed varients.
 	- Implement encryption in the RTP code
 	- Ignore connection refused errors in IPv4 UDP send.
@@ -191,7 +191,7 @@ v1.0.10	- Mbus updates from Markus Germeier, which fix compatibility with
 	* 13 December 1999 [rat v4.1.2]
 
 1.0.11  - Changed autoconf generated header to uclconf.h.
-	- Changed library name to uclmmbase to be consistent with other libs.	
+	- Changed library name to uclmmbase to be consistent with other libs.   
 	- Add RTP_OPT_FILTER_MY_PACKETS
 	- Cleanup test routines
 	- Fix various potential buffer overflow problems
@@ -199,7 +199,8 @@ v1.0.10	- Mbus updates from Markus Germeier, which fix compatibility with
 	- Previous versions of udp_send() would sometimes return -1 on error, 
 	  and would sometimes abort(). We now always return -1 and never abort.
 	- Add test routines for code in net_udp.c
-
+	- Fix SCOPE parameter in mbus configuration on windows
+	- Fix sending of hearbeat messages whilst in mbus.waiting() and mbus.go() loops
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,

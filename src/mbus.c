@@ -433,15 +433,17 @@ void mbus_retransmit(struct mbus *m)
 void mbus_heartbeat(struct mbus *m, int interval)
 {
 	struct timeval	curr_time;
+	char	*a = (char *) xmalloc(3);
+	sprintf(a, "()");
 
 	gettimeofday(&curr_time, NULL);
-
 	if (curr_time.tv_sec - m->last_heartbeat.tv_sec >= interval) {
-		mbus_qmsg(m, "()", "mbus.hello", "", FALSE);
+		mbus_qmsg(m, a, "mbus.hello", "", FALSE);
 		m->last_heartbeat = curr_time;
 		/* Remove dead sources */
 		remove_inactiv_other_addr(m, curr_time, interval);
 	}
+	xfree(a);
 }
 
 int mbus_waiting_ack(struct mbus *m)
@@ -1035,7 +1037,6 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 					if (mbus_parse_lst(m, &param)) {
 						char 		*newsrc = (char *) xmalloc(strlen(src) + 3);
 						sprintf(newsrc, "(%s)", src);	/* Yes, this is a kludge. */
-						m->cmd_handler(newsrc, cmd, param, data);
 						/* Finally, we snoop on the message we just passed to the application, */
 						/* to do housekeeping of our list of known mbus sources...             */
 						if (strcmp(cmd, "mbus.bye") == 0) {
@@ -1043,8 +1044,10 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 						} 
 						if (strcmp(cmd, "mbus.hello") == 0) {
 						/* Mark this source as activ. We remove dead sources in mbus_heartbeat */
-						    mark_activ_other_addr(m, newsrc);
+							debug_msg("******* %s\n", newsrc);
+							mark_activ_other_addr(m, newsrc);
 						}
+						m->cmd_handler(newsrc, cmd, param, data);
 						xfree(newsrc);
 					} else {
 						debug_msg("Unable to parse mbus command:\n");
@@ -1094,10 +1097,17 @@ static void rz_handler(char *src, char *cmd, char *args, void *data)
 			r->peer = xstrdup(src);
 		}
 		mbus_parse_done(r->m);
-	} else if (strcmp(cmd, "mbus.hello") == 0) {
-		/* Silently ignore this... */
 	} else {
 		r->cmd_handler(src, cmd, args, r->data);
+		if (strcmp(cmd, "mbus.hello") == 0) {
+			/* Mark this source as activ. We remove dead sources in mbus_heartbeat */
+			mark_activ_other_addr(r->m, src);
+		}
+		if (strcmp(cmd, "mbus.bye") == 0) {
+			/* Finally, we snoop on the message we just passed to the application, */
+			/* to do housekeeping of our list of known mbus sources...             */
+			remove_other_addr(r->m, src);
+		}
 	}
 }
 
@@ -1126,6 +1136,7 @@ char *mbus_rendezvous_waiting(struct mbus *m, char *addr, char *token, void *dat
 		mbus_qmsgf(m, addr, FALSE, "mbus.waiting", "%s", token_e);
 		mbus_send(m);
 		mbus_recv(m, r, &timeout);
+		mbus_retransmit(m);
 	}
 	m->cmd_handler = r->cmd_handler;
 	peer = xstrdup(r->peer);
@@ -1158,6 +1169,7 @@ char *mbus_rendezvous_go(struct mbus *m, char *token, void *data)
 		mbus_heartbeat(m, 1);
 		mbus_send(m);
 		mbus_recv(m, r, &timeout);
+		mbus_retransmit(m);
 	}
 	mbus_qmsgf(m, r->peer, FALSE, "mbus.go", "%s", token_e);
 	mbus_send(m);
