@@ -1540,25 +1540,28 @@ static u_int8 *format_rtcp_sdes(u_int8 *buffer, int buflen, u_int32 ssrc, struct
 	if ((session->sdes_count_pri % 3) == 0) {
 		session->sdes_count_sec++;
 		if ((session->sdes_count_sec % 8) == 0) {
+			/* Note that the following is supposed to fall-through the cases */
+			/* until one is found to send... The lack of break statements in */
+			/* the switch is not a bug.                                      */
 			switch (session->sdes_count_ter % 4) {
-			case 0: item = rtp_get_sdes(session, ssrc, RTCP_SDES_EMAIL);
+			case 0: item = rtp_get_sdes(session, ssrc, RTCP_SDES_TOOL);
+				if ((item != NULL) && ((strlen(item) + (size_t) 2) <= remaining_len)) {
+					packet += add_sdes_item(packet, RTCP_SDES_TOOL, item);
+					break;
+				}
+			case 1: item = rtp_get_sdes(session, ssrc, RTCP_SDES_EMAIL);
 				if ((item != NULL) && ((strlen(item) + (size_t) 2) <= remaining_len)) {
 					packet += add_sdes_item(packet, RTCP_SDES_EMAIL, item);
 					break;
 				}
-			case 1: item = rtp_get_sdes(session, ssrc, RTCP_SDES_PHONE);
+			case 2: item = rtp_get_sdes(session, ssrc, RTCP_SDES_PHONE);
 				if ((item != NULL) && ((strlen(item) + (size_t) 2) <= remaining_len)) {
 					packet += add_sdes_item(packet, RTCP_SDES_PHONE, item);
 					break;
 				}
-			case 2: item = rtp_get_sdes(session, ssrc, RTCP_SDES_LOC);
+			case 3: item = rtp_get_sdes(session, ssrc, RTCP_SDES_LOC);
 				if ((item != NULL) && ((strlen(item) + (size_t) 2) <= remaining_len)) {
 					packet += add_sdes_item(packet, RTCP_SDES_LOC, item);
-					break;
-				}
-			case 3: item = rtp_get_sdes(session, ssrc, RTCP_SDES_TOOL);
-				if ((item != NULL) && ((strlen(item) + (size_t) 2) <= remaining_len)) {
-					packet += add_sdes_item(packet, RTCP_SDES_TOOL, item);
 					break;
 				}
 			}
@@ -1604,6 +1607,7 @@ static void send_rtcp(struct rtp *session, u_int32 ts)
 		ptr = format_rtcp_rr(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), session);
 	}
 
+	/* Finally, add the appropriate SDES items to the packet... */
 	ptr = format_rtcp_sdes(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), rtp_my_ssrc(session), session);
 	udp_send(session->rtcp_socket, buffer, ptr - buffer);
 }
