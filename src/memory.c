@@ -158,6 +158,69 @@ void xclaim(void *addr, const char *filen, int line)
 #endif /* DEBUG_MEM */
 } 
 
+#ifdef DEBUG_MEM
+static int 
+alloc_blk_cmp_origin(const void *vab1, const void *vab2)
+{
+        alloc_blk *ab1, *ab2;
+        int sc;
+        
+        ab1 = (alloc_blk*)vab1;
+        ab2 = (alloc_blk*)vab2;
+
+        if (ab1->filen == NULL || ab2->filen == NULL) {
+                if (ab1->filen == NULL && ab2->filen == NULL) {
+                        return 0;
+                } else if (ab1->filen == NULL) {
+                        return +1;
+                } else /* (ab2->filen == NULL)*/ {
+                        return -1;
+                }
+        }
+
+        sc = strcmp(ab1->filen, ab2->filen);
+        if (sc == 0) {
+                if (ab1->line > ab2->line) {
+                        return +1;
+                } else if (ab1->line == ab2->line) {
+                        return 0;
+                } else /* (ab1->line < ab2->line) */{
+                        return -1;
+                }
+        }
+
+        return sc;
+}
+#endif /* DEBUG_MEM */
+
+void 
+xmemdist(FILE *fp)
+{
+#ifdef DEBUG_MEM
+        int i, last_line=-1, cnt=0, entry=0;
+        char *last_filen = NULL;
+        
+        qsort(mem_item, naddr, sizeof(mem_item[0]), alloc_blk_cmp_origin);
+        fprintf(fp, "# Distribution of memory allocated\n# <idx> <file> <line> <allocations>\n");
+        for(i = 0; i < naddr; i++) {
+                if (last_filen == NULL ||
+                    last_line  != mem_item[i].line ||
+                    strcmp(last_filen, mem_item[i].filen)) {
+                        if (last_filen != NULL) {
+                                fprintf(fp, "% 3d\n", cnt);
+                        }
+                        cnt = 0;
+                        last_filen = mem_item[i].filen;
+                        last_line  = mem_item[i].line;
+                        fprintf(fp, "% 3d %20s % 4d ", entry, last_filen, last_line);
+                        entry++;
+                }
+                cnt++;
+        }
+        fprintf(fp, "% 3d\n", cnt);
+#endif /* DEBUG_MEM */
+        UNUSED(fp);
+}
 
 void xfree(void *y)
 {

@@ -49,6 +49,7 @@ void 	 xdoneinit(void);
 void	 xmemchk(void);
 void     xmemdmp(void);
 void     xclaim(void *p, const char *filen, int line);
+void     xmemdist(FILE *fp);
 
 /* Replacements for regular memory fn's */
 void	 xfree(void *x);

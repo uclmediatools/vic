@@ -110,6 +110,7 @@ _block_alloc(unsigned int size, const char *filen, int line)
 #ifdef DEBUG_MEM
         if (blocks_alloced == MAX_BLOCKS_OUT) {
                 debug_msg("Too many blocks allocated.\n");
+                xmemdist(stderr);
                 xmemdmp();
         }
 
