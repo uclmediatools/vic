@@ -37,8 +37,9 @@
 #ifndef vic_io_handler_h
 #define vic_io_handler_h
 
+#include "config.h"
 #ifdef WIN32
-#include <windows.h>
+//#include <windows.h>
 #define WM_WSOCK_READY 	WM_USER+123
 #endif
 

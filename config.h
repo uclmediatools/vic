@@ -37,7 +37,7 @@
 #define vic_config_h
 
 #if defined(sgi) || defined(__bsdi__) || defined(__FreeBSD__) 
-# include <sys/types.h>
+#include <sys/types.h>
 #elif defined(sun)
 #include <sys/types.h>
 #define int8_t	char
@@ -59,9 +59,9 @@ typedef unsigned int   u_int32_t;
 # endif
 typedef short int16_t;
 typedef int   int32_t;
-typedef unsigned char u_int8_t;
-typedef unsigned short u_int16_t;
-typedef unsigned int u_int32_t;
+typedef unsigned char	u_int8_t;
+typedef unsigned short	u_int16_t;
+typedef unsigned int	u_int32_t;
 #endif
 
 #if defined(sun) || defined(_AIX)
@@ -83,8 +83,12 @@ long random(void);
 #define DEFINED_ERRLIST
 #endif
 
+#include "debug.h"
+#include <malloc.h>
 #include <stdlib.h>
 #include <time.h>		/* For clock_t */
+
+
 #ifndef WIN32
 #include <unistd.h>
 #if defined(__cplusplus)
@@ -102,7 +106,7 @@ char *ctime(const time_t *);
 #if defined(__cplusplus)
 }
 #endif
-#endif
+#endif /*ndef WIN32*/
 
 #if defined(NEED_SUNOS_PROTOS)
 #if defined(__cplusplus)
@@ -134,10 +138,80 @@ int strcasecmp(const char*, const char*);
 #endif
 
 #ifdef WIN32
+//#include <windef.h>
+//#include <winbase.h>
 
-#include <winsock.h>
+#include <limits.h>
+#include <malloc.h>
+#include <stdio.h>
+#include <memory.h>
+#include <errno.h>
+#include <math.h>
+#include <stdlib.h>   /* abs() */
+#include <string.h>
 
+#ifdef MUSICA_IPV6
+#include <winsock6.h>
+#else
+#include <winsock2.h>
+//#include <ws2tcpip.h>
+#endif
+
+#ifdef HAVE_IPV6
+
+#if !defined(MUSICA_IPV6) && defined(WIN32) /* MS_IPV6 */
+
+#include <ws2ip6.h>
+#include <ws2tcpip.h>
+
+#define IN6_ARE_ADDR_EQUAL IN6_ADDR_EQUAL
+
+#define IN6ADDR_ANY_INIT { (unsigned char)0, (unsigned char)0, (unsigned char)0, (unsigned char)0, \
+                            (unsigned char)0, (unsigned char)0, (unsigned char)0, (unsigned char)0, \
+                            (unsigned char)0, (unsigned char)0, (unsigned char)0, (unsigned char)0, \
+                            (unsigned char)0, (unsigned char)0, (unsigned char)0, (unsigned char)0 } 
+#define IN6_IS_ADDR_UNSPECIFIED(addr) \
+        (((addr)->s6_addr[0] == 0) && \
+        ((addr)->s6_addr[1] == 0) && \
+        ((addr)->s6_addr[2] == 0) && \
+        ((addr)->s6_addr[3] == 0) && \
+        ((addr)->s6_addr[4] == 0) && \
+        ((addr)->s6_addr[5] == 0) && \
+        ((addr)->s6_addr[6] == 0) && \
+        ((addr)->s6_addr[7] == 0) && \
+        ((addr)->s6_addr[8] == 0) && \
+        ((addr)->s6_addr[9] == 0) && \
+        ((addr)->s6_addr[10] == 0) && \
+        ((addr)->s6_addr[11] == 0) && \
+        ((addr)->s6_addr[12] == 0) && \
+        ((addr)->s6_addr[13] == 0) && \
+        ((addr)->s6_addr[14] == 0) && \
+        ((addr)->s6_addr[15] == 0))
+
+#define IN6_IS_ADDR_MULTICAST(addr) \
+        ((addr)->s6_addr[0] == 0xffU)
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+	const char * inet_ntop(int af, const void *src, char *dst, size_t size);
+	int inet_pton(int af,const char *src,void *dst);
+#if defined(__cplusplus)
+}
+#endif 
+
+#define INET6_ADDRSTRLEN        46      /* max len of IPv6 addr in ascii */
+                                        /* standard colon-hex notation. */ 
+#define EAFNOSUPPORT -1
+//#define IP_MULTICAST_LOOP       0x12    /* set/get IP multicast loopback   */
+
+#endif /* MS_IPV6 */
+
+#endif /* HAVE_IPV6 */
+
+#ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN	256
+#endif
 
 #define _SYS_NMLN	9
 struct utsname {
@@ -159,8 +233,9 @@ struct timezone {
 	int tz_minuteswest;
 	int tz_dsttime;
 };
-
+#ifndef MUSICA_IPV6
 typedef int pid_t;
+#endif
 typedef int uid_t;
 typedef int gid_t;
     
@@ -187,12 +262,14 @@ time_t time(time_t *);
 #endif
 
 #define ECONNREFUSED	WSAECONNREFUSED
-#define ENETUNREACH	WSAENETUNREACH
+#define ENETUNREACH		WSAENETUNREACH
 #define EHOSTUNREACH	WSAEHOSTUNREACH
-#define EWOULDBLOCK	WSAEWOULDBLOCK
+#define EWOULDBLOCK		WSAEWOULDBLOCK
 
 #define M_PI		3.14159265358979323846
 
+#include <windows.h>
+
 #endif /* WIN32 */
   
-#endif
+#endif /* vic_config_h */

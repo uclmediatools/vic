@@ -30,6 +30,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+#ifndef MUSICA_IPV6
 
 #if defined(LIBC_SCCS) && !defined(lint)
 /* static char sccsid[] = "from: @(#)getopt.c	8.2 (Berkeley) 4/2/94"; */
@@ -121,3 +122,5 @@ getopt(nargc, nargv, ostr)
 	}
 	return (optopt);			/* dump back option letter */
 }
+
+#endif /* MUSICA_IPV6 */

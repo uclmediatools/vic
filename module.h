@@ -36,7 +36,7 @@
 #ifndef vic_module_h
 #define vic_module_h
 
-#include "Tcl.h"
+#include "vic_tcl.h"
 #include "config.h"
 
 class Transmitter;
