@@ -1016,18 +1016,20 @@ proc build.encoder w {
 }
 
 proc jpeg_setq value {
-	global useHardwareComp
+	global useHardwareComp videoDevice
 	incr value
 	if { $value > 95 } {
 		set value 95
 	} elseif { $value < 5 } {
 		set value 5
 	}
-	
-	if { $useHardwareComp } {
+
+	set DA [$videoDevice attributes]
+	set DF [attribute_class $DA format]
+	if { [inList "jpeg" $DF] && $useHardwareComp } {
 		grabber q $value
 	} elseif [have grabber] {
-			encoder q $value
+		encoder q $value
 	}	
 	
 	global qvalue
