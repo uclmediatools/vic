@@ -1664,8 +1664,6 @@ static void expire_source(struct rtp *session, source *s, struct timeval curr_ti
 	/* If a source hasn't been heard from for more than 5 RTCP   */
 	/* reporting intervals, we mark the source as inactive.      */
 
-	/* If a source hasn't been heard from for more than 30 mins, */
-	/* we delete that source.                                    */
 }
 
 void rtp_update(struct rtp *session)
