@@ -181,7 +181,7 @@ do
 		echo "Enabled debug option"
 	elif [ $1 = "-optimize" ]; then
 		OPTIMIZE2=$OPTIMIZE
-		DEFS="-DNDEBUG"
+		DEFS="$DEFS -DNDEBUG"
 		echo "Enabled optimize option"
 	elif [ $1 = "-profile" ]; then
 		PROFILE2=$PROFILE
