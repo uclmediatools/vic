@@ -302,7 +302,7 @@ main(int argc, char **argv)
 {
 	printf("#include <sys/types.h>\n");
 #ifdef WIN32
-	printf("#include <winsock.h>\n");
+	printf("#include \"config.h\"\n");
 #endif
 	compute_multab();
 	gen_basis();

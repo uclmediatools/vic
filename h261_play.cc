@@ -36,7 +36,7 @@ static const char rcsid[] =
 
 #include <stdio.h>
 #ifdef WIN32
-#include <winsock.h>
+//#include <winsock.h>
 #include "config.h"
 #else
 #include <sys/param.h>
@@ -292,7 +292,7 @@ int nextframe()
 }
 
 extern "C" char *optarg;
-extern "C" int optind;
+extern "C" int optind_;
 extern "C" int opterr;
 
 const char*
@@ -300,7 +300,7 @@ disparg(int argc, const char** argv, const char* optstr)
 {
 	const char* display = 0;
 	int op;
-	while ((op = getopt(argc, (char**)argv, (char*)optstr)) != -1) {
+	while ((op = getopt_(argc, (char**)argv, (char*)optstr)) != -1) {
 		if (op == 'd') {
 			display = optarg;
 			break;
@@ -308,7 +308,7 @@ disparg(int argc, const char** argv, const char* optstr)
 		else if (op == '?')
 			usage();
 	}
-	optind = 1;
+	optind_ = 1;
 	return (display);
 }
 
@@ -395,7 +395,7 @@ main(int argc, const char **argv)
 	EmbeddedTcl::init();
 	tcl.evalc("init_resources");
 
-	while ((op = getopt(argc, (char**)argv, optstr)) != -1) {
+	while ((op = getopt_(argc, (char**)argv, optstr)) != -1) {
 		switch (op) {
 
 		default:
@@ -459,9 +459,9 @@ main(int argc, const char **argv)
 		checkXShm(Tk_Display(tk), display);
 #endif
 
-	if (optind >= argc || argc <= 1)
+	if (optind_ >= argc || argc <= 1)
 		usage();
-	const char* infile = argv[optind];
+	const char* infile = argv[optind_];
 
 	if (Dflag)
 		decoder = new P64Dumper;

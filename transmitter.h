@@ -37,7 +37,7 @@
 #define vic_transmitter_h
 
 #ifdef WIN32
-#include <winsock.h>
+//#include <winsock.h>
 #else
 #include <sys/param.h>
 #include <sys/socket.h>

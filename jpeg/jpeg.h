@@ -37,8 +37,10 @@
 #ifndef lib_jpeg_h
 #define lib_jpeg_h
 
+#include "../config.h"
+
 #ifdef WIN32
-#include <winsock.h>
+//#include <winsock.h>
 #else
 #include <sys/param.h>
 #endif

@@ -41,7 +41,7 @@ static const char rcsid[] =
 #include <errno.h>
 #include <string.h>
 #ifdef WIN32
-#include <winsock.h>
+//#include <winsock.h>
 #include <io.h>
 #include <sys/stat.h>
 #else

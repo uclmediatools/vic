@@ -22,7 +22,7 @@ static const char rcsid[] =
 #include <string.h>
 #include <ctype.h>
 #ifdef WIN32
-#include <winsock.h>
+//#include <winsock.h>
 #else
 #include <sys/param.h>
 #include <netdb.h>

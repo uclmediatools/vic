@@ -60,8 +60,10 @@ static char rcsid[] =
 #include <stdio.h>
 #include <string.h>
 
+#include "../config.h"
+
 #ifdef WIN32
-#include <winsock.h>
+//#include <winsock.h>
 #else
 #include <sys/param.h>
 #include <sys/file.h>

@@ -47,7 +47,7 @@
 
 #include <sys/types.h>
 #ifdef WIN32
-#include <winsock.h>
+//#include <winsock.h>
 #endif
 #if defined(__osf__)
 #include <machine/endian.h>

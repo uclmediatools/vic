@@ -40,10 +40,13 @@
 #ifndef _MBUS_H
 #define _MBUS_H
 
+
+#include "config.h"
+
 #include "iohandler.h"
 #include "mbus_engine.h"
 #ifdef WIN32
-#include <winsock.h>
+//#include <winsock.h>
 #endif
 
 #define MBUS_ADDR       0xe0ffdeef      /* 224.255.222.239 */

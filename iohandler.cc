@@ -34,11 +34,12 @@
 static const char rcsid[] =
     "@(#) $Header$ (LBL)";
 
+#include "config.h"
 #include "iohandler.h"
 #ifdef WIN32
 #include "Tcl.h"
 #include <stdlib.h>
-#include <winsock.h>
+//#include <winsock.h>
 #endif
 
 #ifdef WIN32

@@ -29,7 +29,7 @@ static const char rcsid[] =
 #include <string.h>
 #include <ctype.h>
 #ifdef WIN32
-#include <winsock.h>
+//#include <winsock.h>
 #else
 #include <sys/param.h>
 #include <netdb.h>
@@ -49,7 +49,11 @@ inet6_LookupHostAddr(struct in6_addr *addr, const char* s) {
     int error_num;
     hp = getipnodebyname(s, AF_INET6, AI_DEFAULT, &error_num);
 #else
+#ifdef DAS_IPV6
     hp = gethostbyname2(s, AF_INET6);
+#else
+    hp = getnodebyname(s, AF_INET6,0);
+#endif
 #endif
     if (hp == 0)  return (-1);
     memcpy(addr->s6_addr, *(hp->h_addr_list), hp->h_length);

@@ -37,9 +37,11 @@
 #ifndef vic_inet_h
 #define vic_inet_h
 
+#include "config.h"
+
 #include <sys/types.h>
 #ifdef WIN32
-#include <winsock.h>
+//#include <winsock.h>
 #endif
 #if defined(__osf__)
 #include <machine/endian.h>
@@ -60,7 +62,8 @@ extern "C" {
 #include <arpa/inet.h>
 #endif
 
-#include "config.h"
+//#include "config.h"
+
 
 #ifdef __cplusplus
 extern "C" {

@@ -48,7 +48,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #ifdef WIN32
-#include <winsock.h>
+//#include <winsock.h>
 #else
 #include <sys/param.h>
 #include <netinet/in.h>
