@@ -198,6 +198,8 @@ proc init_resources {} {
 
 	option add Vic.flowLabel 0 startupFile
 
+	option add Vic.numLayers 0 startupFile
+
 	option add Vic.foundry adobe startupFile
 
 	# Lip sync option

@@ -32,6 +32,8 @@
 #
 
 set rtp_type(126) raw
+set rtp_type(20) ldct
+set rtp_type(21) pvh
 set rtp_type(22) bvc
 set rtp_type(25) cellb
 set rtp_type(26) jpeg
@@ -46,7 +48,8 @@ set rtp_type(34) h263
 set rtp_type(127) h261v1
 
 proc vic_main {} {
-	global V tcl_platform env
+	global V tcl_platform
+
 	set V(class) Vic    
 	set V(app) vic
 	set V(media) video

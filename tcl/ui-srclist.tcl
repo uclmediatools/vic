@@ -71,9 +71,22 @@ set srclist_bottom 2
 # srcs participating in the conferencing (e.g., including
 # those not actually sending video).
 #
+# This also sets up the layers within each source object
+#
 proc register src {
-	global srcstate srclist srclist_bottom nametag
+	global srcstate srclist srclist_bottom nametag numLayers
+
 	set srcstate($src) 1
+
+	set layer 0
+	$src layer $layer [new SourceLayer]
+
+	# Create SourceLayer objs within the src as required
+	while { $numLayers > $layer } {
+		incr layer
+		$src layer $layer [new SourceLayer]
+	}
+	
 	if [info exists srclist] {
 		set f [mediumfont]
 		set nametag($src) [ $srclist create text \

@@ -592,10 +592,17 @@ proc redecorate n {
 }
 
 proc create_decoder src {
-	set decoder [new decoder [rtp_format $src]]
+	global numLayers
+
+	set format [rtp_format $src]
+	set decoder [new decoder $format]
 	if { $decoder == "" } {
 		# don't support this format
 		set decoder [new decoder null]
+	}
+##LL
+	if { $format == "pvh" } {
+		$decoder maxChannel $numLayers
 	}
 	$src handler $decoder
 	return $decoder
@@ -609,11 +616,13 @@ proc set_busy src {}
 # the video stream.
 #
 proc activate src {
+	global V
+
 	if [yesno relateInterface] {
-		create_decoder $src
+		set V(decoder) [create_decoder $src]
 		after idle "really_activate_relate $src"
 	} else {
-		create_decoder $src
+		set V(decoder) [create_decoder $src]
 	#
 	# give decoder a chance see a packet so it can
 	# determine the output geometry and color decimation.
