@@ -16,9 +16,9 @@
 #undef HAVE_SIN6_LEN
 
 /*
- * Define this if your C library has vsnprintf.
+ * Define this if your C library doesn't have vsnprintf.
  */
-#undef HAVE_VSNPRINTF
+#undef NEED_VSNPRINTF
 
 
 /*

@@ -99,7 +99,7 @@ fi
 # GCC-specific warning flags
 if test "$GCC" = yes
 then
-        CFLAGS="$CFLAGS -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wcast-align -Wstrict-prototypes -Wmissing-declarations -Werror"
+        CFLAGS="$CFLAGS -W -Wall -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wstrict-prototypes -Wmissing-declarations -Werror"
         if test -f .devel
         then
                 CFLAGS="$CFLAGS -Werror"
@@ -111,7 +111,7 @@ AC_CHECK_FILE(/dev/urandom,AC_DEFINE(HAVE_DEV_URANDOM))
 
 # If more files than mbus.c use vsnprintf, split it out into
 # vsnprintf.c and add it to AC_REPLACE_FUNCS
-AC_CHECK_FUNCS(vsnprintf)
+AC_CHECK_FUNC(vsnprintf,,AC_DEFINE(NEED_VSNPRINTF))
 
 # If inet_aton is actually needed somewhere, split it out into
 # inet_aton.c and add it to AC_REPLACE_FUNCS

@@ -53,7 +53,7 @@
 #define MBUS_MAX_PD	    10
 #define MBUS_MAX_QLEN	    50 /* Number of messages we can queue with mbus_qmsg() */
 
-#ifndef HAVE_VSNPRINTF
+#ifdef NEED_VSNPRINTF
 int vsnprintf(char *s, size_t buf_size, const char *format, va_list ap)
 {
 	/* Quick hack replacement for vsnprintf... note that this */
