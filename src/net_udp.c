@@ -54,7 +54,8 @@
 struct _socket_udp {
 	int	 	 mode;	/* IPv4 or IPv6 */
 	char		*addr;
-	u_int16	 	 port;
+	u_int16	 	 rx_port;
+	u_int16		 tx_port;
 	ttl_t	 	 ttl;
 	fd_t	 	 fd;
 	struct in_addr	 addr4;
@@ -198,15 +199,16 @@ int inet_pton(int family, const char *name, void *addr)
 /* IPv4 specific functions...                                                */
 /*****************************************************************************/
 
-static socket_udp *udp_init4(char *addr, u_int16 port, int ttl)
+static socket_udp *udp_init4(char *addr, u_int16 rx_port, u_int16 tx_port, int ttl)
 {
 	int                 reuse = 1;
 	struct sockaddr_in  s_in;
 	socket_udp         *s = (socket_udp *) malloc(sizeof(socket_udp));
-	s->mode  = IPv4;
-	s->addr  = addr;
-	s->port  = port;
-	s->ttl   = ttl;
+	s->mode    = IPv4;
+	s->addr    = addr;
+	s->rx_port = rx_port;
+	s->tx_port = tx_port;
+	s->ttl     = ttl;
 	if (inet_pton(AF_INET, addr, &s->addr4) != 1) {
 		struct hostent *h = gethostbyname(addr);
 		if (h == NULL) {
@@ -231,7 +233,7 @@ static socket_udp *udp_init4(char *addr, u_int16 port, int ttl)
 #endif
 	s_in.sin_family      = AF_INET;
 	s_in.sin_addr.s_addr = INADDR_ANY;
-	s_in.sin_port        = htons(port);
+	s_in.sin_port        = htons(rx_port);
 	if (bind(s->fd, (struct sockaddr *) &s_in, sizeof(s_in)) != 0) {
 		socket_error("bind");
 		abort();
@@ -258,7 +260,6 @@ static socket_udp *udp_init4(char *addr, u_int16 port, int ttl)
 			abort();
 		}
 	}
-        debug_msg("Inited socket %d port %d\n", s->fd, port);
 	return s;
 }
 
@@ -274,7 +275,7 @@ static int udp_send4(socket_udp *s, char *buffer, int buflen)
 
 	s_in.sin_family      = AF_INET;
         s_in.sin_addr.s_addr = s->addr4.s_addr;
-	s_in.sin_port        = htons(s->port);
+	s_in.sin_port        = htons(s->tx_port);
 	if ((ret = sendto(s->fd, buffer, buflen, 0, (struct sockaddr *) &s_in, sizeof(s_in))) < 0) {
 		socket_error("udp_send4");
 	}
@@ -285,7 +286,7 @@ static int udp_send4(socket_udp *s, char *buffer, int buflen)
 /* IPv6 specific functions...                                                */
 /*****************************************************************************/
 
-static socket_udp *udp_init6(char *addr, u_int16 port, int ttl)
+static socket_udp *udp_init6(char *addr, u_int16 rx_port, u_int16 tx_port, int ttl)
 {
 #ifdef HAVE_IPv6
 	int                 reuse = 1;
@@ -294,10 +295,11 @@ static socket_udp *udp_init6(char *addr, u_int16 port, int ttl)
 #endif
 	struct sockaddr_in6 s_in;
 	socket_udp         *s = (socket_udp *) malloc(sizeof(socket_udp));
-	s->mode  = IPv6;
-	s->addr  = addr;
-	s->port  = port;
-	s->ttl   = ttl;
+	s->mode    = IPv6;
+	s->addr    = addr;
+	s->rx_port = rx_port;
+	s->tx_port = tx_port;
+	s->ttl     = ttl;
 
 	if (inet_pton(AF_INET6, addr, &s->addr6) != 1) {
 		/* We should probably try to do a DNS lookup on the name */
@@ -322,7 +324,7 @@ static socket_udp *udp_init6(char *addr, u_int16 port, int ttl)
 #endif
 
 	s_in.sin6_family = AF_INET6;
-	s_in.sin6_port   = htons(port);
+	s_in.sin6_port   = htons(rx_port);
 	memcpy(s_in.sin6_addr.s6_addr, &s->addr6, sizeof(struct in6_addr));
 	if (bind(s->fd, (struct sockaddr *) &s_in, sizeof(s_in)) != 0) {
              /* bind to group address failed, try generic address. */
@@ -356,7 +358,8 @@ static socket_udp *udp_init6(char *addr, u_int16 port, int ttl)
 	return s;
 #else
 	UNUSED(addr);
-	UNUSED(port);
+	UNUSED(rx_port);
+	UNUSED(tx_port);
 	UNUSED(ttl);
 	return NULL;
 #endif
@@ -375,7 +378,7 @@ static int udp_send6(socket_udp *s, char *buffer, int buflen)
 
 	s_in.sin6_family = AF_INET6;
 	s_in.sin6_addr   = s->addr6;
-	s_in.sin6_port   = htons(s->port);
+	s_in.sin6_port   = htons(s->tx_port);
 	if ((ret = sendto(s->fd, buffer, buflen, 0, (struct sockaddr *) &s_in, sizeof(s_in))) < 0) {
 		socket_error("udp_send6");
 	}
@@ -392,14 +395,14 @@ static int udp_send6(socket_udp *s, char *buffer, int buflen)
 /* Generic functions, which call the appropriate protocol specific routines. */
 /*****************************************************************************/
 
-socket_udp *udp_init(char *addr, u_int16 port, int ttl)
+socket_udp *udp_init(char *addr, u_int16 rx_port, u_int16 tx_port, int ttl)
 {
 	socket_udp *res;
 
 	if (strchr(addr, ':') == NULL) {
-		res = udp_init4(addr, port, ttl);
+		res = udp_init4(addr, rx_port, tx_port, ttl);
 	} else {
-		res = udp_init6(addr, port, ttl);
+		res = udp_init6(addr, rx_port, tx_port, ttl);
 	}
 	return res;
 }

@@ -686,8 +686,8 @@ struct rtp *rtp_init(char *addr, u_int16 port, int ttl, double rtcp_bw, void (*c
 	srand48(time(NULL));
 
 	session = (struct rtp *) xmalloc(sizeof(struct rtp));
-	session->rtp_socket         = udp_init(addr, port, ttl);
-	session->rtcp_socket        = udp_init(addr, port+1, ttl);
+	session->rtp_socket         = udp_init(addr, port,   port,   ttl);
+	session->rtcp_socket        = udp_init(addr, port+1, port+1, ttl);
 	session->my_ssrc            = (u_int32) lrand48();
 	session->callback           = callback;
 	session->invalid_rtp_count  = 0;

@@ -721,7 +721,7 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 	}
 
 	mbus_lock_config_file(m);
-	m->s		  = udp_init("224.255.222.239", (u_int16) 47000, 0);
+	m->s		  = udp_init("224.255.222.239", (u_int16) 47000, (u_int16) 47000, 0);
 	m->seqnum         = 0;
 	m->cmd_handler    = cmd_handler;
 	m->err_handler	  = err_handler;

@@ -55,6 +55,9 @@ v1.0.4  - Fix compilation with Microsoft IPv6 stack
 	- Fixes to mbus code from Dirk Kutscher
 	* 2 June 1999 [rat v4.0.3]
 
+v1.0.5	- Add ability to send to one port whilst receiving on another, 
+	  requested by Henning Schulzrinne.
+
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
 	  since it does a gethostbyname() and looks that up, yet that can
