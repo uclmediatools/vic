@@ -174,7 +174,7 @@ int XILWindowAssistor::consume(const VideoFrame* vf)
              * to avoid this, only continue as long as 2 or
              * more frames in the CIS */
             /* Begin XIL molecule */
-	    xil_set_attribute(displayimage_,"HW_DECOMPRESS_CIS",-1);
+	    xil_set_attribute(displayimage_,"HW_DECOMPRESS_CIS",(void *)-1);
             xil_decompress(cis_, imageYCC);
 	    if ((targetw_ == lastcisw) && (targeth_ == lastcish)) {
 		    xil_set_colorspace(imageYCC, ycc);
@@ -318,7 +318,7 @@ int XILWindowAssistor::command(int argc, const char*const* argv)
 		//fprintf(stderr,"HW_DECOMPRESS_CIS\n");
 		// disable (osprey) hardware decompression for Windowed Display.
 		// the software decoder is fast enough
-		xil_set_attribute(displayimage_,"HW_DECOMPRESS_CIS",-1);
+		xil_set_attribute(displayimage_,"HW_DECOMPRESS_CIS",(void *)-1);
 /*
 		int arg;
 		xil_get_device_attribute(displayimage_,"VIDEO_OUT",(void**)&arg);
@@ -349,8 +349,8 @@ int XILWindowAssistor::command(int argc, const char*const* argv)
 	return (Renderer::command(argc, argv));
 }
 
-extern jpeg_luma_qt(int,int[]);
-extern jpeg_chroma_qt(int,int[]);
+extern void jpeg_luma_qt(int,int[]);
+extern void jpeg_chroma_qt(int,int[]);
 
 void XILWindowAssistor::reset(int type,int q, int w, int h)
 {
@@ -543,6 +543,8 @@ XilLookup XILWindowAssistor::create_cmap(
         for (i = 0; i < cmapsize; i++)
             ilist->pixels[i] = (Xil_unsigned32) pixels[i];
     }
+#else 
+UNUSED(ilist);
 #endif
 
     /* Allocate memory to hold colormap data. */

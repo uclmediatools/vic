@@ -233,7 +233,7 @@ int H261hwFramer::parse_block()
 	 */
 	register int nbb = nbb_;
 	register int bb = bb_;
-	register u_short *bs = bs_;
+	register const u_short *bs = bs_;
 
 	if ((mt_ & MT_CBP) == 0) {
 		SKIP_BITS(bs, 8, nbb, bb);
