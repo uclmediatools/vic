@@ -112,6 +112,7 @@ OBJ1 =	inet.o cellb_tables.o tkStripchart.o md5c.o random.o
 OBJ2 =	main.o net.o net-ip.o source.o \
 	iohandler.o timer.o idlecallback.o media-timer.o \
 	session.o session-rtpv1.o session-nv.o session-ivs.o \
+	mbus.o mbus_engine.o \
 	decoder.o decoder-jpeg.o decoder-nv.o \
 	decoder-h261.o decoder-h261v1.o \
 	decoder-cellb.o \
