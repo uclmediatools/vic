@@ -118,7 +118,8 @@ v1.0.8	- Add mbus_sent_all()
 	- rtp_init() now takes separate rx_port and tx_port, instead of a
 	  single port for both sending and receiving.
 	- Add rtp_get_addr(), rtp_get_rx_port(), rtp_get_tx_port() and rtp_get_ttl()
-
+	- Change return type of rtp_recv to int (was void).  Returns TRUE if
+	  packets were processed, FALSE otherwise.
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
