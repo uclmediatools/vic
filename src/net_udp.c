@@ -284,7 +284,7 @@ static int udp_send4(socket_udp *s, char *buffer, int buflen)
 	s_in.sin_port        = htons(s->tx_port);
 	if ((ret = sendto(s->fd, buffer, buflen, 0, (struct sockaddr *) &s_in, sizeof(s_in))) < 0) {
 		if (errno != ECONNREFUSED) {
-			socket_error("recvfrom");
+			socket_error("sendto");
 		}
 	}
 	return ret;
