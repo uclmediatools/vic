@@ -400,11 +400,17 @@ class VfwDevice : public InputDevice {
 	VfwGrabber *grabber_;
 };
 
+#define NUM_DEVS 4
+
 class VfwScanner {
  public:
 	VfwScanner(const int n);
+	~VfwScanner();
+ protected:
+	VfwDevice *devs_[NUM_DEVS];
 };
-static VfwScanner find_vfw_devices(4);
+
+static VfwScanner find_vfw_devices(NUM_DEVS);
 
 VfwScanner::VfwScanner(const int n)
 {
@@ -417,8 +423,20 @@ VfwScanner::VfwScanner(const int n)
 					    sizeof(deviceName),
 					    (LPSTR)deviceVersion,
 					    sizeof(deviceVersion))) {
-			new VfwDevice(strdup(deviceName), index);
-                }
+			dprintf("Adding device %d\n", index);
+			devs_[index] = new VfwDevice(strdup(deviceName), index);
+                } else
+			devs_[index] = NULL;
+	}
+}
+
+VfwScanner::~VfwScanner()
+{
+	dprintf("~VfwScanner\n");
+	for (int i = 0; i < NUM_DEVS; i++)
+		if (devs_[i]) {
+			dprintf("Deleteing device %d\n", i);
+			delete devs_[i];
 	}
 }
 
