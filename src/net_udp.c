@@ -349,6 +349,10 @@ static const char *udp_host_addr4(void)
 		abort();
 	}
 	hent = gethostbyname(hname);
+	if (hent == NULL) {
+		debug_msg("Can't get host IP address: %s", strerror(errno));
+		return NULL;
+	}
 	assert(hent->h_addrtype == AF_INET);
 	memcpy(&iaddr.s_addr, hent->h_addr, sizeof(iaddr.s_addr));
 	strncpy(hname, inet_ntoa(iaddr), MAXHOSTNAMELEN);

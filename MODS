@@ -269,6 +269,10 @@ v1.1.5  - Remove SunOS and Solaris defines from the configure script, they
 	* 17 April 2000
 
 v1.1.6	- Add udp_fd() function, to retrieve the underlying file descriptor.
+	- udp_get_host_addr4() will now return NULL on failure, and leave
+	  errno set.
+	- Workaround failure to get host IP address when setting the RTP
+	  CNAME (we use user@127.0.0.1 as the CNAME in this case). 
 
 
 Still to do...

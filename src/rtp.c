@@ -822,6 +822,11 @@ static char *get_cname(socket_udp *s)
         
         /* Now the hostname. Must be dotted-quad IP address. */
         hname = udp_host_addr(s);
+	if (hname == NULL) {
+		/* If we can't get our IP address we use the loopback address... */
+		/* This is horrible, but it stops the code from failing.         */
+		hname = "127.0.0.1";
+	}
         strncpy(cname + strlen(cname), hname, MAXCNAMELEN - strlen(cname));
         return cname;
 }
