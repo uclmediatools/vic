@@ -454,6 +454,8 @@ X11Grabber::X11Grab_RGB16(void)
     uint8 *vp= up + (framesize_ >> 2) ;
     uint16 *data=(uint16 *)ximage_->image->data, p0, p1, p2, p3;
 
+    printf("R: %d, G: %d, B: %d;\n", ximage_->image->red_mask, ximage_->image->green_mask, ximage_->image->blue_mask);
+
     for (y=0; y<height_; y+=2) {
         for (x=0; x<width_; x += 2) {
             p0 = data[0] ;
@@ -504,7 +506,7 @@ X11Grabber::X11Grab_TrueXBGR24()
     uint16 p0, p1 ;
     uint32 d ;
 
-    for (y=0; y<height_; y += 2) {
+    for (y=0; y<height_; y++) {
         for (x=0; x<width_; x+=2) {
             d = XGetPixel(ximage_->image,x,y);
             //p0 = ((d<<8) & 0xf100) | ((p0>>5) & 0x7e0) | ((p0>>19) & 0x1f);
@@ -520,13 +522,14 @@ X11Grabber::X11Grab_TrueXBGR24()
   	    p0 = ( (p0 >> 1) & 0x7bef ) + ( (p1 >> 1) & 0x7bef ) ;
 	    *up++ = rgb2u_[ p0 ];
         }
+	y++;
         for (x=0; x<width_; x+=2) {
-            d = XGetPixel(ximage_->image,x,y+1);
+            d = XGetPixel(ximage_->image,x,y);
             //p0 = ((d<<8) & 0xf100) | ((p0>>5) & 0x7e0) | ((p0>>19) & 0x1f);
             p0 = ((d<<8) & 0xf800) | ((d>>5) & 0x7e0) | ((d>>19) & 0x1f);
 	    *yp++ = rgb2y_[ p0 ];
 
-            d = XGetPixel(ximage_->image,x+1,y+1);
+            d = XGetPixel(ximage_->image,x+1,y);
             //p1 = ((d<<8) & 0xf100) | ((p0>>5) & 0x7e0) | ((p0>>19) & 0x1f);
             p1 = ((d<<8) & 0xf800) | ((d>>5) & 0x7e0) | ((d>>19) & 0x1f);
 	    *yp++ = rgb2y_[ p1 ];
@@ -555,7 +558,7 @@ X11Grabber::X11Grab_TrueXRGB24()
     uint16 p0, p1 ;
     uint32 d ;
 
-    for (y=0; y<height_; y += 2) {
+    for (y=0; y<height_; y++) {
         for (x=0; x<width_; x+=2) {
             d = XGetPixel(ximage_->image,x,y);
 	    p0 = ((d>>3) & 0x1f) | ((d>>5) & 0x7e0) | ((d>>8) & 0xf800);
@@ -569,12 +572,13 @@ X11Grabber::X11Grab_TrueXRGB24()
   	    p0 = ( (p0 >> 1) & 0x7bef ) + ( (p1 >> 1) & 0x7bef ) ;
 	    *up++ = rgb2u_[ p0 ];
         }
+	y++;
         for (x=0; x<width_; x+=2) {
-            d = XGetPixel(ximage_->image,x,y+1);
+            d = XGetPixel(ximage_->image,x,y);
 	    p0 = ((d>>3) & 0x1f) | ((d>>5) & 0x7e0) | ((d>>8) & 0xf800);
 	    *yp++ = rgb2y_[ p0 ];
 
-            d = XGetPixel(ximage_->image,x+1,y+1);
+            d = XGetPixel(ximage_->image,x+1,y);
 	    p1 = ((d>>3) & 0x1f) | ((d>>5) & 0x7e0) | ((d>>8) & 0xf800);
 	    *yp++ = rgb2y_[ p1 ];
 
