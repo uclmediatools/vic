@@ -40,6 +40,7 @@
 #include "net_udp.h"
 #include "hmac.h"
 #include "base64.h"
+#include "crypt_random.h"
 #include "mbus.h"
 
 #define MBUS_BUF_SIZE	 1500
@@ -75,23 +76,110 @@ struct mbus {
 	struct mbus_msg	*waiting_ack;
 	char		*authkey;
 	int		 authkeylen;
+#ifndef WIN32
+	fd_t		 cfgfd;		/* The file descriptor for the $HOME/.mbus config file, on Unix */
+#endif
 };
 
-static void mbus_lock_config_file(void)
+#define SECS_PER_WEEK    604800
+#define MBUS_ENCRKEY_LEN      7
+#define MBUS_HASHKEY_LEN     12
+
+static char *mbus_new_encrkey(void)
 {
-#ifdef NDEF
+	/* Create a new key, for use by the hashing routines. Returns */
+	/* a key of the form (DES,946080000,MTIzMTU2MTg5MTEyMQ==)     */
+	struct timeval	 curr_time;
+	u_int32		 expiry_time;
+	char		 random_string[MBUS_ENCRKEY_LEN];
+	char		 encoded_string[(MBUS_ENCRKEY_LEN*4/3)+4];
+	int		 encoded_length;
+	int		 i;
+	char		*key;
+
+	/* Step 1: generate a random string for the key... */
+	for (i = 0; i < MBUS_ENCRKEY_LEN; i++) {
+		random_string[i] = (lbl_random() | 0x000ff000) >> 24;
+	}
+	/* Step 2: base64 encode that string... */
+	encoded_length = base64encode(random_string, MBUS_ENCRKEY_LEN, encoded_string, (MBUS_ENCRKEY_LEN*4/3)+4);
+
+	/* Step 3: figure out the expiry time of the key, */
+	/*         we use a value one week from now.      */
+	gettimeofday(&curr_time, NULL);
+	expiry_time = curr_time.tv_sec + SECS_PER_WEEK;
+
+	/* Step 4: put it all together to produce the key... */
+	key = (char *) xmalloc(encoded_length + 18);
+	sprintf(key, "(DES,%ld,%s)", expiry_time, encoded_string);
+	debug_msg("New encryption key = %s\n", key);
+
+	return key;
+}
+
+static char *mbus_new_hashkey(void)
+{
+	/* Create a new key, for use by the hashing routines. Returns  */
+	/* a key of the form (HMAC-MD5,946080000,MTIzMTU2MTg5MTEyMQ==) */
+	struct timeval	 curr_time;
+	u_int32		 expiry_time;
+	char		 random_string[MBUS_HASHKEY_LEN];
+	char		 encoded_string[(MBUS_HASHKEY_LEN*4/3)+1];
+	int		 encoded_length;
+	int		 i;
+	char		*key;
+
+	/* Step 1: generate a random string for the key... */
+	for (i = 0; i < MBUS_HASHKEY_LEN; i++) {
+		random_string[i] = (lbl_random() | 0x000ff000) >> 24;
+	}
+	/* Step 2: base64 encode that string... */
+	encoded_length = base64encode(random_string, MBUS_HASHKEY_LEN, encoded_string, (MBUS_HASHKEY_LEN*4/3)+1);
+
+	/* Step 3: figure out the expiry time of the key, */
+	/*         we use a value one week from now.      */
+	gettimeofday(&curr_time, NULL);
+	expiry_time = curr_time.tv_sec + SECS_PER_WEEK;
+
+	/* Step 4: put it all together to produce the key... */
+	key = (char *) xmalloc(encoded_length + 23);
+	sprintf(key, "(HMAC-MD5,%ld,%s)", expiry_time, encoded_string);
+	debug_msg("New hashkey = %s\n", key);
+
+	return key;
+}
+
+static void mbus_lock_config_file(struct mbus *m)
+{
+#ifdef WIN32
+	/* Do something complicated with the registry... */
+#else
 	/* Obtain a valid lock on the mbus configuration file. This function */
 	/* creates the file, if one does not exist. The default contents of  */
 	/* this file are a random authentication key, no encryption and node */
 	/* local scope.                                                      */
-	int		fd;
-	struct flock	l;
+	struct flock	 l;
+	struct stat	 s;
+	struct passwd	*p;	
+	char		*buf;
+	char		*cfg_file;
 
-	fd = open("mbus-config", O_RDWR | O_CREAT, 0700);
-	if (fd == -1) {
+	/* The getpwuid() stuff is to determine the users home directory, into which we */
+	/* write a .mbus config file. The struct returned by getpwuid() is statically   */
+	/* allocated, so it's not necessary to free it afterwards.                      */
+	p = getpwuid(getuid());
+	if (p == NULL) {
+		perror("Unable to get passwd entry");
+		abort();
+	}
+	cfg_file = (char *) xmalloc(strlen(p->pw_dir) + 6);
+	sprintf(cfg_file, "%s/.mbus", p->pw_dir);
+	m->cfgfd = open(cfg_file, O_RDWR | O_CREAT, 0600);
+	if (m->cfgfd == -1) {
 		perror("Unable to open mbus configuration file");
 		abort();
 	}
+	xfree(cfg_file);
 
 	/* We attempt to get a lock on the config file, blocking until  */
 	/* the lock can be obtained. The only time this should block is */
@@ -101,19 +189,68 @@ static void mbus_lock_config_file(void)
 	l.l_start  = 0;
 	l.l_whence = SEEK_SET;
 	l.l_len    = 0;
-	if (fcntl(fd, F_SETLKW, &l) == -1) {
+	debug_msg("Trying to lock mbus config file...\n");
+	if (fcntl(m->cfgfd, F_SETLKW, &l) == -1) {
 		perror("Unable to lock mbus configuration file");
 		abort();
 	}
-	debug_msg("mbus config file locked\n");
+	debug_msg("...lock obtained!\n");
 
-	/* Check that the file contains sensible information, if not */
-	/* we write sensible defaults into it.                       */
+	if (fstat(m->cfgfd, &s) != 0) {
+		perror("Unable to stat config file\n");
+		abort();
+	}
+	if (s.st_size == 0) {
+		/* Empty file, create with sensible defaults... */
+		char	*hashkey = mbus_new_hashkey();
+		char	*encrkey = mbus_new_encrkey();
+		char	*scope   = "HOSTLOCAL";
+		int	 len;
+
+		len = strlen(hashkey) + strlen(encrkey) + strlen(scope) + 39;
+		buf = (char *) xmalloc(len);
+		sprintf(buf, "[MBUS]\nHASHKEY=%s\nENCRYPTIONKEY=%s\nSCOPE=%s\n", hashkey, encrkey, scope);
+		write(m->cfgfd, buf, strlen(buf));
+		xfree(buf);
+		free(hashkey);
+		xfree(encrkey);
+	} else {
+		/* Read in the contents of the config file... */
+		buf = (char *) xmalloc(s.st_size);
+		if (read(m->cfgfd, buf, s.st_size) != s.st_size) {
+			perror("Unable to read config file\n");
+			abort();
+		}
+		/* Check that the file contains sensible information...   */
+		/* This is rather a pathetic check, but it'll do for now! */
+		if (strncmp(buf, "[MBUS]", 6) != 0) {
+			debug_msg("Mbus config file has incorrect header\n");
+			abort();
+		}
+		xfree(buf);
+	}
 #endif
 }
 
-static void mbus_unlock_config_file(void)
+static void mbus_unlock_config_file(struct mbus *m)
 {
+#ifdef WIN32
+	/* Do something complicated with the registry... */
+#else
+	struct flock	l;
+
+	l.l_type   = F_UNLCK;
+	l.l_start  = 0;
+	l.l_whence = SEEK_SET;
+	l.l_len    = 0;
+	debug_msg("Trying to unlock mbus config file...\n");
+	if (fcntl(m->cfgfd, F_SETLKW, &l) == -1) {
+		perror("Unable to unlock mbus configuration file");
+		abort();
+	}
+	debug_msg("...success!\n");
+	close(m->cfgfd);
+#endif
 }
 
 static int mbus_addr_match(char *a, char *b)
@@ -229,7 +366,7 @@ struct mbus *mbus_init(unsigned short channel,
 		return NULL;
 	}
 
-	mbus_lock_config_file();
+	mbus_lock_config_file(m);
 	m->s		= udp_init("224.255.222.239", (u_int16) (47000 + channel), 0);
 	m->channel	= channel;
 	m->seqnum       = 0;
@@ -239,11 +376,11 @@ struct mbus *mbus_init(unsigned short channel,
 	m->parse_depth  = 0;
 	m->cmd_queue	= NULL;
 	m->waiting_ack	= NULL;
-	m->authkey 	= "hello";
+	m->authkey 	= "hello";		/* should fill this in with info from the config file... */
 	m->authkeylen   = 5;
 	for (i = 0; i < MBUS_MAX_ADDR; i++) m->addr[i]         = NULL;
 	for (i = 0; i < MBUS_MAX_PD;   i++) m->parse_buffer[i] = NULL;
-	mbus_unlock_config_file();
+	mbus_unlock_config_file(m);
 
 	return m;
 }
