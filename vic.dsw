@@ -1,0 +1,197 @@
+Microsoft Developer Studio Workspace File, Format Version 6.00
+# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
+
+###############################################################################
+
+Project: "H263v2 Dec_tmndec"=".\codec\tmndec\H263v2 Dec_tmndec.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "H263v2 Enc_tmnx"=".\codec\tmn-x\H263v2 Enc_tmnx.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "common"=..\common\common.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "histtolut"=.\histtolut\histtolut.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "mkbv"=.\render\mkbv\mkbv.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "mkcube"=.\render\mkcube\mkcube.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "mkhuff"=.\render\mkhuff\mkhuff.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "ppmtolut"=.\render\ppmtolut\ppmtolut.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "tcl2cpp"=.\tcl\tcl2cpp\tcl2cpp.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "tcllib"="..\tcl-8.0\win\tcllib.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "tklib"="..\tk-8.0\win\tklib.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name tcllib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "vic"=.\vic.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name common
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name tcllib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name tklib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name H263v2 Dec_tmndec
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name H263v2 Enc_tmnx
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name histtolut
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name mkbv
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name mkcube
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name mkhuff
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name ppmtolut
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name tcl2cpp
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Global:
+
+Package=<5>
+{{{
+}}}
+
+Package=<3>
+{{{
+}}}
+
+###############################################################################
+
