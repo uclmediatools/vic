@@ -16,7 +16,7 @@ OBJS = crypt_random.o debug.o mbus.o mbus_config.o md5.o memory.o net_udp.o \
 
 TEST_OBJS = test_base64.o test_des.o test_md5.o test.o
 
-SRCS := $(OBJS:%.o=%.c)
+SRCS = $(OBJS:%.o=%.c)
 
 all: libcommon.a test-libcommon
 
