@@ -557,36 +557,30 @@ static const char *udp_host_addr6(socket_udp *s)
 {
 #ifdef HAVE_IPv6
 	static char		 hname[MAXHOSTNAMELEN];
-	int 			 gai_err;
+	int 			 gai_err, newsock;
 	struct addrinfo 	 hints, *ai;
-	struct sockaddr_in6 	 local, empty;
+	struct sockaddr_in6 	 local, addr6;
 	int len = sizeof(local), result = 0;
 
-	/* connect to socket before getsockname call */
-	memset((char *)&empty, 0, len);
-	empty.sin6_family = AF_INET6;
+	newsock=socket(AF_INET6, SOCK_DGRAM,0);
+    memset ((char *)&addr6, 0, len);
+    addr6.sin6_family = AF_INET6;
 #ifdef HAVE_SIN6_LEN
-	empty.sin6_len    = len;
+    addr6.sin6_len    = len;
 #endif
-	empty.sin6_addr = s->addr6; 
-	connect(s->fd, (struct sockaddr *) &empty, len);
+    bind (newsock, (struct sockaddr *) &addr6, len);
+    addr6.sin6_addr = s->addr6;
+    addr6.sin6_port = htons (s->rx_port);
+    connect (newsock, (struct sockaddr *) &addr6, len);
 
-	memset((char *)&local, 0, len);
-	local.sin6_family = AF_INET6;
-#ifdef HAVE_SIN6_LEN
-	local.sin6_len    = len;
-#endif
-	if ((result = getsockname(s->fd,(struct sockaddr *)&local, &len)) < 0){
+    memset ((char *)&local, 0, len);
+	if ((result = getsockname(newsock,(struct sockaddr *)&local, &len)) < 0){
 		local.sin6_addr = in6addr_any;
 		local.sin6_port = 0;
 		debug_msg("getsockname failed\n");
 	}
 
-	/* disconnect socket */
-	memset((char *)&empty, 0, len);
-	empty.sin6_family = AF_UNSPEC;
-	empty.sin6_addr = in6addr_any;	
-	connect(s->fd, (struct sockaddr *) &empty, len);	
+	close (newsock);
 
 	if (IN6_IS_ADDR_UNSPECIFIED(&local.sin6_addr) || IN6_IS_ADDR_MULTICAST(&local.sin6_addr)) {
 		if (gethostname(hname, MAXHOSTNAMELEN) != 0) {
