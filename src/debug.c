@@ -137,7 +137,7 @@ void debug_dump(void*lp, long len)
    }
 }
 
-void _debug_set_core_dir(const char *argv0)
+void debug_set_core_dir(const char *argv0)
 {
 #if defined(DEBUG) && !defined(WIN32)
         struct stat s;
