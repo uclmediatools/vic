@@ -138,12 +138,12 @@ typedef enum {
         RX_SR,
         RX_RR,
         RX_SDES,
-        RX_BYE,         /* Source is leaving the session, database entry is still valid */
+        RX_BYE,         /* Source is leaving the session, database entry is still valid                           */
         SOURCE_CREATED,
-        SOURCE_DELETED, /* Source has been removed from the database                    */
-        RX_RR_EMPTY,    /* We've received an empty reception report block                                               */
+        SOURCE_DELETED, /* Source has been removed from the database                                              */
+        RX_RR_EMPTY,    /* We've received an empty reception report block                                         */
         RX_RTCP_START,  /* Processing a compound RTCP packet about to start. The SSRC is not valid in this event. */
-        RX_RTCP_FINISH,	/* Processing a compound RTCP packet finished. The SSRC is not valid in this event.  */
+        RX_RTCP_FINISH,	/* Processing a compound RTCP packet finished. The SSRC is not valid in this event.       */
         RR_TIMEOUT,
         RX_APP
 } rtp_event_type;
