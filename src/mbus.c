@@ -159,6 +159,22 @@ static void store_other_addr(struct mbus *m, char *a)
 	m->other_addr[m->num_other_addr++] = xstrdup(a);
 }
 
+static void remove_other_addr(struct mbus *m, char *a)
+{
+	/* Removes the address a from the m->other_addr field of the */
+	/* mbus structure.                                           */
+	int	i, j;
+
+	for (i = 0; i < m->num_other_addr; i++) {
+		if (mbus_addr_match(m->other_addr[i], a)) {
+			for (j = i+1; j < m->num_other_addr; j++) {
+				m->other_addr[j-1] = m->other_addr[j];
+			}
+			m->num_other_addr--;
+		}
+	}
+}
+
 int mbus_addr_valid(struct mbus *m, char *addr)
 {
 	int	i;
@@ -459,12 +475,10 @@ void mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, i
 
 	if (reliable && !mbus_addr_valid(m, dest)) {
 		debug_msg("Trying to send reliably to an unknown address...\n");
-#ifdef NDEF
 		if (m->err_handler == NULL) {
 			abort();
 		}
 		m->err_handler(curr->seqnum, MBUS_DESTINATION_UNKNOWN);
-#endif
 	}
 
 	while (curr != NULL) {
@@ -870,6 +884,15 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 						char 		*newsrc = (char *) xmalloc(strlen(src) + 3);
 						sprintf(newsrc, "(%s)", src);	/* Yes, this is a kludge. */
 						m->cmd_handler(newsrc, cmd, param, data);
+						/* Finally, we snoop on the message we just passed to the application, */
+						/* to do housekeeping of our list of known mbus sources...             */
+						if (strcmp(cmd, "mbus.quit") == 0) {
+							remove_other_addr(m, newsrc);
+						} 
+						if (strcmp(cmd, "mbus.hello") == 0) {
+							/* We should use these to mark sources as active, and timeout */
+							/* those we haven't heard from for a while. Oh well.          */
+						}
 						xfree(newsrc);
 					} else {
 						debug_msg("Unable to parse mbus command:\n");

@@ -113,6 +113,10 @@ v1.0.8	- Add mbus_sent_all()
 	  reception report (ie: no report blocks) has been received.
 	- Add RX_RTCP_START and RX_RTCP_FINISH events to the RTP code.
 	- debug_msg() now displays the pid
+	- The mbus code now maintains the list of active sources more correctly, 
+	  making mbus_addr_valid() useful
+	- rtp_init() now takes separate rx_port and tx_port, instead of a
+	  single port for both sending and receiving.
 
 
 Still to do...
