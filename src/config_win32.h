@@ -79,7 +79,6 @@
 
 typedef int		ttl_t;
 typedef unsigned int	fd_t;
-typedef unsigned char	byte;
 
 /*
  * the definitions below are valid for 32-bit architectures and will have to

@@ -121,8 +121,6 @@ extern int h_errno;
 
 #include <net/if.h>
 
-typedef unsigned char	byte;
-
 typedef u_char	ttl_t;
 typedef int	fd_t;
 
