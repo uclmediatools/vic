@@ -181,6 +181,7 @@ v1.0.10	- Mbus updates from Markus Germeier, which fix compatibility with
 		u_int32	-> u_int32_t
 	  and the same for the signed varients.
 	- Implement encryption in the RTP code
+	- Ignore connection refused errors in IPv4 UDP send.
 
 
 Still to do...
