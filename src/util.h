@@ -40,6 +40,10 @@
 #ifndef _UTIL_H
 #define _UTIL_H
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #define block_alloc(x)	_block_alloc(x,__FILE__,__LINE__)
 #define block_free(x,y) _block_free(x,y,__LINE__)
 
@@ -54,5 +58,9 @@ void purge_chars(char *src, char *to_go);
 
 /* overlapping_words: returns how many words match in two strings */
 int overlapping_words(const char *s1, const char *s2, int max_words);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif 

@@ -10,6 +10,10 @@ February 1993
 #if !defined(_qfDES_h_)
 #define      _qfDES_h_
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 /* what */
 typedef enum QFDES_what_e {qfDES_encrypt, qfDES_decrypt} QFDES_what;
 
@@ -21,6 +25,7 @@ typedef enum QFDES_parity_e {qfDES_even, qfDES_odd} QFDES_parity;
 
 /* key/IV generation */
 typedef enum QFDES_generate_e {qfDES_key, qfDES_iv} QFDES_generate;
+
 
 /* This does it all */
 int qfDES (unsigned char *key, unsigned char *data, unsigned int size, const QFDES_what what, const QFDES_mode mode, unsigned char *initVec);
@@ -40,6 +45,7 @@ int qfDES (unsigned char *key, unsigned char *data, unsigned int size, const QFD
 
 /* Padded [m|re]alloc() */
 unsigned char    qfDES_setPad (unsigned char pad);
+
 #define qfDES_padSpace() qfDES_setPad((unsigned char) ' ')
 #define qfDES_padZero() qfDES_setPad((unsigned char) '\0')
 
@@ -51,9 +57,14 @@ void qfDES_setParity (unsigned char *ptr, unsigned int size, const QFDES_parity 
 unsigned int qfDES_checkParity (unsigned char *ptr, unsigned int size, const QFDES_parity parity);
 
 unsigned char *qfDES_generate (const QFDES_generate what); /* returns a pointer to static memory */
+
 #define qfDES_generateKey() qfDES_generate(qfDES_key)
 #define qfDES_generateIV() qfDES_generate(qfDES_iv)
 
 int qfDES_checkWeakKeys (unsigned char *key);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif /* !_qfDES_h_ */

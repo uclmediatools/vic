@@ -38,6 +38,10 @@
 
 typedef struct _socket_udp socket_udp;
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 socket_udp *udp_init(char *addr, u_int16 rx_port, u_int16 tx_port, int ttl);
 void        udp_exit(socket_udp *s);
 int         udp_send(socket_udp *s, char *buffer, int buflen);
@@ -47,6 +51,10 @@ void        udp_fd_zero(void);
 void        udp_fd_set(socket_udp *s);
 int         udp_fd_isset(socket_udp *s);
 char       *udp_host_addr(socket_udp *s);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif
 

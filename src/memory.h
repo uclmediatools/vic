@@ -44,6 +44,10 @@
 #define xmalloc(x)	_xmalloc(x,__FILE__,__LINE__)
 #define xstrdup(x)	_xstrdup(x,__FILE__,__LINE__)
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 /* Debug Functions */
 void 	 xdoneinit(void);
 void	 xmemchk(void);
@@ -58,5 +62,9 @@ void	*_xrealloc(void *p,unsigned size,const char *filen,int line);
 char	*_xstrdup(const char *s1, const char *filen, int line);
 void	*_block_alloc(unsigned size, const char *filen, int line);
 void	 _block_free(void *p, int size, int line);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif 

@@ -51,6 +51,9 @@ struct mbus_config {
 	int		  cfg_locked;
 };
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 char *mbus_new_encrkey(void);
 char *mbus_new_hashkey(void);
@@ -58,5 +61,9 @@ void mbus_lock_config_file(struct mbus_config *m);
 void mbus_unlock_config_file(struct mbus_config *m);
 void mbus_get_encrkey(struct mbus_config *m, struct mbus_key *key);
 void mbus_get_hashkey(struct mbus_config *m, struct mbus_key *key);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif

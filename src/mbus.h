@@ -42,6 +42,10 @@
 
 struct mbus;
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, void *dat), 
 		       void  (*err_handler)(int seqnum, int reason));
 void         mbus_cmd_handler(struct mbus *m, void  (*cmd_handler)(char *src, char *cmd, char *arg, void *dat));
@@ -63,5 +67,9 @@ char        *mbus_encode_str(const char *s);
 void         mbus_retransmit(struct mbus *m);
 void         mbus_heartbeat(struct mbus *m, int interval);
 int          mbus_waiting_ack(struct mbus *m);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif
