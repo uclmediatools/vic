@@ -22,7 +22,7 @@ extern "C" {
                ((((ntp_sec)  & 0x0000ffff) << 16) | \
                 (((ntp_frac) & 0xffff0000) >> 16))
 
-#define  ntp32_sub(now, then) ((now) > (then)) ? ((now) - (then)) : ((now) - (then) + 0xffffffff)
+#define  ntp32_sub(now, then) ((now) > (then)) ? ((now) - (then)) : (((now) - (then)) + 0x7fffffff)
 
 void     ntp64_time(uint32_t *ntp_sec, uint32_t *ntp_frac);
 
