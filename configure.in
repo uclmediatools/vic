@@ -160,10 +160,11 @@ sparc-sun-solaris*)
 	have_xil=no
 	xil_dir=/usr/openwin
 	if test -d $xil_dir ; then
-		if test ! -d $xil_dir/include ; then
+		if test ! -d $xil_dir/include/xil ; then
 			echo "You don't have the XIL developer's kit!"
 			echo "Building without XIL support..."
 		else
+			echo "Using XIL developer's kit (Found in: $xil_dir/include/xil)"
 			have_xil=yes
 		fi
 	fi
