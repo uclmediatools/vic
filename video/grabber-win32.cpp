@@ -770,7 +770,7 @@ void VfwGrabber::start()
 
 	assert(fmt_->biPlanes == 1);
 	debug_msg("Using biBitCount = %d\n", fmt_->biBitCount);
-	if (fmt_->biWidth != basewidth_ / decimate_) {
+	if (fmt_->biWidth != (LONG) (basewidth_ / decimate_)) {
 		/* The driver is totally stupid so accept it's settings! */
 		debug_msg("Stupid driver. Accepting %x %d*%d*%d\n", fmt_->biCompression, fmt_->biWidth, fmt_->biHeight, fmt_->biBitCount);
 		switch (fmt_->biWidth) {
