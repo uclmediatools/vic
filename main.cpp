@@ -130,7 +130,7 @@ Usage: vic [-HPs] [-A nv|ivs|rtp] [-B maxbps] [-C conf]\n\
 \t[-K key ] [-L flowLabel (ip6 only)] [-l (creates log file)]\n\
 \t[-M colormap] [-m mtu] [-N session] [-n atm|ip|ip6|rtip]\n\
 \t[-o clipfile] [-t ttl] [-U interval] [-u script]\n\
-\t[-V visual] [-X resource=value] [-z numlayers] dest/port[/fmt/ttl]\n"
+\t[-V visual] [-X resource=value] [-j numlayers] dest/port[/fmt/ttl]\n"
 	);
 	exit(1);
 }
@@ -423,7 +423,7 @@ main(int argc, const char** argv)
 #endif
 	// Option list; If letter is followed by ':' then it takes an argument
 	const char* options = 
-		"A:B:C:c:D:d:f:F:HI:K:lL:M:m:N:n:o:Pq:re:sST:t:U:u:V:w:X:yy:z:";
+		"A:B:C:c:D:d:f:F:HI:j:K:lL:M:m:N:n:o:Pq:re:sST:t:U:u:V:w:X:yy:";
 	/* process display and window (-use) options before initialising tcl/tk */
 	char buf[256], tmp[256];
 	const char *display=0, *use=0;
@@ -544,6 +544,10 @@ main(int argc, const char** argv)
 			tcl.add_option("confBusChannel", optarg);
 			break;
 
+		case 'j':
+			tcl.add_option("numLayers", optarg);
+			break;
+
 		case 'K':
 			/*XXX probably do not want this in X server*/
 			tcl.add_option("sessionKey", optarg);
@@ -635,9 +639,6 @@ main(int argc, const char** argv)
 			{
 				tcl.add_option("bw_control", "true");
 			}
-			break;
-		case 'z':
-			tcl.add_option("numLayers", optarg);
 			break;
 		}
 	}
