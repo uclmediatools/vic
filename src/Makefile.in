@@ -53,5 +53,5 @@ release:
 	cvs tag release-`cat VERSION | sed "s/\./-/g"`
 
 depend: $(SRCS)
-	makedepend $(INC) $(SRCS)
+	makedepend $(DEFS) $(INC) $(SRCS)
 
