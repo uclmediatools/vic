@@ -346,6 +346,22 @@ then
 	AC_DEFINE(HAVE_SIN6_LEN) 
 fi
 
+AC_CACHE_CHECK(for msg_control in struct msghdr, ucl_cv_control,
+        [AC_TRY_COMPILE([
+                #include <sys/types.h>
+		#include <sys/socket.h>
+        ],[
+                struct msghdr msg;
+                msg.msg_control = 0;
+        ],
+                ucl_cv_control=yes,
+                ucl_cv_control=no
+        )])
+if test $ucl_cv_control = yes
+then
+        AC_DEFINE(HAVE_MSGHDR_MSGCTRL)
+fi
+
 ###############################################################################
 # Check whether gtk-doc is installed
 
