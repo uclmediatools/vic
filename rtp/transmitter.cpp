@@ -146,7 +146,7 @@ void Transmitter::loopback(pktbuf* pb)
 		h = s->change_format(fmt);
 	}
 
-	if (s->mute() || !loopback_) {
+	if (s->mute()) {
 		pb->release();
 		return;
 	}
