@@ -483,58 +483,18 @@ Word s_p7[64] =
 
 unsigned char G_padChar = (char) 0; /* Default pad charcater */
 
-static
-Word rol[16][3] =
-{ /* For rotating left */
-{0x80000000, 27, 1}, {0x80000000, 27, 1},
-{0xc0000000, 26, 2}, {0xc0000000, 26, 2},
-{0xc0000000, 26, 2}, {0xc0000000, 26, 2},
-{0xc0000000, 26, 2}, {0xc0000000, 26, 2},
-{0x80000000, 27, 1}, {0xc0000000, 26, 2},
-{0xc0000000, 26, 2}, {0xc0000000, 26, 2},
-{0xc0000000, 26, 2}, {0xc0000000, 26, 2},
-{0xc0000000, 26, 2}, {0x80000000, 27, 1}
-};
-
-#define ROTATE_LEFT(v, rot) \
-v = ((v & rot[0]) >> rot[1]) | v << rot[2] 
-
-static
-Word ror[16][3] =
-{ /* For rotating right */
-{0x00000000,  0, 0}, {0x00000010, 27, 1},
-{0x00000030, 26, 2}, {0x00000030, 26, 2},
-{0x00000030, 26, 2}, {0x00000030, 26, 2},
-{0x00000030, 26, 2}, {0x00000030, 26, 2},
-{0x00000010, 27, 1}, {0x00000030, 26, 2},
-{0x00000030, 26, 2}, {0x00000030, 26, 2},
-{0x00000030, 26, 2}, {0x00000030, 26, 2},
-{0x00000030, 26, 2}, {0x00000010, 27, 1}
-};
-
-#define ROTATE_RIGHT(v, rot) \
-v = ((v & rot[0]) << rot[1]) | v >> rot[2]
-
-static void K_ENCRYPT(Word regC, Word regD, Word *ik)
+static Word ROTATE_LEFT(Word x) 
 {
-    register int z; 
-    register Word *rl, *k = ik; 
-    for(rl = rol[z = 0]; z < 16; rl = rol[++z], k += 2) { 
-        ROTATE_LEFT(regC, rl); 
-        ROTATE_LEFT(regD, rl);
-        PC2(regC, regD, k); 
-    } 
+	Word	a;
+	a = (x >> 31) & 1;
+	return (x << 1) | a;
 }
 
-static void K_DECRYPT(Word regC, Word regD, Word *ik)
-{ 
-    register int z; 
-    register Word *rr, *k = ik; 
-    for(rr = ror[z = 0]; z < 16; rr = ror[++z], k += 2) { 
-        ROTATE_RIGHT(regC, rr); 
-        ROTATE_RIGHT(regD, rr);
-        PC2(regC, regD, k); 
-    } 
+static Word ROTATE_RIGHT(Word x) 
+{
+	Word	a;
+	a = x & 1;
+	return (x >> 1) | (a << 31);
 }
 
 /*
@@ -603,35 +563,24 @@ static void K_DECRYPT(Word regC, Word regD, Word *ik)
 #endif /* DIFF_BYTE_ORDER */
 
 int
-qfDES(unsigned char         *key,
-      unsigned char         *data,
-      unsigned int size,
-const QFDES_what   what,
-const QFDES_mode   mode,
-      unsigned char         *initVec)
+qfDES(unsigned char	*key,
+      unsigned char	*data,
+      unsigned int 	 size,
+const QFDES_what   	 what,
+const QFDES_mode   	 mode,
+      unsigned char	*initVec)
 {
     /* Store some info to optimise for multiple calls ... */
-    static
-    unsigned char desKey[8],
-         desKeys[128];
-
-    static
-    Word *oldKey = (Word *) desKey,
-         *keys   = (Word *) desKeys;
-
-    static
-    QFDES_what oldWhat;
-
-    static
-    QFDES_mode oldMode;
-
-    unsigned char b0[8], b1[8]; /* feedback blocks */
-
-    register
-    Word *newKey = (Word *) key, /* key from user */
-         *text,                  /* text to be [en|de]crypted */
-         *cb     = (Word *) b0,  /* the chained block in CBC mode */
-         *cb1    = (Word *) b1;  /* a copy for use when decrypting */
+    static unsigned char desKey[8], desKeys[128];
+    static Word 	*oldKey = (Word *) desKey,
+         		*keys   = (Word *) desKeys;
+    static QFDES_what 	oldWhat;
+    static QFDES_mode 	oldMode;
+    unsigned char 	b0[8], b1[8]; /* feedback blocks */
+    Word 		*newKey = (Word *) key, /* key from user */
+         		*text,                  /* text to be [en|de]crypted */
+         		*cb     = (Word *) b0,  /* the chained block in CBC mode */
+         		*cb1    = (Word *) b1;  /* a copy for use when decrypting */
 
 #if defined(DIFF_BYTE_ORDER)
     unsigned int origSize = size;
@@ -644,27 +593,42 @@ const QFDES_mode   mode,
     ** and set up intermediate keys.
     */
     if (newKey[0] != oldKey[0] || newKey[1] != oldKey[1]) {
-
-        /* all new */
-        register
         Word c, d;  /* C and D registers */
 
         oldKey[0] = newKey[0]; oldKey[1] = newKey[1];
-        oldWhat = what;
-        oldMode = mode;
+        oldWhat   = what;
+        oldMode   = mode;
 
         PC1(newKey, c, d);
 
-        if ((what == qfDES_encrypt) ||
-            (mode == qfDES_cfb) || (mode == qfDES_ofb)) /* Always encrypt */
-            { K_ENCRYPT(c, d, keys); }
-        else
-            { K_DECRYPT(c, d, keys); }
-    }
+        if ((what == qfDES_encrypt) || (mode == qfDES_cfb) || (mode == qfDES_ofb)) {
+		int 	 z;
+		Word	 r; 
+		Word	*k = keys; 
+		Word 	 rol[16] = {1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1};
 
-    else if ((what != oldWhat) &&
-             ((mode == qfDES_ecb) || (mode == qfDES_cbc))) {
+		for(z = 0; z < 16; z++, k += 2) { 
+			for (r = 0; r < rol[z]; r++) {
+				c = ROTATE_LEFT(c); 
+				d = ROTATE_LEFT(d);
+			}
+			PC2(c, d, k); 
+		}
+        } else {
+		int 	 z;
+		Word	 r; 
+		Word	*k = keys; 
+		Word 	 ror[16] = {1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1};
 
+		for(z = 0; z < 16; z++, k += 2) { 
+			for (r = 0; r < ror[z]; r++) {
+				c = ROTATE_RIGHT(c); 
+				d = ROTATE_RIGHT(d);
+			}
+			PC2(c, d, k); 
+		} 
+	}
+    } else if ((what != oldWhat) && ((mode == qfDES_ecb) || (mode == qfDES_cbc))) {
         /*
         ** Same key but different direction.
         ** Reverse intermediate key sequence (ECB and CBC).
