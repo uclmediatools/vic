@@ -50,12 +50,16 @@
 #include "crypt_random.h"
 #include "rtp.h"
 
+#define MAX_DROPOUT    3000
+#define MAX_MISORDER   100
+#define MIN_SEQUENTIAL 2
+
 /*
  * Definitions for the RTP/RTCP packets on the wire...
  */
 
 #define RTP_MAX_PACKET_LEN 1500
-#define RTP_SEQ_MOD        1<<16
+#define RTP_SEQ_MOD        0x10000
 #define RTP_MAX_SDES_LEN   256
 
 #define RTCP_SR   200
@@ -128,6 +132,16 @@ typedef struct _source {
 	struct timeval	 last_active;
 	int		 sender;
 	int		 got_bye;	/* TRUE if we've received an RTCP bye from this source */
+	int		 base_seq;
+	int		 max_seq;
+	int		 bad_seq;
+	int		 cycles;
+	int		 received;
+	int		 received_prior;
+	int		 expected_prior;
+	int		 probation;
+	u_int32		 jitter;
+	u_int32		 transit;
 } source;
 
 /* The size of the hash table used to hold the source database. */
@@ -359,20 +373,30 @@ static void create_source(struct rtp *session, u_int32 ssrc)
 	/* This is a new source, we have to create it... */
 	h = ssrc_hash(ssrc);
 	s = (source *) xmalloc(sizeof(source));
-	s->next    = session->db[h];
-	s->prev    = NULL;
-	s->ssrc    = ssrc;
-	s->cname   = NULL;
-	s->name    = NULL;
-	s->email   = NULL;
-	s->phone   = NULL;
-	s->loc     = NULL;
-	s->tool    = NULL;
-	s->note    = NULL;
-	s->sr      = NULL;
-	s->rr      = NULL;
-	s->got_bye = FALSE;
-	s->sender  = FALSE;
+	s->next           = session->db[h];
+	s->prev           = NULL;
+	s->ssrc           = ssrc;
+	s->cname          = NULL;
+	s->name           = NULL;
+	s->email          = NULL;
+	s->phone          = NULL;
+	s->loc            = NULL;
+	s->tool           = NULL;
+	s->note           = NULL;
+	s->sr             = NULL;
+	s->rr             = NULL;
+	s->got_bye        = FALSE;
+	s->sender         = FALSE;
+	s->base_seq       = 0;
+	s->max_seq        = 0;
+	s->bad_seq        = 0;
+	s->cycles         = 0;
+	s->received       = 0;
+	s->received_prior = 0;
+	s->expected_prior = 0;
+	s->probation      = -1;
+	s->jitter         = 0;
+	s->transit        = 0;
 	gettimeofday(&(s->last_active), NULL);
 	/* Now, add it to the database... */
 	if (session->db[h] != NULL) {
@@ -441,6 +465,71 @@ static void delete_source(struct rtp *session, u_int32 ssrc)
 	event.ts   = &event_ts;
 	session->callback(session, &event);
 	check_database(session);
+}
+
+static void init_seq(source *s, u_int16 seq)
+{
+	/* Taken from draft-ietf-avt-rtp-new-01.txt */
+	s->base_seq = seq - 1;
+	s->max_seq = seq;
+	s->bad_seq = RTP_SEQ_MOD + 1;
+	s->cycles = 0;
+	s->received = 0;
+	s->received_prior = 0;
+	s->expected_prior = 0;
+}
+
+static int update_seq(source *s, u_int16 seq)
+{
+	/* Taken from draft-ietf-avt-rtp-new-01.txt */
+	u_int16 udelta = seq - s->max_seq;
+
+	/*
+	 * Source is not valid until MIN_SEQUENTIAL packets with
+	 * sequential sequence numbers have been received.
+	 */
+	if (s->probation) {
+		  /* packet is in sequence */
+		  if (seq == s->max_seq + 1) {
+				s->probation--;
+				s->max_seq = seq;
+				if (s->probation == 0) {
+					 init_seq(s, seq);
+					 s->received++;
+					 return 1;
+				}
+		  } else {
+				s->probation = MIN_SEQUENTIAL - 1;
+				s->max_seq = seq;
+		  }
+		  return 0;
+	} else if (udelta < MAX_DROPOUT) {
+		  /* in order, with permissible gap */
+		  if (seq < s->max_seq) {
+				/*
+				 * Sequence number wrapped - count another 64K cycle.
+				 */
+				s->cycles += RTP_SEQ_MOD;
+		  }
+		  s->max_seq = seq;
+	} else if (udelta <= RTP_SEQ_MOD - MAX_MISORDER) {
+		  /* the sequence number made a very large jump */
+		  if (seq == s->bad_seq) {
+				/*
+				 * Two sequential packets -- assume that the other side
+				 * restarted without telling us so just re-sync
+				 * (i.e., pretend this was the first packet).
+				 */
+				init_seq(s, seq);
+		  } else {
+				s->bad_seq = (seq + 1) & (RTP_SEQ_MOD-1);
+				return 0;
+		  }
+	} else {
+		  /* duplicate or reordered packet */
+	}
+	s->received++;
+	return 1;
 }
 
 static double rtcp_interval(struct rtp *session, int reconsider)
@@ -567,7 +656,7 @@ static char *get_cname(socket_udp *s)
         uname = pwent->pw_name;
 #endif
         if (uname != NULL) {
-                sprintf(cname, "%s@", uname);
+                sprintf(cname, "test-%s@", uname);
         }
 
         /* Now the hostname. Must be dotted-quad IP address. */
@@ -676,7 +765,7 @@ static int validate_rtp(rtp_packet *packet, int len)
 	return TRUE;
 }
 
-static void rtp_recv_data(struct rtp *session)
+static void rtp_recv_data(struct rtp *session, u_int32 curr_time)
 {
 	/* This routine processes incoming RTP packets */
 	rtp_packet	*packet = (rtp_packet *) xmalloc(RTP_MAX_PACKET_LEN);
@@ -684,7 +773,7 @@ static void rtp_recv_data(struct rtp *session)
 	int		 buflen;
 	rtp_event	 event;
 	struct timeval	 event_ts;
-	int		 i;
+	int		 i, d, transit;
 	source		*s;
 
 	buflen = udp_recv(session->rtp_socket, buffer, RTP_MAX_PACKET_LEN - RTP_PACKET_HEADER_SIZE);
@@ -709,29 +798,52 @@ static void rtp_recv_data(struct rtp *session)
 		packet->data     = buffer + 12 + packet->cc + packet->extn_len;
 		packet->data_len = buflen - packet->extn_len - packet->cc - 12;
 		if (validate_rtp(packet, buflen)) {
-			create_source(session, packet->ssrc);
-			if (packet->cc > 0) {
-				for (i = 0; i < packet->cc; i++) {
-					create_source(session, packet->csrc[i]);
-				}
-			}
-			/* Update the source database... */
 			s = get_source(session, packet->ssrc);
-			if (s->sender == FALSE) {
-				s->sender = TRUE;
-				session->sender_count++;
+			if (s != NULL) {
+				if (s->probation == -1) {
+					s->probation = MIN_SEQUENTIAL;
+					s->max_seq   = packet->seq;
+				} else if (s->probation > 0) {
+					/* This source is still on probation... */
+					update_seq(s, packet->seq);
+					debug_msg("RTP packet from probationary source ignored...\n");
+				} else {
+					/* Process the packet we've just received... */
+					update_seq(s, packet->seq);
+					if (packet->cc > 0) {
+						for (i = 0; i < packet->cc; i++) {
+							create_source(session, packet->csrc[i]);
+						}
+					}
+					/* Update the source database... */
+					if (s->sender == FALSE) {
+						s->sender = TRUE;
+						session->sender_count++;
+					}
+					transit    = curr_time - packet->ts;
+					d      	   = transit - s->transit;
+					s->transit = transit;
+					if (d < 0) {
+						d = -d;
+					}
+					s->jitter += d - ((s->jitter + 8) / 16);
+
+					/* Callback to the application to process the packet... */
+					gettimeofday(&event_ts, NULL);
+					event.ssrc = packet->ssrc;
+					event.type = RX_RTP;
+					event.data = (void *) packet;	/* The callback function MUST free this! */
+					event.ts   = &event_ts;
+					session->callback(session, &event);
+					return;	/* we don't free "packet", that's done by the callback function... */
+				}
+			} else {
+				debug_msg("RTP packet from unknown source ignored\n");
 			}
-			/* Callback to the application to process the packet... */
-			gettimeofday(&event_ts, NULL);
-			event.ssrc = packet->ssrc;
-			event.type = RX_RTP;
-			event.data = (void *) packet;	/* The callback function MUST free this! */
-			event.ts   = &event_ts;
-			session->callback(session, &event);
-			return;
+		} else {
+			session->invalid_rtp_count++;
+			debug_msg("Invalid RTP packet discarded\n");
 		}
-		session->invalid_rtp_count++;
-		debug_msg("Invalid RTP packet discarded\n");
 	}
 	xfree(packet);
 }
@@ -1023,14 +1135,14 @@ static void rtp_recv_ctrl(struct rtp *session)
 	}
 }
 
-void rtp_recv(struct rtp *session, struct timeval *timeout)
+void rtp_recv(struct rtp *session, struct timeval *timeout, u_int32 curr_time)
 {
 	udp_fd_zero();
 	udp_fd_set(session->rtp_socket);
 	udp_fd_set(session->rtcp_socket);
 	if (udp_select(timeout) > 0) {
 		if (udp_fd_isset(session->rtp_socket)) {
-			rtp_recv_data(session);
+			rtp_recv_data(session, curr_time);
 		}
 		if (udp_fd_isset(session->rtcp_socket)) {
 			rtp_recv_ctrl(session);
@@ -1200,46 +1312,75 @@ static u_int8 *format_rtcp_sr(u_int8 *buffer, int buflen, struct rtp *session, u
 	return packet;
 }
 
-static u_int8 *format_rtcp_rr(u_int8 *buffer, int buflen, struct rtp *session, u_int32 ts)
+static u_int8 *format_rtcp_rr(u_int8 *buffer, int buflen, struct rtp *session)
 {
-	/* Write an RTCP RR header into buffer, returning a pointer */
-	/* to the next byte after the header we have just written.  */
-	/* Write an RTCP SR header into buffer, returning a pointer */
-	/* to the next byte after the header we have just written.  */
-	u_int8		*packet = buffer;
-	rtcp_common	 common;
+	/* Write an RTCP RR into buffer, returning a pointer to */
+	/* the next byte after the header we have just written. */
+	rtcp_t		*packet = (rtcp_t *) buffer;
+	source	 	*s;
+	int	 	 h;
+	int		 remaining_length;
 
-	UNUSED(session);
-	UNUSED(ts);
+	assert(buflen >= 8);	/* ...else there isn't space for the header */
 
-	assert(buflen > (int) (sizeof(rtcp_common) + sizeof(rtcp_rr)));
+	packet->common.version = 2;
+	packet->common.p       = 0;
+	packet->common.count   = 0;
+	packet->common.pt      = RTCP_RR;
+	packet->common.length  = htons(1);
+	packet->r.rr.ssrc      = htonl(session->my_ssrc);
 
-	common.version = 2;
-	common.p       = 0;
-	common.count   = 0;
-	common.pt      = RTCP_RR;
-	common.length  = htons(1);
+	/* Add report blocks, until we either run out of senders */
+	/* to report upon or we run out of space in the buffer.  */
+	remaining_length = buflen - 8;
+	for (h = 0; h < RTP_DB_SIZE; h++) {
+		for (s = session->db[h]; s != NULL; s = s->next) {
+			if ((packet->common.count == 31) || (remaining_length < 24)) {
+				break; /* Insufficient space for more report blocks... */
+			}
+			if (s->sender) {
+				/* Much of this is taken from A.3 of draft-ietf-avt-rtp-new-01.txt */
+				int	extended_max      = s->cycles + s->max_seq;
+       				int	expected          = extended_max - s->base_seq + 1;
+       				int	lost              = expected - s->received;
+				int	expected_interval = expected - s->expected_prior;
+       				int	received_interval = s->received - s->received_prior;
+       				int 	lost_interval     = expected_interval - received_interval;
+				int	fraction;
+				u_int32	lsr;
 
-	memcpy(packet, &common, sizeof(common)); 
-	packet += sizeof(common);
-	*((u_int32 *) packet) = htonl(rtp_my_ssrc(session));
-	packet += 4;
+       				s->expected_prior = expected;
+       				s->received_prior = s->received;
+       				if (expected_interval == 0 || lost_interval <= 0) {
+					fraction = 0;
+       				} else {
+					fraction = (lost_interval << 8) / expected_interval;
+				}
 
-#ifdef NDEF
-	rr.srrc          = htonl(rtp_my_srrc(session));
-	rr.ntp_sec       = 0;
-	rr.ntp_frac      = 0;
-	rr.rtp_ts        = htonl(ts);
-	rr.sender_pcount = 0;
-	rr.sender_bcount = 0;
-
-	memcpy(packet, &rr, sizeof(rr)); 
-	packet += sizeof(rr);
-#endif
-
-	/* ...fill out the RRs... */
-
-	return packet;
+				if (s->sr == NULL) {
+					lsr = 0;
+				} else {
+					lsr = (s->sr->ntp_sec & 0x0000ffff) | ((s->sr->ntp_frac & 0xffff0000) >> 16);
+				}
+				packet->r.rr.rr[packet->common.count].ssrc       = htonl(s->ssrc);
+				packet->r.rr.rr[packet->common.count].fract_lost = fraction;
+				packet->r.rr.rr[packet->common.count].total_lost = lost & 0x00ffffff;
+				packet->r.rr.rr[packet->common.count].last_seq   = htonl(extended_max);
+				packet->r.rr.rr[packet->common.count].jitter     = htonl(s->jitter / 16);
+				packet->r.rr.rr[packet->common.count].lsr        = htonl(lsr);
+				packet->r.rr.rr[packet->common.count].dlsr       = 0;
+				s->sender = FALSE;
+				remaining_length -= 24;
+				packet->common.count++;
+				session->sender_count--;
+				if (session->sender_count == 0) {
+					break; /* No point continuing, since we've reported on all senders... */
+				}
+			}
+		}
+	}
+	packet->common.length = ntohs(1 + (packet->common.count * 6));
+	return buffer + 8 + (24 * packet->common.count);
 }
 
 /*
@@ -1296,10 +1437,12 @@ static void send_rtcp(struct rtp *session, u_int32 ts)
 	u_int8	 buffer[RTP_MAX_PACKET_LEN];
 	u_int8	*ptr = buffer;
 
+	/* It's possible that there are more than 31 senders, so we should loop round */
+	/* here if they don't all fit into a single sender/receiver report packet...  */
 	if (session->we_sent) {
 		ptr = format_rtcp_sr(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), session, ts);
 	} else {
-		ptr = format_rtcp_rr(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), session, ts);
+		ptr = format_rtcp_rr(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), session);
 	}
 	ptr = format_rtcp_sdes(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), session);
 	udp_send(session->rtcp_socket, buffer, ptr - buffer);
@@ -1314,8 +1457,10 @@ int rtp_send_ctrl(struct rtp *session, u_int32 ts)
 	if (tv_gt(curr_time, session->next_rtcp_send_time)) {
 		/* The RTCP transmission timer has expired. The following */
 		/* implements draft-ietf-avt-rtp-new-02.txt section 6.3.6 */
+#ifdef NDEF
 		int		 h;
 		source		*s;
+#endif
 		struct timeval	 new_send_time;
 		double		 new_interval;
 
@@ -1328,12 +1473,14 @@ int rtp_send_ctrl(struct rtp *session, u_int32 ts)
 			session->next_rtcp_send_time = curr_time; tv_add(&(session->next_rtcp_send_time), new_interval);
 			session->initial_rtcp = FALSE;
 			session->we_sent      = FALSE;
+#ifdef NDEF
 			session->sender_count = 0;
 			for (h = 0; h < RTP_DB_SIZE; h++) {
 				for (s = session->db[h]; s != NULL; s = s->next) {
 					s->sender = FALSE;
 				}
 			}
+#endif
 		} else {
 			session->next_rtcp_send_time = session->last_rtcp_send_time; 
 			tv_add(&(session->next_rtcp_send_time), new_interval);
