@@ -48,8 +48,9 @@ static const char rcsid[] =
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+#undef Status
 #include "color-pseudo.h"
-#include "Tcl.h"
+//#include "Tcl.h"
 #include "bsd-endian.h"
 #include "color-hist.h"
 

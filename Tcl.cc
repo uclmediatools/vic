@@ -43,6 +43,7 @@ static const char rcsid[] =
 #ifndef NO_TK
 #include <tk.h>
 #endif
+#undef Status
 #include "Tcl.h"
 #include <sys/types.h>
 
@@ -346,6 +347,9 @@ TclObject* Matcher::lookup(const char* classname, const char* id)
 			return (o);
 		}
 	}
+#ifdef DEBUG
+    printf("Failed Matcher::lookup on %s\n", classname);
+#endif /* DEBUG */
 	return (0);
 }
 

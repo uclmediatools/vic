@@ -35,6 +35,7 @@
 #define vic_color_hist_h
 
 #include "iohandler.h"
+#undef Status 
 #include "Tcl.h"
 
 class ColorHist : public TclObject {

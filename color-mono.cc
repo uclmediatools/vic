@@ -55,8 +55,8 @@ static char rcsid[] =
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
+//#include <X11/Xlib.h>
+//#include <X11/Xutil.h>
 #include "color.h"
 #include "renderer-window.h"
 #include "bsd-endian.h"
