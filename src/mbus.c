@@ -1004,7 +1004,7 @@ int mbus_recv(struct mbus *m, void *data)
 {
 	char		*auth, *ver, *src, *dst, *ack, *r, *cmd, *param;
 	char	 	buffer[MBUS_BUF_SIZE];
-	int	 	buffer_len, seq, i, a, rx, ts;
+	int	 	buffer_len, seq, i, a, rx, ts, authlen;
 	char	 	ackbuf[MBUS_ACK_BUF_SIZE];
 	char	 	digest[16];
 	struct timeval	t;
@@ -1039,6 +1039,10 @@ int mbus_recv(struct mbus *m, void *data)
 			memset(initVec, 0, 8);
 			qfDES_CBC_d(m->encrkey, tx_cryptbuf, buffer_len, initVec);
 			memcpy(buffer, tx_cryptbuf, buffer_len);
+			if (strncmp(buffer + MBUS_AUTH_LEN + 1, "mbus/1.0", 8) != 0) {
+				debug_msg("Message did not correctly decrypt\n");
+				return FALSE;
+			}
 		}
 
 		mbus_parse_init(m, buffer);
@@ -1048,13 +1052,13 @@ int mbus_recv(struct mbus *m, void *data)
 			mbus_parse_done(m);
 			return FALSE;
 		}
+
 		/* Check that the packet authenticates correctly... */
-		hmac_md5(buffer + strlen(auth) + 1, buffer_len - strlen(auth) - 1, m->hashkey, m->hashkeylen, digest);
+		authlen = strlen(auth);
+		hmac_md5(buffer + authlen + 1, buffer_len - authlen - 1, m->hashkey, m->hashkeylen, digest);
 		base64encode(digest, 16, ackbuf, 24);
 		if ((strlen(auth) != 24) || (strncmp(auth, ackbuf, 24) != 0)) {
 			debug_msg("Failed to authenticate message...\n");
-			debug_msg("Digest in message = %s\n", auth);
-			debug_msg("Calculated digest = %s\n", ackbuf);
 			mbus_parse_done(m);
 			return FALSE;
 		}
