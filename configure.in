@@ -51,19 +51,22 @@ AC_MSG_CHECKING(for uint8_t in <stdint.h>)
 AC_EGREP_HEADER(uint8_t,
 		stdint.h,
 		[AC_MSG_RESULT(yes)],
-		[AC_MSG_RESULT(no) AC_CHECK_TYPE(uint8_t,  unsigned char)])
+		[AC_MSG_RESULT(no) 
+		 AC_CHECK_TYPE(uint8_t,  unsigned char)])
 
 AC_MSG_CHECKING(for uint16_t in <stdint.h>)
 AC_EGREP_HEADER(uint16_t,
 		stdint.h,
 		[AC_MSG_RESULT(yes)],
-		[AC_MSG_RESULT(no) AC_CHECK_TYPE(uint16_t,  unsigned char)])
+		[AC_MSG_RESULT(no) 
+		 AC_CHECK_TYPE(uint16_t,  unsigned char)])
 
 AC_MSG_CHECKING(for uint32_t in <stdint.h>)
 AC_EGREP_HEADER(uint32_t,
 		stdint.h,
 		[AC_MSG_RESULT(yes)],
-		[AC_MSG_RESULT(no) AC_CHECK_TYPE(uint32_t,  unsigned char)])
+		[AC_MSG_RESULT(no) 
+		 AC_CHECK_TYPE(uint32_t,  unsigned char)])
 
 # The following two macros cause autoconf to complain.
 AC_C_BIGENDIAN
