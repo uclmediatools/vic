@@ -9,6 +9,9 @@
 
 <P><!-- @(#) $Header$ (LBL)--></P>
 <H3>v2.8ucl-1.1.7</H3><UL>
+<LI>Updated configure so it includes both v4l1 v4l2 drivers as there are still devices that use v4l1 even in 2.6.x kernel - like the Philips USB cams. 
+<LI> Updated v4l1 to cope with some more v4l1 devices (Philips USB) - based
+vaguely on MASH <a href="http://www.openmash.org/lxr/source/video/video-v4l.cc">v4l</a> - not quite finished.
 <LI>Updated video4linux2 driver so it works with latest API - i.e. with linux kernel 2.6.1. Modified configure to so it can be selected. The old v4l2 driver is
 still there as grabber-v4l2-old. 
 </ul><H3>v2.8ucl-1.1.6</H3><UL>
