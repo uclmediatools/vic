@@ -22,7 +22,7 @@ libcommon.a: $(OBJS)
 	$(CC) $(CFLAGS) $(INC) -c $<
 
 clean:
-	-rm -f $(OBJS) version.h Makefile libcommon.a tags
+	-rm -f $(OBJS) version.h Makefile Makefile.sed libcommon.a tags
 
 etags:
 	etags *.[ch]

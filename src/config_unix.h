@@ -59,9 +59,9 @@
 #include <math.h>
 #include <stdlib.h>   /* abs() */
 #include <string.h>
-
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <sys/uio.h>
 #include <netinet/in.h>
 #include <sys/time.h>
@@ -112,7 +112,6 @@ typedef int	fd_t;
 #endif
 
 #ifdef __NetBSD__
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/audioio.h>
 #endif
@@ -126,7 +125,6 @@ typedef int	fd_t;
 #ifdef Solaris
 #define NEED_INET_ATON
 #define NEED_INET_PTON
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/sockio.h>
 #ifdef __cplusplus
@@ -196,7 +194,6 @@ int gethostname(char *hostname, size_t size);
 
 #ifdef Linux
 #define DIFF_BYTE_ORDER  1
-#include <sys/stat.h>
 #include <fcntl.h>
 void *memcpy(void *dest, const void *src, size_t n);
 int   memcmp(const void *s1, const void *s2, size_t n);
