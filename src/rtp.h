@@ -195,6 +195,7 @@ void 		 rtp_update(struct rtp *session);
 
 uint32_t	 rtp_my_ssrc(struct rtp *session);
 int		 rtp_add_csrc(struct rtp *session, uint32_t csrc);
+int		 rtp_del_csrc(struct rtp *session, uint32_t csrc);
 int		 rtp_valid_ssrc(struct rtp *session, uint32_t ssrc);
 int		 rtp_set_sdes(struct rtp *session, uint32_t ssrc, rtcp_sdes_type type, char *value, int length);
 const char	*rtp_get_sdes(struct rtp *session, uint32_t ssrc, rtcp_sdes_type type);

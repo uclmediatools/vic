@@ -1634,6 +1634,13 @@ int rtp_add_csrc(struct rtp *session, uint32_t csrc)
 	return FALSE;
 }
 
+int rtp_del_csrc(struct rtp *session, uint32_t csrc)
+{
+	check_database(session);
+	UNUSED(csrc);
+	return FALSE;
+}
+
 int rtp_set_sdes(struct rtp *session, uint32_t ssrc, rtcp_sdes_type type, char *value, int length)
 {
 	source	*s;

@@ -297,6 +297,8 @@ v1.2.2	- Fix bug in mbus transmit code which caused messages to have the same se
 	- Fix RTCP timer reconsideration (Vladimir Brauner).
 	* 22 August 2000 [rat v4.2.8]
 
+v1.2.3	- Add prototype for rtp_del_csrc() which will be needed by the
+ 	  mixer in rat.
 
 
 Still to do...
