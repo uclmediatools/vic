@@ -2671,6 +2671,13 @@ void rtp_send_bye(struct rtp *session)
 	/* 50 members in the group), or b) returns without sending a BYE (if there are 50  */
 	/* or more members). See draft-ietf-avt-rtp-new-01.txt (section 6.3.7).            */
 	check_database(session);
+
+	if ((session->we_sent == FALSE) && (session->initial_rtcp == TRUE)) {
+		/* "...a participant which never sent an RTP or RTCP packet MUST NOT send  */
+		/* a BYE packet when they leave the group." (section 6.3.6 of RTP spec)    */
+		return;
+	}
+
 	if (session->ssrc_count < 50) {
 		rtp_send_bye_now(session);
 	}
