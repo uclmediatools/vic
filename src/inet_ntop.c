@@ -84,7 +84,7 @@ inet_ntop4(src, dst, size)
 	char tmp[sizeof "255.255.255.255"];
 
 	sprintf(tmp, fmt, src[0], src[1], src[2], src[3]);
-	if (strlen(tmp) > size) {
+	if ((size_t)strlen(tmp) > size) {
 		errno = ENOSPC;
 		return (NULL);
 	}
