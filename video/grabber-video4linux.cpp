@@ -52,7 +52,6 @@ static const char *devlist[] = {
 };
 
 #define DEBUG(x)
-//#define DEBUG(x) (x)
 
 #define NTSC_WIDTH  640
 #define NTSC_HEIGHT 480
@@ -68,6 +67,7 @@ static const int  one = 1, zero = 0;
 #define CF_411 1
 #define CF_CIF 2
 
+
 /* YUV Byte order */
 #define BYTE_ORDER_YUYV 0
 #define BYTE_ORDER_YVYU 1
@@ -76,7 +76,6 @@ static const int  one = 1, zero = 0;
 
 /* VIDEO NORMS */
 #define MAX_NORMS 4
-
 
 class V4lGrabber : public Grabber {
 public:
@@ -95,6 +94,9 @@ protected:
 
     void packed422_to_planar422(char *, char*);
     void packed422_to_planar411(char *, char*);
+    void vcvt_420p_422p(int width, int height, void *src, void *dst);
+    void vcvt_420p_411p(int width, int height, void *src, void *dst);
+    void vcvt_420i_yuyv(int width, int height, int plus, void *src, void *dst);
 
     struct video_capability  capability;
     struct video_channel     *channels;
@@ -113,6 +115,8 @@ protected:
     int fd_;
     int format_;
     int have_422P;
+    int have_422;
+    int have_420P;
     int v4lformat_;
     int byteorder_;
     int cformat_;
@@ -143,7 +147,7 @@ V4lDevice::V4lDevice(const char *dev, const char *name, char *attr) : InputDevic
 {
     dev_ = dev;
     attributes_ = attr;
-    fprintf(stderr,"V4l:  ==> %s\n",attr);
+    debug_msg("V4l:  ==> %s\n",attr);
 }
 
 int V4lDevice::command(int argc, const char*const* argv)
@@ -187,9 +191,9 @@ V4lScanner::V4lScanner(const char **dev)
     char *nick, *attr;
 
     for (i = 0; dev[i] != NULL; i++) {
-	fprintf(stderr,"V4l: trying %s... ",dev[i]);
+	debug_msg("V4l: trying %s... ",dev[i]);
 	if (-1 == (fd = open(dev[i],O_RDONLY))) {
-	    perror("open");
+	    debug_msg("Error opening: %s : %s",dev[i], sys_errlist[errno]);
 	    continue;
 	}
 	if (-1 == ioctl(fd,VIDIOCGCAP,&capability)) {
@@ -199,12 +203,12 @@ V4lScanner::V4lScanner(const char **dev)
 	}
 
 	if (!(capability.type & VID_TYPE_CAPTURE)) {
-	    fprintf(stderr,"device can't capture\n");
+	    debug_msg("device can't capture\n");
 	    close(fd);
 	    continue;
 	}
 
-	fprintf(stderr,"ok, %s\nV4l:   %s; size: %dx%d => %dx%d%s\n",
+	debug_msg("ok, %s\nV4l:   %s; size: %dx%d => %dx%d%s\n",
 		capability.name,
 		capability.type & VID_TYPE_MONOCHROME ? "mono" : "color",
 		capability.minwidth,capability.minheight,
@@ -221,25 +225,25 @@ V4lScanner::V4lScanner(const char **dev)
 	    strcat(attr,"size { small cif } ");
 	}
 	
-	fprintf(stderr,"V4l:   ports:");
+	debug_msg("V4l:   ports:");
 	strcat(attr,"port { ");
 	for (j = 0; j < capability.channels; j++) {
 	    channel.channel = j;
 	    if (-1 == ioctl(fd,VIDIOCGCHAN,&channel)) {
 		perror("ioctl VIDIOCGCHAN");
 	    } else {
-		fprintf(stderr," %s",channel.name);
+		debug_msg(" %s",channel.name);
 		strcat(attr,channel.name);
 		strcat(attr," ");
 	    }
 	}
-	fprintf(stderr,"\n");
+	debug_msg("\n");
 	strcat(attr,"} ");
 
 	if (-1 == ioctl(fd,VIDIOCGPICT,&pict)) {
 	    perror("ioctl VIDIOCGPICT");
 	}
-	fprintf(stderr,"V4l:   depth=%d, palette=%s\n",
+	debug_msg("V4l:   depth=%d, palette=%s\n",
 		pict.depth,(pict.palette<sizeof(palette_name)/sizeof(char*))?
 		palette_name[pict.palette]:"??");
 
@@ -262,12 +266,41 @@ V4lGrabber::V4lGrabber(const char *cformat, const char *dev)
 
     have_mmap = 0;
     have_422P = 0;
+    have_422  = 0;
+    have_420P = 0;
 
+    printf("Videodev: %s\n", dev);
+    printf("Cformat: %s\n", cformat);
     fd_ = open(dev, O_RDWR);
     if (fd_ < 0) {
 	perror("open");
 	exit(1);
     }
+
+    vid_mmap.format = VIDEO_PALETTE_YUV420P;
+    vid_mmap.frame = 0;
+    vid_mmap.width = PAL_WIDTH;
+    vid_mmap.height = PAL_HEIGHT;
+    
+    if (-1 != ioctl(fd_, VIDIOCMCAPTURE, &vid_mmap)) {
+      have_422P = 0;
+      have_422 = 0;
+      have_420P = 1;
+      printf("Device capture VIDEO_PALETTE_YUV420P\n");
+    }
+
+
+    vid_mmap.format = VIDEO_PALETTE_YUV422;
+    vid_mmap.frame = 0;
+    vid_mmap.width = PAL_WIDTH;
+    vid_mmap.height = PAL_HEIGHT;
+    
+    if (-1 != ioctl(fd_, VIDIOCMCAPTURE, &vid_mmap)) {
+      have_422P = 0;
+      have_422 = 1;
+      printf("Device capture VIDEO_PALETTE_YUV422\n");
+    }
+
     vid_mmap.format = VIDEO_PALETTE_YUV422P;
     vid_mmap.frame = 0;
     vid_mmap.width = PAL_WIDTH;
@@ -275,7 +308,14 @@ V4lGrabber::V4lGrabber(const char *cformat, const char *dev)
 
     if (-1 != ioctl(fd_, VIDIOCMCAPTURE, &vid_mmap)) {
            have_422P = 1;
+	   printf("Device capture VIDEO_PALETTE_YUV422P\n");
     }
+
+    if( !( have_422P || have_422 || have_420P))   {
+      debug_msg("No suituable palette found\n");
+      exit(1);
+    }
+
     /* Release device */
     close(fd_);
 
@@ -309,11 +349,12 @@ V4lGrabber::V4lGrabber(const char *cformat, const char *dev)
 	perror("ioctl VIDIOCGMBUF");
     }
     mem = (char *)mmap(0,gb_buffers.size,PROT_READ|PROT_WRITE,MAP_SHARED,fd_,0);
+
     if ((char*)-1 == mem) {
 	perror("mmap");
-	fprintf(stderr,"V4l: device has no mmap support\n");
+	debug_msg("V4l: device has no mmap support\n");
     } else {
-	fprintf(stderr,"v4l: mmap()'ed buffer size = 0x%x\n",
+	debug_msg("v4l: mmap()'ed buffer size = 0x%x\n",
 		gb_buffers.size);
 	have_mmap = 1;
     }
@@ -335,7 +376,7 @@ V4lGrabber::V4lGrabber(const char *cformat, const char *dev)
 
 V4lGrabber::~V4lGrabber()
 {
-    DEBUG(fprintf(stderr,"V4l: destructor\n"));
+    debug_msg("V4l: destructor\n");
 
     if (have_mmap)
 	munmap(mem,gb_buffers.size);
@@ -345,8 +386,8 @@ V4lGrabber::~V4lGrabber()
 int V4lGrabber::command(int argc, const char*const* argv)
 {
     int i;
-    struct video_channel     channel;
-    static const char *norms[] = {"pal", "ntsc", "secam", "auto"};
+    //struct video_channel     channel;
+    //static const char *norms[] = {"pal", "ntsc", "secam", "auto"};
 
     Tcl &tcl = Tcl::instance();
 
@@ -383,7 +424,7 @@ int V4lGrabber::command(int argc, const char*const* argv)
     			if (-1 == ioctl(fd_,VIDIOCSPICT,&pict))
         		perror("ioctl VIDIOCSPICT");
 
-                        DEBUG(fprintf(stderr, "V4l: Brightness = %d\n", val));
+                        debug_msg( "V4l: Brightness = %d\n", val);
                         return (TCL_OK);
         }
 
@@ -395,7 +436,7 @@ int V4lGrabber::command(int argc, const char*const* argv)
     			if (-1 == ioctl(fd_,VIDIOCSPICT,&pict))
         		perror("ioctl VIDIOCSPICT");
 
-                        DEBUG(fprintf(stderr, "V4l: Contrast = %d\n", val));
+                        debug_msg( "V4l: Contrast = %d\n", val);
                         return (TCL_OK);
         }
 
@@ -407,7 +448,7 @@ int V4lGrabber::command(int argc, const char*const* argv)
     			if (-1 == ioctl(fd_,VIDIOCSPICT,&pict))
         		perror("ioctl VIDIOCSPICT");
 
-                        DEBUG(fprintf(stderr, "V4l: Hue = %d\n", val));
+                        debug_msg( "V4l: Hue = %d\n", val);
                         return (TCL_OK);
         }
 
@@ -419,7 +460,7 @@ int V4lGrabber::command(int argc, const char*const* argv)
     			if (-1 == ioctl(fd_,VIDIOCSPICT,&pict))
         		perror("ioctl VIDIOCSPICT");
 
-                        DEBUG(fprintf(stderr, "V4l: Saturation = %d\n", val));
+                        debug_msg( "V4l: Saturation = %d\n", val);
                         return (TCL_OK);
         }
 
@@ -434,7 +475,7 @@ int V4lGrabber::command(int argc, const char*const* argv)
                         if (-1 == ioctl(fd_,VIDIOCSPICT,&pict))
                         perror("ioctl VIDIOCSPICT");
 
-                        DEBUG(fprintf(stderr, "V4l: Resetting controls\n"));
+                        debug_msg( "V4l: Resetting controls\n");
                         return (TCL_OK);
 		}
         }
@@ -446,7 +487,7 @@ int V4lGrabber::command(int argc, const char*const* argv)
 
 
 	if (strcmp(argv[1], "fps") == 0) {
-	    DEBUG(fprintf(stderr,"V4l: fps %s\n",argv[2]));
+	    debug_msg("V4l: fps %s\n",argv[2]);
 	}
 
 
@@ -471,7 +512,7 @@ int V4lGrabber::command(int argc, const char*const* argv)
 
 void V4lGrabber::start()
 {
-    DEBUG(fprintf(stderr,"V4l: start\n"));
+    debug_msg("V4l: start\n");
 
     format();
 
@@ -495,7 +536,7 @@ void V4lGrabber::start()
 
 void V4lGrabber::stop()
 {
-    DEBUG(fprintf(stderr,"V4l: stop\n"));
+    debug_msg("V4l: stop\n");
 
     if (have_mmap) {
 	while (grab_count > sync_count) {
@@ -514,12 +555,14 @@ int V4lGrabber::grab()
 {
     char  *fr=NULL;
 
-    DEBUG(fprintf(stderr,(sync_count % 2) ? "o" : "e"));
+    debug_msg((sync_count % 2) ? "o" : "e");
 
     if (have_mmap) {
 	fr = mem + (gb_buffers.offsets[ (sync_count % 2) ? 1: 0]);
-	if (-1 == ioctl(fd_, VIDIOCSYNC, (sync_count%2) ? &one:&zero))
+	if (-1 == ioctl(fd_, VIDIOCSYNC, (sync_count%2) ? &one:&zero)){
 	    perror("ioctl VIDIOCSYNC");
+	    printf("Syncerror SyncCount %d\n",sync_count);
+	}
 	else
 	    sync_count++;
     } else {
@@ -531,15 +574,26 @@ int V4lGrabber::grab()
     case CF_411:
 
     case CF_CIF:
+      if (have_422)         
 	packed422_to_planar411((char*)frame_,fr);
-	break;
+      else {
+	//  have_420P 
+	// vcvt_420p_411p(width_, height_, (char *)fr, frame_);  
+	// erwartet wird scheinbar 420P und nicht 411P  *wunder* 
+	memcpy((void *)frame_, (const void *)fr, (size_t)height_*width_*3/2);
+      }
+      break;
 
     case CF_422:
-    if (have_422P) 
+      if (have_422P) 
 	memcpy((void *)frame_, (const void *)fr, (size_t)height_*width_*2);
-    else
+      else if ( have_422 ) {
 	packed422_to_planar422((char*)frame_,fr);
-	break;
+      }  else {
+	//  have_420P 
+	vcvt_420p_422p(width_, height_, (char *)fr, frame_);  
+      }
+      break;
     }
 
     if (have_mmap) {
@@ -709,38 +763,147 @@ void V4lGrabber::packed422_to_planar411(char *dest, char *src)
     	}
         break;
     }
-
-
 }
+
+/* Konvertierung YUV420P YUV422P
+ * 
+ */
+void V4lGrabber::vcvt_420p_422p(int width, int height, void *src, void *dst)
+{
+  /**
+  \brief convert YUV 4:2:0 (planar) data into YUV 4:2:2 (planar)
+  \param width Width of yuv data, in pixels
+  \param height Height of yuv data, in pixels
+  \param src beginning of YUV420 data
+  \param dst beginning of YUV422P data
+  */
+
+  int line, clinewidth;
+  unsigned char *sy, *su, *sv, *ty, *tu, *tv;
+  
+  clinewidth = 2*width;
+  sy = (unsigned char *)src;
+  su = sy + width * height;
+  sv = su + width * height / 4;
+
+  ty = (unsigned char *)dst;
+  tu = ty + width * height;
+  tv = tu + width * height / 2;
+
+  /* Copy planar lumina block */
+  memcpy(ty,sy,width*height);
+
+  /* Copy the chroma under consideration of chroma for two lines in YUV420 */
+  for (line = 0; line < height; line += 2) {
+    memcpy(tu,su,clinewidth);
+    memcpy(tv,sv,clinewidth);
+    // Don't increment sourceline if line = 2,6,10,14,... 
+    if( (line & 3) != 2 ){
+      su += width;
+      sv += width;
+    }
+    tu += width;
+    tv += width;
+  }
+}
+
+
+/* Konvertierung YUV420P YUV411P
+ * 
+ */
+void V4lGrabber::vcvt_420p_411p(int width, int height, void *src, void *dst)
+{
+  /**
+  \brief convert YUV 4:2:0 (planar) data into YUV 4:1:1 (planar)
+  \param width Width of yuv data, in pixels
+  \param height Height of yuv data, in pixels
+  \param src beginning of YUV420 data
+  \param dst beginning of YUV422P data
+  */
+
+  int line, col, clinewidth, tr,tb;
+  unsigned char *sy, *su, *sv, *ty, *tu, *tv;
+  
+  clinewidth = width*2;
+  sy = (unsigned char *)src;
+  su = sy + width * height;
+  sv = su + width * height / 4;
+
+  ty = (unsigned char *)dst;
+  tu = ty + width * height;
+  tv = tu + width * height / 4;
+
+  /* Copy planar lumina block */
+  memcpy(ty,sy,width*height);
+
+  /* Copy the chroma under consideration of chroma for two lines in YUV420
+   * Conversation 2lines2columns1chroma => 1line4columns1chroma */
+  for (line = 0; line < height; line += 2) {
+     for (col = 0; col < clinewidth; col += 4){
+       tb = (*su++ + *su++) / 2;
+       tr = (*sv++ + *sv++) / 2;
+       *tu++ = tb;
+       *tv++ = tr;
+     }
+    
+     // Decrement sourceline if line = 2,6,10,14,... 
+     if( (line & 3) == 2 ){
+       su -= width;
+       sv -= width;
+     }
+     }
+
+  /*  for (line = 0; line < height; line += 2) {
+    for (col = 0; col < width; col += 4){
+      tb = (*su++ + *su++) / 2;
+      tr = (*sv++ + *sv++) / 2;
+      *tu++ = tb;
+      *tv++ = tr;
+    }
+    su -= width/2;
+    sv -= width/2;
+    for (col = 0; col < width; col += 4){
+      tb = (*su++ + *su++) / 2;
+      tr = (*sv++ + *sv++) / 2;
+      *tu++ = tb;
+      *tv++ = tr;
+    }
+    }*/
+}
+
+
 
 
 
 void V4lGrabber::format()
 {
     struct video_channel     channel;
-    DEBUG(fprintf(stderr,"V4l: format"));
+    debug_msg("V4l: format\n");
 
     width_  = CIF_WIDTH  *2  / decimate_;
     height_ = CIF_HEIGHT *2  / decimate_;
 
-    v4lformat_=VIDEO_PALETTE_YUV422;
+    if (have_422)
+      v4lformat_=VIDEO_PALETTE_YUV422;
+    else
+      v4lformat_=VIDEO_PALETTE_YUV420P;
 
     switch (cformat_) {
     case CF_CIF:
         set_size_411(width_, height_);
-        DEBUG(fprintf(stderr," cif"));
+        debug_msg(" cif");
         break;
     case CF_411:
         set_size_411(width_, height_);
-        DEBUG(fprintf(stderr," 411"));
+        debug_msg(" 411");
         break;
     case CF_422:
         set_size_422(width_, height_);
     	if (have_422P ) {
 		v4lformat_=VIDEO_PALETTE_YUV422P;
-        	fprintf(stderr,"Capturing directly in 422 Planar\n");
+        	debug_msg("Capturing directly in 422 Planar\n");
 	}
-        DEBUG(fprintf(stderr," 422"));
+        debug_msg(" 422");
         break;
     }
     if (have_mmap) {
@@ -772,7 +935,7 @@ void V4lGrabber::format()
     }
 
     
-    DEBUG(fprintf(stderr," size=%dx%d",width_,height_));
+    debug_msg(" size=%dx%d\n",width_,height_);
 
     bzero(&channel, sizeof(struct video_channel));
     if (-1 == ioctl(fd_, VIDIOCGCHAN, &channel))
@@ -784,8 +947,8 @@ void V4lGrabber::format()
     if (-1 == ioctl(fd_, VIDIOCSCHAN, &channel))
 	perror("ioctl VIDIOCSCHAN");
 
-    DEBUG(fprintf(stderr," port=%d\n",port_));
-    DEBUG(fprintf(stderr," norm=%d\n",norm_));
+    debug_msg(" port=%d\n",port_);
+    debug_msg(" norm=%d\n",norm_);
 
     allocref();
 }
