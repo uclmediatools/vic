@@ -62,21 +62,23 @@ int base64encode(unsigned char *input, int input_length, unsigned char *output, 
 	int	i = 0, j = 0;
 	int	pad;
 
-	while ((i + 1) < input_length) {
-		if ((j + 3) >= output_length) {
-			debug_msg("Insufficient output space!\n");
-			return -1;
-		}
+	assert(output_length > (input_length * 4 / 3));
+
+	while (i < input_length) {
 		pad = 3 - (input_length - i);
-		output[j  ] = basis_64[input[i]>>2];
-		output[j+1] = basis_64[((input[i] & 0x03) << 4) | ((input[i+1] & 0xf0) >> 4)];
 		if (pad == 2) {
+			output[j  ] = basis_64[input[i]>>2];
+			output[j+1] = basis_64[(input[i] & 0x03) << 4];
 			output[j+2] = '=';
 			output[j+3] = '=';
 		} else if (pad == 1) {
-			output[j+2] = basis_64[((input[i+1] & 0x0f) << 2) | ((input[i+2] & 0xc0) >> 6)];
+			output[j  ] = basis_64[input[i]>>2];
+			output[j+1] = basis_64[((input[i] & 0x03) << 4) | ((input[i+1] & 0xf0) >> 4)];
+			output[j+2] = basis_64[(input[i+1] & 0x0f) << 2];
 			output[j+3] = '=';
 		} else{
+			output[j  ] = basis_64[input[i]>>2];
+			output[j+1] = basis_64[((input[i] & 0x03) << 4) | ((input[i+1] & 0xf0) >> 4)];
 			output[j+2] = basis_64[((input[i+1] & 0x0f) << 2) | ((input[i+2] & 0xc0) >> 6)];
 			output[j+3] = basis_64[input[i+2] & 0x3f];
 		}
@@ -86,17 +88,56 @@ int base64encode(unsigned char *input, int input_length, unsigned char *output, 
 	return j;
 }
 
-#ifdef NDEF
-void base64decode(char *input, char *output, int length)
+/* This assumes that an unsigned char is exactly 8 bits. Not portable code! :-) */
+static unsigned char index_64[128] = {
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,   62, 0xff, 0xff, 0xff,   63,
+      52,   53,   54,   55,   56,   57,   58,   59,   60,   61, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    0xff,    0,    1,    2,    3,    4,    5,    6,    7,    8,    9,   10,   11,   12,   13,   14,
+      15,   16,   17,   18,   19,   20,   21,   22,   23,   24,   25, 0xff, 0xff, 0xff, 0xff, 0xff,
+    0xff,   26,   27,   28,   29,   30,   31,   32,   33,   34,   35,   36,   37,   38,   39,   40,
+      41,   42,   43,   44,   45,   46,   47,   48,   49,   50,   51, 0xff, 0xff, 0xff, 0xff, 0xff
+};
+
+#define char64(c)  ((c > 127) ? 0xff : index_64[(c)])
+
+int base64decode(unsigned char *input, int input_length, unsigned char *output, int output_length)
 {
+	int		i = 0, j = 0, pad;
+	unsigned char	c[4];
+
+	assert(output_length >= (input_length * 3 / 4));
+	assert((input_length % 4) == 0);
+	while ((i + 3) < input_length) {
+		pad  = 0;
+		c[0] = char64(input[i  ]); pad += (c[0] == 0xff);
+		c[1] = char64(input[i+1]); pad += (c[1] == 0xff);
+		c[2] = char64(input[i+2]); pad += (c[2] == 0xff);
+		c[3] = char64(input[i+3]); pad += (c[3] == 0xff);
+		if (pad == 2) {
+			output[j++] = (c[0] << 2) | ((c[1] & 0x30) >> 4);
+			output[j]   = (c[1] & 0x0f) << 4;
+		} else if (pad == 1) {
+			output[j++] = (c[0] << 2) | ((c[1] & 0x30) >> 4);
+			output[j++] = ((c[1] & 0x0f) << 4) | ((c[2] & 0x3c) >> 2);
+			output[j]   = (c[2] & 0x03) << 6;
+		} else {
+			output[j++] = (c[0] << 2) | ((c[1] & 0x30) >> 4);
+			output[j++] = ((c[1] & 0x0f) << 4) | ((c[2] & 0x3c) >> 2);
+			output[j++] = ((c[2] & 0x03) << 6) | (c[3] & 0x3f);
+		}
+		i += 4;
+	}
+	return j;
 }
-#endif
 
 #ifdef TEST_BASE64
 int main() {
-	/* The string "Hello, world!" should encode as "SGVsbG8sIHdvcmxkI" */
-	char	*input = "Hello, world!";
+	/* The string "Hello, world" should encode as "SGVsbG8sIHdvcmxk" */
+	char	*input = "Hello, world";
 	char	 output[100];
+	char	 decode[100];
 	int	 i;
 
 	for (i = 0; i < 100; i++) {
@@ -104,6 +145,8 @@ int main() {
 	}
 	i = base64encode(input, strlen(input), output, 100);
 	printf("%d %s\n", i, output);
+	i = base64decode(output, i, decode, 100);
+	printf("%d %s\n", i, decode);
 	return 0;
 }
 #endif

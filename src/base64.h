@@ -33,6 +33,6 @@
  * SUCH DAMAGE.
  */
 
-int  base64encode(unsigned char *input, int input_length, unsigned char *output, int output_length);
-void base64decode(char *input, char *output, int length);
+int base64encode(unsigned char *input, int input_length, unsigned char *output, int output_length);
+int base64decode(unsigned char *input, int input_length, unsigned char *output, int output_length);
 
