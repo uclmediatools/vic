@@ -92,7 +92,7 @@ v1.0.7  - Add udp_exit to close sockets and leave multicast groups if necessary.
 	- Add drand48() workaround for win32
 	* Released 20 August 1999
 
-v1.0.8	
+v1.0.8	- Add mbus_sent_all()
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,

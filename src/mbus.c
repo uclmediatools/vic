@@ -304,6 +304,11 @@ int mbus_waiting_ack(struct mbus *m)
 	return m->waiting_ack != NULL;
 }
 
+int mbus_sent_all(struct mbus *m)
+{
+	return (m->cmd_queue == NULL) && (m->waiting_ack == NULL);
+}
+
 struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, void *dat), 
 		       void  (*err_handler)(int seqnum, int reason))
 {

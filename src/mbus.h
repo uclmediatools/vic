@@ -67,6 +67,7 @@ char        *mbus_encode_str(const char *s);
 void         mbus_retransmit(struct mbus *m);
 void         mbus_heartbeat(struct mbus *m, int interval);
 int          mbus_waiting_ack(struct mbus *m);
+int          mbus_sent_all(struct mbus *m);
 
 #if defined(__cplusplus)
 }
