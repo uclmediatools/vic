@@ -93,7 +93,7 @@ class Network : public TclObject {
     protected:
 	virtual void dosend(u_char* buf, int len, int fd);
         virtual int dorecv(u_char* buf, int len, u_int32_t& from, int fd);
-	virtual int dorecv(u_char* buf, int len, Address &from, int fd) {return (0);}
+	virtual int dorecv(u_char* buf, int len, Address &from, int fd) {UNUSED(buf); UNUSED(len); UNUSED(from); UNUSED(fd); return (0);}
 
 	Address & addr_;
 	Address & local_;
