@@ -618,10 +618,12 @@ const QFDES_mode   	 mode,
 		int 	 z;
 		Word	 r; 
 		Word	*k = keys; 
-		Word 	 ror[16] = {1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1};
+		Word 	 ror[16] = {0, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1};
 
 		for(z = 0; z < 16; z++, k += 2) { 
-			for (r = 0; r < ror[z]; r++) {
+			r = 0;
+			while (ror[z] > r) {
+				r++;
 				c = ROTATE_RIGHT(c); 
 				d = ROTATE_RIGHT(d);
 			}
