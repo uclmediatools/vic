@@ -77,7 +77,7 @@ sdp_handle_session_key(sdp *session, char key, char *value)
   sdp_bandwidth_modifier *bwm;
   sdp_attribute *attr, *curr_attr;
   sdp_encryption *encrypt;
-  int n_char;
+  unsigned int n_char;
 
   switch (key) {
   case 'v':
@@ -238,7 +238,7 @@ sdp_handle_media_key(sdp_media *media, char key, char *value)
   sdp_bandwidth_modifier *bwm;
   sdp_attribute *attr, *curr_attr;
   sdp_encryption *encrypt;
-  int n_char;
+  unsigned int n_char;
 
   switch (key) {
   case 'i':
