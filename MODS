@@ -38,6 +38,7 @@ v1.0.2	- Assorted fixes to RTP library
 	- Mbus defaults to no encryption, but if the config file specifies
 	  DES encryption we will use it (although until the DES code is
 	  fixed, this is probably not much use).
+	- Fix DES code
 
 
 Still to do...

@@ -3,9 +3,7 @@
  * AUTHORS: Colin Perkins
  *
  * The test vectors and outline structure of this are taken from Eric
- * Young's destest.c from libdes, version 3.00 (7 October 1993). That
- * library is distributed under the Artistic license - see the file
- * COPYRIGHT.ARTISTIC for details.
+ * Young's destest.c from libdes, version 3.00 (7 October 1993). 
  *
  * Copyright (c) 1993 Eric Young
  * All rights reserved.
