@@ -376,7 +376,7 @@ int udp_recv(socket_udp *s, char *buffer, int buflen)
 }
 
 static fd_set	rfd;
-static int	max_fd;
+static fd_t	max_fd;
 
 void udp_fd_zero(void)
 {
@@ -387,7 +387,7 @@ void udp_fd_zero(void)
 void udp_fd_set(socket_udp *s)
 {
 	FD_SET(s->fd, &rfd);
-	if (s->fd > (unsigned)max_fd) {
+	if (s->fd > (fd_t)max_fd) {
 		max_fd = s->fd;
 	}
 }
