@@ -6,20 +6,6 @@
 #ifndef _DEFS_H_
 #define _DEFS_H_
 
-/******************/
-/* Hardware flags */
-/******************/
-
-/* Needed for e.g. Pentium */
-#ifdef WIN32
-#define LITTLE_ENDIAN
-#endif
-
-/*************************/
-/* End of Hardware flags */
-/*************************/
-
-
 #define NUM_LAYERS 4
 
 #ifndef RAND_MAX

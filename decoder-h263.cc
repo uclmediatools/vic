@@ -1,6 +1,50 @@
 /*
- * (c) Marcus Meissner
+ * Copyright (c) 1998 Marcus Meissner and The Regents of the University of
+ * Erlangen.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *      This product includes software developed by the University of
+ *      California, Berkeley and the Network Research Group at
+ *      Lawrence Berkeley Laboratory.
+ * 4. Neither the name of the University nor of the Laboratory may be used
+ *    to endorse or promote products derived from this software without
+ *    specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
  */
+
+/* History:
+ *
+ * This decoder was written for a DFN project (http://www.dfn.de/) at the
+ * University of Erlangen-Nuremberg, Lehrstuhl fuer Nachrichtentechnik by
+ * Marcus Meissner in 1998.
+ *
+ * Merged into UCL vic development tree in 1998 by ?
+ *
+ * Cleanups, endianess, translation of comments into english, bugfixes,
+ * done by Marcus Meissner in June 1999.
+ */
+
 static const char rcsid[] =
     "@(#) $Header$ (LBL)";
 
@@ -50,15 +94,15 @@ H263Decoder::~H263Decoder()
 	FreeH263Decoder(h263decoder);
 }
 
-/* Liefert Informationen ueber den aktuellen Decoder an den Tcl Code.
- * FIXME: Richtige Informationen zurueckliefern ;)
+/* Returns informations about the current decoder back to Tcl.
+ * FIXME: We currently do not return useful information. Hmm.
  */
 void H263Decoder::info(char* wrk) const
 {
 	sprintf(wrk, "[q=42]");
 }
 
-/* Berechne eine Art Colorhistory. Wird wohl im PseudoColor Modus verwendet */
+/* Calculates the colorhistory. Used in the palette color modes. */
 int H263Decoder::colorhist(u_int* hist) const
 {
 	if (backframe_)
@@ -66,112 +110,116 @@ int H263Decoder::colorhist(u_int* hist) const
 	return (1);
 }
 
-/* Sucht komplette GOB Sequenzen im Ringbuffer.
- * Mode A Bloecke werden sofort zurueckgeliefert, Mode B Bloecke erst zusammen-
- * gesetzt.
+/* Searches for complete GOB sequences in our ringbuffer.
+ * Mode A blocks are returned instantly, mode B blocks are reassembled first
+ * (if possible).
  */
 inline int
 H263Decoder::reassemble_gobs(u_char **newbp,int *newcc)
 {
-	u_int	startblock,endblock,j,i,xi,x,l,last,size,sbit,seqno,firstlong;
+	u_int	startblock,j,i,xi,x,l,last,size,seqno,firstlong;
 	u_char	*p;
+	int	endblock;
 
-	/* FIXME: sollte wahrscheinlich beim aeltesten Paket anfangen...  */
+	/* FIXME: should start with oldest packet (vfy timestamp/sequence nr) */
 	for (i=0;i<H263_SLOTS;i++) {
 		xi = i & H263_SLOTMASK;
 		seqno = slot_[xi].seqno;
-		/* Laenge 0 markiert leere Eintraege */
+		/* length 0 -> empty/already handled */
 		if (!slot_[xi].cc)
 			continue;
-		/* Mode A Bloecke enthalten komplette GOB Sequenzen -> return */
+		/* mode A blocks always contain complete GOB sequences */
 		if (!slot_[xi].h263rh.ftype)  {
 			*newbp = slot_[xi].bp;
 			*newcc = slot_[xi].cc;
 			slot_[xi].cc = 0;
 			return 1;
 		}
-		/* In den ersten Bytes muss der 22 Bit PSC sein */
+		/* The first 22 bits must be the PSC if we want to reassemble
+		 * a GOB sequence.
+		 */
 		/* 0000 0000 0000 0000 100000  == 0x00008000 */
 		p = slot_[xi].bp;
 		firstlong = (p[0]<<24)+(p[1]<<16)+(p[2]<<8)+p[3];
 		if ((firstlong & 0xffff8000) != 0x00008000)
 			continue;
 
-		/* Finde den laengsten Mode B Verkettungspfad, der diesen 
-		 * Block enthaelt. Wenn wir dies nicht tun, gibt es Probleme
-		 * mit um den Buffer wrappenden Mode B Splits.
+		/* Good. Now find the longest mode B chain in the ringbuffer,
+		 * which contains this block. (if we do not do this, we get
+		 * problems with buffer-wrapping mode B splits).
 		 */
 		startblock = xi;
-		/* Rueckwaerts Suche wird durch (n-1) -> (0) Addition und
-		 * Modulo erreicht. Wir erhalten also xi-1,xi-2 ...
+		/* backwards search done by (n-1) -> (0) addition and modulo
+		 * operatin. We get xi-1,xi-2 ...
 		 */
 		for (j=H263_SLOTS;j--;) {
 			x=(xi+j)&H263_SLOTMASK;
 			
 			p = slot_[x].bp;
 			firstlong = (p[0]<<24)+(p[1]<<16)+(p[2]<<8)+p[3];
-			/* Mode A Block unterbricht die Kette */
+			/* A mode A block breaks the mode B chain */
 			if (!slot_[x].h263rh.ftype)
 				break;
-			/* Leerer Eintrag -> dito */
+			/* An empty entry too. */
 			if (!slot_[x].cc)
 				break;
-			/* Falsche Sequenznummer -> dito */
+			/* A wrong sequence number too. */
 			if ((slot_[x].seqno&0xffff)!= (seqno+(j-H263_SLOTS))&0xffff)
 				break;
-			/* Falsche Magic am Anfang (nicht GSC) -> dito */
+			/* A wrong magic at the start (not GSC) is not useful
+			 * as starting block, continue. */
 			if ((firstlong & 0xffff8000) != 0x00008000)
 				continue;
-			/* alles korrekt, neuen Start merken und weitersuchen */
+			/* all correct, maybe we can use this as startblock,
+			 * continue searching. */
 			startblock = x;
 		}
-		/* neue startsequenznummer */
+		/* new sequence startnr? */
 		if (xi!=startblock)
 			seqno=slot_[startblock].seqno;
 
 		endblock = -1;
-		/* jetzt vorwaerts nach dem ersten Ende suchen */
+		/* look forward for the next endblock */
 		for (j=0;j<H263_SLOTS;j++) {
 			x=(startblock+j)&H263_SLOTMASK;
 
-			/* Sequenznummer falsch -> raus */
+			/* wrong sequence number -> leave */
 			if ((slot_[x].seqno&0xffff)!= (seqno+j)&0xffff)
 				break;
-			/* Leerer Eintrag ist eine gueltige Endemarkerung */
+			/* empty entry is a valid endmarker */
 			if (!slot_[x].cc) {
-				/* ... aber nur, wenn wir mindestens zwei 
-				 * Mode B bloecke haben 
-				 */
+				/* ... but only if we got at least 2 mode b
+				 * blocks.*/
 				if (j)
 					endblock = j-1;
 				break;
 			}
 			p = slot_[x].bp;
 			firstlong = (p[0]<<24)+(p[1]<<16)+(p[2]<<8)+p[3];
-			/* GSC ist gueltige Endemarkierung */
+			/* GSC is a valid endmarker */
 			if ((firstlong & 0xffff8000) == 0x00008000)
 				if (j) {
 					endblock=j-1;
 					break;
 				}
 
-			/* Mode A Block ist gueltige Endemarkierung */
+			/* A Mode A block ist a valid endmarker */
 			if (!slot_[x].h263rh.ftype) {
 				endblock = j-1;
 				break;
 			} else {
-				/* Und RTP Endemarkierung natuerlich auch */
+				/* And the RTP endmarker too */
 				if (slot_[x].rtflags&RTP_M) {
 					endblock = j;
 					break;
 				}
 			}
 		}
-		/* kein Endpunkt gefunden? Schade, weitersuchen */
+		/* no endmarker found? Look for next Mode B chain ... */
 		if (endblock==-1)
 			continue;
 
-		/* Groesse der resultierenden Kette bestimmen */
+		/* Determine size of this mode B chain */
 		size = 0;
 		for (l=0;l<=endblock;l++) {
 			x=(startblock+l)&H263_SLOTMASK;
@@ -179,7 +227,7 @@ H263Decoder::reassemble_gobs(u_char **newbp,int *newcc)
 			if (slot_[x].h263rh.ebit)
 				size--;
 		}
-		/* evt. temporaeren Buffer vergroessern */
+		/* If necessary, increase temporary buffer */
 		size+=16;
 		if (size>h263streamsize_) {
 			delete[] h263stream_;
@@ -189,12 +237,12 @@ H263Decoder::reassemble_gobs(u_char **newbp,int *newcc)
 		}
 		memset(h263stream_,0,h263streamsize_);
 
-		/* und zusammenkopieren */
+		/* and reassemble */
 		last=0;
 		for (l=0;l<=endblock;l++) {
 			x=(startblock+l)&H263_SLOTMASK;
 			if (slot_[x].h263rh.sbit) {
-				/* Ueberlappende Bytes */
+				/* overlapping bytes */
 				h263stream_[last]|=slot_[x].bp[0];
 				last++;
 				memcpy(h263stream_+last,slot_[x].bp+1,slot_[x].cc-1);
@@ -203,54 +251,117 @@ H263Decoder::reassemble_gobs(u_char **newbp,int *newcc)
 				memcpy(h263stream_+last,slot_[x].bp,slot_[x].cc);
 				last+=slot_[x].cc;
 			}
-			/* Bei ueberlappenden Bytes noch nicht ueber das letzte
-			 * Byte hinausgehen
-			 */
+			/* For overlapping bytes stay on that last byte. */
 			if ((l<endblock) && slot_[x].h263rh.ebit)
 				last--;
-			/* 'leer' */
+			/* 'empty' */
 			slot_[x].cc = 0;
 		}
-		/* und fertig */
+		/* and done! */
 		*newbp = h263stream_;
 		*newcc = last;
 		return 1;
 	}
-	/* nix gefunden ... */
+	/* nothing found ... */
 	return 0;
 }
 
-/* Eigentliche Dekoderfunktion.
- * Erhaelt RTP Pakete von der VIC Netzwerkschicht, setzt diese ggfalls in 
- * GOB Sequenzen zusammen, dekodiert sie und stellt das Ergebnis dar.
+/* For exact format, check out RFC 2190, I just extract the relevant bits of
+ * information.
+ *
+ * NOTE: The bit extraction method used will NOT work for some of the commented
+ *       out fields which overlap bytes (e.g. mba)!!
+ *
+ * ASSUMES: layout of h263rtpheader_B and h263rtpheader_A is the same for
+ *          structure members ftype,sbit,ebit and srcformat.
+ */
+static inline int
+copy_to_h263rtpheader( h263rtpheader_B *h263rh, const u_char *bp) {
+	u_char const mask[9] = {0x0,0x1,0x3,0x7,0xf,0x1f,0x3f,0x7f,0xff};
+
+#define BIT(x,n) ((bp[x>>3]>>(8-n-(x&7)))&mask[n])
+
+	/* They have the same position in the RTP header,
+	 * and in our structures too 
+	 */
+	h263rh->ftype		= BIT(0,1);
+	h263rh->sbit		= BIT(2,3);
+	h263rh->ebit		= BIT(5,3);
+	h263rh->srcformat	= BIT(8,3);
+	return h263rh->ftype;
+
+#if 0
+	if (h263rh->ftype) {
+	    h263rh->pbframes			= BIT(1,1);
+	    h263rh->sbit			= BIT(2,3);
+	    h263rh->ebit			= BIT(5,3);
+	    h263rh->srcformat			= BIT(8,3);
+	    h263rh->quant			= BIT(11,5);
+	    h263rh->gobn			= BIT(16,5);
+	    h263rh->mba				= BIT(21,9);
+	    h263rh->reserved			= BIT(30,2);
+	    h263rh->picture_coding_type		= BIT(32,1);
+	    h263rh->unrestricted_motion_vector	= BIT(33,1);
+	    h263rh->syntax_based_arithmetic	= BIT(34,1);
+	    h263rh->advanced_prediction		= BIT(35,1);
+	    h263rh->hmv1			= BIT(36,7);
+	    h263rh->vmv1			= BIT(43,7);
+	    h263rh->hmv2			= BIT(50,7);
+	    h263rh->vmv2			= BIT(57,7);
+	    return 1;
+	} else {
+	    h263rtpheader_A *h263rha = (h263rtpheader_A*)h263rh;
+	    h263rha->pbframes			= BIT(1,1);
+	    h263rha->sbit			= BIT(2,3);
+	    h263rha->ebit			= BIT(5,3);
+	    h263rha->srcformat			= BIT(8,3);
+	    h263rha->picture_coding_type	= BIT(11,1);
+	    h263rha->unrestricted_motion_vector	= BIT(12,1);
+	    h263rha->syntax_based_arithmetic	= BIT(13,1);
+	    h263rha->advanced_prediction	= BIT(14,1);
+	    h263rha->reserved			= BIT(15,4);
+	    h263rha->dbq			= BIT(19,2);
+	    h263rha->trb			= BIT(21,3);
+	    h263rha->tr				= BIT(24,8);
+	    return 0;
+	}
+#endif
+}
+
+/* The decoderfunction itself.
+ * Gets RTP packets from the VIC networking layer, reassembles them to GOB 
+ * sequences, decodes them and displays the result. (and more magic ;)
  */
 void H263Decoder::recv(const rtphdr* rh, const u_char* bp, int cc)
  {
-	u_int	h263streamsize,k;
-	int	targetcc,i,ret,seq,disp,gobbytes,gobnr;
+	u_int	k,newsrcformat;
+	int	targetcc,i,seq,disp,gobbytes,gobnr;
 	u_char	*targetbp,*next;
-	h263rtpheader_B	*h263rh = (h263rtpheader_B*)bp;
-	int	offset,l = ntohs(rh->rh_seqno) & H263_SLOTMASK;
+	int	ismodeB,offset,l = ntohs(rh->rh_seqno) & H263_SLOTMASK;
+	h263rtpheader_B h263rhb;
 
-	/* Wie lang ist der Extra Header ? */
-	if (h263rh->ftype)
+	ismodeB = copy_to_h263rtpheader(&h263rhb,bp);
+	newsrcformat = h263rhb.srcformat;
+
+	/* How long is the RTP payload header? */
+	if (ismodeB)
 		offset = 8;
 	else
 		offset = 4;
 	assert(cc < 2000);
 
-	/* Ringbuffer Eintrag ausfuellen, headersize abziehen von den Daten */
+	/* Fill out ringbuffer entry, leave out header from payload */
 	slot_[l].cc	= cc-offset;
 	slot_[l].seqno = ntohs(rh->rh_seqno) & 0xffff;
 	slot_[l].rtflags = ntohs(rh->rh_flags);
-	memcpy(&(slot_[l].h263rh),h263rh,offset);
+	memcpy(&(slot_[l].h263rh),&h263rhb,sizeof(h263rhb));
 	memcpy((char*)slot_[l].bp, bp+offset,cc-offset);
 
 	seq = slot_[l].seqno;
 
-	/* Hat sich das (Bild)Format geaendert? */
-	if (srcformat_!=h263rh->srcformat) {
-		switch (h263rh->srcformat) {
+	/* Did the srcformat change? */
+	if (srcformat_!=newsrcformat) {
+		switch (newsrcformat) {
 		case 1: inw_ = SQCIF_WIDTH;
 			inh_ = SQCIF_HEIGHT;
 			break;
@@ -268,27 +379,26 @@ void H263Decoder::recv(const rtphdr* rh, const u_char* bp, int cc)
 			break;
 		case 0:
 		default:
-			fprintf(stderr,"illegal sourceformat %d!\n",h263rh->srcformat);
+			fprintf(stderr,"illegal sourceformat %d!\n",newsrcformat);
 			break;
 		}
 		/* 0000 0000 0000 0000 100000  == 0x00008000 */
 		u_char *p = slot_[l].bp;
 		long firstlong = (p[0]<<24)+(p[1]<<16)+(p[2]<<8)+p[3];
-		if ((firstlong & 0xfffffe00) != 0x00008000) {
+		if ((firstlong & 0xfffffe00) != 0x00008000)
 			return;
-		}
-		srcformat_ = h263rh->srcformat;
+		srcformat_ = newsrcformat;
 		backframe_ = NULL;
 		resize(inw_,inh_);
 		for (i=0;i<H263_SLOTS;i++)
 			slot_[i].cc = 0;
 	
-		/* Decoder disinitialisieren */
+		/* Decoder disinit */
 		if (!h263decoder->first)
 			DisinitH263Decoder(h263decoder);
 		FreeH263Decoder(h263decoder);
 		h263decoder=NewH263Decoder();
-		/* Und neu initialisieren, wir kennen die Groesse schon */
+		/* And initialise new, we do know the new size */
 		h263decoder->source_format = srcformat_;
 		InitH263Decoder(h263decoder);
 	}
@@ -303,29 +413,31 @@ void H263Decoder::recv(const rtphdr* rh, const u_char* bp, int cc)
 	
 	gobbytes = k*16*inw_;
 
-	/* zur erkennung von dekodierten GOBs fuer die Darstellung */
-	int gobn=gobnr;
+	/* For detecting GOBs to display. */
 	/* XXX */
 	int	decgobs[18];
 
-	/* solange wir noch GOB Sequenzen finden im Ringbuffer */
+	/* as long as we find GOB sequences in the ringbuffer */
 	while (reassemble_gobs(&targetbp,&targetcc)) {
 		next = targetbp;
-		assert (!next[0] && !next[1]);
+		assert(!next[0] && !next[1]);
 		for (i=0;i<gobnr;i++)
 			decgobs[i] = h263decoder->decGOBs[i];
 		int tempref = h263decoder->temp_ref;
 		while (next<targetbp+targetcc) {
 			if (h263decoder->first) {
 				long firstlong = (next[0]<<24)+(next[1]<<16)+(next[2]<<8)+next[3];
-				if ((firstlong&0xfffffc00)!=0x00008000)
+				if ((firstlong&0xfffffc00)!=0x00008000) {
+					/* skip this block, we can't use it*/
+					next = targetbp+targetcc;
 					continue;
+				}
 			}
 
 			disp=HandleH263DataJunk(h263decoder,&next,targetbp+targetcc,0);
 		}
 
-		/* markiere die dekodierten GOBs als zu updatende in rvts_ */
+		/* mark the decoded GOBs as "to update" in rvts_ */
 		for (i=0;i<gobnr;i++) {
 			/* lastdec	nowdec	disp
 			 * 0		1	yes
@@ -344,13 +456,12 @@ void H263Decoder::recv(const rtphdr* rh, const u_char* bp, int cc)
 				decgobs[i]=0;
 		}
 	}
-	/* stelle den aktuell dekodierten Frame dar */
+	/* display the current decoded frame */
 	backframe_ = h263decoder->newframe[0];
 	if (backframe_)
 		render_frame(backframe_);
 }
 
-/* Redraw Funktion */
 void H263Decoder::redraw() {
 	if (backframe_)
 		Decoder::redraw(backframe_);
