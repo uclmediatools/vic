@@ -1,1425 +1,520 @@
-<!-- @(#) $Header$ (LBL)-->
-<html>
-<head><title>vic Change Log</title></head>
-<body>
-<h1>vic: Change History</h1>
-
-<h2>
-<h3> v2.8ucl1 </h2>
-<ul>
-<li>	Port to Tcl/Tk 8.0
-<li>	Added DES support
-<li>	Added H.263+ codec from TU-Berlin
-</ul>
-
-<hr>
-<h3>v2.8  <i>Mon Jul 22 13:13:10 PDT 1996</i></h3>
-
-<ul>
-<li>Fixed long standing bug where vic generated non-conformant
-RTP/H.261 headers (the MBA and GOB fields were swapped).
-We maintained this bug in v2.7 to avoid incompatibility
-with v2.6, but <a href=#rtph261bug>added code</a>
-to handle either case.
-
-<li>Added <a href=mailto:brezak@apollo.hp.com>John Brezak's</a>
-patch for a hookable TkPlatformInit to overcome the fact that
-under Windows you cannot override internal DLL calls.
-
-<li>Ifdef out XSync calls under WIN32.
-
-</ul>
-
-<hr>
-<h3>v2.7  <i>Mon Jul 22 11:47:48 PDT 1996</i></h3>
-
-<ul>
-<li>Fixed several bugs in the MME grabber: (1) bandwidth limits were
-ignored by the grabber, (2) mapping of JPEG Quality slider to internal
-quality setting was wrong, and (3) the YUV grabber was grabbing frames
-that were 1/4 (1/2 in each direction) the requested size.
-Fixes from <a href=mailto:morris@zko.dec.com>Tom Morris</a>.
-
-<li>Fixed bug with calculation of extended highest sequence number
-in reception reports.  Reported by
-<a href=mailto:fenner@parc.xerox.com>Bill Fenner</a>.
-
-</ul>
-
-<hr>
-<h3>v2.7b4  <i>Wed Jun 26 17:59:49 PDT 1996</i></h3>
-
-<ul>
-
-<li>Fixed control menu so that user cannot select a compression format
-if there are no available devices.  Otherwise, a tcl error results.
-Bug reported by <a href=mailto:rush@alikazam.sprintcorp.com>David Rush</a>.
-
-<li>Removed load_stat class and hooks since we want to re-architect
-this.  We plan to put more general hooks into vic-3.0.
-
-<li>Added support for the SCC "Smart Capture Card", a PCMCIA video capture card
-sold by Japan IBM.  Contributed by
-<a href=mailto:oka@kobe-u.ac.jp>Koji OKAMURA</a>.
-Koji maintains an <a href=ftp://ftp.kobe-u.ac.jp/pub/mc/scc>
-SCC Driver for Linux</a> and 
-<a href=ftp://ftp.kobe-u.ac.jp/pub/mc/apps/vic>
-Linux vic binary w/ SCC support</a>.
-
-<li>Brought the DEC MME grabber up to date.
-<a href=mailto:morris@zko.dec.com>Tom Morris</a> contributed
-the (substantial) changes and bug fixes.
-
-<li>Modified 
-<a href=http://www.connectix.com/>
-Connectix</a>
-<a href=http://www.connectix.com/connectix/qcchoice.html>QuickCam</a>
-grabber for more generic <i>driver versus library</i> detection by
-<a href=mailto:jbash@cisco.com>John Bashinski</a>.
-This version works with QuickCam driver on Solaris 2.x.
-Also added QuickCam GUI controls, and removed old auto-contrast system.
-
-<li>Fixed bug that caused core dump for unknown visuals
-Reported by <a href=mailto:craig@lucent.com>Craig Votava</a>.
-
-<li>Added grabber module for PCMCIA IBM Smart Capture Card.
-Works under both Linux and FreeBSD.  Contributed by
-<a href=mailto:oka@nanotsu.kobe-u.ac.jp>Koji OKAMURA</a>.
-
-<li>Added ability to specify default video port on a per-device
-basis.  For example, you can set the <i>Vic.defaultPort(vino)</i>
-X resource to <i>Analog-Video-Input</i> to cause vic to default to the
-analog composite input with SGI's vino device.
-
-<li>Fixed bug in session max bandwidth computation.  The heuristic
-that differentiated between audio and video needed to check <i>V(app)</i>
-rather than the <i>sessioType</i> resource.
-Originally reported by <a href=mailto:klemets@vxstream.com>
-Anders Klements</a>.
-
-<li>Fixed bug computing DLSR field of RTCP receiver reports.
-Reported by <a href=mailto:klemets@vxstream.com>
-Anders Klements</a>.
-
-<li>Re-named methods that were named <i>sendmsg</i> since some
-systems re-define this identifier.
-
-<li>Added hook to meteor grabber to set frame rate
-so we only transfer what we need, thanks to
-<a href=mailto:james@allmalt.cs.uwm.edu>Jim Lowe</a>.
-
-<li>Brought up to date with IRIX-6.2, thanks to
-<a href=mailto:arc@sgi.com>Andrew Cherenson</a>.
-
-<li>Ported to final release versions of tcl7.5/tk4.1.  You
-now need these versions or later to build.
-
-<li>Fixed compilations problems under AIX, reported by
-<a href=mailto:srini@watson.ibm.com>Srinivasan Seshan </a>.
-
-<li>Added Hi-Color (16-bit) renderer.
-
-<li>Lots of changes for Win95 with tcl7.5/tk4.1.
-
-</ul>
-
-<hr>
-<h3>v2.7b3  <i>May 16 07:07 PDT 1996</i></h3>
-
-Windows binary release.
-
-<hr>
-<h3>v2.7b2  <i>Sun Apr 21 09:58:36 PDT 1996</i></h3>
-<ul>
-
-<li>Bring ultrix port up to date.
-
-<li>Removed VIC.SD.TCL from distribution since sdr has obsoleted sd.
-
-</ul>
-
-<hr>
-<h3>v2.7b1  <i>Tue Apr  9 23:11:48 PDT 1996</i></h3>
-<ul>
-
-<li>Added a manual page for h261_play.
-
-<li>Ported to tcl7.5b3 and tk4.1b3.  You need this version or later
-to build.  tcl7.5a* and tk4.1a* will not work.
-
-<li>Replaced blt_table with new Tk grid geometry manager.
-This eliminates all dependence on blt.
-
-<li>Fixed bug that caused abort whenever a window was dismissed
-that held a stream that was different from the original stream
-upon creation.
-Reported by <a href=mailto:casner@precept.com>Steve Casner</a>
-
-<li>Fixed uninitialized-variable bug in session.cc.
-Thanks to <a href=mailto:templin@pa.dec.com>Fred Templin</a>.
-
-<li>Catch error when trying to mtrace a source when mtrace binary
-is not present.  This bug reported by many.
-
-<li>Added better logic to Meteor grabber for deciding when to
-use even-only field capture mode.  Patch from
-<a href=mailto:james@allmalt.cs.uwm.edu>Jim Lowe</a>.
-
-<li>Timestamps in rtcp messages were still wrong: the media ts
-of the last packet sent was simply combined with the current ntp time
-rather than being corrected for the difference between the last
-send and the current time.  Fixed.
-Reported by <a href=mailto:casner@precept.com>Steve Casner</a>
-
-<li>Weren't following the guidelines on sdes content of rtcp
-msgs:  Are supposed to put in cname plus one other piece of
-info.  Instead, were sending all info in every msg.  Changed
-to follow guidelines and sequence through the available info,
-one item per msg.
-Reported by <a href=mailto:casner@precept.com>Steve Casner</a>
-
-<li>Removed tk.tcl from list of source files since it should
-always be built from local tk library (otherwise you can end
-up with a version mismatch between -ltk and the support files
-built into vat/vic.
-Reported by <a href=mailto:Hans.Mayer@gmd.de>Hans Mayer</a>
-
-</ul>
-
-<hr>
-<h3>v2.7a38  <i>Thu Mar 21 03:52:22 PST 1996</i></h3>
-<ul>
-
-<li>Fixed problems in VideoPix grabber when grabbing CIF format
-(h.261) from a PAL camera.  Result would be garbage and would
-also trash random memory.  Problem reported by
-<a href=mailto:richter@ro2.informatik.uni-hamburg.de>Jan-Peter Richter</a>
-
-<li>Fixed problem in Parallax grabber where tk update call could
-cause re-entrance to grabber.  Change update to "update idletasks".
-Fix from <a href=mailto:Tie.Liao@inria.fr>Tie Liao</a>.
-
-<li>Removed old, obsolete key bindings that caused tcl background errors
-when certain keys were typed into a video display window.  Bug
-reported by <a href=mailto:david@msri.org>David Hoffman</a>.
-
-<li>Fixed some problems with the Matrox Meteor grabber; in particular,
-svideo input and secam format.  Also added support for the RGB
-version of the Meteor.
-Contributed by <a href=mailto:james@allmalt.cs.uwm.edu>Jim Lowe</a>.
-
-<li>Fixed small bug in RTCP code where random offset was added
-in twice (once in <i>media_ts</i> method and once by external
-code).
-Reported by <a href=mailto:olson@mcs.anl.gov>Bob Olson</a>.
-
-<li>Added support for <a href=http://www.connectix.com/>
-Connectix</a>
-<a href=http://www.connectix.com/connectix/qcchoice.html>QuickCam</a>
-video capture device for PC's.
-Contributed by <a href=mailto:oka@is.aist-nara.ac.jp>Koji OKAMURA</a>.
-Known to work with the <a href=ftp://ftp.nas.com/laird/>
-linux qcam driver</a>
-and Paul Traina's driver under 
-<a href=http://www.freebsd.org/>FreeBSD</a> (which is
-in FreeBSD-2.2 or later).
-The configure script will compile the QuickCam
-driver if /usr/local/lib/libqcam.a exists.
-
-<li>Fixed bug in SLIC grabber that prevented grabber panel from
-being instantiated.  Thanks to
-<a href=mailto:Toerless.Eckert@Informatik.Uni-Erlangen.de>Toerless Eckert</a>.
-
-<li>Full-size h.261 grabbing was broken if using NTSC camera with
-vigrapix board.  Problem was that Phillips scalar chip can't scale
-up so we'd have to grab a full frame & deinterlace to go from 240
-line high NTSC to 288 line high CIF.  Since this would double amount
-of I/O, instead we do same as other NTSC CIF grabbers & embed NTSC sized
-image on gray CIF sized background.
-Problem reported by <a href=mailto:pallas@apple.com>Joe Pallas</a>.
-
-<li>cpmsg was causing a call to realloc on every packet rather
-than only when the work buffer needed to be expanded.
-Reported by <a href=mailto:olson@mcs.anl.gov>Bob Olson</a>.
-
-<li>VIC.SD.TCL was missing from the binary distributions.
-Reported by <a href=mailto:dsc@nwnet.net>David Comay</a>.
-
-<li>Much hacking on configure scripts to deal with tk4.1/tk4.0
-file name changes, need for dynamic loader with tcl7.5, blt-1.9
-release, etc.
-
-<li>Got ok from Sun to add grabber-rtvc.cc to source distribution.
-
-</ul>
-
-<hr>
-<h3>v2.7a37  <i>Wed Feb 15 14:39:06 PST 1996</i></h3>
-<ul>
-
-<li>Incorporated fourth round of patches from 
-<a href=mailto:brezak@apollo.hp.com>John Brezak</a>
-for <b>Win95/NT</b> port.  Added README.WIN32 file containing
-brief description and tcl/tk patches from John.
-
-</ul>
-<hr>
-<h3>v2.7a36  <i>Wed Feb  7 14:39:06 PST 1996</i></h3>
-<ul>
-
-<li>Changed to use new mode in meteor driver (METEOR_GEO_YUV_422) and
-allow even only fields to be captured under certain conditions.
-Added FRAME_CNTS debugging option. 
-Thanks to <a href=mailto:james@miller.cs.uwm.edu>Jim Lowe</a>.
-
-<li>Incorporated third round of patches from 
-<a href=mailto:brezak@apollo.hp.com>John Brezak</a>
-for <b>Win95/NT</b> port.
-
-</ul>
-<hr>
-<h3>v2.7a35  <i>Wed Feb  7 02:45:10 PST 1996</i></h3>
-<ul>
-
-<li>Add missing file (load_stat.h) to distribution.
-
-</ul>
-
-<hr>
-<h3>v2.7a34  <i>Tue Feb  6 14:41:34 PST 1996</i></h3>
-<ul>
-
-<li>Incorporated second round of patches from 
-<a href=mailto:brezak@apollo.hp.com>John Brezak</a>
-for <b>Win95/NT</b> port.
-
-</ul>
-
-<hr>
-<h3>v2.7a33  <i>Tue Feb  6 02:59:53 PST 1996</i></h3>
-<ul>
-
-<li>Bug fix from <a href=mailto:arichard@rp.csiro.au>Atony Richards</a>
-to fix run-away source allocation problem when receiving packets through
-the Fore ATM module.
-
-<li>Addition of load_stat class and hooks to store decode and rendering
-timing information.  This is to serve as an eventual
-basis for load adaptation.
-(<a href=mailto:kfall@ee.lbl.gov>Kevin Fall</a>)
-
-<li>Integrated several bug fixes for 32-bit parallax capture
-from <a href=mailto:Tie.Liao@inria.fr>Tie Liao's</a>.
-
-<a name=rtph261bug>
-<li>Implemented a transition strategy for the fact that v2.7 is currently
-incompatible with the RTP/H.261 payload format specification
-(the GOB and MB fields are swapped).  To maintain backward compat,
-v2.7 will continue to generate the illegal format.  The decoder in
-v2.7a33 and later can handle either format.  (The decoder assumes the
-bug, then if its sees an out of range gob, reverts to the spec format.)
-We will fix the bug in v2.8.  At this time, v2.7 decoders will
-still work (but hiccough on each new stream).
-</a>
-
-<li>Integrated <a href=mailto:brezak@apollo.hp.com>John Brezak's</a>
-port to <b>Win95/NT</b>!  We haven't tested this code so it might
-be a few more versions before it stabilizes (or even compiles
-out of the box).
-
-<li>Fixed nagging bug in window drawing code that caused bottom of border
-to be garbled on redraws triggered by expose events.
-
-<li>Reverted to Motif-style menubutton bindings (undoes 2.7a17 change).
-The previous binding introduced a race (bug reported by many...)
-and was inconsistent with other Motif/tk apps.
-
-<li>Added <a href=mailto:james@allmalt.cs.uwm.edu>Jim Lowe's</a>.
-video spigot grabber.  Jim says: The spigot is an ISA video capture
-card with the phillips 7191 chip on it.  It can do about 10 fps in
-320x240 mode.
-
-</ul>
-
-<hr>
-<h3>v2.7a32  <i>Mon Dec 11 21:40:08 PST 1995</i></h3>
-<ul>
-<li>CIF grabber for VigraPix board was broken - it would grab
-two fields instead of one which resulted in a bizarre image.
-Reported by <a href=mailto:Hans.Mayer@gmd.de>Hans Mayer</a>.
-
-<li>Allow user to set initial window geometry with a Vic.geometry
-X resource.
-
-</ul>
-<hr>
-<h3>v2.7a31  <i>Mon Dec 4 11:35:29 PST 1995</i></h3>
-<ul>
-<li>Fixed bug that caused exit on unknown font.
-Reported by <a href=mailto:Xander.Jansen@SURFnet.nl>Xander Jansen</a>.
-
-<li>Fixed typo in encoder-h261.cc that prevented compilation on
-32-bit little-endians.  Reported by
-<a href=mailto:james@allmalt.cs.uwm.edu>Jim Lowe</a>.
-
-</ul>
-<hr>
-<h3>v2.7a30  <i>Sun Dec 3 22:43:14 PST 1995</i></h3>
-<ul>
-
-<li>Removed a bunch of unused variables thanks to
-<a href=mailto:arc@sgi.com>Andrew Cherenson</a>.
-(We need to start using <i>gcc -Wall</i> again...)
-
-<li>Added misordered packet stat (that was present in vat-3).  Change
-suggested by <a href=mailto:elson@aeolus.jpl.nasa.gov>Lee Elson</a>.
-
-<li>Patched memory leak in grabber-plx.cc thanks to
-<a href=mailto:olson@mcs.anl.gov>Bob Olson</a>.
-
-<li>Fixed bug where adaptive quantizer would sometimes get set to zero at
-high qualities (Q less than 5).  Problem reported by
-<a href=mailto:lucia@univ-lyon1.fr>Lucia Gradinariu</a>.
-
-<li>H.261 decoder was discarding high bit of quantizer in fragmented
-packets.  This would produce awful quality & horrible artifacts at Q
-greater than 10.
-
-</ul>
-<hr>
-<h3>v2.7a29  <i>Mon Nov 13 21:50:51 PST 1995</i></h3>
-<ul>
-
-<li>Fixed tcl run-time errors introduced by "still" capture device.
-Reported by
-<a href=mailto:meyer@network-services.uoregon.edu>David Meyer</a>
-and
-<a href=mailto:awjacks@dancer.ca.sandia.gov>Alden Jackson</a>.
-
-<li>Fixed bugs in halftoner for mono displays.  Changes from
-<a href=mailto:elan@cs.berkeley.edu>Elan Amir</a>.
-
-<li>Fixed bug in JPEG decoder that caused core dump thanks
-to <a href=mailto:elan@cs.berkeley.edu>Elan Amir</a>.
-
-<li>More fixes from <a href=mailto:arc@sgi.com>Andrew Cherenson</a>
-for compiling with SGI's C++ compiler.  Also fixed bug that
-caused tcl run-time error when trying to "optimize colormap"
-when grayscale rendering active.
-
-</ul>
-
-<hr>
-<h3>v2.7a28  <i>Sun Nov 12 00:50:15 PST 1995</i></h3>
-
-<ul>
-
-<li>Fixed bug that prevented H.261 format button from being enabled
-under XIL capture.  Problem reported by 
-<a href=mailto:meyer@phloem.uoregon.edu>David Meyer</a>.
-
-<li>Added support transmitting a static JPEG image from a file.
-Contributed by <a href=mailto:olson@mcs.anl.gov>Bob Olson</a>.
-You need to set <i>Vic.stillGrabber</i> to <i>true</i> in order
-to get a <i>still</i> device in the Device menu-button.
-When you select this device, a panel will be inserted in
-the control menu to let you specify the file anme for
-an RTP/JPEG type-0 frame.  This crude interface is
-currently just for testing.
-
-<li>Fixed compilation problems with SGI's C++ compiler.
-Reported by <a href=mailto:arc@sgi.com>Andrew Cherenson</a>.
-
-<li>Kevin Fall added support for ``fast Intra-H.261'' encoding using
-JPEG hardware.  The idea is to use a JPEG board as a DCT engine
-by Huffman decoding each JPEG MCU.  We then carry out conditional
-replenishment in the DCT domain and hand the frame buffer of
-DCTs to a modified H.261 encoder.  The trick is to convert 4:2:2
-color decimated JPEG into 4:1:1.  This technology is described
-in our 
-<a href="http://www.cs.berkeley.edu/~elan/articles/pub/vgw.ps">
-ACM Multimedia paper</a>.
-(By default, this is currently disabled.  Enable it by setting
-<i>Vic.useJPEGforH261</i> to true.)
-
-<li>Fixed problem with object compatibility between distributed version
-of grabber-rtvc.o and newer versions of gcc.  Workaround suggested
-by <a href=mailto:Toerless.Eckert@Informatik.Uni-Erlangen.de>
-Toerless Eckert</a>.
-
-<li>Fixed bug with PAL/CIF input, reported by several testers.
-16 pixels on either side of the image was incorrectly cropped.
-
-<li>Added support for the Matrox Meteor Video adaptor, a PCI-based capture
-board, thanks to <a href=mailto:james@allmalt.cs.uwm.edu>Jim Lowe</a>.
-A driver is available (in source form) for FreeBSD.
-See <a href=ftp://ftp.cs.uwm.edu/pub/FreeBSD/>
-ftp://ftp.cs.uwm.edu/pub/FreeBSD/meteor*</a>.
-
-
-<li>Fixed bogus error message when specifying "-n atm" with a vic binary
-that doesn't have compiled-in ATM support.  Bug reported by
-<a href=mailto:mark@taku.rc.hpy.f>Markus Backstrom</a>.
-
-<li>Fixed bug that caused last_sr field in RTCP sender reports to be
-miscomputed.  Reported by <a href=mailto:stewart@hibp7.ecse.rpi.edu>
-Paul Stewart</a>.
-
-<li>Fixed bug where SDES "note" attribute was not displayed
-next to thumbnail as intended.  Reported by 
-<a href=mailto:Craig.M.Votava@att.com>Craig Votava</a>.
-
-<li>Fixed rate control stats (again) in transmission panel, which were
-being updated incorrectly.
-
-</ul>
-<hr>
-<h3>v2.7a27  <i>Tue Oct 17 02:49:29 PDT 1995</i></h3>
-
-<ul>
-
-<li>Forgot to re-configure solaris source directory, so the 
-a26 solaris binary was bogus.  Re-released a26 as a27 for solaris.
-(There is no change in the any source code between a26 and a27,
-and thus no reason to update any of the other binaries.)
-</ul>
-
-<hr>
-<h3>v2.7a26  <i>Mon Oct 16 23:23:09 PDT 1995</i></h3>
-
-<ul>
-
-<li>Fixed bug that caused bogus srcid generation on alpha (DEC's atoi
-saturates it's result to 0x7fffffff so we use strtoul instead).
-
-<li>Tried to make setting of q factor in cosmo grabber more robust.
-
-<li>Fixed bug in external device menu button.  Instead of building selection
-list when window is created, build it when menu-button is invoked so
-user gets an up to date list.
-
-<li>Fixed bug in jpeg decoder that caused core dumps when changing
-the quality parameter.
-
-<li>Added more validity checks to conference bus messages.
-
-<li>Fixed bugs in compositor (which the title maker uses) introduced
-by changes to CR scheme.
-
-<li>Fixed rate control stats in transmission panel, which weren't
-being updated.
-
-<li>Added missing files to source distribution.
-
-<li>Fixed bug that caused core dump in nv-compat mode.
-
-<li>[internal]Factored out media-specific code from session.cc.  Ivs,
-nv, and vat session handlers are all in separate modules now.  Created
-separate video and audio session sub-classes since audio/video RTP
-payload types are not disjoint.
-
-<li>Changed multicast address of Conference Buses.  This avoids compatibility
-problems with the old binary protocol, but has the disadvantage that
-voice-switched windows need vat-4.0 or later.
-
-</ul>
-
-<hr>
-<h3>v2.7a25  <i>Sat Oct 14 03:38:11 PDT 1995</i></h3>
-
-<ul>
-
-<li>Change algorithm that transforms a text string into an encryption
-key.  We now use an md5 hash and the algorithm/key syntax suggested
-by <a href=mailto:M.Handley@cs.ucl.ac.uk>Mark Handley</a>.
-For example, DES1/secret-key implies the standard DES algorithm
-with cipher-block chaining with key "secret-key" while
-DES3/secret-key implies triple DES.  Added "DULL" encryption module
-for test purposes and as an example for integrating modules.
-
-<li>Fixed md5 header file (global.h) to set 32-bit typedef
-appropriately for alpha; otherwise, it doesn't work correctly
-(and encryption keys are synthesized incorrectly).
-
-<li>[internal] Merged the Transmitter and SessionManager objects since
-packet transmission depends on the session type.
-
-<li>Fixed bug where parallax capture window was iconified while the grabber
-was still able to send a frame.  Reported by
-<a href=mailto:pallas@Apple.COM>Joe Pallas</a>.
-
-<li>Merged patches from <a href=mailto:brezak@apollo.hp.com>John Brezak</a>
-to compile again under HPUX.
-
-<li>Added <a href=mailto:frederick@parc.xerox.com>
-Ron Frederick's</a> DCT extension to the nv format, which gives
-improved compression at higher run-time cost.  According to Ron,
-this extension will be in the forthcoming RTPv2 version of nv.
-
-<li>Added check for *rtpName and *rtpEmail resources at start-up.
-If they don't exist, a dialog box queries the user and stores
-the new values in ~/.RTPdefaults.  This seems like a more robust
-(albeit annoying) approach compared to the heuristics of used
-to find a fully qualified domain name.
-
-<li>Changed thumbnail to relief to ridge and highlight border when mouse
-enters window to indicate that a button-click will do something.
-Suggested by <a href=mailto:elan@cs.berkeley.edu>Elan Amir</a>.
-
-<li>Made many minor changes in order to share code between vic
-and vat-4.
-
-<li>Added a frame grabber for the SlicVideo SBus adaptor.
-Contributed by
-<a href=mailto:Toerless.Eckert@Informatik.Uni-Erlangen.de>
-Toerless Eckert</a>.
-
-<li>Added a new mechanism to present grabber specific controls in
-the main menu.  If a grabber wants such controls, the corresponding
-tcl procedure build.grabberName should exist (and build the UI).
-grabberName is the device "nickname", e.g., build.slicvideo exists
-to build the SlicVideo controls.  When the user switches devices,
-the corresponding control panel is automatically removed and inserted
-by tcl support code.  This extension suggested by
-<a href=mailto:Toerless.Eckert@Informatik.Uni-Erlangen.de>
-Toerless Eckert</a>, <a href=mailto:allas@Apple.COM>Joe Pallas</a>,
-and others.
-
-<li>[internal] Changed SessionManager::chkdup() to match sources who never
-sent data so that sites that exit abnormally don't build up source table.
-
-<li>Fixed some bugs in the conditional replenishment algorithm and changed
-implementation to make it more intuitive.  Encoders no longer alter the
-contents of the cr vector.  Also, extended the old model from two types
-of blocks to three (motion, aged, and background), with three levels
-of quality.
-
-<li>Enhanced H.261 encoder to do adaptive quantization.  High motion areas
-are sent at low-quality (for higher update rate), ``aged'' blocks are
-sent at medium-quality, and background blocks are sent slowly at
-very high quality.
-
-</ul>
-
-<hr>
-<h3>v2.7a24  <i>Wed Oct  4 22:07:42 PDT 1995</i></h3>
-<ul>
-
-<li>Changed behavior of user interface when RTP message attribute
-is present.  Instead of highlighting info button, replace the second
-line of the thumbnail description with the message.  Revert
-to CNAME info when message text goes away.
-Suggested by <a href=mailto:Craig.M.Votava@att.com>Craig Votava</a>.
-
-<li> Fixed cosmo grabber to search through hardware inventory list
-and disable selector when no device is found.  Otherwise, CL calls
-caused problems.  Reported by
-<a href=mailto:Craig.M.Votava@att.com>Craig Votava</a>
-and <a href=mailto:hoofar@sgi.com>Hoofar Razavi</a>.
-Hoofar suggested the fix (which was to use SGI's getinvent() system call
-and explicitly look for a cosmo board).
-
-<li>Changed -lXext to appear before -lXvid on the link line because
-parallax client library defines an XShmPutImage that doens't seem to work.
-
-<li>[internal] Fixed CaptureWindow class to work in the absence of
-  shared memory support.  Changed sense of xshm switch from NOSHM
-  to USE_SHM because double negative was confusing.
-
-<li>More fixes to configure search for X support thanks to
-  Joe Pallas (Pallas@Apple.COM).
-
-<li>Fixed race in window resize code.  Reported by Bob Olson (olson@mcs.anl.gov).
-
-<li>Use Network::reset() hack under AIX.
-</ul>
-
-<hr>
-<h3>v2.7a23  <i>Tue Oct  3 02:29:36 PDT 1995</i></h3>
-<ul>
-
-<li>Fixed bug that caused first value of a plotted statistic to be way too
-  large so that the autoscaling left all the other data unreadable.
-
-<li>[internal] Don't include <i>osfcn.h</i> anywhere.
-
-<li>Added PAL selectors to window size menu.  Suggested by
-  Toerless Eckert (Toerless.Eckert@Informatik.Uni-Erlangen.de).
-
-<li>[internal] Factored out code shared among grabbers for capturing input
-  video to an onscreen window.  In the new model, tcl creates the capture
-  window and installs it in the grabber.  Revamped parallax and xv grabbers
-  to use this approach.  Added supported to xv grabber for CIF and 411
-  capture.
-
-<li>Improved configure search scheme for locating X libraries and includes.
-  Thanks to input from Toerless Eckert
-	(Toerless.Eckert@Informatik.Uni-Erlangen.de).
-
-<li>[internal] Added RGB_Converter class to be shared among grabbers that
-  capture from the frame buffer in RGB format and convert to YUV.
-
-<li>[internal] Removed grabber-tx.cc from distribution since it's been
-  superseded by grabber-xv.cc.
-
-<li>Finished implementing rtvc grabber support for listing multiple
-  sunvideo devices in the device list as RTVC-0, RTVC-1, etc.
-
-<li>Merged Bob Olson's patches for shared memory support under AIX.
-  Fix additional problems with compilation under AIX 4.1.3 (as opposed
-  to AIX 3).  Tweaked the xv grabber for AIX 4.1.3 and to compile
-  without shared memory.
-</ul>
-
-<hr>
-<h3>v2.7a22 <i>Sat Sep 30 12:16:21 PDT 1995</i></h3>
-<ul>
-
-<li>Fixed bug where failure to connect to jvdriver on decode-side resulted
-  in a core dump.
-
-<li>Added Vic.sdesList so you can specify which RTP SDES items you want
-  to see in the info window.  Default is "cname tool email mesg".
-  Also, display srcid in the info window.
-
-<li>[internal] Added tcl hook so that decoder can assert that stream parameters
-  have changed in a way that might affect the rendering modules.  For example,
-  the RTP/JPEG type might change causing the output format to change from
-  YUV-422 to YUV-411.  In this case, we might have disable hardware decoding
-  (because the hardware doesn't support 411) or reallocate the software
-  renderers because they depend on the decimation factor.
-
-<li>[internal] Changed interface between vic and jpeg/h.261 decoders with
-  respect to bookkeeping blocks that changed.  Now pass in a table
-  that is filled in by the decoder, instead of using "render" call backs.
-
-<li>Fixed bugs with -A.  "-A rtp" didn't work; added back "-A vic" for
-  backward compatibility.  Reported by Toerless Eckert
-  (Toerless.Eckert@Informatik.Uni-Erlangen).
-
-<li>Added Use-Hardware button (in display panel) to control whether we
-  use hardware decoding when possible.  Created Vic.useHardwareDecode
-  resource to set initial disposition of Use-Hardware button.
-
-<li>Removed Vic.sunvideoDevice X resource and instead look for all available
-  devices at startup so they are selectable from user-interface.  (Default
-  can be selected with Vic.defaultDevice, e.g., by setting it to RTVC-1.)
-
-<li>Renamed "Decoder" panel "Display" and improved layout.
-</ul>
-
-<hr>
-<h3>v2.7a21  <i>Thu Sep 28 00:28:53 PDT 1995</i></h3>
-<ul>
-
-<li>Added support for IBM's Ultimedia Video I/O Adaptor under AIX, thanks to
-  Bob Olson (olson@mcs.anl.gov).
-
-<li>[internal] Fixed adios() so vic gracefully exists when interrupted.
-
-<li>Better handling of -with-* args to configure and a few
-  more fixes for AIX from Bob Olson (olson@mcs.anl.gov).
-
-<li>Fixed bugs introduced by last round of bug fixes to encryption
-  key manipulations.  Reported by Craig Votava (Craig.M.Votava@att.com).
-
-<li>[internal] Changed grabber/encoder API so that we can insert arbitrary
-  processing modules between the capture device and the encoder.  We now
-  pass around frames as typed objects to the consume() method of generic
-  Module class.  Frames are self-describing so we no longer need the
-  control API (e.g., setparams() and size()) between the grabber and
-  encoder.  This architecture arose from discussions with Kevin Fall
-  (kfall@ee.lbl.gov).
-
-<li>[internal] Changed decoder/renderer API as above.
-</ul>
-
-<hr>
-<h3>v2.7a20  <i>Tue Sep 26 22:44:09 PDT 1995</i></h3>
-<ul>
-
-<li>Fixed bugs with -K and -t (for ttl > 16) reported by Craig Votava
-  (Craig.M.Votava@att.com).
-
-<li>Changes to configure.  Can now specify paths to tcl,tk,blt source
-  trees using -with-tcl=pathname etc.  Always use -g with gcc.
-
-<li>Ported to AIX.  Patches contributed by Bob Olson (olson@mcs.anl.gov).
-  Bob also supplied patches to bring linux support back in line.
-
-<li>Fixed bug in net-ip.cc.  IPNetwork::open() was returning garbage.
-  Fix from Bob Olson (olson@mcs.anl.gov).
-</ul>
-
-<hr>
-<h3>v2.7a19  <i>Tue Sep 26 14:44:19 PDT 1995</i></h3>
-<ul>
-<li>Fixed bug that caused core dump in send_report() when device released.
-
-<li>Fixed bug in parallax grabber introduced with changes from v2.7a14
-  to v2.7a17.  Thanks to Jason Lee (Jason_Lee@lbl.gov).
-
-<li>Added nv's halftoner to support monochrome displays.  Elan Amir
-  (elan@cs.berkeley.edu) ported the nv code to vic.
-
-<li>Clarified warning message printed when *rtpEmail resource not defined.
-
-<li>Disabled bvc button until we get the bvc codec in better shape.
-
-<li> Changed cosmo and IndigoVideo grabbers to probe the device at 
-  startup and disable their selector in the user-interface if
-  not available.  Bug fix from Hoofar Razavi (hoofar@sgi.com).
-
-<li>Fixed bug with switching capture devices when a device was already
-  opened.  Fix from Bob Olson (olson@mcs.anl.gov).
-</ul>
-
-<hr>
-<h3>v2.7a17 <i>Sep 25 09:39 PST 1995</i></h3>
-<ul>
-
-<li>Added support for the Parallax jpeg adaptor (both JPEG and
-  standard capture are supported).  Contributed independently
-  by Joe Pallas (Pallas@Apple.COM) and Sai Rathnam (rathnam@cse.ogi.edu).
-
-<li>Added a "Message" form to the control window so that user's can leave
-  a descriptive message on the state of the transmission (for example,
-  "out of office" or "meeting resumes at 2pm").  When the message is
-  present in a stream, the corresponding "info" button is highlighted,
-  which invokes the info window containing the text.  (These messages
-  use RTPv2 TXT SDES items.)
-
-<li>Added Vic.sunvideoDevice X resource to indicate an alternative device
-  to use.  Set it to a small integer n to tell vic to use device
-  /dev/rtvc{n} and /dev/rtvcctl{n}.  This change suggested by Hanan Herzog.
-
-<li>Added support for sending decoded video to an external (analog) output
-  port under SGI VL (for example, SGI's galileo board has a composite
-  output jack).
-
-<li>Changed the default format to H.261.
-
-<li>Added encryption hooks.  You need to obtain a DES library elsewhere
-  in order to build a vic with encryption support.
-
-<li>Improved statistics displays with a legend and the ability to plot
-  (via a stripchart) multiple statistics simulataneously.  A stripchart
-  is created in a separate window by clicking on the name of the
-  desired statistic.  Added an "info" window without the clutter of
-  all the stats.
-
-<li>Added a "Decoder panel" to the control menu with several controls for
-  manipulating vic's decode-side functionality.  You can now interactively
-  select the dithering algorithm on an 8-bit display to dynamically change
-  the number of colors used by vic.  For example, if you want to run a
-  color-intensive application but leave vic up, you can select the "Gray"
-  dithering option, run your application and when done, revert vic back to
-  color dithering.  You can also adjust the gamma factor.  If you set
-  the gamma factor to 1.0 and select and "ordered dither", vic will use
-  the standard 5x5x5 color cube.  Since other applications use this same
-  cube (e.g., wb, gs, and nv), you are less likely to run out of colors
-  because of colormap conflicts.  These controls are disabled when your
-  running on an 24-bit or mono display.
-
-  With these changes, you no longer specify the dithering algorithm
-  using Vic.colorModel.  Instead, you specify a visual with Vic.visual
-  (i.e., truecolor, pseudocolor, etc) or with -V or -Xvisual (e.g.,
-  -Xvisual=truecolor).  For 8-bit pseudcolor visuals, the default
-  dithering algorithm is specified with Vic.dither (or -c, or -Xdither),
-  but can be overridden in the user-interface (as explained above).
-  The visual cannot be changed after startup.
-
-<li>Added a "Save-CPU" toggle-button under the viewing-window "Modes" pulldown
-  menu, which reduces the update rate of the window.  This allows you to
-  open a local looped back window for monitoring the outbound transmission
-  without incurring the cost of rendering every frame in real-time.
-
-<li>Changed "for" statement conventions to adhere to the proposed ANSI
-  standard change which re-defines the lexical scope semantics of the
-  initializer statement as described in 
-
-	http://www.cygnus.com/~mrs/wp-draft/stmt.html#stmt.for
-
-  In order to be compatible with both the old and new semantics, we have
-  changed all instances of
-
-	for (int i = ... ) ...
-	use(i);
-  to
-	int i;
-	for (i = ... ) ...
-	use(i);
-
-<li>Ported to tk-4.0.  You'll need BLT-1.8 to build vic from source.
-  An unofficial BLT-1.8 is available from http://www.cs.uoregon.edu/jhobbs/.
-
-<li>Merged changes from Michael Speer (speer@eng.sun.com) to compile
-  with Sun's C++ compiler.
-
-<li>Deleted -r option (for RTIP) and added more generic -n option to
-  specify the communications protocol underneath RTP.  "ip" (for IP
-  or IP Multicast), "rtip" (for Tenet RTIP), and "atm" (for the Fore
-  SPANS ATM API) are supported.
-
-<li>Added Vic.defaultDevice X resource to specify initial selection
-  of device when multiple devices are present.
-
-<li>[internal] Migrated voice-activated switcher code from C++ to tcl.
-
-<li>Added code to randomize the RTP initial sequence number and media
-  timestamps to foil plaintext attacks in case encryption is used
-  (as specified in the RTP spec).  Choose a heuristic random seed
-  using an MD5 hash as suggested in the spec.
-
-<li>Eliminated support of unidirectional RTIP connections
-  (i.e., connections are now always esatblished in both directions).
-
-<li>Changed VL module to query available devices and list each
-  device separately in the control panel.  Also, added code to
-  query the available input ports and dynamically configure the
-  port menu accordingly.
-
-<li>Changed RTP presentation timestamps to the 90Khz format agreed upon
-  at the July 1995 Stockholm IETF.
-
-<li>[internal] Fixed bug where a garbage video stream (e.g., from an
-  encryped session) could cause rendering code to fault.  Problem
-  is that rendering code assumes (possibly scaled) output image
-  width is an integral multiple of four (which is true for the
-  range of supported scales and the geometries of standard video
-  streams).  Since this is a pathological condition, the fix is
-  to simply disable rendering of such streams thereby avoiding
-  the software fault.  In theory, non-standard video sources
-  (like X screen captures) could fall into this category and
-  hence appear as a "gray window".  This problem reported by
-  Ian Wakeman (I.Wakeman@cs.ucl.ac.uk).
-
-<li>Added support for point-to-point ATM transport via Fore's API,
-  thanks to Anastasio Andrea Scalisi (scalisi@mailer.cefriel.it).
-  In the process of integrating this code, reworked network object
-  support so that new network abstractions can be more easily added.
-  Added -n flag to specify network type.  For example, "-n ip",
-  "-n atm", and "-n rtip" are currently supported (ip is the default).
-
-<li>Added hack to be able to utilize two DEC JPEG boards simultaneously.
-  The environment variable JVIN_PORT specifies the jvdriver port number
-  to connect to for the capture board.  The decode side uses the
-  default port.  This change contributed by Lance Berc (berc@pa.dec.com).
-
-<li>Deal gracefully with shared memory allocation failures.  Added code
-  to print out an error message and revert to non-shared buffers.
-
-<li>Fixed bug in voice-switched windows where a speaker without a video
-  stream would cause the window to be switched to the first thumbnail.
-
-<li>Added validity check for new packet stream.  Only accept a new
-  source when we've seen two in-sequence packets; suggested by
-  Ian Wakeman (I.Wakeman@cs.ucl.ac.uk).  This check prevents vic
-  from allocating an unbounded number of demultiplexing data structures
-  when confronted by a stream of garbage (e.g., such garbage results
-  when listening to an encrypted session without the key).
-
-<li>Changed reception reports loss semantics to conform to 3/21/95
-  RTP draft (draft-ietf-avt-rtp-07.txt) (in particular, the
-  extended highest seqno received field, the loss fraction, and
-  the cumulative loss fields of the reception report were updated).
-
-<li>Added check for duplicate packets in common receive path so that
-  they are now reported in the stats window for all compression formats.
-
-<li>Added support for SGI Cosmo JPEG board.  Because this board was designed
-  for non-linear video editing, it has large latencies that preclude
-  good interactive operation.
-
-<li>[internal] Moved code to allocate framer buffers etc., which is shared
-  among all the grabber subclasses, into the grabber base class.
-  Changed the way grabbers specify their attributes; they simply
-  return a nested tcl list.  Reorganized all tcl-style objects
-  (i.e., widgets that implement tcl commands) so that they derive from
-  a shared TclObject base class.  Support hardware assisted decoding
-  via new Assistor class (instead of having separate Decoder objects).
-  Assistors are analogous to Renderers; the latter support software decoding.
-  Revert to model where there is only one Decoder object per incoming stream.  
-
-<li>[internal] Reworked the way encoders and grabbers are allocated
-  to make it easier to add support for the encode-side of a new format.
-  Suggested by Joe Pallas (Pallas@Apple.COM)
-
-<li>Fixed bug that caused crash using DEC j300 hardware JPEG decoder.
-  Problem was that default Vic.jvColors was not defined.
-  Reported by Stefan Savage (savage@cs.washington.edu).
-
-<li>Changed video capture modules to embed NTSC sized images into CIF sized
-  frames with a gray border instead of using ugly scaling.  PAL is still
-  handled the same way (i.e., 16 pixels from each line are discarded).
-
-<li>Changed default position on frame rate slider from two to eight.
-
-<li>Added support for native size 4:1:1 YUV grabbers
-  (i.e., not just CIF dimensions).
-
-<li>Added support for the VigraPix frame grabber.  Thanks to
-  Steve Haehnichen (steve@vigra.com) and Vigra for the
-  donation of a board.
-
-<li>[internal] Changed CR to operate on 16x16 instead of 8x8 blocks.
-
-<li>Changed perceptually weighted H.261 quantization.  Previous scheme
-  that folded the weighting in with the DCT quantization was deficient
-  because in addition to increasing the dead zone, it threw away
-  bits unecessarily (and the loss of these bits was not captured
-  by the h.261 entropy coder).  Instead, we now increase the dead
-  zone using perceptual weighting after we do quantization.
-
-<li>Fixed bug in conditional replenishment algorithm.  CR decision was
-  based solely on the first 8 pixels of every block, so motion of
-  small items (like pointers) left artifacts behind.  Fix was to
-  advanced CR scanline pointer (as intended in the algorithm).
-
-<li>Updated H.261 framing to conform to July 1995 Internet Draft "RTP payload
-  format for H.261 video streams" (draft-ietf-avt-h261-01.txt).  Maintained
-  backward compatibility with ivs encoder by using the RTP version number
-  to imply the old encapsulation format.  Once ivs switches to RTPv2,
-  we can abandon the GOB reassembly code.
-
-<li>Patched memory leak in nv encoder.  Thanks to Bernd Lamparter
-  (lampart@ICSI.Berkeley.EDU) and Wieland Holfelder (whd@ICSI.Berkeley.EDU).
-
-<li>Fixed bug where checkXshm was not detaching the test shared-segment
-  in the X server.  The X server could see two XShmAttach's with
-  the same shmid (one readonly the other read/write), and the prior
-  one becomes invalid.  Bug fix from Srinivasan Seshan (ss@cs.berkeley.edu).
-
-<li>Added check for session packets arriving on data port.  This should
-  eliminate the gray windows with fmt-0x1 and fmt-0x0 as the media type.
-
-<li>Fixed bug where source sequence number was reset to 0 when changing
-  the compression format.  This would cause receivers to reset their
-  packet counts, which in turn, caused inconsistent reception reports.
-  Problem reported by Paul Stewart (stewart@hibp6.ecse.rpi.edu).
-
-<li>Shared memory with the X server now works under BSD/OS 2.0.
-  Unfortunately, the BSD/OS 2.0 X server is not compiled with the
-  XShm extension.  You might ask Srinivasan Seshan (ss@cs.berkeley.edu)
-  for a pre-compiled XFree86 server, if you don't feel like building one
-  from scratch.
-
-<li>Fixed session message timestamps to conform to NTP epoch instead of
-  unix 1970 epoch.  Bug reported by Bernd Deffner (deffner@fokus.gmd.de).
-
-<li>[internal] Fixed bug where rtpv2 source tcl-methods were derived from
-  the RTP SSRC.  This caused numerous problems when sources would come
-  and go (or when SSRC's collided, which is relatively common with the
-  heuristic to generate them in rtpv1 compat mode).
-
-<li>Changed semantics of -u.  File argument to -u is sourced after the
-  built-in tcl script.  Previously, -u completely overrided built-in
-  script.
-
-<li>Added code to source $HOME/.vic.tcl if it exists.  This file is sourced
-  after the built-in tcl script, but before the file argument to -i.
-  Suggestion from Bill Fenner (fenner@parc.xerox.com).
-
-<li>[internal] adaptive load rendering
-
-<li>Fixed several bugs in RTCP packets.
-
-<li>[internal] Made it easier to add new decoders.  A new format can be
-  supported without having to change any existing code.  Design change
-  suggested by Joe Pallas (Pallas@Apple.COM).
-
-<li>[internal] Established convention that all YUV image buffers are contiguous
-  so that chroma offsets can be computed where needed (and only a single
-  pointer need be maintained).
-
-<li>[internal] Reimplemented switcher architecture in tcl and created
-  generic Conference Bus object.
-
-<li>Changed semantics of -u option so that file argument is sourced in
-  addition to (rather than in place of) the built in tcl code.
-
-<li>Incorporated Garrett Wollman's (wollman@lcs.mit.edu) patches for FreeBSD.
-
-<li>Fixed some problems with the VL grabber.  Added PAL CIF support
-  and code to choose from set of allowable frame rates (frame rate
-  problem reported by many - thanks).  Deleted vlSelectEvents call.
-  Fixes from Andrew Cherenson (arc@sgi.com).
-
-<li>Converted configuration scheme to use GNU autoconf.  If you encounter
-  problems running ./configure, please see if you can fix things by
-  modifying configure.in and running autoconf
-	  (avaialable in ftp://prep.ai.mit.edu/pub/gnu/autoconf*).
-  Then, send us your fixes so vic's configure script will work out of
-  the box for you in the future.
-
-<li>Changed binding on pull-down menu buttons so that you can click on
-  button a second time to make the menu go away.  This change suggested
-  by Pat Parseghian (pep@research.att.com).
-
-<li>Fixed xil grabber to conform to Solaris-2.4 API.  Problem
-  reported by David Meyer (meyer@network-services.uoregon.edu)
-  and Michael Mealling (Michael.Mealling@oit.gatech.edu).
-
-<li>Changed Vic.defaultRate to Vic.framerate to make less ambiguous,
-  and fixed explanation in man page, which was bogus.  Reported
-  by Pat Parseghian (pep@research.att.com).
-
-<li>Fixed bug with default format (it was never used).  Reported by
-  Pat Parseghian (pep@research.att.com).
-
-<li>Fixed bug where color button would get out of sync with actual color
-  disposition when changing encoding formats.  Reported by Pat Parseghian
-  (pep@research.att.com).
-
-<li>Bring IndigoVideo module up to date.  Changes from Andrew Cherenson
-  (arc@sgi.com).
-
-<li>Ported to Linux, thanks to patches from Vesa Ruokonen
-  (Vesa.Ruokonen@lut.fi).
-
-v2.6beta Mon Dec  5 00:26:42 PST 1994
-
-<li>Changed VIC.SD.TCL script to use ivs (instead of vic in ivs compat mode)
-  by default, since ivs' rate control scheme depends on feedback reports
-  that vic does not generate.
-
-<li>Made H.261 decoder more robust to packet loss and reordering.
-  Problem reported by terje.vernly@usit.uio.no.
- 
-<li>Upgrade release status from ALPHA to BETA.
-
-<li>Incorporated John Brezak's (brezak@apollo.hp.com) changes to
-  support generic Xvideo devices.  He says:
- <ul>
-	<li>	You need a fixed libXv.a (get the source from ftp.x.org and
-	 	apply patch in grabber-xv.cc)
-
-	<li>	Haven't implemented cif_grabber(). Maybe next week.
-
-	<li> 	There are 2 config options - XV_PSEUDO8 and XV_USES_XSHM .
-		XV_PSEUDO8 is for allowing an 8bit visual to be used to
-		upply a capture window for a 24bit image. HP does this.
-		XV_USES_XSHM is for an Xv extension that can use the SHM
-		versions of image operations. Parallax currently doesn't
-		support this on HP.
- </ul>
-
-<li>Incorporated Greg Earle's (earle@isolar.Tujunga.CA.US) and
-  Paul Kranenburg's (pk@cs.few.eur.nl) (independent) patches
-  for NetBSD/sparc.  
-
-<li>Fixed bug that caused core dump when deleting local thumbnail.
-  Report by George Michaelson (G.Michaelson@cc.uq.oz.au).
-
-<li>Fixed "can't unset name_line" bug.  Reported by
-  Steve Casner (casner@isi.edu) and others.
-
-<li>Fixed bug that caused video capture to hang when switching input
-  ports with SunVideo.  Reported by speer@eng.sun.com (Michael Speer).
-
-<li>Fixed VIC.SD.TCL to generated -I options correctly for voice-switched
-  operation.  Bug report and fix from a61@nikhef.nl (Herman van Dompseler).
-
-<li>Arranged for viewing windows to be remapped without user placement
-  at the same location and size when dismissed (suggestion from
-  George Michaelson).
-
-<li>Fix bug that unecessarily caused decoder data structures to be
-  created and destroyed when initializing a new stream (fix from
-  Bernd Lamparter (lampart@ICSI.Berkeley.EDU)).
-
-<li>Fix bug that caused error message when invoking release button
-  at wrong time.  Reported by a61@nikhef.nl (Herman van Dompseler).
-
-<li>Fix bug that caused error message when invoking lock button
-  at wrong time.  Reported by Dan Molinelli (moline@gumby.sp.TRW.COM)
-  and several others.
-</ul>
-
-<hr>
-<h3>v2.5alpha <i>Wed Nov 30 01:41:55 PST 1994</i></h3>
-<ul>
-<li>sd.tcl script was wrong - vj used a "switch" construct in a "case"
-  command which doesn't work.  also forgot to say "global vic" before
-  using $vic.
-
-<li>wasn't supplying correct timestamp in session messages in nv compat
-  mode so nv-3.3 would occasionally 'lock up' ignoring either session
-  or data packets.  (bug reported by George Michaelson)
-
-<li>made first cut at support for 32-bit visuals (e.g., parallax card).
-  (problem reported by Steve Casner)
-
-<li>fix long-standing bug in h261 decoding: were not swapping front & back
-  buffers if only leftmost mba of gob was rendered.  (problem reported
-  by Graeme Wood)
-
-<li>was never using shared memory to talk to x server because of stupid
-  initialization error.  (bug & fix suggested by Greg Earle)
-
-<li>don't drop core in strlen() if we're given a video format we don't
-  know about.
-</ul>
-
-<hr>
-<h3>v2.4alpha (no v2.3) <i>Tue Nov 29 04:53:15 PST 1994</i></h3>
-<i>(First public release)</i>
-<ul>
-<li>Added -P command line argument to force use of private colormap.
-
-<li>Added the -X command line argument.  "-X resource=value" will override an
-  arbitrary vic resource on the command-line.  Removed -e and -p options.
-
-<li>[internal] Reworked packet demultiplexing code so that it is independent
-  of vic, eventually allowing it to be shared by other applications (i.e.,
-  vat, wb, etc).  The motivation is to share as much code as possible
-  with vb.
-
-<li>Fixed usage message.
-
-<li>Added support for -o, which dumps locally sourced video to an RTP
-  clip file.
-
-<li>Added Vic.filterGain resource for controlling time constant on
-  bit-rate, frame-rate, and loss estimators.  Default is 0.25.
-
-<li>Changed menu popup to have generic layout indepedent of capture device.
-  Portions of the interface are enabled or disabled by querying the device
-  to see what features are supported.
-
-<li>Fixed H.261 encoder to do GOB-oriented rather than frame-oriented
-  fragmentation.
-
-<li>[internal] Added traffic smoothing so packets are evenly spaced
-  across a frame time.  This adds latency but is necessary given
-  the current constraints of Internet routers.
-
-<li>[internal] Do second cut on rtp/jpeg reassembly code.  This version
-  does a reasonable job with misordered packets etc.
-
-<li>[internal] Reorganized grabber/encoder architecture so that conditional
-  replenishment algorithm is carried out by the grabber.  This saves bus
-  bandwidth because blocks that are to be suppressed need not be copied
-  from the grabber specific format to the format expected by vic.  If the
-  capture device uses programmed I/O, there is little advantage but no
-  disadvantage.  You might think this would complicate the grabbers, but
-  most of the work is carried out by a generic macro.
-
-<li>[internal] Converted bstrings routines to posix equivalents.
-
-<li>Changed the polarity of -H, which nows means use hardware decoding
-  if available.  The default is not to use hardware assist (see the
-  man page for an explanation).
-
-<li>Added support for error-diffusion dithering, thanks to Elan Amir.
-  Error diffusion dithering is now the default rendering technique
-  on 8-bit color displays.  You can revert to the ordered dithering
-  technique (similar to that used in nv) by specifiying the "od"
-  color model with the Vic.colorModel resource or the -c command option.
-  Error-diffusion runs somewhat slower than the ordered-dither but the
-  quality is higher.
-
-  Also added support for computing statistically optimized colormaps using
-  Heckbert's median cut algorithm.  You can invoke the colormap optimization
-  from the "Colors" panel in the control menu.  This causes vic to compute
-  a color histogram across all unmuted video streams.  The histogram is then
-  passed to a separate program (vic_colord) to carry out the median cut.
-  We fork off a separate process because the computation is CPU intensive
-  and will block the user-interface if not run as a separate thread.
-
-<li>Changed 24-bit display code to use full 24-bit precision instead
-  of a 16-bit lookup table (thanks to Van Jacobson).
-
-<li>[internal] Reworked the way windows are sync'd to the frame buffer.
-
-<li>Use private colormap when default colormap is too full.
-
-<li>Compile with gcc-2.6.0 under DEC OSF.  DEC's C++ compiler is no
-  longer supported.
-
-<li>[internal] Changed ppmtolut and color-lut.cc to use convention that
-  grays are explicit in the stored color map.
-
-<li>Added support for simple INTRA-only H.261 encoding.
-
-<li>[internal] Major changes to DCT code and software decoders for
-  substantial speedups.  Employ Arai, Agui, and Nakajmia's 8pt 1D DCT,
-  from Fig. 4-8 Pennebaker & Mitchell (i.e., the pink JPEG book).
-  By computing scaled DCTs on each of the column and row passes
-  and folding the descaling step with quantization step, only five
-  multiplies per 8-pt DCT are required, resulting in a 90-multiply
-  8x8 DCT.  Thanks to Martin Vetterli for explaining how to do this.
-
-<li>Fixed bug that caused core dump if there is no USER enviroment variable
-  defined (and  Vic.sessionName is not defined).  Some shells don't define
-  USER (i.e., ksh under solaris).
-
-<li>[internal] Reworked speedups in software jpeg decoder.  Instead of
-  caching mappings between huffman strings and decoded blocks (which
-  required an infeasibly huge hash table for good quality video), we
-  reduce load by skipping over any block that is sufficiently similar
-  to the same block that's currently displayed.  The similarity
-  comparison can be carried out cheaply in the quantized, DCT domain.
-
-<li>Change thumbnail frame rate to report decoding frame rate when
-  not disabled and receiving frame rate when disabled.  The decoding
-  rate can be lower than the receiving rate if the local cpu can't
-  keep up with the source, or if there are no active windows (besides
-  the thumbnail) which means we don't have to decode every frame.
-
-<li>Modified thumbnail/info window so that sites are always sorted
-  in lexicographic order (by rtp NAME attribute).
-
-<li>Modified thumbnail/info window to tile according to the number of
-  columns specified in the "Tile..." pulldown in the Menu window.  
-  The default value is 1, and can be overridden with the the Vic.tile
-  resource.  You can also type a number into the thumbnail window
-  as a shortcut.
-
-<li>If 75dpi fonts aren't available, change all fonts to wildcard the
-  pitch.
-
-<li>Sourcing video from clip files is no longer supported.  This functionality
-  is now provided by rtp_play.
-
-<li>Added source rate statistics to transmission panel in menu window.
-  This way you can monitor how fast you're sending even if the loopback
-  decoding can't keep up.
-
-<li>Added Vic.defaultFormat resource to set the default video transmission
-  format.  If not specified the default is determined by your capture
-  hardware (for example, jpeg is default if you have jpeg hardware ).
-
-<li>Ported to Solaris 2.3.  Added XIL support for raw capture and JPEG, H.261
-  and CellB hardware capture (the sunvideo card currently doesn't implement
-  H.261).
-
-<li>[internal] Generalized jpeg decoder to deal with arbitrary decoder
-  parameters (and subclass special cases to optimize).  In particular,
-  we can now deal with 4:1:1 jpeg, which the SunVideo produces.
-
-<li>Add code to distinguish between j300 and jvideo and for the latter
-  to disable non-JPEG formats and 1:1 decimation.
-
-<li>Added code to receive path to always deal with RTP version 1 packets
-  properly.
-
-<li>[internal] Created SoftwareDecoder, PlaneDecoder, and SoftwareRenderer
-  sub-classes so that a bunch of common code could be shared among the
-  decoders.
-
-<li>[internal] Broke out block suppression code into separate sub-class
-  so it can be shared among the nv, nvm, and cellb encoders.
-
-<li>Small change to architecture to cope with dynamic geometry and video
-  format changes.
-
-<li>Ported to DEC OSF/1 v2.0.
-
-<li>Added CellB support (based on the code in nv and the RTP/CellB
-  Internet Draft).  Sped up the encoder by a factor of two by
-  using straight-line code instead of conditionals in the Y/Y VQ
-  computation.  Changed the U/V VQ to use straight subsampling
-  instead of LPF/subsampling since the chroma planes usually have
-  little high frequency energy (and visual comparisons show
-  negligible gain).  Sped up decoder by replacing conditionals
-  with straight-line code.  But the biggest improvement was to run
-  the conditional replenishment algorithm in the pixel domain instead
-  of the cell domain.  There is little hope of doing good temporal
-  compression on quantized values, because the quantization noise
-  is approximately a random process with variance proportional to
-  the quantizer step size, and this additive noise will completely
-  defeat the conditional replenishment algorithm.  Running the
-  differencing in the pixel domain will give much more effective
-  temporal compression, which reduces network bandwidth and saves
-  CPU cycles.
-
-<li>Fixed bug that caused nv & ivs senders to never be deleted from
-  the main window.
-
-<li>Changed model so that video capture device is opened first time
-  transmission is invoked, as opposed to at start-up.  Still need
-  to implement device sharing as vat does with non-shareable audio
-  hardware.
-
-<li>Fragment JPEG streams instead of letting IP do the fragmentation.
-  RTP/JPEG protocol still in limbo.
-
-<li>Changed semantics for clicking on thumbnail.  If the site is already
-  being displayed (in locked mode), the corresponding window is deleted.
-  Otherwise, it is created as before.  This gives toggle-like behavior
-  as in nv.
-
-<li>Always use vanilla rtp headers instead of vic-specific packet format.
-
-<li>Improvements to ordered dithering code.  Incorporated Ron Frederick's
-  model from nv v3.3alpha, i.e., to fold the dither matrix into the
-  color-to-pixel lookup table.  Van sped up this code by incorporating
-  his hacks from the 24-bit color code.
-
-<li>Improvements to user interface.  Looks more like vat now.
-
-<li>Added -c to specify the color rendition technique.
-  
-<li>Added support for 24 bit displays (thanks to Van Jacobson).
-
-<li>Added support for pip/tx grabber on decstations.
-
-<li>[internal] Reworked grabber/encoder architecture.  Added Device class.
-  Arranged for most action to be initiated via tcl "device" command.
-
-<li>[internal] Reworked jv grabber so that SharedVideoImage class allocates
-  the shared memory.  This means won't match the mme grabber model 
-  (i.e., the mme server will do the memory allocation), but that's
-  okay since the right way to handle this is derive an MmeVideoImage
-  from a SharedVideoImage.
-
-<li>[internal] Changed all tcl grabber hooks to use the "grabber" command.
-  Subclasses can catch invocations via the virtual method
-  Grabber::command(argc, argv).
-  
-<li>Changed -f to -u to be compatible with vat (since vat already used
-  -f for audio format).  Changed previous -u flag to -U.  Changed
-  "-e encoding" to "-f format" to be consistent with vat.
-
-v2.2alpha Tue Nov 23 15:20:59 PST 1993
-
-<li>Added support for decoding H.261 video.  (The encoder isn't implemented yet.)
-
-<li>Added the -A flag.  '-A nv' for nv compatibiliry; '-A ivs' for ivs 
-  compatilibility.  Took away '-n'.
-
-<li>Fixed bug introduced in 2.1a that caused core dump on window resize.
-
-v2.1alpha Tue Nov 9 14:52:59 PST 1993
-
-<li>Fixed bug that caused sparc-10 core dumps during xunet conference.
-
-<li>Default JPEG decoder to color output instead of gray scale.
-
-<li>Allow control window to be vertically resized.
-
-<li>Fixed conference title bug.  Default addr/port version wasn't displayed.
-
-<li>Fixed bug that caused 12 bytes of garbage at front of nv packets.
-
-<li>Fixes to compile with gcc under DEC/OSF.
-
-<li>Update to tcl7.1/tk3.4.
-
-<li>First cut at man page; needs much more work.
-
-<li>Eliminate chud at bottom of J-Video windows that are 232 pixels
-  high instead of 240.
-</ul>
-
-<hr>
-<h3>v2.0alpha <i>Tue Oct 19 17:48:26 PDT 1993</i></h3>
-<ul>
-<li>Initial alpha binary release to xunet sites.
-</ul>
-
-<hr>
-<a href=vic.html>[Return to main vic page]</a>
-</body>
-</html>
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=windows-1252">
+<META NAME="Generator" CONTENT="Microsoft Word 97">
+<TITLE>vic Change Log</TITLE>
+<META NAME="Template" CONTENT="D:\Program Files\Microsoft Office\Office\html.dot">
+</HEAD>
+<BODY LINK="#0000ff" VLINK="#800080">
+
+<P><!-- @(#) $Header$ (LBL)--></P>
+<H1>vic: Change History</H1>
+<H3>v2.8ucl4</H3><UL>
+<LI>Added <a href="http://roadrunner.swansea.uk.linux.org/v4l.shtml">Video4Linux</a> capture support. <B>Note:</b> This only works with kernel 2.2.x and above.
+<LI>Updated H263 support for Litte Endian machines (thanks to <a href="mailto:mm@lst.de">Marcus Meissner</a>).
+<LI>Updated grabber-x11 so it works on more machines and when running vic on a remote X server (thanks to <a href="mailto:mm
+@lst.de">Marcus Meissner</a>, <a href="mailto:davide@di.unito.it">Davide Cavagnino</a>).
+<LI>Added [HAVE_IPV6] support for IPv6 from <a href="http://irl.cs.ucla.edu/">UCLA</a> version, adding support for;
+<DL><dt>SOLARIS7_IPV6
+<dd>Solaris 7 <a href="http://www.sun.com/solaris/ipv6/">IPv6 Prototype</a>.
+<dt>LINUX_IPV6
+<dd>Linux IPv6 support in kernel 2.2.x
+<dt>WIN32
+<dd>Microsoft research's <a href="http://www.research.microsoft.com/msripv6/">IPv6</a> support for NT4.0.
+<dt>DAS_IPV6
+<dd>Thompson-CSF Detexis' IPv6 Stack on Windows NT4.0
+</dl>
+<LI> Command line options:
+<UL>
+<LI>-n ip6 : Sets vic to use IPv6[HAVE_IPV6].
+<LI>-L <flowinfo> : Sets flowinfo in IPv6 packets[HAVE_IPV6].
+<LI>-y : This sets local transmit rate to 32kb/s
+unless it receives a lbl message from rat to say you are sending audio.
+<LI>-l <logfile> : Logs framerate, loss, bandwidth to a file.
+</UL>
+</UL>
+
+<P><HR></P>
+<H3>v2.8ucl3</H3>
+
+<UL>
+<LI>Added support for SunVideo PCI card - from <A HREF="http://www.nt.e-technik.uni-erlangen.de/Projekte/dfn/vic.html"><U><FONT COLOR="#0000ff">Friedrich-Alexander Universitaet Erlangen-Nuernberg (FAU)</U></FONT></A></LI></UL>
+<DIR>
+<P>- Provides hardware H.261 codec</P></DIR>
+</DIR>
+<UL>
+<LI>Added H.263 codec for UNIX - from <A HREF="http://www.nt.e-technik.uni-erlangen.de/Projekte/dfn/vic.html"><U><FONT COLOR="#0000ff">Friedrich-Alexander Universitaet Erlangen-Nuernberg (FAU)</U></FONT></A></LI>
+<LI>Included many useful fixes from Bill Fenner.</LI></UL>
+
+<P><HR></P>
+<H3>v2.8ucl2</H3>
+
+<UL>
+<LI>Added JPEG and bvc software codec's from <A HREF="http://www-mash.cs.berkeley.edu/mash/">MASH project</A> , University of California, Berkeley </LI></UL>
+
+<P><HR></P>
+<H3>v2.8ucl1 </H3>
+
+<UL>
+<LI>Port to Tcl/Tk 8.0 </LI>
+<LI>Added DES support</LI>
+<LI>Added 'configure on transmit option' for windows which brings up the configuration panel for the installed frame grabber.</LI>
+<LI>Added H.263+ codec from <A HREF="http://kbs.cs.tu-berlin.de/payload/">TU-Berlin</A> </LI></UL>
+
+<P><HR></P>
+<H3>v2.8 <I>Mon Jul 22 13:13:10 PDT 1996</H3>
+
+<UL>
+</I><LI>Fixed long standing bug where vic generated non-conformant RTP/H.261 headers (the MBA and GOB fields were swapped). We maintained this bug in v2.7 to avoid incompatibility with v2.6, but <A HREF="#rtph261bug">added code</A> to handle either case. </LI>
+<LI>Added <A HREF="mailto:brezak@apollo.hp.com">John Brezak's</A> patch for a hookable TkPlatformInit to overcome the fact that under Windows you cannot override internal DLL calls. </LI>
+<LI>Ifdef out XSync calls under WIN32. </LI></UL>
+
+<P><HR></P>
+<H3>v2.7 <I>Mon Jul 22 11:47:48 PDT 1996</H3>
+
+<UL>
+</I><LI>Fixed several bugs in the MME grabber: (1) bandwidth limits were ignored by the grabber, (2) mapping of JPEG Quality slider to internal quality setting was wrong, and (3) the YUV grabber was grabbing frames that were 1/4 (1/2 in each direction) the requested size. Fixes from <A HREF="mailto:morris@zko.dec.com">Tom Morris</A>. </LI>
+<LI>Fixed bug with calculation of extended highest sequence number in reception reports. Reported by <A HREF="mailto:fenner@parc.xerox.com">Bill Fenner</A>. </LI></UL>
+
+<P><HR></P>
+<H3>v2.7b4 <I>Wed Jun 26 17:59:49 PDT 1996</H3>
+
+<UL>
+</I><LI>Fixed control menu so that user cannot select a compression format if there are no available devices. Otherwise, a tcl error results. Bug reported by <A HREF="mailto:rush@alikazam.sprintcorp.com">David Rush</A>. </LI>
+<LI>Removed load_stat class and hooks since we want to re-architect this. We plan to put more general hooks into vic-3.0. </LI>
+<LI>Added support for the SCC "Smart Capture Card", a PCMCIA video capture card sold by Japan IBM. Contributed by <A HREF="mailto:oka@kobe-u.ac.jp">Koji OKAMURA</A>. Koji maintains an <A HREF="ftp://ftp.kobe-u.ac.jp/pub/mc/scc">SCC Driver for Linux</A> and <A HREF="ftp://ftp.kobe-u.ac.jp/pub/mc/apps/vic">Linux vic binary w/ SCC support</A>. </LI>
+<LI>Brought the DEC MME grabber up to date. <A HREF="mailto:morris@zko.dec.com">Tom Morris</A> contributed the (substantial) changes and bug fixes. </LI>
+<LI>Modified <A HREF="http://www.connectix.com/">Connectix</A> <A HREF="http://www.connectix.com/connectix/qcchoice.html">QuickCam</A> grabber for more generic <I>driver versus library</I> detection by <A HREF="mailto:jbash@cisco.com">John Bashinski</A>. This version works with QuickCam driver on Solaris 2.x. Also added QuickCam GUI controls, and removed old auto-contrast system. </LI>
+<LI>Fixed bug that caused core dump for unknown visuals Reported by <A HREF="mailto:craig@lucent.com">Craig Votava</A>. </LI>
+<LI>Added grabber module for PCMCIA IBM Smart Capture Card. Works under both Linux and FreeBSD. Contributed by <A HREF="mailto:oka@nanotsu.kobe-u.ac.jp">Koji OKAMURA</A>. </LI>
+<LI>Added ability to specify default video port on a per-device basis. For example, you can set the <I>Vic.defaultPort(vino)</I> X resource to <I>Analog-Video-Input</I> to cause vic to default to the analog composite input with SGI's vino device. </LI>
+<LI>Fixed bug in session max bandwidth computation. The heuristic that differentiated between audio and video needed to check <I>V(app)</I> rather than the <I>sessioType</I> resource. Originally reported by <A HREF="mailto:klemets@vxstream.com">Anders Klements</A>. </LI>
+<LI>Fixed bug computing DLSR field of RTCP receiver reports. Reported by <A HREF="mailto:klemets@vxstream.com">Anders Klements</A>. </LI>
+<LI>Re-named methods that were named <I>sendmsg</I> since some systems re-define this identifier. </LI>
+<LI>Added hook to meteor grabber to set frame rate so we only transfer what we need, thanks to <A HREF="mailto:james@allmalt.cs.uwm.edu">Jim Lowe</A>. </LI>
+<LI>Brought up to date with IRIX-6.2, thanks to <A HREF="mailto:arc@sgi.com">Andrew Cherenson</A>. </LI>
+<LI>Ported to final release versions of tcl7.5/tk4.1. You now need these versions or later to build. </LI>
+<LI>Fixed compilations problems under AIX, reported by <A HREF="mailto:srini@watson.ibm.com">Srinivasan Seshan </A>. </LI>
+<LI>Added Hi-Color (16-bit) renderer. </LI>
+<LI>Lots of changes for Win95 with tcl7.5/tk4.1. </LI></UL>
+
+<P><HR></P>
+<H3>v2.7b3 <I>May 16 07:07 PDT 1996</H3>
+</I><P>Windows binary release. </P>
+<P><HR></P>
+<H3>v2.7b2 <I>Sun Apr 21 09:58:36 PDT 1996</H3>
+
+<UL>
+</I><LI>Bring ultrix port up to date. </LI>
+<LI>Removed VIC.SD.TCL from distribution since sdr has obsoleted sd. </LI></UL>
+
+<P><HR></P>
+<H3>v2.7b1 <I>Tue Apr 9 23:11:48 PDT 1996</H3>
+
+<UL>
+</I><LI>Added a manual page for h261_play. </LI>
+<LI>Ported to tcl7.5b3 and tk4.1b3. You need this version or later to build. tcl7.5a* and tk4.1a* will not work. </LI>
+<LI>Replaced blt_table with new Tk grid geometry manager. This eliminates all dependence on blt. </LI>
+<LI>Fixed bug that caused abort whenever a window was dismissed that held a stream that was different from the original stream upon creation. Reported by <A HREF="mailto:casner@precept.com">Steve Casner</A> </LI>
+<LI>Fixed uninitialized-variable bug in session.cc. Thanks to <A HREF="mailto:templin@pa.dec.com">Fred Templin</A>. </LI>
+<LI>Catch error when trying to mtrace a source when mtrace binary is not present. This bug reported by many. </LI>
+<LI>Added better logic to Meteor grabber for deciding when to use even-only field capture mode. Patch from <A HREF="mailto:james@allmalt.cs.uwm.edu">Jim Lowe</A>. </LI>
+<LI>Timestamps in rtcp messages were still wrong: the media ts of the last packet sent was simply combined with the current ntp time rather than being corrected for the difference between the last send and the current time. Fixed. Reported by <A HREF="mailto:casner@precept.com">Steve Casner</A> </LI>
+<LI>Weren't following the guidelines on sdes content of rtcp msgs: Are supposed to put in cname plus one other piece of info. Instead, were sending all info in every msg. Changed to follow guidelines and sequence through the available info, one item per msg. Reported by <A HREF="mailto:casner@precept.com">Steve Casner</A> </LI>
+<LI>Removed tk.tcl from list of source files since it should always be built from local tk library (otherwise you can end up with a version mismatch between -ltk and the support files built into vat/vic. Reported by <A HREF="mailto:Hans.Mayer@gmd.de">Hans Mayer</A> </LI></UL>
+
+<P><HR></P>
+<H3>v2.7a38 <I>Thu Mar 21 03:52:22 PST 1996</H3>
+
+<UL>
+</I><LI>Fixed problems in VideoPix grabber when grabbing CIF format (h.261) from a PAL camera. Result would be garbage and would also trash random memory. Problem reported by <A HREF="mailto:richter@ro2.informatik.uni-hamburg.de">Jan-Peter Richter</A> </LI>
+<LI>Fixed problem in Parallax grabber where tk update call could cause re-entrance to grabber. Change update to "update idletasks". Fix from <A HREF="mailto:Tie.Liao@inria.fr">Tie Liao</A>. </LI>
+<LI>Removed old, obsolete key bindings that caused tcl background errors when certain keys were typed into a video display window. Bug reported by <A HREF="mailto:david@msri.org">David Hoffman</A>. </LI>
+<LI>Fixed some problems with the Matrox Meteor grabber; in particular, svideo input and secam format. Also added support for the RGB version of the Meteor. Contributed by <A HREF="mailto:james@allmalt.cs.uwm.edu">Jim Lowe</A>. </LI>
+<LI>Fixed small bug in RTCP code where random offset was added in twice (once in <I>media_ts</I> method and once by external code). Reported by <A HREF="mailto:olson@mcs.anl.gov">Bob Olson</A>. </LI>
+<LI>Added support for <A HREF="http://www.connectix.com/">Connectix</A> <A HREF="http://www.connectix.com/connectix/qcchoice.html">QuickCam</A> video capture device for PC's. Contributed by <A HREF="mailto:oka@is.aist-nara.ac.jp">Koji OKAMURA</A>. Known to work with the <A HREF="ftp://ftp.nas.com/laird/">linux qcam driver</A> and Paul Traina's driver under <A HREF="http://www.freebsd.org/">FreeBSD</A> (which is in FreeBSD-2.2 or later). The configure script will compile the QuickCam driver if /usr/local/lib/libqcam.a exists. </LI>
+<LI>Fixed bug in SLIC grabber that prevented grabber panel from being instantiated. Thanks to <A HREF="mailto:Toerless.Eckert@Informatik.Uni-Erlangen.de">Toerless Eckert</A>. </LI>
+<LI>Full-size h.261 grabbing was broken if using NTSC camera with vigrapix board. Problem was that Phillips scalar chip can't scale up so we'd have to grab a full frame &amp; deinterlace to go from 240 line high NTSC to 288 line high CIF. Since this would double amount of I/O, instead we do same as other NTSC CIF grabbers &amp; embed NTSC sized image on gray CIF sized background. Problem reported by <A HREF="mailto:pallas@apple.com">Joe Pallas</A>. </LI>
+<LI>cpmsg was causing a call to realloc on every packet rather than only when the work buffer needed to be expanded. Reported by <A HREF="mailto:olson@mcs.anl.gov">Bob Olson</A>. </LI>
+<LI>VIC.SD.TCL was missing from the binary distributions. Reported by <A HREF="mailto:dsc@nwnet.net">David Comay</A>. </LI>
+<LI>Much hacking on configure scripts to deal with tk4.1/tk4.0 file name changes, need for dynamic loader with tcl7.5, blt-1.9 release, etc. </LI>
+<LI>Got ok from Sun to add grabber-rtvc.cc to source distribution. </LI></UL>
+
+<P><HR></P>
+<H3>v2.7a37 <I>Wed Feb 15 14:39:06 PST 1996</H3>
+
+<UL>
+</I><LI>Incorporated fourth round of patches from <A HREF="mailto:brezak@apollo.hp.com">John Brezak</A> for <B>Win95/NT</B> port. Added README.WIN32 file containing brief description and tcl/tk patches from John. </LI></UL>
+
+<P><HR></P>
+<H3>v2.7a36 <I>Wed Feb 7 14:39:06 PST 1996</H3>
+
+<UL>
+</I><LI>Changed to use new mode in meteor driver (METEOR_GEO_YUV_422) and allow even only fields to be captured under certain conditions. Added FRAME_CNTS debugging option. Thanks to <A HREF="mailto:james@miller.cs.uwm.edu">Jim Lowe</A>. </LI>
+<LI>Incorporated third round of patches from <A HREF="mailto:brezak@apollo.hp.com">John Brezak</A> for <B>Win95/NT</B> port. </LI></UL>
+
+<P><HR></P>
+<H3>v2.7a35 <I>Wed Feb 7 02:45:10 PST 1996</H3>
+
+<UL>
+</I><LI>Add missing file (load_stat.h) to distribution. </LI></UL>
+
+<P><HR></P>
+<H3>v2.7a34 <I>Tue Feb 6 14:41:34 PST 1996</H3>
+
+<UL>
+</I><LI>Incorporated second round of patches from <A HREF="mailto:brezak@apollo.hp.com">John Brezak</A> for <B>Win95/NT</B> port. </LI></UL>
+
+<P><HR></P>
+<H3>v2.7a33 <I>Tue Feb 6 02:59:53 PST 1996</H3>
+
+<UL>
+</I><LI>Bug fix from <A HREF="mailto:arichard@rp.csiro.au">Atony Richards</A> to fix run-away source allocation problem when receiving packets through the Fore ATM module. </LI>
+<LI>Addition of load_stat class and hooks to store decode and rendering timing information. This is to serve as an eventual basis for load adaptation. (<A HREF="mailto:kfall@ee.lbl.gov">Kevin Fall</A>) </LI>
+<LI>Integrated several bug fixes for 32-bit parallax capture from <A HREF="mailto:Tie.Liao@inria.fr">Tie Liao's</A>. <A NAME="rtph261bug"></LI>
+<LI>Implemented a transition strategy for the fact that v2.7 is currently incompatible with the RTP/H.261 payload format specification (the GOB and MB fields are swapped). To maintain backward compat, v2.7 will continue to generate the illegal format. The decoder in v2.7a33 and later can handle either format. (The decoder assumes the bug, then if its sees an out of range gob, reverts to the spec format.) We will fix the bug in v2.8. At this time, v2.7 decoders will still work (but hiccough on each new stream). </A></LI>
+<LI>Integrated <A HREF="mailto:brezak@apollo.hp.com">John Brezak's</A> port to <B>Win95/NT</B>! We haven't tested this code so it might be a few more versions before it stabilizes (or even compiles out of the box). </LI>
+<LI>Fixed nagging bug in window drawing code that caused bottom of border to be garbled on redraws triggered by expose events. </LI>
+<LI>Reverted to Motif-style menubutton bindings (undoes 2.7a17 change). The previous binding introduced a race (bug reported by many...) and was inconsistent with other Motif/tk apps. </LI>
+<LI>Added <A HREF="mailto:james@allmalt.cs.uwm.edu">Jim Lowe's</A>. video spigot grabber. Jim says: The spigot is an ISA video capture card with the phillips 7191 chip on it. It can do about 10 fps in 320x240 mode. </LI></UL>
+
+<P><HR></P>
+<H3>v2.7a32 <I>Mon Dec 11 21:40:08 PST 1995</H3>
+
+<UL>
+</I><LI>CIF grabber for VigraPix board was broken - it would grab two fields instead of one which resulted in a bizarre image. Reported by <A HREF="mailto:Hans.Mayer@gmd.de">Hans Mayer</A>. </LI>
+<LI>Allow user to set initial window geometry with a Vic.geometry X resource. </LI></UL>
+
+<P><HR></P>
+<H3>v2.7a31 <I>Mon Dec 4 11:35:29 PST 1995</H3>
+
+<UL>
+</I><LI>Fixed bug that caused exit on unknown font. Reported by <A HREF="mailto:Xander.Jansen@SURFnet.nl">Xander Jansen</A>. </LI>
+<LI>Fixed typo in encoder-h261.cc that prevented compilation on 32-bit little-endians. Reported by <A HREF="mailto:james@allmalt.cs.uwm.edu">Jim Lowe</A>. </LI></UL>
+
+<P><HR></P>
+<H3>v2.7a30 <I>Sun Dec 3 22:43:14 PST 1995</H3>
+
+<UL>
+</I><LI>Removed a bunch of unused variables thanks to <A HREF="mailto:arc@sgi.com">Andrew Cherenson</A>. (We need to start using <I>gcc -Wall</I> again...) </LI>
+<LI>Added misordered packet stat (that was present in vat-3). Change suggested by <A HREF="mailto:elson@aeolus.jpl.nasa.gov">Lee Elson</A>. </LI>
+<LI>Patched memory leak in grabber-plx.cc thanks to <A HREF="mailto:olson@mcs.anl.gov">Bob Olson</A>. </LI>
+<LI>Fixed bug where adaptive quantizer would sometimes get set to zero at high qualities (Q less than 5). Problem reported by <A HREF="mailto:lucia@univ-lyon1.fr">Lucia Gradinariu</A>. </LI>
+<LI>H.261 decoder was discarding high bit of quantizer in fragmented packets. This would produce awful quality &amp; horrible artifacts at Q greater than 10. </LI></UL>
+
+<P><HR></P>
+<H3>v2.7a29 <I>Mon Nov 13 21:50:51 PST 1995</H3>
+
+<UL>
+</I><LI>Fixed tcl run-time errors introduced by "still" capture device. Reported by <A HREF="mailto:meyer@network-services.uoregon.edu">David Meyer</A> and <A HREF="mailto:awjacks@dancer.ca.sandia.gov">Alden Jackson</A>. </LI>
+<LI>Fixed bugs in halftoner for mono displays. Changes from <A HREF="mailto:elan@cs.berkeley.edu">Elan Amir</A>. </LI>
+<LI>Fixed bug in JPEG decoder that caused core dump thanks to <A HREF="mailto:elan@cs.berkeley.edu">Elan Amir</A>. </LI>
+<LI>More fixes from <A HREF="mailto:arc@sgi.com">Andrew Cherenson</A> for compiling with SGI's C++ compiler. Also fixed bug that caused tcl run-time error when trying to "optimize colormap" when grayscale rendering active. </LI></UL>
+
+<P><HR></P>
+<H3>v2.7a28 <I>Sun Nov 12 00:50:15 PST 1995</H3>
+
+<UL>
+</I><LI>Fixed bug that prevented H.261 format button from being enabled under XIL capture. Problem reported by <A HREF="mailto:meyer@phloem.uoregon.edu">David Meyer</A>. </LI>
+<LI>Added support transmitting a static JPEG image from a file. Contributed by <A HREF="mailto:olson@mcs.anl.gov">Bob Olson</A>. You need to set <I>Vic.stillGrabber</I> to <I>true</I> in order to get a <I>still</I> device in the Device menu-button. When you select this device, a panel will be inserted in the control menu to let you specify the file anme for an RTP/JPEG type-0 frame. This crude interface is currently just for testing. </LI>
+<LI>Fixed compilation problems with SGI's C++ compiler. Reported by <A HREF="mailto:arc@sgi.com">Andrew Cherenson</A>. </LI>
+<LI>Kevin Fall added support for ``fast Intra-H.261'' encoding using JPEG hardware. The idea is to use a JPEG board as a DCT engine by Huffman decoding each JPEG MCU. We then carry out conditional replenishment in the DCT domain and hand the frame buffer of DCTs to a modified H.261 encoder. The trick is to convert 4:2:2 color decimated JPEG into 4:1:1. This technology is described in our <A HREF="http://www.cs.berkeley.edu/~elan/articles/pub/vgw.ps">ACM Multimedia paper</A>. (By default, this is currently disabled. Enable it by setting <I>Vic.useJPEGforH261</I> to true.) </LI>
+<LI>Fixed problem with object compatibility between distributed version of grabber-rtvc.o and newer versions of gcc. Workaround suggested by <A HREF="mailto:Toerless.Eckert@Informatik.Uni-Erlangen.de">Toerless Eckert</A>. </LI>
+<LI>Fixed bug with PAL/CIF input, reported by several testers. 16 pixels on either side of the image was incorrectly cropped. </LI>
+<LI>Added support for the Matrox Meteor Video adaptor, a PCI-based capture board, thanks to <A HREF="mailto:james@allmalt.cs.uwm.edu">Jim Lowe</A>. A driver is available (in source form) for FreeBSD. See <A HREF="ftp://ftp.cs.uwm.edu/pub/FreeBSD/">ftp://ftp.cs.uwm.edu/pub/FreeBSD/meteor*</A>. </LI>
+<LI>Fixed bogus error message when specifying "-n atm" with a vic binary that doesn't have compiled-in ATM support. Bug reported by <A HREF="mailto:mark@taku.rc.hpy.f">Markus Backstrom</A>. </LI>
+<LI>Fixed bug that caused last_sr field in RTCP sender reports to be miscomputed. Reported by <A HREF="mailto:stewart@hibp7.ecse.rpi.edu">Paul Stewart</A>. </LI>
+<LI>Fixed bug where SDES "note" attribute was not displayed next to thumbnail as intended. Reported by <A HREF="mailto:Craig.M.Votava@att.com">Craig Votava</A>. </LI>
+<LI>Fixed rate control stats (again) in transmission panel, which were being updated incorrectly. </LI></UL>
+
+<P><HR></P>
+<H3>v2.7a27 <I>Tue Oct 17 02:49:29 PDT 1995</H3>
+
+<UL>
+</I><LI>Forgot to re-configure solaris source directory, so the a26 solaris binary was bogus. Re-released a26 as a27 for solaris. (There is no change in the any source code between a26 and a27, and thus no reason to update any of the other binaries.) </LI></UL>
+
+<P><HR></P>
+<H3>v2.7a26 <I>Mon Oct 16 23:23:09 PDT 1995</H3>
+
+<UL>
+</I><LI>Fixed bug that caused bogus srcid generation on alpha (DEC's atoi saturates it's result to 0x7fffffff so we use strtoul instead). </LI>
+<LI>Tried to make setting of q factor in cosmo grabber more robust. </LI>
+<LI>Fixed bug in external device menu button. Instead of building selection list when window is created, build it when menu-button is invoked so user gets an up to date list. </LI>
+<LI>Fixed bug in jpeg decoder that caused core dumps when changing the quality parameter. </LI>
+<LI>Added more validity checks to conference bus messages. </LI>
+<LI>Fixed bugs in compositor (which the title maker uses) introduced by changes to CR scheme. </LI>
+<LI>Fixed rate control stats in transmission panel, which weren't being updated. </LI>
+<LI>Added missing files to source distribution. </LI>
+<LI>Fixed bug that caused core dump in nv-compat mode. </LI>
+<LI>[internal]Factored out media-specific code from session.cc. Ivs, nv, and vat session handlers are all in separate modules now. Created separate video and audio session sub-classes since audio/video RTP payload types are not disjoint. </LI>
+<LI>Changed multicast address of Conference Buses. This avoids compatibility problems with the old binary protocol, but has the disadvantage that voice-switched windows need vat-4.0 or later. </LI></UL>
+
+<P><HR></P>
+<H3>v2.7a25 <I>Sat Oct 14 03:38:11 PDT 1995</H3>
+
+<UL>
+</I><LI>Change algorithm that transforms a text string into an encryption key. We now use an md5 hash and the algorithm/key syntax suggested by <A HREF="mailto:M.Handley@cs.ucl.ac.uk">Mark Handley</A>. For example, DES1/secret-key implies the standard DES algorithm with cipher-block chaining with key "secret-key" while DES3/secret-key implies triple DES. Added "DULL" encryption module for test purposes and as an example for integrating modules. </LI>
+<LI>Fixed md5 header file (global.h) to set 32-bit typedef appropriately for alpha; otherwise, it doesn't work correctly (and encryption keys are synthesized incorrectly). </LI>
+<LI>[internal] Merged the Transmitter and SessionManager objects since packet transmission depends on the session type. </LI>
+<LI>Fixed bug where parallax capture window was iconified while the grabber was still able to send a frame. Reported by <A HREF="mailto:pallas@Apple.COM">Joe Pallas</A>. </LI>
+<LI>Merged patches from <A HREF="mailto:brezak@apollo.hp.com">John Brezak</A> to compile again under HPUX. </LI>
+<LI>Added <A HREF="mailto:frederick@parc.xerox.com">Ron Frederick's</A> DCT extension to the nv format, which gives improved compression at higher run-time cost. According to Ron, this extension will be in the forthcoming RTPv2 version of nv. </LI>
+<LI>Added check for *rtpName and *rtpEmail resources at start-up. If they don't exist, a dialog box queries the user and stores the new values in ~/.RTPdefaults. This seems like a more robust (albeit annoying) approach compared to the heuristics of used to find a fully qualified domain name. </LI>
+<LI>Changed thumbnail to relief to ridge and highlight border when mouse enters window to indicate that a button-click will do something. Suggested by <A HREF="mailto:elan@cs.berkeley.edu">Elan Amir</A>. </LI>
+<LI>Made many minor changes in order to share code between vic and vat-4. </LI>
+<LI>Added a frame grabber for the SlicVideo SBus adaptor. Contributed by <A HREF="mailto:Toerless.Eckert@Informatik.Uni-Erlangen.de">Toerless Eckert</A>. </LI>
+<LI>Added a new mechanism to present grabber specific controls in the main menu. If a grabber wants such controls, the corresponding tcl procedure build.grabberName should exist (and build the UI). grabberName is the device "nickname", e.g., build.slicvideo exists to build the SlicVideo controls. When the user switches devices, the corresponding control panel is automatically removed and inserted by tcl support code. This extension suggested by <A HREF="mailto:Toerless.Eckert@Informatik.Uni-Erlangen.de">Toerless Eckert</A>, <A HREF="mailto:allas@Apple.COM">Joe Pallas</A>, and others. </LI>
+<LI>[internal] Changed SessionManager::chkdup() to match sources who never sent data so that sites that exit abnormally don't build up source table. </LI>
+<LI>Fixed some bugs in the conditional replenishment algorithm and changed implementation to make it more intuitive. Encoders no longer alter the contents of the cr vector. Also, extended the old model from two types of blocks to three (motion, aged, and background), with three levels of quality. </LI>
+<LI>Enhanced H.261 encoder to do adaptive quantization. High motion areas are sent at low-quality (for higher update rate), ``aged'' blocks are sent at medium-quality, and background blocks are sent slowly at very high quality. </LI></UL>
+
+<P><HR></P>
+<H3>v2.7a24 <I>Wed Oct 4 22:07:42 PDT 1995</H3>
+
+<UL>
+</I><LI>Changed behavior of user interface when RTP message attribute is present. Instead of highlighting info button, replace the second line of the thumbnail description with the message. Revert to CNAME info when message text goes away. Suggested by <A HREF="mailto:Craig.M.Votava@att.com">Craig Votava</A>. </LI>
+<LI>Fixed cosmo grabber to search through hardware inventory list and disable selector when no device is found. Otherwise, CL calls caused problems. Reported by <A HREF="mailto:Craig.M.Votava@att.com">Craig Votava</A> and <A HREF="mailto:hoofar@sgi.com">Hoofar Razavi</A>. Hoofar suggested the fix (which was to use SGI's getinvent() system call and explicitly look for a cosmo board). </LI>
+<LI>Changed -lXext to appear before -lXvid on the link line because parallax client library defines an XShmPutImage that doens't seem to work. </LI>
+<LI>[internal] Fixed CaptureWindow class to work in the absence of shared memory support. Changed sense of xshm switch from NOSHM to USE_SHM because double negative was confusing. </LI>
+<LI>More fixes to configure search for X support thanks to Joe Pallas (Pallas@Apple.COM). </LI>
+<LI>Fixed race in window resize code. Reported by Bob Olson (olson@mcs.anl.gov). </LI>
+<LI>Use Network::reset() hack under AIX. </LI></UL>
+
+<P><HR></P>
+<H3>v2.7a23 <I>Tue Oct 3 02:29:36 PDT 1995</H3>
+
+<UL>
+</I><LI>Fixed bug that caused first value of a plotted statistic to be way too large so that the autoscaling left all the other data unreadable. </LI>
+<LI>[internal] Don't include <I>osfcn.h</I> anywhere. </LI>
+<LI>Added PAL selectors to window size menu. Suggested by Toerless Eckert (Toerless.Eckert@Informatik.Uni-Erlangen.de). </LI>
+<LI>[internal] Factored out code shared among grabbers for capturing input video to an onscreen window. In the new model, tcl creates the capture window and installs it in the grabber. Revamped parallax and xv grabbers to use this approach. Added supported to xv grabber for CIF and 411 capture. </LI>
+<LI>Improved configure search scheme for locating X libraries and includes. Thanks to input from Toerless Eckert (Toerless.Eckert@Informatik.Uni-Erlangen.de). </LI>
+<LI>[internal] Added RGB_Converter class to be shared among grabbers that capture from the frame buffer in RGB format and convert to YUV. </LI>
+<LI>[internal] Removed grabber-tx.cc from distribution since it's been superseded by grabber-xv.cc. </LI>
+<LI>Finished implementing rtvc grabber support for listing multiple sunvideo devices in the device list as RTVC-0, RTVC-1, etc. </LI>
+<LI>Merged Bob Olson's patches for shared memory support under AIX. Fix additional problems with compilation under AIX 4.1.3 (as opposed to AIX 3). Tweaked the xv grabber for AIX 4.1.3 and to compile without shared memory. </LI></UL>
+
+<P><HR></P>
+<H3>v2.7a22 <I>Sat Sep 30 12:16:21 PDT 1995</H3>
+
+<UL>
+</I><LI>Fixed bug where failure to connect to jvdriver on decode-side resulted in a core dump. </LI>
+<LI>Added Vic.sdesList so you can specify which RTP SDES items you want to see in the info window. Default is "cname tool email mesg". Also, display srcid in the info window. </LI>
+<LI>[internal] Added tcl hook so that decoder can assert that stream parameters have changed in a way that might affect the rendering modules. For example, the RTP/JPEG type might change causing the output format to change from YUV-422 to YUV-411. In this case, we might have disable hardware decoding (because the hardware doesn't support 411) or reallocate the software renderers because they depend on the decimation factor. </LI>
+<LI>[internal] Changed interface between vic and jpeg/h.261 decoders with respect to bookkeeping blocks that changed. Now pass in a table that is filled in by the decoder, instead of using "render" call backs. </LI>
+<LI>Fixed bugs with -A. "-A rtp" didn't work; added back "-A vic" for backward compatibility. Reported by Toerless Eckert (Toerless.Eckert@Informatik.Uni-Erlangen). </LI>
+<LI>Added Use-Hardware button (in display panel) to control whether we use hardware decoding when possible. Created Vic.useHardwareDecode resource to set initial disposition of Use-Hardware button. </LI>
+<LI>Removed Vic.sunvideoDevice X resource and instead look for all available devices at startup so they are selectable from user-interface. (Default can be selected with Vic.defaultDevice, e.g., by setting it to RTVC-1.) </LI>
+<LI>Renamed "Decoder" panel "Display" and improved layout. </LI></UL>
+
+<P><HR></P>
+<H3>v2.7a21 <I>Thu Sep 28 00:28:53 PDT 1995</H3>
+
+<UL>
+</I><LI>Added support for IBM's Ultimedia Video I/O Adaptor under AIX, thanks to Bob Olson (olson@mcs.anl.gov). </LI>
+<LI>[internal] Fixed adios() so vic gracefully exists when interrupted. </LI>
+<LI>Better handling of -with-* args to configure and a few more fixes for AIX from Bob Olson (olson@mcs.anl.gov). </LI>
+<LI>Fixed bugs introduced by last round of bug fixes to encryption key manipulations. Reported by Craig Votava (Craig.M.Votava@att.com). </LI>
+<LI>[internal] Changed grabber/encoder API so that we can insert arbitrary processing modules between the capture device and the encoder. We now pass around frames as typed objects to the consume() method of generic Module class. Frames are self-describing so we no longer need the control API (e.g., setparams() and size()) between the grabber and encoder. This architecture arose from discussions with Kevin Fall (kfall@ee.lbl.gov). </LI>
+<LI>[internal] Changed decoder/renderer API as above. </LI></UL>
+
+<P><HR></P>
+<H3>v2.7a20 <I>Tue Sep 26 22:44:09 PDT 1995</H3>
+
+<UL>
+</I><LI>Fixed bugs with -K and -t (for ttl 16) reported by Craig Votava (Craig.M.Votava@att.com). </LI>
+<LI>Changes to configure. Can now specify paths to tcl,tk,blt source trees using -with-tcl=pathname etc. Always use -g with gcc. </LI>
+<LI>Ported to AIX. Patches contributed by Bob Olson (olson@mcs.anl.gov). Bob also supplied patches to bring linux support back in line. </LI>
+<LI>Fixed bug in net-ip.cc. IPNetwork::open() was returning garbage. Fix from Bob Olson (olson@mcs.anl.gov). </LI></UL>
+
+<P><HR></P>
+<H3>v2.7a19 <I>Tue Sep 26 14:44:19 PDT 1995</H3>
+
+<UL>
+</I><LI>Fixed bug that caused core dump in send_report() when device released. </LI>
+<LI>Fixed bug in parallax grabber introduced with changes from v2.7a14 to v2.7a17. Thanks to Jason Lee (Jason_Lee@lbl.gov). </LI>
+<LI>Added nv's halftoner to support monochrome displays. Elan Amir (elan@cs.berkeley.edu) ported the nv code to vic. </LI>
+<LI>Clarified warning message printed when *rtpEmail resource not defined. </LI>
+<LI>Disabled bvc button until we get the bvc codec in better shape. </LI>
+<LI>Changed cosmo and IndigoVideo grabbers to probe the device at startup and disable their selector in the user-interface if not available. Bug fix from Hoofar Razavi (hoofar@sgi.com). </LI>
+<LI>Fixed bug with switching capture devices when a device was already opened. Fix from Bob Olson (olson@mcs.anl.gov). </LI></UL>
+
+<P><HR></P>
+<H3>v2.7a17 <I>Sep 25 09:39 PST 1995</H3>
+
+<UL>
+</I><LI>Added support for the Parallax jpeg adaptor (both JPEG and standard capture are supported). Contributed independently by Joe Pallas (Pallas@Apple.COM) and Sai Rathnam (rathnam@cse.ogi.edu). </LI>
+<LI>Added a "Message" form to the control window so that user's can leave a descriptive message on the state of the transmission (for example, "out of office" or "meeting resumes at 2pm"). When the message is present in a stream, the corresponding "info" button is highlighted, which invokes the info window containing the text. (These messages use RTPv2 TXT SDES items.) </LI>
+<LI>Added Vic.sunvideoDevice X resource to indicate an alternative device to use. Set it to a small integer n to tell vic to use device /dev/rtvc{n} and /dev/rtvcctl{n}. This change suggested by Hanan Herzog. </LI>
+<LI>Added support for sending decoded video to an external (analog) output port under SGI VL (for example, SGI's galileo board has a composite output jack). </LI>
+<LI>Changed the default format to H.261. </LI>
+<LI>Added encryption hooks. You need to obtain a DES library elsewhere in order to build a vic with encryption support. </LI>
+<LI>Improved statistics displays with a legend and the ability to plot (via a stripchart) multiple statistics simulataneously. A stripchart is created in a separate window by clicking on the name of the desired statistic. Added an "info" window without the clutter of all the stats. </LI>
+<LI>Added a "Decoder panel" to the control menu with several controls for manipulating vic's decode-side functionality. You can now interactively select the dithering algorithm on an 8-bit display to dynamically change the number of colors used by vic. For example, if you want to run a color-intensive application but leave vic up, you can select the "Gray" dithering option, run your application and when done, revert vic back to color dithering. You can also adjust the gamma factor. If you set the gamma factor to 1.0 and select and "ordered dither", vic will use the standard 5x5x5 color cube. Since other applications use this same cube (e.g., wb, gs, and nv), you are less likely to run out of colors because of colormap conflicts. These controls are disabled when your running on an 24-bit or mono display. With these changes, you no longer specify the dithering algorithm using Vic.colorModel. Instead, you specify a visual with Vic.visual (i.e., truecolor, pseudocolor, etc) or with -V or -Xvisual (e.g., -Xvisual=truecolor). For 8-bit pseudcolor visuals, the default dithering algorithm is specified with Vic.dither (or -c, or -Xdither), but can be overridden in the user-interface (as explained above). The visual cannot be changed after startup. </LI>
+<LI>Added a "Save-CPU" toggle-button under the viewing-window "Modes" pulldown menu, which reduces the update rate of the window. This allows you to open a local looped back window for monitoring the outbound transmission without incurring the cost of rendering every frame in real-time. </LI>
+<LI>Changed "for" statement conventions to adhere to the proposed ANSI standard change which re-defines the lexical scope semantics of the initializer statement as described in http://www.cygnus.com/~mrs/wp-draft/stmt.html#stmt.for In order to be compatible with both the old and new semantics, we have changed all instances of for (int i = ... ) ... use(i); to int i; for (i = ... ) ... use(i); </LI>
+<LI>Ported to tk-4.0. You'll need BLT-1.8 to build vic from source. An unofficial BLT-1.8 is available from http://www.cs.uoregon.edu/jhobbs/. </LI>
+<LI>Merged changes from Michael Speer (speer@eng.sun.com) to compile with Sun's C++ compiler. </LI>
+<LI>Deleted -r option (for RTIP) and added more generic -n option to specify the communications protocol underneath RTP. "ip" (for IP or IP Multicast), "rtip" (for Tenet RTIP), and "atm" (for the Fore SPANS ATM API) are supported. </LI>
+<LI>Added Vic.defaultDevice X resource to specify initial selection of device when multiple devices are present. </LI>
+<LI>[internal] Migrated voice-activated switcher code from C++ to tcl. </LI>
+<LI>Added code to randomize the RTP initial sequence number and media timestamps to foil plaintext attacks in case encryption is used (as specified in the RTP spec). Choose a heuristic random seed using an MD5 hash as suggested in the spec. </LI>
+<LI>Eliminated support of unidirectional RTIP connections (i.e., connections are now always esatblished in both directions). </LI>
+<LI>Changed VL module to query available devices and list each device separately in the control panel. Also, added code to query the available input ports and dynamically configure the port menu accordingly. </LI>
+<LI>Changed RTP presentation timestamps to the 90Khz format agreed upon at the July 1995 Stockholm IETF. </LI>
+<LI>[internal] Fixed bug where a garbage video stream (e.g., from an encryped session) could cause rendering code to fault. Problem is that rendering code assumes (possibly scaled) output image width is an integral multiple of four (which is true for the range of supported scales and the geometries of standard video streams). Since this is a pathological condition, the fix is to simply disable rendering of such streams thereby avoiding the software fault. In theory, non-standard video sources (like X screen captures) could fall into this category and hence appear as a "gray window". This problem reported by Ian Wakeman (I.Wakeman@cs.ucl.ac.uk). </LI>
+<LI>Added support for point-to-point ATM transport via Fore's API, thanks to Anastasio Andrea Scalisi (scalisi@mailer.cefriel.it). In the process of integrating this code, reworked network object support so that new network abstractions can be more easily added. Added -n flag to specify network type. For example, "-n ip", "-n atm", and "-n rtip" are currently supported (ip is the default). </LI>
+<LI>Added hack to be able to utilize two DEC JPEG boards simultaneously. The environment variable JVIN_PORT specifies the jvdriver port number to connect to for the capture board. The decode side uses the default port. This change contributed by Lance Berc (berc@pa.dec.com). </LI>
+<LI>Deal gracefully with shared memory allocation failures. Added code to print out an error message and revert to non-shared buffers. </LI>
+<LI>Fixed bug in voice-switched windows where a speaker without a video stream would cause the window to be switched to the first thumbnail. </LI>
+<LI>Added validity check for new packet stream. Only accept a new source when we've seen two in-sequence packets; suggested by Ian Wakeman (I.Wakeman@cs.ucl.ac.uk). This check prevents vic from allocating an unbounded number of demultiplexing data structures when confronted by a stream of garbage (e.g., such garbage results when listening to an encrypted session without the key). </LI>
+<LI>Changed reception reports loss semantics to conform to 3/21/95 RTP draft (draft-ietf-avt-rtp-07.txt) (in particular, the extended highest seqno received field, the loss fraction, and the cumulative loss fields of the reception report were updated). </LI>
+<LI>Added check for duplicate packets in common receive path so that they are now reported in the stats window for all compression formats. </LI>
+<LI>Added support for SGI Cosmo JPEG board. Because this board was designed for non-linear video editing, it has large latencies that preclude good interactive operation. </LI>
+<LI>[internal] Moved code to allocate framer buffers etc., which is shared among all the grabber subclasses, into the grabber base class. Changed the way grabbers specify their attributes; they simply return a nested tcl list. Reorganized all tcl-style objects (i.e., widgets that implement tcl commands) so that they derive from a shared TclObject base class. Support hardware assisted decoding via new Assistor class (instead of having separate Decoder objects). Assistors are analogous to Renderers; the latter support software decoding. Revert to model where there is only one Decoder object per incoming stream. </LI>
+<LI>[internal] Reworked the way encoders and grabbers are allocated to make it easier to add support for the encode-side of a new format. Suggested by Joe Pallas (Pallas@Apple.COM) </LI>
+<LI>Fixed bug that caused crash using DEC j300 hardware JPEG decoder. Problem was that default Vic.jvColors was not defined. Reported by Stefan Savage (savage@cs.washington.edu). </LI>
+<LI>Changed video capture modules to embed NTSC sized images into CIF sized frames with a gray border instead of using ugly scaling. PAL is still handled the same way (i.e., 16 pixels from each line are discarded). </LI>
+<LI>Changed default position on frame rate slider from two to eight. </LI>
+<LI>Added support for native size 4:1:1 YUV grabbers (i.e., not just CIF dimensions). </LI>
+<LI>Added support for the VigraPix frame grabber. Thanks to Steve Haehnichen (steve@vigra.com) and Vigra for the donation of a board. </LI>
+<LI>[internal] Changed CR to operate on 16x16 instead of 8x8 blocks. </LI>
+<LI>Changed perceptually weighted H.261 quantization. Previous scheme that folded the weighting in with the DCT quantization was deficient because in addition to increasing the dead zone, it threw away bits unecessarily (and the loss of these bits was not captured by the h.261 entropy coder). Instead, we now increase the dead zone using perceptual weighting after we do quantization. </LI>
+<LI>Fixed bug in conditional replenishment algorithm. CR decision was based solely on the first 8 pixels of every block, so motion of small items (like pointers) left artifacts behind. Fix was to advanced CR scanline pointer (as intended in the algorithm). </LI>
+<LI>Updated H.261 framing to conform to July 1995 Internet Draft "RTP payload format for H.261 video streams" (draft-ietf-avt-h261-01.txt). Maintained backward compatibility with ivs encoder by using the RTP version number to imply the old encapsulation format. Once ivs switches to RTPv2, we can abandon the GOB reassembly code. </LI>
+<LI>Patched memory leak in nv encoder. Thanks to Bernd Lamparter (lampart@ICSI.Berkeley.EDU) and Wieland Holfelder (whd@ICSI.Berkeley.EDU). </LI>
+<LI>Fixed bug where checkXshm was not detaching the test shared-segment in the X server. The X server could see two XShmAttach's with the same shmid (one readonly the other read/write), and the prior one becomes invalid. Bug fix from Srinivasan Seshan (ss@cs.berkeley.edu). </LI>
+<LI>Added check for session packets arriving on data port. This should eliminate the gray windows with fmt-0x1 and fmt-0x0 as the media type. </LI>
+<LI>Fixed bug where source sequence number was reset to 0 when changing the compression format. This would cause receivers to reset their packet counts, which in turn, caused inconsistent reception reports. Problem reported by Paul Stewart (stewart@hibp6.ecse.rpi.edu). </LI>
+<LI>Shared memory with the X server now works under BSD/OS 2.0. Unfortunately, the BSD/OS 2.0 X server is not compiled with the XShm extension. You might ask Srinivasan Seshan (ss@cs.berkeley.edu) for a pre-compiled XFree86 server, if you don't feel like building one from scratch. </LI>
+<LI>Fixed session message timestamps to conform to NTP epoch instead of unix 1970 epoch. Bug reported by Bernd Deffner (deffner@fokus.gmd.de). </LI>
+<LI>[internal] Fixed bug where rtpv2 source tcl-methods were derived from the RTP SSRC. This caused numerous problems when sources would come and go (or when SSRC's collided, which is relatively common with the heuristic to generate them in rtpv1 compat mode). </LI>
+<LI>Changed semantics of -u. File argument to -u is sourced after the built-in tcl script. Previously, -u completely overrided built-in script. </LI>
+<LI>Added code to source $HOME/.vic.tcl if it exists. This file is sourced after the built-in tcl script, but before the file argument to -i. Suggestion from Bill Fenner (fenner@parc.xerox.com). </LI>
+<LI>[internal] adaptive load rendering </LI>
+<LI>Fixed several bugs in RTCP packets. </LI>
+<LI>[internal] Made it easier to add new decoders. A new format can be supported without having to change any existing code. Design change suggested by Joe Pallas (Pallas@Apple.COM). </LI>
+<LI>[internal] Established convention that all YUV image buffers are contiguous so that chroma offsets can be computed where needed (and only a single pointer need be maintained). </LI>
+<LI>[internal] Reimplemented switcher architecture in tcl and created generic Conference Bus object. </LI>
+<LI>Changed semantics of -u option so that file argument is sourced in addition to (rather than in place of) the built in tcl code. </LI>
+<LI>Incorporated Garrett Wollman's (wollman@lcs.mit.edu) patches for FreeBSD. </LI>
+<LI>Fixed some problems with the VL grabber. Added PAL CIF support and code to choose from set of allowable frame rates (frame rate problem reported by many - thanks). Deleted vlSelectEvents call. Fixes from Andrew Cherenson (arc@sgi.com). </LI>
+<LI>Converted configuration scheme to use GNU autoconf. If you encounter problems running ./configure, please see if you can fix things by modifying configure.in and running autoconf (avaialable in ftp://prep.ai.mit.edu/pub/gnu/autoconf*). Then, send us your fixes so vic's configure script will work out of the box for you in the future. </LI>
+<LI>Changed binding on pull-down menu buttons so that you can click on button a second time to make the menu go away. This change suggested by Pat Parseghian (pep@research.att.com). </LI>
+<LI>Fixed xil grabber to conform to Solaris-2.4 API. Problem reported by David Meyer (meyer@network-services.uoregon.edu) and Michael Mealling (Michael.Mealling@oit.gatech.edu). </LI>
+<LI>Changed Vic.defaultRate to Vic.framerate to make less ambiguous, and fixed explanation in man page, which was bogus. Reported by Pat Parseghian (pep@research.att.com). </LI>
+<LI>Fixed bug with default format (it was never used). Reported by Pat Parseghian (pep@research.att.com). </LI>
+<LI>Fixed bug where color button would get out of sync with actual color disposition when changing encoding formats. Reported by Pat Parseghian (pep@research.att.com). </LI>
+<LI>Bring IndigoVideo module up to date. Changes from Andrew Cherenson (arc@sgi.com). </LI>
+<LI>Ported to Linux, thanks to patches from Vesa Ruokonen (Vesa.Ruokonen@lut.fi). v2.6beta Mon Dec 5 00:26:42 PST 1994 </LI>
+<LI>Changed VIC.SD.TCL script to use ivs (instead of vic in ivs compat mode) by default, since ivs' rate control scheme depends on feedback reports that vic does not generate. </LI>
+<LI>Made H.261 decoder more robust to packet loss and reordering. Problem reported by terje.vernly@usit.uio.no. </LI>
+<LI>Upgrade release status from ALPHA to BETA. </LI>
+<LI>Incorporated John Brezak's (brezak@apollo.hp.com) changes to support generic Xvideo devices. He says: </LI>
+
+<UL>
+<LI>You need a fixed libXv.a (get the source from ftp.x.org and apply patch in grabber-xv.cc) </LI>
+<LI>Haven't implemented cif_grabber(). Maybe next week. </LI>
+<LI>There are 2 config options - XV_PSEUDO8 and XV_USES_XSHM . XV_PSEUDO8 is for allowing an 8bit visual to be used to upply a capture window for a 24bit image. HP does this. XV_USES_XSHM is for an Xv extension that can use the SHM versions of image operations. Parallax currently doesn't support this on HP. </LI></UL>
+
+<LI>Incorporated Greg Earle's (earle@isolar.Tujunga.CA.US) and Paul Kranenburg's (pk@cs.few.eur.nl) (independent) patches for NetBSD/sparc. </LI>
+<LI>Fixed bug that caused core dump when deleting local thumbnail. Report by George Michaelson (G.Michaelson@cc.uq.oz.au). </LI>
+<LI>Fixed "can't unset name_line" bug. Reported by Steve Casner (casner@isi.edu) and others. </LI>
+<LI>Fixed bug that caused video capture to hang when switching input ports with SunVideo. Reported by speer@eng.sun.com (Michael Speer). </LI>
+<LI>Fixed VIC.SD.TCL to generated -I options correctly for voice-switched operation. Bug report and fix from a61@nikhef.nl (Herman van Dompseler). </LI>
+<LI>Arranged for viewing windows to be remapped without user placement at the same location and size when dismissed (suggestion from George Michaelson). </LI>
+<LI>Fix bug that unecessarily caused decoder data structures to be created and destroyed when initializing a new stream (fix from Bernd Lamparter (lampart@ICSI.Berkeley.EDU)). </LI>
+<LI>Fix bug that caused error message when invoking release button at wrong time. Reported by a61@nikhef.nl (Herman van Dompseler). </LI>
+<LI>Fix bug that caused error message when invoking lock button at wrong time. Reported by Dan Molinelli (moline@gumby.sp.TRW.COM) and several others. </LI></UL>
+
+<P><HR></P>
+<H3>v2.5alpha <I>Wed Nov 30 01:41:55 PST 1994</H3>
+
+<UL>
+</I><LI>sd.tcl script was wrong - vj used a "switch" construct in a "case" command which doesn't work. also forgot to say "global vic" before using $vic. </LI>
+<LI>wasn't supplying correct timestamp in session messages in nv compat mode so nv-3.3 would occasionally 'lock up' ignoring either session or data packets. (bug reported by George Michaelson) </LI>
+<LI>made first cut at support for 32-bit visuals (e.g., parallax card). (problem reported by Steve Casner) </LI>
+<LI>fix long-standing bug in h261 decoding: were not swapping front &amp; back buffers if only leftmost mba of gob was rendered. (problem reported by Graeme Wood) </LI>
+<LI>was never using shared memory to talk to x server because of stupid initialization error. (bug &amp; fix suggested by Greg Earle) </LI>
+<LI>don't drop core in strlen() if we're given a video format we don't know about. </LI></UL>
+
+<P><HR></P>
+<H3>v2.4alpha (no v2.3) <I>Tue Nov 29 04:53:15 PST 1994</H3>
+<P>(First public release)</I> </P>
+
+<UL>
+<LI>Added -P command line argument to force use of private colormap. </LI>
+<LI>Added the -X command line argument. "-X resource=value" will override an arbitrary vic resource on the command-line. Removed -e and -p options. </LI>
+<LI>[internal] Reworked packet demultiplexing code so that it is independent of vic, eventually allowing it to be shared by other applications (i.e., vat, wb, etc). The motivation is to share as much code as possible with vb. </LI>
+<LI>Fixed usage message. </LI>
+<LI>Added support for -o, which dumps locally sourced video to an RTP clip file. </LI>
+<LI>Added Vic.filterGain resource for controlling time constant on bit-rate, frame-rate, and loss estimators. Default is 0.25. </LI>
+<LI>Changed menu popup to have generic layout indepedent of capture device. Portions of the interface are enabled or disabled by querying the device to see what features are supported. </LI>
+<LI>Fixed H.261 encoder to do GOB-oriented rather than frame-oriented fragmentation. </LI>
+<LI>[internal] Added traffic smoothing so packets are evenly spaced across a frame time. This adds latency but is necessary given the current constraints of Internet routers. </LI>
+<LI>[internal] Do second cut on rtp/jpeg reassembly code. This version does a reasonable job with misordered packets etc. </LI>
+<LI>[internal] Reorganized grabber/encoder architecture so that conditional replenishment algorithm is carried out by the grabber. This saves bus bandwidth because blocks that are to be suppressed need not be copied from the grabber specific format to the format expected by vic. If the capture device uses programmed I/O, there is little advantage but no disadvantage. You might think this would complicate the grabbers, but most of the work is carried out by a generic macro. </LI>
+<LI>[internal] Converted bstrings routines to posix equivalents. </LI>
+<LI>Changed the polarity of -H, which nows means use hardware decoding if available. The default is not to use hardware assist (see the man page for an explanation). </LI>
+<LI>Added support for error-diffusion dithering, thanks to Elan Amir. Error diffusion dithering is now the default rendering technique on 8-bit color displays. You can revert to the ordered dithering technique (similar to that used in nv) by specifiying the "od" color model with the Vic.colorModel resource or the -c command option. Error-diffusion runs somewhat slower than the ordered-dither but the quality is higher. Also added support for computing statistically optimized colormaps using Heckbert's median cut algorithm. You can invoke the colormap optimization from the "Colors" panel in the control menu. This causes vic to compute a color histogram across all unmuted video streams. The histogram is then passed to a separate program (vic_colord) to carry out the median cut. We fork off a separate process because the computation is CPU intensive and will block the user-interface if not run as a separate thread. </LI>
+<LI>Changed 24-bit display code to use full 24-bit precision instead of a 16-bit lookup table (thanks to Van Jacobson). </LI>
+<LI>[internal] Reworked the way windows are sync'd to the frame buffer. </LI>
+<LI>Use private colormap when default colormap is too full. </LI>
+<LI>Compile with gcc-2.6.0 under DEC OSF. DEC's C++ compiler is no longer supported. </LI>
+<LI>[internal] Changed ppmtolut and color-lut.cc to use convention that grays are explicit in the stored color map. </LI>
+<LI>Added support for simple INTRA-only H.261 encoding. </LI>
+<LI>[internal] Major changes to DCT code and software decoders for substantial speedups. Employ Arai, Agui, and Nakajmia's 8pt 1D DCT, from Fig. 4-8 Pennebaker &amp; Mitchell (i.e., the pink JPEG book). By computing scaled DCTs on each of the column and row passes and folding the descaling step with quantization step, only five multiplies per 8-pt DCT are required, resulting in a 90-multiply 8x8 DCT. Thanks to Martin Vetterli for explaining how to do this. </LI>
+<LI>Fixed bug that caused core dump if there is no USER enviroment variable defined (and Vic.sessionName is not defined). Some shells don't define USER (i.e., ksh under solaris). </LI>
+<LI>[internal] Reworked speedups in software jpeg decoder. Instead of caching mappings between huffman strings and decoded blocks (which required an infeasibly huge hash table for good quality video), we reduce load by skipping over any block that is sufficiently similar to the same block that's currently displayed. The similarity comparison can be carried out cheaply in the quantized, DCT domain. </LI>
+<LI>Change thumbnail frame rate to report decoding frame rate when not disabled and receiving frame rate when disabled. The decoding rate can be lower than the receiving rate if the local cpu can't keep up with the source, or if there are no active windows (besides the thumbnail) which means we don't have to decode every frame. </LI>
+<LI>Modified thumbnail/info window so that sites are always sorted in lexicographic order (by rtp NAME attribute). </LI>
+<LI>Modified thumbnail/info window to tile according to the number of columns specified in the "Tile..." pulldown in the Menu window. The default value is 1, and can be overridden with the the Vic.tile resource. You can also type a number into the thumbnail window as a shortcut. </LI>
+<LI>If 75dpi fonts aren't available, change all fonts to wildcard the pitch. </LI>
+<LI>Sourcing video from clip files is no longer supported. This functionality is now provided by rtp_play. </LI>
+<LI>Added source rate statistics to transmission panel in menu window. This way you can monitor how fast you're sending even if the loopback decoding can't keep up. </LI>
+<LI>Added Vic.defaultFormat resource to set the default video transmission format. If not specified the default is determined by your capture hardware (for example, jpeg is default if you have jpeg hardware ). </LI>
+<LI>Ported to Solaris 2.3. Added XIL support for raw capture and JPEG, H.261 and CellB hardware capture (the sunvideo card currently doesn't implement H.261). </LI>
+<LI>[internal] Generalized jpeg decoder to deal with arbitrary decoder parameters (and subclass special cases to optimize). In particular, we can now deal with 4:1:1 jpeg, which the SunVideo produces. </LI>
+<LI>Add code to distinguish between j300 and jvideo and for the latter to disable non-JPEG formats and 1:1 decimation. </LI>
+<LI>Added code to receive path to always deal with RTP version 1 packets properly. </LI>
+<LI>[internal] Created SoftwareDecoder, PlaneDecoder, and SoftwareRenderer sub-classes so that a bunch of common code could be shared among the decoders. </LI>
+<LI>[internal] Broke out block suppression code into separate sub-class so it can be shared among the nv, nvm, and cellb encoders. </LI>
+<LI>Small change to architecture to cope with dynamic geometry and video format changes. </LI>
+<LI>Ported to DEC OSF/1 v2.0. </LI>
+<LI>Added CellB support (based on the code in nv and the RTP/CellB Internet Draft). Sped up the encoder by a factor of two by using straight-line code instead of conditionals in the Y/Y VQ computation. Changed the U/V VQ to use straight subsampling instead of LPF/subsampling since the chroma planes usually have little high frequency energy (and visual comparisons show negligible gain). Sped up decoder by replacing conditionals with straight-line code. But the biggest improvement was to run the conditional replenishment algorithm in the pixel domain instead of the cell domain. There is little hope of doing good temporal compression on quantized values, because the quantization noise is approximately a random process with variance proportional to the quantizer step size, and this additive noise will completely defeat the conditional replenishment algorithm. Running the differencing in the pixel domain will give much more effective temporal compression, which reduces network bandwidth and saves CPU cycles. </LI>
+<LI>Fixed bug that caused nv &amp; ivs senders to never be deleted from the main window. </LI>
+<LI>Changed model so that video capture device is opened first time transmission is invoked, as opposed to at start-up. Still need to implement device sharing as vat does with non-shareable audio hardware. </LI>
+<LI>Fragment JPEG streams instead of letting IP do the fragmentation. RTP/JPEG protocol still in limbo. </LI>
+<LI>Changed semantics for clicking on thumbnail. If the site is already being displayed (in locked mode), the corresponding window is deleted. Otherwise, it is created as before. This gives toggle-like behavior as in nv. </LI>
+<LI>Always use vanilla rtp headers instead of vic-specific packet format. </LI>
+<LI>Improvements to ordered dithering code. Incorporated Ron Frederick's model from nv v3.3alpha, i.e., to fold the dither matrix into the color-to-pixel lookup table. Van sped up this code by incorporating his hacks from the 24-bit color code. </LI>
+<LI>Improvements to user interface. Looks more like vat now. </LI>
+<LI>Added -c to specify the color rendition technique. </LI>
+<LI>Added support for 24 bit displays (thanks to Van Jacobson). </LI>
+<LI>Added support for pip/tx grabber on decstations. </LI>
+<LI>[internal] Reworked grabber/encoder architecture. Added Device class. Arranged for most action to be initiated via tcl "device" command. </LI>
+<LI>[internal] Reworked jv grabber so that SharedVideoImage class allocates the shared memory. This means won't match the mme grabber model (i.e., the mme server will do the memory allocation), but that's okay since the right way to handle this is derive an MmeVideoImage from a SharedVideoImage. </LI>
+<LI>[internal] Changed all tcl grabber hooks to use the "grabber" command. Subclasses can catch invocations via the virtual method Grabber::command(argc, argv). </LI>
+<LI>Changed -f to -u to be compatible with vat (since vat already used -f for audio format). Changed previous -u flag to -U. Changed "-e encoding" to "-f format" to be consistent with vat. v2.2alpha Tue Nov 23 15:20:59 PST 1993 </LI>
+<LI>Added support for decoding H.261 video. (The encoder isn't implemented yet.) </LI>
+<LI>Added the -A flag. '-A nv' for nv compatibiliry; '-A ivs' for ivs compatilibility. Took away '-n'. </LI>
+<LI>Fixed bug introduced in 2.1a that caused core dump on window resize. v2.1alpha Tue Nov 9 14:52:59 PST 1993 </LI>
+<LI>Fixed bug that caused sparc-10 core dumps during xunet conference. </LI>
+<LI>Default JPEG decoder to color output instead of gray scale. </LI>
+<LI>Allow control window to be vertically resized. </LI>
+<LI>Fixed conference title bug. Default addr/port version wasn't displayed. </LI>
+<LI>Fixed bug that caused 12 bytes of garbage at front of nv packets. </LI>
+<LI>Fixes to compile with gcc under DEC/OSF. </LI>
+<LI>Update to tcl7.1/tk3.4. </LI>
+<LI>First cut at man page; needs much more work. </LI>
+<LI>Eliminate chud at bottom of J-Video windows that are 232 pixels high instead of 240. </LI></UL>
+
+<P><HR></P>
+<H3>v2.0alpha <I>Tue Oct 19 17:48:26 PDT 1993</H3>
+
+<UL>
+</I><LI>Initial alpha binary release to xunet sites. </LI></UL>
+
+<P><HR></P>
+<P><A HREF="file:///M:/vic/vic/vic.html">[Return to main vic page]</A> </P></BODY>
+</HTML>
