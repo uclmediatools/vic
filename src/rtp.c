@@ -1237,7 +1237,7 @@ int rtp_set_sdes(struct rtp *session, u_int32 ssrc, u_int8 type, char *value, in
 	return TRUE;
 }
 
-char *rtp_get_sdes(struct rtp *session, u_int32 ssrc, u_int8 type)
+const char *rtp_get_sdes(struct rtp *session, u_int32 ssrc, u_int8 type)
 {
 	source	*s = get_source(session, ssrc);
 
@@ -1492,7 +1492,7 @@ static u_int8 *format_rtcp_rr(u_int8 *buffer, int buflen, struct rtp *session)
 	return buffer + 8 + (24 * packet->common.count);
 }
 
-static int add_sdes_item(u_int8 *buf, int type, char *val)
+static int add_sdes_item(u_int8 *buf, int type, const char *val)
 {
 	/* Fill out an SDES item. It is assumed that the item is a NULL    */
 	/* terminated string.                                              */
@@ -1524,7 +1524,7 @@ static u_int8 *format_rtcp_sdes(u_int8 *buffer, int buflen, u_int32 ssrc, struct
         /* 22".                                                            */
 	u_int8		*packet = buffer;
 	rtcp_common	*common = (rtcp_common *) buffer;
-	char		*item;
+	const char	*item;
 	size_t		 remaining_len;
 
 	assert(buflen > (int) sizeof(rtcp_common));
