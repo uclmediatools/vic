@@ -40,6 +40,7 @@ v1.0.2	- Assorted fixes to RTP library
 	  reliable messages to known unicast addresses. 
 	- Mbus error function now takes a "type of error" argument
 	- Added xrealloc()
+	- Fix reordering of mbus messages
 
 
 Still to do...

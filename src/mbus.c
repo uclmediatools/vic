@@ -64,6 +64,7 @@ struct mbus_msg {
 	struct timeval	 ts;	/* Time the message was composed, the timestamp in the packet header */
 	char		*dest;
 	int		 reliable;
+	int		 complete;	/* Indicates that we've finished adding cmds to this message */
 	int		 seqnum;
 	int		 retransmit_count;
 	int		 message_size;
@@ -831,7 +832,6 @@ void mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, i
 	struct mbus_msg	*prev = NULL;
 	int		 alen = strlen(cmnd) + strlen(args) + 4;
 
-
 	if (reliable && !addr_known(m, dest)) {
 		debug_msg("Trying to send reliably to an unknown address...\n");
 #ifdef NDEF
@@ -842,17 +842,23 @@ void mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, i
 #endif
 	}
 
-
 	while (curr != NULL) {
-		if (mbus_addr_match(curr->dest, dest) 
+		if ((!curr->complete)
+		&& mbus_addr_match(curr->dest, dest) 
 		&& (curr->num_cmds < MBUS_MAX_QLEN) 
 		&& ((curr->message_size + alen) < (MBUS_BUF_SIZE - 8))) {
+			/* Slots message in if it fits, but this breaks ordering.  Msg
+		         * X+1 maybe shorter than X that is in next packet, so X+1 jumps
+		         * ahead.
+		         */
 			curr->num_cmds++;
 			curr->reliable |= reliable;
 			curr->cmd_list[curr->num_cmds-1] = xstrdup(cmnd);
 			curr->arg_list[curr->num_cmds-1] = xstrdup(args);
 			curr->message_size += alen;
 			return;
+		} else {
+			curr->complete = TRUE;
 		}
 		prev = curr;
 		curr = curr->next;
@@ -864,6 +870,7 @@ void mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, i
 	curr->message_size     = alen + 60 + strlen(dest) + strlen(m->addr[0]);
 	curr->seqnum           = m->seqnum++;
 	curr->reliable         = reliable;
+	curr->complete         = FALSE;
 	curr->num_cmds         = 1;
 	curr->cmd_list[0]      = xstrdup(cmnd);
 	curr->arg_list[0]      = xstrdup(args);
