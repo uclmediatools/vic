@@ -1610,7 +1610,7 @@ int rtp_add_csrc(struct rtp *session, uint32_t csrc)
 	return FALSE;
 }
 
-int rtp_set_sdes(struct rtp *session, uint32_t ssrc, uint8_t type, char *value, int length)
+int rtp_set_sdes(struct rtp *session, uint32_t ssrc, rtcp_sdes_type type, char *value, int length)
 {
 	source	*s;
 	char	*v;
@@ -1667,7 +1667,7 @@ int rtp_set_sdes(struct rtp *session, uint32_t ssrc, uint8_t type, char *value, 
 	return TRUE;
 }
 
-const char *rtp_get_sdes(struct rtp *session, uint32_t ssrc, uint8_t type)
+const char *rtp_get_sdes(struct rtp *session, uint32_t ssrc, rtcp_sdes_type type)
 {
 	source	*s;
 
@@ -1681,22 +1681,24 @@ const char *rtp_get_sdes(struct rtp *session, uint32_t ssrc, uint8_t type)
 	check_source(s);
 
 	switch (type) {
-		case RTCP_SDES_CNAME: 
-			return s->cname;
-		case RTCP_SDES_NAME:
-			return s->name;
-		case RTCP_SDES_EMAIL:
-			return s->email;
-		case RTCP_SDES_PHONE:
-			return s->phone;
-		case RTCP_SDES_LOC:
-			return s->loc;
-		case RTCP_SDES_TOOL:
-			return s->tool;
-		case RTCP_SDES_NOTE:
-			return s->note;
+        case RTCP_SDES_CNAME: 
+                return s->cname;
+        case RTCP_SDES_NAME:
+                return s->name;
+        case RTCP_SDES_EMAIL:
+                return s->email;
+        case RTCP_SDES_PHONE:
+                return s->phone;
+        case RTCP_SDES_LOC:
+                return s->loc;
+        case RTCP_SDES_TOOL:
+                return s->tool;
+        case RTCP_SDES_NOTE:
+                return s->note;
+        default:
+                /* This includes RTCP_SDES_PRIV and RTCP_SDES_END */
+                debug_msg("Unknown SDES item (type=%d)\n", type);
 	}
-	debug_msg("Unknown SDES item (type=%d)\n", type);
 	return NULL;
 }
 

@@ -155,20 +155,24 @@ typedef struct {
 } rtp_event;
 
 /* RTP options */
-#define RTP_OPT_PROMISC     	  1
-#define RTP_OPT_WEAK_VALIDATION	  2
-#define RTP_OPT_FILTER_MY_PACKETS 3
+typedef enum {
+        RTP_OPT_PROMISC =	    1,
+        RTP_OPT_WEAK_VALIDATION	=   2,
+        RTP_OPT_FILTER_MY_PACKETS = 3
+} rtp_option;
 
 /* SDES packet types... */
-#define RTCP_SDES_END   0
-#define RTCP_SDES_CNAME 1
-#define RTCP_SDES_NAME  2
-#define RTCP_SDES_EMAIL 3
-#define RTCP_SDES_PHONE 4
-#define RTCP_SDES_LOC   5
-#define RTCP_SDES_TOOL  6
-#define RTCP_SDES_NOTE  7
-#define RTCP_SDES_PRIV  8
+typedef enum {
+        RTCP_SDES_END   = 0,
+        RTCP_SDES_CNAME = 1,
+        RTCP_SDES_NAME  = 2,
+        RTCP_SDES_EMAIL = 3,
+        RTCP_SDES_PHONE = 4,
+        RTCP_SDES_LOC   = 5,
+        RTCP_SDES_TOOL  = 6,
+        RTCP_SDES_NOTE  = 7,
+        RTCP_SDES_PRIV  = 8
+} rtcp_sdes_type;
 
 struct rtp;
 
@@ -191,8 +195,8 @@ void 		 rtp_update(struct rtp *session);
 uint32_t	 rtp_my_ssrc(struct rtp *session);
 int		 rtp_add_csrc(struct rtp *session, uint32_t csrc);
 int		 rtp_valid_ssrc(struct rtp *session, uint32_t ssrc);
-int		 rtp_set_sdes(struct rtp *session, uint32_t ssrc, uint8_t type, char *value, int length);
-const char	*rtp_get_sdes(struct rtp *session, uint32_t ssrc, uint8_t type);
+int		 rtp_set_sdes(struct rtp *session, uint32_t ssrc, rtcp_sdes_type type, char *value, int length);
+const char	*rtp_get_sdes(struct rtp *session, uint32_t ssrc, rtcp_sdes_type type);
 const rtcp_sr	*rtp_get_sr(struct rtp *session, uint32_t ssrc);
 const rtcp_rr	*rtp_get_rr(struct rtp *session, uint32_t reporter, uint32_t reportee);
 void		 rtp_send_bye(struct rtp *session);
