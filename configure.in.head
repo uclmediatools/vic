@@ -11,7 +11,7 @@ AC_HAVE_HEADERS(string.h)
 V_INCLUDE=""
 V_LIB=""
 V_OBJ=""
-V_OBJ_CRYPT="qfDES.o qfDES_key.o qfDES_memory.o"
+V_OBJ_CRYPT=""
 V_BROKEN_OBJ="strtol.o strtoul.o"
 
 V_SHELL=""

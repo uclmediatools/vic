@@ -1,7 +1,7 @@
 dnl 'autoconf' input file for the LBL/UCB vic tool
 dnl $Header$ (LBL)
 
-AC_INIT(main.cc)
+AC_INIT(main.cpp)
 
 V_PROG="vic"
 V_ALL="$V_PROG"
@@ -34,7 +34,7 @@ fi
 
 V_LIB_GRABBER=""
 V_INCLUDE_GRABBER=""
-V_OBJ_GRABBER="grabber-x11.o"
+V_OBJ_GRABBER="video/grabber-x11.o"
 V_LIB_XIL=""
 V_OBJ_XIL=""
 
@@ -43,52 +43,52 @@ if test -r /usr/lib/libvl.so ; then
 	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-vl.o output-vl.o"
 	if test -r /usr/include/dmedia/cl_cosmo.h  ; then
 		V_LIB_GRABBER="$V_LIB_GRABBER -lcl"
-		V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-cosmo.o"
+		V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-cosmo.o"
 	fi		
 fi
 if test -r /usr/lib/libsvideo.a ; then
 	V_LIB_GRABBER="$V_LIB_GRABBER -lsvideo"
-	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-svideo.o"
+	V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-svideo.o"
 fi
 if test -r /usr/lib/libXv.a ; then
 	V_LIB_GRABBER="$V_LIB_GRABBER -lXv"
 	V_DEFINE="$V_DEFINE -DXV_PSEUDO8"
-	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-xv.o"
+	V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-xv.o"
 fi
 if test -r /usr/lpp/parallax/lib/libXvid.a ; then
     V_LIB_GRABBER="$V_LIB_GRABBER -L/usr/lpp/parallax/lib -lXvid -lXv"
     V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I/usr/lpp/parallax/include"
-    V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-plx.o assistor-plx.o"
+    V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-plx.o video/assistor-plx.o"
 fi
 if test -r /usr/lpp/UMS6000/lib/libUMSobj.a ; then
 	V_LIB_GRABBER="$V_LIB_GRABBER -L/usr/lpp/UMS6000/lib -lUMSobj"
 	V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I/usr/lpp/UMS6000/include"
 	V_DEFINE="$V_DEFINE -DSUNRISE"
-	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-sunrise.o output-sunrise.o"
+	V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-sunrise.o video/output-sunrise.o"
 fi
 if test -r /usr/include/machine/ioctl_meteor.h ; then
-	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-meteor.o"
+	V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-meteor.o"
 fi
 if test -r /usr/include/linux/videodev.h ; then
-	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-video4linux.o"
+	V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-video4linux.o"
 fi
 #if test -r /usr/local/lib/libspigot.a -a ${PORTOBJFORMAT} != elf; then
 if test -r /usr/local/lib/libspigot.a ; then
-	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-spigot.o"
+	V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-spigot.o"
 	V_LIB_GRABBER="$V_LIB_GRABBER -lspigot"
 	V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I/usr/local/include"
 fi
 if test "$qcamdir" != "" ; then
-	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-qcam.o"
+	V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-qcam.o"
 	V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I$qcamdir"
 	V_DEFINE="$V_DEFINE -DQCAMDEV -DQCAMDOTH=qcam.h"
 elif test -r /usr/local/lib/libqcam.a ; then
-	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-qcam.o"
+	V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-qcam.o"
 	V_LIB_GRABBER="$V_LIB_GRABBER -lqcam"
 	V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I/usr/local/include"
 	V_DEFINE="$V_DEFINE -DQCAMLIB"
 elif test -r /dev/qcam0 ; then
-	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-qcam.o"
+	V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-qcam.o"
 	V_DEFINE="$V_DEFINE -DQCAMDEV"
 fi
 vpix_dir=/usr/src/local/vfc-1.0
@@ -101,7 +101,7 @@ if test -d $vpix_dir ; then
 	V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I$vpix_dir/sys -I$vpix_lib"
 	V_LIB_GRABBER="$V_LIB_GRABBER $vpix_lib/libvfc.a"
 	V_DEFINE="$V_DEFINE -DVIDEOPIX"
-	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-vpix.o"
+	V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-vpix.o"
 fi
 places="/usr/src/local/vigrapix/lib \
 	/opt/VIGRAvigrapix/lib"
@@ -109,7 +109,7 @@ for dir in $places; do
 	if test -d $dir ; then
 		V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I$dir"
 		V_LIB_GRABBER="$V_LIB_GRABBER $dir/libvigrapix.a"
-		V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-vigra.o"
+		V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-vigra.o"
     		break
 	fi
 done
@@ -118,14 +118,14 @@ d=/opt/MMACslv
 if test -d $d ; then
 	V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I$d/include"
 	V_LIB_GRABBER="$V_LIB_GRABBER $d/lib/libslv.a -lintl"
-	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-slv.o"
+	V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-slv.o"
 fi
 
 d=/usr/include/mme
 if test -d $d ; then
 	V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I$d"
 	V_LIB_GRABBER="$V_LIB_GRABBER -lmme"
-	V_OBJ_GRABBER="grabber-mme.o $V_OBJ_GRABBER"
+	V_OBJ_GRABBER="video/grabber-mme.o $V_OBJ_GRABBER"
 fi
 
 places="/opt/parallax \
@@ -137,7 +137,7 @@ for dir in $places; do
 	if test -d $dir/include ; then
 		V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I$dir/include"
 		V_LIB_GRABBER="$V_LIB_GRABBER -L$dir/lib -lXext -lXvid"
-		V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-plx.o assistor-plx.o"
+		V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-plx.o video/assistor-plx.o"
     		break
 	fi
 done
@@ -147,7 +147,7 @@ case "$target" in
 	jv_dir=jv2
 	V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I$jv_dir"
 	V_LIB_GRABBER="$V_LIB_GRABBER $jv_dir/jvdriverint.o"
-	V_OBJ_GRABBER="$V_OBJ_GRABBER assistor-jv.o grabber-jv.o"
+	V_OBJ_GRABBER="$V_OBJ_GRABBER video/assistor-jv.o video/grabber-jv.o"
 	if test "$target_os" = ultrix4.3 ; then
 		#XXX rtip code currently broken
 		#V_DEFINE="$V_DEFINE -DRTIP"
@@ -175,16 +175,16 @@ sparc-sun-solaris*)
 		V_DEFINE="$V_DEFINE -mv8 -msupersparc"
 	fi
 	V_DEFINE="$V_DEFINE -D__svr4__"
-	if test -f grabber-rtvc.cc || test -f grabber-rtvc.o ; then
-		V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-rtvc.o"
+	if test -f video/grabber-rtvc.cc || test -f video/grabber-rtvc.o ; then
+		V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-rtvc.o"
 		if test "$have_xil" = yes ; then
 			V_ALL="$V_PROG $V_PROG.xil"
 			V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I$xil_dir/include"
 			V_LIB_XIL="-L$xil_dir/lib -R\"$xil_dir/lib:/opt/SUNWo1kp/lib:/opt/MMACo1k/lib\" -lxil "
-			V_OBJ_XIL="grabber-xil.o framer-h261hw.o framer-cellb.o assistor-xil.o" 
+			V_OBJ_XIL="video/grabber-xil.o codec/framer-h261hw.o codec/framer-cellb.o video/assistor-xil.o" 
 		fi
 	elif test "$have_xil" = yes ; then
-		V_OBJ_XIL="grabber-xil.o framer-h261hw.o framer-cellb.o assistor-xil.o"
+		V_OBJ_XIL="video/grabber-xil.o codec/framer-h261hw.o codec/framer-cellb.o video/assistor-xil.o"
 		V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I$xil_dir/include"
 		V_LIB_GRABBER="$V_LIB_GRABBER -L$xil_dir/lib -R\"$xil_dir/lib:/opt/SUNWo1kp/lib:/opt/MMACo1k/lib\" -lxil "
 	fi

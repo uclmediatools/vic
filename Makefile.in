@@ -34,13 +34,13 @@
 # @(#) $Header$ (LBL)
 #
 
-.SUFFIXES: .cc $(.SUFFIXES)
+.SUFFIXES: .cpp $(.SUFFIXES)
 
 ALL = @V_ALL@ histtolut
 all:	$(ALL)
 
-.cc.o:
-	rm -f $@; $(C++) -o $@ -c $(CFLAGS) $*.cc
+.cpp.o:
+	rm -f $@; $(C++) -o $@ -c $(CFLAGS) $*.cpp
 
 .c.o:
 	rm -f $@; $(CC) -o $@ -c $(CFLAGS) $*.c
@@ -54,7 +54,7 @@ CCOPT = @V_CCOPT@
 INCLUDE_TK = @V_INCLUDE_TK@
 INCLUDE_TCL = @V_INCLUDE_TCL@
 INCLUDE_X11 = @V_INCLUDE_X11@
-INCLUDE_MISC = @V_INCLUDE@ -Itmndec -Itmn-x -Ih263
+INCLUDE_MISC = @V_INCLUDE@ -I. -Icodec/tmndec -Icodec/tmn-x -Icodec/h263 -Irtp -Irender -Inet -Ivideo -Icodec -I../common
 
 STATIC = @V_STATIC@
 MKDEP = ./mkdep
@@ -81,13 +81,13 @@ TK_LIBRARY_FILES = \
 LIB_GRABBER = @V_LIB_GRABBER@
 INCLUDE_GRABBER = @V_INCLUDE_GRABBER@
 OBJ_GRABBER = @V_OBJ_GRABBER@
-SRC_GRABBER = $(OBJ_GRABBER:.o=.cc) 
+SRC_GRABBER = $(OBJ_GRABBER:.o=.cpp) 
 OBJ_XIL = @V_OBJ_XIL@
 OBJ_CRYPT = @V_OBJ_CRYPT@
 LIB = $(LIB_GRABBER) @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ \
-	tmndec/libh263.a tmn-x/libh263coder.a -lm
+	codec/tmndec/libh263.a codec/tmn-x/libh263coder.a -lm
 INCLUDE = $(INCLUDE_MISC) $(INCLUDE_GRABBER) $(INCLUDE_TK) $(INCLUDE_TCL) \
-	$(INCLUDE_X11) $(MD_INC) -I./jpeg -I./p64 -I.
+	$(INCLUDE_X11) $(MD_INC) -Icodec/jpeg -Icodec/p64 -I.
 DEFINE = @V_DEFINE@ -DED_YBITS=$(ED_YBITS) -DSIGRET=@V_SIGRET@
 BFLAGS = $(DEFINE) $(INCLUDE)
 CFLAGS = $(CCOPT) $(BFLAGS)
@@ -100,7 +100,7 @@ TCL_VIC = ui-ctrlmenu.tcl ui-main.tcl ui-resource.tcl ui-relate.tcl \
 	ui-switcher.tcl ui-extout.tcl ui-grabber.tcl ui-unix.tcl \
 	cf-main.tcl cf-tm.tcl cf-confbus.tcl cf-network.tcl cf-util.tcl \
 	tkerror.tcl entry.tcl
-TCL_VIC_C = $(TCL_VIC:.tcl=.cc)
+TCL_VIC_C = tcl/$(TCL_VIC:.tcl=.cpp)
 
 #
 # These modules are broken in libg++.  Rather than fix libg++
@@ -109,36 +109,36 @@ TCL_VIC_C = $(TCL_VIC:.tcl=.cc)
 #
 BROKEN_OBJ = @V_BROKEN_OBJ@
 
-H263_OBJS = h263/h263rtp.o h263/h263dec.o h263/bitIn.o h263/input.o \
-	h263/getgob.o h263/reconh263.o h263/recon.o h263/getvlc.o \
-	h263/getblk.o h263/h263enc.o h263/motion.o h263/block.o \
-	h263/bitOut.o h263/h263mux.o h263/idctdec.o \
-	h263/fdct.o h263/code.o h263/gethdr.o h263/idctenc.o h263/sac.o
+H263_OBJS = codec/h263/h263rtp.o codec/h263/h263dec.o codec/h263/bitIn.o codec/h263/input.o \
+	codec/h263/getgob.o codec/h263/reconh263.o codec/h263/recon.o codec/h263/getvlc.o \
+	codec/h263/getblk.o codec/h263/h263enc.o codec/h263/motion.o codec/h263/block.o \
+	codec/h263/bitOut.o codec/h263/h263mux.o codec/h263/idctdec.o \
+	codec/h263/fdct.o codec/h263/code.o codec/h263/gethdr.o codec/h263/idctenc.o codec/h263/sac.o
 
 # .c objects
-OBJ1 =	inet.o inet6.o cellb_tables.o tkStripchart.o md5c.o random.o \
+OBJ1 =	net/inet.o net/inet6.o codec/cellb_tables.o tkStripchart.o md5c.o random.o \
 	$(H263_OBJS)
 #	session-rtpv1.o session-nv.o session-ivs.o # Not supported anymore
-# .cc objects
+# .cpp objects
 OBJ2 =	main.o iohandler.o timer.o idlecallback.o media-timer.o \
-	net.o net-ip.o net-addr.o net-ipv6.o session.o source.o \
-	decoder.o decoder-jpeg.o decoder-nv.o decoder-h263.o \
-	decoder-h261.o decoder-h261v1.o decoder-raw.o \
-	decoder-cellb.o decoder-h263v2.o mbus.o mbus_engine.o \
-	device.o grabber.o vw.o Tcl.o Tcl2.o module.o transmitter.o \
-	encoder-h263v2.o encoder-nv.o encoder-cellb.o encoder-h261.o \
-	encoder-jpeg.o encoder-raw.o encoder-h263.o \
-	transcoder-jpeg.o framer-jpeg.o assistor-list.o \
-	group-ipc.o confbus.o renderer.o renderer-window.o \
-	color.o color-true.o color-pseudo.o color-dither.o color-ed.o \
-	color-quant.o color-hi.o color-gray.o color-mono.o color-hist.o \
-	rgb-converter.o jpeg/jpeg.o p64/p64.o dct.o \
-	compositor.o rate-variable.o crypt.o crypt-des.o \
-	grabber-still.o @V_OBJ@
+	net/net.o net/net-ip.o net/net-addr.o net/net-ipv6.o rtp/session.o rtp/source.o \
+	codec/decoder.o codec/decoder-jpeg.o codec/decoder-nv.o codec/decoder-h263.o \
+	codec/decoder-h261.o codec/decoder-h261v1.o codec/decoder-raw.o \
+	codec/decoder-cellb.o codec/decoder-h263v2.o net/mbus_handler.o net/mbus_engine.o \
+	video/device.o video/grabber.o render/vw.o Tcl.o Tcl2.o module.o rtp/transmitter.o \
+	codec/encoder-h263v2.o codec/encoder-nv.o codec/encoder-cellb.o codec/encoder-h261.o \
+	codec/encoder-jpeg.o codec/encoder-raw.o codec/encoder-h263.o \
+	codec/transcoder-jpeg.o codec/framer-jpeg.o video/assistor-list.o \
+	net/group-ipc.o net/confbus.o render/renderer.o render/renderer-window.o \
+	render/color.o render/color-true.o render/color-pseudo.o render/color-dither.o render/color-ed.o \
+	render/color-quant.o render/color-hi.o render/color-gray.o render/color-mono.o render/color-hist.o \
+	render/rgb-converter.o codec/jpeg/jpeg.o codec/p64/p64.o codec/dct.o \
+	codec/compositor.o rate-variable.o net/crypt.o net/crypt-des.o \
+	video/grabber-still.o @V_OBJ@
 OBJ3 =	cm0.o cm1.o huffcode.o version.o bv.o \
 	$(TCL_VIC:.tcl=.o) tk.o
-SRC =	$(OBJ1:.o=.c) $(OBJ2:.o=.cc) $(BROKEN_OBJ:.o=.c) \
-	$(RTIP_OBJ:.o=.c) $(SRC_GRABBER) $(OBJ_XIL:.o=.cc) $(OBJ_CRYPT:.o=.c)
+SRC =	$(OBJ1:.o=.c) $(OBJ2:.o=.cpp) $(BROKEN_OBJ:.o=.c) \
+	$(RTIP_OBJ:.o=.c) $(SRC_GRABBER) $(OBJ_XIL:.o=.cpp) $(OBJ_CRYPT:.o=.c)
 OBJ =	$(OBJ1) $(OBJ2) $(OBJ3) $(BROKEN_OBJ) $(RTIP_OBJ)
 
 OBJ_VDD = vdd.o p64/p64.o p64/p64dump.o \
@@ -167,7 +167,7 @@ OBJ_JPEGPLAY = jpeg_play.o jpeg/jpeg.o \
 
 LIB_CB = @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ -lm
 OBJ_CB = cbAppInit.o cb.o confbus.o group-ipc.o iohandler.o \
-	net.o net-ip.o crypt.o crypt-dull.o $(OBJ_CRYPT) communicator.o \
+	net.o net-ip.o crypt.o crypt-dull.o $(OBJ_CRYPT) net/communicator.o \
 	ppm.o Tcl.o Tcl2.o inet.o md5c.o
 
 OBJ_H261DUMP = h261_dump.o p64/p64.o p64/p64dump.o huffcode.o dct.o bv.o
@@ -177,7 +177,7 @@ OBJ_H261DUMP = h261_dump.o p64/p64.o p64/p64dump.o huffcode.o dct.o bv.o
 #	rm -f $@
 #	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(LIB) $(STATIC)
 
-vic: tmndec/libh263.a tmn-x/libh263coder.a $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)  $(OBJ_XIL)
+vic: codec/tmndec/libh263.a codec/tmn-x/libh263coder.a $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)  $(OBJ_XIL)
 	rm -f $@
 	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(OBJ_CRYPT) $(LIB) $(STATIC)
 
@@ -191,9 +191,9 @@ vic.xil: tmndec/libh263.a tmn-x/libh263coder.a $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $
 	rm -f $@
 	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(OBJ_XIL) $(OBJ_CRYPT) $(LIB) $(STATIC) @V_LIB_XIL@
 
-histtolut: histtolut.cc convex_hull.o
+histtolut: render/histtolut/histtolut.cpp convex_hull.o
 	rm -f $@
-	$(C++) -o $@ $(CFLAGS) histtolut.cc convex_hull.o
+	$(C++) -o $@ $(CFLAGS) histtolut.cpp convex_hull.o
 
 vdd: $(OBJ_VDD)
 	rm -f $@
@@ -215,55 +215,59 @@ h261_dump: $(OBJ_H261DUMP)
 	rm -f $@
 	$(CC) -o $@ $(CFLAGS) $(OBJ_H261DUMP) -lm $(STATIC)
 
-h261tortp: h261tortp.cc
+h261tortp: h261tortp.cpp
 	rm -f $@
-	$(C++) -o $@ $(CFLAGS) h261tortp.cc
+	$(C++) -o $@ $(CFLAGS) h261tortp.cpp
+
+tcl2c++: tcl/tcl2cpp/tcl2cpp.c
+	rm -f $@
+	$(C++) -o $@ $(CFLAGS) tcl/tcl2cpp/tcl2cpp.c
 
 #
 # Compile without optimzation to work around an OSF compiler bug.
 #
-Tcl2.o: Tcl.h
+Tcl2.o: vic_tcl.h
 	rm -f $@
-	$(C++) -c $(BFLAGS) Tcl2.cc
+	$(C++) -c $(BFLAGS) Tcl2.cpp
 
 #
 # pass-1 embedded tcl files
 #
 tk.o: $(TK_LIBRARY_FILES) tcl2c++
-	base=tk; rm -f $@ $$base.cc ; \
-		./tcl2c++ 1 $(TK_LIBRARY_FILES) > $$base.cc ; \
-		$(C++) -o $@ -c $(CFLAGS) $$base.cc ; rm -f $$base.cc
+	base=tk; rm -f $@ $$base.cpp ; \
+		./tcl2c++ 1 $(TK_LIBRARY_FILES) > $$base.cpp ; \
+		$(C++) -o $@ -c $(CFLAGS) $$base.cpp ; rm -f $$base.cpp
 
 #
 # pass-2 embedded tcl files
 #
 TCL_VIC_OBJS=$(TCL_VIC:.tcl=.o) ui-vdd.o ui-h261_play.o
 $(TCL_VIC_OBJS): tcl2c++
-	base=$(@:.o=); rm -f $@ $$base.cc ; \
-		./tcl2c++ 2 $$base.tcl > $$base.cc ; \
-		$(C++) -o $@ -c $(CFLAGS) $$base.cc ; rm -f $$base.cc
+	base=$(@:.o=); rm -f $@ $$base.cpp ; \
+		./tcl2c++ 2 tcl/$$base.tcl > tcl/$$base.cpp ; \
+		$(C++) -o $@ -c $(CFLAGS) tcl/$$base.cpp ; rm -f tcl/$$base.cpp
 
-ui-ctrlmenu.o: ui-ctrlmenu.tcl
-ui-extout.o: ui-extout.tcl
-ui-grabber.o: ui-grabber.tcl
-ui-main.o: ui-main.tcl
-ui-resource.o: ui-resource.tcl
-ui-srclist.o: ui-srclist.tcl
-ui-stats.o: ui-stats.tcl
-ui-switcher.o: ui-switcher.tcl
-ui-unix.o: ui-unix.tcl
-ui-util.o: ui-util.tcl
-ui-windows.o: ui-windows.tcl
-cf-main.o: cf-main.tcl
-cf-util.o: cf-util.tcl
-cf-network.o: cf-network.tcl
-cf-tm.o: cf-tm.tcl
-cf-confbus.o: cf-confbus.tcl
-tkerror.o: tkerror.tcl
-entry.o: entry.tcl
-ui-vdd.o: ui-vdd.tcl
-ui-h261_play.o: ui-h261_play.tcl
-ui-relate.o: ui-relate.tcl
+ui-ctrlmenu.o: tcl/ui-ctrlmenu.tcl
+ui-extout.o: tcl/ui-extout.tcl
+ui-grabber.o: tcl/ui-grabber.tcl
+ui-main.o: tcl/ui-main.tcl
+ui-resource.o: tcl/ui-resource.tcl
+ui-srclist.o: tcl/ui-srclist.tcl
+ui-stats.o: tcl/ui-stats.tcl
+ui-switcher.o: tcl/ui-switcher.tcl
+ui-unix.o: tcl/ui-unix.tcl
+ui-util.o: tcl/ui-util.tcl
+ui-windows.o: tcl/ui-windows.tcl
+cf-main.o: tcl/cf-main.tcl
+cf-util.o: tcl/cf-util.tcl
+cf-network.o: tcl/cf-network.tcl
+cf-tm.o: tcl/cf-tm.tcl
+cf-confbus.o: tcl/cf-confbus.tcl
+tkerror.o: tcl/tkerror.tcl
+entry.o: tcl/entry.tcl
+ui-vdd.o: tcl/ui-vdd.tcl
+ui-h261_play.o: tcl/ui-h261_play.tcl
+ui-relate.o: tcl/ui-relate.tcl
 
 version.c: VERSION
 	rm -f version.c
@@ -285,17 +289,17 @@ huffcode.c: mkhuff
 	rm -f $@
 	./mkhuff -e > huffcode.c
 
-mkhuff: p64/mkhuff.cc p64/p64-huff.h
+mkhuff: codec/p64/mkhuff.cpp 
 	rm -f $@
-	$(C++) -o $@ $(CFLAGS) p64/mkhuff.cc $(STATIC)
+	$(C++) -o $@ $(CFLAGS) codec/p64/mkhuff.cpp $(STATIC)
 
 bv.c: mkbv
 	rm -f $@
 	./mkbv > $@
 
-mkbv: mkbv.c
+mkbv: render/mkbv/mkbv.c
 	rm -f $@
-	$(C++) -o $@ $(CFLAGS) mkbv.c $(STATIC)
+	$(C++) -o $@ $(CFLAGS) render/mkbv/mkbv.c $(STATIC)
 
 rgb-cube.ppm: mkcube
 	rm -f $@
@@ -305,13 +309,13 @@ yuv-map.ppm: mkcube
 	rm -f $@
 	./mkcube -Y $(ED_YBITS) -U 45 -V 45 yuv > $@
 
-mkcube: mkcube.cc
+mkcube: render/mkcube/mkcube.cpp
 	rm -f $@
-	$(C++) -o $@ $(CFLAGS) mkcube.cc $(STATIC)
+	$(C++) -o $@ $(CFLAGS) render/mkcube/mkcube.cpp $(STATIC)
 
-ppmtolut: ppmtolut.c
+ppmtolut: render/ppmtolut/ppmtolut.c
 	rm -f $@
-	$(CC) -o $@ $(CFLAGS) ppmtolut.c -lm $(STATIC)
+	$(CC) -o $@ $(CFLAGS) render/ppmtolut/ppmtolut.c -lm $(STATIC)
 
 install: force
 	 cp vic @prefix@/bin/vic
@@ -391,8 +395,8 @@ fulltar: force
 	    "chmod 444 $$name.tar.gz" ; \
 	     chmod 444 $$name.tar.gz
 
-tmndec/libh263.a:
-	(cd tmndec; $(MAKE) -f Makefile.lib)
+codec/tmndec/libh263.a:
+	(cd codec/tmndec; $(MAKE) -f Makefile.lib)
 
-tmn-x/libh263coder.a:
-	(cd tmn; $(MAKE))
+codec/tmn-x/libh263coder.a:
+	(cd codec/tmn; $(MAKE))
