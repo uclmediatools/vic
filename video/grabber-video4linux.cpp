@@ -12,6 +12,8 @@
      Added support for various YUV byte orders.
      by Jean-Marc Orliaguet <jmo@medialab.chalmers.se>
 
+     Added support for NTSC/PAL/SECAM norm selection. (14/10/99)
+     by Jean-Marc Orliaguet <jmo@medialab.chalmers.se>
 
    ========================================================================= */
 
@@ -112,7 +114,7 @@ protected:
     int byteorder_;
     int cformat_;
     int port_;
-
+    int norm_;
     
     unsigned char *tm_;
     int width_;
@@ -339,6 +341,7 @@ V4lGrabber::~V4lGrabber()
 int V4lGrabber::command(int argc, const char*const* argv)
 {
     int i;
+    struct video_channel     channel;
 
     Tcl &tcl = Tcl::instance();
 
@@ -437,6 +440,19 @@ int V4lGrabber::command(int argc, const char*const* argv)
                         byteorder_ = atoi(argv[2]);
                         return (TCL_OK);
         }
+
+        if (strcmp(argv[1], "norm") == 0) {
+                        norm_ = atoi(argv[2]);
+
+                        channel.channel=port_;
+                        channel.norm=norm_;
+
+    			if (-1 == ioctl(fd_, VIDIOCSCHAN, &channel))
+			perror("ioctl VIDIOCSCHAN");
+
+                        DEBUG(fprintf(stderr, "V4l: Norm = %d\n", norm_));
+                        return (TCL_OK);
+	}
 
 	if (strcmp(argv[1], "fps") == 0) {
 	    DEBUG(fprintf(stderr,"V4l: fps %s\n",argv[2]));
@@ -752,10 +768,11 @@ void V4lGrabber::format()
     DEBUG(fprintf(stderr," size=%dx%d",width_,height_));
 
     channel.channel = port_;
-    channel.norm = VIDEO_MODE_PAL;
+    channel.norm = norm_;
     if (-1 == ioctl(fd_, VIDIOCSCHAN, &channel))
 	perror("ioctl VIDIOCSCHAN");
     DEBUG(fprintf(stderr," port=%d\n",port_));
+    DEBUG(fprintf(stderr," norm=%d\n",norm_));
 
     allocref();
 }
