@@ -162,9 +162,15 @@ static void store_other_addr(struct mbus *m, char *a)
 
 	if (m->num_other_addr == m->max_other_addr) {
 		/* Expand the list... */
+		int old_other_addr = m->max_other_addr;
 		m->max_other_addr *= 2;
 		m->other_addr = (char **) xrealloc(m->other_addr, m->max_other_addr * sizeof(char *));
 		m->other_hello = (struct timeval **) xrealloc(m->other_hello, m->max_other_addr * sizeof(struct timeval *));
+		for (i = old_other_addr; i < m->max_other_addr; i++) {
+			m->other_addr[i] = NULL;
+			m->other_hello[i] = NULL;
+		}
+		
 	}
 	m->other_hello[m->num_other_addr]=(struct timeval *)xmalloc(sizeof(struct timeval));
 	gettimeofday(m->other_hello[m->num_other_addr],NULL);
