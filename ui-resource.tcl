@@ -99,6 +99,7 @@ proc init_fonts {} {
 }
 
 proc init_resources {} {
+	global tcl_platform
 	#
 	# use 2 pixels of padding by default
 	#
@@ -115,9 +116,11 @@ proc init_resources {} {
 	# base priority from widgetDefault to 61 so that user's X resources
 	# won't override these.
 	#
-	tk_setPalette gray80
-	foreach option [array names tkPalette] {
-		option add *$option $tkPalette($option) 61
+	if {$tcl_platform(platform) != "windows"} {
+		tk_setPalette gray80
+		foreach option [array names tkPalette] {
+			option add *$option $tkPalette($option) 61
+		}
 	}
 
 	option add *Radiobutton.relief flat startupFile
