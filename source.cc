@@ -493,11 +493,12 @@ void Source::adapt(u_int32_t arr_ts, u_int32_t ts, int flag)
 		pdelay_ = FUDGE + delay_ + int(3. * dvar_); 
 		if (pending_) {
 			/* set to the max between the audio & video playout delays */
+			printf("ad = %d\tvd= %d\n", apdelay_, pdelay_);
 			if (pdelay_ < apdelay_) 
 				pdelay_ = apdelay_;
 			/* prepare mbus msg and send it to mbus, if we have to ... */
 			sprintf(arg, "%s %d", mbus_->mbus_encode_str(sdes_[RTCP_SDES_CNAME]), pdelay_); 	
-			printf("VIC--> %s\n", arg);
+			//printf("VIC--> %s\n", arg);
 			mbus_->mbus_send(mbus_->mbus_audio_addr, "source.playout", arg, 0);
 			pending_ = 0;
 		}
@@ -537,14 +538,12 @@ Source::schedule()
                 return;
 
         u_int playout = head_->playout();
-        int ms = int(int(playout - now_) / 65.536);
 
         if (playout <= now_ || elastic_ == 0) {
                 timeout();
-#ifdef DEBUGI
-                printf("Late by %d ms\n", ms);
-#endif
         } else {
+		//if (int((playout - now_) / 65.536) > 700)
+			printf("%d\n", int((playout - now_) / 65.536));
                 msched(int((playout - now_) / 65.536));
         }
 }
@@ -628,7 +627,7 @@ Source::recv(u_char *pkt, struct rtphdr* rh, u_char *vh, int cc)
 
 	now_ = ntptime();
 	/* calculate the real send time */ 
-	if (ts > rtp_ctrl_) 
+	if (ts >= rtp_ctrl_) 
 		sendtime = sts_ctrl_ + (((ts - rtp_ctrl_) << 12) / 5625);  
 	else
 		sendtime = sts_ctrl_ - (((rtp_ctrl_ - ts) << 12) / 5625);

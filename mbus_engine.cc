@@ -87,7 +87,7 @@ static void func_source_playout(char *srce, char *args, MBusHandler *mb)
 		addr = cname2addr(name);
 		SourceManager &sm = SourceManager::instance();
 		Source *s = sm.lookup(addr);
-		printf("VIC<-- %s  %d  %d\n", cname, playout, (int)s); 
+		//printf("VIC<--  %d\n", playout); 
 		if (s) {
 			s->apdelay(playout);
 			s->pending(1);

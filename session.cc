@@ -662,6 +662,7 @@ void SessionManager::parse_sr(rtcphdr* rh, int flags, u_char*ep,
 	s->map_ntp_time(t);
 	s->map_rtp_time(s->convert_time(t));
 	s->rtp2ntp(1);
+	//printf("Got SR\n");
 
 	int cnt = flags >> 8 & 0x1f;
 	parse_rr_records(ssrc, (rtcp_rr*)(sr + 1), cnt, ep, addr);
