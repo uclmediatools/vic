@@ -135,63 +135,7 @@ int strcasecmp(const char*, const char*);
 
 #ifdef WIN32
 
-
-#ifdef DAS_IPV6
-#include <winsock6.h>
-#else
-#include <winsock2.h>
-//#include <ws2tcpip.h>
-#endif
-
-#ifdef HAVE_IPV6
-
-#if !defined(DAS_IPV6) && defined(WIN32) /* MS_IPV6 */
-
-#include <ws2ip6.h>
-#include <ws2tcpip.h>
-
-#define IN6ADDR_ANY_INIT { (unsigned char)0, (unsigned char)0, (unsigned char)0, (unsigned char)0, \
-                            (unsigned char)0, (unsigned char)0, (unsigned char)0, (unsigned char)0, \
-                            (unsigned char)0, (unsigned char)0, (unsigned char)0, (unsigned char)0, \
-                            (unsigned char)0, (unsigned char)0, (unsigned char)0, (unsigned char)0 } 
-#define IN6_IS_ADDR_UNSPECIFIED(addr) \
-        (((addr)->s6_addr[0] == 0) && \
-        ((addr)->s6_addr[1] == 0) && \
-        ((addr)->s6_addr[2] == 0) && \
-        ((addr)->s6_addr[3] == 0) && \
-        ((addr)->s6_addr[4] == 0) && \
-        ((addr)->s6_addr[5] == 0) && \
-        ((addr)->s6_addr[6] == 0) && \
-        ((addr)->s6_addr[7] == 0) && \
-        ((addr)->s6_addr[8] == 0) && \
-        ((addr)->s6_addr[9] == 0) && \
-        ((addr)->s6_addr[10] == 0) && \
-        ((addr)->s6_addr[11] == 0) && \
-        ((addr)->s6_addr[12] == 0) && \
-        ((addr)->s6_addr[13] == 0) && \
-        ((addr)->s6_addr[14] == 0) && \
-        ((addr)->s6_addr[15] == 0))
-
-#define IN6_IS_ADDR_MULTICAST(addr) \
-        ((addr)->s6_addr[0] == 0xffU)
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
-	const char * inet_ntop(int af, const void *src, char *dst, size_t size);
-	int inet_pton(int af,const char *src,void *dst);
-#if defined(__cplusplus)
-}
-#endif 
-
-#define INET6_ADDRSTRLEN        46      /* max len of IPv6 addr in ascii */
-                                        /* standard colon-hex notation. */ 
-#define EAFNOSUPPORT -1
-//#define IP_MULTICAST_LOOP       0x12    /* set/get IP multicast loopback   */
-
-#endif /* MS_IPV6 */
-
-#endif /* HAVE_IPV6 */
+#include <winsock.h>
 
 #define MAXHOSTNAMELEN	256
 
@@ -215,9 +159,8 @@ struct timezone {
 	int tz_minuteswest;
 	int tz_dsttime;
 };
-#ifndef DAS_IPV6
+
 typedef int pid_t;
-#endif
 typedef int uid_t;
 typedef int gid_t;
     
@@ -226,7 +169,7 @@ extern "C" {
 #endif
 
 int uname(struct utsname *);
-int getopt_(int, char * const *, const char *);
+int getopt(int, char * const *, const char *);
 int strcasecmp(const char *, const char *);
 int srandom(int);
 int random(void);

@@ -40,14 +40,12 @@ static char rcsid[] =
  * ppmtolut - perform various transformation from colormaps (in the
  * form of a ppm file) to lookup tables.
  */
-#include "config.h"
-
 
 #include <stdio.h>
 #include <sys/types.h> 
 #include <math.h>
 #ifdef WIN32
-//#include <winsock.h>
+#include <winsock.h>
 #endif
 
 /* D65 Reference Whites */
@@ -470,11 +468,11 @@ main(int argc, char **argv)
 	double (*distfn)(struct color *, struct color *);
 
 	extern char *optarg;
-	extern int optind_, opterr;
+	extern int optind, opterr;
 
 	distfn = yuv_distance;
 	factor = 1.0;
-	while ((op = getopt_(argc, argv, "ef:ln:q:rs:vxyY:")) != -1) {
+	while ((op = getopt(argc, argv, "ef:ln:q:rs:vxyY:")) != -1) {
 		switch (op) {
 		case 'e':
 			++eflag;
@@ -515,10 +513,10 @@ main(int argc, char **argv)
 		}
 		
 	}
-	if (optind_ < argc && argc > 1) {
-		if (argc - optind_ > 1)
+	if (optind < argc && argc > 1) {
+		if (argc - optind > 1)
 			usage();
-		cmap = argv[optind_];
+		cmap = argv[optind];
 	}
 	if (cmap == 0)
 		f = stdin;
