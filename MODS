@@ -260,6 +260,10 @@ v1.1.5  - Remove SunOS and Solaris defines from the configure script, they
 	  check all cases are covered in decision blocks.
 	- Fix waiting_ack next is set to null when message is put on ack list.
 	- Add check for udp socket allocation success in mbus_init.
+	- Add get_appname to util.[ch].
+	- Bound ttl to max 127 in rtp.c rather than asserting <= 127.
+	- Change rtp_init to return NULL in rtp.c if ports or ttl 
+	  inappropriate.
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,

@@ -874,9 +874,19 @@ struct rtp *rtp_init_if(char *addr, char *iface, uint16_t rx_port, uint16_t tx_p
 	int         	 i, j;
 	char		*cname;
 
-	assert(ttl >= 0 && ttl < 128);
-	assert(rx_port % 2 == 0);
-	assert(tx_port % 2 == 0);
+        if (ttl < 0) {
+                debug_msg("ttl must be greater than zero\n");
+                return NULL;
+        }
+        if (rx_port % 2) {
+                debug_msg("rx_port must be even\n");
+                return NULL;
+        }
+        if (tx_port % 2) {
+                debug_msg("tx_port must be even\n");
+                return NULL;
+        }
+
 	session 		= (struct rtp *) xmalloc(sizeof(struct rtp));
 	session->magic		= 0xfeedface;
 	session->opt		= (options *) xmalloc(sizeof(options));
@@ -884,7 +894,7 @@ struct rtp *rtp_init_if(char *addr, char *iface, uint16_t rx_port, uint16_t tx_p
 	session->addr		= xstrdup(addr);
 	session->rx_port	= rx_port;
 	session->tx_port	= tx_port;
-	session->ttl		= ttl;
+	session->ttl		= min(ttl, 127);
 	session->rtp_socket	= udp_init_if(addr, iface, rx_port, tx_port, ttl);
 	session->rtcp_socket	= udp_init_if(addr, iface, (uint16_t) (rx_port+1), (uint16_t) (tx_port+1), ttl);
 
