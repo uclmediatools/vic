@@ -142,6 +142,8 @@ v1.0.8	- Add mbus_sent_all()
 	* 5 October 1999
 
 v1.0.9	- Ignore ECONNREFUSED in net_udp.c
+	- Add mbus_rendezvous_waiting() and mbus_rendezvous_go() to enable
+	  easy rendezvous between multiple processes.
 
 
 Still to do...

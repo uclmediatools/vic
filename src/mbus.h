@@ -68,6 +68,8 @@ void         mbus_retransmit(struct mbus *m);
 void         mbus_heartbeat(struct mbus *m, int interval);
 int          mbus_waiting_ack(struct mbus *m);
 int          mbus_sent_all(struct mbus *m);
+char        *mbus_rendezvous_waiting(struct mbus *m, char *addr, char *token, void *data);
+char        *mbus_rendezvous_go(struct mbus *m, char *token, void *data);
 
 #if defined(__cplusplus)
 }

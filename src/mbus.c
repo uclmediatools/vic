@@ -959,3 +959,111 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 	return rx;
 }
 
+#define RZ_HANDLE_WAITING 1
+#define RZ_HANDLE_GO      2
+
+struct mbus_rz {
+	char		*peer;
+	char		*token;
+	struct mbus	*m;
+	void		*data;
+	int		 mode;
+	void (*cmd_handler)(char *src, char *cmd, char *args, void *data);
+};
+
+static void rz_handler(char *src, char *cmd, char *args, void *data)
+{
+	struct mbus_rz	*r = (struct mbus_rz *) data;;
+
+	if ((r->mode == RZ_HANDLE_WAITING) && (strcmp(cmd, "mbus.waiting") == 0)) {
+		char	*t;
+
+		mbus_parse_init(r->m, args);
+		mbus_parse_str(r->m, &t);
+		if (strcmp(mbus_decode_str(t), r->token) == 0) {
+			r->peer = xstrdup(src);
+		}
+		mbus_parse_done(r->m);
+	} else if ((r->mode == RZ_HANDLE_GO) && (strcmp(cmd, "mbus.go") == 0)) {
+		char	*t;
+
+		mbus_parse_init(r->m, args);
+		mbus_parse_str(r->m, &t);
+		if (strcmp(mbus_decode_str(t), r->token) == 0) {
+			r->peer = xstrdup(src);
+		}
+		mbus_parse_done(r->m);
+	} else if (strcmp(cmd, "mbus.hello") == 0) {
+		/* Silently ignore this... */
+	} else {
+		r->cmd_handler(src, cmd, args, r->data);
+	}
+}
+
+char *mbus_rendezvous_waiting(struct mbus *m, char *addr, char *token, void *data)
+{
+	/* Loop, sending mbus.waiting(token) to "addr", until we get mbus.go(token) */
+	/* back from our peer. Any other mbus commands received whilst waiting are  */
+	/* processed in the normal manner, as if mbus_recv() had been called.       */
+	char		*token_e, *peer;
+	struct timeval	 timeout;
+	struct mbus_rz	*r;
+
+	r = (struct mbus_rz *) xmalloc(sizeof(struct mbus_rz));
+	r->peer        = NULL;
+	r->token       = token;
+	r->m           = m;
+	r->data        = data;
+	r->mode        = RZ_HANDLE_GO;
+	r->cmd_handler = m->cmd_handler;
+	m->cmd_handler = rz_handler;
+	token_e        = mbus_encode_str(token);
+	while (r->peer == NULL) {
+		timeout.tv_sec  = 0;
+		timeout.tv_usec = 250000;
+		mbus_heartbeat(m, 1);
+		mbus_qmsgf(m, addr, FALSE, "mbus.waiting", "%s", token_e);
+		mbus_send(m);
+		mbus_recv(m, r, &timeout);
+	}
+	m->cmd_handler = r->cmd_handler;
+	peer = xstrdup(r->peer);
+	xfree(r);
+	xfree(token_e);
+	return peer;
+}
+
+char *mbus_rendezvous_go(struct mbus *m, char *token, void *data)
+{
+	/* Wait until we receive mbus.waiting(token), then send mbus.go(token) back to   */
+	/* the sender of that message. Whilst waiting, other mbus commands are processed */
+	/* in the normal manner as if mbus_recv() had been called.                       */
+	char		*token_e, *peer;
+	struct timeval	 timeout;
+	struct mbus_rz	*r;
+
+	r = (struct mbus_rz *) xmalloc(sizeof(struct mbus_rz));
+	r->peer        = NULL;
+	r->token       = token;
+	r->m           = m;
+	r->data        = data;
+	r->mode        = RZ_HANDLE_WAITING;
+	r->cmd_handler = m->cmd_handler;
+	m->cmd_handler = rz_handler;
+	token_e        = mbus_encode_str(token);
+	while (r->peer == NULL) {
+		timeout.tv_sec  = 0;
+		timeout.tv_usec = 250000;
+		mbus_heartbeat(m, 1);
+		mbus_send(m);
+		mbus_recv(m, r, &timeout);
+	}
+	mbus_qmsgf(m, r->peer, FALSE, "mbus.go", "%s", token_e);
+	mbus_send(m);
+	m->cmd_handler = r->cmd_handler;
+	peer = xstrdup(r->peer);
+	xfree(r);
+	xfree(token_e);
+	return peer;
+}
+
