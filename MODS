@@ -222,4 +222,5 @@ Still to do...
 	  otherwise, as pointed out by Orion.
 	- Allow a callback for background processing during mbus_rendezvous_*()
 	- mbus_exit() queues an mbus.bye() message, but that never gets sent.
+	- Fix buffer potential overflow in _dprintf() on windows
 
