@@ -28,13 +28,13 @@ all: version.h $(TARGET) test-libcommon
 
 test-libcommon: $(TEST_OBJS) $(TARGET)
 	$(CC) $(TEST_OBJS) $(CFLAGS) $(TARGET) $(LIBS) -o test-libcommon
-	
+
 $(TARGET): $(OBJS)
 	$(AR) r $(TARGET) $(OBJS)
 	$(RANLIB) $(TARGET)
 
-version.h:	VERSION
-	sed -e 's/.*/#define CCL_VERSION "v&"/' VERSION > version.h
+version.h: ../VERSION
+	sed -e 's/.*/#define CCL_VERSION "v&"/' $? > version.h
 
 .c.o:
 	$(CC) $(CFLAGS) $(INC) -c $<
@@ -52,7 +52,7 @@ ctags:
 	ctags *.[ch]
 
 release:
-	cvs tag release-`cat VERSION | sed "s/\./-/g"`
+	cvs tag release-`cat ../VERSION | sed "s/\./-/g"`
 
 depend: $(SRCS)
 	makedepend $(DEFS) $(INC) $(SRCS)
