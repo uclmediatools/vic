@@ -48,6 +48,7 @@ char* Module::fttoa(int ft)
 	case FT_H261:	  return ("h261");
 	case FT_CELLB:	  return ("cellb");
 	case FT_DCT:	  return ("dct");
+	case FT_RAW:	  return ("raw");
 	}
 	return ("");
 }
@@ -68,6 +69,8 @@ int Module::atoft(const char* s)
 		return FT_CELLB;
 	if (strcasecmp(s, "dct") == 0)
 		return FT_DCT;
+	if (strcasecmp(s, "raw") == 0)
+		return FT_RAW;
 	return (-1);
 }
 
