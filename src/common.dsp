@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Static Library" 0x0104
 
-CFG=common - Win32 Debug IPv6 Musica
+CFG=common - Win32 Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -18,10 +18,10 @@ CFG=common - Win32 Debug IPv6 Musica
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
 !MESSAGE "common - Win32 Release" (based on "Win32 (x86) Static Library")
-!MESSAGE "common - Win32 Debug" (based on "Win32 (x86) Static Library")
 !MESSAGE "common - Win32 Debug IPv6" (based on "Win32 (x86) Static Library")
 !MESSAGE "common - Win32 Debug IPv6 Musica" (based on "Win32 (x86) Static Library")
-!MESSAGE 
+!MESSAGE "common - Win32 Debug" (based on "Win32 (x86) Static Library")
+!MESSAGE
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
