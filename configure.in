@@ -180,7 +180,7 @@ sparc-sun-solaris*)
 		V_DEFINE="$V_DEFINE -D__svr4__ -DSolaris"
 	fi
 	OPSYS=solaris
-	if test -f video/grabber-rtvc.cc || test -f video/grabber-rtvc.o ; then
+	if test -f video/grabber-rtvc.cpp || test -f video/grabber-rtvc.o ; then
 		V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-rtvc.o"
 		if test "$have_xil" = yes ; then
 			V_ALL="$V_PROG $V_PROG.xil"
@@ -281,8 +281,8 @@ sparc-sun-sunos*)
 	;;
 esac
 
-if test -f encoder-bvc.cc ; then
-	V_OBJ="$V_OBJ encoder-bvc.o decoder-bvc.o"
+if test -f codec/encoder-bvc.cpp ; then
+	V_OBJ="$V_OBJ codec/encoder-bvc.o codec/decoder-bvc.o"
 fi
 
 AC_SUBST(V_INCLUDE_GRABBER)
