@@ -558,8 +558,15 @@ static void tx_add_command(char *cmnd, char *args)
 static void tx_send(struct mbus *m)
 {
 	char		digest[16];
-	int		len = tx_bufpos - tx_buffer;
+	int		len;
 	unsigned char	initVec[8] = {0,0,0,0,0,0,0,0};
+
+	while (((tx_bufpos - tx_buffer) % 8) != 0) {
+		/* Pad to a multiple of 8 bytes, so the encryption can work... */
+		*(tx_bufpos++) = ' ';
+	}
+	*tx_bufpos = '\0';
+	len = tx_bufpos - tx_buffer;
 
 	if (m->hashkey != NULL) {
 		/* Authenticate... */
@@ -570,9 +577,7 @@ static void tx_send(struct mbus *m)
 		/* Encrypt... */
 		memset(tx_cryptbuf, 0, MBUS_BUF_SIZE);
 		memcpy(tx_cryptbuf, tx_buffer, len);
-		while ((len % 8) != 0) {
-			len++;
-		}
+		assert((len % 8) == 0);
 		assert(len < MBUS_BUF_SIZE);
 		assert(m->encrkeylen == 8);
 		qfDES_CBC_e(m->encrkey, tx_cryptbuf, len, initVec);
