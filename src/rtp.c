@@ -1046,7 +1046,11 @@ static int validate_rtp(rtp_packet *packet, int len)
 	/* Check that the amount of padding specified is sensible. */
 	/* Note: have to include the size of any extension header! */
 	if (packet->p) {
-		int	payload_len = len - 12 - (packet->cc * 4) - (packet->extn_len * 4) - packet->extn_len>0?4:0;
+		int	payload_len = len - 12 - (packet->cc * 4) - (packet->extn_len * 4);
+                if (packet->extn_len) {
+                        /* cater for extension header if present */
+                        payload_len -= 4;
+                }
                 if (packet->data[packet->data_len-1] > payload_len) {
                         debug_msg("rtp_header_validation: padding greater than payload length\n");
                         return FALSE;

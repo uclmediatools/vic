@@ -255,7 +255,7 @@ v1.1.5	- Remove SunOS and Solaris defines from the configure script, they
 	- Add workaround for missing getaddrinfo() on some platforms.
 	- Remove most of the abort() statements from udp_init(), we now
 	  return NULL in most cases of an error.
-
+	- Fix header extension handling when padding bit set for RTP packets.
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
