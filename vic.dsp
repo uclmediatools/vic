@@ -1327,6 +1327,10 @@ SOURCE=.\net\rt.h
 # End Group
 # Begin Source File
 
+SOURCE=.\net\communicator.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\net\confbus.cpp
 # End Source File
 # Begin Source File
@@ -1898,10 +1902,6 @@ SOURCE=.\win32\win32X.c
 SOURCE=.\config.h
 # End Source File
 # End Group
-# Begin Source File
-
-SOURCE=.\communicator.cpp
-# End Source File
 # Begin Source File
 
 SOURCE=.\getopt.c
