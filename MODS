@@ -83,6 +83,7 @@ v1.0.7  - Add udp_exit to close sockets and leave multicast groups if necessary.
 	  you get errors in the IPV6_ADD_MEMBERSHIP setsockopt, this is probably
 	  the reason. We could specify an interface explicitly, but which one to
 	  pick?
+	- Updates to the IPv6 code for the Detexis Musica IPv6 stack
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,

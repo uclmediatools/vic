@@ -1,6 +1,7 @@
 /*
- * FILE:    net_udp.c
- * AUTHORS: Colin Perkins
+ * FILE:     net_udp.c
+ * AUTHOR:   Colin Perkins 
+ * MODIFIED: Orion Hodson & Piers O'Hanlon
  * 
  * Copyright (c) 1998-99 University College London
  * All rights reserved.
@@ -48,14 +49,10 @@
 #define IPv6	6
 
 /* This is pretty nasty but it's the simplest way to get round */
-/* the Detexis bug that means their MUSICA IPv6 stack uses */
-/* IPPROTO_IP instead of IPPROTO_IPV6 in setsockopt calls*/
+/* the Detexis bug that means their MUSICA IPv6 stack uses     */
+/* IPPROTO_IP instead of IPPROTO_IPV6 in setsockopt calls      */
 #ifdef MUSICA_IPV6
 #define IPPROTO_IPV6 IPPROTO_IP
-#endif
-
-#ifdef HAVE_IPv6
-const struct in6_addr rat_in6addr_any = { IN6ADDR_ANY_INIT };
 #endif
 
 #ifndef INADDR_NONE
@@ -308,6 +305,24 @@ static int udp_send4(socket_udp *s, char *buffer, int buflen)
         return ret;
 }
 
+static char *udp_host_addr4(void)
+{
+	char	       		*hname;
+	struct hostent 		*hent;
+	struct in_addr  	 iaddr;
+
+	hname = (char *) xmalloc(MAXHOSTNAMELEN);
+	if (gethostname(hname, MAXHOSTNAMELEN) != 0) {
+		debug_msg("Cannot get hostname!");
+		abort();
+	}
+	hent = gethostbyname(hname);
+	assert(hent->h_addrtype == AF_INET);
+	memcpy(&iaddr.s_addr, hent->h_addr, sizeof(iaddr.s_addr));
+	strcpy(hname, inet_ntoa(iaddr));
+	return hname;
+}
+
 /*****************************************************************************/
 /* IPv6 specific functions...                                                */
 /*****************************************************************************/
@@ -448,6 +463,113 @@ static int udp_send6(socket_udp *s, char *buffer, int buflen)
 #endif
 }
 
+static char *udp_host_addr6(socket_udp *s)
+{
+#ifdef HAVE_IPv6
+	char	       		*hname;
+	struct hostent 		*hent;
+#if !defined(WIN32) || defined(MUSICA_IPV6)
+	int			 error_num;
+#endif
+#if defined(Linux) || defined(Solaris)
+	int gai_err;
+    	struct addrinfo hints, *ai;
+#endif
+        struct sockaddr_in6 local;
+        int len = sizeof(local), result = 0;
+
+        memset((char *)&local, 0, len);
+        local.sin6_family = AF_INET6;
+
+        if ((result = getsockname(s->fd,(struct sockaddr *)&local, &len)) < 0){
+                local.sin6_addr = in6addr_any;
+                local.sin6_port = 0;
+		debug_msg("get getsockname fail!");
+        }
+	if (IN6_IS_ADDR_UNSPECIFIED(&(local.sin6_addr))) {
+		debug_msg("get hostname!");
+		hname = (char *) xmalloc(MAXHOSTNAMELEN);
+		if (gethostname(hname, MAXHOSTNAMELEN) != 0) {
+			debug_msg("Cannot get hostname!");
+			abort();
+		}
+		debug_msg("%s\n", hname);
+
+#if defined(WIN32) && !defined(MUSICA_IPV6)
+		hent = getnodebyname(hname, AF_INET6, AI_DEFAULT);
+		assert(hent->h_addrtype == AF_INET6);
+		hname = xstrdup(inet6_ntoa((const struct in6_addr *) hent->h_addr_list[0]));
+#else
+#if defined(Linux) || defined(Solaris)
+
+		memset(&hints, 0, sizeof(struct addrinfo));
+
+		hints.ai_protocol = IPPROTO_IPV6;
+		/*hints.ai_family = AF_INET6; */
+		/*hints.ai_socktype = SOCK_DGRAM;*/
+
+		if ((gai_err=getaddrinfo(hname, NULL, &hints, &ai))) {
+			debug_msg("getaddrinfo: %s: %s\n", hname, gai_strerror(gai_err));
+			abort();
+		}
+
+		if (inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)(ai->ai_addr))->sin6_addr), hname, MAXHOSTNAMELEN) == NULL) {
+			freeaddrinfo(ai);
+			debug_msg("inet_ntop: %s: \n", hname);
+			abort();
+		}
+		freeaddrinfo(ai);
+		UNUSED(error_num);
+		UNUSED(hent);
+#else
+#ifdef MUSICA_IPV6
+		hent = gethostbyname2(hname, AF_INET6);
+#else
+		hent = getipnodebyname(hname, AF_INET6, AI_DEFAULT, &error_num);
+#endif /*MUSICA_IPV6*/
+		if (hent == NULL) {
+			switch (error_num) {
+			case HOST_NOT_FOUND:
+				debug_msg("host not found\n");
+				break;
+			case NO_ADDRESS:
+				debug_msg("no address\n");
+				break;
+			case NO_RECOVERY:
+				debug_msg("no recovery\n");
+				break;
+			case TRY_AGAIN:
+				debug_msg("try again\n");
+				break;
+			default:
+				debug_msg("unknown error\n");
+				break;
+			}
+			abort();
+		}
+		assert(hent->h_addrtype == AF_INET6);
+		if (inet_ntop(AF_INET6, hent->h_addr_list[0], hname, MAXHOSTNAMELEN) == NULL) {
+			debug_msg("inet_ntop: %s: \n", hname);
+			abort();
+		}
+		debug_msg("inet_ntop: %s: \n", hname);
+#endif /*Linux || Solaris7 IPv6 */
+#endif /*MS_IPV6*/
+		return hname;
+	}
+		debug_msg("get getsockname !");
+	if (inet_ntop(AF_INET6, &local.sin6_addr, hname, MAXHOSTNAMELEN) ==
+NULL) {
+		debug_msg("inet_ntop: %s: \n", hname);
+                abort();
+        }
+	return hname;
+#else  /* HAVE_IPv6 */
+	UNUSED(s);
+	return "::";	/* The unspecified address... */
+#endif /* HAVE_IPv6 */
+}
+
 /*****************************************************************************/
 /* Generic functions, which call the appropriate protocol specific routines. */
 /*****************************************************************************/
@@ -529,139 +651,11 @@ int udp_select(struct timeval *timeout)
 	return select(max_fd + 1, &rfd, NULL, NULL, timeout);
 }
 
-static char *udp_host_addr4(void)
-{
-	char	       		*hname;
-	struct hostent 		*hent;
-	struct in_addr  	 iaddr;
-
-	hname = (char *) xmalloc(MAXHOSTNAMELEN);
-	if (gethostname(hname, MAXHOSTNAMELEN) != 0) {
-		debug_msg("Cannot get hostname!");
-		abort();
-	}
-	hent = gethostbyname(hname);
-	assert(hent->h_addrtype == AF_INET);
-	memcpy(&iaddr.s_addr, hent->h_addr, sizeof(iaddr.s_addr));
-	strcpy(hname, inet_ntoa(iaddr));
-	return hname;
-}
-
-#ifdef HAVE_IPv6
-static char *udp_host_addr6(socket_udp *s)
-{
-	char	       		*hname;
-	struct hostent 		*hent;
-#if !defined(WIN32) || defined(MUSICA_IPV6)
-	int			 error_num;
-#endif
-#if defined(Linux) || defined(Solaris)
-	int gai_err;
-    	struct addrinfo hints, *ai;
-#endif
-        struct sockaddr_in6 local;
-        int len = sizeof(local), result = 0;
-
-        memset((char *)&local, 0, len);
-        local.sin6_family = AF_INET6;
-
-        if ((result = getsockname(s->fd,(struct sockaddr *)&local, &len)) < 0){
-                local.sin6_addr = rat_in6addr_any;
-                local.sin6_port = 0;
-		debug_msg("get getsockname fail!");
-        }
-#ifdef MUSICA_IPV6
-        if (IS_SAME_IN6_ADDR(local.sin6_addr, rat_in6addr_any)) {
-#else 
-        if (IN6_ARE_ADDR_EQUAL(&(local.sin6_addr), &rat_in6addr_any)) {
-#endif
-		debug_msg("get hostname!");
-	hname = (char *) xmalloc(MAXHOSTNAMELEN);
-	if (gethostname(hname, MAXHOSTNAMELEN) != 0) {
-		debug_msg("Cannot get hostname!");
-		abort();
-	}
-	debug_msg("%s\n", hname);
-
-#if defined(WIN32) && !defined(MUSICA_IPV6)
-	hent = getnodebyname(hname, AF_INET6, AI_DEFAULT);
-	assert(hent->h_addrtype == AF_INET6);
-	hname = xstrdup(inet6_ntoa((const struct in6_addr *) hent->h_addr_list[0]));
-#else
-#if defined(Linux) || defined(Solaris)
-
-	memset(&hints, 0, sizeof(struct addrinfo));
-
-	hints.ai_protocol = IPPROTO_IPV6;
-	//hints.ai_family = AF_INET6;
-	//hints.ai_socktype = SOCK_DGRAM;
-
-	if ((gai_err=getaddrinfo(hname, NULL, &hints, &ai))) {
-		debug_msg("getaddrinfo: %s: %s\n", hname, gai_strerror(gai_err));
-		abort();
-	}
-
-	if (inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)(ai->ai_addr))->sin6_addr), hname, MAXHOSTNAMELEN) == NULL) {
-		freeaddrinfo(ai);
-		debug_msg("inet_ntop: %s: \n", hname);
-		abort();
-	}
-	freeaddrinfo(ai);
-	UNUSED(error_num);
-	UNUSED(hent);
-#else
-#ifdef MUSICA_IPV6
-    hent = gethostbyname2(hname, AF_INET6);
-#else
-	hent = getipnodebyname(hname, AF_INET6, AI_DEFAULT, &error_num);
-#endif /*MUSICA_IPV6*/
-	if (hent == NULL) {
-		switch (error_num) {
-		case HOST_NOT_FOUND:
-			debug_msg("host not found\n");
-			break;
-		case NO_ADDRESS:
-			debug_msg("no address\n");
-			break;
-		case NO_RECOVERY:
-			debug_msg("no recovery\n");
-			break;
-		case TRY_AGAIN:
-			debug_msg("try again\n");
-			break;
-		default:
-			debug_msg("unknown error\n");
-			break;
-		}
-		abort();
-	}
-	assert(hent->h_addrtype == AF_INET6);
-	if (inet_ntop(AF_INET6, hent->h_addr_list[0], hname, MAXHOSTNAMELEN) == NULL) {
-		debug_msg("inet_ntop: %s: \n", hname);
-		abort();
-	}
-	debug_msg("inet_ntop: %s: \n", hname);
-#endif /*Linux || Solaris7 IPv6 */
-#endif /*MS_IPV6*/
-	return hname;
-	}
-		debug_msg("get getsockname !");
-	if (inet_ntop(AF_INET6, &local.sin6_addr, hname, MAXHOSTNAMELEN) ==
-NULL) {
-		debug_msg("inet_ntop: %s: \n", hname);
-                abort();
-        }
-	return hname;
-}
-#endif /* HAVE_IPv6 */
-
 char *udp_host_addr(socket_udp *s)
 {
 	switch (s->mode) {
 		case IPv4 : return udp_host_addr4();
-#ifdef HAVE_IPv6
 		case IPv6 : return udp_host_addr6(s);
-#endif /* HAVE_IPv6 */
 		default   : abort();
 	}
 	return NULL;
