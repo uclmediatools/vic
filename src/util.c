@@ -163,10 +163,10 @@ void
 _block_free(void *p, int size, int line)
 {
 	int     i, *c;
-#ifdef DEBUG
+#ifdef DEBUG_MEM
         block *bp;
         int    n;
-#endif
+#endif /* DEBUG_MEM */
         UNUSED(line);
 
 	c = (int *)((char *)p - 8);
@@ -190,7 +190,7 @@ _block_free(void *p, int size, int line)
 	}
  
 	i = SIZE_TO_INDEX(size);
-#ifdef DEBUG
+#ifdef DEBUG_MEM
         bp = blocks[i];
         n = 0;
         while(bp) {
@@ -204,7 +204,7 @@ _block_free(void *p, int size, int line)
         if (i >= 4) {
                 *((int*)p+1) = line;
         }
-#endif /* DEBUG */
+#endif /* DEBUG_MEM */
 	((block *)p)->next = blocks[i];
 	blocks[i] = (block *)p;
 #ifdef DEBUG_MEM
