@@ -1,0 +1,447 @@
+<!-- @(#) $Header$ (LBNL)-->
+<html>
+<head><title>UCB/LBNL Video Conferencing Tool (vic)</title></head>
+<body>
+
+<h1>
+vic - <u>Vi</u>deo <u>C</u>onferencing Tool<br>
+</h1>
+Vic is a video conferencing application developed by the
+<a href="http://www-nrg.ee.lbl.gov/">Network Research Group</a>
+at the
+<a href="http://www.lbl.gov/LBL.html">Lawrence Berkeley National Laboratory</a>
+in collaboration with the
+<a href=http://www.berkeley.edu/>University of California, Berkeley</a>.
+Source code and pre-compiled binaries are available via
+<a href=ftp://ftp.ee.lbl.gov/conferencing/vic/>anonymous ftp</a>.
+Vic-related questions and feedback are welcome and can be sent
+to the developers via <a href=mailto:vic@ee.lbl.gov>vic@ee.lbl.gov</a>.
+
+<hr>
+
+<h2>Contents</h2>
+
+<ul>
+<li><a href=#overview>Overview</a>
+<li><a href=#features>Features</a>
+<li><a href=#installation>Installation</a>
+<li><a href=#config>Supported Systems</a>
+<li><a href=#notes>Notes</a>
+<li><a href=#ack>Acknowledgments</a>
+<li><a href=#feedback>Feedback to authors</a>
+</ul>
+
+Other links:
+<ul>
+<li><a href="whats-new.html">What's new?</a>
+<li><a href=ftp://ftp.ee.lbl.gov/conferencing/vic/>The FTP archive</a>
+<li><a href="CHANGES.html">Browse the change history</a>
+<li><a href="research.html">Research Projects</a>
+<li><a href="screen-dump.html">Screen dump of user-interface</a>
+<li>McCanne, S., and Jacobson, V.,
+<strong> <a href="ftp://ftp.ee.lbl.gov/papers/vic-mm95.ps.Z">
+vic: A Flexible Framework Framework for Packet Video,</a></strong>
+ACM Multimedia '95.
+<li><a href=http://rah.star-gate.com/~hasty/mbone.html>
+	FreeBSD MBone Tools</a>
+<li><a href=ftp://hal.smh.stcloud.msus.edu/pub/>Linux MBone tools</a>
+</ul>
+
+<a name=overview>
+<hr>
+<h3>Overview</h3>
+</a>
+
+<p>
+The UCB/LBNL video tool, <i>vic</i>, is a real-time, multimedia application
+for video conferencing over the Internet. 
+Vic was designed with a flexible and extensible architecture to support
+heterogeneous environments and configurations.  For example, in high
+bandwidth settings, multi-megabit full-motion JPEG streams can be 
+sourced using hardware assisted compression, while in low bandwidth
+environments like the Internet, aggressive low bit-rate coding can
+be carried out in software.
+
+<p>
+Vic is based on the Draft Internet Standard
+<a href=ftp://ftp.isi.edu/internet-drafts/draft-ietf-avt-rtp-07.ps>
+Real-time Transport Protocol (RTP)</a> developed by the IETF
+<a href="http://www.ietf.cnri.reston.va.us/html.charters/avt-charter.html">
+Audio/Video Transport</a> working group.
+RTP is an application-level protocol implemented entirely within
+vic -- you need no special system enhancements to run RTP.  Although
+vic can be run point-to-point using standard unicast IP addresses,
+it is primarily intended as a multiparty conferencing application.
+To make use of the conferencing capabilities, your system must support
+IP Multicast, and ideally, your network should be connected to the
+<a href="http://www.best.com/~prince/techinfo/mbone.html">
+IP Multicast Backbone (MBone)</a>. 
+Vic also runs over
+<a href=ftp://tenet.berkeley.edu/pub/tenet/Papers/BaFeMaMoVeZh94.ps>
+RTIP</a>, the experimental real-time networking protocols
+from U.C. Berkeley's <a href="http://tenet.berkeley.edu/">Tenet group</a>
+and over ATM using 
+<a href=http://www.fore.com/>Fore's</a> SPANS API.
+
+<p>
+Vic provides only the video portion of a multimedia conference; audio,
+whiteboard, and session control tools are implemented as separate
+applications.  Our audio tool is called
+<a href="ftp://ftp.ee.lbl.gov/conferencing/vat/">vat</a> and
+our whiteboard tool
+<a href="ftp://ftp.ee.lbl.gov/conferencing/wb/">wb</a>.
+UCL developed the session directory tool
+<a href="ftp://cs.ucl.ac.uk/mice/sdr/">sdr</a>.
+Other related applications include ISI's Multimedia Conference Control,
+<a href="ftp://ftp.isi.edu/confctrl/mmcc/">mmcc</a>,
+the Xerox PARC Network Video tool, 
+<a href="ftp://ftp.parc.xerox.com/pub/net-research/">nv</a>
+and the INRIA Video-conferencing System,
+<a href="http://www.inria.fr/rodeo/ivs.html">ivs</a>.
+Vic is backward compatible with RTPv1 and can interoperate with both
+nv (v3.3) and ivs (v3.3).
+
+<a name=features><hr></a>
+<h3>Features</h3>
+
+<p>
+Features unique to vic include:
+<ul>
+<li> an ``Intra-H.261'' video encoder,
+<li> voice switched viewing windows,
+<li> multiple dithering algorithms,
+<li> interactive ``title generation'', and
+<li> routing of decoded video to external video ports.
+</ul>
+The Intra-H.261
+encoder combines the advantages of nv's block-based conditional
+replenishment scheme (i.e., robustness to loss) with those of H.261
+(i.e., higher compression gain and compatibility with hardware codecs).
+This is achieved by coding only ``intra-mode'' macroblocks and using
+macroblock skip codes to replenish only the blocks that change.
+For a fixed bit rate, the H.261 coder achieves frame rates
+<a href=rd.html>typically 2-4 times</a> that of the nv coding format.
+
+<p>
+Vic allows viewing windows to be configured
+to ``follow the speaker''.  Using cues from vat, vic will switch
+the viewing window to whoever is speaking.  More than
+one window can be configured in this manner, which causes the
+most recent N speakers to be displayed.
+
+<p>
+Vic has several dithering algorithms for representing
+continuous-tone color video streams on color-mapped displays.
+The user can trade of run-time complexity with quality.
+An error-diffusion dither gives the highest quality but
+at the greatest CPU cost, while a direct color quantization
+results in the lowest CPU load but yields relatively low quality.
+An ordered dither (derived from nv) gives moderate
+quality with low complexity.
+
+<p>
+Vic exports an interface that allows graphics to be easily composited
+on top of the captured video.  Overlays can be downloaded and
+manipulated across the ``Conference Bus'' allowing a ``production team''
+to enhance a broadcast with titles, credits, logos, etc.  Since the
+conference bus can be manipulated using tcl, it's easy to extend existing
+scripts or create new scripts for on-the-fly title generation.
+See the ``title-maker'' script in the vic distribution for an example
+of how to do this.
+
+<p>
+Video streams can be displayed simulatanously on a workstation display
+and on an external video output port, provided your hardware supports
+external output.  This allows you to render a single stream to a
+full-sized NTSC/PAL analog video signal, which when viewed on an
+external monitor (or video projector) generally provides a more
+comfortable picture compared to video displayed in a small X window.
+
+
+<a name=installation><hr></a>
+<h3>Installation</h3>
+The easiest way to install vic is to grab the 
+<a href=ftp://ftp.ee.lbl.gov/conferencing/vic/>
+binary distribution</a>.
+for your architecture, unpack it, and install the executable and
+manual entry.
+
+You can also build vic from source.  Start by unpacking the gzip'd
+<a href="ftp://ftp.ee.lbl.gov/conferencing/vic/alpha-test/">
+source tar</a>, e.g., by running
+<ul>
+<li> <a href=ftp://prep.ai.mit.edu/pub/gnu/>gzip</a>
+ -d -c vicsrc-tar.gz | tar xfv -
+</ul>
+
+This will place the contents of the source distribution
+in ./vic-x.y where ``x.y'' is the current version number.
+``cd'' into this directory and do the following:
+<ul>
+<li> Make sure <a href=http://www.sunlabs.com/research/tcl/>
+tcl/tk</a> (v7.5/4.1) is installed or built in the directory
+above the vic tree.
+<li> Run the ./configure script.
+You may specify the following arguments to configure:
+<center><table border cellspacing=1>
+<br>
+<tr>
+	<td>-x-includes=<i>path</i></td>
+	<td>specify a pathname for the X include tree</td>
+</tr><tr>
+	<td>-x-libraries=<i>path</i></td>
+	<td>specify a pathname for the X libraries</td>
+</tr><tr>
+	<td>-with-tcl=<i>path</i></td>
+	<td>specify a pathname for tcl</td>
+</tr><tr>
+	<td>-with-tk=<i>path</i></td>
+	<td>specify a pathname for tk</td>
+</tr><tr>
+	<td>-with-aix-shm=<i>path</i></td>
+	<td>specify a pathname for the AIX shm extension library</td>
+</tr>
+</table></center>
+<br>
+If you run into problems with configure, you should edit <i>configure.in</i>
+instead of <i>configure</i> and use
+<a href=ftp://prep.ai.mit.edu/pub/gnu/>GNU autoconf</a>
+to generate a new configure from configure.in.  If you need to make
+such changes, please send them to us so future versions of vic
+will configure out of the box.
+
+<li> Run make.
+<li> If make completes successfully, run ``make install'' as root
+to install the binary and man page.
+</ul>
+
+<a name=config><hr></a>
+<h3>Supported Systems</h3>
+<center><table border cellspacing=1>
+<tr>
+	<td>sparc</td>
+	<td>SunOS 4.x</td>
+	<td>videopix,
+	<a href="http://www.vigra.com/products/vigrapix.announce.html">
+	vigrapix</a>,
+	<a href=http://www.parallax.com/>parallax</a></td>
+</tr><tr>
+	<td>sparc</td>
+	<td>Solaris 2.4</td>
+	<td>sunvideo,
+	<a href="http://www.vigra.com/products/vigrapix.announce.html">
+	vigrapix</a>,
+	<a href=http://www.parallax.com/>parallax</a>,
+	slv</td>
+</tr><tr>
+	<td>sparc</td>
+	<td>NetBSD 1.x</td>
+	<td>none</td>
+</tr><tr>
+	<td>DEC/MIPS</td>
+	<td>Ultrix 4.3</td>
+	<td>jvideo, Xv (tx/pip)</td>
+</tr><tr>
+	<td>DEC/AXP</td>
+	<td>OSF/1 v3.x</td>
+	<td>j300, jvideo</td>
+</tr><tr>
+	<td>SGI</td>
+	<td>IRIX 5.x</td>
+	<td>vl, IndigoVideo, cosmo</td>
+</tr><tr>
+	<td>i386</td>
+	<td>BSD/OS</td>
+	<td>none (yet)</td>
+</tr><tr>
+	<td>i386</td>
+	<td>FreeBSD</td>
+	<td><a href=http://www.matrox.com/imgweb/meteor.htm>
+	Matrox Meteor</a>,video spigot</td>
+</tr><tr>
+	<td>i386</td>
+	<td>Linux</td>
+	<td><a href=http://www.connectix.com/>Connectix</a>
+	<a href=http://www.connectix.com/connectix/qcchoice.html>QuickCam</a>
+	</td>
+</tr><tr>
+	<td>i386</td>
+	<td>Linux</td>
+	<td>IBM PCMCIA Smart Capture Card (SCC)</td>
+</tr><tr>
+	<td>HP/PA</td>
+	<td>HP-UX 9.x</td>
+	<td>Xv</td>
+</tr><tr>
+	<td>RS/6000, microchannel <br>(3xx,4xx,9xx,41W/T,42W/T)</td>
+	<td>AIX 3/4</td>
+	<td><a
+href="http://www.austin.ibm.com/hardware/Adapters/ultimedia.html#topic7">
+	Ultimedia Video I/O Adaptor</a></td>
+</tr><tr>
+	<td>RS/6000, PCI (40P,43P)</td>
+	<td>AIX 4</td>
+	<td>Parallax (PCI adaptor)</td>
+</tr>
+</table></center>
+<br>
+<a name=notes><hr></a>
+<h3>Notes</h3>
+
+<ul>
+<li>    For the DEC/j300, you will need 
+	<a href="http://www.research.digital.com/SRC/staff/berc/bio.html">
+	Lance Berc's </a> video server called
+	 <a href="http://chocolate.pa.dec.com/mbone/">jvdriver</a>.
+	vic does not work with DEC's MME server.
+
+<li>	Remember to run jv2driver with the right command-line options
+	if your using the svideo connector (-sin) or PAL video (-pal).
+
+<li>    Solaris-2 has small limits on shared memory segments.  If you
+	want to display full sized 24-bit video windows and more than
+	one or two, add these lines to /etc/system and reboot:
+
+ <ul>
+	<li>	set shmsys:shminfo_shmmax=2097152
+	<li>	set shmsys:shminfo_shmseg=24
+ </ul>
+	If you have a cg14 frame buffer (the built-in frame buffer
+	on sparc-20), it's a good idea to run
+ <ul>
+	<li>	/usr/kvm/cg14config -g 2.2
+ </ul>
+	from your X startup script.  The default display gamma
+	is not appropriate for video (even though the man page
+	says the default is 2.2).
+
+<li>	If you're running SunOS, the shared memory limit is also low,
+	but not as bad as Solaris.  You can change it by adding an 
+		"options SHMSIZE=2048"
+	to the system config file or adb'ing the kernel & changing the first
+	word of shminfo to 2097152.
+
+<li>	<a href="http://www.bsdi.com/info/">BSD/OS 2.0</a>
+	now includes a library to support the svr4 shared
+	memory API via
+	<a href="http://www.bsdi.com/bsdi-man/bsdi-man?proto=1.0&apropos=0&section=ALL&query=mmap">mmap</a>.
+	Unfortunately, their X server is not
+	shipped with the X Shared memory extension compiled in.
+	To get reasonable display performance with vic, you'll need
+	to recompile the X server with this extension.
+
+<li>	To use shared memory under AIX, you need to compile one of the
+	sample extensions provided with AIX and start the X server with
+	that extension loaded.  When building vic from source, you need
+	to specify --with-aix-shm=libpath to set the pathname of the
+	extension library (that also needs to be compiled from the exmaple
+	codes).  If --with-aix-shm isn't provided, vic will be built
+	without shared memory support (and hence pay a big performance
+	hit when rendering video to X windows).  (Thanks to 
+	<a href=mailto:olson@mcs.anl.gov>Bob Olson</a>
+	for bringing up vic is this environment.)
+	Bob reports that with the shared memory support in place,
+	a 1T (PowerPC 601 box) can decode 320x240 JPEG at 30fps in
+	software (with q up to about 70).
+	<a href=mailto:andy@virginia.edu>Andrew Booker</a> and
+	<a href=mailto:kira@virginia.edu>Kira Attwood</a> have made
+	AIX binaries 
+	<a href=ftp://raven.dorm.virginia.edu/pub/mbone/>
+	publicly available</a>
+
+<li>	The default BSD/OS make doesn't like vic's Makefile.
+	Just use gmake (which is probably installed).
+
+<li>	There are two versions of vic for Solaris: vic and vic.xil.
+	The vic.xil binary uses Sun's XIL library for video capture,
+	while vic.rtvc bypasses the library and manipulates the device
+	directly.  The rtvc version is faster, but because it doesn't
+	use the standard API, it might not work in future Solaris or
+	XIL releases.  The vic.xil binary is built with only xil
+	support, while the vic binary supports all available capture devices.
+
+<li>	<a href=mailto:hasty@star-gate.com>Amancio Hasty</a>
+	has put together a
+	<a href=http://rah.star-gate.com/~hasty/mbone.html>web page</a>
+	for the MBone tools under <a href=http://www.freebsd.org/>FreeBSD</a>.
+	Check it out.  Thanks to
+	<a href=mailto:james@allmalt.cs.uwm.edu>Jim Lowe</a>,
+	vic supports both the Matrix Meteor board and the video spigot
+	under FreeBSD.
+	See <a href=ftp://ftp.cs.uwm.edu/pub/FreeBSD/>
+	ftp://ftp.cs.uwm.edu/pub/FreeBSD/meteor*</a> for the Matrox
+	and <a href=ftp://ftp.cs.uwm.edu/pub/FreeBSD/spigot/>
+	href=ftp://ftp.cs.uwm.edu/pub/FreeBSD/spigot/</a>
+	for the video spigot.
+
+<li>	<a href=mailto:brezak@apollo.hp.com>John Brezak</a> has ported
+	vic to Windows 95/NT (January 31, 1996).  He says:
+ <ul>
+	<li> Run "nmake -f vic.mak" to compile.
+	<li> Known problems and limitations:
+   <ul>
+	<li> Untested on mono displays
+	<li> Need to handle case where IP_MULTICAST_LOOP cannot
+		be turned off. The default Win95 TCP/IP stack has
+		this limitation.
+	<li> There are some colormap problems in pseudo color/8.
+		This appears to be a Tk problem.
+	<li> Changing color mapping methods can cause an exit on PseudoColor/8
+	  displays.
+	<li> No grabber support.
+	<li> Should use VideoX interface for higher performance.
+    </ul>
+  </ul>
+
+<li><a href=mailto:oka@kobe-u.ac.jp>Koji OKAMURA</a>
+maintains an <a href=ftp://ftp.kobe-u.ac.jp/pub/mc/scc/>
+SCC Driver for Linux</a> and Linux
+<a href=ftp://ftp.kobe-u.ac.jp/pub/mc/apps/vic/>
+vic binaries</a> w/ SCC support.
+
+</ul>
+
+<a name=ack><hr></a>
+<h3>Acknowledgments</h3>
+<p>
+This work was co-sponsored by the the Lawrence Berkeley Laboratory
+and the Tenet Group of the University of California Berkeley and of
+the International Computer Science Institute.  Support was provided by
+
+<ul>
+<li>	an AT&T Graduate Fellowship;
+<li>	for the Lawrence Berkeley National Laboratory:
+ <ul>
+	<li>	<a href=http://www.er.doe.gov/production/octr/mics/index.html>
+		Office of Energy Research, Mathematical, Information,
+		and Computational Sciences Division, of the U.S. Department
+		of Energy</a> under Contract No. DE-AC03-76SF00098,
+	<li>	Sun Microsystems,
+	<li>	Digital Equipment Corporation, and
+	<li>	Silicon Graphics Inc.
+ </ul>
+<li>	for the Tenet Research Group:
+ <ul>
+	<li>	the National Science Foundation and the Advanced
+		Research Projects Agency (ARPA) under Cooperative
+		Agreement NCR-8919038 with the Corporation for
+		National Research Initiatives, and
+	<li>	Digital Equipment Corporation.
+ </ul>
+</ul>
+
+<a name=feedback><hr></a>
+<h3>Feedback</h3>
+
+As always, we very much want to hear about bugs and problems.  Please
+don't hesitate to offer suggestions or other feedback.  Send all vic
+related correspondence to <a href="mailto:vic@ee.lbl.gov">vic@ee.lbl.gov</a>
+(this list includes only the developers and is not distributed beyond
+our site).
+
+<p><a href="http://www-nrg.ee.lbl.gov/mccanne/">
+Steven McCanne</a> <i>(mccanne@ee.lbl.gov)</i><br>
+Van Jacobson <i>(van@ee.lbl.gov)</i>
+
+</body>
+</html>

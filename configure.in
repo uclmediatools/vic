@@ -1,0 +1,271 @@
+dnl 'autoconf' input file for the LBL/UCB vic tool
+dnl $Header$ (LBL)
+
+AC_INIT(main.cc)
+
+V_PROG="vic"
+V_ALL="$V_PROG"
+V_SHM="-DUSE_SHM"
+
+builtin(include, configure.in.head)
+
+#XXX
+V_STATIC="-static"
+
+AC_ARG_WITH(aix-shm,	--with-aix-shm=path	specify a pathname for the AIX shm X extension library file, lib=$withval, lib="")
+if test "$lib" != "" ; then
+	if test ! -r $lib ; then
+		echo "'$lib' does not exist"
+		exit 1
+	fi
+	V_LIB_AIXSHM=$lib
+else
+	V_LIB_AIXSHM=""
+fi
+
+AC_ARG_WITH(qcam,	--with-qcam=dir     specify directory with qcam.h for Connectix QuickCam device driver, qcamdir=$withval, qcamdir="")
+if test "$qcamdir" != "" -a ! -r $qcamdir/qcam.h ; then
+	echo "'$dir/qcam.h' does not exist"
+	exit 1
+fi
+
+# lots of hairy special cases for detecting which frame capture
+# support to compile in
+
+V_LIB_GRABBER=""
+V_INCLUDE_GRABBER=""
+V_OBJ_GRABBER=""
+V_LIB_XIL=""
+V_OBJ_XIL=""
+
+if test -r /usr/lib/libvl.so ; then
+	V_LIB_GRABBER="$V_LIB_GRABBER -lvl -ldmedia"
+	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-vl.o output-vl.o"
+	if test -r /usr/include/dmedia/cl_cosmo.h  ; then
+		V_LIB_GRABBER="$V_LIB_GRABBER -lcl"
+		V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-cosmo.o"
+	fi		
+fi
+if test -r /usr/lib/libsvideo.a ; then
+	V_LIB_GRABBER="$V_LIB_GRABBER -lsvideo"
+	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-svideo.o"
+fi
+if test -r /usr/lib/libXv.a ; then
+	V_LIB_GRABBER="$V_LIB_GRABBER -lXv"
+	V_DEFINE="$V_DEFINE -DXV_PSEUDO8"
+	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-xv.o"
+fi
+if test -r /usr/lpp/parallax/lib/libXvid.a ; then
+    V_LIB_GRABBER="$V_LIB_GRABBER -L/usr/lpp/parallax/lib -lXvid -lXv"
+    V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I/usr/lpp/parallax/include"
+    V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-plx.o assistor-plx.o"
+fi
+if test -r /usr/lpp/UMS6000/lib/libUMSobj.a ; then
+	V_LIB_GRABBER="$V_LIB_GRABBER -L/usr/lpp/UMS6000/lib -lUMSobj"
+	V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I/usr/lpp/UMS6000/include"
+	V_DEFINE="$V_DEFINE -DSUNRISE"
+	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-sunrise.o output-sunrise.o"
+fi
+if test -r /usr/include/machine/ioctl_meteor.h ; then
+	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-meteor.o"
+fi
+if test -r /usr/local/lib/libspigot.a ; then
+	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-spigot.o"
+	V_LIB_GRABBER="$V_LIB_GRABBER -lspigot"
+	V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I/usr/local/include"
+fi
+if test "$qcamdir" != "" ; then
+	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-qcam.o"
+	V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I$qcamdir"
+	V_DEFINE="$V_DEFINE -DQCAMDEV -DQCAMDOTH=qcam.h"
+elif test -r /usr/local/lib/libqcam.a ; then
+	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-qcam.o"
+	V_LIB_GRABBER="$V_LIB_GRABBER -lqcam"
+	V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I/usr/local/include"
+	V_DEFINE="$V_DEFINE -DQCAMLIB"
+elif test -r /dev/qcam0 ; then
+	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-qcam.o"
+	V_DEFINE="$V_DEFINE -DQCAMDEV"
+fi
+if test -r /usr/include/linux/scc.h -o -r /usr/include/machine/scc.h ; then
+	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-scc.o"
+fi
+vpix_dir=/usr/src/local/vfc-1.0
+vpix_lib=$vpix_dir/vfc_lib
+if test -d /import/VideoPix ; then
+	vpix_dir=/import/VideoPix
+	vpic_lib=$vpix_dir/lib
+fi
+if test -d $vpix_dir ; then
+	V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I$vpix_dir/sys -I$vpix_lib"
+	V_LIB_GRABBER="$V_LIB_GRABBER $vpix_lib/libvfc.a"
+	V_DEFINE="$V_DEFINE -DVIDEOPIX"
+	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-vpix.o"
+fi
+places="/usr/src/local/vigrapix/lib \
+	/opt/VIGRAvigrapix/lib"
+for dir in $places; do
+	if test -d $dir ; then
+		V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I$dir"
+		V_LIB_GRABBER="$V_LIB_GRABBER $dir/libvigrapix.a"
+		V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-vigra.o"
+    		break
+	fi
+done
+
+d=/opt/MMACslv
+if test -d $d ; then
+	V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I$d/include"
+	V_LIB_GRABBER="$V_LIB_GRABBER $d/lib/libslv.a -lintl"
+	V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-slv.o"
+fi
+
+d=/usr/include/mme
+if test -d $d ; then
+	V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I$d"
+	V_LIB_GRABBER="$V_LIB_GRABBER -lmme"
+	V_OBJ_GRABBER="grabber-mme.o $V_OBJ_GRABBER"
+fi
+
+places="/opt/parallax \
+	/usr/src/local/parallax \
+	/usr/local/parallax \
+	/usr/local/parallax/components/Xclients_sun4.ow3_1.18 \
+	/usr/src/local/parallax/components/Xclients_sun4.ow3_1.18"
+for dir in $places; do
+	if test -d $dir/include ; then
+		V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I$dir/include"
+		V_LIB_GRABBER="$V_LIB_GRABBER -L$dir/lib -lXext -lXvid"
+		V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-plx.o assistor-plx.o"
+    		break
+	fi
+done
+
+case "$target" in 
+*-dec-*)
+	jv_dir=jv2
+	V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I$jv_dir"
+	V_LIB_GRABBER="$V_LIB_GRABBER $jv_dir/jvdriverint.o"
+	V_OBJ_GRABBER="$V_OBJ_GRABBER assistor-jv.o grabber-jv.o"
+	if test "$target_os" = ultrix4.3 ; then
+		#XXX rtip code currently broken
+		#V_DEFINE="$V_DEFINE -DRTIP"
+		#V_LIB="$V_LIB lib.ultrix/librcap.a"
+		#V_INCLUDE="$V_INCLUDE -Ircap-include"
+		#XXX
+		#V_OBJ_GRABBER="$V_OBJ_GRABBER net-rtip.o"
+		echo no rtip support 
+	fi
+	;;
+sparc-sun-solaris*)
+	V_STATIC=""
+	have_xil=no
+	xil_dir=/opt/SUNWits/Graphics-sw/xil
+	if test -d $xil_dir ; then
+		if test ! -d $xil_dir/include ; then
+			echo "You don't have the XIL developer's kit!"
+			echo "Building without XIL support..."
+		else
+			have_xil=yes
+		fi
+	fi
+	if test $CC = gcc ; then
+		V_DEFINE="$V_DEFINE -mv8 -msupersparc"
+	fi
+	V_DEFINE="$V_DEFINE -D__svr4__"
+	if test -f grabber-rtvc.cc || test -f grabber-rtvc.o ; then
+		V_OBJ_GRABBER="$V_OBJ_GRABBER grabber-rtvc.o"
+		if test "$have_xil" = yes ; then
+			V_ALL="$V_PROG $V_PROG.xil"
+			V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I$xil_dir/include"
+			V_LIB_XIL="-L$xil_dir/lib -R$xil_dir/lib -lxil"
+			V_OBJ_XIL=grabber-xil.o
+		fi
+	elif test "$have_xil" = yes ; then
+		V_OBJ_XIL=grabber-xil.o
+		V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I$xil_dir/include"
+		V_LIB_GRABBER="$V_LIB_GRABBER -L$xil_dir/lib -R$xil_dir/lib -lxil"
+	fi
+	;;
+sparc-sun-sunos*)
+	V_DEFINE="$V_DEFINE -DNEED_SUNOS_PROTOS"
+	;;
+*-sgi-irix*)
+	V_DEFINE="$V_DEFINE -D_BSD_SIGNALS"
+	if test "$target_os" = irix6.2 ; then
+		V_DEFINE="$V_DEFINE -DIRIX6_2 -DSIGARGS=__sigargs"
+	fi
+	V_TARCMD="tar cfL"
+	V_SHELL="SHELL = /bin/sh"
+	if test $CC != gcc ; then
+		V_DEFINE="$V_DEFINE -signed -g3"
+		CC="cc -Dinline="
+		if test "$target_os" = irix5.2 ; then
+			CC="$CC -xansi -D__STDC__"
+		fi
+		CXX="CC +p -float -woff 3262 -DSGI_COMPAT"
+	fi
+	V_STATIC=""
+	;;
+*-*-bsdi1*)
+	V_SHM=""
+	V_TARCMD="tar cfL"
+	;;
+*-*-bsdi2.0*)
+	V_SHM=""
+	V_TARCMD="tar cfL"
+	;;
+*-*-bsdi*)
+	# bsdi2.1 added sys-v shared memory support but their implementation
+	# is broken so we have to turn it off.  If they ever fix libipc,
+	# the following line should be deleted.
+	V_SHM=""
+	V_TARCMD="tar cfL"
+	V_CCOPT="-O2 -m486"
+	V_LIB="$V_LIB -lipc"
+	;;
+*-*-netbsd*)
+	V_TARCMD="tar -h -c -f"
+	V_LIB="$V_LIB -L/usr/local/lib"
+	;;
+*-*-hpux*)
+	V_CCOPT="-O"
+	;;
+*-*-aix3*)
+	V_STATIC=""
+	V_DEFINE="$V_DEFINE -DSIGARGS=int"
+	if test "$V_LIB_AIXSHM" != "" ; then
+		V_LIB="$V_LIB $V_LIB_AIXSHM"
+	else
+		V_SHM=""
+	fi
+	CXX="xlC -+"
+	;;
+*-*-aix4*)
+	V_STATIC=""
+	V_DEFINE="$V_DEFINE -DSIGARGS=int -D_AIX41"
+	if test "$V_LIB_AIXSHM" != "" ; then
+		V_LIB="$V_LIB $V_LIB_AIXSHM"
+	else
+		V_SHM=""
+	fi
+	CXX="xlC -+"
+	;;
+*-*-linux*)
+	V_BROKEN_OBJ=
+	;;
+esac
+
+if test -f encoder-bvc.cc ; then
+	V_OBJ="$V_OBJ encoder-bvc.o decoder-bvc.o"
+fi
+
+AC_SUBST(V_INCLUDE_GRABBER)
+AC_SUBST(V_LIB_GRABBER)
+AC_SUBST(V_OBJ_GRABBER)
+AC_SUBST(V_LIB_XIL)
+AC_SUBST(V_OBJ_XIL)
+
+V_DEFINE="$V_DEFINE $V_SHM"
+
+builtin(include, configure.in.tail)

@@ -1,0 +1,277 @@
+<!-- @(#) $Header$ (LBL)-->
+<html>
+<head><title>vic Research Projects</title></head>
+<body>
+
+<h2>vic: Research Projects</h2>
+
+Vic was developed as a research vehicle for exploring
+packet video and multimedia conferencing as part of
+<a href=http://www-nrg.ee.lbl.gov/mccanne>Steven McCanne's</a>
+dissertation research at <a href=http://www.berkeley.edu>U.C. Berkeley</a>.
+While the first generation design is in place,
+vic continues as an active research project.
+Research continues on the application and system architecture itself,
+as well as on several projects that have evolved from the
+vic development project:
+
+<ul>
+<li><a href=#thesis>Layered Video</a>
+<li><a href=#vgw>Video Gateway</a>
+<li><a href=#confbus>The Conference Bus</a>
+<li><a href=#fasth261>Hardware-assisted Intra-H.261</a>
+<li><a href=#loadadapt>CPU Load Adaptation</a>
+<!-- <li><a href=#vc>Virtual Classroom</a> -->
+</ul>
+
+<a name=thesis><hr></a>
+<h3>Layered Video</h3>
+Internet video broadcasts are currently carried out by transmitting
+a ``single-layer'' stream at a nominal bandwidth to all active multicast
+receivers in the network.
+By using a single-layer compression algorithm, a uniform quality of
+video is transmitted to all users even those situated along high
+bandwidth paths from the source.
+Low-bandwidth portions of the multicast distribution are flooded
+resulting in poor quality delivered to a possibly large fraction
+of the users.  Alternatively, the bandwidth can be scaled back
+at the source to prevent such congestion, but then high bandwidth
+users receive unnecessarily low quality.
+
+<p>
+Our solution is to utilize a
+layered source-coder in tandem with a layered transmission system.
+The layered source-coder produces an embedded bit stream that
+can be decomposed into arbitrary number of hierarchical flows.
+These flows are distributed across multiple multicast groups,
+allowing receivers to ``tune in'' to some subset of the flows
+<a href=#deering>[1]</a>.
+Each layer provides a progressively higher quality signal.
+
+<p>
+We utilize only mechanisms that presently exist in the Internet and
+leverage off a mechanism called ``pruning'' in IP Multicast.
+IP Multicast works by constructing a simplex distribution tree
+from each source subnet.  A source transmits a packet with
+an ``IP group address'' destination
+and the multicast routers forward a copy of this packet along
+each link in the distribution tree.  When a destination subnet
+has no active receivers for a certain group address, the last-hop
+router sends a ``prune'' message back up the distribution tree,
+which prevents intermediate routers from forwarding the unnecessary
+traffic.  Thus, each user can locally adapt to network capacity
+by adjusting the number of multicast groups --- i.e., the number
+of compression layers --- that they receive.
+
+<p>
+Our source-coder is a simple, low-complexity, wavelet-based algorithm
+that can be run in software on standard workstations and PC's
+(see <a href=#wavelet-book>[7]</a> for a comprehensive treatment
+of wavelets applied to subband coding).
+Conceptually, the algorithm works by conditionally replenishing
+wavelet transform coefficients of each frame.  By using a
+wavelet decomposition with fairly short basis functions,
+we can optimize the coder by carrying out conditional replenishment
+in the pixel domain and then transforming and coding only
+those blocks that need to be updated.  The wavelet coefficients
+are bit-plane coded using a representation similar to the
+well-known zero-tree decomposition <a href=#shapiro>[2]</a>.
+All zero-tree sets are computed in parallel with a single
+bottom up traversal of the coefficient quad-tree, and all
+layers of the bit-stream are computed in parallel using
+a table-driven approach.
+<p>
+<a name=vgw><hr></a>
+<h3>Video Gateway</h3>
+While the layered compression algorithm and transmission system
+described above provide an elegant and scalable solution to
+the problem of heterogeneous video distribution, the technology is
+new and will take some time to be deployed.  In the meantime,
+an alternative solution is the deployment of transcoding video gateways.
+<p>
+Using vic's software architecture and codec implementations
+as a foundation, we have designed a new tool for video bandwidth
+adaptation using efficient transcoding between video formats
+<a href=#amir-mm95>[3]</a>.  By placing an application-level gateway
+near the entrance
+to a low bandwidth environment, high-rate video can be
+adapted for the lower bandwidth network through transcoding.
+<p>
+We have implemented our gateway design in an application
+called <i>vgw</i> and used it to transcode high-quality JPEG video
+from a
+<a href=http://roger-rabbit.cs.berkeley.edu/classes/f95-CS298-5/home.html>
+UCB Seminar</a> to low-rate H.261 video for the MBone.
+The JPEG to H.261 conversion process uses
+a highly optimized algorithm that avoids DCT computations by
+manipulating data entirely within the transform domain.
+<p>
+<a href=http://http.cs.berkeley.edu:80/~elan/>Elan Amir</a> has continued
+work on the gateway architecture as part of his Masters thesis, evolving
+our prototype into a fully-functional application and integrating it
+into other environments such as
+<a href=http://infopad.EECS.Berkeley.EDU/>InfoPad</a> and
+<a href=http://HTTP.CS.Berkeley.EDU/~fox/glomop/>GloMop</a>.
+<p>
+<a name=confbus><hr></a>
+<h3>The Conference Bus</h3>
+In July 1992, we added a multicast messaging protocol
+to vat for interprocess communication in order to orchestrate ownership
+of exclusive-access audio devices.  The protocol was completely
+decentralized and stateless, allowing instances of vat to join
+and leave the communication group without an involved
+synchronization procedure.  Since then, we have used this
+extensible ``Conference Bus'' abstraction to implement voice switched
+windows, where vic uses cues from vat to switch a viewing
+window to whomever is talking.
+<p>
+We're currently working on a floor control tool, where the media
+applications are coordinated over the Conference Bus via remote
+commands from the floor control tool.
+All of the LBL MBone tools have the ability to ``mute'' or ignore
+a network media source, and the disposition of this mute control
+can be controlled via the Conference Bus, which the floor
+control tool can use to effect a moderation policy.
+One possible model is that each
+participant in the session follows the direction of a
+well-known (session-defined) moderator.  The moderator can
+give the floor to a participant by multicasting a <em> takes-floor</em>
+directive with that participant's RTP CNAME.
+Locally, each receiver then mutes all participants except the
+one that holds the floor.
+<p>
+Cross-media synchronization can also be
+carried out over the Conference Bus.  Each real-time
+application induces a buffering delay, called the <em> playback</em>
+point, to adapt to packet delay variations <a href=#jacobson>[4]</a>.
+This playback point can be adjusted to synchronize across media.
+By broadcasting ``synchronize'' messages across
+the Conference Bus, the different media can compute the maximum
+of all advertised playout delays.  This maximum is then
+used in the delay-adaptation algorithm.
+<p>
+We've also used the
+Conference Bus to implement remote manipulation of
+graphical overlays in a vic video stream.  This allows
+a ``title-generator'' to be easily prototyped as separate
+tool from vic.
+<p>
+<a href=http://http.cs.berkeley.edu:80/~elan/>Elan Amir</a>
+has extended vgw with a Conference Bus interface, using
+a split implementation where the transcoding engine
+is a bare application with a tcl/tk user-interface
+that configures the engine over the Conference Bus.
+By using the Conference Bus, vgw automatically inherits the
+flexibility of our existing conference coordination framework.
+For example, vgw can be configured to dedicate extra bandwidth
+to a video stream with an active speaker in the same way
+vic can be configured to switch windows to the current speaker.
+<p>
+<a name=fasth261><hr></a>
+<h3>Hardware-assisted Intra-H.261</h3>
+<a href=http://www-nrg.ee.lbl.gov/kfall/>Kevin Fall</a>
+has integrated the efficient JPEG-to-H.261 algorithm from vgw
+into vic's capture model, allowing existing hardware JPEG codecs
+to serve as H.261 sources.  Rather than encode H.261 from
+scratch, a JPEG codec can be used as a <i>DCT Engine</i>
+by entropy decoding the compressed bitstream without performing
+reverse DCT's <a href=#mccanne-ietf>[5]</a>.
+The intermediate transform coefficients can then be encoded directly
+as H.261, avoiding DCT computations entirely.  Since Huffman
+encoding and decoding is much cheaper than the DCT computations,
+the algorithm runs fast.
+<p>
+<a name=loadadapt><hr></a>
+<h3>CPU Load Adaptation</h3>
+Vic currently processes packets as soon as they arrive and renders
+frames as soon as a complete frame is received.  Under this scheme,
+when a receiver can't keep up with a high-rate source, quality
+degrades drastically because packets get dropped indiscriminately
+at the kernel input buffer.  A better approach is to gracefully
+adapt to offered load by adjusting a compute-scalable
+decoder <a href=#fall>[6]</a>
+<p>
+A large component of the decoding CPU budget goes into rendering
+frames, whether copying bits to the frame buffer, performing color
+space conversion, or carrying out a dither.  Accordingly, the
+vic rendering modules were designed so that their load can be
+adapted by running the rendering process at a rate lower than
+the incoming frame rate.  Thus, a 10 f/s H.261 stream can be
+rendered, say,  at 4 f/s if necessary.  Alternatively, the decoding
+process itself can be scaled (if possible).  For example, our
+prototype layered coder can run faster by processing
+a reduced number layers at the cost of lower image quality.
+<p>
+While the hooks for scaling the decoder process are in place,
+the control algorithm isn't.  We are currently working on
+approaches to measuring load and the control algorithm for
+updating the load-scaling parameters.
+<p>
+
+<!-- 
+<a name=vc><hr></a>
+<h3>The Virtual Classroom</h3>
+-->
+
+<hr>
+<h3>References</h3>
+
+<p>
+<dl compact>
+<dt><a name=deering><strong>[1]</strong></a>
+<dd>
+Deering, S., ``Re: hierarchical encoding?''.
+Email message sent to the
+<a href=ftp:://cs.ucl.ac.uk/darpa/IDMR/idmr-archive.Z>
+Inter-Domain Multicast Routing (IDMR) mailing list</a>, Jan 1994.
+
+<dt><a name=shapiro><strong>[2]</strong></a>
+<dd>
+Shapiro, J. M.,
+``Embedded Image Coding Using Zerotrees of Wavelet Coefficients,''
+IEEE Transactions on Signal Processing,
+Vol. 41, No. 12, Dec. 1993, pp. 3445-3462.
+
+<dt><a name=amir-mm95><strong>[3]</strong></a>
+<dd>
+Amir, E., McCanne, S., and Zhang, H.,
+<a href="http://www.cs.berkeley.edu/~elan/articles/pub/vgw.ps">
+An Application-level Video Gateway.</a>
+To appear in ACM Multimedia '95.
+
+<dt><a name=jacobson><strong>[4]</strong></a>
+<dd>
+Jacobson, V. 
+<a href=ftp://cs.ucl.ac.uk/darpa/vjtut.ps.Z>
+SIGCOMM '94 Tutorial: Multimedia conferencing on the Internet</a>, Aug. 1994.
+
+<dt><a name=mccanne-ietf><strong>[5]</strong></a>
+<dd>
+McCanne, S.,
+<a href="http://www-nrg.ee.lbl.gov/mccanne/talks/avt-ietf-dec94.ps.gz">
+vic and RTPv2</a>, 
+Audio-Video Transport Working Group, IETF 31.
+December 6, 1994.  San Jose, CA.
+
+<dt><a name=fall><strong>[6]</strong></a>
+<dd>
+Fall, K., Pasquale, J., and McCanne, S.
+<strong>
+Workstation Video Playback Performance with Competitive Process Load.</strong>
+In Proceedings of the Fifth International Workshop
+on Network and OS Support for Digital Audio and Video.
+April, 1995.  Durham, NH.
+
+<dt><a name=wavelet-book><strong>[7]</strong></a>
+<dd>
+Veterrli, M. and Kovacevic, J.
+<strong>
+<a href=http://gabor.eecs.berkeley.edu/~martin/book.html>
+Wavelets and Subband Coding</a></strong>
+Prentice-Hall, 1995.  ISBN: 0-13-097080-8.
+</dl>
+
+<a href=vic.html>[Return to main vic page]</a>
+
+</body>
+</html>

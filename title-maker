@@ -1,0 +1,76 @@
+#!./cb_wish
+#XXX
+proc ppm_load { object infile outfile } {
+	set ppm [new ppm]
+	set f [open $infile r]
+	$ppm load $f
+	close $f
+	set f [open $outfile w]
+	$ppm dump-yuv $f
+	close $f
+	global object_width object_height object_yuv cb
+	set object_width($object) [$ppm width]
+	set object_height($object) [$ppm height]
+	set object_yuv($object) $outfile
+	delete $ppm
+	$cb send "tm_create $object $outfile \
+		 $object_width($object) $object_height($object)"
+}
+
+set channel 1
+set cb [new confbus $channel]
+$cb send tm_enable
+ppm_load name name.ppm /tmp/name
+ppm_load logo lbl-logo.ppm /tmp/logo
+$cb send "tm_transparent name 255"
+$cb send "tm_transparent logo 1"
+after 1000 "float_graphic name"
+
+proc place_graphic { o x y depth } {
+	global object_x object_y object_depth cb
+	set object_x($o) $x
+	set object_y($o) $y
+	set object_depth($o) $depth
+	$cb send "tm_place $o $x $y $depth"
+}
+	
+proc float_graphic o {
+	global object_x object_y object_depth
+	if [info exists object_x($o)] {
+		set y $object_y($o)
+		if { $y > 4 } {
+			incr y -4
+		}
+		place_graphic $o $object_x($o) $y $object_depth($o)
+	}
+	after 300 "float_graphic $o"
+}
+
+frame .f -width 320 -height 240
+pack .f
+bind .f <1> "position_graphic name %x %y 1"
+bind .f <3> "position_graphic logo %x %y 0"
+
+proc position_graphic { o x y depth } {
+	global object_width object_height cb
+	set w $object_width($o)
+	set h $object_height($o)
+	set nx [expr $x - $w / 2]
+	if { $nx < 0 } {
+		set nx 0
+	}
+	set ny [expr $y - $h / 2]
+	if { $ny < 0 } {
+		set ny 0
+	}
+	place_graphic $o $nx $ny $depth
+}
+
+bind .f <q> "quit"
+bind .f <Enter> "focus %W"
+
+proc quit {} {
+	global cb
+	$cb send tm_disable
+	exit 0
+}

@@ -1,0 +1,48 @@
+<!-- @(#) $Header$ (LBL)-->
+<html>
+<head><title>H.261/nv compression performance</title></head>
+<body>
+
+<h1>
+H.261/nv Compression Performance
+</h1>
+<strong><i>Excerpted from our 
+<a href="ftp://ftp.ee.lbl.gov/papers/vic-mm95.ps.Z">
+ACM Multimedia paper</a></i></strong>.
+<br>
+<br>
+<center>
+<p><img  align=bottom src="rd.gif" alt="rate-distortion comparison">
+<p>Relative compression performance of nv and Intra-H.261.<br>
+</center>
+<br>
+<br>
+<p>
+Because the Intra-H.261 and nv compression schemes use similar
+conditional replenishment algorithms, we can evaluate their relative
+compression performance simply by ignoring the temporal dimension
+and comparing only their 2D image compression performance.
+The figure above shows the performance
+of the two approaches for the canonical 8-bit, 512x512 grayscale
+<a href=ftp://ipl.rpi.edu/pub/image/still/usc/gray/lena.pgm>
+``Lena'' image</a>.
+Both encoders were modified to omit block-addressing
+codes to allow the H.261 encoder to operate on a non-standard
+image size.  This modification has little impact on the results
+since block-addressing accounts for a small fraction of the bit rate.
+<P>
+The peak signal-to-noise ratio (PSNR) is plotted against rate
+(in bits per pixel).  Multiple points were obtained by varying
+the H.261 scalar quantizer and the nv dead-zone threshold.
+Note that the nv algorithm was intended to operate with
+a non-configurable, fixed threshold, but we explored
+other thresholds to complete a rate-distortion curve.
+<P>
+As seen in the graph, H.261 consistently outperforms the nv
+coder by 6-7dB.  Since transmissions are typically rate-limited,
+we should consider a fixed distortion and compare the corresponding
+bit rates.  From this perspective, the nv bit rate is two to three
+times that of H.261.  For a rate-limited transmission,
+this translates into a factor of two to three decrease in frame rate.
+</body>
+</html>

@@ -1,0 +1,875 @@
+Thu Feb 15 19:34:00 PST 1996
+
+John Brezak (brezak@apollo.hp.com) has done a port of vat and vic to
+Microsoft's Win95/WinNT.  His diffs have been merged into the vat
+and vic source distributions.  Also included are Microsoft Visual C++
+4.0 makefiles (vat.mak and vic.mak).
+
+John also supplied the appended diffs for the tk4.1a2 source release
+that fix some bugs and add the capability to store XDefaults in
+the Windows registry. This patch should be applied to the tk4.1a2
+release and tk should be rebuilt *before* building vat or vic.
+
+You will also need to get these files from the Blt distribution:
+
+	bltConfig.h
+	bltList.c
+	bltList.h
+	bltTable.c
+	bltUtil.c
+
+The vic.mak file will expect these to be in the ../blt-1.8/src directory.
+Copy the blt.h.win32 file from the vic source directory to
+../blt-1.8/src/blt.h .
+
+Note that these changes have only been tested with Microsoft Visual C++
+4.0 and are for tcl7.5/tk4.1-a2 *not* tcl7.5/tk4.1-b1. We plan to update
+vat & vic to tcl7.5/tk4.1-b1 in the near future but the changes are
+substantial & doing them now would have held up this release.
+
+ - Van & Steve
+
+--------------------
+
+*** generic/tkOption.c.orig	Wed Feb 07 19:47:12 1996
+--- generic/tkOption.c	Wed Feb 07 19:54:18 1996
+***************
+*** 16,107 ****
+  
+  #include "tkPort.h"
+  #include "tkInt.h"
+  
+- /*
+-  * The option database is stored as one tree for each main window.
+-  * Each name or class field in an option is associated with a node or
+-  * leaf of the tree.  For example, the options "x.y.z" and "x.y*a"
+-  * each correspond to three nodes in the tree;  they share the nodes
+-  * "x" and "x.y", but have different leaf nodes.  One of the following
+-  * structures exists for each node or leaf in the option tree.  It is
+-  * actually stored as part of the parent node, and describes a particular
+-  * child of the parent.
+-  */
+- 
+- typedef struct Element {
+-     Tk_Uid nameUid;			/* Name or class from one element of
+- 					 * an option spec. */
+-     union {
+- 	struct ElArray *arrayPtr;	/* If this is an intermediate node,
+- 					 * a pointer to a structure describing
+- 					 * the remaining elements of all
+- 					 * options whose prefixes are the
+- 					 * same up through this element. */
+- 	Tk_Uid valueUid;		/* For leaf nodes, this is the string
+- 					 * value of the option. */
+-     } child;
+-     int priority;			/* Used to select among matching
+- 					 * options.  Includes both the
+- 					 * priority level and a serial #.
+- 					 * Greater value means higher
+- 					 * priority.  Irrelevant except in
+- 					 * leaf nodes. */
+-     int flags;				/* OR-ed combination of bits.  See
+- 					 * below for values. */
+- } Element;
+- 
+- /*
+-  * Flags in Element structures:
+-  *
+-  * CLASS -		Non-zero means this element refers to a class,
+-  *			Zero means this element refers to a name.
+-  * NODE -		Zero means this is a leaf element (the child
+-  *			field is a value, not a pointer to another node).
+-  *			One means this is a node element.
+-  * WILDCARD -		Non-zero means this there was a star in the
+-  *			original specification just before this element.
+-  *			Zero means there was a dot.
+-  */
+- 
+- #define TYPE_MASK		0x7
+- 
+- #define CLASS			0x1
+- #define NODE			0x2
+- #define WILDCARD		0x4
+- 
+- #define EXACT_LEAF_NAME		0x0
+- #define EXACT_LEAF_CLASS	0x1
+- #define EXACT_NODE_NAME		0x2
+- #define EXACT_NODE_CLASS	0x3
+- #define WILDCARD_LEAF_NAME	0x4
+- #define WILDCARD_LEAF_CLASS	0x5
+- #define WILDCARD_NODE_NAME	0x6
+- #define WILDCARD_NODE_CLASS	0x7
+- 
+- /*
+-  * The following structure is used to manage a dynamic array of
+-  * Elements.  These structures are used for two purposes:  to store
+-  * the contents of a node in the option tree, and for the option
+-  * stacks described below.
+-  */
+- 
+- typedef struct ElArray {
+-     int arraySize;		/* Number of elements actually
+- 				 * allocated in the "els" array. */
+-     int numUsed;		/* Number of elements currently in
+- 				 * use out of els. */
+-     Element *nextToUse;		/* Pointer to &els[numUsed]. */
+-     Element els[1];		/* Array of structures describing
+- 				 * children of this node.  The
+- 				 * array will actually contain enough
+- 				 * elements for all of the children
+- 				 * (and even a few extras, perhaps).
+- 				 * This must be the last field in
+- 				 * the structure. */
+- } ElArray;
+- 
+- #define EL_ARRAY_SIZE(numEls) ((unsigned) (sizeof(ElArray) \
+- 	+ ((numEls)-1)*sizeof(Element)))
+  #define INITIAL_SIZE 5
+  
+  /*
+--- 16,23 ----
+  
+  #include "tkPort.h"
+  #include "tkInt.h"
++ #include "tkOption.h"
+  
+  #define INITIAL_SIZE 5
+  
+  /*
+***************
+*** 140,146 ****
+   * them;  keeping them separate speeds up the searches.
+   */
+  
+- #define NUM_STACKS 8
+  static ElArray *stacks[NUM_STACKS];
+  static TkWindow *cachedWindow = NULL;	/* Lowest-level window currently
+  					 * loaded in stacks at present. 
+--- 56,61 ----
+***************
+*** 150,169 ****
+  					 * to the database. */
+  
+  /*
+-  * One of the following structures is used to keep track of each
+-  * level in the stacks.
+-  */
+- 
+- typedef struct StackLevel {
+-     TkWindow *winPtr;		/* Window corresponding to this stack
+- 				 * level. */
+-     int bases[NUM_STACKS];	/* For each stack, index of first
+- 				 * element on stack corresponding to
+- 				 * this level (used to restore "numUsed"
+- 				 * fields when popping out of a level. */
+- } StackLevel;
+- 
+- /*
+   * Information about all of the stack levels that are currently
+   * active.  This array grows dynamically to become as large as needed.
+   */
+--- 65,70 ----
+***************
+*** 195,217 ****
+   * Forward declarations for procedures defined in this file:
+   */
+  
+- static int		AddFromString _ANSI_ARGS_((Tcl_Interp *interp,
+- 			    Tk_Window tkwin, char *string, int priority));
+  static void		ClearOptionTree _ANSI_ARGS_((ElArray *arrayPtr));
+  static ElArray *	ExtendArray _ANSI_ARGS_((ElArray *arrayPtr,
+  			    Element *elPtr));
+  static void		ExtendStacks _ANSI_ARGS_((ElArray *arrayPtr,
+  			    int leaf));
+- static int		GetDefaultOptions _ANSI_ARGS_((Tcl_Interp *interp,
+- 			    TkWindow *winPtr));	
+  static ElArray *	NewArray _ANSI_ARGS_((int numEls));	
+  static void		OptionInit _ANSI_ARGS_((TkMainInfo *mainPtr));
+  static int		ParsePriority _ANSI_ARGS_((Tcl_Interp *interp,
+  			    char *string));
+- static int		ReadOptionFile _ANSI_ARGS_((Tcl_Interp *interp,
+- 			    Tk_Window tkwin, char *fileName, int priority));
+  static void		SetupStacks _ANSI_ARGS_((TkWindow *winPtr, int leaf));
+  
+  /*
+   *--------------------------------------------------------------
+   *
+--- 96,113 ----
+   * Forward declarations for procedures defined in this file:
+   */
+  
+  static void		ClearOptionTree _ANSI_ARGS_((ElArray *arrayPtr));
+  static ElArray *	ExtendArray _ANSI_ARGS_((ElArray *arrayPtr,
+  			    Element *elPtr));
+  static void		ExtendStacks _ANSI_ARGS_((ElArray *arrayPtr,
+  			    int leaf));
+  static ElArray *	NewArray _ANSI_ARGS_((int numEls));	
+  static void		OptionInit _ANSI_ARGS_((TkMainInfo *mainPtr));
+  static int		ParsePriority _ANSI_ARGS_((Tcl_Interp *interp,
+  			    char *string));
+  static void		SetupStacks _ANSI_ARGS_((TkWindow *winPtr, int leaf));
+  
++ 
+  /*
+   *--------------------------------------------------------------
+   *
+***************
+*** 550,556 ****
+  	} else {
+  	    priority = TK_INTERACTIVE_PRIO;
+  	}
+! 	return ReadOptionFile(interp, tkwin, argv[2], priority);
+      } else {
+  	Tcl_AppendResult(interp, "bad option \"", argv[1],
+  		"\": must be add, clear, get, or readfile", (char *) NULL);
+--- 446,452 ----
+  	} else {
+  	    priority = TK_INTERACTIVE_PRIO;
+  	}
+! 	return Tk_ReadOptionFile(interp, tkwin, argv[2], priority);
+      } else {
+  	Tcl_AppendResult(interp, "bad option \"", argv[1],
+  		"\": must be add, clear, get, or readfile", (char *) NULL);
+***************
+*** 682,688 ****
+   *----------------------------------------------------------------------
+   */
+  
+! static int
+  ParsePriority(interp, string)
+      Tcl_Interp *interp;		/* Interpreter to use for error reporting. */
+      char *string;		/* Describes a priority level, either
+--- 578,584 ----
+   *----------------------------------------------------------------------
+   */
+  
+! int
+  ParsePriority(interp, string)
+      Tcl_Interp *interp;		/* Interpreter to use for error reporting. */
+      char *string;		/* Describes a priority level, either
+***************
+*** 724,730 ****
+  /*
+   *----------------------------------------------------------------------
+   *
+!  * AddFromString --
+   *
+   *	Given a string containing lines in the standard format for
+   *	X resources (see other documentation for details on what this
+--- 620,626 ----
+  /*
+   *----------------------------------------------------------------------
+   *
+!  * Tk_AddFromString --
+   *
+   *	Given a string containing lines in the standard format for
+   *	X resources (see other documentation for details on what this
+***************
+*** 744,751 ****
+   *----------------------------------------------------------------------
+   */
+  
+! static int
+! AddFromString(interp, tkwin, string, priority)
+      Tcl_Interp *interp;		/* Interpreter to use for reporting results. */
+      Tk_Window tkwin;		/* Token for window:  options are entered
+  				 * for this window's main window. */
+--- 640,647 ----
+   *----------------------------------------------------------------------
+   */
+  
+! int
+! Tk_AddFromString(interp, tkwin, string, priority)
+      Tcl_Interp *interp;		/* Interpreter to use for reporting results. */
+      Tk_Window tkwin;		/* Token for window:  options are entered
+  				 * for this window's main window. */
+***************
+*** 871,877 ****
+  /*
+   *----------------------------------------------------------------------
+   *
+!  * ReadOptionFile --
+   *
+   * 	Read a file of options ("resources" in the old X terminology)
+   *	and load them into the option database.
+--- 767,773 ----
+  /*
+   *----------------------------------------------------------------------
+   *
+!  * Tk_ReadOptionFile --
+   *
+   * 	Read a file of options ("resources" in the old X terminology)
+   *	and load them into the option database.
+***************
+*** 887,894 ****
+   *----------------------------------------------------------------------
+   */
+  
+! static int
+! ReadOptionFile(interp, tkwin, fileName, priority)
+      Tcl_Interp *interp;		/* Interpreter to use for reporting results. */
+      Tk_Window tkwin;		/* Token for window:  options are entered
+  				 * for this window's main window. */
+--- 783,790 ----
+   *----------------------------------------------------------------------
+   */
+  
+! int
+! Tk_ReadOptionFile(interp, tkwin, fileName, priority)
+      Tcl_Interp *interp;		/* Interpreter to use for reporting results. */
+      Tk_Window tkwin;		/* Token for window:  options are entered
+  				 * for this window's main window. */
+***************
+*** 929,935 ****
+      }
+      close(fileId);
+      buffer[statBuf.st_size] = 0;
+!     result = AddFromString(interp, tkwin, buffer, priority);
+      ckfree(buffer);
+      return result;
+  }
+--- 825,831 ----
+      }
+      close(fileId);
+      buffer[statBuf.st_size] = 0;
+!     result = Tk_AddFromString(interp, tkwin, buffer, priority);
+      ckfree(buffer);
+      return result;
+  }
+***************
+*** 1271,1277 ****
+  
+      mainPtr->optionRootPtr = NewArray(20);
+      interp = Tcl_CreateInterp();
+!     (void) GetDefaultOptions(interp, mainPtr->winPtr);
+      Tcl_DeleteInterp(interp);
+  }
+  
+--- 1167,1173 ----
+  
+      mainPtr->optionRootPtr = NewArray(20);
+      interp = Tcl_CreateInterp();
+!     (void) Tk_GetDefaultOptions(interp, mainPtr->winPtr);
+      Tcl_DeleteInterp(interp);
+  }
+  
+***************
+*** 1294,1300 ****
+   *--------------------------------------------------------------
+   */
+  
+! static void
+  ClearOptionTree(arrayPtr)
+      ElArray *arrayPtr;		/* Array of options;  delete everything
+  				 * referred to recursively by this. */
+--- 1190,1196 ----
+   *--------------------------------------------------------------
+   */
+  
+! void
+  ClearOptionTree(arrayPtr)
+      ElArray *arrayPtr;		/* Array of options;  delete everything
+  				 * referred to recursively by this. */
+***************
+*** 1311,1384 ****
+      ckfree((char *) arrayPtr);
+  }
+  
+- /*
+-  *--------------------------------------------------------------
+-  *
+-  * GetDefaultOptions --
+-  *
+-  *	This procedure is invoked to load the default set of options
+-  *	for a window.
+-  *
+-  * Results:
+-  *	None.
+-  *
+-  * Side effects:
+-  *	Options are added to those for winPtr's main window.  If
+-  *	there exists a RESOURCE_MANAGER proprety for winPtr's
+-  *	display, that is used.  Otherwise, the .Xdefaults file in
+-  *	the user's home directory is used.
+-  *
+-  *--------------------------------------------------------------
+-  */
+- 
+- static int
+- GetDefaultOptions(interp, winPtr)
+-     Tcl_Interp *interp;		/* Interpreter to use for error reporting. */
+-     TkWindow *winPtr;		/* Fetch option defaults for main window
+- 				 * associated with this. */
+- {
+-     char *regProp, *home, *fileName;
+-     int result, actualFormat;
+-     unsigned long numItems, bytesAfter;
+-     Atom actualType;
+- 
+-     /*
+-      * Try the RESOURCE_MANAGER property on the root window first.
+-      */
+- 
+-     regProp = NULL;
+-     result = XGetWindowProperty(winPtr->display,
+- 	    RootWindow(winPtr->display, 0),
+- 	    XA_RESOURCE_MANAGER, 0, 100000,
+- 	    False, XA_STRING, &actualType, &actualFormat,
+- 	    &numItems, &bytesAfter, (unsigned char **) &regProp);
+- 
+-     if ((result == Success) && (actualType == XA_STRING)
+- 	    && (actualFormat == 8)) {
+- 	result = AddFromString(interp, (Tk_Window) winPtr, regProp,
+- 		TK_USER_DEFAULT_PRIO);
+- 	XFree(regProp);
+- 	return result;
+-     }
+- 
+-     /*
+-      * No luck there.  Try a .Xdefaults file in the user's home
+-      * directory.
+-      */
+- 
+-     if (regProp != NULL) {
+- 	XFree(regProp);
+-     }
+-     home = getenv("HOME");
+-     if (home == NULL) {
+- 	sprintf(interp->result,
+- 		"no RESOURCE_MANAGER property and no HOME envariable");
+- 	return TCL_ERROR;
+-     }
+-     fileName = (char *) ckalloc((unsigned) (strlen(home) + 20));
+-     sprintf(fileName, "%s/.Xdefaults", home);
+-     result = ReadOptionFile(interp, (Tk_Window) winPtr, fileName,
+- 	    TK_USER_DEFAULT_PRIO);
+-     ckfree(fileName);
+-     return result;
+- }
+--- 1207,1209 ----
+*** generic/tkOption.h.orig	Wed Feb 07 19:56:31 1996
+--- generic/tkOption.h	Thu Jan 11 12:07:27 1996
+***************
+*** 0 ****
+--- 1,123 ----
++ /*
++  * tkOption.h --
++  *
++  * Copyright (c) 1995 Sun Microsystems, Inc.
++  *
++  * See the file "license.terms" for information on usage and redistribution
++  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
++  *
++  * SCCS: @(#) tkOption.h 1.4 95/02/16 14:12:21 */
++ 
++ #ifndef _TKOPTION
++ #define _TKOPTION
++ 
++ /*
++  * The option database is stored as one tree for each main window.
++  * Each name or class field in an option is associated with a node or
++  * leaf of the tree.  For example, the options "x.y.z" and "x.y*a"
++  * each correspond to three nodes in the tree;  they share the nodes
++  * "x" and "x.y", but have different leaf nodes.  One of the following
++  * structures exists for each node or leaf in the option tree.  It is
++  * actually stored as part of the parent node, and describes a particular
++  * child of the parent.
++  */
++ 
++ typedef struct Element {
++     Tk_Uid nameUid;			/* Name or class from one element of
++ 					 * an option spec. */
++     union {
++ 	struct ElArray *arrayPtr;	/* If this is an intermediate node,
++ 					 * a pointer to a structure describing
++ 					 * the remaining elements of all
++ 					 * options whose prefixes are the
++ 					 * same up through this element. */
++ 	Tk_Uid valueUid;		/* For leaf nodes, this is the string
++ 					 * value of the option. */
++     } child;
++     int priority;			/* Used to select among matching
++ 					 * options.  Includes both the
++ 					 * priority level and a serial #.
++ 					 * Greater value means higher
++ 					 * priority.  Irrelevant except in
++ 					 * leaf nodes. */
++     int flags;				/* OR-ed combination of bits.  See
++ 					 * below for values. */
++ } Element;
++ 
++ /*
++  * Flags in Element structures:
++  *
++  * CLASS -		Non-zero means this element refers to a class,
++  *			Zero means this element refers to a name.
++  * NODE -		Zero means this is a leaf element (the child
++  *			field is a value, not a pointer to another node).
++  *			One means this is a node element.
++  * WILDCARD -		Non-zero means this there was a star in the
++  *			original specification just before this element.
++  *			Zero means there was a dot.
++  */
++ 
++ #define TYPE_MASK		0x7
++ 
++ #define CLASS			0x1
++ #define NODE			0x2
++ #define WILDCARD		0x4
++ 
++ #define EXACT_LEAF_NAME		0x0
++ #define EXACT_LEAF_CLASS	0x1
++ #define EXACT_NODE_NAME		0x2
++ #define EXACT_NODE_CLASS	0x3
++ #define WILDCARD_LEAF_NAME	0x4
++ #define WILDCARD_LEAF_CLASS	0x5
++ #define WILDCARD_NODE_NAME	0x6
++ #define WILDCARD_NODE_CLASS	0x7
++ 
++ /*
++  * The following structure is used to manage a dynamic array of
++  * Elements.  These structures are used for two purposes:  to store
++  * the contents of a node in the option tree, and for the option
++  * stacks described below.
++  */
++ 
++ typedef struct ElArray {
++     int arraySize;		/* Number of elements actually
++ 				 * allocated in the "els" array. */
++     int numUsed;		/* Number of elements currently in
++ 				 * use out of els. */
++     Element *nextToUse;		/* Pointer to &els[numUsed]. */
++     Element els[1];		/* Array of structures describing
++ 				 * children of this node.  The
++ 				 * array will actually contain enough
++ 				 * elements for all of the children
++ 				 * (and even a few extras, perhaps).
++ 				 * This must be the last field in
++ 				 * the structure. */
++ } ElArray;
++ 
++ #define EL_ARRAY_SIZE(numEls) ((unsigned) (sizeof(ElArray) \
++ 	+ ((numEls)-1)*sizeof(Element)))
++ 
++ 
++ /*
++  * One of the following structures is used to keep track of each
++  * level in the stacks.
++  */
++ 
++ #define NUM_STACKS 8
++ 
++ typedef struct StackLevel {
++     TkWindow *winPtr;		/* Window corresponding to this stack
++ 				 * level. */
++     int bases[NUM_STACKS];	/* For each stack, index of first
++ 				 * element on stack corresponding to
++ 				 * this level (used to restore "numUsed"
++ 				 * fields when popping out of a level. */
++ } StackLevel;
++ 
++ int			Tk_AddFromString _ANSI_ARGS_((Tcl_Interp *interp,
++ 			    Tk_Window tkwin, char *string, int priority));
++ int			Tk_ReadOptionFile _ANSI_ARGS_((Tcl_Interp *interp,
++ 			    Tk_Window tkwin, char *fileName, int priority));
++ int			Tk_GetDefaultOptions _ANSI_ARGS_((Tcl_Interp *interp,
++ 			    TkWindow *winPtr));	
++ #endif
+*** unix/Makefile.in.orig	Wed Feb 07 20:29:20 1996
+--- unix/Makefile.in	Wed Feb 07 20:37:55 1996
+***************
+*** 263,268 ****
+--- 263,269 ----
+  	$(GENERIC_DIR)/tkSquare.c $(GENERIC_DIR)/tkTest.c \
+  	$(UNIX_DIR)/tkAppInit.c $(UNIX_DIR)/tkUnix.c \
+  	$(UNIX_DIR)/tkUnixCursor.c $(UNIX_DIR)/tkUnixDraw.c\
++ 	$(UNIX_DIR)/tkUnixOption.c \
+  	$(UNIX_DIR)/tkUnixNotify.c $(UNIX_DIR)/tkUnixWm.c
+  
+  HDRS = bltList.h \
+*** unix/tkUnixOption.c.orig	Wed Feb 07 20:29:30 1996
+--- unix/tkUnixOption.c	Wed Feb 07 20:29:06 1996
+***************
+*** 0 ****
+--- 1,92 ----
++ /* 
++  * tkUnixOption.c --
++  *
++  *	This module contains procedures to manage the option
++  *	database, which allows various strings to be associated
++  *	with windows either by name or by class or both.
++  *
++  * Copyright (c) 1990-1994 The Regents of the University of California.
++  * Copyright (c) 1994-1995 Sun Microsystems, Inc.
++  *
++  * See the file "license.terms" for information on usage and redistribution
++  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
++  */
++ 
++ static char sccsid[] = "@(#) tkUnixOption.c 1.42 95/09/27 08:16:45";
++ 
++ #include "tkPort.h"
++ #include "tkInt.h"
++ #include "tkOption.h"
++ 
++ 
++ /*
++  *--------------------------------------------------------------
++  *
++  * Tk_GetDefaultOptions --
++  *
++  *	This procedure is invoked to load the default set of options
++  *	for a window.
++  *
++  * Results:
++  *	None.
++  *
++  * Side effects:
++  *	Options are added to those for winPtr's main window.  If
++  *	there exists a RESOURCE_MANAGER proprety for winPtr's
++  *	display, that is used.  Otherwise, the .Xdefaults file in
++  *	the user's home directory is used.
++  *
++  *--------------------------------------------------------------
++  */
++ 
++ int
++ Tk_GetDefaultOptions(interp, winPtr)
++     Tcl_Interp *interp;		/* Interpreter to use for error reporting. */
++     TkWindow *winPtr;		/* Fetch option defaults for main window
++ 				 * associated with this. */
++ {
++     char *regProp, *home, *fileName;
++     int result, actualFormat;
++     unsigned long numItems, bytesAfter;
++     Atom actualType;
++ 
++     /*
++      * Try the RESOURCE_MANAGER property on the root window first.
++      */
++ 
++     regProp = NULL;
++     result = XGetWindowProperty(winPtr->display,
++ 	    RootWindow(winPtr->display, 0),
++ 	    XA_RESOURCE_MANAGER, 0, 100000,
++ 	    False, XA_STRING, &actualType, &actualFormat,
++ 	    &numItems, &bytesAfter, (unsigned char **) &regProp);
++ 
++     if ((result == Success) && (actualType == XA_STRING)
++ 	    && (actualFormat == 8)) {
++ 	result = Tk_AddFromString(interp, (Tk_Window) winPtr, regProp,
++ 		TK_USER_DEFAULT_PRIO);
++ 	XFree(regProp);
++ 	return result;
++     }
++ 
++     /*
++      * No luck there.  Try a .Xdefaults file in the user's home
++      * directory.
++      */
++ 
++     if (regProp != NULL) {
++ 	XFree(regProp);
++     }
++     home = getenv("HOME");
++     if (home == NULL) {
++ 	sprintf(interp->result,
++ 		"no RESOURCE_MANAGER property and no HOME envariable");
++ 	return TCL_ERROR;
++     }
++     fileName = (char *) ckalloc((unsigned) (strlen(home) + 20));
++     sprintf(fileName, "%s/.Xdefaults", home);
++     result = Tk_ReadOptionFile(interp, (Tk_Window) winPtr, fileName,
++ 	    TK_USER_DEFAULT_PRIO);
++     ckfree(fileName);
++     return result;
++ }
+*** win/makefile.vc.orig	Wed Feb 07 19:46:36 1996
+--- win/makefile.vc	Wed Feb 07 20:02:29 1996
+***************
+*** 69,74 ****
+--- 69,75 ----
+  	$(TMPDIR)\tkWinImage.obj \
+  	$(TMPDIR)\tkWinInit.obj \
+  	$(TMPDIR)\tkWinKey.obj \
++ 	$(TMPDIR)\tkWinOption.obj \
+  	$(TMPDIR)\tkWinPixmap.obj \
+  	$(TMPDIR)\tkWinPointer.obj \
+  	$(TMPDIR)\tkWinNotify.obj \
+*** win/tkWinDraw.c.orig	Wed Feb 07 19:37:14 1996
+--- win/tkWinDraw.c	Wed Feb 07 19:47:21 1996
+***************
+*** 484,489 ****
+--- 484,490 ----
+  					 * drawable.  */
+      unsigned int width, height;		/* Dimensions of subimage. */
+  {
++     static DWORD winVersion = -1;
+      HDC dc, dcMem;
+      TkWinDCState state;
+      BITMAPINFO *infoPtr;
+***************
+*** 529,535 ****
+  	 * just declare the image to be top-down.
+  	 */
+  
+! 	if ((GetVersion() & 0x80000000)) {
+  	    int y;
+  	    char *srcPtr, *dstPtr, *temp;
+  
+--- 530,539 ----
+  	 * just declare the image to be top-down.
+  	 */
+  
+! 	if (winVersion == -1)
+! 	    winVersion = GetVersion();
+!   	
+! 	if (!(winVersion < 0x80000000) && (LOBYTE(LOWORD(winVersion))<4)) {
+  	    int y;
+  	    char *srcPtr, *dstPtr, *temp;
+  
+*** win/tkWinImage.c.orig	Wed Feb 07 19:37:02 1996
+--- win/tkWinImage.c	Wed Feb 07 19:39:04 1996
+***************
+*** 46,51 ****
+--- 46,60 ----
+      return 0;
+  }
+  
++ 
++ static void
++ DestroyImage(image)
++     XImage *image;
++ {
++     ckfree((char *)image);
++ }
++ 
++ 
+  /*
+   *----------------------------------------------------------------------
+   *
+***************
+*** 111,117 ****
+      imagePtr->green_mask = visual->green_mask;
+      imagePtr->blue_mask = visual->blue_mask;
+      imagePtr->f.create_image = NULL;
+!     imagePtr->f.destroy_image = NULL;
+      imagePtr->f.get_pixel = NULL;
+      imagePtr->f.sub_image = NULL;
+      imagePtr->f.add_pixel = NULL;
+--- 120,126 ----
+      imagePtr->green_mask = visual->green_mask;
+      imagePtr->blue_mask = visual->blue_mask;
+      imagePtr->f.create_image = NULL;
+!     imagePtr->f.destroy_image = DestroyImage;
+      imagePtr->f.get_pixel = NULL;
+      imagePtr->f.sub_image = NULL;
+      imagePtr->f.add_pixel = NULL;
+*** win/tkWinOption.c.orig	Wed Feb 07 19:46:14 1996
+--- win/tkWinOption.c	Wed Feb 07 19:46:28 1996
+***************
+*** 0 ****
+--- 1,102 ----
++ /* 
++  * tkWinOption.c --
++  *
++  *	This module contains procedures to manage the option
++  *	database, which allows various strings to be associated
++  *	with windows either by name or by class or both.
++  *
++  * Copyright (c) 1990-1994 The Regents of the University of California.
++  * Copyright (c) 1994-1995 Sun Microsystems, Inc.
++  *
++  * See the file "license.terms" for information on usage and redistribution
++  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
++  */
++ 
++ static char sccsid[] = "@(#) tkWinOption.c 1.42 95/09/27 08:16:45";
++ 
++ #include "tkPort.h"
++ #include "tkInt.h"
++ #include "tkWinInt.h"
++ #include "tkOption.h"
++ 
++ 
++ static void
++ LoadRegistryResources(interp, winPtr, hRoot, path, priority)
++     Tcl_Interp *interp;		/* Interpreter to use for error reporting. */
++     TkWindow *winPtr;
++     HKEY hRoot;
++     CHAR *path;
++     int priority;
++ {
++     HKEY hKey;
++     DWORD retCode;
++     DWORD dwType;
++     DWORD i, valueLen, dataLen;
++     CHAR keyValue[MAX_PATH], keyData[MAX_PATH];
++     
++     retCode = RegOpenKeyEx(hRoot, path, 0,
++ 			   KEY_ENUMERATE_SUB_KEYS | KEY_EXECUTE | KEY_QUERY_VALUE,
++ 			   &hKey);
++     if (retCode == ERROR_SUCCESS) {
++ 	for (i = 0; retCode == ERROR_SUCCESS; i++) {
++ 	    valueLen = sizeof(keyValue);
++ 	    dataLen = sizeof(keyData);
++ 	    retCode = RegEnumValue(hKey, i, keyValue, &valueLen, 0,
++ 				   &dwType, keyData, &dataLen);
++ 	    if (retCode == ERROR_SUCCESS &&
++ 		dwType == REG_SZ) {
++ 		Tk_AddOption((Tk_Window)winPtr, keyValue, keyData, priority);
++ 	    }
++ 	}
++ 	RegCloseKey(hKey);
++     }
++ }
++ 
++ 
++ /*
++  *--------------------------------------------------------------
++  *
++  * Tk_GetDefaultOptions --
++  *
++  *	This procedure is invoked to load the default set of options
++  *	for a window.
++  *
++  * Results:
++  *	None.
++  *
++  * Side effects:
++  *	Options are added to those for winPtr's main window.  If
++  *	there exists a RESOURCE_MANAGER proprety for winPtr's
++  *	display, that is used.  Otherwise, the .Xdefaults file in
++  *	the user's home directory is used.
++  *
++  *--------------------------------------------------------------
++  */
++ 
++ int
++ Tk_GetDefaultOptions(interp, winPtr)
++     Tcl_Interp *interp;		/* Interpreter to use for error reporting. */
++     TkWindow *winPtr;		/* Fetch option defaults for main window
++ 				 * associated with this. */
++ {
++     CHAR *regPath;
++     
++     regPath = ckalloc(16 + strlen(winPtr->classUid) + strlen(winPtr->nameUid));
++     sprintf(regPath, "SOFTWARE\\%s\\%s", winPtr->classUid, winPtr->nameUid);
++ 
++     /*
++      * Get LOCAL_MACHINE Resources for application
++      */
++     LoadRegistryResources(interp, winPtr, HKEY_LOCAL_MACHINE,
++ 			  regPath, TK_STARTUP_FILE_PRIO);
++     
++     /*
++      * Get CURRENT_USER Resources for application
++      */
++     LoadRegistryResources(interp, winPtr, HKEY_CURRENT_USER,
++ 			  regPath, TK_USER_DEFAULT_PRIO);
++ 
++     ckfree(regPath);
++ 
++     return (TCL_OK);
++ }
+

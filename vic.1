@@ -1,0 +1,1020 @@
+.\" @(#) $Header$ (LBL)
+.\"
+.\" Copyright (c) 1994-1995
+.\" The Regents of the University of California.  
+.\" All rights reserved.  
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that: (1) source code distributions
+.\" retain the above copyright notice and this paragraph in its entirety, (2)
+.\" distributions including binary code include the above copyright notice and
+.\" this paragraph in its entirety in the documentation or other materials
+.\" provided with the distribution, and (3) all advertising materials mentioning
+.\" features or use of this software display the following acknowledgment:
+.\" ``This product includes software developed by the University of California,
+.\" Lawrence Berkeley Laboratory and its contributors.'' Neither the name of
+.\" the University nor the names of its contributors may be used to endorse
+.\" or promote products derived from this software without specific prior
+.\" written permission.  
+.\" THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED
+.\" WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
+.\" MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  
+.\"
+.TH VIC 1 "18 Sep 1995"
+.de HD
+.sp 1.5
+.B
+..
+.SH NAME
+vic \- video conference
+.SH SYNOPSIS
+.na
+.B vic
+[
+.B \-A
+.I proto
+]
+[
+.B \-B
+.I kbps
+]
+[
+.B \-C
+.I conference
+]
+[
+.B \-c
+.I dither
+]
+[
+.B \-D
+.I device
+]
+[
+.B \-d
+.I display
+]
+[
+.B \-f
+.I format
+]
+[
+.B \-F
+.I fps
+]
+[
+.B \-H
+]
+[
+.B \-I
+.I channel
+]
+[
+.B \-K
+.I key
+]
+[
+.B \-M
+.I colorfile
+]
+[
+.B \-m
+.I mtu
+]
+[
+.B \-N
+.I sessionname
+]
+[
+.B \-n
+.I network
+]
+[
+.B \-o
+.I clipfile
+]
+[
+.B \-P
+]
+[
+.B \-s
+]
+[
+.B \-t
+.I ttl
+]
+[
+.B \-U
+.I interval
+]
+[
+.B \-u
+.I script
+]
+[
+.B \-V
+.I visual
+]
+[
+.B \-X
+.I resource=value
+]
+.I dest/port[/format/ttl]
+.br
+.ad
+.SH DESCRIPTION
+.LP
+.I Vic
+is an experimental video conferencing tool
+that allows groups of users to transmit video
+to each other over an IP Multicast network
+(``vic'' is a contraction of VIdeo Conference).
+A host must be equipped with a camera and
+frame digitizer to send video, but no special
+hardware is required to receive and display it.
+Audio is handled by a separate application.
+
+The conference is carried out on the address specified by
+.I dest.
+Point-to-point conferences are initiated by supplying a
+standard IP address, while multiparty conferences
+use a Class D group address.
+.I Port
+specifies the UDP ports to use,
+and
+.I ttl
+specifies the IP time-to-live (see below).
+For RTPv2,
+.I port
+specifies two consecutive ports, one for data and
+one for control.  The data port is set to the greatest even
+integer less than or equal to
+.I port.
+The control port is one greater than the data port.
+
+Video is coded in a variety of formats.  The default format
+depends on the host video capture hardware, but can be overridden.
+.I Vic
+will take advantage of certain hardware compression and
+decompression units, if present, but since decompression
+hardware is not always available, all supported coding formats
+can be decoded in software.
+
+.SH OPTIONS
+.\"(Note that all the parameters set by
+.\"the following flags can also be controlled by X resources
+.\"(which all have `reasonable' defaults)
+.\"so one should not need to give
+.\".I vic
+.\"any flags in the usual case.  The flags only exist to temporarily
+.\"override some resource.)
+.TP
+.B \-A
+Use the transport protocol specified by
+.I proto,
+which may be
+.I rtp,
+for RTPv2 (version 2 of the real-time transport protocol),
+.I nv
+for the variant of RTPv1 used by Xerox PARC's network video tool, or
+.I ivs
+for the variant of RTPv1 used by the INRIA Videoconference System.
+.TP
+.B \-B
+Set the maximum value of the bandwidth slider to
+.I kbps
+kilobits per second.
+If the conference address is a multicast address and
+\-B is not specified,
+the maximum bandwidth is based on the session scope,
+using the well-known, agreed-upon MBone design parameters
+(i.e., that define permissible bit-rates for a given
+transmission scope).
+.TP
+.B \-C
+Use 
+.I conference,
+as the title of this
+.I vic
+window.  If the \-C flag is ommitted, the
+destination address and port are used as the window title.  
+.TP
+.B \-c
+On a color-mapped display, use the algorithm indicated by
+.I dither
+to convert video (typically represented in 24-bit YUV color space)
+to the available color palette.  For monochrome and truecolor
+displays, this argument is ignored.
+.I dither
+may be one of the following:
+.nf
+	ed		a simple, error-diffusion dither 
+			(i.e., Floyd-Steinberg dither)
+	gray		32-levels of gray
+	od		a simple 4x4 ordered dither
+	quantize	straight quantization
+.fi
+The ``od'' algorithms uses the standard 5x5x5 color cube.
+Since this color palette is used by several other applications
+(wb, nv, and gs), colors can be shared which avoids the use of
+a private color map.
+.TP
+.B \-D
+Use
+.I device
+as the default choice for video capture.  On systems with multiple
+capture devices, this option may be used to specify the selected
+device at start-up.
+The argument may be one of the following:
+.nf
+	cosmo		SGI Cosmo (JPEG) adaptor
+	galileo		SGI Galileo Video
+	indigo		SGI Indigo Video
+	j300		DEC J300
+	parallax	Parallax Xvideo card (jpeg board for sparcs)
+	rtvc		Sun /dev/rtvc*
+	tx		DEC tx/pip frame grabber
+	videopix	Sun VideoPix card
+	vigrapix	Vigra card (for sparcs)
+	vino		SGI VINO (Indy Video)
+	xil		Sun XIL library
+.fi
+The -D command option overrides the
+.I Vic.device
+resource.
+.TP
+.B \-d
+Connect to the X server indicated by the
+.I display
+argument.
+.TP
+.B \-f
+Use the video coding indicated by the
+.I format
+argument for transmission. 
+.I Format
+may be one of
+.nf
+	jpeg		Motion JPEG
+	mpeg		MPEG
+	h261		CCITT H.261
+	nv		Xerox PARC Network Video
+	cellb		Sun CellB
+	bvc		Berkeley Video Codec
+.fi
+Not all encodings are compatible with all frame grabbers.
+For instance, you need JPEG compression hardware in order
+to source a JPEG stream (e.g., a DEC J300, SunVideo, etc.).
+.TP
+.B \-F
+Set the maximum value of the frame rate slider to
+.I fps
+frames per second.
+.TP
+.B \-H
+Set the initial disposition of the Use-Hardware-Decode button to ``on''.
+Vic uses software decoding by default.
+.TP
+.B \-I
+Use the ``LBL Conference Bus'' to interact with other multimedia
+conferencing tools.
+The small integer
+.I channel,
+which must be non-zero,
+is used as the channel identifier for group interprocess communication on
+the local host.  This value should be consistent across each group
+of applications that belong to a single conference, and should
+be unique across conferences.  The session directory tool (sd)
+will allocate appropriate values.
+.I (Vic
+and
+.I vat
+currently use this mechanism to coordinate
+voice-activated video switching.  Vat version 2.17, or later,
+is required.)
+.TP
+.B \-K
+Use 
+.I key
+as the encryption key for this vic session.  (This only works if you
+have a binary with encryption support.  Because of U.S. export controls,
+the standard distribution from LBL does include this support.)
+.TP
+.B \-M
+Use
+.I colorfile
+as the base lookup table for the error-diffusion
+or quantizing color rendering algorithms.  
+This file is generated from a colormap using
+.I ppmtolut(1).
+The input to 
+.I ppmtolut
+is a
+.I ppm(5)
+file, which contains a single pixel of each color in the colormap
+(the geometry of the pixmap is irrelevant).
+
+The error-diffusion code can utilize any colormap in which
+the chrominance level of each color falls on the lattice 0, 16, 32, ... 240.
+.I mkcube(1)
+is a simple utility for generating such colormaps with
+varying color densities.
+
+Note that this option can also be used in conjunction with the ordered dither,
+but doing so is not advisable.
+The reason is that an ordered dither relies on colors uniformly spaced
+throughout the (5x5x5) RGB color cube, so overriding this default
+colormap probably will not produce improved results.
+.TP
+.B \-m
+Set the packet transmission size to
+.I mtu
+bytes, but limited to 1024 bytes (per the application protocol).
+The default is 1024.
+.TP
+.B \-N
+Use 
+.I session,
+in lieu of your user name and local host,
+to identify you to other sites.  
+If \-N is ommitted, the X resource
+.I Vic.sessionName 
+is used.  
+.TP
+.B \-n
+Use
+.I network
+as the communications protocol underlying the RTP transport,
+which may be
+.I ip,
+for IP or IP Multicast,
+.I atm
+for the Fore SPANS ATM API,
+or 
+.I rtip
+for the U.C. Berkeley Tenet group's Real-time Internet Protocol
+(see http://tenet.berkeley.edu for more information.)
+In the case of ATM and RTIP, only
+point-to-point communication is allowed.
+.IP
+RTIP is a simplex protocol requiring connection establishment
+in both directions.  The vic with the lower valued RTIP address 
+will block, waiting for a connection from the other vic.
+Once the first connection is set up, the two vic's exchange
+roles to setup the second connection.
+.TP
+.B \-o
+Dump the RTP video stream sourced from the local host to
+a file.
+.TP
+.B \-P
+Use a private X colormap.
+.TP
+.B \-s
+Don't use shared buffers with the X server.
+.TP
+.B \-t
+Set the multicast ttl (time-to-live) to
+.I ttl.  
+(The ttl is ignored if the destination address is not an IP multicast
+address.)  If no \-t flag is given, the value of the X resource
+.I Vic.defaultTTL
+is used.  A ttl of 1 restricts traffic to the local net; a ttl of 0
+restricts the traffic to the local host (e.g., only loopback works,
+which is useful for testing).
+.TP
+.B \-U
+Use
+.I interval
+as the update period, in seconds, for the thumbnail sized images
+of each video source.
+.sp .5
+.TP
+.B \-u
+Source
+.I script,
+in addition to the compiled-in script, to build the user interface.
+This is only useful during development.
+.TP
+.B \-X
+Override the X resource 
+Vic.\fIresource\fR
+with
+.I value.
+
+.SH OPERATION
+The main vic window provides an abbreviated summary of all sources
+that are actively transmitting video to the conference address.
+If no sources are active, the text ``Waiting for video...''
+is displayed in the window.
+Otherwise,
+each source has a panel composed of a thumbnail image,
+identification text, some bit and frame rate statistics,
+a ``mute'' button, a ``color'' button, and an ``info'' button.
+.LP
+The first line of the identification text contains the RTP NAME
+attribute of the corresponding source, which for
+.I vic,
+is set using -N,
+.I Vic.sessionName,
+or manually entered in
+the control menu (see below).
+The second line of text contains the RTP CNAME attribute
+and format of transmitted video.
+If the NAME and CNAME are identical (or very similar),
+or if the CNAME does not contain a numeric IP address,
+the second line will instead list the source's IP address
+(along with the video format).
+The third line contains filtered frame and bit rate statistics,
+and a loss indicator.
+These rates may differ from the actual
+sender's rate because of network packet drops or loss due to local
+socket buffer overflows because of CPU saturation.
+The gain of the low-pass filter used
+to smooth the statistics is controlled by the
+.I Vic.filterGain
+resource.
+Note that smoothing can be effectively
+disabled by setting
+.I Vic.filterGain
+to 1.
+.HD
+Loss Computation
+.LP
+The number of missing packets is computed as the
+difference between the total number of packets received and
+the total number of packets sent (which is inferred from sequence numbers).
+At each sampling interval, a loss percentage is computed by
+dividing the number of packets missing into the number of
+packets received during that interval.  This percentage
+is then low-passed filtered (again using the
+.I Vic.filterGain
+constant),
+which is what finally appears as the parenthesized loss indicator.
+.HD
+Mute & Color
+.LP
+The ``mute'' button, when selected, causes
+.I vic
+to ignore video from the corresponding host.  In general,
+you want to disable any site your not interested in to
+shed load.  Also, it is a good idea to mute your own looped-back
+transmission to make the encoding process run faster.
+.LP
+The toggle button labeled ``color'' controls the color disposition
+of the output.  When enabled (by default), video is displayed in
+color; otherwise, it is displayed in grayscale.  Using grayscale
+reduces the CPU load (for machines without TrueColor displays)
+because color dithering is costly.  The ``color'' button does
+not affect your transmitted video.
+.HD
+XXX
+Statistics
+.LP
+Clicking on the ``stats'' button brings up a top level window
+containing network and video coding statistics for the corresponding
+source.  These statistics are updated in real-time once per second.
+.LP
+The window consists of three panels.  The top panel lists the
+RTP NAME attribute, coding format and geometry, and times of
+reception of the most recent control and data packets.
+.LP
+The middle panel lists the actual statistics,
+which depend on the underlying coding format.
+(For example, only H.261 streams have a Bad-GOB stat.)
+The statistics are displayed in three columns.
+The first column is the change since the last sampling
+period (i.e., change over the last second); the middle column
+is a smoothed version of the first column (smoothing controlled
+by
+.I Vic.statsFilter);
+and the last column is the accumulated value since startup.
+.LP
+The bottom panel contains a stripchart that displays the statistic
+from the middle panel that is selected with the radio button.
+The stripchart plots one point per sampling interval.
+.HD
+Viewing Windows
+.LP
+The thumbnail image is not updated in real-time, but rather every
+few seconds (the default update
+interval can be overridden with the X resource
+.I Vic.stampInterval
+or \-U).
+Left-clicking on the image will open a larger viewing
+window of the corresponding source.  
+Along the bottom of the window
+are some additional controls and the corresponding site name.
+The ``Dismiss'' button will close the window, as will typing
+a 'q' into the window.
+The popup menu labeled ``Size'' is used to set the
+window size, while the menu labeled ``Mode'' changes the
+switching mode of the window.  By default, the switching
+mode is ``locked'', which means that the window is locked
+onto the indicated video source.  In ``browse'' mode,
+.I vic
+cycles through the set of active video sources,
+switching participants every
+.I Vic.switchInterval
+seconds.
+Additionally, when in ``browse mode'', you can cycle
+through the participants by hand using the '>' and '<'
+keys.  The last mode is ``voice-activated''.
+When running in tandem with
+.I vat(1),
+voice-activated switching causes the video window to
+switch to whoever is talking (see \-I).  You can run
+multiple voice-activated windows simultaneously, which
+will cause the remote participants who have spoken recently
+to be displayed.
+.HD
+The Control Menu
+.LP
+Clicking on the ``Menu'' button in the lower righthand corner
+of the main vic window will bring up a control panel, which
+is composed of three subpanels: transmission controls,
+encoder controls, and session controls.
+The transmission controls include a toggle button label ``Transmit'',
+which opens the video capture device and begins transmission.
+The ``Lock'' toggle button prevents any external agents from
+automatically initiating or terminating transmission.
+(For example, a ``video silence suppression'' algorithm might
+remotely turn off transmission if there are no interested
+receivers.)  The ``Release'' button
+terminates the transmission if active, and explicitly closes the
+capture device (so it may be opened by another application if the
+device is exclusive access).
+If the device cannot be opened (e.g., because no capture device
+is present or the device server isn't running), then a
+dialog box containing an error message will appear in response
+to invoking the Transmit button.
+
+Adjacent to the transmission buttons are rate control sliders.
+The bit rate is limited with the top slider while the frame rate
+is limited with the bottom slider.
+.I Vic
+uses the more
+constraining control to limit the output transmission rate.
+The frame rate slider ranges from 1 to 30 frames/sec, while
+the bit-rate slider ranges from 10 to
+.I Vic.maxbw
+kilobits/sec.
+The actual capture (and encode) rates are displayed above the
+two sliders.
+
+The ``Encoder'' panel contains controls for selecting the coding format,
+video image size, coding quality level, device ports, signal type,
+and device.  Not all options are supported by all devices.
+The upper lefthand panel contains a list of supported coding
+formats, which may be changed at any time.
+Formats that are not supported by the underlying device (or by
+software compression) are grayed out and disabled.
+
+The video image size is controlled by selecting generic ``small'',
+``normal'', and ``large'' formats.  The actual size depends on
+the coding format and underlying signal type.  In general,
+NTSC images are 640x480 (lg), 320x240 (norm), or 160x120 (sm);
+PAL images are 768x576 (lg), 384x288 (norm), or 192x144 (sm);
+and H.261 images are converted from their native signal size
+to CIF size 352x288 (norm) or QCIF size 176x144 (sm).
+If a size is not supported by the underlying hardware,
+the corresponding button will be disabled.
+
+To the right of the size selector is the device selector.
+Typically, a single binary contains support for only one device type,
+but eventually there will be support for multiple types
+(for example, VideoPix, SunVideo, and Parallax on a Sparcstation).
+
+If the selected coding format supports a quality adjustment, then the
+quality slider will be enabled and the corresponding quality ``value''
+displayed next to the slider.  
+The semantics of the quality setting depend on the particular coding
+format, but in general, higher quality settings are obtained
+by moving the slider to the right.
+For nv format, the setting controls the size of the dead-zone region
+of the Haar transform coefficient quantizer.  For motion JPEG, the
+setting corresponds to the Independent JPEG group's 1-100 compression
+value.  Finally, for H.261, the value corresponding to the GQUANT and
+MQUANT quantizers from the CCITT standard (this is the nominal
+quantizer -- if the quantizer is too small to adequately represent
+the dynamic range of a block, then a larger quantizer is used for
+that block).
+
+Adjacent to the quality slider are two pull-down menu buttons.
+The ``Port'' button selects among the analog input jacks to
+the capture device (for example, a VideoPix has two composite
+inputs and an S-Video input).  The ``Type'' button selects
+the analog video types, which is one of auto, NTSC, PAL, or SECAM.
+The ``auto'' setting attempts to determine the signal type from
+the actual input (provided the hardware supports this).
+
+The ``Session'' panel controls conference address information,
+some type-in boxes, and other session controls.
+The first line of the panel lists the numeric IP address 
+UDP port of the conference, the RTP source identifier of
+the local instance, and the multicast TTL.
+There are two
+.I "type-in boxes"
+labeled
+.B ``Name''
+and
+.B ``Key''.
+The ``Name'' box
+can be used to change the RTP session name announced to other sites.
+The ``Key'' box contains a session key for encryption described below.
+Below the type in boxes are toggle switches for controlling session
+behavior.  The ``Mute New Sources'' button, when selected, causes
+sources that transmit video to come up ``muted''.
+.HD
+Encryption
+.LP
+\fI(N.B.: Because of U.S. export controls,
+the standard distribution of vic from LBL does not support encryption.
+In this case, the ``Key'' type-in box will be disabled.)\fP
+.LP
+Since vic conversations are typically conducted over open IP networks,
+there is no way to prevent eavesdropping, particularly for multicast
+conferences.  To add some measure of privacy, vic allows the video
+streams to be DES encrypted.  Presumably only sites sharing
+the same key will be able to decrypt and
+listen to the encrypted video.
+.LP
+Encryption is enabled by entering an arbitrary string in the
+.B key
+box (this string is the previously agreed upon encryption key
+for the conference \- note that key distribution should be
+done by mechanisms totally separate from vic).  Encryption
+can be turned off by entering a null string (just a carriage
+return or any string starting with a blank) in the
+.B key
+box.
+.HD
+Tiling
+.LP
+Along the bottom of the control menu are several buttons.
+The button labeled ``Tile'' is a pull-down menu which allows
+you to specify the number of columns to use for displaying
+the thumbnail summaries of each active source.  The default
+is single column.
+The number of columns can also be specified by
+typing a single digit into the main window.
+.HD
+Session Member Listing
+.LP
+Clicking on the ``Members'' button brings up a top level window
+with a scrollable list of all the participants in the session.
+This list includes participants that are not actively sending
+video.
+.HD
+Colormap Optimization
+.LP
+The ``Colors'' button invokes a dynamic optimization of the color map
+used by the error diffusion or ordered dither algorithms.
+The distribution of colors for all ``unmuted'' sources is collected
+and handed off to a separate process to compute an improved colormap.
+Vic forks off
+.I histtolut(1),
+which must be in your execution path, to perform the computation.
+Because this optimization is computationally intensive, it may
+take a non-negligible time to complete.  During this time, the ``Colors''
+button is disabled and grayed out.
+.SH "CODING FORMATS"
+Vic supports a variety of video coding formats and it's a good idea
+to be familiar with the tradeoffs among formats before deciding
+which to use for a transmission.
+All of the formats (except Motion JPEG) utilize a block-based
+conditional replenishment algorithm, where the video image is
+divided up into 8x8 blocks and only those blocks that change
+are transmitted.  By coding each block independently of the
+past, the decoding process is made robust to packet loss.
+Because block updates are driven by scene activity, receivers
+might accumulate many stale blocks from packet loss or from joining
+an in-progress session.  This is circumvented by running
+a background refresh process which cycles through all the blocks
+continuously transmitting them at some low rate.
+The efficacy of this approach has been nicely demonstrated
+by Ron Frederick in nv.
+.LP
+Once the conditional replenishment step determines that a block
+is to be transmitted, the block must be coded.  How it is coded
+depends upon the selected format.
+For the nv format, the block is transformed to a frequency
+domain representation via the 8x8 Haar transform.
+The Haar coefficients are quantized with a simple dead-zone only
+quantizer (i.e., coefficients that fall below some threshold
+are truncated to zero; otherwise, they are unchanged).
+The coefficients are then run-length encoded.
+Unlike traditional transform coders, there is no Huffman or arithmetic
+coding step (which typically yields a factor of two in compression
+gain -- but because of the dead-zone only quantizer, entropy coding would
+be less effective here).
+.LP
+For H.261, the blocks are coded as intra-mode macroblock updates
+using an H.261 compliant syntax.  Note that vic never uses
+motion-compensated macroblock types since this type of coding
+is very susceptible to packet loss.  H.261 codecs typically
+do not have provisions for producing this type of bit stream,
+which we call ``Intra-H.261'', but decoders have no problem
+decoding it since the syntax is fully compliant.
+(Most H.261 codecs have an ``intra'' operating mode, but this is
+typically very inefficient because every block of every frame is coded.)
+The Intra-H.261 and nv encoders are both transform coders and
+are in fact quite similar.
+The differences are: (1) H.261 uses a discrete
+cosine transform (DCT) instead of a Haar transform; (2) H.261 uses
+a linear quantizer instead of dead-zone only quantizer;
+and (3) H.261 applies Huffman coding to the run-length encoded symbols.
+.LP
+For the ``simple conditional replenishment'' (scr) format,
+the block update is sent uncompressed.  This approach has
+very high image quality but works very poorly over low bandwidth
+networks.  Even on high bandwidth networks, slower end-systems
+have a hard time keeping up with the data rates associated
+with processing uncompressed video.
+.LP
+For the CellB format, blocks are encoded according to
+Sun Microsystems CellB syntax.  CellB is a block truncation
+coding technique that gives a 16:1 compression gain
+with relatively low image quality.  The simplicity
+of the CellB codec results in a fast software implementation.
+.LP
+Finally, for Motion JPEG format, entire frames are coded
+via the JPEG still image standard.  Motion JPEG is suitable
+only in high bandwidth environments and is supported
+only with capture devices that support hardware JPEG compression.
+Vic can, however, decode Motion JPEG in software.
+.HD
+Coding Format Tradeoffs
+.LP
+As in nv, vic limits its transmission bandwidth by using a
+variable frame rate.
+When scene activity is high, the video becomes harder to code
+and the frame rate slows.  Under this scheme, higher compression
+gain turns into higher frame rates.
+.LP
+Because overall perceived quality depends very much on scene content,
+it's not always clear which coding scheme is best.
+For example, it's better to view slides at a low frame
+rate and high image quality, whereas most people prefer
+viewing a human speaker at a higher frame rate at the expense
+of lower image quality.
+The Haar transform in the nv algorithm tends to code edges,
+and hence text, better than the DCT in H.261.
+On the other hand, for typical scenes, the Intra-H.261 encoder tends to
+outperform the nv encoder by a factor of two to four (Frederick
+has reported a similar factor of two by replacing the Haar transform
+by the DCT in the nv coding algorithm).
+.SH "MONITOR GAMMA"
+Because computer monitors are not designed to display generic
+composite video and because analog video standards
+bias source signals with a display gamma correction,
+most computer monitors are not properly calibrated for
+displaying digital video signals.  In other words, cameras
+adjust for a gamma response that is not typically present
+in computer monitors.  For color mapped rendering (i.e., error
+diffusion or ordered dither), vic allows you to specify
+a gamma correction factor that is tailored to your monitor.
+You can choose a proper gamma using the test image,
+.I gamma.gif,
+included in the vic distribution.  View the image from several
+feet away and choose the bar which appears to have a uniform
+gray level.  The number printed below this bar is the gamma
+of your display.  Take this number, divide it by 2.2 (the gamma
+correction built into an analog video signal),
+and use this result for vic's gamma correction (i.e.,
+.I Vic.gamma).
+
+This gamma calibration procedure is due to Robert Berger
+(rwb@J.GP.CS.CMU.EDU),
+who provides an excellent discussion of monitor gamma in
+.br
+http://www.cs.cmu.edu:8001/afs/cs/user/rwb/www/gamma.html.
+The gamma.gif calibration image is redistributed with the permission
+of Robert Berger.
+.SH "X RESOURCES"
+The following are the names and default values of X resources used by
+.I vic.
+Any of these resources can be overridden by the -X command switch,
+which may be used multiple times on the command line.
+For example, "-Xmtu=800" overrides
+.I Vic.mtu
+with 800.
+.IP "\fBVic.mtu\fI (1024)\fP"
+the maximum transmission unit for vic, with respect to the RTP layer
+.IP "\fBVic.framerate\fI (2)\fP"
+the default initial setting of the frame rate slider
+.IP "\fBVic.defaultTTL\fI (16)\fP"
+the default IP multicast time-to-live
+.IP "\fBVic.maxbw\fI (-1)\fP"
+the maximum allowable transmission rate; -1 causes vic to automatically
+choose the maximum based on the MBONE heuristics that relate ttl scopes
+to maximum transmission rate
+.IP "\fBVic.bandwidth\fI (128)\fP"
+the default initial setting of the bandwidth slider in kb/s
+.IP "\fBVic.iconPrefix\fI (vic:)\fP"
+a string that is prefixed to the vic icon names
+.IP "\fBVic.priority\fI (10)\fP"
+a scheduling priority that is set using the
+.I nice(3)
+system call; typically, video is run at a lower priority to prevent
+computationally expensive decoding from interfering with
+.I vat(1)
+to avoid audio breakups
+.IP "\fBVic.format\fI (none)\fP"
+the default coding format, which may be \fBnv, cellb, bvc, jpeg,\fR
+or \fBh261\fR.
+.IP "\fBVic.stampInterval\fI (1000)\fP"
+the time interval (in milliseconds) between updates of the thumbnail
+image; the thumbnail is not rendered in real-time to avoid decoding
+overhead when the stream is not being actively viewed
+.IP "\fBVic.switchInterval\fI (5)\fP"
+the time interval (in seconds) to wait before switching to the next
+video source in timer-switched mode
+.IP "\fBVic.dither\fI (od)\fP"
+the default mode for dithering for 8-bit displays;
+see the -c command line option for more information.
+.IP "\fBVic.tile\fI (1)\fP"
+the default number of columns used for displaying thumbnails
+in the main vic window
+.IP "\fBVic.filterGain\fI (0.25)\fP"
+the low pass filter constant used for smoothing the frame rate
+and bit rate statistics
+.IP "\fBVic.statsFilter\fI (0.0625)\fP"
+the low pass filter constant used for smoothing the decoder
+and network statistics (in the ``stats'' popup window)
+.IP "\fBVic.medianCutColors\fI (150)\fP"
+the number of colors to use in the dynamic colormap optimization,
+run when the ``Colors'' button is invoked
+.IP "\fBVic.gamma\fI (0.7)\fP"
+the default gamma correction factor to use in the color mapped
+rendering algorithms
+.IP "\fBVic.rtipXmin\fI (655)\fP"
+the RTIP ``xmin'' traffic spec parameter
+.IP "\fBVic.rtipXave\fI (655)\fP"
+the RTIP ``xave'' traffic spec parameter
+.IP "\fBVic.rtipI\fI (6553)\fP"
+the RTIP ``I'' traffic spec parameter
+.IP "\fBVic.rtipSmax\fI (1200)\fP"
+the RTIP ``Smax'' traffic spec parameter
+.IP "\fBVic.rtipD\fI (1200)\fP"
+the RTIP ``D'' QOS spec parameter
+.IP "\fBVic.rtipJ\fI (3279)\fP"
+the RTIP ``J'' QOS spec parameter
+.IP "\fBVic.rtipZ\fI (10000)\fP"
+the RTIP ``Z'' QOS spec parameter
+.IP "\fBVic.rtipW\fI (1000)\fP"
+the RTIP ``W'' QOS spec parameter
+.IP "\fBVic.rtipU\fI (1000)\fP"
+the RTIP ``U'' QOS spec parameter
+.IP "\fBVic.rtipType\fI (1)\fP"
+the RTIP type parameter
+.SH "SEE ALSO"
+vat(1),
+ivs(1),
+nv(1),
+ppmtolut(1),
+mkcube(1),
+histtolut(1)
+.LP
+Schulzrinne, Casner, Frederick, Jacobson,
+``RTP: A Transport Protocol for Real-Time Applications'',
+Internet Draft, available via anonymous ftp to
+ftp.isi.edu in internet-drafts/draft-ietf-avt-rtp-*.
+.LP
+McCanne, Steven and Jacobson, Van.
+``vic: A Flexible Framework for Packet Video''.
+In proceedings of ACM Multimedia '95.
+November, 1995.
+.LP
+.I vat
+is available via anonymous ftp to ftp.ee.lbl.gov in conferencing/vat.
+.I nv
+is available via anonymous ftp to ftp.parc.xerox.com in pub/net-research.
+.I ivs
+is available via anonymous ftp to avahi.inria.fr in pub/videoconference.
+.br
+.SH ACKNOWLEDGMENTS
+.LP
+.I Vic
+was inspired by
+.I nv,
+the pioneering Internet video tool developed
+by Ron Frederick at Xerox PARC (frederick@parc.xerox.com).
+Portions of vic (the ordered dither, the nv-format codec, and
+some of the video capture code) were derived from the
+.I nv
+source code.
+.LP
+Lance Berc (berc@src.dec.com) provided the j300/jvideo video server;
+his model for video capture and decompression shaped vic's hardware
+codec support architecture.
+Lance has been tremendously helpful in the development
+process.  He has helped to diagnose and fix several particularly
+nasty bugs and provided many excellent suggestions for the user
+interface and overall functionality.
+.LP
+The CellB codec is based on an implementation from
+Michael Speer (speer@eng.sun.com).
+.LP
+Amit Gupta (amit@cs.berkeley.edu) originally suggested the abstraction
+that evolved into the voice-activated switching mechanism.
+.LP
+Elan Amir (elan@cs.berkeley.edu) implemented the error diffusion
+dithering code and dynamic color allocation (median cut) algorithms.
+Chris Goodman (goodman@sgi.com) provided valuable advice on the
+error diffusion algorithm and helped debug the implementation.
+.LP
+Martin Vetterli (martin@diva.eecs.berkeley.edu) provided input on fast
+DCT implementations.  He pointed out that Arai, Agui, and Nakajmia's
+8pt 1D DCT can be used to compute scaled row and column DCTs leading to
+a 80 multiply 8x8 2D DCT.
+.LP
+Thanks to Robert Berger (rwb@J.GP.CS.CMU.EDU) for his excellent
+web page on monitor gamma and for his permission to redistribute the
+gamma calibration test image (gamma.gif).
+.LP
+Many thanks to the early alpha testers who invested tremendous
+effort fielding version after version of bug ridden binaries.
+Their feedback, patience, and willingness to cope with our
+source code distribution policies are very much appreciated.
+The cast includes
+Lance Berc (berc@pa.dec.com),
+Toerless Eckert <Toerless.Eckert@Informatik.Uni-Erlangen.de>
+Atanu Ghosh (A.Ghosh@cs.ucl.ac.uk),
+Mark Handley (M.Handley@cs.ucl.ac.uk),
+Don Hoffman (hoffman@eng.sun.com),
+George Michaelson (G.Michaelson@cc.uq.oz.au),
+Bob Olson (olson@mcs.anl.gov),
+Joe Pallas (Pallas@Apple.COM),
+Hoofar Razavi (hoofar@sgi.com),
+Michael Speer (speer@eng.sun.com),
+Craig Votava (Craig.M.Votava@att.com).
+and
+Ian Wakeman (I.Wakeman@cs.ucl.ac.uk),
+.LP
+The extension for compositing graphical overlays in the capture path
+was suggested by Lance Berc (berc@pa.dec.com).
+.LP
+Thanks to the Xunet research community for using an early version
+of vic to conduct research meetings over the Xunet backbone during
+Fall 1993.  This experiment led to an important design change in
+vic: the separation of viewing window from the underlying video source.
+With this separation, a window could be ``switched'' among the
+many active sources present in the relatively large Xunet conferences.
+.LP
+This software is based in part on the work of the Independent JPEG Group
+and the Portable Video Research Group.
+.LP
+This work was co-sponsored by the the Lawrence Berkeley National Laboratory
+and the Tenet Group of the University of California Berkeley and 
+of the International Computer Science Institute.
+Support was provided by
+(1) an AT&T Graduate Fellowship;
+(2) for Lawrence Berkeley National Laboratory: (i) the Director,
+Office of Energy Research, Scientific Computing Staff, of the
+U.S. Department of Energy, Contract No. DE-AC03-76SF00098,
+(ii) Sun Microsystems, (iii) Digital Equipment Corporation,
+and (iv) Silicon Graphics Inc.; and
+(3) for the Tenet Research Group: (i) the National Science Foundation
+and the Advanced Research Projects Agency (ARPA) under
+Cooperative Agreement NCR-8919038 with the Corporation for
+National Research Initiatives, (ii) Digital Equipment Corporation,
+and (iii) Silicon Graphics Inc.
+.LP
+.SH AUTHOR
+Steven McCanne (mccanne@ee.lbl.gov), University of California, Berkeley
+and Lawrence Berkeley National Laboratory, Berkeley, CA, and
+Van Jacobson (van@ee.lbl.gov),
+Lawrence Berkeley National Laboratory, Berkeley, CA.
+.SH BUGS
+MPEG is not yet supported.  We plan to implement an ``Intra-MPEG'' encoder
+using the same principle underlying vic's ``Intra-H.261'' encoder.
+
+The (software) JPEG decoder makes no attempt to interpolate
+unnatural aspect ratios and does not have deinterlace support
+(i.e., it will display 640x240 fields as is).
+
+There are no contrast or brightness controls.
+
+The error-diffsuion dithering code needs more work.
+At low luminosities, strange pastel colors appear.
+Blue skies are often rendered green.
+
+Monochrome displays are not supported.
+
+Vic cannot operate on the loopback interface because it gets
+confused by it's own stream.  Similarly, routing loops
+due to application level gateways are not yet dealt with
+gracefully.
+
+The J300 only produces 8-bit dithered output, so you must run vic
+with an 8-bit visual if you want to use the J300 to decode JPEG
+to a window.
+
+If you invoke the colormap optimization and then change the dithering
+algorithm, the optimized colormap is lost.
+
+Quarter-sized NTSC input video is truncated from 160x120 to 160x112
+due to limitations in the way vic performs conditional replenishment
+(i.e., it uses 16x16 blocks and 120 is not an integral multiple of 16).
+

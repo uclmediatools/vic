@@ -1,0 +1,267 @@
+dnl autoconf rules to find tcl & tk 
+dnl $Header$ (LBL)
+
+AC_ARG_WITH(tcl,	--with-tcl=path	specify a pathname for tcl, d=$withval, d="")
+if test "$d" != "" ; then 
+	if test ! -d $d ; then 
+		echo "'$d' is not a directory"
+		exit 1
+	fi
+	V_INCLUDE_TCL=-I$d/include
+	if test ! -r $d/include/tcl.h ; then
+		echo "can't find tcl.h in $d/include"
+		exit 1
+	fi
+	places="$d/lib/libtcl7.5.so \
+		$d/lib/libtcl7.5.a \
+		$d/lib/libtcl.so \
+		$d/lib/libtcl.a"
+	V_LIB_TCL=FAIL
+	for dir in $places; do
+		if test -r $dir ; then
+			V_LIB_TCL=$dir
+			break
+		fi
+	done
+	if test $V_LIB_TCL = FAIL ; then
+		echo "can't find libtcl.a in $d/lib"
+		exit 1
+	fi
+	places="$d/lib/tcl7.5 \
+		$d/lib/tcl"
+	V_LIBRARY_TCL=FAIL
+	for dir in $places; do
+		if test -r $dir/init.tcl ; then
+			V_LIBRARY_TCL=$dir
+			break
+		fi
+	done
+	if test $V_LIBRARY_TCL = FAIL ; then
+		echo "can't find init.tcl in $d/lib/tcl"
+		exit 1
+	fi
+else
+	AC_TEST_CPP([#include <tcl.h>], V_INCLUDE_TCL="", V_INCLUDE_TCL=FAIL)
+	if test "$V_INCLUDE_TCL" = FAIL; then
+		echo "checking for tcl.h"
+		places="$PWD/../tcl7.5 \
+			/usr/src/local/tcl7.5 \
+			/import/tcl/include/tcl7.5 \
+			$prefix/include \
+			$x_includes/tk \
+			$x_includes \
+			/usr/local/include \
+			/usr/contrib/include \
+			/usr/include"
+		for dir in $places; do
+			if test -r $dir/tcl.h ; then
+				V_INCLUDE_TCL=-I$dir
+			        break
+			fi
+		done
+		if test "$V_INCLUDE_TCL" = FAIL; then
+			echo "can't find tcl.h"
+			exit 1
+		fi
+	fi
+	AC_CHECK_LIB(tcl7.5, main, V_LIB_TCL="-ltcl7.5", V_LIB_TCL="FAIL")
+	if test "$V_LIB_TCL" = FAIL; then
+		echo "checking for libtcl.a"
+		places="\
+			$prefix/lib \
+			$x_libraries \
+			/usr/contrib/lib \
+			/usr/local/lib \
+			/usr/lib \
+			$PWD/../tcl7.5 \
+			/usr/src/local/tcl7.5 \
+			/import/tcl/lib/tcl7.5 \
+			"
+		for dir in $places; do
+			if test -r $dir/libtcl7.5.so -o -r $dir/libtcl7.5.a; then
+				V_LIB_TCL="-L$dir -ltcl7.5"
+				break
+			fi
+			if test -r $dir/libtcl.so -o -r $dir/libtcl.a; then
+				V_LIB_TCL="-L$dir -ltcl"
+				break
+			fi
+		done
+		if test "$V_LIB_TCL" = FAIL; then
+			echo "can't find libtcl.a"
+			exit 1
+		else
+			if test $solaris ; then
+				V_LIB_TCL="-R$dir $V_LIB_TCL"
+			fi
+		fi
+	fi
+	echo "checking for tcl/init.tcl"
+	V_LIBRARY_TCL=FAIL
+	places="/usr/local/lib/tcl7.5 \
+		/usr/contrib/lib/tcl7.5 \
+		/usr/lib/tcl7.5 \
+		/usr/lib/tk/tcl7.5 \
+		/import/tcl/lib/tcl7.5 \
+		$prefix/lib/tcl7.5 \
+		$x_libraries/tcl7.5 \
+		/usr/local/lib/tcl \
+		/usr/lib/tcl \
+		/usr/lib/tk/tcl \
+		/import/tcl/lib/tcl \
+		$prefix/lib/tcl \
+		$x_libraries/tcl \
+		$x_libraries/tcl"
+	for dir in $places; do
+		if test -r $dir/init.tcl; then
+			V_LIBRARY_TCL=$dir
+			break
+		fi
+	done
+	if test "$V_LIBRARY_TCL" = FAIL; then
+		echo "can't find tcl/init.tcl"
+		exit 1
+	fi
+fi
+AC_SUBST(V_INCLUDE_TCL)
+AC_SUBST(V_LIB_TCL)
+AC_SUBST(V_LIBRARY_TCL)
+
+AC_ARG_WITH(tk,	--with-tk=path	specify a pathname for tk, d=$withval, d="")
+if test "$d" != "" ; then 
+	if test ! -d $d ; then 
+		echo "'$d' is not a directory"
+		exit 1
+	fi
+	V_INCLUDE_TK=-I$d/include
+	if test ! -r $d/include/tk.h ; then
+		echo "can't find tk.h in $d/include"
+		exit 1
+	fi
+	places="$d/lib/libtk4.1.so \
+		$d/lib/libtk4.1.a \
+		$d/lib/libtk.so \
+		$d/lib/libtk.a"
+	V_LIB_TK=FAIL
+	for dir in $places; do
+		if test -r $dir ; then
+			V_LIB_TK=$dir
+			break
+		fi
+	done
+	if test $V_LIB_TK = FAIL ; then
+		echo "can't find libtk.a in $d/lib"
+		exit 1
+	fi
+	places="$d/lib/tk4.1 \
+		$d/lib/tk"
+	V_LIBRARY_TK=FAIL
+	for dir in $places; do
+		if test -r $dir/tk.tcl ; then
+			V_LIBRARY_TK=$dir
+			break
+		fi
+	done
+	if test $V_LIBRARY_TK = FAIL ; then
+		echo "can't find tk.tcl in $d/lib/tk"
+		exit 1
+	fi
+else
+	AC_TEST_CPP([#include <tk.h>], V_INCLUDE_TK="", V_INCLUDE_TK=FAIL)
+	if test "$V_INCLUDE_TK" = FAIL; then
+		echo "checking for tk.h"
+		V_INCLUDE_TK=""
+		places="\
+			$prefix/include \
+			/usr/local/include \
+			/usr/contrib/include \
+			/usr/include/tcl \
+			/usr/include\
+			$x_includes/tk \
+			$x_includes \
+			$PWD/../tk4.1 \
+			/usr/src/local/tk4.1 \
+			/import/tcl/include/tk4.1 \
+			"
+		for dir in $places; do
+			if test -r $dir/tk.h ; then
+				V_INCLUDE_TK=-I$dir
+				break
+			fi
+		done
+		if test "$V_INCLUDE_TK" = FAIL; then
+			echo "can't find tk.h"
+			exit 1
+		fi
+	fi
+	AC_CHECK_LIB(tk4.1, main, V_LIB_TK="-ltk4.1", V_LIB_TK="FAIL")
+	if test "$V_LIB_TK" = FAIL; then
+		echo "checking for libtk.a"
+		places="/usr/local/lib \
+			/usr/contrib/lib \
+			/usr/lib \
+			/usr/lib/tk \
+			/import/tcl/lib \
+			$PWD/../tk4.1 \
+			/usr/src/local/tk4.1 \
+			$prefix/lib \
+			$x_libraries"
+		for dir in $places; do
+			if test -r $dir/libtk4.1.so -o -r $dir/libtk4.1.a; then
+				V_LIB_TK="-L$dir -ltk4.1"
+				break
+			fi
+			if test -r $dir/libtk.so -o -r $dir/libtk.a; then
+				V_LIB_TK="-L$dir -ltk"
+				break
+			fi
+		done
+		if test "$V_LIB_TK" = FAIL; then
+			echo "can't find libtk.a"
+			exit 1
+		else
+			if test $solaris ; then
+				V_LIB_TK="-R$dir $V_LIB_TK"
+			fi
+		fi
+	fi
+	echo "checking for tk/tk.tcl"
+	V_LIBRARY_TK=FAIL
+	places="/usr/local/lib/tk4.1 \
+		/usr/contrib/lib/tk4.1 \
+		/usr/lib/tk4.1 \
+		/usr/lib/tk/tk4.1 \
+		/import/tcl/lib/tk4.1 \
+		$prefix/lib/tk4.1 \
+		$x_libraries/tk4.1 \
+		$PWD/../tk4.1/library \
+		/usr/src/local/tk4.1/library \
+		/usr/local/lib/tk \
+		/usr/lib/tk \
+		/usr/lib/tk/tk \
+		/import/tcl/lib/tk \
+		$prefix/lib/tk \
+		$x_libraries/tk \
+		$x_libraries/tk"
+	for dir in $places; do
+		if test -r $dir/tk.tcl; then
+			V_LIBRARY_TK=$dir
+			break
+		fi
+	done
+	if test "$V_LIBRARY_TK" = FAIL; then
+		echo "can't find tk/tk.tcl"
+		exit 1
+	fi
+fi
+if test -r $V_LIBRARY_TK/optionMenu.tcl ; then
+	V_TKDOSNAMES='$(LIBRARY_TK)/optionMenu.tcl $(LIBRARY_TK)/scrollbar.tcl'
+	V_NEED_DL=""
+else
+	V_TKDOSNAMES='$(LIBRARY_TK)/optMenu.tcl $(LIBRARY_TK)/scrlbar.tcl'
+	V_NEED_DL=YES
+fi
+AC_SUBST(V_TKDOSNAMES)
+AC_SUBST(V_INCLUDE_TK)
+AC_SUBST(V_LIB_TK)
+AC_SUBST(V_LIBRARY_TK)
