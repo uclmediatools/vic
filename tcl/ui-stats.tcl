@@ -250,6 +250,79 @@ proc info_destroy { w src } {
 	destroy $w
 }
 
+proc set_numDecoderLayers { src value } {
+	global numDecoderLayers V decoderLayerValue
+
+	$decoderLayerValue($src) configure -text $value
+	
+	#$V(encoder) loop_layer [expr {$numEncoderLayers + 1}]
+	set d [$src handler]
+	if { "$d" != "" } {
+		$d maxChannel $numDecoderLayers($src)
+	}
+}
+
+
+proc create_decoder_control_window src { 
+	if { "[$src handler]" != "" } {
+		set w .decoder_control$src
+
+		if [winfo exists $w] {
+			destroy $w
+			return
+		}
+		create_toplevel $w [getid $src]
+
+		set f [smallfont]
+
+		frame $w.title -borderwidth 2 -relief groove
+		label $w.title.main -borderwidth 0 -anchor w -text "Decoder Control"
+		label $w.title.name -borderwidth 0 -anchor w \
+			-textvariable src_nickname($src)
+		frame $w.tb -borderwidth 2 -relief groove
+
+		pack $w.title.name -anchor w
+		pack $w.title.main -anchor w
+		pack $w.title -fill x
+
+		wm geometry $w +[winfo pointerx .]+[winfo pointery .]
+		wm deiconify $w
+
+		set fmt [rtp_format $src]
+
+		if { $fmt == "pvh" } {
+
+			global numDecoderLayers numLayers decoderLayerValue
+
+			if ![info exists numDecoderLayers($src)] {
+				set numDecoderLayers($src) $numLayers
+			}
+
+			label $w.tb.value -text 0 -font $f -width 3
+			scale $w.tb.scale -font $f -orient horizontal \
+				-showvalue 0 -from 0 -to $numLayers \
+				-variable numDecoderLayers($src) \
+				-width 12 -relief groove \
+				-command "set_numDecoderLayers $src"
+
+
+			set decoderLayerValue($src) $w.tb.value
+
+			$decoderLayerValue($src) configure -text $numDecoderLayers($src)
+
+			pack $w.tb.scale -side left -fill x -expand 1
+			pack $w.tb.value -side left
+		}
+		pack $w.tb -fill x -padx 6 -side left -expand 1
+
+		button $w.dismiss -relief raised -font $f \
+			-command "destroy $w" -text Dismiss
+		pack $w.dismiss -anchor c -pady 4
+
+	} else {
+		open_dialog "Decoder not initialised yet"
+	}
+}
 proc create_stats_window { w src titleText method } {
 
 	if [winfo exists $w] {
@@ -299,6 +372,7 @@ proc create_decoder_window src {
 		open_dialog "no decoder stats yet"
 	}
 }
+
 
 #
 # delete any windows bound to this source's decoder
@@ -640,6 +714,7 @@ proc read_mtrace {fd w} {
 }
 
 proc build_info_menu {src m} {
+	global V
 	menu $m
 	set f [smallfont]
 	$m add command -label "Site Info" \
@@ -648,7 +723,9 @@ proc build_info_menu {src m} {
 		-command "create_rtp_window $src" -font $f
 	$m add command -label "Decoder Stats" \
 		-command "create_decoder_window $src" -font $f
-	global V
+	$m add command -label "Decoder Control" \
+		-command "create_decoder_control_window $src" -font $f
+
 	if [$V(data-net) ismulticast] {
 		$m add command -label "Mtrace from" \
 			-command "create_mtrace_window $src from" -font $f

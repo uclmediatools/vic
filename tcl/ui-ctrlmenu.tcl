@@ -279,7 +279,7 @@ proc create_encoder fmt {
 set  transmitButtonState 0
 
 proc transmit { } {
-	global transmitButtonState videoFormat videoDevice V useJPEGforH261 useHardwareComp numLayers
+	global transmitButtonState videoFormat videoDevice V useJPEGforH261 useHardwareComp numEncoderLayers
 	if ![have grabber] {
 		set DA [$videoDevice attributes]
 		set DF [attribute_class $DA format]
@@ -320,7 +320,7 @@ proc transmit { } {
 
 		$encoder transmitter $V(session)
 
-		$encoder loop_layer [expr {$numLayers + 1}]
+		$encoder loop_layer [expr {$numEncoderLayers + 1}]
 		
 		set V(encoder) $encoder
 		set ff [$grabtarget frame-format]
@@ -744,39 +744,19 @@ proc format_col { w n0 n1 } {
 	#format_col $w.p4 pvh bvc
 }
 
-proc set_numLayers { value } {
-	global transmitButtonState numLayers V layerscale layervalue
+proc set_numEncoderLayers { value } {
+	global transmitButtonState numEncoderLayers V encoderLayerScale encoderLayerValue
 
-	$layervalue configure -text $value
+	$encoderLayerValue configure -text $value
 	
 	if $transmitButtonState {
-		$V(encoder) loop_layer [expr {$numLayers + 1}]
-		$V(decoder) maxChannel $numLayers
+		$V(encoder) loop_layer [expr {$numEncoderLayers + 1}]
+		#$V(decoder) maxChannel $numEncoderLayers
 	}
 }
 
-proc layer_frame { w n0 } {
-	global numLayers
-	set f [smallfont]
-
-	radiobutton $w.b0 -text $n0 -relief flat -font $f -anchor w \
-		-variable videoFormat -value $n0 -padx 0 -pady 0 \
-		-command "select_format $n0" -state disabled
-	
-	scale $w.scale -orient horizontal -width 12 \
-		-label "Number of layers" \
-		-variable numLayers \
-		-relief groove -showvalue 1 -from 0 -to [resource numLayers] \
-        -command "set_numLayers"
-	
-	pack $w.b0 $w.scale -fill x -side left
-
-	global formatButtons
-	lappend formatButtons $w.b0
-}
-
-proc build.layer_scale w {
-	global numLayers layerscale layervalue
+proc build.encoderLayer_scale w {
+	global numLayers encoderLayerScale encoderLayerValue
 
 	set f [smallfont]
 
@@ -785,15 +765,15 @@ proc build.layer_scale w {
 	label $w.tb.value -text 0 -font $f -width 3
 	scale $w.tb.scale -font $f -orient horizontal \
 		-showvalue 0 -from 0 -to $numLayers \
-		-variable numLayers \
+		-variable numEncoderLayers \
 		-width 12 -relief groove \
-        -command "set_numLayers"
+        -command "set_numEncoderLayers"
 
 
-	set layerscale $w.tb.scale
-	set layervalue $w.tb.value
+	set encoderLayerScale $w.tb.scale
+	set encoderLayerValue $w.tb.value
 
-	$layervalue configure -text $numLayers
+	$encoderLayerValue configure -text $numLayers
 
 #$layerscale configure -state disabled
 
@@ -810,16 +790,9 @@ proc build.format w {
 	format_col $w.p3 raw cellb
 	format_col $w.p4 bvc pvh:
 	
-	#frame $w.layer -relief groove -borderwidth 2 -width 50
-	#layer_frame $w.layer pvh
-
 	frame $w.glue0
 	frame $w.glue1
-
-	#pack $w.layer -side bottom -fill x -expand 1
-	#pack $w.glue0 -side left -fill x -expand 1
 	pack $w.p0 $w.p1 $w.p2 $w.p3 $w.p4 -side left
-	#pack $w.glue1 -side left -fill x -expand 1
 
 }
 
@@ -1110,7 +1083,6 @@ proc build.encoder w {
 
 	frame $w.f.h0 -relief flat
 	frame $w.f.quality -relief flat
-#	frame $w.f.layer -relief flat
 	frame $w.f.h0.eb -relief flat
 	frame $w.f.h0.format -relief groove -borderwidth 2
 	frame $w.f.h0.size -relief groove -borderwidth 2
@@ -1121,7 +1093,6 @@ proc build.encoder w {
 	build.size $w.f.h0.size
 
 	build.q $w.f.quality
-#build.layer_scale $w.f.h2
 
 	pack $w.f.h0.eb -side left -anchor n -fill y -padx 6 -pady 4
 	pack $w.f.h0.format -side left -anchor n -fill both -expand 1
@@ -1129,7 +1100,6 @@ proc build.encoder w {
 	pack $w.f.h0.gap -side left -anchor c
 
 	pack $w.f.h0 -fill x -pady 4
-#	pack $w.f.layer -fill x 
 	pack $w.f.quality -fill x -pady 6
 	pack $w.title $w.f -fill x
 }
@@ -1329,7 +1299,7 @@ set qscale_val(raw) 1
 set lastFmt ""
 
 proc select_format fmt {
-	global qscale qlabel videoDevice videoFormat qscale_val lastFmt layerscale
+	global qscale qlabel videoDevice videoFormat qscale_val lastFmt
 
 	if { $fmt == "h261" || $fmt == "pvh"} {
 		# H.261 supports only QCIF/CIF
@@ -1339,14 +1309,14 @@ proc select_format fmt {
 	}
 
 	if { $fmt == "pvh"} {
-		set w .menu.encoder.f.layer
+		set w .menu.encoder.f.encoderLayer
 		if ![winfo exists $w] {
 			frame $w
-			build.layer_scale $w
+			build.encoderLayer_scale $w
 		}
 		pack $w -before .menu.encoder.f.quality  -fill x
 	} else {
-		pack forget .menu.encoder.f.layer
+		pack forget .menu.encoder.f.encoderLayer
 	}
 
 	set qscale_val($lastFmt) [$qscale get]

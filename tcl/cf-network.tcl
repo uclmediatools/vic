@@ -401,9 +401,10 @@ proc net_open_rtip { sessionType session dst } {
 }
 
 proc init_network {} {
-	global numLayers
+	global numLayers numEncoderLayers
 	
 	set numLayers [resource numLayers]
+	set numEncoderLayers $numLayers
 	set netType [resource network]
 	# Auto detect IPv6 addresses
 	if { [string first ":" [resource defaultHostSpec]] > 0 } {

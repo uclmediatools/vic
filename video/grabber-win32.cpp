@@ -1010,7 +1010,7 @@ VfwGrabber::capture(VfwGrabber *gw, LPBYTE frame)
 int
 VfwGrabber::grab()
 {
-#ifdef DEBUG
+#ifdef DEBUG_GRAB
 	debug_msg("VfwGrabber::grab: thread=%x w=%d h=%d frame_=%d fsize_=%d in=%dx%d out=%dx%d\n",
 		GetCurrentThreadId(),
 		basewidth_, baseheight_, frame_, framesize_,
