@@ -99,6 +99,12 @@ v1.0.8	- Add mbus_sent_all()
 	- Add binary tree.
 	- Add OpenBSD fixes from Angelos D. Keromytis
 	- Add Jerry Isdale's debug_dump() routine.
+	- Add fix to RTP init_seq() to correct bug(?) in RFC1889 which
+	  means we incorrectly report the one packet lost in the first
+	  reporting interval. Fix by Bill Fenner.
+	- Make the RTP create_source() routine return a pointer to the
+	  source. Patch from Bill Fenner.
+
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
