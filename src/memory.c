@@ -85,7 +85,7 @@ void xdoneinit(void)
 
 static int chk_header_okay(const chk_header *ch)
 {
-        const void *tm; /* tail magic */
+        const uint8_t *tm; /* tail magic */
         assert(ch != NULL);
 
         if (ch->key == MAGIC_MEMORY) {
@@ -93,7 +93,7 @@ static int chk_header_okay(const chk_header *ch)
                 abort();
         }
 
-        tm = (const void*)ch;
+        tm = (const uint8_t*)ch;
         tm += sizeof(chk_header) + ch->size;
 
         if (ch->magic != MAGIC_MEMORY) {
@@ -265,7 +265,7 @@ xclaim(void *addr, const char *filen, int line)
         alloc_blk *m;
         chk_header *ch;
         
-        ch = (chk_header*)(addr - sizeof(chk_header));
+        ch = (chk_header*)((uint8_t*)addr - sizeof(chk_header));
         m  = mem_item_find(ch->key); 
 
         if (chk_header_okay(ch) == FALSE) {
@@ -322,12 +322,12 @@ xfree(void *p)
         alloc_blk  *m;
         chk_header *ch;
         uint32_t size, delta, magic, idx;
-
+        
 	if (p == NULL) {
 		printf("ERROR: Attempt to free NULL pointer!\n");
 		abort();
 	}
-        ch = (chk_header*)(p - sizeof(chk_header));
+        ch = (chk_header*)((uint8_t*)p - sizeof(chk_header));
 
         /* Validate entry  */
         if (chk_header_okay(ch) == FALSE) {
@@ -346,12 +346,12 @@ xfree(void *p)
          * deref'ing free'd */
         size  = ch->size + sizeof(chk_header) + MAGIC_MEMORY_SIZE;
         magic = MAGIC_MEMORY;
-        p     = (void*)ch;
+        p     = (uint8_t*)ch;
         while (size > 0) {
                 delta = min(size, 4);
                 memcpy(p, &magic, delta);
-                p    += delta;
-                size -= delta;
+                (uint8_t*)p += delta;
+                size        -= delta;
         }
 
         /* Free memory     */
@@ -389,7 +389,7 @@ _xmalloc(unsigned size, const char *filen, int line)
         ch->magic = MAGIC_MEMORY;
 
         /* Fill allocated memory with random numbers */
-        for (j = (uint32_t*)(p + sizeof(chk_header)); size > 4; size -= 4) {
+        for (j = (uint32_t*)((uint8_t*)p + sizeof(chk_header)); size > 4; size -= 4) {
                 *j++ = rand();
         }
         for (t = (uint8_t*)j; size > 0; size--) { 
@@ -426,7 +426,7 @@ _xmalloc(unsigned size, const char *filen, int line)
                 abort();
         }
         
-        return p + sizeof(chk_header);
+        return (uint8_t*)p + sizeof(chk_header);
 }
 
 void *
@@ -439,7 +439,7 @@ _xrealloc(void *p, unsigned size, const char *filen, int line)
         assert(p     != NULL);
         assert(filen != NULL);
 	
-        ch = (chk_header*)(p - sizeof(chk_header));
+        ch = (chk_header*)((uint8_t*)p - sizeof(chk_header));
         m  = mem_item_find(ch->key);
         if (m != NULL) {
                 /* Attempt reallocation */
