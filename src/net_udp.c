@@ -47,11 +47,15 @@
 #define IPv4	4
 #define IPv6	6
 
-/* This is pretty nasty but its the simplest way to get round the
-/* Detexis bug that means their MUSICA IPv6 stack uses 
+/* This is pretty nasty but it's the simplest way to get round */
+/* the Detexis bug that means their MUSICA IPv6 stack uses */
 /* IPPROTO_IP instead of IPPROTO_IPV6 in setsockopt calls*/
 #ifdef MUSICA_IPV6
 #define IPPROTO_IPV6 IPPROTO_IP
+#endif
+
+#ifdef HAVE_IPv6
+const struct in6_addr rat_in6addr_any = { IN6ADDR_ANY_INIT };
 #endif
 
 #ifndef INADDR_NONE
@@ -544,14 +548,34 @@ static char *udp_host_addr4(void)
 }
 
 #ifdef HAVE_IPv6
-static char *udp_host_addr6(void)
+static char *udp_host_addr6(socket_udp *s)
 {
 	char	       		*hname;
 	struct hostent 		*hent;
 #if !defined(WIN32) || defined(MUSICA_IPV6)
 	int			 error_num;
 #endif
+#if defined(Linux) || defined(Solaris)
+	int gai_err;
+    	struct addrinfo hints, *ai;
+#endif
+        struct sockaddr_in6 local;
+        int len = sizeof(local), result = 0;
 
+        memset((char *)&local, 0, len);
+        local.sin6_family = AF_INET6;
+
+        if ((result = getsockname(s->fd,(struct sockaddr *)&local, &len)) < 0){
+                local.sin6_addr = rat_in6addr_any;
+                local.sin6_port = 0;
+		debug_msg("get getsockname fail!");
+        }
+#ifdef MUSICA_IPV6
+        if (IS_SAME_IN6_ADDR(local.sin6_addr, rat_in6addr_any)) {
+#else 
+        if (IN6_ARE_ADDR_EQUAL(&(local.sin6_addr), &rat_in6addr_any)) {
+#endif
+		debug_msg("get hostname!");
 	hname = (char *) xmalloc(MAXHOSTNAMELEN);
 	if (gethostname(hname, MAXHOSTNAMELEN) != 0) {
 		debug_msg("Cannot get hostname!");
@@ -565,19 +589,26 @@ static char *udp_host_addr6(void)
 	hname = xstrdup(inet6_ntoa((const struct in6_addr *) hent->h_addr_list[0]));
 #else
 #if defined(Linux) || defined(Solaris)
-    struct addrinfo hints, *ai, *ai2;
-    memset(&hints, 0, sizeof(struct addrinfo));
 
-    hints.ai_family = AF_INET6;
-    hints.ai_socktype = SOCK_DGRAM;
+	memset(&hints, 0, sizeof(struct addrinfo));
 
-    if (getaddrinfo(hostname, NULL, &hints, &ai)) {
-		debug_msg("getaddrinfo: %s: %s\n", hostname, gai_strerror(i));
-		abort();
-    }
-	if (inet_ntop(AF_INET6, (((struct sockaddr_in6 *)(ai->ai_addr))->sin6_addr), hname, MAXHOSTNAMELEN) == NULL) {
+	hints.ai_protocol = IPPROTO_IPV6;
+	//hints.ai_family = AF_INET6;
+	//hints.ai_socktype = SOCK_DGRAM;
+
+	if ((gai_err=getaddrinfo(hname, NULL, &hints, &ai))) {
+		debug_msg("getaddrinfo: %s: %s\n", hname, gai_strerror(gai_err));
 		abort();
 	}
+
+	if (inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)(ai->ai_addr))->sin6_addr), hname, MAXHOSTNAMELEN) == NULL) {
+		freeaddrinfo(ai);
+		debug_msg("inet_ntop: %s: \n", hname);
+		abort();
+	}
+	freeaddrinfo(ai);
+	UNUSED(error_num);
+	UNUSED(hent);
 #else
 #ifdef MUSICA_IPV6
     hent = gethostbyname2(hname, AF_INET6);
@@ -606,11 +637,20 @@ static char *udp_host_addr6(void)
 	}
 	assert(hent->h_addrtype == AF_INET6);
 	if (inet_ntop(AF_INET6, hent->h_addr_list[0], hname, MAXHOSTNAMELEN) == NULL) {
+		debug_msg("inet_ntop: %s: \n", hname);
 		abort();
 	}
+	debug_msg("inet_ntop: %s: \n", hname);
 #endif /*Linux || Solaris7 IPv6 */
 #endif /*MS_IPV6*/
-
+	return hname;
+	}
+		debug_msg("get getsockname !");
+	if (inet_ntop(AF_INET6, &local.sin6_addr, hname, MAXHOSTNAMELEN) ==
+NULL) {
+		debug_msg("inet_ntop: %s: \n", hname);
+                abort();
+        }
 	return hname;
 }
 #endif /* HAVE_IPv6 */
@@ -620,10 +660,9 @@ char *udp_host_addr(socket_udp *s)
 	switch (s->mode) {
 		case IPv4 : return udp_host_addr4();
 #ifdef HAVE_IPv6
-		case IPv6 : return udp_host_addr6();
+		case IPv6 : return udp_host_addr6(s);
 #endif /* HAVE_IPv6 */
 		default   : abort();
 	}
 	return NULL;
 }
-
