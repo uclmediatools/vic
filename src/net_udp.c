@@ -503,7 +503,7 @@ static socket_udp *udp_init6(const char *addr, const char *iface, uint16_t rx_po
 	}
 	
 	if (IN6_IS_ADDR_MULTICAST(&(s->addr6))) {
-		unsigned int      loop = 1;
+		unsigned int      loop = 1, mreqsize = 0;
 		struct ipv6_mreq  imr;
 #ifdef MUSICA_IPV6
 		imr.i6mr_interface = 1;
@@ -513,7 +513,11 @@ static socket_udp *udp_init6(const char *addr, const char *iface, uint16_t rx_po
 		imr.ipv6mr_interface = 0;
 #endif
 		
-		if (SETSOCKOPT(s->fd, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, (char *) &imr, sizeof(struct ipv6_mreq)) != 0) {
+		mreqsize = sizeof(imr);
+#ifdef WIN2K_IPV6
+		mreqsize += 4;
+#endif
+		if (SETSOCKOPT(s->fd, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, (char *) &imr, mreqsize) != 0) {
 			socket_error("setsockopt IPV6_ADD_MEMBERSHIP");
 			return NULL;
 		}
