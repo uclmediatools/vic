@@ -21,7 +21,7 @@ CFG=vic - Win32 Debug IPv6 Musica
 !MESSAGE "vic - Win32 Debug IPv6" (based on "Win32 (x86) Application")
 !MESSAGE "vic - Win32 Debug IPv6 Musica" (based on "Win32 (x86) Application")
 !MESSAGE "vic - Win32 Debug" (based on "Win32 (x86) Application")
-!MESSAGE
+!MESSAGE 
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
@@ -46,7 +46,7 @@ RSC=rc.exe
 # PROP Target_Dir ""
 vic=rc.exe
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /W3 /GX /O2 /I ".\\" /I "codec" /I "render" /I "rtp" /I "net" /I "win32" /I "video" /I "..\common" /I "..\tk-8.0\win" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\tcl-8.0\win" /I "..\tcl-8.0\generic" /I "codec\tmndec" /I "codec\tmn-x" /I "codec\jpeg" /I "codec\p64" /I "codec\h263" /D "NDEBUG" /D "_WINDOWS" /D "SASR" /D "WIN32" /D "NEED_INET_PTON" /D ED_YBITS=4 /D SIGRET=void /D SIGARGS=int /D NLAYER=8 /FR /YX /FD /c
+# ADD CPP /nologo /W3 /GX /O2 /I ".\\" /I "codec" /I "render" /I "rtp" /I "net" /I "win32" /I "video" /I "..\common" /I "..\tk-8.0\win" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\tcl-8.0\win" /I "..\tcl-8.0\generic" /I "codec\tmndec" /I "codec\tmn-x" /I "codec\jpeg" /I "codec\p64" /I "codec\h263" /D "NDEBUG" /D "_WINDOWS" /D "SASR" /D "WIN32" /D "HAVE_INET_PTON" /D ED_YBITS=4 /D SIGRET=void /D SIGARGS=int /D NLAYER=8 /FR /YX /FD /c
 # SUBTRACT CPP /X
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
@@ -58,34 +58,6 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
 # ADD LINK32 tklib.lib tcllib.lib uclmm.lib libh263.lib libh263coder.lib wsock32.lib Ws2_32.lib winmm.lib kernel32.lib user32.lib gdi32.lib shell32.lib vfw32.lib advapi32.lib comdlg32.lib /nologo /subsystem:windows /machine:I386 /libpath:"..\common\Release" /libpath:"..\tcl-8.0\win\Release" /libpath:"..\tk-8.0\win\Release" /libpath:"codec\tmndec" /libpath:"codec\tmn-x"
-
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "Debug"
-# PROP BASE Intermediate_Dir "Debug"
-# PROP BASE Target_Dir ""
-# PROP Use_MFC 0
-# PROP Use_Debug_Libraries 1
-# PROP Output_Dir "Debug"
-# PROP Intermediate_Dir "Debug"
-# PROP Ignore_Export_Lib 0
-# PROP Target_Dir ""
-vic=rc.exe
-# ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I ".\\" /I "codec" /I "render" /I "rtp" /I "net" /I "win32" /I "video" /I "..\common" /I "..\tk-8.0\win" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\tcl-8.0\win" /I "..\tcl-8.0\generic" /I "codec\tmndec" /I "codec\tmn-x" /I "codec\jpeg" /I "codec\p64" /I "codec\h263" /D "_WINDOWS" /D "DEBUG" /D "SASR" /D "_DEBUG" /D "_WIN95" /D "WIN32" /D "NEED_INET_PTON" /D ED_YBITS=4 /D SIGRET=void /D SIGARGS=int /D NLAYER=8 /Fr /YX /FD /I ../common /c
-# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
-# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
-# ADD BASE RSC /l 0x809 /d "_DEBUG"
-# ADD RSC /l 0x809 /d "_DEBUG"
-BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
-# ADD BSC32 /nologo
-LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 tklib.lib tcllib.lib uclmm.lib libh263.lib libh263coder.lib wsock32.lib Ws2_32.lib winmm.lib kernel32.lib user32.lib gdi32.lib shell32.lib vfw32.lib advapi32.lib comdlg32.lib /nologo /subsystem:windows /debug /machine:I386 /libpath:"..\common\Debug" /libpath:"..\tcl-8.0\win\Debug" /libpath:"..\tk-8.0\win\Debug" /libpath:"codec\tmndec" /libpath:"codec\tmn-x"
-# SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
@@ -146,14 +118,42 @@ LINK32=link.exe
 # ADD LINK32 tklib.lib tcllib.lib uclmm.lib libh263.lib libh263coder.lib lib44bsd.lib Resolv.lib wsock32.lib Ws2_32.lib winmm.lib kernel32.lib user32.lib gdi32.lib shell32.lib vfw32.lib advapi32.lib comdlg32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept /libpath:"..\tcl-8.0\win\Debug" /libpath:"..\tk-8.0\win\Debug" /libpath:"..\common\Debug" /libpath:"codec\tmndec" /libpath:"codec\tmn-x" /libpath:"..\MUSICA_420\WINSOCK6"
 # SUBTRACT LINK32 /pdb:none /incremental:no /map /force
 
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "Debug"
+# PROP BASE Intermediate_Dir "Debug"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "Debug"
+# PROP Intermediate_Dir "Debug"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+vic=rc.exe
+# ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
+# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I ".\\" /I "codec" /I "render" /I "rtp" /I "net" /I "win32" /I "video" /I "..\common" /I "..\tk-8.0\win" /I "..\tk-8.0\generic" /I "..\tk-8.0\xlib" /I "..\tcl-8.0\win" /I "..\tcl-8.0\generic" /I "codec\tmndec" /I "codec\tmn-x" /I "codec\jpeg" /I "codec\p64" /I "codec\h263" /D "_WINDOWS" /D "DEBUG" /D "SASR" /D "_DEBUG" /D "_WIN95" /D "WIN32" /D "NEED_INET_PTON" /D ED_YBITS=4 /D SIGRET=void /D SIGARGS=int /D NLAYER=8 /Fr /YX /FD /I ../common /c
+# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
+# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
+# ADD BASE RSC /l 0x809 /d "_DEBUG"
+# ADD RSC /l 0x809 /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 tklib.lib tcllib.lib libh263.lib libh263coder.lib wsock32.lib Ws2_32.lib winmm.lib kernel32.lib user32.lib gdi32.lib shell32.lib vfw32.lib advapi32.lib comdlg32.lib uclmm.lib /nologo /subsystem:windows /debug /machine:I386 /libpath:"..\common\Debug" /libpath:"..\tcl-8.0\win\Debug" /libpath:"..\tk-8.0\win\Debug" /libpath:"codec\tmndec" /libpath:"codec\tmn-x"
+# SUBTRACT LINK32 /pdb:none
+
 !ENDIF 
 
 # Begin Target
 
 # Name "vic - Win32 Release"
-# Name "vic - Win32 Debug"
 # Name "vic - Win32 Debug IPv6"
 # Name "vic - Win32 Debug IPv6 Musica"
+# Name "vic - Win32 Debug"
 # Begin Group "Tcl/Tk Scripts"
 
 # PROP Default_Filter ".tcl"
@@ -256,17 +256,6 @@ InputName=cf-confbus
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-# Begin Custom Build
-InputPath=".\tcl\cf-confbus.tcl"
-InputName=cf-confbus
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 # Begin Custom Build
@@ -281,6 +270,17 @@ InputName=cf-confbus
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
+# Begin Custom Build
+InputPath=".\tcl\cf-confbus.tcl"
+InputName=cf-confbus
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
 # Begin Custom Build
 InputPath=".\tcl\cf-confbus.tcl"
 InputName=cf-confbus
@@ -308,17 +308,6 @@ InputName=cf-main
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-# Begin Custom Build
-InputPath=".\tcl\cf-main.tcl"
-InputName=cf-main
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 # Begin Custom Build
@@ -333,6 +322,17 @@ InputName=cf-main
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
+# Begin Custom Build
+InputPath=".\tcl\cf-main.tcl"
+InputName=cf-main
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
 # Begin Custom Build
 InputPath=".\tcl\cf-main.tcl"
 InputName=cf-main
@@ -360,17 +360,6 @@ InputName=cf-network
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-# Begin Custom Build
-InputPath=".\tcl\cf-network.tcl"
-InputName=cf-network
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 # Begin Custom Build
@@ -385,6 +374,17 @@ InputName=cf-network
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
+# Begin Custom Build
+InputPath=".\tcl\cf-network.tcl"
+InputName=cf-network
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
 # Begin Custom Build
 InputPath=".\tcl\cf-network.tcl"
 InputName=cf-network
@@ -412,17 +412,6 @@ InputName=cf-tm
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-# Begin Custom Build
-InputPath=".\tcl\cf-tm.tcl"
-InputName=cf-tm
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 # Begin Custom Build
@@ -437,6 +426,17 @@ InputName=cf-tm
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
+# Begin Custom Build
+InputPath=".\tcl\cf-tm.tcl"
+InputName=cf-tm
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
 # Begin Custom Build
 InputPath=".\tcl\cf-tm.tcl"
 InputName=cf-tm
@@ -464,17 +464,6 @@ InputName=cf-util
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-# Begin Custom Build
-InputPath=".\tcl\cf-util.tcl"
-InputName=cf-util
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 # Begin Custom Build
@@ -489,6 +478,17 @@ InputName=cf-util
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
+# Begin Custom Build
+InputPath=".\tcl\cf-util.tcl"
+InputName=cf-util
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
 # Begin Custom Build
 InputPath=".\tcl\cf-util.tcl"
 InputName=cf-util
@@ -516,17 +516,6 @@ InputName=entry
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-# Begin Custom Build
-InputPath=.\tcl\entry.tcl
-InputName=entry
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 # Begin Custom Build
@@ -541,6 +530,17 @@ InputName=entry
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
+# Begin Custom Build
+InputPath=.\tcl\entry.tcl
+InputName=entry
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
 # Begin Custom Build
 InputPath=.\tcl\entry.tcl
 InputName=entry
@@ -568,17 +568,6 @@ InputName=tkerror
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-# Begin Custom Build
-InputPath=.\tcl\tkerror.tcl
-InputName=tkerror
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 # Begin Custom Build
@@ -593,6 +582,17 @@ InputName=tkerror
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
+# Begin Custom Build
+InputPath=.\tcl\tkerror.tcl
+InputName=tkerror
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
 # Begin Custom Build
 InputPath=.\tcl\tkerror.tcl
 InputName=tkerror
@@ -620,17 +620,6 @@ InputName=ui-ctrlmenu
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-# Begin Custom Build
-InputPath=".\tcl\ui-ctrlmenu.tcl"
-InputName=ui-ctrlmenu
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 # Begin Custom Build
@@ -645,6 +634,17 @@ InputName=ui-ctrlmenu
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
+# Begin Custom Build
+InputPath=".\tcl\ui-ctrlmenu.tcl"
+InputName=ui-ctrlmenu
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
 # Begin Custom Build
 InputPath=".\tcl\ui-ctrlmenu.tcl"
 InputName=ui-ctrlmenu
@@ -672,17 +672,6 @@ InputName=ui-extout
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-# Begin Custom Build
-InputPath=".\tcl\ui-extout.tcl"
-InputName=ui-extout
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 # Begin Custom Build
@@ -697,6 +686,17 @@ InputName=ui-extout
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
+# Begin Custom Build
+InputPath=".\tcl\ui-extout.tcl"
+InputName=ui-extout
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
 # Begin Custom Build
 InputPath=".\tcl\ui-extout.tcl"
 InputName=ui-extout
@@ -724,17 +724,6 @@ InputName=ui-grabber
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-# Begin Custom Build
-InputPath=".\tcl\ui-grabber.tcl"
-InputName=ui-grabber
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 # Begin Custom Build
@@ -749,6 +738,17 @@ InputName=ui-grabber
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
+# Begin Custom Build
+InputPath=".\tcl\ui-grabber.tcl"
+InputName=ui-grabber
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
 # Begin Custom Build
 InputPath=".\tcl\ui-grabber.tcl"
 InputName=ui-grabber
@@ -776,17 +776,6 @@ InputName=ui-help
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-# Begin Custom Build
-InputPath=".\tcl\ui-help.tcl"
-InputName=ui-help
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 # Begin Custom Build
@@ -801,6 +790,17 @@ InputName=ui-help
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
+# Begin Custom Build
+InputPath=".\tcl\ui-help.tcl"
+InputName=ui-help
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
 # Begin Custom Build
 InputPath=".\tcl\ui-help.tcl"
 InputName=ui-help
@@ -828,17 +828,6 @@ InputName=ui-main
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-# Begin Custom Build
-InputPath=".\tcl\ui-main.tcl"
-InputName=ui-main
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 # Begin Custom Build
@@ -853,6 +842,17 @@ InputName=ui-main
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
+# Begin Custom Build
+InputPath=".\tcl\ui-main.tcl"
+InputName=ui-main
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
 # Begin Custom Build
 InputPath=".\tcl\ui-main.tcl"
 InputName=ui-main
@@ -880,17 +880,6 @@ InputName=ui-relate
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-# Begin Custom Build
-InputPath=".\tcl\ui-relate.tcl"
-InputName=ui-relate
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 # Begin Custom Build
@@ -905,6 +894,17 @@ InputName=ui-relate
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
+# Begin Custom Build
+InputPath=".\tcl\ui-relate.tcl"
+InputName=ui-relate
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
 # Begin Custom Build
 InputPath=".\tcl\ui-relate.tcl"
 InputName=ui-relate
@@ -932,17 +932,6 @@ InputName=ui-resource
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-# Begin Custom Build
-InputPath=".\tcl\ui-resource.tcl"
-InputName=ui-resource
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 # Begin Custom Build
@@ -957,6 +946,17 @@ InputName=ui-resource
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
+# Begin Custom Build
+InputPath=".\tcl\ui-resource.tcl"
+InputName=ui-resource
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
 # Begin Custom Build
 InputPath=".\tcl\ui-resource.tcl"
 InputName=ui-resource
@@ -984,17 +984,6 @@ InputName=ui-srclist
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-# Begin Custom Build
-InputPath=".\tcl\ui-srclist.tcl"
-InputName=ui-srclist
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 # Begin Custom Build
@@ -1009,6 +998,17 @@ InputName=ui-srclist
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
+# Begin Custom Build
+InputPath=".\tcl\ui-srclist.tcl"
+InputName=ui-srclist
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
 # Begin Custom Build
 InputPath=".\tcl\ui-srclist.tcl"
 InputName=ui-srclist
@@ -1036,17 +1036,6 @@ InputName=ui-stats
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-# Begin Custom Build
-InputPath=".\tcl\ui-stats.tcl"
-InputName=ui-stats
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 # Begin Custom Build
@@ -1061,6 +1050,17 @@ InputName=ui-stats
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
+# Begin Custom Build
+InputPath=".\tcl\ui-stats.tcl"
+InputName=ui-stats
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
 # Begin Custom Build
 InputPath=".\tcl\ui-stats.tcl"
 InputName=ui-stats
@@ -1088,17 +1088,6 @@ InputName=ui-switcher
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-# Begin Custom Build
-InputPath=".\tcl\ui-switcher.tcl"
-InputName=ui-switcher
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 # Begin Custom Build
@@ -1113,6 +1102,17 @@ InputName=ui-switcher
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
+# Begin Custom Build
+InputPath=".\tcl\ui-switcher.tcl"
+InputName=ui-switcher
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
 # Begin Custom Build
 InputPath=".\tcl\ui-switcher.tcl"
 InputName=ui-switcher
@@ -1140,17 +1140,6 @@ InputName=ui-util
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-# Begin Custom Build
-InputPath=".\tcl\ui-util.tcl"
-InputName=ui-util
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 # Begin Custom Build
@@ -1165,6 +1154,17 @@ InputName=ui-util
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
+# Begin Custom Build
+InputPath=".\tcl\ui-util.tcl"
+InputName=ui-util
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
 # Begin Custom Build
 InputPath=".\tcl\ui-util.tcl"
 InputName=ui-util
@@ -1192,17 +1192,6 @@ InputName=ui-win32
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-# Begin Custom Build
-InputPath=".\tcl\ui-win32.tcl"
-InputName=ui-win32
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 # Begin Custom Build
@@ -1217,6 +1206,17 @@ InputName=ui-win32
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
+# Begin Custom Build
+InputPath=".\tcl\ui-win32.tcl"
+InputName=ui-win32
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
 # Begin Custom Build
 InputPath=".\tcl\ui-win32.tcl"
 InputName=ui-win32
@@ -1244,17 +1244,6 @@ InputName=ui-windows
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-# Begin Custom Build
-InputPath=".\tcl\ui-windows.tcl"
-InputName=ui-windows
-
-"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 # Begin Custom Build
@@ -1269,6 +1258,17 @@ InputName=ui-windows
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 # PROP Ignore_Default_Tool 1
+# Begin Custom Build
+InputPath=".\tcl\ui-windows.tcl"
+InputName=ui-windows
+
+"tcl\generated\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  > tcl\generated\$(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
 # Begin Custom Build
 InputPath=".\tcl\ui-windows.tcl"
 InputName=ui-windows
@@ -1383,13 +1383,13 @@ SOURCE=".\net\net-ip.cpp"
 
 !IF  "$(CFG)" == "vic - Win32 Release"
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-# SUBTRACT CPP /D "_WIN95"
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# SUBTRACT CPP /D "_WIN95"
 
 !ENDIF 
 
@@ -2079,18 +2079,6 @@ InputPath=.\cm170.ppm
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-# PROP Ignore_Default_Tool 1
-USERDEP__CM170="render\mkbv\mkbv.exe"	
-# Begin Custom Build
-InputPath=.\cm170.ppm
-
-"codec\bv.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	render\mkbv\mkbv > codec\bv.c
-
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 USERDEP__CM170="render\mkbv\mkbv.exe"	
@@ -2104,6 +2092,18 @@ InputPath=.\cm170.ppm
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
+USERDEP__CM170="render\mkbv\mkbv.exe"	
+# Begin Custom Build
+InputPath=.\cm170.ppm
+
+"codec\bv.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	render\mkbv\mkbv > codec\bv.c
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Ignore_Default_Tool 1
 USERDEP__CM170="render\mkbv\mkbv.exe"	
 # Begin Custom Build
 InputPath=.\cm170.ppm
@@ -2139,25 +2139,6 @@ BuildCmds= \
    $(BuildCmds)
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-USERDEP__RGB_C="render\mkcube\mkcube.exe"	"render\ppmtolut\ppmtolut.exe"	
-# Begin Custom Build
-InputPath=".\rgb-cube.ppm"
-
-BuildCmds= \
-	render\mkcube\mkcube rgb > $(InputPath) \
-	render\ppmtolut\ppmtolut -n cube rgb-cube.ppm > render\cm0.c \
-	render\ppmtolut\ppmtolut -n jv_cube jv-cube-128.ppm >> render\cm0.c \
-	
-
-"$(InputPath)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-   $(BuildCmds)
-
-"render\cm0.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-   $(BuildCmds)
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 USERDEP__RGB_C="render\ppmtolut\ppmtolut.exe"	"render\mkcube\mkcube.exe"	
@@ -2180,6 +2161,25 @@ BuildCmds= \
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 USERDEP__RGB_C="render\ppmtolut\ppmtolut.exe"	"render\mkcube\mkcube.exe"	
+# Begin Custom Build
+InputPath=".\rgb-cube.ppm"
+
+BuildCmds= \
+	render\mkcube\mkcube rgb > $(InputPath) \
+	render\ppmtolut\ppmtolut -n cube rgb-cube.ppm > render\cm0.c \
+	render\ppmtolut\ppmtolut -n jv_cube jv-cube-128.ppm >> render\cm0.c \
+	
+
+"$(InputPath)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+
+"render\cm0.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+USERDEP__RGB_C="render\mkcube\mkcube.exe"	"render\ppmtolut\ppmtolut.exe"	
 # Begin Custom Build
 InputPath=".\rgb-cube.ppm"
 
@@ -2224,23 +2224,6 @@ InputPath=.\Version
 	
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-USERDEP__VERSI="win32\echo.txt"	"win32\set.txt"	"win32\null.txt"	
-# Begin Custom Build - Generating "version.c".
-InputPath=.\Version
-
-"version.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	copy win32\set.txt + VERSION win32\vergen.bat 
-	copy win32\vergen.bat + win32\null.txt win32\vergen.bat 
-	copy win32\vergen.bat + win32\echo.txt win32\vergen.bat 
-	win32\vergen.bat 
-	move win32\version.c version.c 
-	erase win32\version.c 
-	erase win32\vergen.bat 
-	
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 USERDEP__VERSI="win32\echo.txt"	"win32\set.txt"	"win32\null.txt"	
@@ -2259,6 +2242,23 @@ InputPath=.\Version
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
+
+USERDEP__VERSI="win32\echo.txt"	"win32\set.txt"	"win32\null.txt"	
+# Begin Custom Build - Generating "version.c".
+InputPath=.\Version
+
+"version.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	copy win32\set.txt + VERSION win32\vergen.bat 
+	copy win32\vergen.bat + win32\null.txt win32\vergen.bat 
+	copy win32\vergen.bat + win32\echo.txt win32\vergen.bat 
+	win32\vergen.bat 
+	move win32\version.c version.c 
+	erase win32\version.c 
+	erase win32\vergen.bat 
+	
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
 
 USERDEP__VERSI="win32\echo.txt"	"win32\set.txt"	"win32\null.txt"	
 # Begin Custom Build - Generating "version.c".
@@ -2302,27 +2302,6 @@ BuildCmds= \
    $(BuildCmds)
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
-
-# PROP Ignore_Default_Tool 1
-USERDEP__YUV_M="render\ppmtolut\ppmtolut.exe"	"render\mkcube\mkcube.exe"	
-# Begin Custom Build
-InputPath=".\yuv-map.ppm"
-
-BuildCmds= \
-	set ED_YBITS=4 \
-	render\mkcube\mkcube -Y $ED_YBITS -U 45 -V 45 yuv >  $(InputPath) \
-	render\ppmtolut\ppmtolut -n quant cm170.ppm > render\cm1.c \
-	render\ppmtolut\ppmtolut -Y $ED_YBITS -n ed -e yuv-map.ppm >> render\cm1.c \
-	
-
-"$(InputPath)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-   $(BuildCmds)
-
-"render\cm1.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-   $(BuildCmds)
-# End Custom Build
-
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6"
 
 USERDEP__YUV_M="render\ppmtolut\ppmtolut.exe"	"render\mkcube\mkcube.exe"	
@@ -2346,6 +2325,27 @@ BuildCmds= \
 !ELSEIF  "$(CFG)" == "vic - Win32 Debug IPv6 Musica"
 
 USERDEP__YUV_M="render\mkcube\mkcube.exe"	"render\ppmtolut\ppmtolut.exe"	
+# Begin Custom Build
+InputPath=".\yuv-map.ppm"
+
+BuildCmds= \
+	set ED_YBITS=4 \
+	render\mkcube\mkcube -Y $ED_YBITS -U 45 -V 45 yuv >  $(InputPath) \
+	render\ppmtolut\ppmtolut -n quant cm170.ppm > render\cm1.c \
+	render\ppmtolut\ppmtolut -Y $ED_YBITS -n ed -e yuv-map.ppm >> render\cm1.c \
+	
+
+"$(InputPath)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+
+"render\cm1.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "vic - Win32 Debug"
+
+# PROP Ignore_Default_Tool 1
+USERDEP__YUV_M="render\ppmtolut\ppmtolut.exe"	"render\mkcube\mkcube.exe"	
 # Begin Custom Build
 InputPath=".\yuv-map.ppm"
 
