@@ -51,6 +51,8 @@
 #include <stdlib.h>   /* abs() */
 #include <string.h>
 #include <winsock2.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #ifdef HAVE_IPv6
 #include <ws2ip6.h>
