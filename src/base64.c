@@ -132,22 +132,3 @@ int base64decode(unsigned char *input, int input_length, unsigned char *output, 
 	return j;
 }
 
-#ifdef TEST_BASE64
-int main() {
-	/* The string "Hello, world" should encode as "SGVsbG8sIHdvcmxk" */
-	char	*input = "Hello, world";
-	char	 output[100];
-	char	 decode[100];
-	int	 i;
-
-	for (i = 0; i < 100; i++) {
-		output[i] = '\0';
-	}
-	i = base64encode(input, strlen(input), output, 100);
-	printf("%d %s\n", i, output);
-	i = base64decode(output, i, decode, 100);
-	printf("%d %s\n", i, decode);
-	return 0;
-}
-#endif
-

@@ -1,5 +1,5 @@
 /*
- * FILE:    test.c
+ * FILE:    test_base64.c
  * AUTHORS: Colin Perkins
  * 
  * Copyright (c) 1999 University College London
@@ -36,17 +36,35 @@
 #include "config_unix.h"
 #include "config_win32.h"
 #include "debug.h"
-#include "version.h"
+#include "base64.h"
 #include "test_base64.h"
-#include "test_des.h"
-#include "test_md5.h"
 
-int main()
+void test_base64(void)
 {
-	printf("Test suite for %s\n", CCL_VERSION);
-	test_base64();
-	test_des();
-	test_md5();
-	return 0;
+	/* The string "Hello, world" should encode as "SGVsbG8sIHdvcmxk" */
+	char	*input = "Hello, world";
+	char	 output[100];
+	char	 decode[100];
+	int	 i;
+
+	for (i = 0; i < 100; i++) {
+		output[i] = '\0';
+	}
+
+	printf("  base64 encode: "); fflush(stdout);
+	i = base64encode(input, strlen(input), output, 100);
+	if ((i != 16) || (strncmp(output, "SGVsbG8sIHdvcmxk", i) != 0)) {
+		printf("failed\n");
+	} else {
+		printf("success\n");
+	}
+
+	printf("  base64 decode: "); fflush(stdout);
+	i = base64decode(output, i, decode, 100);
+	if ((i != 12) || (strncmp(decode, "Hello, world", i) != 0)) {
+		printf("failed\n");
+	} else {
+		printf("success\n");
+	}
 }
 
