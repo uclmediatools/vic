@@ -2479,13 +2479,54 @@ EOF
  
 fi
 
+echo $ac_n "checking for msg_control in struct msghdr""... $ac_c" 1>&6
+echo "configure:2484: checking for msg_control in struct msghdr" >&5
+if eval "test \"`echo '$''{'ucl_cv_control'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 2489 "configure"
+#include "confdefs.h"
+
+                #include <sys/types.h>
+		#include <sys/socket.h>
+        
+int main() {
+
+                struct msghdr msg;
+                msg.msg_control = 0;
+        
+; return 0; }
+EOF
+if { (eval echo configure:2502: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  ucl_cv_control=yes
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  ucl_cv_control=no
+        
+fi
+rm -f conftest*
+fi
+
+echo "$ac_t""$ucl_cv_control" 1>&6
+if test $ucl_cv_control = yes
+then
+        cat >> confdefs.h <<\EOF
+#define HAVE_MSGHDR_MSHCTRL 1
+EOF
+
+fi
+
 ###############################################################################
 # Check whether gtk-doc is installed
 
 # Extract the first word of "gtkdoc-scan", so it can be a program name with args.
 set dummy gtkdoc-scan; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:2489: checking for $ac_word" >&5
+echo "configure:2530: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_GTKDOC'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
