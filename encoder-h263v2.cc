@@ -56,17 +56,17 @@ static const char rcsid[] =
 #define	QCIF_WIDTH	176
 #define	QCIF_HEIGHT	144
 
-#ifndef WIN32
+/*#ifndef WIN32
+extern "C" int QP,QPI;
+extern "C" unsigned char *h263_frame;          /* encoder input */
+//extern "C" int            h263_streamcount;    /* encoder output */
+//extern "C" char          *h263_bitstream;
+//#else
 extern "C" int QP,QPI;
 extern "C" unsigned char *h263_frame;          /* encoder input */
 extern "C" int            h263_streamcount;    /* encoder output */
 extern "C" char          *h263_bitstream;
-#else
-extern "C" int QP,QPI;
-extern "C" unsigned char *h263_frame;          /* encoder input */
-extern "C" int            h263_streamcount;    /* encoder output */
-extern "C" char          *h263_bitstream;
-#endif
+//#endif
 
 class H263plusEncoder : public TransmitterModule {
 public:
