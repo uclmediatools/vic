@@ -1264,6 +1264,7 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 						char 		*newsrc = (char *) xmalloc(strlen(src) + 3);
 						sprintf(newsrc, "(%s)", src);	/* Yes, this is a kludge. */
 						m->cmd_handler(newsrc, cmd, param, data);
+						xfree(newsrc);
 					} else {
 						debug_msg("Unable to parse mbus command:\n");
 						debug_msg("cmd = %s\n", cmd);

@@ -64,6 +64,7 @@ v1.0.5	- Add ability to send to one port whilst receiving on another,
 	- Add extra sanity checking to mbus_parse_*
 	- Fix source address passed to mbus_recv() callback - was missing
 	  the "(" and ")" around it.
+	- Fix memory leak in mbus_recv()
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
