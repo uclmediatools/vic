@@ -375,6 +375,7 @@ v1.2.5	- More informative error message when the lock on the mbus configuration
 	* 24 September 2001
 
 1.2.11	- Fix _xrealloc() in debug mode (Chris Greenhalgh)
+	- Update configure script to better support IPv6 (Suzuki Shinsuke)
 
 
 Still to do...
