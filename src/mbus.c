@@ -149,34 +149,6 @@ static void mbus_msg_validate(struct mbus_msg *m)
 	assert(m->magic == MBUS_MSG_MAGIC);
 }
 
-static void mbus_msg_destroy(struct mbus_msg *curr) {
-	int i;
-	
-	xfree(curr->dest);
-	for(i = 0; i < curr->num_cmds; i++) {
-		xfree(curr->cmd_list[i]);
-		xfree(curr->arg_list[i]);
-	}
-	xfree(curr);
-}
-
-static void flush_msgs_for_addr(struct mbus_msg **q, char *a)
-{
-	struct mbus_msg **msg, *tmp;
-	
-	msg = q;
-	while (*msg != NULL) {
-		if (strcmp(a, (*msg)->dest) == 0) {
-			tmp = *msg;
-			msg = &(tmp->next);
-			tmp->next = NULL;
-			mbus_msg_destroy(tmp);
-		} else {
-			msg = &((*msg)->next);
-		}
-	}
-}
-
 static void store_other_addr(struct mbus *m, char *a)
 {
 	/* This takes the address a and ensures it is stored in the   */
@@ -215,9 +187,6 @@ static void remove_other_addr(struct mbus *m, char *a)
 
 	mbus_validate(m);
 
-	flush_msgs_for_addr(&m->cmd_queue, a);
-	flush_msgs_for_addr(&m->waiting_ack, a);
-	
 	for (i = 0; i < m->num_other_addr; i++) {
 		if (mbus_addr_match(m->other_addr[i], a)) {
 			xfree(m->other_addr[i]);
@@ -231,7 +200,6 @@ static void remove_other_addr(struct mbus *m, char *a)
 			m->num_other_addr--;
 		}
 	}
-
 }
 
 static void remove_inactiv_other_addr(struct mbus *m, struct timeval t, int interval){
@@ -530,11 +498,16 @@ void mbus_cmd_handler(struct mbus *m, void  (*cmd_handler)(char *src, char *cmd,
 static void mbus_flush_msgs(struct mbus_msg *queue)
 {
         struct mbus_msg *curr, *next;
+        int i;
 
         curr = queue;
         while(curr) {
                 next = curr->next;
-		mbus_msg_destroy(curr);
+                xfree(curr->dest);
+                for(i = 0; i < curr->num_cmds; i++) {
+                        xfree(curr->cmd_list[i]);
+                        xfree(curr->arg_list[i]);
+                }
                 curr = next;
         }
 }
@@ -565,7 +538,7 @@ void mbus_exit(struct mbus *m)
 
 	/* Clean up other_* */
 	for (i=m->num_other_addr-1; i>=0; i--){
-		remove_other_addr(m, m->other_addr[i]);
+	    remove_other_addr(m, m->other_addr[i]);
 	}
 
         xfree(m->addr);

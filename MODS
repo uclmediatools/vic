@@ -258,8 +258,6 @@ v1.1.5	- Remove SunOS and Solaris defines from the configure script, they
 	- Fix header extension handling when padding bit set for RTP packets.
 	- Change RTP event type #defines into rtp_event_type so compiler can
 	  check all cases are covered in decision blocks.
-	- Flush pending messages and acks to destination address when address is
-	  is removed from those known.
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
