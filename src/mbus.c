@@ -569,6 +569,7 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 	m->cmd_queue	  = NULL;
 	m->waiting_ack	  = NULL;
 	m->magic          = MBUS_MAGIC;
+
 	mp = mbus_parse_init(xstrdup(addr));
 	if (!mbus_parse_lst(mp, &(m->addr))) {
 		debug_msg("Invalid mbus address\n");
@@ -646,6 +647,7 @@ void mbus_exit(struct mbus *m)
 	    remove_other_addr(m, m->other_addr[i]);
 	}
 
+        xfree(m->addr);
 	xfree(m->other_addr);
 	xfree(m->other_hello);
 	xfree(m->cfg);
@@ -1005,6 +1007,7 @@ static void rz_handler(char *src, char *cmd, char *args, void *data)
 		mp = mbus_parse_init(args);
 		mbus_parse_str(mp, &t);
 		if (strcmp(mbus_decode_str(t), r->token) == 0) {
+                        assert(r->peer == NULL);
 			r->peer = xstrdup(src);
 		}
 		mbus_parse_done(mp);
@@ -1014,6 +1017,7 @@ static void rz_handler(char *src, char *cmd, char *args, void *data)
 		mp = mbus_parse_init(args);
 		mbus_parse_str(mp, &t);
 		if (strcmp(mbus_decode_str(t), r->token) == 0) {
+                        assert(r->peer == NULL);
 			r->peer = xstrdup(src);
 		}
 		mbus_parse_done(mp);
