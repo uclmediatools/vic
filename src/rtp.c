@@ -1150,8 +1150,12 @@ static void rtp_recv_data(struct rtp *session, uint32_t curr_rtp_ts)
 			packet->extn_len  = 0;
 			packet->extn_type = 0;
 		}
-		packet->data     = buffer + 12 + (packet->cc * 4) + ((packet->extn_len + 1) * 4);
-		packet->data_len = buflen - ((packet->extn_len + 1) * 4)- (packet->cc * 4) - 12;
+		packet->data     = buffer + 12 + (packet->cc * 4);
+		packet->data_len = buflen -  (packet->cc * 4) - 12;
+		if (packet->extn != NULL) {
+			packet->data += ((packet->extn_len + 1) * 4);
+			packet->data_len -= ((packet->extn_len + 1) * 4);
+		}
 		if (validate_rtp(packet, buflen)) {
                         int weak = 0, promisc = 0;
                         rtp_getopt(session, RTP_OPT_WEAK_VALIDATION, &weak);
