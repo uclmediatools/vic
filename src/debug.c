@@ -154,7 +154,7 @@ void _debug_set_core_dir(const char *argv0)
         /* Should check length of appname, but this is debug code   */
         /* and developers should know better than to have 64 char   */
         /* app name.                                                */
-        sprintf(coredir, "core-%s\n", appname);
+        sprintf(coredir, "core-%s", appname);
 
         mkdir(coredir, S_IRWXU);
         if (stat(coredir, &s) != 0) {
@@ -169,7 +169,9 @@ void _debug_set_core_dir(const char *argv0)
                 debug_msg("Cannot write in or change to %s\n", coredir);
                 return;
         }
-        chdir(coredir);
+        if (!chdir(coredir)) {
+                perror(coredir);
+        }
 #endif /* DEBUG */
         UNUSED(argv0);
 }
