@@ -831,13 +831,18 @@ void mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, i
 	struct mbus_msg	*prev = NULL;
 	int		 alen = strlen(cmnd) + strlen(args) + 4;
 
+
 	if (reliable && !addr_known(m, dest)) {
+                debug_msg("R to unknown %s %s\n", cmnd, args);
+/* 
 		debug_msg("Trying to send reliably to an unknown address...\n");
 		if (m->err_handler == NULL) {
 			abort();
 		}
 		m->err_handler(curr->seqnum, MBUS_DESTINATION_UNKNOWN);
+        */
 	}
+
 
 	while (curr != NULL) {
 		if (mbus_addr_match(curr->dest, dest) 
