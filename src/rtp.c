@@ -1038,24 +1038,28 @@ static int validate_rtp(rtp_packet *packet, int len)
 	}
 	/* Check that the length of any header extension is sensible... */
         if (packet->x) {
-		if (packet->extn_len > (len - 12 - (4 * packet->cc) - packet->p?packet->data[packet->data_len-1]:0)) {
-			debug_msg("rtp_header_validation: extension header is too big!\n");
+                int expected_extn_len = len - 12 - (4 * packet->cc);
+                if (packet->p) {
+                        expected_extn_len -= packet->data[packet->data_len - 1];
+                }
+		if (packet->extn_len != expected_extn_len) {
+			debug_msg("rtp_header_validation: extension header is wrong size (%d != %d)!\n", packet->extn_len, expected_extn_len);
 			return FALSE;
 		}
         }
 	/* Check that the amount of padding specified is sensible. */
 	/* Note: have to include the size of any extension header! */
 	if (packet->p) {
-		int	payload_len = len - 12 - (packet->cc * 4) - (packet->extn_len * 4);
-                if (packet->extn_len) {
-                        /* cater for extension header if present */
-                        payload_len -= 4;
+		int	payload_len = len - 12 - (packet->cc * 4);
+                if (packet->x) {
+                        /* extension header and data */
+                        payload_len -= 4 * (1 + packet->extn_len);
                 }
-                if (packet->data[packet->data_len-1] > payload_len) {
+                if (packet->data[packet->data_len - 1] > payload_len) {
                         debug_msg("rtp_header_validation: padding greater than payload length\n");
                         return FALSE;
                 }
-                if (packet->data[packet->data_len-1] < 1) {
+                if (packet->data[packet->data_len - 1] < 1) {
 			debug_msg("rtp_header_validation: padding zero\n");
 			return FALSE;
 		}
@@ -1190,7 +1194,6 @@ static int validate_rtcp(uint8_t *packet, int len)
 	rtcp_t	*end  = (rtcp_t *) (((char *) pkt) + len);
 	rtcp_t	*r    = pkt;
 	int	 l    = 0;
-	int	 last = 0;
 	int	 pc   = 1;
 
 	/* All RTCP packets must be compound packets (RFC1889, section 6.1) */
@@ -1222,15 +1225,15 @@ static int validate_rtcp(uint8_t *packet, int len)
 			debug_msg("Bogus RTCP packet: version number != 2 in sub-packet %d\n", pc);
 			return FALSE;
 		}
-		if (last == 1) {
-			debug_msg("Bogus RTCP packet: padding bit set before last in compound (sub-packet %d)\n", pc);
-			return FALSE;
-		}
-		if (r->common.p == 1) last = 1;
 		l += (ntohs(r->common.length) + 1) * 4;
 		r  = (rtcp_t *) (((uint32_t *) r) + ntohs(r->common.length) + 1);
 		pc++;	/* count of sub-packets, for debugging... */
-	} while (r < end);
+	} while (r < end && r->common.p == 0);
+
+        if (r < end && r->common.p == 1) {
+                debug_msg("Bogus RTCP packet: padding bit set before last in compound (sub-packet %d)\n", pc);
+                return FALSE;
+        }
 
 	/* Check that the length of the packets matches the length of the UDP */
 	/* packet in which they were received...                              */
