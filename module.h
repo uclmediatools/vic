@@ -38,8 +38,14 @@
 
 #include "vic_tcl.h"
 #include "config.h"
+#include "pktbuf-rtp.h"
+#include "transmitter.h"
 
 class Transmitter;
+
+class RTP_BufferPool;
+class BufferPool;
+class pktbuf;
 
 class VideoFrame {
     public:
@@ -106,6 +112,8 @@ class CellBFrame : public VideoFrame {
 #define FT_H261		(5|FT_HW)
 #define FT_CELLB	(6|FT_HW)
 #define FT_RAW		7
+#define FT_LDCT		8
+#define FT_PVH		9
 
 class Module : public TclObject {
     public:
@@ -133,10 +141,12 @@ class Module : public TclObject {
 
 class TransmitterModule : public Module {
     public:
+	~TransmitterModule();
 	virtual int command(int argc, const char*const* argv);
     protected:
 	TransmitterModule(int ft);
 	Transmitter* tx_;
+	RTP_BufferPool* pool_;
 };
 
 #endif

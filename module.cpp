@@ -35,7 +35,6 @@
 static char rcsid[] =
     "@(#) $Header$ (LBL)";
 #endif
-
 #include "module.h"
 
 char* Module::fttoa(int ft)
@@ -49,6 +48,8 @@ char* Module::fttoa(int ft)
 	case FT_CELLB:	  return ("cellb");
 	case FT_DCT:	  return ("dct");
 	case FT_RAW:	  return ("raw");
+	case FT_LDCT:	  return ("ldct");
+	case FT_PVH:	  return ("pvh");
 	}
 	return ("");
 }
@@ -71,6 +72,10 @@ int Module::atoft(const char* s)
 		return FT_DCT;
 	if (strcasecmp(s, "raw") == 0)
 		return FT_RAW;
+	if (strcasecmp(s, "ldct") == 0)
+		return FT_LDCT;
+	if (strcasecmp(s, "pvh") == 0)
+		return FT_PVH;
 	return (-1);
 }
 
@@ -99,6 +104,12 @@ int Module::command(int argc, const char*const* argv)
 
 TransmitterModule::TransmitterModule(int ft) : Module(ft)
 {
+	pool_ = new RTP_BufferPool;
+}
+
+TransmitterModule::~TransmitterModule()
+{
+	delete pool_;
 }
 
 int TransmitterModule::command(int argc, const char*const* argv)
@@ -107,6 +118,10 @@ int TransmitterModule::command(int argc, const char*const* argv)
 	if (argc == 3) {
 		if (strcmp(argv[1], "transmitter") == 0) {
 			tx_ = (Transmitter*)TclObject::lookup(argv[2]);
+			return (TCL_OK);
+		}
+		if (strcmp(argv[1], "loop_layer") == 0) {
+			tx_->loop_layer(atoi(argv[2]));
 			return (TCL_OK);
 		}
 	}
