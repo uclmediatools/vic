@@ -59,6 +59,7 @@ DEFS=""
 
 AR="ar"
 RANLIB="ranlib"
+ECHO="echo"
 
 case $OSTYPE in
   SunOS   ) CC="gcc"
@@ -96,6 +97,7 @@ case $OSTYPE in
 	    CHAR="-fsigned-char"
 	    OPTIMIZE="-O4"
 	    PROFILE="-pg"
+	    ECHO="echo -e"
             ;;
   FreeBSD ) CC="gcc"
             WFLAGS=$GCCWFLAGS
@@ -126,31 +128,31 @@ case $OSTYPE in
             ;;
 esac
 
-echo -n "Searching for in_addr_t in <netinet/in.h>... "
+${ECHO} "Searching for in_addr_t in <netinet/in.h>... \c"
 T1=`grep -c in_addr_t /usr/include/netinet/in.h`
 if [ $T1 = 0 ]; then
 	DEFS="$DEFS -DNEED_IN_ADDR_T"
-	echo "no"
+	${ECHO} "no"
 else 
-	echo "yes"
+	${ECHO} "yes"
 fi
 
 # This is the usual place for inet_pton()...
-echo -n "Searching for inet_pton in <arpa/inet.h>... "
+${ECHO} "Searching for inet_pton in <arpa/inet.h>... \c"
 T2=`grep -c inet_pton /usr/include/arpa/inet.h`
 if [ $T2 = 0 ]; then
-	echo "no"
+	${ECHO} "no"
 	# ...but Solaris 2.6 has in it resolv.h...
-	echo -n "Searching for inet_pton in <resolv.h>... "
+	${ECHO} "Searching for inet_pton in <resolv.h>... \c"
 	T2=`grep -c inet_pton /usr/include/resolv.h`
 	if [ $T2 = 0 ]; then
 		DEFS="$DEFS -DNEED_INET_PTON"
-		echo "no"
+		${ECHO} "no"
 	else 
-		echo "yes"
+		${ECHO} "yes"
 	fi
 else 
-	echo "yes"
+	${ECHO} "yes"
 fi
 
 # Process options to the configure script...
