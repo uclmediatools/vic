@@ -26,6 +26,14 @@
 #undef uint8_t
 
 /*
+ * Debugging:
+ * DEBUG: general debugging
+ * DEBUG_MEM: debug memory allocation
+ */
+#undef DEBUG
+#undef DEBUG_MEM
+
+/*
  * #defines for operating system.
  * THESE WANT TO GO AWAY!
  * Any checks for a specific OS should be replaced by a check for
