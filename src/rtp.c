@@ -578,6 +578,7 @@ int rtp_set_sdes(struct rtp *session, u_int32 ssrc, u_int8 type, char *value, in
 			break;
 		default :
 			debug_msg("Unknown SDES item (type=%d, value=%s)\n", type, v);
+                        xfree(v);
 			return FALSE;
 	}
 	return TRUE;
