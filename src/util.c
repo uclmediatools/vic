@@ -60,7 +60,8 @@ static int     blocks_alloced;
 
 /* Block tracking for when things are going wrong */
 
-static struct iovec blk_out[1280];
+#define MAX_BLOCKS_OUT 1280
+static struct iovec blk_out[MAX_BLOCKS_OUT];
 static int          nblks_out;
 
 static int
@@ -106,7 +107,11 @@ _block_alloc(unsigned int size, const char *filen, int line)
 		fprintf(stderr, "block_alloc: block is too small %d %d!\n", size, *c);
 	}
 #ifdef DEBUG_MEM
-        assert(nblks_out < MAX_INDEX);
+        if (blocks_alloced == MAX_BLOCKS_OUT) {
+                debug_msg("Too many blocks allocated.\n");
+                xmemdmp();
+        }
+
         blk_out[nblks_out].iov_base = (char*)c;
         blk_out[nblks_out].iov_len  = size;
         nblks_out++;
