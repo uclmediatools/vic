@@ -1,40 +1,45 @@
-/*
- * rijndael-alg-fst.h   v2.4   April '2000
+/**
+ * rijndael-alg-fst.h
  *
- * Optimised ANSI C code
+ * @version 3.0 (December 2000)
  *
- * #define INTERMEDIATE_VALUE_KAT to generate the Intermediate Value Known Answer Test.
+ * Optimised ANSI C code for the Rijndael cipher (now AES)
+ *
+ * @author Vincent Rijmen <vincent.rijmen@esat.kuleuven.ac.be>
+ * @author Antoon Bosselaers <antoon.bosselaers@esat.kuleuven.ac.be>
+ * @author Paulo Barreto <paulo.barreto@terra.com.br>
+ *
+ * This code is hereby placed in the public domain.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHORS ''AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 #ifndef __RIJNDAEL_ALG_FST_H
 #define __RIJNDAEL_ALG_FST_H
 
-#define BINARY_KEY_MATERIAL
-#define MAXKC			(256/32)
-#define MAXROUNDS		14
+#define MAXKC	(256/32)
+#define MAXKB	(256/8)
+#define MAXNR	14
 
-#ifndef USUAL_TYPES
-#define USUAL_TYPES
-typedef unsigned char	byte;
-typedef unsigned char	word8;	
-typedef unsigned short	word16;	
-typedef unsigned int	word32;
-#endif /* USUAL_TYPES */
+typedef unsigned char	u8;	
+typedef unsigned short	u16;	
+typedef unsigned int	u32;
 
-int rijndaelKeySched(word8 k[MAXKC][4], word8 rk[MAXROUNDS+1][4][4], int ROUNDS);
+int rijndaelKeySetupEnc(u32 rk[/*4*(Nr + 1)*/], const u8 cipherKey[], int keyBits);
+int rijndaelKeySetupDec(u32 rk[/*4*(Nr + 1)*/], const u8 cipherKey[], int keyBits);
+void rijndaelEncrypt(const u32 rk[/*4*(Nr + 1)*/], int Nr, const u8 pt[16], u8 ct[16]);
+void rijndaelDecrypt(const u32 rk[/*4*(Nr + 1)*/], int Nr, const u8 ct[16], u8 pt[16]);
 
-int rijndaelKeyEncToDec(word8 W[MAXROUNDS+1][4][4], int ROUNDS);
-
-int rijndaelEncrypt(word8 a[16], word8 b[16], word8 rk[MAXROUNDS+1][4][4], int ROUNDS);
-
-#ifdef INTERMEDIATE_VALUE_KAT
-int rijndaelEncryptRound(word8 a[4][4], word8 rk[MAXROUNDS+1][4][4], int ROUNDS, int rounds);
-#endif /* INTERMEDIATE_VALUE_KAT */
-
-int rijndaelDecrypt(word8 a[16], word8 b[16], word8 rk[MAXROUNDS+1][4][4], int ROUNDS);
-
-#ifdef INTERMEDIATE_VALUE_KAT
-int rijndaelDecryptRound(word8 a[4][4], word8 rk[MAXROUNDS+1][4][4], int ROUNDS, int rounds);
-#endif /* INTERMEDIATE_VALUE_KAT */
+void rijndaelEncryptRound(const u32 rk[/*4*(Nr + 1)*/], int Nr, u8 block[16], int rounds);
+void rijndaelDecryptRound(const u32 rk[/*4*(Nr + 1)*/], int Nr, u8 block[16], int rounds);
 
 #endif /* __RIJNDAEL_ALG_FST_H */
