@@ -207,6 +207,17 @@ v1.0.10 - Mbus updates from Markus Germeier, which fix compatibility with
 	  need to use vsnprintf() in there, but Windows doesn't implement it
 	  and I don't have time before we give the demo... Sigh, only two
 	  days wasted.
+	- Fix buffer overflow in _dprintf() on Windows, using _vsnprintf().
+	- Update IPv6 support for Microsoft Research IPv6 stack, v1.4
+		- Use the versions of inet_ntop() and inet_pton() provided with the 
+		  IPv6 stack, but retain our own implementation when building with 
+		  IPv4 support only.
+		- Use getaddrinfo() rather than getnodebyname() to get our IPv6 address if
+		  running with the Microsoft Research IPv6 stack. 
+		- We now require getaddrinfo() to be present in all IPv6 stacks: those which
+		  do not have this call (eg: the Musica IPv6 stack) MUST provide a workaround
+		  implementation.
+	  versions of MSR IPv6 prior to 1.4 are no longer supported.
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
@@ -222,5 +233,3 @@ Still to do...
 	  otherwise, as pointed out by Orion.
 	- Allow a callback for background processing during mbus_rendezvous_*()
 	- mbus_exit() queues an mbus.bye() message, but that never gets sent.
-	- Fix buffer potential overflow in _dprintf() on windows
-
