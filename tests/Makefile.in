@@ -14,7 +14,7 @@ CC     = @CC@
 
 OBJS = test_base64.o test_des.o test_md5.o test_net_udp.o \
        test_memory.o test_mbus_parser.o test_mbus_addr.o  \
-       test.o
+       test_aes.o test.o
 
 SRCS = $(OBJS:%.o=%.c)
 

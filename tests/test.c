@@ -66,6 +66,7 @@ int main(int argc, char *argv[])
 	printf("Testing common multimedia library %s\n", CCL_VERSION);
 	test_base64();
 	test_des();
+	test_aes();
 	test_md5();
         test_memory();
 	test_net_udp();
