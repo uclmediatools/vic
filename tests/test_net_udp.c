@@ -342,94 +342,94 @@ abort_multicast_ipv6:
 
 	/**********************************************************************/
 	printf("UDP/IP networking (FreeBSD bug)........ \n");
+	randomize(buf1, BUFSIZE);
+	s1 = udp_init("224.2.0.1", 5000, 5000, 1);
+	if (s1 == NULL) {
+		printf("fail (parent): cannot initialize socket\n");
+		return;
+	}
 	rc = fork();
 	if (rc == -1) {
 		printf("fail: cannot fork\n");
 		goto abort_bsd;
 	} else if (rc == 0) {
 		/* child */
-		s1 = udp_init("224.2.0.1", 5000, 5000, 1);
-		if (s1 == NULL) {
-			printf("fail: cannot initialize socket\n");
+		s2 = udp_init("224.2.0.1", 5000, 5000, 1);
+		if (s2 == NULL) {
+			printf("fail (child): cannot initialize socket\n");
 			return;
 		}
-		randomize(buf1, BUFSIZE);
-		if (udp_send(s1, buf1, BUFSIZE) < 0) {
-			perror("fail");
+		if (udp_send(s2, buf1, BUFSIZE) < 0) {
+			perror("fail (child)");
 			goto abort_bsd;
 		}
 	        timeout.tv_sec  = 10;
         	timeout.tv_usec = 0;
         	udp_fd_zero();
-        	udp_fd_set(s1);
+        	udp_fd_set(s2);
         	rc = udp_select(&timeout);
 		if (rc < 0) {
-			perror("fail");
+			perror("fail (child)");
 			exit(0);
 		}
 		if (rc == 0) {
-			printf("fail: no data waiting (no multicast loopback route?)\n");
+			printf("fail (child): no data waiting (no multicast loopback route?)\n");
 			exit(0);
 		}
-		if (!udp_fd_isset(s1)) {
-			printf("fail: no data on file descriptor\n");
+		if (!udp_fd_isset(s2)) {
+			printf("fail (child): no data on file descriptor\n");
 			exit(0);
 		}
-		rc = udp_recv(s1, buf2, BUFSIZE);
+		rc = udp_recv(s2, buf2, BUFSIZE);
 		if (rc < 0) {
-			perror("fail");
+			perror("fail (child)");
 			exit(0);
 		}
 		if (rc != BUFSIZE) {
-			printf("fail: read size incorrect (%d != %d)\n", rc, BUFSIZE);
+			printf("fail (child): read size incorrect (%d != %d)\n", rc, BUFSIZE);
 			exit(0);
 		}
 		if (memcmp(buf1, buf2, BUFSIZE) != 0) {
-			printf("fail: buffer corrupt\n");
+			printf("fail (child): buffer corrupt\n");
 			exit(0);
 		}
+		udp_exit(s2);
 		printf("pass (child)\n");
 		exit(1);
 	} else {
 		/* parent */
-		s1 = udp_init("224.2.0.1", 5000, 5000, 1);
-		if (s1 == NULL) {
-			printf("fail: cannot initialize socket\n");
-			return;
-		}
                 timeout.tv_sec  = 10;
                 timeout.tv_usec = 0;
                 udp_fd_zero();
                 udp_fd_set(s1);
                 rc = udp_select(&timeout);
 		if (rc < 0) {
-			perror("fail");
+			perror("fail (parent)");
 			goto abort_bsd;
 		}
 		if (rc == 0) {
-			printf("fail: no data waiting (no multicast loopback route?)\n");
+			printf("fail (parent): no data waiting (no multicast loopback route?)\n");
 			goto abort_bsd;
 		}
 		if (!udp_fd_isset(s1)) {
-			printf("fail: no data on file descriptor\n");
+			printf("fail (parent): no data on file descriptor\n");
 			goto abort_bsd;
 		}
                 rc = udp_recv(s1, buf2, BUFSIZE);
                 if (rc < 0) {
-                        perror("fail");
+                        perror("fail (parent)");
 			goto abort_bsd;
                 }
                 if (rc != BUFSIZE) {
-                        printf("fail: read size incorrect (%d != %d)\n", rc, BUFSIZE);
+                        printf("fail (parent): read size incorrect (%d != %d)\n", rc, BUFSIZE);
 			goto abort_bsd;
                 }
 		if (memcmp(buf1, buf2, BUFSIZE) != 0) {
-			printf("fail: buffer corrupt\n");
+			printf("fail (parent): buffer corrupt\n");
 			goto abort_bsd;
 		}
                 printf("pass (parent)\n");
 	}
-	printf("pass\n");
 abort_bsd:
 	udp_exit(s1);
 	return;
