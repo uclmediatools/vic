@@ -48,6 +48,7 @@ int			 mbus_parse_lst(struct mbus_parser *m, char **l);
 int			 mbus_parse_str(struct mbus_parser *m, char **s);
 int			 mbus_parse_sym(struct mbus_parser *m, char **s);
 int			 mbus_parse_int(struct mbus_parser *m, int *i);
+int                      mbus_parse_ts(struct mbus_parser *m, struct timeval *ts);
 int			 mbus_parse_flt(struct mbus_parser *m, double *d);
 char			*mbus_decode_str(char *s);
 char			*mbus_encode_str(const char *s);

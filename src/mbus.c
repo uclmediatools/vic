@@ -103,6 +103,7 @@ static void mbus_validate(struct mbus *m)
 #ifdef DEBUG
 	int	i;
 
+      assert(m != 0);
 	assert(m->num_other_addr <= m->max_other_addr);
 	assert(m->num_other_addr >= 0);
 	for (i = 0; i < m->num_other_addr; i++) {
@@ -245,15 +246,20 @@ char	*mb_bufpos;
 
 #define MBUS_AUTH_LEN 16
 
-static void mb_header(int seqnum, int ts, char reliable, const char *src, const char *dst, int ackseq)
+static void mb_header(int seqnum, struct timeval ts, char reliable, const char *src, const char *dst, int ackseq)
 {
 	xmemchk();
 	mb_buffer   = (char *) xmalloc(MBUS_BUF_SIZE + 1);
-	memset(mb_buffer,   0, MBUS_BUF_SIZE);
+      memset(mb_buffer,   0, MBUS_BUF_SIZE + 1);
 	memset(mb_buffer, ' ', MBUS_AUTH_LEN);
 	mb_bufpos = mb_buffer + MBUS_AUTH_LEN;
-	sprintf(mb_bufpos, "\nmbus/1.0 %6d %9d %c (%s) %s ", seqnum, ts, reliable, src, dst);
-	mb_bufpos += 33 + strlen(src) + strlen(dst);
+      /* monster kludge */
+      if(*dst == '(')
+	    sprintf(mb_bufpos, "\nmbus/1.0 %6d %ld%03ld %c (%s) %s ", seqnum, ts.tv_sec,ts.tv_usec/1000, reliable, src, dst);
+      else
+	    sprintf(mb_bufpos, "\nmbus/1.0 %6d %ld%03ld %c (%s) (%s) ", seqnum, ts.tv_sec,ts.tv_usec/1000, reliable, src, dst);
+
+      mb_bufpos += strlen(mb_bufpos);
 	if (ackseq == -1) {
 		sprintf(mb_bufpos, "()\n");
 		mb_bufpos += 3;
@@ -281,36 +287,44 @@ static void mb_send(struct mbus *m)
  
 	mbus_validate(m);
 
-	*(mb_bufpos++) = '\0';
+      *mb_bufpos = '\0';
 	assert((mb_bufpos - mb_buffer) < MBUS_BUF_SIZE);
 	assert(strlen(mb_buffer) < MBUS_BUF_SIZE);
 
 	/* Pad to a multiple of 8 bytes, so the encryption can work... */
-	while (((mb_bufpos - mb_buffer) % 8) != 0) {
+	
+      if (m->encrkey != NULL) {
+	    while (((mb_bufpos - mb_buffer - (MBUS_AUTH_LEN+1)) % 8) != 0) {
 		*(mb_bufpos++) = '\0';
 	}
+      }
+      
 	len = mb_bufpos - mb_buffer;
 	assert(len < MBUS_BUF_SIZE);
 	assert(strlen(mb_buffer) < MBUS_BUF_SIZE);
 
 	xmemchk();
-	if (m->hashkey != NULL) {
-		/* Authenticate... */
-		hmac_md5(mb_buffer + MBUS_AUTH_LEN+1, strlen(mb_buffer) - (MBUS_AUTH_LEN+1), m->hashkey, m->hashkeylen, digest);
-		base64encode(digest, 12, mb_buffer, MBUS_AUTH_LEN);
-	}
-	xmemchk();
+
 	if (m->encrkey != NULL) {
 		/* Encrypt... */
 		memset(mb_cryptbuf, 0, MBUS_BUF_SIZE);
-		memcpy(mb_cryptbuf, mb_buffer, len);
-		assert((len % 8) == 0);
+	    memcpy(mb_cryptbuf, 
+		   mb_buffer + MBUS_AUTH_LEN + 1, 
+		   len - (MBUS_AUTH_LEN+1));
+	    assert(((len - (MBUS_AUTH_LEN+1)) % 8) == 0);
 		assert(len < MBUS_BUF_SIZE);
 		assert(m->encrkeylen == 8);
 		xmemchk();
-		qfDES_CBC_e(m->encrkey, mb_cryptbuf, len, initVec);
+	    qfDES_CBC_e(m->encrkey, mb_cryptbuf, len - (MBUS_AUTH_LEN+1), initVec);
 		xmemchk();
-		memcpy(mb_buffer, mb_cryptbuf, len);
+	    memcpy(mb_buffer + (MBUS_AUTH_LEN+1), mb_cryptbuf, len);
+      }
+      xmemchk();
+      
+      if (m->hashkey != NULL) {
+	    /* Authenticate... */
+	    hmac_md5(mb_buffer + MBUS_AUTH_LEN+1, len - (MBUS_AUTH_LEN+1), m->hashkey, m->hashkeylen, digest);
+	    base64encode(digest, 12, mb_buffer, MBUS_AUTH_LEN);
 	}
 	xmemchk();
 	udp_send(m->s, mb_buffer, len);
@@ -325,7 +339,7 @@ static void resend(struct mbus *m, struct mbus_msg *curr)
 
 	mbus_validate(m);
 
-	mb_header(curr->seqnum, curr->comp_time.tv_sec, (char)(curr->reliable?'R':'U'), m->addr, curr->dest, -1);
+      mb_header(curr->seqnum, curr->comp_time, (char)(curr->reliable?'R':'U'), m->addr, curr->dest, -1);
 	for (i = 0; i < curr->num_cmds; i++) {
 		mb_add_command(curr->cmd_list[i], curr->arg_list[i]);
 	}
@@ -396,7 +410,7 @@ void mbus_heartbeat(struct mbus *m, int interval)
 
 	gettimeofday(&curr_time, NULL);
 	if (curr_time.tv_sec - m->last_heartbeat.tv_sec >= interval) {
-		mb_header(++m->seqnum, (int) curr_time.tv_sec, 'U', m->addr, "()", -1);
+	    mb_header(++m->seqnum, curr_time, 'U', m->addr, "()", -1);
 		mb_add_command("mbus.hello", "");
 		mb_send(m);
 
@@ -591,7 +605,7 @@ void mbus_send(struct mbus *m)
 			}
 		}
 		/* Create the message... */
-		mb_header(curr->seqnum, curr->comp_time.tv_sec, (char)(curr->reliable?'R':'U'), m->addr, curr->dest, -1);
+	    mb_header(curr->seqnum, curr->comp_time, (char)(curr->reliable?'R':'U'), m->addr, curr->dest, -1);
 		for (i = 0; i < curr->num_cmds; i++) {
 			assert(m->index_sent == (curr->idx_list[i] - 1));
 			m->index_sent = curr->idx_list[i];
@@ -704,8 +718,10 @@ void mbus_qmsgf(struct mbus *m, const char *dest, int reliable, const char *cmnd
 int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 {
 	char			*auth, *ver, *src, *dst, *ack, *r, *cmd, *param, *npos;
-	char	 		 buffer[MBUS_BUF_SIZE];
-	int	 		 buffer_len, seq, a, rx, ts, authlen, loop_count;
+      char	 		 buffer_array[MBUS_BUF_SIZE+1];
+      char                      *buffer;
+      int	 		 buffer_len, seq, a, rx, authlen, loop_count;
+      struct timeval             ts = {0,0};
 	char	 		 ackbuf[MBUS_ACK_BUF_SIZE];
 	char	 		 digest[16];
 	unsigned char		 initVec[8] = {0,0,0,0,0,0,0,0};
@@ -714,10 +730,14 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 
 	mbus_validate(m);
 
+      //	debug_msg("receiving\n");
+	
 	rx = FALSE;
 	loop_count = 0;
 	while (loop_count++ < 10) {
+	    buffer = buffer_array;
 		memset(buffer, 0, MBUS_BUF_SIZE);
+	    assert(m != NULL);
                 assert(m->s != NULL);
 		udp_fd_zero();
 		udp_fd_set(m->s);
@@ -734,6 +754,25 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 			return FALSE;
 		}
 
+	    /* check authentication */
+	    auth = buffer;
+		
+	    /* Check that the packet authenticates correctly... */
+	    authlen = 0;
+	    if(m->hashkey != NULL){
+		  authlen = MBUS_AUTH_LEN;
+		  hmac_md5(buffer + authlen + 1, buffer_len - authlen - 1, m->hashkey, m->hashkeylen, digest);
+		  base64encode(digest, 12, ackbuf, 16);
+		  if ((strncmp(auth, ackbuf, 16) != 0)) {
+			debug_msg("Failed to authenticate message...\n");
+			continue;
+		  }
+	    }
+		
+	    buffer += authlen+1;
+	    buffer_len -= authlen+1;
+		
+		
 		if (m->encrkey != NULL) {
 			/* Decrypt the message... */
 			if ((buffer_len % 8) != 0) {
@@ -746,33 +785,23 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 			memcpy(buffer, mb_cryptbuf, buffer_len);
 		}
 
+
 		/* Sanity check that this is a vaguely sensible format message... Should prevent */
 		/* problems if we're fed complete garbage, but won't prevent determined hackers. */
-		if (strncmp(buffer + MBUS_AUTH_LEN + 1, "mbus/1.0", 8) != 0) {
+	    if (strncmp(buffer, "mbus/1.0", 8) != 0) {
+		  debug_msg("message doesn't start with preamble\n");
 			continue;
 		}
 
+	    buffer[buffer_len] = '\0';
+	    assert(strlen(buffer) <= MBUS_BUF_SIZE);
+		
+	    
 		mp = mbus_parse_init(buffer);
 		/* remove trailing 0 bytes */
 		npos = (char *) strchr(buffer,'\0');
 		if(npos!=NULL) {
 			buffer_len=npos-buffer;
-		}
-		/* Parse the authentication header */
-		if (!mbus_parse_sym(mp, &auth)) {
-			debug_msg("Failed to parse authentication header\n");
-			mbus_parse_done(mp);
-			continue;
-		}
-
-		/* Check that the packet authenticates correctly... */
-		authlen = strlen(auth);
-		hmac_md5(buffer + authlen + 1, buffer_len - authlen - 1, m->hashkey, m->hashkeylen, digest);
-		base64encode(digest, 12, ackbuf, 16);
-		if ((strlen(auth) != 16) || (strncmp(auth, ackbuf, 16) != 0)) {
-			debug_msg("Failed to authenticate message...\n");
-			mbus_parse_done(mp);
-			continue;
 		}
 
 		/* Parse the header */
@@ -791,7 +820,7 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 			debug_msg("Parser failed seq\n");
 			continue;
 		}
-		if (!mbus_parse_int(mp, &ts)) {
+	    if (!mbus_parse_ts(mp, &ts)) {
 			mbus_parse_done(mp);
 			debug_msg("Parser failed ts\n");
 			continue;
@@ -847,9 +876,11 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 				char 		*newsrc = (char *) xmalloc(strlen(src) + 3);
 				struct timeval	 t;
 
+			debug_msg("received relieable msg %d, sending ACK\n", seq);
+			
 				sprintf(newsrc, "(%s)", src);	/* Yes, this is a kludge. */
 				gettimeofday(&t, NULL);
-				mb_header(++m->seqnum, (int) t.tv_sec, 'U', m->addr, newsrc, seq);
+			mb_header(++m->seqnum, t, 'U', m->addr, newsrc, seq);
 				mb_send(m);
 				xfree(newsrc);
 			} else if (strcmp(r, "U") == 0) {
@@ -871,6 +902,8 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 						/* Mark this source as activ. We remove dead sources in mbus_heartbeat */
 						store_other_addr(m, newsrc);
 					}
+			      assert(m != NULL);
+			      assert(m->cmd_handler != NULL);
 					m->cmd_handler(newsrc, cmd, param, data);
 					xfree(newsrc);
 				} else {

@@ -61,6 +61,8 @@ int mbus_addr_match(const char *a, const char *b)
 		for (y = b; ((*y != ' ') && (*y != ')') && (*y != '\0')); y++) {
 			/* do nothing */
 		}
+		if(y == b)
+		      return TRUE;
 		y--;
 		/* Check if the word between b and y is contained in the    */
 		/* string pointed to be a.                                  */

@@ -72,7 +72,7 @@ void mbus_parse_done(struct mbus_parser *m)
 int mbus_parse_lst(struct mbus_parser *m, char **l)
 {
 	int instr = FALSE;
-	int inlst = FALSE;
+	int inlst = 0;
 
 	assert(m->magic == MBUS_PARSER_MAGIC);
 
@@ -90,11 +90,11 @@ int mbus_parse_lst(struct mbus_parser *m, char **l)
 			instr = !instr;
 		}
 		if ((*m->buffer == '(') && (*(m->buffer-1) != '\\') && !instr) {
-			inlst = !inlst;
+			inlst++;
 		}
 		if ((*m->buffer == ')') && (*(m->buffer-1) != '\\') && !instr) {
-			if (inlst) {
-				inlst = !inlst;
+			if (inlst > 0) {
+				inlst--;
 			} else {
 				*m->buffer = '\0';
 				m->buffer++;
@@ -181,6 +181,53 @@ int mbus_parse_int(struct mbus_parser *m, int *i)
 	m->buffer = p;
 	CHECK_OVERRUN;
 	return TRUE;
+}
+
+int mbus_parse_ts(struct mbus_parser *m, struct timeval *ts){
+      char *s;
+      char *p;
+      
+      assert(m->magic == MBUS_PARSER_MAGIC);
+
+      while (isspace((unsigned char)*m->buffer)) {
+	    m->buffer++;
+	    CHECK_OVERRUN;
+      }
+    
+      s = m->buffer;
+      while (!isspace((unsigned char)*m->buffer)){
+	    m->buffer++;
+	    CHECK_OVERRUN;
+      }
+      
+      if((m->buffer - s) < 4){
+	    /* less than 1 sec */
+	    ts->tv_sec = 0;
+	    ts->tv_usec = strtol(m->buffer - (m->buffer - s), &p, 10) * 1000;
+	    if(m->buffer != p){
+		  debug_msg("failed to parse msec\n");
+		  return FALSE;
+	    }
+      } else {
+	    /* more than 1 sec */
+	    ts->tv_usec = strtol(m->buffer-3, &p, 10) * 1000;
+	    if(m->buffer != p){
+		  debug_msg("failed to parse msec\n");
+		  return FALSE;
+	    }
+	    *(m->buffer - 3) = '\0';
+	    ts->tv_sec = strtol(s, &p, 10);
+	    if((m->buffer-3 != p) || (ts->tv_sec == LONG_MAX) || (ts->tv_sec == LONG_MIN)){
+		  debug_msg("failed to parse sec\n");
+	    return FALSE;
+	    }
+       }
+      
+      *m->buffer = '\0';
+      m->buffer++;
+      CHECK_OVERRUN;
+      
+      return TRUE;
 }
 
 int mbus_parse_flt(struct mbus_parser *m, double *d)
