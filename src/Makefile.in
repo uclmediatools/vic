@@ -10,7 +10,7 @@ AR     = __AR__
 RANLIB = __RANLIB__
 
 OBJS = crypt_random.o debug.o mbus.o mbus_config.o md5.o memory.o net_udp.o qfDES.o \
-       util.o hmac.o base64.o rtp.o inet_ntop.o inet_pton.o
+       util.o hmac.o base64.o rtp.o inet_ntop.o inet_pton.o drand48.o
 
 TEST_OBJS = test_base64.o test_des.o test_md5.o test.o
 
