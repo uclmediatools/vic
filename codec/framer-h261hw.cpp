@@ -503,9 +503,9 @@ int H261hwFramer::consume(const VideoFrame* vf)
 	int		sentbytes = 0;
 	char		*frameend;
 
-	Transmitter::pktbuf* pb = tx_->alloc(p->ts_, RTP_PT_H261);
+	pktbuf* pb = pool_->alloc(p->ts_, RTP_PT_H261);
 	/* RTP/H.261 header */
-	rtphdr*		rh = (rtphdr*)pb->iov[0].iov_base;
+	rtphdr*		rh = (rtphdr*)pb->data;
 	*(u_int*)(rh + 1) = (1<<24) | (mq_ << 10);
 	char		*lastaddr,*lastsentaddr;
 	u_int		lastmt,lastgob,lastmquant,lastmba,lastbit,lastsentbit;
@@ -584,21 +584,27 @@ int H261hwFramer::consume(const VideoFrame* vf)
 			u_int	cc = lastaddr-lastsentaddr+1;
 
 			if (stuffzero) {
-				*(pb->iov[1].iov_base)=0;
-				memcpy(pb->iov[1].iov_base+1,lastsentaddr,cc);
-				pb->iov[1].iov_len = cc+1;
+				//*(pb->iov[1].iov_base)=0;
+				pb->data[HDRSIZE]=0;
+				//memcpy(pb->iov[1].iov_base+1,lastsentaddr,cc);
+				memcpy(&pb->data[HDRSIZE+1],lastsentaddr,cc);
+				//pb->iov[1].iov_len = cc+1;
+				pb->len = cc+HDRSIZE+1;
 				stuffzero = 0;
 			} else {
-				memcpy(pb->iov[1].iov_base,lastsentaddr,cc);
-				pb->iov[1].iov_len = cc;
+				//memcpy(pb->iov[1].iov_base,lastsentaddr,cc);
+				memcpy(&pb->data[HDRSIZE],lastsentaddr,cc);
+				//pb->iov[1].iov_len = cc;
+				pb->len = cc+HDRSIZE;
 			}
-			pb->iov[0].iov_len = HDRSIZE;
+			//pb->iov[0].iov_len = HDRSIZE;
 			u_int h=(*(u_int*)(rh+1))|(lastbit<<26)|(lastsentbit<<29);
 			*(u_int*)(rh+1) = htonl(h);
 			tx_->send(pb);
 			sentbytes+= HDRSIZE+cc;
-			pb = tx_->alloc(vf->ts_, RTP_PT_H261);
-			rh = (rtphdr*)pb->iov[0].iov_base;
+			pb = pool_->alloc(vf->ts_, RTP_PT_H261);
+			//rh = (rtphdr*)pb->iov[0].iov_base;
+			rh = (rtphdr*)pb->data;
 			*(u_int*)(rh + 1) =	(lastgob << 20)	|
 						(lastmba << 15)	|
 						(mq_ << 10);
@@ -657,14 +663,16 @@ int H261hwFramer::consume(const VideoFrame* vf)
 	 * but trust the grabbing device... */
 	cc = frameend-lastsentaddr+1;
 
-	pb->iov[0].iov_len = HDRSIZE;
-	memcpy(pb->iov[1].iov_base,lastsentaddr,cc);
-	pb->iov[1].iov_len = cc;
+	//pb->iov[0].iov_len = HDRSIZE;
+	//memcpy(pb->iov[1].iov_base,lastsentaddr,cc);
+	memcpy(&pb->data[HDRSIZE],lastsentaddr,cc);
+	//pb->iov[1].iov_len = cc;
+	pb->len = cc+HDRSIZE;
 	rh->rh_flags |= htons(RTP_M);
 	u_int	h = *(u_int*)(rh+1)|((nbb_&7)<<26) | (lastsentbit<<29);
 	*(u_int*)(rh+1) = htonl(h);
 	tx_->send(pb);
 	sentbytes+= HDRSIZE+cc;
-	tx_->flush();
+	//tx_->flush();
 	return sentbytes;
 }
