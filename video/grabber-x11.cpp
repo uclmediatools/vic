@@ -408,10 +408,10 @@ X11Grabber::X11Grab_ComputeYUVTable(void)
         }
         break;
     case TrueColor:
-	fprintf(stderr, "TrueColor...\n");
+	//fprintf(stderr, "TrueColor...\n");
         break;
     case DirectColor:
-	fprintf(stderr, "DirectColor...\n");
+	//fprintf(stderr, "DirectColor...\n");
         break;
     }
 }
@@ -579,8 +579,6 @@ X11Grabber::X11Grab_RGB16(void)
     uint8 *up= (uint8 *)yp + framesize_ ;
     uint8 *vp= up + (framesize_ >> 2) ;
     uint16 *data=(uint16 *)ximage_->image->data, p0, p1, p2, p3;
-
-    printf("R: %d, G: %d, B: %d;\n", ximage_->image->red_mask, ximage_->image->green_mask, ximage_->image->blue_mask);
 
     for (y=0; y<height_; y+=2) {
         for (x=0; x<width_; x += 2) {
