@@ -59,13 +59,13 @@ int XShmGetEventBase(struct _XDisplay *);
 #else
 int XShmGetEventBase(Display *);
 #endif
-#ifdef sgi
+#ifdef sgi_old
 #define XShmAttach __XShmAttach__
 #define XShmDetach __XShmDetach__
 #define XShmPutImage __XShmPutImage__
 #endif
 #include <X11/extensions/XShm.h>
-#ifdef sgi
+#ifdef sgi_old
 #undef XShmAttach
 #undef XShmDetach
 #undef XShmPutImage
