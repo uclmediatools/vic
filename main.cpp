@@ -123,7 +123,6 @@ extern "C" int gethostname(char* name, int len);
 static void
 usage(char *szOffending)
 {
-#ifdef WIN32
 char win_usage[] = "\
 VIC is a multicast (or unicast) video tool. It is best to start it\n\
 using a multicast directory tool, like sdr or multikit. If desired VIC\n\
@@ -145,6 +144,7 @@ if (szOffending == NULL) {
         szOffending = win_usage;
 }
 
+#ifdef WIN32
 MessageBox(NULL, szOffending, "VIC Usage", MB_ICONINFORMATION | MB_OK);
 #else
 printf(win_usage);
