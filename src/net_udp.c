@@ -471,10 +471,16 @@ static char *udp_host_addr6(socket_udp *s)
 			abort();
 		}
 		
-		memset(&hints, 0, sizeof(struct addrinfo));
-		
-		hints.ai_protocol = IPPROTO_IPV6;
-		
+		hints.ai_protocol  = IPPROTO_IPV6;
+		hints.ai_flags     = AI_CANONNAME;
+		hints.ai_family    = PF_INET;
+		hints.ai_socktype  = SOCK_DGRAM;
+		hints.ai_protocol  = IPPROTO_IPV6;
+		hints.ai_addrlen   = 0;
+		hints.ai_canonname = NULL;
+		hints.ai_addr      = NULL;
+		hints.ai_next      = NULL;
+
 		if ((gai_err = getaddrinfo(hname, NULL, &hints, &ai))) {
 			debug_msg("getaddrinfo: %s: %s\n", hname, gai_strerror(gai_err));
 			abort();
