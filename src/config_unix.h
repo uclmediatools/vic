@@ -202,12 +202,5 @@ void *memcpy(void *dest, const void *src, size_t n);
 int   memcmp(const void *s1, const void *s2, size_t n);
 #endif /* Linux */
 
-
-/* The tcl/tk includes have to go after config.h, else we get warnings on
- * solaris 2.5.1, due to buggy system header files included by config.h [csp]
- */
-#include <tcl.h>
-#include <tk.h>
-
-#endif 
-#endif
+#endif /* _CONFIG_UNIX_H_ */
+#endif /* WIN32 */
