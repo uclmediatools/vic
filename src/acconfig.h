@@ -43,3 +43,9 @@
 #undef Solaris
 #undef Linux
 #undef HPUX
+
+@BOTTOM@
+
+#ifndef WORDS_BIGENDIAN
+#define WORDS_SMALLENDIAN
+#endif

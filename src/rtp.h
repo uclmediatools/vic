@@ -43,6 +43,10 @@
 #define RTP_PACKET_HEADER_SIZE	((sizeof(char *) * 2) + sizeof(u_int32 *) + (2 * sizeof(int)))
 #define RTP_MAX_PACKET_LEN 1500
 
+#if !defined(WORDS_BIGENDIAN) && !defined(WORDS_SMALLENDIAN)
+#error RTP library requires WORDS_BIGENDIAN or WORDS_SMALLENDIAN to be defined.
+#endif
+
 typedef struct {
 	/* The following are pointers to the data in the packet as    */
 	/* it came off the wire. The packet it read in such that the  */
