@@ -1,12 +1,12 @@
 /*
- * FILE:    mbus.h
- * AUTHORS: Colin Perkins
+ * FILE:     mbus_parser.h
+ * AUTHOR:   Colin Perkins
  * 
- * Copyright (c) 1997-2000 University College London
+ * Copyright (c) 2000 University College London
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, is permitted, provided that the following conditions 
+ * modification, is permitted provided that the following conditions 
  * are met:
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
@@ -33,39 +33,15 @@
  * SUCH DAMAGE.
  */
 
-#ifndef _MBUS_H
-#define _MBUS_H
+struct mbus_parser;
 
-/* Error codes... */
-#define MBUS_MESSAGE_LOST           1
-#define MBUS_DESTINATION_UNKNOWN    2
-#define MBUS_DESTINATION_NOT_UNIQUE 3
+struct mbus_parser 	*mbus_parse_init(char *str);
+void	 		 mbus_parse_done(struct mbus_parser *m);
+int			 mbus_parse_lst(struct mbus_parser *m, char **l);
+int			 mbus_parse_str(struct mbus_parser *m, char **s);
+int			 mbus_parse_sym(struct mbus_parser *m, char **s);
+int			 mbus_parse_int(struct mbus_parser *m, int *i);
+int			 mbus_parse_flt(struct mbus_parser *m, double *d);
+char			*mbus_decode_str(char *s);
+char			*mbus_encode_str(const char *s);
 
-struct mbus;
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
-struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, void *dat), 
-		       void  (*err_handler)(int seqnum, int reason));
-void         mbus_cmd_handler(struct mbus *m, void  (*cmd_handler)(char *src, char *cmd, char *arg, void *dat));
-void         mbus_exit(struct mbus *m);
-void         mbus_addr(struct mbus *m, char *addr);
-int          mbus_addr_valid(struct mbus *m, char *addr);
-void         mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, int reliable);
-void         mbus_qmsgf(struct mbus *m, char *dest, int reliable, const char *cmnd, const char *format, ...);
-void         mbus_send(struct mbus *m);
-int          mbus_recv(struct mbus *m, void *data, struct timeval *timeout);
-void         mbus_retransmit(struct mbus *m);
-void         mbus_heartbeat(struct mbus *m, int interval);
-int          mbus_waiting_ack(struct mbus *m);
-int          mbus_sent_all(struct mbus *m);
-char        *mbus_rendezvous_waiting(struct mbus *m, char *addr, char *token, void *data);
-char        *mbus_rendezvous_go(struct mbus *m, char *token, void *data);
-
-#if defined(__cplusplus)
-}
-#endif
-
-#endif

@@ -46,11 +46,11 @@
 #include "gettimeofday.h"
 #include "mbus.h"
 #include "mbus_config.h"
+#include "mbus_parser.h"
 
 #define MBUS_BUF_SIZE	  1500
 #define MBUS_ACK_BUF_SIZE 1500
 #define MBUS_MAX_ADDR	    10
-#define MBUS_MAX_PD	    10
 #define MBUS_MAX_QLEN	    50 /* Number of messages we can queue with mbus_qmsg() */
 
 #define MBUS_MAGIC	0x87654321
@@ -91,9 +91,6 @@ struct mbus {
 	int		 	  num_other_addr;
 	char			**other_addr;			/* Addresses of other entities on the mbus. 			*/
         struct timeval          **other_hello;                  /* Time of last mbus.hello we received from other entities      */
-	char		 	 *parse_buffer[MBUS_MAX_PD];	/* Temporary storage for parsing mbus commands 			*/
-	char		 	 *parse_bufend[MBUS_MAX_PD];	/* End of space allocated for parsing, to check for overflows 	*/
-	int		 	  parse_depth;
 	int		 	  seqnum;
 	struct mbus_msg	 	 *cmd_queue;			/* Queue of messages waiting to be sent */
 	struct mbus_msg	 	 *waiting_ack;			/* The last reliable message sent, if we have not yet got the ACK */
@@ -120,10 +117,6 @@ static void mbus_validate(struct mbus *m)
 	for (i = m->num_addr + 1; i < MBUS_MAX_ADDR; i++) {
 		assert(m->addr[i] == NULL);
 	}
-
-	assert((m->parse_depth < MBUS_MAX_PD) && (m->parse_depth >= 0));
-	assert(m->parse_buffer[0] == NULL);
-	assert(m->parse_bufend[0] == NULL);
 
 	assert(m->num_other_addr <= m->max_other_addr);
 	assert(m->num_other_addr >= 0);
@@ -581,7 +574,6 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 		m->other_addr[i]  = NULL;
 		m->other_hello[i] = NULL;
 	}
-	m->parse_depth    = 0;
 	m->cmd_queue	  = NULL;
 	m->waiting_ack	  = NULL;
 	m->magic          = MBUS_MAGIC;
@@ -597,8 +589,6 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 	m->hashkeylen = k.key_len;
 
 	for (i = 0; i < MBUS_MAX_ADDR; i++) m->addr[i]         = NULL;
-	for (i = 0; i < MBUS_MAX_PD;   i++) m->parse_buffer[i] = NULL;
-	for (i = 0; i < MBUS_MAX_PD;   i++) m->parse_bufend[i] = NULL;
 	mbus_unlock_config_file(m->cfg);
 
 	xfree(net_addr);
@@ -639,13 +629,6 @@ void mbus_exit(struct mbus *m)
 	mbus_qmsg(m, "()", "mbus.bye", "", FALSE);
 	mbus_send(m);
 
-        while(m->parse_depth > 0) {
-                xfree(m->parse_buffer[m->parse_depth]);
-		m->parse_buffer[m->parse_depth] = NULL;
-		m->parse_bufend[m->parse_depth] = NULL;
-		m->parse_depth--;
-        }
-
 	/* FIXME: It should be a fatal error to call mbus_exit() if some messages are still outstanding. */
 	/*        We will need an mbus_flush() call first though, to ensure nothing is waiting.          */
         mbus_flush_msgs(m->cmd_queue);
@@ -673,13 +656,15 @@ void mbus_exit(struct mbus *m)
 
 void mbus_addr(struct mbus *m, char *addr)
 {
+	struct mbus_parser	*mp;
+
 	mbus_validate(m);
 	assert(m->num_addr < MBUS_MAX_ADDR);
-	mbus_parse_init(m, xstrdup(addr));
-	if (mbus_parse_lst(m, &(m->addr[m->num_addr]))) {
+	mp = mbus_parse_init(xstrdup(addr));
+	if (mbus_parse_lst(mp, &(m->addr[m->num_addr]))) {
 		m->num_addr++;
 	}
-	mbus_parse_done(m);
+	mbus_parse_done(mp);
 }
 
 void mbus_send(struct mbus *m)
@@ -827,224 +812,16 @@ void mbus_qmsgf(struct mbus *m, char *dest, int reliable, const char *cmnd, cons
 	mbus_qmsg(m, dest, cmnd, buffer, reliable);
 }
 
-void mbus_parse_init(struct mbus *m, char *str)
-{
-	mbus_validate(m);
-	assert(m->parse_depth < (MBUS_MAX_PD - 1));
-	m->parse_depth++;
-	m->parse_buffer[m->parse_depth] = str;
-	m->parse_bufend[m->parse_depth] = str + strlen(str);
-}
-
-void mbus_parse_done(struct mbus *m)
-{
-	mbus_validate(m);
-	m->parse_buffer[m->parse_depth] = NULL;
-	m->parse_bufend[m->parse_depth] = NULL;
-	m->parse_depth--;
-	assert(m->parse_depth >= 0);
-}
-
-#define CHECK_OVERRUN if (m->parse_buffer[m->parse_depth] > m->parse_bufend[m->parse_depth]) {\
-	debug_msg("parse buffer overflow\n");\
-	return FALSE;\
-}
-
-int mbus_parse_lst(struct mbus *m, char **l)
-{
-	int instr = FALSE;
-	int inlst = FALSE;
-
-	mbus_validate(m);
-
-	*l = m->parse_buffer[m->parse_depth];
-        while (isspace((unsigned char)*m->parse_buffer[m->parse_depth])) {
-                m->parse_buffer[m->parse_depth]++;
-		CHECK_OVERRUN;
-        }
-	if (*m->parse_buffer[m->parse_depth] != '(') {
-		return FALSE;
-	}
-	*(m->parse_buffer[m->parse_depth]) = ' ';
-	while (*m->parse_buffer[m->parse_depth] != '\0') {
-		if ((*m->parse_buffer[m->parse_depth] == '"') && (*(m->parse_buffer[m->parse_depth]-1) != '\\')) {
-			instr = !instr;
-		}
-		if ((*m->parse_buffer[m->parse_depth] == '(') && (*(m->parse_buffer[m->parse_depth]-1) != '\\') && !instr) {
-			inlst = !inlst;
-		}
-		if ((*m->parse_buffer[m->parse_depth] == ')') && (*(m->parse_buffer[m->parse_depth]-1) != '\\') && !instr) {
-			if (inlst) {
-				inlst = !inlst;
-			} else {
-				*m->parse_buffer[m->parse_depth] = '\0';
-				m->parse_buffer[m->parse_depth]++;
-				CHECK_OVERRUN;
-				return TRUE;
-			}
-		}
-		m->parse_buffer[m->parse_depth]++;
-		CHECK_OVERRUN;
-	}
-	return FALSE;
-}
-
-int mbus_parse_str(struct mbus *m, char **s)
-{
-	mbus_validate(m);
-
-        while (isspace((unsigned char)*m->parse_buffer[m->parse_depth])) {
-                m->parse_buffer[m->parse_depth]++;
-		CHECK_OVERRUN;
-        }
-	if (*m->parse_buffer[m->parse_depth] != '"') {
-		return FALSE;
-	}
-	*s = m->parse_buffer[m->parse_depth]++;
-	while (*m->parse_buffer[m->parse_depth] != '\0') {
-		if ((*m->parse_buffer[m->parse_depth] == '"') && (*(m->parse_buffer[m->parse_depth]-1) != '\\')) {
-			m->parse_buffer[m->parse_depth]++;
-			*m->parse_buffer[m->parse_depth] = '\0';
-			m->parse_buffer[m->parse_depth]++;
-			return TRUE;
-		}
-		m->parse_buffer[m->parse_depth]++;
-		CHECK_OVERRUN;
-	}
-	return FALSE;
-}
-
-static int mbus_parse_sym(struct mbus *m, char **s)
-{
-	mbus_validate(m);
-
-        while (isspace((unsigned char)*m->parse_buffer[m->parse_depth])) {
-                m->parse_buffer[m->parse_depth]++;
-		CHECK_OVERRUN;
-        }
-	if (!isgraph((unsigned char)*m->parse_buffer[m->parse_depth])) {
-		return FALSE;
-	}
-	*s = m->parse_buffer[m->parse_depth]++;
-	while (!isspace((unsigned char)*m->parse_buffer[m->parse_depth]) && (*m->parse_buffer[m->parse_depth] != '\0')) {
-		m->parse_buffer[m->parse_depth]++;
-		CHECK_OVERRUN;
-	}
-	*m->parse_buffer[m->parse_depth] = '\0';
-	m->parse_buffer[m->parse_depth]++;
-	CHECK_OVERRUN;
-	return TRUE;
-}
-
-int mbus_parse_int(struct mbus *m, int *i)
-{
-	char	*p;
-
-	mbus_validate(m);
-
-        while (isspace((unsigned char)*m->parse_buffer[m->parse_depth])) {
-                m->parse_buffer[m->parse_depth]++;
-		CHECK_OVERRUN;
-        }
-
-	*i = strtol(m->parse_buffer[m->parse_depth], &p, 10);
-	if (((*i == LONG_MAX) || (*i == LONG_MIN)) && (errno == ERANGE)) {
-		debug_msg("integer out of range\n");
-		return FALSE;
-	}
-
-	if (p == m->parse_buffer[m->parse_depth]) {
-		return FALSE;
-	}
-	if (!isspace((unsigned char)*p) && (*p != '\0')) {
-		return FALSE;
-	}
-	m->parse_buffer[m->parse_depth] = p;
-	CHECK_OVERRUN;
-	return TRUE;
-}
-
-int mbus_parse_flt(struct mbus *m, double *d)
-{
-	char	*p;
-
-	mbus_validate(m);
-
-        while (isspace((unsigned char)*m->parse_buffer[m->parse_depth])) {
-                m->parse_buffer[m->parse_depth]++;
-		CHECK_OVERRUN;
-        }
-
-	*d = strtod(m->parse_buffer[m->parse_depth], &p);
-	if (errno == ERANGE) {
-		debug_msg("float out of range\n");
-		return FALSE;
-	}
-
-	if (p == m->parse_buffer[m->parse_depth]) {
-		return FALSE;
-	}
-	if (!isspace((unsigned char)*p) && (*p != '\0')) {
-		return FALSE;
-	}
-	m->parse_buffer[m->parse_depth] = p;
-	CHECK_OVERRUN;
-	return TRUE;
-}
-
-char *mbus_decode_str(char *s)
-{
-	int	l = strlen(s);
-	int	i, j;
-
-	/* Check that this an encoded string... */
-	assert(s[0]   == '\"');
-	assert(s[l-1] == '\"');
-
-	for (i=1,j=0; i < l - 1; i++,j++) {
-		if (s[i] == '\\') {
-			i++;
-		}
-		s[j] = s[i];
-	}
-	s[j] = '\0';
-	return s;
-}
-
-char *mbus_encode_str(const char *s)
-{
-	int 	 i, j;
-	int	 len = strlen(s);
-	char	*buf = (char *) xmalloc((len * 2) + 3);
-
-	for (i = 0, j = 1; i < len; i++,j++) {
-		if (s[i] == ' ') {
-			buf[j] = '\\';
-			buf[j+1] = ' ';
-			j++;
-		} else if (s[i] == '\"') {
-			buf[j] = '\\';
-			buf[j+1] = '\"';
-			j++;
-		} else {
-			buf[j] = s[i];
-		}
-	}
-	buf[0]   = '\"';
-	buf[j]   = '\"';
-	buf[j+1] = '\0';
-	return buf;
-}
-
 int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 {
-	char		*auth, *ver, *src, *dst, *ack, *r, *cmd, *param, *npos;
-	char	 	buffer[MBUS_BUF_SIZE];
-	int	 	buffer_len, seq, i, a, rx, ts, authlen, loop_count;
-	char	 	ackbuf[MBUS_ACK_BUF_SIZE];
-	char	 	digest[16];
-	unsigned char	initVec[8] = {0,0,0,0,0,0,0,0};
-	struct timeval	t;
+	char			*auth, *ver, *src, *dst, *ack, *r, *cmd, *param, *npos;
+	char	 		 buffer[MBUS_BUF_SIZE];
+	int	 		 buffer_len, seq, i, a, rx, ts, authlen, loop_count;
+	char	 		 ackbuf[MBUS_ACK_BUF_SIZE];
+	char	 		 digest[16];
+	unsigned char		 initVec[8] = {0,0,0,0,0,0,0,0};
+	struct timeval		 t;
+	struct mbus_parser	*mp, *mp2;
 
 	mbus_validate(m);
 
@@ -1086,16 +863,16 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 			continue;
 		}
 
-		mbus_parse_init(m, buffer);
+		mp = mbus_parse_init(buffer);
 		/* remove trailing 0 bytes */
 		npos = (char *) strchr(buffer,'\0');
 		if(npos!=NULL) {
 			buffer_len=npos-buffer;
 		}
 		/* Parse the authentication header */
-		if (!mbus_parse_sym(m, &auth)) {
+		if (!mbus_parse_sym(mp, &auth)) {
 			debug_msg("Failed to parse authentication header\n");
-			mbus_parse_done(m);
+			mbus_parse_done(mp);
 			continue;
 		}
 
@@ -1105,48 +882,48 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 		base64encode(digest, 12, ackbuf, 16);
 		if ((strlen(auth) != 16) || (strncmp(auth, ackbuf, 16) != 0)) {
 			debug_msg("Failed to authenticate message...\n");
-			mbus_parse_done(m);
+			mbus_parse_done(mp);
 			continue;
 		}
 
 		/* Parse the header */
-		if (!mbus_parse_sym(m, &ver)) {
-			mbus_parse_done(m);
+		if (!mbus_parse_sym(mp, &ver)) {
+			mbus_parse_done(mp);
 			debug_msg("Parser failed version (1): %s\n",ver);
 			continue;
 		}
 		if (strcmp(ver, "mbus/1.0") != 0) {
-			mbus_parse_done(m);
+			mbus_parse_done(mp);
 			debug_msg("Parser failed version (2): %s\n",ver);
 			continue;
 		}
-		if (!mbus_parse_int(m, &seq)) {
-			mbus_parse_done(m);
+		if (!mbus_parse_int(mp, &seq)) {
+			mbus_parse_done(mp);
 			debug_msg("Parser failed seq\n");
 			continue;
 		}
-		if (!mbus_parse_int(m, &ts)) {
-			mbus_parse_done(m);
+		if (!mbus_parse_int(mp, &ts)) {
+			mbus_parse_done(mp);
 			debug_msg("Parser failed ts\n");
 			continue;
 		}
-		if (!mbus_parse_sym(m, &r)) {
-			mbus_parse_done(m);
+		if (!mbus_parse_sym(mp, &r)) {
+			mbus_parse_done(mp);
 			debug_msg("Parser failed reliable\n");
 			continue;
 		}
-		if (!mbus_parse_lst(m, &src)) {
-			mbus_parse_done(m);
+		if (!mbus_parse_lst(mp, &src)) {
+			mbus_parse_done(mp);
 			debug_msg("Parser failed src\n");
 			continue;
 		}
-		if (!mbus_parse_lst(m, &dst)) {
-			mbus_parse_done(m);
+		if (!mbus_parse_lst(mp, &dst)) {
+			mbus_parse_done(mp);
 			debug_msg("Parser failed dst\n");
 			continue;
 		}
-		if (!mbus_parse_lst(m, &ack)) {
-			mbus_parse_done(m);
+		if (!mbus_parse_lst(mp, &ack)) {
+			mbus_parse_done(mp);
 			debug_msg("Parser failed ack\n");
 			continue;
 		}
@@ -1157,8 +934,8 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 		for (i = 0; i < m->num_addr; i++) {
 			if (mbus_addr_match(m->addr[i], dst)) {
 				/* ...if so, process any ACKs received... */
-				mbus_parse_init(m, ack);
-				while (mbus_parse_int(m, &a)) {
+				mp2 = mbus_parse_init(ack);
+				while (mbus_parse_int(mp2, &a)) {
 					if (mbus_waiting_ack(m)) {
 						if (m->waiting_ack->seqnum == a) {
 							while (m->waiting_ack->num_cmds > 0) {
@@ -1176,7 +953,7 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 						debug_msg("Got ACK %d but wasn't expecting it\n", a);
 					}
 				}
-				mbus_parse_done(m);
+				mbus_parse_done(mp2);
 				/* ...if an ACK was requested, send one... */
 				if (strcmp(r, "R") == 0) {
 					char 		*newsrc = (char *) xmalloc(strlen(src) + 3);
@@ -1193,8 +970,8 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 					debug_msg("Message with invalid reliability field \"%s\" ignored\n", r);
 				}
 				/* ...and process the commands contained in the message */
-				while (mbus_parse_sym(m, &cmd)) {
-					if (mbus_parse_lst(m, &param)) {
+				while (mbus_parse_sym(mp, &cmd)) {
+					if (mbus_parse_lst(mp, &param)) {
 						char 		*newsrc = (char *) xmalloc(strlen(src) + 3);
 						sprintf(newsrc, "(%s)", src);	/* Yes, this is a kludge. */
 						/* Finally, we snoop on the message we just passed to the application, */
@@ -1217,7 +994,7 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 				}
 			}
 		}
-		mbus_parse_done(m);
+		mbus_parse_done(mp);
 	}
 	return rx;
 }
@@ -1236,26 +1013,27 @@ struct mbus_rz {
 
 static void rz_handler(char *src, char *cmd, char *args, void *data)
 {
-	struct mbus_rz	*r = (struct mbus_rz *) data;;
+	struct mbus_rz		*r = (struct mbus_rz *) data;
+	struct mbus_parser	*mp;
 
 	if ((r->mode == RZ_HANDLE_WAITING) && (strcmp(cmd, "mbus.waiting") == 0)) {
 		char	*t;
 
-		mbus_parse_init(r->m, args);
-		mbus_parse_str(r->m, &t);
+		mp = mbus_parse_init(args);
+		mbus_parse_str(mp, &t);
 		if (strcmp(mbus_decode_str(t), r->token) == 0) {
 			r->peer = xstrdup(src);
 		}
-		mbus_parse_done(r->m);
+		mbus_parse_done(mp);
 	} else if ((r->mode == RZ_HANDLE_GO) && (strcmp(cmd, "mbus.go") == 0)) {
 		char	*t;
 
-		mbus_parse_init(r->m, args);
-		mbus_parse_str(r->m, &t);
+		mp = mbus_parse_init(args);
+		mbus_parse_str(mp, &t);
 		if (strcmp(mbus_decode_str(t), r->token) == 0) {
 			r->peer = xstrdup(src);
 		}
-		mbus_parse_done(r->m);
+		mbus_parse_done(mp);
 	} else {
 		r->cmd_handler(src, cmd, args, r->data);
 	}

@@ -190,7 +190,7 @@ v1.0.10 - Mbus updates from Markus Germeier, which fix compatibility with
 	- Fix batching of multiple mbus messages into one packet.
 	* 13 December 1999 [rat v4.1.2]
 
-1.0.11  - Changed autoconf generated header to uclconf.h.
+1.1.0   - Changed autoconf generated header to uclconf.h.
 	- Changed library name to uclmmbase to be consistent with other libs.   
 	- Add RTP_OPT_FILTER_MY_PACKETS
 	- Cleanup test routines
@@ -221,7 +221,10 @@ v1.0.10 - Mbus updates from Markus Germeier, which fix compatibility with
 	- Update IPv6 support for Red Hat Linux 6.1
 	- Fix generation of version.h on Win32
 	- Add VC++ project file to build the test suite under Win32
-	- Add extra debug code to the mbus libraru
+	- Add extra debug code to the mbus library
+	- Rewrite mbus code: mbus_parser.[ch] exist now, and include routines moved from the
+	  main mbus.[ch] files. Note that the interface to the mbus_parse_*() functions has
+	  now changed and is not backwards compatible.
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
