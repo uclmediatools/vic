@@ -318,8 +318,8 @@ v1.2.5	- More informative error message when the lock on the mbus configuration
 	  interval. This is needed to ensure that reverse reconsideration works
 	  correctly, and sources are correctly deleted after BYEs are received.
 	- Fix reverse reconsideration of the RTCP interval
-
-
+	- Change socket_error to support formatted messages.
+	- Add socket_error messages for gethostbyname failures.
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,

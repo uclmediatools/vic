@@ -117,8 +117,12 @@ struct _socket_udp {
 /*****************************************************************************/
 
 static void
-socket_error(const char *msg)
+socket_error(const char *msg, ...)
 {
+	char		buffer[255];
+	u_int32_t	blen = sizeof(buffer) / sizeof(buffer[0]);
+	va_list		ap;
+
 #ifdef WIN32
 #define WSERR(x) {#x,x}
 	struct wse {
@@ -141,9 +145,15 @@ socket_error(const char *msg)
 	while(ws_errs[i].errno && ws_errs[i].errno != e) {
 		i++;
 	}
+	va_start(ap, msg);
+	_vsnprintf(buffer, blen, msg, ap);
+	va_end(ap);
 	printf("ERROR: %s, (%d - %s)\n", msg, e, ws_errs[i].errname);
 #else
-	perror(msg);
+	va_start(ap, msg);
+	vsnprintf(buffer, blen, msg, ap);
+	va_end(ap);
+	perror(buffer);
 #endif
 }
 
@@ -211,6 +221,7 @@ int inet_aton(const char *name, struct in_addr *addr)
 #endif
 
 
+
 /*****************************************************************************/
 /* IPv4 specific functions...                                                */
 /*****************************************************************************/
@@ -218,10 +229,18 @@ int inet_aton(const char *name, struct in_addr *addr)
 static int udp_addr_valid4(const char *dst)
 {
         struct in_addr addr4;
-	if (inet_pton(AF_INET, dst, &addr4) || 
-            gethostbyname(dst) != NULL) {
-                return TRUE;
-        }
+	struct hostent *h;
+
+	if (inet_pton(AF_INET, dst, &addr4)) {
+		return TRUE;
+	} 
+
+	h = gethostbyname(dst);
+	if (h != NULL) {
+		return TRUE;
+	}
+	socket_error("Can't resolve IP address for %s", dst);
+
         return FALSE;
 }
 
@@ -239,6 +258,7 @@ static socket_udp *udp_init4(const char *addr, const char *iface, uint16_t rx_po
 	if (inet_pton(AF_INET, addr, &s->addr4) != 1) {
 		struct hostent *h = gethostbyname(addr);
 		if (h == NULL) {
+			socket_error("Can't resolve IP address for %s", addr);
                         free(s);
 			return NULL;
 		}
@@ -351,7 +371,7 @@ static const char *udp_host_addr4(void)
 	}
 	hent = gethostbyname(hname);
 	if (hent == NULL) {
-		debug_msg("Can't get host IP address: %s", strerror(errno));
+		socket_error("Can't resolve IP address for %s", hname);
 		return NULL;
 	}
 	assert(hent->h_addrtype == AF_INET);
