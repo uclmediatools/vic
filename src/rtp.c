@@ -866,7 +866,7 @@ int rtp_set_my_ssrc(struct rtp *session, u_int32 ssrc)
         return TRUE;
 }
 
-void rtp_setopt(struct rtp *session, int optname, int optval)
+int rtp_setopt(struct rtp *session, int optname, int optval)
 {
 	assert((optval == TRUE) || (optval == FALSE));
 
@@ -879,20 +879,26 @@ void rtp_setopt(struct rtp *session, int optname, int optval)
 			break;
         	default:
 			debug_msg("Ignoring unknown option (%d) in call to rtp_setopt().\n", optname);
+                        return FALSE;
 	}
+        return TRUE;
 }
 
-int rtp_getopt(struct rtp *session, int optname)
+int rtp_getopt(struct rtp *session, int optname, int *optval)
 {
 	switch (optname) {
 		case RTP_OPT_WEAK_VALIDATION:
-			return session->opt->wait_for_rtcp;
+			*optval = session->opt->wait_for_rtcp;
+                        break;
         	case RTP_OPT_PROMISC:
-			return session->opt->promiscuous_mode;
+			*optval = session->opt->promiscuous_mode;
+                        break;
         	default:
+                        *optval = 0;
 			debug_msg("Ignoring unknown option (%d) in call to rtp_getopt().\n", optname);
-                        return 0;
+                        return FALSE;
 	}
+        return TRUE;
 }
 
 void *rtp_get_userdata(struct rtp *session)
@@ -1018,12 +1024,15 @@ static void rtp_recv_data(struct rtp *session, u_int32 curr_time)
 		packet->data     = buffer + 12 + (packet->cc * 4) + packet->extn_len;
 		packet->data_len = buflen - packet->extn_len - (packet->cc * 4) - 12;
 		if (validate_rtp(packet, buflen)) {
-			if (rtp_getopt(session, RTP_OPT_WEAK_VALIDATION)) {
+                        int weak = 0, promisc = 0;
+                        rtp_getopt(session, RTP_OPT_WEAK_VALIDATION, &weak);
+			if (weak) {
 				s = get_source(session, packet->ssrc);
 			} else {
 				s = create_source(session, packet->ssrc);
 			}
-			if (rtp_getopt(session, RTP_OPT_PROMISC)) {
+                        rtp_getopt(session, RTP_OPT_PROMISC, &promisc);
+			if (promisc) {
 				if (s == NULL) {
 					create_source(session, packet->ssrc);
 					s = get_source(session, packet->ssrc);

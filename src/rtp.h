@@ -168,8 +168,8 @@ struct rtp;
 struct rtp	*rtp_init(char *addr, u_int16 rx_port, u_int16 tx_port, int ttl, double rtcp_bw, 
 			  void (*callback)(struct rtp *session, rtp_event *e),
 			  void *user_data);
-void 		 rtp_setopt(struct rtp *session, int optname, int optval);
-int 		 rtp_getopt(struct rtp *session, int optname);
+int 		 rtp_setopt(struct rtp *session, int optname, int optval);
+int 		 rtp_getopt(struct rtp *session, int optname, int *optval);
 void 		*rtp_get_userdata(struct rtp *session);
 int 		 rtp_recv(struct rtp *session, struct timeval *timeout, u_int32 curr_time);
 int 		 rtp_send_data(struct rtp *session, u_int32 ts, char pt, int m, int cc, u_int32 csrc[], 
