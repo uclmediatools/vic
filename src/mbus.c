@@ -670,7 +670,7 @@ void mbus_qmsg(struct mbus *m, const char *dest, const char *cmnd, const char *a
 	curr->dest             = xstrdup(dest);
 	curr->retransmit_count = 0;
 	curr->message_size     = alen + 60 + strlen(dest) + strlen(m->addr);
-	curr->seqnum           = m->seqnum++;
+	curr->seqnum           = ++m->seqnum;
 	curr->reliable         = reliable;
 	curr->complete         = FALSE;
 	curr->num_cmds         = 1;

@@ -283,6 +283,13 @@ v1.2.0	- Add udp_fd() function, to retrieve the underlying file descriptor.
 
 v1.2.1	* 16 June 2000 [rat 4.2.5]
 
+v1.2.2	- Fix bug in mbus transmit code which caused messages to have the same sequence
+	  number as the preceeding ack.
+	- Remove get_appname() function from util.[ch], since it didn't
+	  work in all cases (sometimes argv[0] doesn't contain anything
+	  sensible).
+
+
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
 	  since it does a gethostbyname() and looks that up, yet that can
