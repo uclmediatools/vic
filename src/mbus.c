@@ -1123,7 +1123,7 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 			memset(initVec, 0, 8);
 			qfDES_CBC_d(m->encrkey, tx_cryptbuf, buffer_len, initVec);
 			if (strncmp(tx_cryptbuf + MBUS_AUTH_LEN + 1, "mbus/1.0", 8) != 0) {
-				debug_msg("Message did not correctly decrypt\n");
+				/* Message did not correctly decrypt... */
 				continue;
 			}
 			memcpy(buffer, tx_cryptbuf, buffer_len);
