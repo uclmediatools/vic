@@ -122,7 +122,7 @@ OBJ2 =	main.o net.o net-ip.o source.o \
 	color.o color-true.o color-pseudo.o color-dither.o color-ed.o \
 	color-quant.o color-hi.o color-gray.o color-mono.o color-hist.o \
 	rgb-converter.o jpeg/jpeg.o p64/p64.o dct.o \
-	compositor.o rate-variable.o crypt.o crypt-dull.o \
+	compositor.o rate-variable.o crypt.o crypt-des.o \
 	grabber-still.o @V_OBJ@
 OBJ3 =	cm0.o cm1.o huffcode.o version.o bv.o \
 	$(TCL_VIC:.tcl=.o) tk.o
@@ -161,11 +161,12 @@ OBJ_CB = cbAppInit.o cb.o confbus.o group-ipc.o iohandler.o \
 
 OBJ_H261DUMP = h261_dump.o p64/p64.o p64/p64dump.o huffcode.o dct.o bv.o
 
-vic:	$(OBJ) $(OBJ_GRABBER) $(JV_LIB)
-	rm -f $@
-	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(LIB) $(STATIC)
+# Don't allow building of the non-DES version...
+#vic:	$(OBJ) $(OBJ_GRABBER) $(JV_LIB)
+#	rm -f $@
+#	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(LIB) $(STATIC)
 
-vic.des: $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)
+vic: $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)
 	rm -f $@
 	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(OBJ_CRYPT) $(LIB) $(STATIC)
 
