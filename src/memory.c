@@ -79,7 +79,7 @@ void xmemchk(void)
 	}
 	for (i=0; i<naddr; i++) {
 		assert(mem_item[i].addr != NULL);
-		assert(strlen(mem_item[i].filen) == mem_item[i].length);
+		assert((size_t) strlen(mem_item[i].filen) == mem_item[i].length);
 		if (*mem_item[i].addr != *(mem_item[i].addr + (*mem_item[i].addr / 4) + 2)) {
 			printf("Memory check failed!\n");
 			j = i;
@@ -134,7 +134,7 @@ void xfree(void *y)
 #ifdef DEBUG_MEM
 	char	*x = (char *) y;
 	int	 i, j;
-	int	*a;
+	int	*a, *b, *c;
 
 	if (x == NULL) {
 		printf("ERROR: Attempt to free NULL pointer!\n");
@@ -142,16 +142,17 @@ void xfree(void *y)
 	}
 
 	j = 0;
+	c = (int *) (x - 8);
 	for (i = 0; i < naddr - j; i++) {
-		if (mem_item[i].addr == (int *)(x-8)) {
+		if (mem_item[i].addr == c) {
 			if (j != 0) {
 				printf("ERROR: Attempt to free memory twice! (addr=%p)\n", y);
 				abort();
 			}
 			j = 1;
 			/* Trash the contents of the memory we're about to free... */
-                        a = (int*) (x-8);
-			for (a = (int *) (x-8); a < (int *) (a + *(x-8) + 8); a++) {
+			b = (int *) (x + *((int *)(x-8)));
+			for (a = (int *) (x-8); a < b; a++) {
 				*a = 0xdeadbeef;
 			}
 			/* ...and free it! */
