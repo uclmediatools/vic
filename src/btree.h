@@ -52,11 +52,15 @@ int btree_find   (btree_t *tree, u_int32 key, void **d);
 /* and fills key with key if possible, FALSE otherwise                       */
 
 int btree_get_min_key (btree_t *tree, u_int32 *key);
+int btree_get_max_key (btree_t *tree, u_int32 *key);
 
 /* btree_get_next_key attempts to get the key above cur_key.  Returns        */
 /* TRUE and fills key with key if possible, FALSE otherwise.                 */
 
 int btree_get_next_key (btree_t *tree, u_int32 cur_key, u_int32 *next_key);
+
+/* btree_get_element_count returns numver of nodes on tree                   */
+int btree_get_element_count(btree_t *tree);
 
 #endif /* __BTREE_H__ */
 

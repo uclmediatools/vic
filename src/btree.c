@@ -27,6 +27,7 @@ typedef struct s_btree_node {
 
 struct s_btree {
         btree_node_t   *root;
+        int             cnt;
 };
 
 /*****************************************************************************/
@@ -41,6 +42,18 @@ btree_min(btree_node_t *x)
         }
         while(x->left) {
                 x = x->left;
+        }
+        return x;
+}
+
+static btree_node_t*
+btree_max(btree_node_t *x)
+{
+        if (x == NULL) {
+                return NULL;
+        }
+        while(x->right) {
+                x = x->right;
         }
         return x;
 }
@@ -147,6 +160,7 @@ btree_create(btree_t **tree)
         btree_t *t = (btree_t*)xmalloc(sizeof(btree_t));
         if (t) {
                 t->root = NULL;
+                t->cnt  = 0;
                 *tree = t;
                 return TRUE;
         }
@@ -196,6 +210,7 @@ btree_add(btree_t *tree, u_int32 key, void *data)
         x->data = data;
         x->parent = x->left = x->right = NULL;
         btree_insert_node(tree, x);
+        tree->cnt++;
 
         return TRUE;
 }
@@ -222,6 +237,7 @@ btree_remove(btree_t *tree, u_int32 key, void **data)
         *data = x->data;
         x = btree_delete_node(tree, x);
         xfree(x);
+        tree->cnt--;
 
         return TRUE;
 }
@@ -236,6 +252,24 @@ btree_get_min_key(btree_t *tree, u_int32 *key)
         }
 
         x = btree_min(tree->root);
+        if (x == NULL) {
+                return FALSE;
+        }
+        
+        *key = x->key;
+        return TRUE;
+}
+
+int 
+btree_get_max_key(btree_t *tree, u_int32 *key)
+{
+        btree_node_t *x;
+
+        if (tree->root == NULL) {
+                return FALSE;
+        }
+
+        x = btree_max(tree->root);
         if (x == NULL) {
                 return FALSE;
         }
@@ -261,6 +295,12 @@ btree_get_next_key(btree_t *tree, u_int32 cur_key, u_int32 *next_key)
         
         *next_key = x->key;
         return TRUE;
+}
+
+int 
+btree_get_element_count(btree_t *tree)
+{
+        return tree->cnt;
 }
 
 /*****************************************************************************/
