@@ -47,22 +47,25 @@ typedef unsigned char  u_int8_t;
 typedef unsigned short u_int16_t;
 typedef unsigned int   u_int32_t;
 #elif defined(linux)
-# include <sys/bitypes.h>
+#include <sys/bitypes.h>
 #else
-# ifdef ultrix
-#  include <sys/types.h>
-# endif
-# ifdef sco
-   typedef char int8_t;
-# else
-   typedef signed char int8_t;
-# endif
+
+#ifdef ultrix
+#include <sys/types.h>
+#endif
+
+#ifdef sco
+typedef char int8_t;
+#else
+typedef signed char int8_t;
+#endif
+
 typedef short int16_t;
 typedef int   int32_t;
 typedef unsigned char	u_int8_t;
 typedef unsigned short	u_int16_t;
 typedef unsigned int	u_int32_t;
-#endif
+#endif /*linux*/
 
 #if defined(sun) || defined(_AIX)
 #if defined(__cplusplus)
@@ -96,13 +99,13 @@ extern "C" {
 #endif
 #include <netinet/in.h>
 #include <arpa/inet.h>
-int strcasecmp(const char *, const char *);
+int		strcasecmp(const char *, const char *);
 clock_t clock(void);
 #if !defined(sco) && !defined(sgi) && !defined(__bsdi__) && !defined(__FreeBSD__) && !defined(sun) && !defined(__linux__)
-int gethostid(void);
+int		gethostid(void);
 #endif
-time_t time(time_t *);
-char *ctime(const time_t *);
+time_t	time(time_t *);
+char   *ctime(const time_t *);
 #if defined(__cplusplus)
 }
 #endif
@@ -116,6 +119,7 @@ struct timeval;
 struct timezone;
 struct msghdr;
 struct sockaddr;
+
 int bind(int s, struct sockaddr*, int);
 int close(int);
 int connect(int s, struct sockaddr*, int);
@@ -150,29 +154,9 @@ int strcasecmp(const char*, const char*);
 #include <stdlib.h>   /* abs() */
 #include <string.h>
 
+/* Must be included before <Windows.h> otherwise winsock.h gets included instead */
 #include <winsock2.h>
 
-#ifdef MUSICA_IPV6
-#include <winsock6.h>
-/* These DEF's are required as MUSICA's winsock6.h causes a clash with some of the 
- * standard ws2tcpip.h definitions (eg struct in_addr6).
- * Note: winsock6.h defines AF_INET6 as 24 NOT 23 as in winsock2.h - I have left it
- * set to the MUSICA value as this is used in some of their function calls. 
- */
-//#define AF_INET6        23
-#define IP_MULTICAST_LOOP      11 /*set/get IP multicast loopback */
-#define	IP_MULTICAST_IF		9 /* set/get IP multicast i/f  */
-#define	IP_MULTICAST_TTL       10 /* set/get IP multicast ttl */
-#define	IP_MULTICAST_LOOP      11 /*set/get IP multicast loopback */
-#define	IP_ADD_MEMBERSHIP      12 /* add an IP group membership */
-#define	IP_DROP_MEMBERSHIP     13/* drop an IP group membership */
-struct ip_mreq {
-	struct in_addr imr_multiaddr;	/* IP multicast address of group */
-	struct in_addr imr_interface;	/* local IP address of interface */
-};
-#else
-#include <ws2tcpip.h>
-#endif
 
 #ifdef HAVE_IPV6
 
@@ -211,8 +195,8 @@ struct ip_mreq {
 #if defined(__cplusplus)
 extern "C" {
 #endif
-	const char * inet_ntop(int af, const void *src, char *dst, size_t size);
-	int inet_pton(int af,const char *src,void *dst);
+const char *inet_ntop(int af, const void *src, char *dst, size_t size);
+int			inet_pton(int af,const char *src,void *dst);
 #if defined(__cplusplus)
 }
 #endif 
@@ -226,9 +210,48 @@ extern "C" {
 
 #endif /* HAVE_IPV6 */
 
+#ifdef MUSICA_IPV6
+#include <winsock6.h>
+/* These DEF's are required as MUSICA's winsock6.h causes a clash with some of the 
+ * standard ws2tcpip.h definitions (eg struct in_addr6).
+ * Note: winsock6.h defines AF_INET6 as 24 NOT 23 as in winsock2.h - I have left it
+ * set to the MUSICA value as this is used in some of their function calls. 
+ */
+//#define AF_INET6        23
+#define IP_MULTICAST_LOOP      11 /*set/get IP multicast loopback */
+#define	IP_MULTICAST_IF		9 /* set/get IP multicast i/f  */
+#define	IP_MULTICAST_TTL       10 /* set/get IP multicast ttl */
+#define	IP_MULTICAST_LOOP      11 /*set/get IP multicast loopback */
+#define	IP_ADD_MEMBERSHIP      12 /* add an IP group membership */
+#define	IP_DROP_MEMBERSHIP     13/* drop an IP group membership */
+struct ip_mreq {
+	struct in_addr imr_multiaddr;	/* IP multicast address of group */
+	struct in_addr imr_interface;	/* local IP address of interface */
+};
+#else 
+#include <ws2tcpip.h>
+typedef int pid_t;
+#endif
+
+typedef int uid_t;
+typedef int gid_t;
+
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN	256
 #endif
+typedef char *caddr_t;
+/*
+ * the definitions below are valid for 32-bit architectures and will have to
+ * be adjusted for 16- or 64-bit architectures
+ */
+typedef u_char		u_int8;
+typedef u_short		u_int16;
+typedef u_long		u_int32;
+typedef char		int8;
+typedef short		int16;
+typedef long		int32;
+typedef __int64		int64;
+typedef unsigned long	in_addr_t;
 
 #define _SYS_NMLN	9
 struct utsname {
@@ -239,7 +262,6 @@ struct utsname {
 	char machine[_SYS_NMLN];
 };
 
-typedef char *caddr_t;
 
 struct iovec {
 	caddr_t iov_base;
@@ -250,11 +272,6 @@ struct timezone {
 	int tz_minuteswest;
 	int tz_dsttime;
 };
-#ifndef MUSICA_IPV6
-typedef int pid_t;
-#endif
-typedef int uid_t;
-typedef int gid_t;
     
 #if defined(__cplusplus)
 extern "C" {
