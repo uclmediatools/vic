@@ -42,6 +42,7 @@
 #ifndef _CONFIG_WIN32_H
 #define _CONFIG_WIN32_H
 
+#include <limits.h>
 #include <malloc.h>
 #include <stdio.h>
 #include <memory.h>
