@@ -160,7 +160,7 @@ static
 int inet_aton(const char *name, struct in_addr *addr)
 {
 	addr->s_addr = inet_addr(name);
-	return addr->s_addr == (in_addr_t) INADDR_ANY;
+	return (addr->s_addr != (in_addr_t) INADDR_ANY);
 }
 #endif
 
