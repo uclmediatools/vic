@@ -2104,7 +2104,7 @@ EOF
 		case "$host_os" in
 		# FreeBSD Kame uses seperate libinet6
 		freebsd*)	
-			LIBS="$LIBS -L/usr/local/v6/lib -linet6"
+#			LIBS="$LIBS -L/usr/local/v6/lib -linet6"
 			;;
 		*)	;;
 		esac

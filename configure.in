@@ -173,18 +173,15 @@ AC_ARG_ENABLE(debug-mem,
 # IPv6 related configuration options
 
 AC_ARG_ENABLE(ipv6,
-	[  --enable-ipv6           enable ipv6],
-	[if test $enableval = yes
-	then
+        [  --enable-ipv6           enable ipv6],
+	AC_DEFINE(HAVE_IPv6))
+
+AC_ARG_ENABLE(kame-ipv6,
+	[  --enable-kame-ipv6      enable kame implementation of ipv6],
+	[
 		AC_DEFINE(HAVE_IPv6)
-		case "$host_os" in
-		# FreeBSD Kame uses seperate libinet6
-		freebsd*)	
-			LIBS="$LIBS -L/usr/local/v6/lib -linet6"
-			;;
-		*)	;;
-		esac
-	fi])
+		LIBS="$LIBS -L/usr/local/v6/lib -linet6"
+	])
 
 # Test below are IPv6 specific.  Their result has no bearing if HAVE_IPv6 is
 # not defined.  They are kept outside IPv6 enable check to keep code readable.
