@@ -21,14 +21,14 @@ extern int errno;
 
 
 #if defined(DEBUG)
-#define ERROR(s_) \
+#define DES_ERROR(s_) \
     fprintf(stderr, "%s: errno %d - %s [%s line %d]\n", s_, errno, errno < sys_nerr ? sys_errlist[errno] : "???", __FILE__, __LINE__)
 #else
-#define ERROR(s_) \
+#define DES_ERROR(s_) \
     fprintf(stderr, "%s: errno %d - %s\n", s_, errno, errno < sys_nerr ? sys_errlist[errno] : "???")
 #endif
 
-extern char G_padChar; /* in qfDES.c */
+char G_padChar; /* in qfDES.c */
 
 char
 #if defined(__STDC__) || defined(__cplusplus)
@@ -64,7 +64,7 @@ unsigned int size;
         *ptr = bp;
     }
     else {
-        ERROR("qfDES_malloc");
+        DES_ERROR("qfDES_malloc");
         s = 0;
         *ptr = (char *) 0;
     }
@@ -96,7 +96,7 @@ unsigned int size;
         *ptr = bp;
     }
     else {
-        ERROR("qfDES_realloc()");
+        DES_ERROR("qfDES_realloc()");
         s = 0;
     }
 
@@ -205,7 +205,7 @@ unsigned int size;
     if (bp != (char *) 0)
         memcpy((void *) bp, (void *) ptr, size);
     else
-        ERROR("qfDES_copy()");
+        DES_ERROR("qfDES_copy()");
 
     return bp;
 }
