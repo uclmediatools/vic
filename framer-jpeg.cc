@@ -51,7 +51,7 @@ static class JpegFramerMatcher : public Matcher {
 public:
 	JpegFramerMatcher() : Matcher("module") {}
 	TclObject* match(const char* fmt) {
-		if (strcasecmp(fmt, "jpeg") == 0)
+		if (strcasecmp(fmt, "jpeg/hw") == 0)
 			return (new JpegFramer);
 		return (0);
 	}

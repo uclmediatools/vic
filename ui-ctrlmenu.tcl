@@ -278,8 +278,7 @@ proc create_encoder fmt {
 
 set transmitButtonState 0
 proc transmit { } {
-	global transmitButtonState videoFormat videoDevice V useJPEGforH261 
-
+	global transmitButtonState videoFormat videoDevice V useJPEGforH261 useHardwareComp
 	if ![have grabber] {
 		set DA [$videoDevice attributes]
 		set DF [attribute_class $DA format]
@@ -290,7 +289,18 @@ proc transmit { } {
 		# if that doesn't work, try anything else
 
 		if { [inList $videoFormat $DF] } {
-			set encoder [create_encoder $videoFormat]
+			if { $videoFormat == "h261" || $videoFormat == "cellb" } {
+				# use special hardware tag...
+				set encoder ""
+				if  { $useHardwareComp } {
+					set encoder [create_encoder "$videoFormat/hw"]
+				}
+				if { $encoder == "" } {
+					set encoder [create_encoder "$videoFormat"]
+				}
+			} else {
+				set encoder [create_encoder $videoFormat]
+			}
 			set grabtarget $encoder
 			set grabq ""
 		} elseif { $videoFormat == "h261" && [inList jpeg $DF] && \
@@ -311,7 +321,6 @@ proc transmit { } {
 		set V(encoder) $encoder
 		set ff [$grabtarget frame-format]
 		set V(grabber) [$videoDevice open $ff]
-
 		# special cases
 		if { $V(grabber) == "" && $ff == "411" } {
 			# try cif instead of 411
@@ -515,7 +524,7 @@ proc device_formats device {
 	set formats [attribute_class $L format]
 	set fmtList ""
 	if [inList 422 $formats] {
-		set fmtList "$fmtList nv nvdct cellb"
+		set fmtList "$fmtList nv nvdct cellb jpeg"
 	}
 	if [inList 411 $formats] {
 		set fmtList "$fmtList bvc"
@@ -791,8 +800,9 @@ proc build.encoder_buttons w {
 }
 
 proc build.encoder_options w {
-	global useJPEGforH261 tcl_platform
+	global useJPEGforH261 tcl_platform useHardwareComp
 	set useJPEGforH261 [yesno useJPEGforH261]
+	set useHardwareComp [yesno useHardwareComp]
 	set f [smallfont]
 	set m $w.menu
 	menubutton $w -text Options... -menu $m -relief raised -width 10 \
@@ -802,6 +812,8 @@ proc build.encoder_options w {
 		-variable sendingSlides -font $f -command setFillRate
     	$m add checkbutton -label "Use JPEG for H261" \
 		-variable useJPEGforH261 -font $f -command restart
+		$m add checkbutton -label "Use Hardware Encode" \
+		-variable useHardwareComp -font $f -command restart
 		if {$tcl_platform(platform) == "windows"} {
 			$m add checkbutton -label "Configure on Transmit" \
 			-variable configOnTransmit -font $f
@@ -1013,7 +1025,9 @@ proc jpeg_setq value {
 	} elseif { $value < 5 } {
 		set value 5
 	}
-	grabber q $value
+	if [have grabber] {
+		encoder q $value
+	}
 	global qvalue
 	$qvalue configure -text $value
 }
@@ -1199,7 +1213,6 @@ proc init_grabber { grabber } {
 		set cmd [lindex [$qscale configure -command] 4]
 		$cmd [$qscale get]
 	}
-
 	global inputPort inputType portButton typeButton
 	if { [$portButton cget -state] == "normal" } {
 		$grabber port $inputPort
