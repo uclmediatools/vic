@@ -186,7 +186,6 @@ int	toupper(int c);
 #ifdef IRIX
 #include <bstring.h>     /* Needed for FDZERO on IRIX only */
 #include <fcntl.h>
-int gethostname(char *name, int namelen);
 #endif
 
 #ifdef HPUX
