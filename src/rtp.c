@@ -202,7 +202,7 @@ struct rtp {
 	source		*db[RTP_DB_SIZE];
         rtcp_rr_wrapper  rr[RTP_DB_SIZE][RTP_DB_SIZE]; 	/* Indexed by [hash(reporter)][hash(reportee)] */
 	options		*opt;
-	void		*userdata;
+	uint8_t		*userdata;
 	int		 invalid_rtp_count;
 	int		 invalid_rtcp_count;
 	int		 csrc_count;
@@ -918,7 +918,7 @@ struct rtp *rtp_init(const char *addr,
 		     uint16_t rx_port, uint16_t tx_port, 
 		     int ttl, double rtcp_bw, 
                      rtp_callback callback,
-                     void *userdata)
+                     uint8_t *userdata)
 {
 	return rtp_init_if(addr, NULL, rx_port, tx_port, ttl, rtcp_bw, callback, userdata);
 }
@@ -950,7 +950,7 @@ struct rtp *rtp_init_if(const char *addr, char *iface,
 			uint16_t rx_port, uint16_t tx_port, 
 			int ttl, double rtcp_bw, 
                         rtp_callback callback,
-                        void *userdata)
+                        uint8_t *userdata)
 {
 	struct rtp 	*session;
 	int         	 i, j;
@@ -1141,12 +1141,10 @@ int rtp_get_option(struct rtp *session, rtp_option optname, int *optval)
  *
  * This function returns the userdata pointer that was passed to the
  * rtp_init() or rtp_init_if() function when creating this session.
- * XXX (Note that gtkdoc thinks that it returns void, not void*, so
- * ignores the "Returns:" block here)
- * Returns: The userdata pointer that was passed to the rtp_init() or
- * rtp_init_if() function when creating this session.
+ *
+ * Returns: pointer to userdata.
  */
-void *rtp_get_userdata(struct rtp *session)
+uint8_t *rtp_get_userdata(struct rtp *session)
 {
 	check_database(session);
 	return session->userdata;

@@ -76,7 +76,18 @@ static alloc_blk mem_item[MAX_ADDRS];
 
 static int   naddr = 0; /* number of allocations */
 static int   tick  = 1; /* xmemchk assumes this is one, do not change without checking why */
+
 static int   init  = 0;
+
+/**
+ * xdoneinit:
+ * @void: 
+ * 
+ * Marks end of an applications initialization period.  For media
+ * applications with real-time data transfer it's sometimes helpful to
+ * distinguish between memory allocated during application
+ * initialization and when application is running.
+ **/
 
 void xdoneinit(void) 
 {
@@ -129,6 +140,16 @@ static alloc_blk *mem_item_find(uint32_t key) {
         return (alloc_blk*)p;
 }
 
+/**
+ * xmemchk:
+ * @void: 
+ * 
+ * Check for bounds overruns in all memory allocated with xmalloc(),
+ * xrealloc(), and xstrdup().  Information on corrupted blocks is
+ * rendered on the standard error stream.  This includes where the
+ * block was allocated, the size of the block, and the number of
+ * allocations made since the block was created.
+ **/
 void xmemchk(void)
 {
         uint32_t    last_key;
@@ -227,6 +248,13 @@ alloc_blk_cmp_est(const void *vab1, const void *vab2)
         }
 }
 
+/**
+ * xmemdmp:
+ * @void: 
+ * 
+ * Dumps the address, size, age, and point of allocation in code.
+ *
+ **/
 void 
 xmemdmp(void)
 {
@@ -259,6 +287,17 @@ xmemdmp(void)
 
 /* Because block_alloc recycles blocks we need to know which code
  * fragment takes over responsibility for the memory.  */
+
+/**
+ * xclaim:
+ * @addr: address
+ * @filen: new filename
+ * @line: new allocation line
+ * 
+ * Coerces information in allocation table about allocation file and
+ * line to be @filen and @line.  This is used by the evil
+ * block_alloc() and should probably not be used anywhere else ever.
+ **/
 void 
 xclaim(void *addr, const char *filen, int line)
 {
@@ -285,6 +324,12 @@ xclaim(void *addr, const char *filen, int line)
         m->est    = tick++;
 }
 
+/**
+ * xmemdist:
+ * @fp: file pointer
+ * 
+ * Dumps information on existing memory allocations to file.
+ **/
 void 
 xmemdist(FILE *fp)
 {
@@ -316,6 +361,17 @@ xmemdist(FILE *fp)
         qsort(mem_item, naddr, sizeof(mem_item[0]), mem_key_cmp);
 }
 
+/**
+ * xfree:
+ * @p: pointer to block to freed.
+ * 
+ * Free block of memory.  Semantically equivalent to free(), but
+ * checks for bounds overruns in @p and tidies up state associated
+ * additional functionality.
+ *
+ * Must be used to free memory allocated with xmalloc(), xrealloc(),
+ * and xstrdup().
+ **/
 void 
 xfree(void *p)
 {
@@ -490,16 +546,6 @@ void xclaim    (void *p, const char *filen, int line)
 }
 
 void xmemdist (FILE *f) { UNUSED(f); }
-
-/**
- * xfree:
- * @x: pointer to memory block to be freed.
- *
- * This function is conceptually the same as the standard C library
- * free() function call, but contains some extra debugging
- * functionality when DEBUG_MEM is defined.
- *  
- */
 
 void xfree    (void *x) { free(x); }
 

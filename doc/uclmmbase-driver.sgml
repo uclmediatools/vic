@@ -3,6 +3,8 @@
 <!entity md5 SYSTEM "sgml/md5.sgml">
 <!entity netudp SYSTEM "sgml/net_udp.sgml">
 <!entity rtp SYSTEM "sgml/rtp.sgml">
+<!entity debug SYSTEM "sgml/debug.sgml">
+<!entity memory SYSTEM "sgml/memory.sgml">
 ]>
 
 <book>
@@ -14,13 +16,16 @@
   <title>Overview</title>
 
 <para> The UCL Common Multimedia Library provides a number of useful
-features for multimedia applications.  The most notable feature of the
-library is the RTP implementation.</para>
+features for multimedia applications.  It includes several protocols
+and functions related to IETF multimedia applications.</para>
 
     &hmac;
     &md5;
     &netudp;
     &rtp; 
+
+    &debug;
+    &memory;
 
 </chapter>
 

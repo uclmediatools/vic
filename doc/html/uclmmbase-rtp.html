@@ -13,7 +13,10 @@ TITLE="Overview"
 HREF="uclmmbase.html"><LINK
 REL="PREVIOUS"
 TITLE="NETUDP"
-HREF="uclmmbase-net-udp.html"></HEAD
+HREF="uclmmbase-net-udp.html"><LINK
+REL="NEXT"
+TITLE="Debug"
+HREF="uclmmbase-debug.html"></HEAD
 ><BODY
 CLASS="REFENTRY"
 BGCOLOR="#FFFFFF"
@@ -98,7 +101,16 @@ SIZE="3"
 WIDTH="25%"
 BGCOLOR="#C00000"
 ALIGN="right"
->&nbsp;</TD
+><A
+HREF="uclmmbase-debug.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Next Page &#62;&#62;&#62;</B
+></FONT
+></A
+></TD
 ></TR
 ></TABLE
 ></DIV
@@ -232,7 +244,10 @@ HREF="DOUBLE"
 HREF="uclmmbase-rtp.html#RTP-CALLBACK"
 >rtp_callback</A
 > callback,
-                                             void *userdata);
+                                             <GTKDOCLINK
+HREF="UINT8-T"
+>uint8_t</GTKDOCLINK
+> *userdata);
 <GTKDOCLINK
 HREF="RTP-T"
 >rtp_t</GTKDOCLINK
@@ -258,7 +273,10 @@ HREF="DOUBLE"
 HREF="uclmmbase-rtp.html#RTP-CALLBACK"
 >rtp_callback</A
 > callback,
-                                             void *userdata);
+                                             <GTKDOCLINK
+HREF="UINT8-T"
+>uint8_t</GTKDOCLINK
+> *userdata);
 void        <A
 HREF="uclmmbase-rtp.html#RTP-SEND-BYE"
 >rtp_send_bye</A
@@ -512,7 +530,10 @@ HREF="uclmmbase-rtp.html#RTP-GET-TTL"
 HREF="RTP"
 >rtp</GTKDOCLINK
 > *session);
-void*       <A
+<GTKDOCLINK
+HREF="UINT8-T"
+>uint8_t</GTKDOCLINK
+>*    <A
 HREF="uclmmbase-rtp.html#RTP-GET-USERDATA"
 >rtp_get_userdata</A
 >                (struct <GTKDOCLINK
@@ -526,7 +547,7 @@ HREF="RTP"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN595"
+NAME="AEN598"
 ></A
 ><H2
 >Description</H2
@@ -537,14 +558,14 @@ of audio, video, and other real-time data across IP capable networks.&#13;</P
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN598"
+NAME="AEN601"
 ></A
 ><H2
 >Details</H2
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN600"
+NAME="AEN603"
 ></A
 ><H3
 ><A
@@ -570,7 +591,7 @@ CLASS="PROGRAMLISTING"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN605"
+NAME="AEN608"
 ></A
 ><H3
 ><A
@@ -596,7 +617,7 @@ CLASS="PROGRAMLISTING"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN610"
+NAME="AEN613"
 ></A
 ><H3
 ><A
@@ -665,7 +686,7 @@ struct without changing RTP_PACKET_HEADER_SIZE to match.</P
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN615"
+NAME="AEN618"
 ></A
 ><H3
 ><A
@@ -696,7 +717,7 @@ If you change rtp_packet, make sure to change this too.</P
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN621"
+NAME="AEN624"
 ></A
 ><H3
 ><A
@@ -729,7 +750,7 @@ CLASS="PROGRAMLISTING"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN626"
+NAME="AEN629"
 ></A
 ><H3
 ><A
@@ -768,7 +789,7 @@ CLASS="PROGRAMLISTING"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN631"
+NAME="AEN634"
 ></A
 ><H3
 ><A
@@ -816,7 +837,7 @@ constant during an RTP session to avoid confusing end users.</P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN639"
+NAME="AEN642"
 ></A
 ><P
 ></P
@@ -982,7 +1003,7 @@ TARGET="_top"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN683"
+NAME="AEN686"
 ></A
 ><H3
 ><A
@@ -1012,7 +1033,7 @@ CLASS="PROGRAMLISTING"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN688"
+NAME="AEN691"
 ></A
 ><H3
 ><A
@@ -1053,7 +1074,7 @@ CLASS="PROGRAMLISTING"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN693"
+NAME="AEN696"
 ></A
 ><H3
 ><A
@@ -1090,7 +1111,7 @@ an RTCP RR.</P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN701"
+NAME="AEN704"
 ></A
 ><P
 ></P
@@ -1185,7 +1206,7 @@ if no APP packet needs to be sent at this time.
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN724"
+NAME="AEN727"
 ></A
 ><H3
 ><A
@@ -1227,7 +1248,7 @@ Each value represents an event in RTP or RTCP processing.</P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN730"
+NAME="AEN733"
 ></A
 ><P
 ></P
@@ -1258,7 +1279,10 @@ The data field points to a <A
 HREF="uclmmbase-rtp.html#RTP-PACKET"
 >rtp_packet</A
 > containing the RTP data packet.
-The callback must free the rtp_packet when it's done with it.</TD
+The callback must free the rtp_packet when it's done with it using the <A
+HREF="uclmmbase-memory.html#XFREE"
+>xfree</A
+>() function.</TD
 ></TR
 ><TR
 ><TD
@@ -1466,7 +1490,7 @@ The callback must free the app packet when it's done with it.&#13;</TD
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN789"
+NAME="AEN793"
 ></A
 ><H3
 ><A
@@ -1509,7 +1533,7 @@ contains the timestamp of the packet reception that caused this event.</P
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN796"
+NAME="AEN800"
 ></A
 ><H3
 ><A
@@ -1549,7 +1573,7 @@ HREF="uclmmbase-rtp.html#RTP-CALLBACK"
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN805"
+NAME="AEN809"
 ></A
 ><P
 ></P
@@ -1608,7 +1632,7 @@ HREF="uclmmbase-rtp.html#RTP-EVENT"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN819"
+NAME="AEN823"
 ></A
 ><H3
 ><A
@@ -1638,7 +1662,7 @@ passed to the application and when internal state for sources is created.</P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN824"
+NAME="AEN828"
 ></A
 ><P
 ></P
@@ -1712,7 +1736,7 @@ filtered out with this option.&#13;</TD
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN841"
+NAME="AEN845"
 ></A
 ><H3
 ><A
@@ -1749,7 +1773,10 @@ HREF="DOUBLE"
 HREF="uclmmbase-rtp.html#RTP-CALLBACK"
 >rtp_callback</A
 > callback,
-                                             void *userdata);</PRE
+                                             <GTKDOCLINK
+HREF="UINT8-T"
+>uint8_t</GTKDOCLINK
+> *userdata);</PRE
 ></TD
 ></TR
 ></TABLE
@@ -1760,7 +1787,7 @@ HREF="uclmmbase-rtp.html#RTP-CALLBACK"
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN852"
+NAME="AEN857"
 ></A
 ><P
 ></P
@@ -1926,7 +1953,7 @@ the RTP library functions, or NULL on failure.</TD
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN891"
+NAME="AEN896"
 ></A
 ><H3
 ><A
@@ -1964,7 +1991,10 @@ HREF="DOUBLE"
 HREF="uclmmbase-rtp.html#RTP-CALLBACK"
 >rtp_callback</A
 > callback,
-                                             void *userdata);</PRE
+                                             <GTKDOCLINK
+HREF="UINT8-T"
+>uint8_t</GTKDOCLINK
+> *userdata);</PRE
 ></TD
 ></TR
 ></TABLE
@@ -1975,7 +2005,7 @@ HREF="uclmmbase-rtp.html#RTP-CALLBACK"
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN902"
+NAME="AEN908"
 ></A
 ><P
 ></P
@@ -2161,7 +2191,7 @@ the RTP library functions, or NULL on failure.</TD
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN945"
+NAME="AEN951"
 ></A
 ><H3
 ><A
@@ -2194,7 +2224,7 @@ BYE if there are less than 50 members and sends nothing otherwise.</P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN952"
+NAME="AEN958"
 ></A
 ><P
 ></P
@@ -2232,7 +2262,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN961"
+NAME="AEN967"
 ></A
 ><H3
 ><A
@@ -2267,7 +2297,7 @@ HREF="uclmmbase-rtp.html#RTP-SEND-BYE"
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN969"
+NAME="AEN975"
 ></A
 ><P
 ></P
@@ -2305,7 +2335,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN978"
+NAME="AEN984"
 ></A
 ><H3
 ><A
@@ -2344,7 +2374,7 @@ documentation on the options and their legal values.</P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN987"
+NAME="AEN993"
 ></A
 ><P
 ></P
@@ -2434,7 +2464,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1009"
+NAME="AEN1015"
 ></A
 ><H3
 ><A
@@ -2473,7 +2503,7 @@ documentation on the options and their legal values.</P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1018"
+NAME="AEN1024"
 ></A
 ><P
 ></P
@@ -2563,7 +2593,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1040"
+NAME="AEN1046"
 ></A
 ><H3
 ><A
@@ -2601,7 +2631,7 @@ HREF="UINT32-T"
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1049"
+NAME="AEN1055"
 ></A
 ><P
 ></P
@@ -2695,7 +2725,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1072"
+NAME="AEN1078"
 ></A
 ><H3
 ><A
@@ -2812,7 +2842,7 @@ recognize.</P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1096"
+NAME="AEN1102"
 ></A
 ><P
 ></P
@@ -3048,7 +3078,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1152"
+NAME="AEN1158"
 ></A
 ><H3
 ><A
@@ -3091,7 +3121,7 @@ frequently.</P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1161"
+NAME="AEN1167"
 ></A
 ><P
 ></P
@@ -3166,7 +3196,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1179"
+NAME="AEN1185"
 ></A
 ><H3
 ><A
@@ -3200,7 +3230,7 @@ called more frequently.</P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1186"
+NAME="AEN1192"
 ></A
 ><P
 ></P
@@ -3241,7 +3271,7 @@ HREF="uclmmbase-rtp.html#RTP-INIT"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1196"
+NAME="AEN1202"
 ></A
 ><H3
 ><A
@@ -3274,7 +3304,7 @@ HREF="RTP"
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1204"
+NAME="AEN1210"
 ></A
 ><P
 ></P
@@ -3330,7 +3360,7 @@ they need it.</TD
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1217"
+NAME="AEN1223"
 ></A
 ><H3
 ><A
@@ -3370,7 +3400,7 @@ Used by mixers and transcoders.</P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1226"
+NAME="AEN1232"
 ></A
 ><P
 ></P
@@ -3443,7 +3473,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1244"
+NAME="AEN1250"
 ></A
 ><H3
 ><A
@@ -3483,7 +3513,7 @@ Used by mixers and transcoders.</P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1253"
+NAME="AEN1259"
 ></A
 ><P
 ></P
@@ -3561,7 +3591,7 @@ CLASS="PARAMETER"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1272"
+NAME="AEN1278"
 ></A
 ><H3
 ><A
@@ -3616,7 +3646,7 @@ transmitted onto the network.</P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1283"
+NAME="AEN1289"
 ></A
 ><P
 ></P
@@ -3745,7 +3775,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1314"
+NAME="AEN1320"
 ></A
 ><H3
 ><A
@@ -3795,7 +3825,7 @@ HREF="uclmmbase-rtp.html#RTCP-SDES-TYPE"
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1325"
+NAME="AEN1331"
 ></A
 ><P
 ></P
@@ -3886,7 +3916,7 @@ received, NULL otherwise.  </TD
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1347"
+NAME="AEN1353"
 ></A
 ><H3
 ><A
@@ -3928,7 +3958,7 @@ CLASS="PARAMETER"
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1357"
+NAME="AEN1363"
 ></A
 ><P
 ></P
@@ -4002,7 +4032,7 @@ otherwise.  The pointer must not be freed.</TD
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1375"
+NAME="AEN1381"
 ></A
 ><H3
 ><A
@@ -4054,7 +4084,7 @@ Provides an indication of other receivers reception service.</P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1387"
+NAME="AEN1393"
 ></A
 ><P
 ></P
@@ -4145,7 +4175,7 @@ otherwise.  The pointer must not be freed.</TD
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1409"
+NAME="AEN1415"
 ></A
 ><H3
 ><A
@@ -4191,7 +4221,7 @@ not be compatible for keys which are non-invarient under this step.</P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1421"
+NAME="AEN1427"
 ></A
 ><P
 ></P
@@ -4261,7 +4291,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1438"
+NAME="AEN1444"
 ></A
 ><H3
 ><A
@@ -4299,7 +4329,7 @@ should not be used otherwise.</P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1446"
+NAME="AEN1452"
 ></A
 ><P
 ></P
@@ -4369,7 +4399,7 @@ VALIGN="TOP"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1463"
+NAME="AEN1469"
 ></A
 ><H3
 ><A
@@ -4399,7 +4429,7 @@ HREF="RTP"
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1470"
+NAME="AEN1476"
 ></A
 ><P
 ></P
@@ -4459,7 +4489,7 @@ HREF="uclmmbase-rtp.html#RTP-INIT-IF"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1485"
+NAME="AEN1491"
 ></A
 ><H3
 ><A
@@ -4492,7 +4522,7 @@ HREF="RTP"
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1493"
+NAME="AEN1499"
 ></A
 ><P
 ></P
@@ -4552,7 +4582,7 @@ HREF="uclmmbase-rtp.html#RTP-INIT-IF"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1508"
+NAME="AEN1514"
 ></A
 ><H3
 ><A
@@ -4585,7 +4615,7 @@ HREF="RTP"
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1516"
+NAME="AEN1522"
 ></A
 ><P
 ></P
@@ -4645,7 +4675,7 @@ HREF="uclmmbase-rtp.html#RTP-INIT-IF"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1531"
+NAME="AEN1537"
 ></A
 ><H3
 ><A
@@ -4675,7 +4705,7 @@ HREF="RTP"
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1538"
+NAME="AEN1544"
 ></A
 ><P
 ></P
@@ -4735,7 +4765,7 @@ HREF="uclmmbase-rtp.html#RTP-INIT-IF"
 ><HR><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN1553"
+NAME="AEN1559"
 ></A
 ><H3
 ><A
@@ -4751,7 +4781,10 @@ CELLPADDING="6"
 ><TD
 ><PRE
 CLASS="PROGRAMLISTING"
->void*       rtp_get_userdata                (struct <GTKDOCLINK
+><GTKDOCLINK
+HREF="UINT8-T"
+>uint8_t</GTKDOCLINK
+>*    rtp_get_userdata                (struct <GTKDOCLINK
 HREF="RTP"
 >rtp</GTKDOCLINK
 > *session);</PRE
@@ -4766,15 +4799,13 @@ HREF="uclmmbase-rtp.html#RTP-INIT"
 >() or <A
 HREF="uclmmbase-rtp.html#RTP-INIT-IF"
 >rtp_init_if</A
->() function when creating this session.
-XXX (Note that gtkdoc thinks that it returns void, not void*, so
-ignores the "Returns:" block here)</P
+>() function when creating this session.</P
 ><P
 ></P
 ><DIV
 CLASS="INFORMALTABLE"
 ><A
-NAME="AEN1562"
+NAME="AEN1569"
 ></A
 ><P
 ></P
@@ -4803,6 +4834,21 @@ ALIGN="LEFT"
 VALIGN="TOP"
 > The RTP session.</TD
 ></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> pointer to userdata.</TD
+></TR
 ></TBODY
 ></TABLE
 ><P
@@ -4813,7 +4859,7 @@ VALIGN="TOP"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN1571"
+NAME="AEN1582"
 ></A
 ><H2
 >See Also</H2
@@ -4914,7 +4960,16 @@ SIZE="3"
 WIDTH="25%"
 BGCOLOR="#C00000"
 ALIGN="right"
->&nbsp;</TD
+><A
+HREF="uclmmbase-debug.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Next Page &#62;&#62;&#62;</B
+></FONT
+></A
+></TD
 ></TR
 ><TR
 ><TD
@@ -4930,7 +4985,13 @@ SIZE="3"
 ><TD
 COLSPAN="2"
 ALIGN="right"
->&nbsp;</TD
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Debug</B
+></FONT
+></TD
 ></TR
 ></TABLE
 ></DIV

@@ -170,6 +170,7 @@ lbl_random
 
 <SECTION>
 <FILE>debug</FILE>
+<INCLUDE>debug.h</INCLUDE>
 UNUSED
 debug_msg
 debug_dump
@@ -273,8 +274,9 @@ MD5Final
 
 <SECTION>
 <FILE>memory</FILE>
-xrealloc
+<INCLUDE>memory.h</INCLUDE>
 xmalloc
+xrealloc
 xstrdup
 xdoneinit
 xmemchk
@@ -417,5 +419,7 @@ NEED_INET_NTOP
 HAVE_INTTYPES_H
 HAVE_SYS_FILIO_H
 WORDS_SMALLENDIAN
+DEBUG
+DEBUG_MEM
 </SECTION>
 

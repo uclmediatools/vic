@@ -130,7 +130,7 @@ Each value represents an event in RTP or RTCP processing.
 @RX_RTP: An RTP data packet was received.
 The ssrc field contains the RTP data packet's SSRC.
 The data field points to a #rtp_packet containing the RTP data packet.
-The callback must free the rtp_packet when it's done with it.
+The callback must free the rtp_packet when it's done with it using the xfree() function.
 @RX_SR: An RTCP SR packet was received.
 The ssrc field contains the SR packet's SSRC.
 The data field points to an #rtcp_sr.
@@ -455,5 +455,6 @@ filtered out with this option.
 </para>
 
 @session: 
+@Returns: 
 
 

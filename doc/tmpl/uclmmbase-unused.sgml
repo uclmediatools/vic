@@ -34,12 +34,6 @@
 </para>
 
 
-<!-- ##### MACRO DEBUG ##### -->
-<para>
-
-</para>
-
-
 <!-- ##### SECTION ./tmpl/test_net_udp.sgml:Title ##### -->
 test_net_udp
 
@@ -62,12 +56,6 @@ test_net_udp
 
 <!-- ##### SECTION ./tmpl/test_net_udp.sgml:Short_Description ##### -->
 
-
-
-<!-- ##### MACRO DEBUG_MEM ##### -->
-<para>
-
-</para>
 
 
 <!-- ##### SECTION ./tmpl/test_mbus_parser.sgml:Title ##### -->

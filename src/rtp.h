@@ -186,15 +186,15 @@ typedef enum {
 } rtcp_sdes_type;
 
 rtp_t		rtp_init(const char *addr, 
-			  uint16_t rx_port, uint16_t tx_port, 
-			  int ttl, double rtcp_bw, 
-			  rtp_callback callback,
-			  void *userdata);
+			 uint16_t rx_port, uint16_t tx_port, 
+			 int ttl, double rtcp_bw, 
+			 rtp_callback callback,
+			 uint8_t *userdata);
 rtp_t		rtp_init_if(const char *addr, char *iface, 
-			     uint16_t rx_port, uint16_t tx_port, 
-			     int ttl, double rtcp_bw, 
-			     rtp_callback callback,
-			     void *userdata);
+			    uint16_t rx_port, uint16_t tx_port, 
+			    int ttl, double rtcp_bw, 
+			    rtp_callback callback,
+			    uint8_t *userdata);
 
 void		 rtp_send_bye(struct rtp *session);
 void		 rtp_done(struct rtp *session);
@@ -231,6 +231,6 @@ char 		*rtp_get_addr(struct rtp *session);
 uint16_t	 rtp_get_rx_port(struct rtp *session);
 uint16_t	 rtp_get_tx_port(struct rtp *session);
 int		 rtp_get_ttl(struct rtp *session);
-void 		*rtp_get_userdata(struct rtp *session);
+uint8_t		*rtp_get_userdata(struct rtp *session);
 
 #endif /* __RTP_H__ */
