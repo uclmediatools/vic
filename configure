@@ -147,12 +147,14 @@ if [ $T2 = 0 ]; then
 else 
 	# Okay, we have a header for inet_pton(), but is the function
 	# really there? 
-	echo "#include <arpa/inet.h>   "  > configure.inet_pton.c
-	echo "int main()               " >> configure.inet_pton.c
-	echo "{                        " >> configure.inet_pton.c
-	echo "        inet_pton(0,0,0);" >> configure.inet_pton.c
-	echo "        return 0;        " >> configure.inet_pton.c
-	echo "}                        " >> configure.inet_pton.c
+	cat > configure.inet_pton.c <<EOF
+		#include <arpa/inet.h> 
+		int main()               
+		{                        
+			inet_pton(0,0,0);
+			return 0;        
+		}                        
+EOF
 	${CC} ${LDLIBS} -o /dev/null configure.inet_pton.c 2> configure.inet_pton.out
 	T3=`wc -l configure.inet_pton.out | awk '{print $1}'`
 	if [ $T3 = 0 ]; then
@@ -173,12 +175,17 @@ if [ $T2 = 0 ]; then
 else 
 	# Okay, we have a header for inet_aton(), but is the function
 	# really there? 
-	echo "#include <arpa/inet.h> "  > configure.inet_aton.c
-	echo "int main()             " >> configure.inet_aton.c
-	echo "{                      " >> configure.inet_aton.c
-	echo "        inet_aton(0,0);" >> configure.inet_aton.c
-	echo "        return 0;      " >> configure.inet_aton.c
-	echo "}                      " >> configure.inet_aton.c
+	cat > configure.inet_aton.c <<EOF
+		#include <sys/types.h>
+		#include <sys/socket.h>
+		#include <netinet/in.h>
+		#include <arpa/inet.h>  
+		int main()             
+		{                      
+			inet_aton(0,0);
+			return 0;      
+		}                      
+EOF
 	${CC} ${LDLIBS} -o /dev/null configure.inet_aton.c 2> configure.inet_aton.out
 	T3=`wc -l configure.inet_aton.out | awk '{print $1}'`
 	if [ $T3 = 0 ]; then
