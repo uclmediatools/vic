@@ -57,7 +57,7 @@ lbl_srandom(int seed)
 int
 lbl_random(void)
 {
-#ifdef Linux
+#if defined (Linux) || defined(FreeBSD)
 	/* I don't trust the LBL random number generator, so if   */
 	/* we're on Linux we now use the random number generator  */
 	/* in the kernel which is cryptographically strong. [csp] */
