@@ -834,10 +834,12 @@ void mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, i
 
 	if (reliable && !addr_known(m, dest)) {
 		debug_msg("Trying to send reliably to an unknown address...\n");
+#ifdef NDEF
 		if (m->err_handler == NULL) {
 			abort();
 		}
 		m->err_handler(curr->seqnum, MBUS_DESTINATION_UNKNOWN);
+#endif
 	}
 
 
