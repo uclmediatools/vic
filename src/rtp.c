@@ -1853,7 +1853,7 @@ int rtp_del_csrc(struct rtp *session, uint32_t csrc)
  * 
  * Return value: Returns TRUE if participant exists, FALSE otherwise.
  **/
-int rtp_set_sdes(struct rtp *session, uint32_t ssrc, rtcp_sdes_type type, char *value, int length)
+int rtp_set_sdes(struct rtp *session, uint32_t ssrc, rtcp_sdes_type type, const char *value, int length)
 {
 	source	*s;
 	char	*v;

@@ -116,12 +116,6 @@ typedef struct {
 } rtcp_rr;
 
 typedef struct {
-	uint8_t		type;		/* type of SDES item              */
-	uint8_t		length;		/* length of SDES item (in bytes) */
-	char		data[1];	/* text, not zero-terminated      */
-} rtcp_sdes_item;
-
-typedef struct {
 #ifdef WORDS_BIGENDIAN
 	unsigned short  version:2;	/* RTP version            */
 	unsigned short  p:1;		/* padding flag           */
@@ -137,8 +131,6 @@ typedef struct {
 	char            name[4];        /* four ASCII characters  */
 	char            data[1];        /* variable length field  */
 } rtcp_app;
-
-typedef rtcp_app* (*rtcp_app_callback)(struct rtp *session, uint32_t rtp_ts, int max_size);
 
 /* rtp_event type values. */
 typedef enum {
@@ -163,14 +155,9 @@ typedef struct {
 	struct timeval	*ts;
 } rtp_event;
 
+/* Callback types */
 typedef void (*rtp_callback)(struct rtp *session, rtp_event *e);
-
-/* RTP options */
-typedef enum {
-        RTP_OPT_PROMISC =	    1,
-        RTP_OPT_WEAK_VALIDATION	=   2,
-        RTP_OPT_FILTER_MY_PACKETS = 3
-} rtp_option;
+typedef rtcp_app* (*rtcp_app_callback)(struct rtp *session, uint32_t rtp_ts, int max_size);
 
 /* SDES packet types... */
 typedef enum {
@@ -185,6 +172,20 @@ typedef enum {
         RTCP_SDES_PRIV  = 8
 } rtcp_sdes_type;
 
+typedef struct {
+	rtcp_sdes_type	type;		/* type of SDES item              */
+	uint8_t		length;		/* length of SDES item (in bytes) */
+	char		data[1];	/* text, not zero-terminated      */
+} rtcp_sdes_item;
+
+/* RTP options */
+typedef enum {
+        RTP_OPT_PROMISC =	    1,
+        RTP_OPT_WEAK_VALIDATION	=   2,
+        RTP_OPT_FILTER_MY_PACKETS = 3
+} rtp_option;
+
+/* API */
 rtp_t		rtp_init(const char *addr, 
 			 uint16_t rx_port, uint16_t tx_port, 
 			 int ttl, double rtcp_bw, 
@@ -218,7 +219,8 @@ int		 rtp_add_csrc(struct rtp *session, uint32_t csrc);
 int		 rtp_del_csrc(struct rtp *session, uint32_t csrc);
 
 int		 rtp_set_sdes(struct rtp *session, uint32_t ssrc, 
-			      rtcp_sdes_type type, char *value, int length);
+			      rtcp_sdes_type type, 
+			      const char *value, int length);
 const char	*rtp_get_sdes(struct rtp *session, uint32_t ssrc, rtcp_sdes_type type);
 
 const rtcp_sr	*rtp_get_sr(struct rtp *session, uint32_t ssrc);
