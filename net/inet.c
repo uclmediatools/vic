@@ -40,7 +40,7 @@ LookupHostAddr(const char *s)
 
    if (isdigit(*s)) {
      result = inet_addr(s);
-     if (result != ~0) {
+     if (result != INADDR_NONE) {
        return (result);
      }
    }
