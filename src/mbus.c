@@ -116,6 +116,11 @@ static int mbus_addr_match(char *a, char *b)
 	assert(a != NULL);
 	assert(b != NULL);
 
+	if ((*a == '\0') || (*b == '\0')) {
+		/* Unspecified addresses never match... */
+		return FALSE;
+	}
+
 	/* Skip leading whitespace and '('... */
 	while (isspace((unsigned char)*a) || (*a == '(')) a++;
 	while (isspace((unsigned char)*b) || (*b == '(')) b++;

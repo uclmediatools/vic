@@ -1567,10 +1567,10 @@ int rtp_send_data(struct rtp *session, uint32_t ts, char pt, int m, int cc, uint
 	/* the amount of padding to add here, so we can reserve    */
 	/* space - the actual padding is added later.              */
 	if ((session->encryption_key != NULL) && ((buffer_len % 8) != 0)) {
-		pad     = 1;
+		pad     = TRUE;
 		pad_len = 8 - (buffer_len % 8);
 	} else {
-		pad     = 0;
+		pad     = FALSE;
 		pad_len = 0;
 	}
 
@@ -2128,7 +2128,15 @@ int rtp_set_encryption_key(struct rtp* session, const char *passphrase)
         if (session->encryption_key != NULL) {
                 xfree(session->encryption_key);
         }
-        session->encryption_key = (char *) malloc(8);
+
+	if (passphrase == NULL) {
+		/* A NULL passphrase means disable encryption... */
+		session->encryption_key = NULL;
+		return TRUE;
+	}
+
+	debug_msg("Enabling RTP/RTCP encryption\n");
+        session->encryption_key = (char *) xmalloc(8);
 
 	/* Step 1: convert to canonical form, comprising the following steps:  */
 	/*   a) convert the input string to the ISO 10646 character set, using */
