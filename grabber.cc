@@ -148,7 +148,9 @@ int Grabber::command(int argc, const char*const* argv)
 		/*XXX*/
 		if (strcmp(argv[1], "decimate") == 0 ||
 		    strcmp(argv[1], "port") == 0 ||
-		    strcmp(argv[1], "type") == 0)
+		    strcmp(argv[1], "type") == 0 ||
+			/* windows only */
+			strcmp(argv[1], "useconfig") ==0)
 			/* ignore */
 			return (TCL_OK);
 	}

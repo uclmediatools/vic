@@ -348,7 +348,7 @@ class VfwGrabber : public Grabber {
 	void setport(const char *port);
 
 	device_type_e devtype_;
-
+	int useconfig_;
 	int dev_;
 	int connected_;
 	u_int max_fps_;
@@ -491,7 +491,7 @@ int VfwDevice::command(int argc, const char*const* argv)
 }
 
 VfwGrabber::VfwGrabber(const int dev) : dev_(dev), connected_(0),
-	last_frame_(0), devtype_(Generic)
+	last_frame_(0), devtype_(Generic), useconfig_(0)
 {
 	char deviceName[80] ;
 	char deviceVersion[100] ;
@@ -633,6 +633,13 @@ void VfwGrabber::start()
 		fprintf(stderr, "capDriverConnect: dev=%d failed - %lu\n", dev_, GetLastError());
 		/*abort();*/
 	}
+
+	if (useconfig_) {
+		capDlgVideoFormat(capwin_);
+		capDlgVideoSource(capwin_);
+		capDlgVideoDisplay(capwin_);
+	}
+
 	capSetUserData(capwin_, this);
 	dprintf("SetUserData=%x\n", this);
 	connected_ = 1;
@@ -950,6 +957,9 @@ int VfwGrabber::command(int argc, const char*const* argv)
 		} else if (strcmp(argv[1], "port") == 0) {
 			setport(argv[2]);
 			return (TCL_OK);
+		} else if (strcmp(argv[1], "useconfig") ==0) {
+			if (strcmp(argv[2], "1") == 0) useconfig_=1;
+			if (strcmp(argv[2], "0") == 0) useconfig_=0;
 		}
 	}
 	return (Grabber::command(argc, argv));
@@ -1027,7 +1037,7 @@ VfwGrabber::grab()
 		return (FALSE);
 
 	converter_->convert((u_int8_t*)last_frame_, basewidth_ / decimate_, baseheight_ / decimate_, frame_, outw_, outh_, TRUE);
-	ReleaseSemaphore(frame_sem_, 1, NULL);
+	/*ReleaseSemaphore(frame_sem_, 1, NULL);*/
 	last_frame_ = NULL;
 	suppress(frame_);
 	saveblks(frame_);

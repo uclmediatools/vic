@@ -278,7 +278,7 @@ proc create_encoder fmt {
 
 set transmitButtonState 0
 proc transmit { } {
-	global transmitButtonState videoFormat videoDevice V useJPEGforH261
+	global transmitButtonState videoFormat videoDevice V useJPEGforH261 
 
 	if ![have grabber] {
 		set DA [$videoDevice attributes]
@@ -380,6 +380,11 @@ proc release_device { } {
 		}
 		close_device
 	}
+}
+
+proc configWinGrabber {} {
+	global configOnTransmit
+	grabber useconfig $configOnTransmit
 }
 
 proc build.buttons w {
@@ -786,7 +791,7 @@ proc build.encoder_buttons w {
 }
 
 proc build.encoder_options w {
-	global useJPEGforH261
+	global useJPEGforH261 tcl_platform
 	set useJPEGforH261 [yesno useJPEGforH261]
 	set f [smallfont]
 	set m $w.menu
@@ -797,6 +802,10 @@ proc build.encoder_options w {
 		-variable sendingSlides -font $f -command setFillRate
     	$m add checkbutton -label "Use JPEG for H261" \
 		-variable useJPEGforH261 -font $f -command restart
+		if {$tcl_platform(platform) == "windows"} {
+			$m add checkbutton -label "Configure on Transmit" \
+			-variable configOnTransmit -font $f
+		}
 }
 
 proc build.tile w {
@@ -1158,7 +1167,11 @@ proc select_format fmt {
 }
 
 proc init_grabber { grabber } {
-	global V
+	global V configOnTransmit tcl_platform
+
+	if {$tcl_platform(platform) == "windows"} {
+		$grabber useconfig $configOnTransmit
+	}
 
 	if { [$grabber need-capwin] && ![have capwin] } {
 		#
