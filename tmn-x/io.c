@@ -53,7 +53,11 @@
 #include        "sim.h"
 
 #ifdef VIC
+#ifndef WIN32
+unsigned char *h263_frame;
+#else
 extern unsigned char *h263_frame;
+#endif
 #endif
 
 /**********************************************************************

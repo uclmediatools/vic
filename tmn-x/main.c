@@ -568,10 +568,12 @@ void
 h263_cleanup(struct ENCODER_STATE *s)
 {
     /* Closing files */
+#ifndef VIC
     fclose(streamfile);
     if (trace) {
 	fclose(tf);
     }
+#endif
     /* Free memory */
     free(streamname);
     free(seqfilename);

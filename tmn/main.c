@@ -567,11 +567,13 @@ h263_encode_one_frame(struct ENCODER_STATE *s, int i, int tr)
 void
 h263_cleanup(struct ENCODER_STATE *s)
 {
+#ifndef VIC
     /* Closing files */
     fclose(streamfile);
     if (trace) {
-	fclose(tf);
+	/*fclose(tf);*/
     }
+#endif
     /* Free memory */
     free(streamname);
     free(seqfilename);

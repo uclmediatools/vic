@@ -63,8 +63,13 @@
 #include "sim.h"
 
 #ifdef VIC
+#ifndef WIN32
+int            h263_streamcount;
+unsigned char *h263_bitstream;
+#else
 extern int            h263_streamcount;
 extern unsigned char *h263_bitstream;
+#endif
 #else
 extern FILE *streamfile;        /* the only global var we need here */
 #endif
