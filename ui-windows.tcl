@@ -209,11 +209,11 @@ proc open_window src {
 		-command "resize $v 192 144" \
 		-font $f -value 192x144 -variable size$w
 	$m add radiobutton -label "1/4 PAL" \
-		-command "resize $v 384 288" \
-		-font $f -value 384x288 -variable size$w
+		-command "resize $v 384 284" \
+		-font $f -value 384x284 -variable size$w
 	$m add radiobutton -label PAL \
-		-command "resize $v 768 576" \
-		-font $f -value 768x576 -variable size$w
+		-command "resize $v 768 568" \
+		-font $f -value 768x568 -variable size$w
 
 	label $w.bar.label -text "" -anchor w -relief raised
 	pack $w.bar.label -expand 1 -side left -fill both
