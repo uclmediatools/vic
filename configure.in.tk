@@ -45,6 +45,11 @@ else
 	if test "$V_INCLUDE_TCL" = FAIL; then
 		echo "checking for tcl.h"
 		places="$PWD/../tcl8.0 \
+			$PWD/../tcl-8.0 \
+			$PWD/../tcl \
+		/cs/research/mice/starship/common/solaris/include/tcl8.0 \
+			/cs/research/mice/starship/common/irix/include/tcl8.0 \
+			/usr/local/include/tcl8.0 \
 			/usr/src/local/tcl8.0 \
 			/import/tcl/include/tcl8.0 \
 			$prefix/include \
@@ -67,7 +72,12 @@ else
 	AC_CHECK_LIB(tcl8.0, main, V_LIB_TCL="-ltcl8.0", V_LIB_TCL="FAIL")
 	if test "$V_LIB_TCL" = FAIL; then
 		echo "checking for libtcl.a"
-		places="\
+		places="$PWD/../tcl8.0/unix \
+                        $PWD/../tcl-8.0/unix \
+                        $PWD/../tcl/unix \
+                	/cs/research/mice/starship/common/solaris/lib \
+                        /cs/research/mice/starship/common/irix/lib \
+			/usr/local/lib \
 			$prefix/lib \
 			$x_libraries \
 			/usr/contrib/lib \
@@ -98,7 +108,12 @@ else
 	fi
 	echo "checking for tcl/init.tcl"
 	V_LIBRARY_TCL=FAIL
-	places="/usr/local/lib/tcl8.0 \
+	places="$PWD/../tcl8.0/library \
+		$PWD/../tcl-8.0/library \
+                $PWD/../tcl/library \
+                /cs/research/mice/starship/common/solaris/lib/tcl8.0 \
+                /cs/research/mice/starship/common/irix/lib/tcl8.0 \
+		/usr/local/lib/tcl8.0 \
 		/usr/contrib/lib/tcl8.0 \
 		/usr/lib/tcl8.0 \
 		/usr/lib/tk/tcl8.0 \
@@ -171,9 +186,13 @@ else
 	if test "$V_INCLUDE_TK" = FAIL; then
 		echo "checking for tk.h"
 		V_INCLUDE_TK=""
-		places="\
-			$prefix/include \
+		places="$PWD/../tk8.0/generic \
+	                $PWD/../tk-8.0/generic \
+       		        $PWD/../tk/generic \
+       		        /cs/research/mice/starship/common/solaris/include \
+       		        /cs/research/mice/starship/common/irix/include \
 			/usr/local/include \
+			$prefix/include \
 			/usr/contrib/include \
 			/usr/include/tcl \
 			/usr/include\
@@ -197,7 +216,12 @@ else
 	AC_CHECK_LIB(tk8.0, main, V_LIB_TK="-ltk8.0", V_LIB_TK="FAIL")
 	if test "$V_LIB_TK" = FAIL; then
 		echo "checking for libtk.a"
-		places="/usr/local/lib \
+		places="$PWD/../tk8.0/unix \
+			$PWD/../tk-8.0/unix \
+                	$PWD/../tk/unix \
+                	/cs/research/mice/starship/common/solaris/lib \
+                	/cs/research/mice/starship/common/irix/lib \
+			/usr/local/lib \
 			/usr/contrib/lib \
 			/usr/lib \
 			/usr/lib/tk \
@@ -227,7 +251,12 @@ else
 	fi
 	echo "checking for tk/tk.tcl"
 	V_LIBRARY_TK=FAIL
-	places="/usr/local/lib/tk8.0 \
+	places="$PWD/../tk8.0/library \
+		$PWD/../tk-8.0/library \
+               	$PWD/../tk/library \
+               	/cs/research/mice/starship/common/solaris/lib/tk8.0 \
+               	/cs/research/mice/starship/common/irix/lib/tk8.0 \
+		/usr/local/lib/tk8.0 \
 		/usr/contrib/lib/tk8.0 \
 		/usr/lib/tk8.0 \
 		/usr/lib/tk/tk8.0 \
