@@ -76,12 +76,20 @@ proc search_font { foundry style weight points } {
 }
 
 proc init_fonts {} {
+	global tcl_platform
 	set foundry [option get . foundry Vic]
 
-	set helv10  [search_font $foundry helvetica medium 10]
-	set helv10b [search_font $foundry helvetica bold 10]
-	set helv12b [search_font $foundry helvetica bold 12]
-	set times14 [search_font $foundry times medium 14]
+	if {$tcl_platform(platform) == "windows"} {
+		set helv10  [search_font $foundry helvetica medium 12]
+		set helv10b [search_font $foundry helvetica bold 12]
+		set helv12b [search_font $foundry helvetica bold 12]
+		set times14 [search_font $foundry times medium 14]
+	} else {
+		set helv10  [search_font $foundry helvetica medium 10]
+		set helv10b [search_font $foundry helvetica bold 10]
+		set helv12b [search_font $foundry helvetica bold 12]
+		set times14 [search_font $foundry times medium 14]
+	}
 
 	option add *Font $helv12b startupFile
 	option add Vic.medfont $helv12b startupFile

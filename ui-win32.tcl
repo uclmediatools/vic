@@ -32,7 +32,6 @@
 #
 # @(#) $Header$ (LBL)
 
-
 proc run_resource_dialog { name email } {
 	global V
 	set owner ""
