@@ -45,7 +45,7 @@
 #define MBUS_BUF_SIZE	 1500
 #define MBUS_ACK_BUF_SIZE 110
 #define MBUS_MAX_ADDR	   10
-#define MBUS_MAX_PD	       10
+#define MBUS_MAX_PD	   10
 #define MBUS_MAX_QLEN	   50 /* Number of messages we can queue with mbus_qmsg() */
 
 struct mbus_msg {
@@ -76,6 +76,45 @@ struct mbus {
 	char		*authkey;
 	int		 authkeylen;
 };
+
+static void mbus_lock_config_file(void)
+{
+#ifdef NDEF
+	/* Obtain a valid lock on the mbus configuration file. This function */
+	/* creates the file, if one does not exist. The default contents of  */
+	/* this file are a random authentication key, no encryption and node */
+	/* local scope.                                                      */
+	int		fd;
+	struct flock	l;
+
+	fd = open("mbus-config", O_RDWR | O_CREAT, 0700);
+	if (fd == -1) {
+		perror("Unable to open mbus configuration file");
+		abort();
+	}
+
+	/* We attempt to get a lock on the config file, blocking until  */
+	/* the lock can be obtained. The only time this should block is */
+	/* when another instance of this code has a write lock on the   */
+	/* file, because the contents are being updated.                */
+	l.l_type   = F_WRLCK;
+	l.l_start  = 0;
+	l.l_whence = SEEK_SET;
+	l.l_len    = 0;
+	if (fcntl(fd, F_SETLKW, &l) == -1) {
+		perror("Unable to lock mbus configuration file");
+		abort();
+	}
+	debug_msg("mbus config file locked\n");
+
+	/* Check that the file contains sensible information, if not */
+	/* we write sensible defaults into it.                       */
+#endif
+}
+
+static void mbus_unlock_config_file(void)
+{
+}
 
 static int mbus_addr_match(char *a, char *b)
 {
@@ -185,6 +224,12 @@ struct mbus *mbus_init(unsigned short channel,
 	int		 i;
 
 	m = (struct mbus *) xmalloc(sizeof(struct mbus));
+	if (m == NULL) {
+		debug_msg("Unable to allocate memory for mbus\n");
+		return NULL;
+	}
+
+	mbus_lock_config_file();
 	m->s		= udp_init("224.255.222.239", (u_int16) (47000 + channel), 0);
 	m->channel	= channel;
 	m->seqnum       = 0;
@@ -198,6 +243,8 @@ struct mbus *mbus_init(unsigned short channel,
 	m->authkeylen   = 5;
 	for (i = 0; i < MBUS_MAX_ADDR; i++) m->addr[i]         = NULL;
 	for (i = 0; i < MBUS_MAX_PD;   i++) m->parse_buffer[i] = NULL;
+	mbus_unlock_config_file();
+
 	return m;
 }
 
@@ -233,9 +280,10 @@ void mbus_send(struct mbus *m)
 		sprintf(bufp, "########################\nmbus/1.0 %6d %c (%s) %s ()\n", curr->seqnum, curr->reliable?'R':'U', m->addr[0], curr->dest);
 		bufp += strlen(m->addr[0]) + strlen(curr->dest) + 50;
 		for (i = 0; i < curr->num_cmds; i++) {
+			int cmdlen = strlen(curr->cmd_list[i]) + strlen(curr->arg_list[i]) + 4;
+			assert((bufp + cmdlen - buffer) < MBUS_BUF_SIZE);
 			sprintf(bufp, "%s (%s)\n", curr->cmd_list[i], curr->arg_list[i]);
-			bufp += strlen(curr->cmd_list[i]) + strlen(curr->arg_list[i]) + 4;
-			assert((bufp - buffer) < MBUS_BUF_SIZE);
+			bufp += cmdlen;
 		}
 		assert(*buffer && strlen(buffer) < MBUS_BUF_SIZE);
 
@@ -288,7 +336,7 @@ void mbus_qmsg(struct mbus *m, char *dest, const char *cmnd, const char *args, i
 	curr->next             = NULL;
 	curr->dest             = xstrdup(dest);
 	curr->retransmit_count = 0;
-	curr->message_size     = alen + 46 + strlen(dest) + strlen(m->addr[0]);
+	curr->message_size     = alen + 50 + strlen(dest) + strlen(m->addr[0]);
 	curr->seqnum           = m->seqnum++;
 	curr->reliable         = reliable;
 	curr->num_cmds         = 1;
