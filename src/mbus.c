@@ -487,7 +487,7 @@ static void resend(struct mbus *m, struct mbus_msg *curr)
 	/* this message was first transmitted. If it was okay then, it's okay now.     */
 	memset(buffer, 0, MBUS_BUF_SIZE);
 	sprintf(bufp, "########################\nmbus/1.0 %6d %9d %c (%s) %s ()\n", 
-		curr->seqnum, curr->ts.tv_sec, curr->reliable?'R':'U', m->addr[0], curr->dest);
+		curr->seqnum, (int) curr->ts.tv_sec, curr->reliable?'R':'U', m->addr[0], curr->dest);
 	hmac_md5(buffer+25, strlen(buffer)-25, m->hashkey, m->hashkeylen, digest);
 	base64encode(digest, 16, buffer, 24);
 	bufp += strlen(m->addr[0]) + strlen(curr->dest) + 60;
@@ -661,7 +661,7 @@ void mbus_send(struct mbus *m)
 		bufp = buffer;
 		memset(buffer, 0, MBUS_BUF_SIZE);
 		sprintf(bufp, "########################\nmbus/1.0 %6d %9d %c (%s) %s ()\n", 
-			curr->seqnum, curr->ts.tv_sec, curr->reliable?'R':'U', m->addr[0], curr->dest);
+			curr->seqnum, (int) curr->ts.tv_sec, curr->reliable?'R':'U', m->addr[0], curr->dest);
 		bufp += strlen(m->addr[0]) + strlen(curr->dest) + 60;
 		for (i = 0; i < curr->num_cmds; i++) {
 			int cmdlen = strlen(curr->cmd_list[i]) + strlen(curr->arg_list[i]) + 4;
@@ -937,7 +937,6 @@ int mbus_recv(struct mbus *m, void *data)
 		base64encode(digest, 16, ackbuf, 24);
 		if ((strlen(auth) != 24) || (strncmp(auth, ackbuf, 24) != 0)) {
 			mbus_parse_done(m);
-			debug_msg("Unable to authenticate message\n");
 			return FALSE;
 		}
 
@@ -1005,7 +1004,7 @@ int mbus_recv(struct mbus *m, void *data)
 				if (strcmp(r, "R") == 0) {
 					gettimeofday(&t, NULL);
 					sprintf(ackbuf, "########################\nmbus/1.0 %d %d U (%s) (%s) (%d)\n", 
-					        ++m->seqnum, t.tv_sec, m->addr[0], src, seq);
+					        ++m->seqnum, (int) t.tv_sec, m->addr[0], src, seq);
 					assert(strlen(ackbuf)< MBUS_ACK_BUF_SIZE);
 					hmac_md5(ackbuf+25, strlen(ackbuf)-25, m->hashkey, m->hashkeylen, digest);
 					base64encode(digest, 16, ackbuf, 24);
