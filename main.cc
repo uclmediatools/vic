@@ -177,7 +177,7 @@ public:
 		else {
 			Tk_Window tk = t.tkmain();
 			Tk_Uid uid = Tk_GetUid((char*)argv[1]);
-			XFontStruct* p = Tk_GetFontStruct(t.interp(), tk, uid);
+			Tk_Font p = Tk_GetFont(t.interp(), tk, uid);
 			t.result(p != 0 ? "1" : "0");
 		}
 		return (TCL_OK);
@@ -426,7 +426,7 @@ main(int argc, const char** argv)
 	signal(SIGINT, ciao);
 	signal(SIGTERM, ciao);
 
-#ifdef WIN32
+#ifdef WIN32_NOT
 	TkSetPlatformInit(TkPlatformInit);
 #endif
 

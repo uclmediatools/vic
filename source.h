@@ -230,7 +230,7 @@ class Source : public TclObject, public Timer {
 	Source* hlink_;		/* link for SourceManager hash table */
 
 	// DMIRAS: This bit for the elastic buffer
-	inline u_int32_t convert_time(u_int32_t ts);
+	u_int32_t convert_time(u_int32_t ts);
 	
 	void add(u_char *pckt, struct rtphdr* rh, u_char *vh,
                       int len, u_int playout);

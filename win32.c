@@ -109,10 +109,10 @@ uname(struct utsname *ub)
 int gettimeofday(struct timeval *p, struct timezone *z)
 {
     if (p) {
-	extern void TclGetTime(Tcl_Time*);
+	extern void TclpGetTime(Tcl_Time*);
 	Tcl_Time tt;
 
-	TclGetTime(&tt);
+	TclpGetTime(&tt);
         p->tv_sec = tt.sec;
 	p->tv_usec = tt.usec;
     }
@@ -285,12 +285,9 @@ perror(const char *msg)
 }
 
 int
-WinPutsCmd(clientData, interp, argc, argv)
-    ClientData clientData;		/* ConsoleInfo pointer. */
-    Tcl_Interp *interp;			/* Current interpreter. */
-    int argc;				/* Number of arguments. */
-    char **argv;			/* Argument strings. */
+WinPutsCmd(ClientData clientData, Tcl_Interp *interp, int argc, char **argv)
 {
+    FILE *f;
     int i, newline;
     char *fileId;
 
@@ -328,8 +325,7 @@ WinPutsCmd(clientData, interp, argc, argv)
 
     if (strcmp(fileId, "stdout") == 0 || strcmp(fileId, "stderr") == 0) {
 	char *result;
-	int level;
-	
+
 	if (newline) {
 	    int len = strlen(argv[i]);
 	    result = ckalloc(len+2);
@@ -339,22 +335,23 @@ WinPutsCmd(clientData, interp, argc, argv)
 	} else {
 	    result = argv[i];
 	}
-	if (strcmp(fileId, "stdout") == 0) {
-	    level = MB_ICONINFORMATION;
-	} else {
-	    level = MB_ICONERROR;
-	}
 	OutputDebugString(result);
-	ShowMessage(level, result);
 	if (newline)
 	    ckfree(result);
-	return TCL_OK;
     } else {
-	extern int Tcl_PutsCmd(ClientData clientData, Tcl_Interp *interp,
-			       int argc, char **argv);
-
-	return (Tcl_PutsCmd(clientData, interp, argc, argv));
+	return TCL_OK;
+	clearerr(f);
+	fputs(argv[i], f);
+	if (newline) {
+	    fputc('\n', f);
+	}
+	if (ferror(f)) {
+	    Tcl_AppendResult(interp, "error writing \"", fileId,
+		    "\": ", Tcl_PosixError(interp), (char *) NULL);
+	    return TCL_ERROR;
+	}
     }
+    return TCL_OK;
 }
 
 int

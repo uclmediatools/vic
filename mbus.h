@@ -42,7 +42,7 @@
 
 #include "iohandler.h"
 #include "mbus_engine.h"
-#ifdef win32
+#ifdef WIN32
 #include <winsock.h>
 #endif
 

@@ -42,7 +42,7 @@ static const char rcsid[] =
 #endif
 
 #ifdef WIN32
-extern "C" HINSTANCE TkWinGetAppInstance();
+extern "C" HINSTANCE Tk_GetHINSTANCE();
 
 LRESULT CALLBACK
 IOHandler::WSocketHandler(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -90,7 +90,7 @@ IOHandler::IOHandler() : fd_(-1)
     cl.lpfnWndProc = WSocketHandler;
     cl.cbClsExtra = 0;
     cl.cbWndExtra = 0;
-    cl.hInstance = TkWinGetAppInstance();
+    cl.hInstance = Tk_GetHINSTANCE();
     cl.hIcon = NULL;
     cl.hCursor = NULL;
     cl.hbrBackground = NULL;
@@ -121,7 +121,7 @@ void IOHandler::link(int fd, int mask)
 			     WS_POPUP | WS_CLIPCHILDREN,
 			     CW_USEDEFAULT, CW_USEDEFAULT, 1, 1,
 			     NULL,
-			     NULL, TkWinGetAppInstance(), this);
+			     NULL, Tk_GetHINSTANCE(), this);
 
 	ShowWindow(hwnd_, SW_HIDE);
 

@@ -600,7 +600,7 @@ Source::process(struct rtphdr* rh, u_char *bp, int len)
 }
 
 
-inline u_int32_t 
+u_int32_t 
 Source::convert_time(u_int32_t ts)
 {
 	u_int32_t t = ts;
