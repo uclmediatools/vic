@@ -39,19 +39,362 @@
 # called foo-1, foo-2, etc. and you'll only need build.foo
 #
 
+
+proc build.parallax w {
+global logoButton, setPlxInput, V
+	set f [smallfont]
+	label $w.title -text "Parallax-Grabber"
+	frame $w.f -relief sunken -borderwidth 2
+
+	frame $w.f.hl -relief flat
+
+	label $w.f.hl.label  -font $f -text "Hue" -anchor s 
+
+	label $w.f.hl.slabel -font $f -text "Saturation" -anchor s
+
+	pack  $w.f.hl.label $w.f.hl.slabel -side left -fill x -expand 1
+
+	frame $w.f.h -relief flat
+
+	scale $w.f.h.hscale -orient horizontal -width 12 \
+		-relief groove -showvalue 1 -from 0 -to 255 \
+		-variable parallaxHue \
+		-command "grabber hue"
+	scale $w.f.h.sscale -orient horizontal -width 12 -relief groove \
+		-showvalue 1 -from 0 -to 255 \
+		-variable parallaxSat \
+		-command "grabber saturation"
+	pack  $w.f.h.hscale $w.f.h.sscale -side left -fill x -expand 1
+
+	frame $w.f.ll -relief flat
+
+	label $w.f.ll.clabel -font $f -text "Contrast" -anchor s
+
+	label $w.f.ll.blabel -font $f -text "Brightness" -anchor s
+	pack  $w.f.ll.clabel $w.f.ll.blabel -side left -fill x -expand 1
+
+	frame $w.f.l  -relief flat
+
+	scale $w.f.l.cscale   -orient horizontal -width 12 -relief groove \
+		-showvalue 1 -from 0 -to 255 \
+		-variable parallaxCon \
+		-command "grabber contrast"
+
+	scale $w.f.l.bscale -orient horizontal -width 12 -relief groove \
+		-showvalue 1 -from 0 -to 255 \
+		-variable parallaxBri \
+		-command "grabber brightness"
+	pack  $w.f.l.cscale $w.f.l.bscale  -side left -fill x -expand 1
+
+	frame $w.f.qb  -relief flat
+
+	set logoButton $w.f.qb.logo
+	button $w.f.qb.logo -text "Logo" \
+		-relief raised -command "grabber set_logo"\
+		-anchor w -font $f \
+		-width 5 -state normal -highlightthickness 0
+
+	button $w.f.qb.halfbutton -font $f -text Halfsize -width 9 -command "grabber half"
+
+	radiobutton $w.f.qb.b0 -text "PAL" -command "grabber setInput PAL" \
+		-padx 0 -pady 0 \
+		-anchor w -variable setPlxInput -font $f -relief flat -value "PAL"
+	radiobutton $w.f.qb.b1 -text "NTSC" -command "grabber setInput NTSC" \
+		-padx 0 -pady 0 \
+		-anchor w -variable setPlxInput -font $f -relief flat -value "NTSC"
+	radiobutton $w.f.qb.b2 -text "SECAM" -command "grabber setInput SECAM" \
+		-padx 0 -pady 0 \
+		-anchor w -variable setPlxInput -font $f -relief flat -value "SECAM"
+	pack $w.f.qb.b0 $w.f.qb.b1 $w.f.qb.b2 -fill x -side left
+
+
+	pack  $w.f.qb.logo $w.f.qb.halfbutton -side left -fill x 
+
+	frame $w.f.rb  -relief flat
+
+	label $w.f.rb.label -text "Remote-Display:" -font $f -anchor w -padx 1m
+# XXX
+	mk.entry $w.f.rb grabber [option get . localPlxDisplay $V(class)]
+	$w.f.rb.entry configure -state disabled -foreground gray60
+	$w.f.rb.label configure -foreground gray60
+
+	pack  $w.f.rb.label $w.f.rb.entry -side left -fill x -expand 1
+	pack  $w.f.hl $w.f.h $w.f.ll $w.f.l $w.f.qb $w.f.rb -fill x -padx 1m
+
+
+	frame $w.f.lr  -relief flat
+	frame $w.f.lr.x  -relief flat
+	frame $w.f.lr.y  -relief flat
+
+	label $w.f.lr.x.label -text "Capture-Window-Size: " -font $f -anchor w -padx 1m
+	mk.entry $w.f.lr.x grabber  ""
+	$w.f.lr.x.entry configure -width 6
+
+	label $w.f.lr.y.label -text "x" -font $f -anchor e 
+	mk.entry $w.f.lr.y grabber ""
+	$w.f.lr.y.entry configure -width 6
+
+	checkbutton $w.f.lr.stillbutton -text "Not Live" \
+		-relief raised -command "grabber sendStill" \
+		-anchor e -variable stillButtonState -font $f \
+		-state normal -highlightthickness 0
+
+	pack  $w.f.lr.x.label -side left -padx 1m
+	pack  $w.f.lr.x.entry -side left 
+	pack  $w.f.lr.y.label -side left 
+	pack  $w.f.lr.y.entry -side left 
+	pack  $w.f.lr.x $w.f.lr.y $w.f.lr -side left 
+	pack  $w.f.lr.stillbutton -side left 
+
+
+	pack  $w.title $w.f -fill x -expand 1
+
+	$w.f.h.hscale set 128
+	$w.f.h.sscale set 128
+	$w.f.l.cscale set 128
+	$w.f.l.bscale set 128
+	set logoButtonState 0
+	set stillButtonState 0
+	set setPlxInput "PAL"
+}
+
+
+proc build.xil_SlicVideo w {
+	# .menu.xil
+	set f [smallfont]
+	label $w.title -text "XIL SLIC Grabber"
+	frame $w.f -relief sunken -borderwidth 2
+
+	frame $w.f.left
+	frame $w.f.right
+
+	frame $w.f.left.hue -relief flat
+	label $w.f.left.hue.name -font $f -anchor e -text "Hue"
+	scale $w.f.left.hue.scale -orient horizontal -width 12 \
+			   -variable xilHue \
+		           -relief groove -showvalue 1 -from -128 -to 127 \
+                           -command "grabber set HUE"
+	pack $w.f.left.hue.name $w.f.left.hue.scale -fill x -expand 1
+
+	frame $w.f.left.lbrightness -relief flat
+	label $w.f.left.lbrightness.name -font $f -anchor e -text "Luma Brightness"
+	scale $w.f.left.lbrightness.scale -orient horizontal -width 12 \
+			   -variable xilLumaBrightness \
+		           -relief groove -showvalue 1 -from 0 -to 255 \
+                           -command "grabber set LUMA_BRIGHTNESS"
+	pack $w.f.left.hue $w.f.left.lbrightness.name $w.f.left.lbrightness.scale -fill x -expand 1
+
+
+	frame $w.f.left.lcontrast -relief flat
+	label $w.f.left.lcontrast.name -font $f -anchor e -text "Luma Contrast"
+	scale $w.f.left.lcontrast.scale -orient horizontal -width 12 \
+		           -relief groove -showvalue 1 -from 0 -to 127 \
+			   -variable xilLumaContrast \
+			   -command "grabber set LUMA_CONTRAST"
+	pack $w.f.left.lcontrast.name $w.f.left.lcontrast.scale -fill x -expand 1
+
+	pack $w.f.left.lbrightness $w.f.left.lcontrast -side left -fill x -expand 1 
+
+
+	frame $w.f.right.csat -relief flat
+	label $w.f.right.csat.name -font $f -anchor e -text "Chroma Saturation"
+	scale $w.f.right.csat.scale -orient horizontal -width 12 \
+		           -relief groove -showvalue 1 -from 0 -to 127 \
+			   -variable xilChromaSaturation \
+                           -command "grabber set CHROMA_SATURATION"
+	pack $w.f.right.csat.name $w.f.right.csat.scale -fill x -expand 1
+
+	frame $w.f.right.cgain -relief flat
+	label $w.f.right.cgain.name -font $f -anchor e -text "Chroma Gain"
+	scale $w.f.right.cgain.scale -orient horizontal -width 12 \
+		           -relief groove -showvalue 1 -from 0 -to 255 \
+			   -variable xilChromaGain \
+                          -command "grabber set CHROMA_GAIN"
+	pack $w.f.right.cgain.name $w.f.right.cgain.scale -fill x -expand 1
+
+
+	pack $w.f.right.csat $w.f.right.cgain -side left -fill x -expand 1 
+
+	pack $w.f.left $w.f.right -fill y -side top -expand 1
+
+	pack $w.title $w.f -fill x -expand 1
+
+	set xcsat [resource chroma_saturation]
+	if { $xcsat != 0 } {
+		$w.f.right.csat.scale set $xcsat
+	} else {
+		$w.f.right.csat.scale set 64
+	}
+	set xcgain [resource chroma_gain]
+	if { $xcgain != 0} {
+		$w.f.right.cgain.scale  set $xcgain
+	} else {
+		$w.f.right.csat.scale set 44
+	}
+	set xlcontrast [resource luma_contrast]
+	if { $xlcontrast != 0 }  {
+		$w.f.left.lcontrast.scale  set $xlcontrast
+	} else {
+		$w.f.left.lcontrast.scale  set 64
+	}
+	set xlbrightness [resource luma_brightness]
+	if { $xlbrightness }  {
+		$w.f.left.lbrightness.scale  set $xlbrightness
+	} else {
+		$w.f.left.lbrightness.scale  set 128
+	}
+}
+
+proc xil_set_vformat { value } {
+	global env
+
+	if [info exists env(O1KHOME)] {
+        	if { [file exists "$env(O1KHOME)/bin/o1k_ctl"] } {
+                 exec $env(O1KHOME)/bin/o1k_ctl -D /dev/o1k0 -cmd -set -vf $value
+                 restart
+		 return
+		}
+	} 
+	if { [file exists "/opt/MMACo1k/bin/o1k_ctl"] } {
+		exec /opt/MMACo1k/bin/o1k_ctl -D /dev/o1k0 -cmd -set -vf $value
+		restart
+	} elseif { [file exists "/opt/SUNWo1kp/bin/o1k_ctl"] } {
+		exec /opt/SUNWo1kp/bin/o1k_ctl -D /dev/o1k0 -cmd -set -vf $value
+		restart
+	} else {
+		puts "Cannot find config utility"
+	}
+}
+
+proc build.xil_Osprey_1k w {
+	# .menu.xil
+	set f [smallfont]
+	label $w.title -text "XIL Grabber"
+	frame $w.f -relief sunken -borderwidth 2
+
+	frame $w.f.left
+	frame $w.f.right
+	frame $w.f.names
+	frame $w.f.vformat -relief groove -borderwidth 2 
+
+	frame $w.f.hue -relief flat
+	label $w.f.names.hue -justify left -font $f -anchor w -text "Hue"
+	label $w.f.hue.val -font $f -text 0 -width 4
+	scale $w.f.hue.scale -orient horizontal -width 12 \
+			   -variable xilHue \
+		           -relief groove -showvalue 0 -from -128 -to 127 \
+                           -command " $w.f.hue.val configure -text \$xilHue
+        grabber set HUE "
+#                           -command "xil_grabber_set HUE $w.f.hue.val"
+	pack $w.f.hue.scale $w.f.hue.val -fill x -expand 1 -side left
+
+#	frame $w.f.left.chromau -relief flat
+#	label $w.f.left.chromau.name -font $f -anchor e -text "Gain U"
+#	scale $w.f.left.chromau.scale -orient horizontal -width 12 \
+#		           -relief groove -showvalue 1 -from -256 -to 255 \
+#			   -variable xilChromaGainU \
+#                          -command "grabber set CHROMA_GAIN_U"
+#	pack $w.f.left.chromau.name $w.f.left.chromau.scale -fill x -expand 1
+#
+#	frame $w.f.left.chromav -relief flat
+#	label $w.f.left.chromav.name -font $f -anchor e -text "Gain V"
+#	scale $w.f.left.chromav.scale -orient horizontal -width 12 \
+#		           -relief groove -showvalue 1 -from -256 -to 255 \
+#			   -variable xilChromaGainV \
+#                           -command "grabber set CHROMA_GAIN_V"
+#	pack $w.f.left.chromav.name $w.f.left.chromav.scale -fill x -expand 1
+
+	frame $w.f.saturation -relief flat
+	label $w.f.names.saturation -justify left -font $f -anchor w -text "Saturation"
+	label $w.f.saturation.val -font $f -text 0 -width 4
+	scale $w.f.saturation.scale -orient horizontal -width 12 \
+		           -relief groove -showvalue 0 -from -256 -to 255 \
+			   -variable xilSaturation \
+                          -command "$w.f.saturation.val configure -text \$xilSaturation 
+grabber set SATURATION "
+	pack $w.f.saturation.scale $w.f.saturation.val -fill x -expand 1 -side left
+
+
+	#pack $w.f.hue $w.f.saturation -side top -fill x -expand 1 -anchor w
+
+	frame $w.f.brightness -relief flat
+	label $w.f.names.brightness -justify left -font $f -anchor w -text "Brightness"
+	label $w.f.brightness.val  -font $f -text 0 -width 4
+	scale $w.f.brightness.scale -orient horizontal -width 12 \
+		           -relief groove -showvalue 0 -from -128 -to 127 \
+			   -variable xilBrightness \
+			-command "$w.f.brightness.val configure -text \$xilBrightness
+grabber set BRIGHTNESS "
+	pack $w.f.brightness.scale $w.f.brightness.val -fill x -expand 1 -side left
+
+	frame $w.f.contrast -relief flat
+	label $w.f.names.contrast -justify left -font $f -anchor w -text "Contrast"
+	label $w.f.contrast.val -font $f -text 0 -width 4
+	scale $w.f.contrast.scale -orient horizontal -width 12 \
+			   -variable xilContrast \
+		           -relief groove -showvalue 0 -from -256 -to 255 \
+                           -command "$w.f.contrast.val configure -text \$xilContrast
+grabber set CONTRAST "
+	pack  $w.f.contrast.scale $w.f.contrast.val -fill x -expand 1 -side left
+
+	#pack $w.f.brightness $w.f.contrast -side top -fill x -expand 1 -anchor w
+	label $w.f.vformat.title -text "Video Format" -font $f
+
+	radiobutton $w.f.vformat.pal -text Pal -command "xil_set_vformat 0" -anchor w -padx 4 -font $f -variable vformat -value 1
+	radiobutton $w.f.vformat.ntsc -text Ntsc -command "xil_set_vformat 1" -anchor w -padx 4 -font $f -variable vformat -value 2
+	radiobutton $w.f.vformat.auto -text Auto -command "xil_set_vformat 2" -anchor w -padx 4 -font $f -variable vformat -value 0
+
+	pack $w.f.left -fill y -side left -expand 1
+	pack $w.f.vformat.title $w.f.vformat.pal $w.f.vformat.ntsc -side top -anchor w
+	pack $w.f.vformat -fill y -side right -expand 1 -pady 4
+	pack $w.f.right -fill y -side right -expand 1
+
+	pack $w.f.names.hue $w.f.names.saturation $w.f.names.brightness $w.f.names.contrast -side top -anchor w
+	pack $w.f.names -in $w.f.left -side top
+	pack $w.f.hue $w.f.saturation $w.f.brightness $w.f.contrast -in $w.f.right -side top
+	pack $w.title $w.f -fill x -expand 1
+
+	set xhue [resource hue]
+	if { $xhue != 0 } {
+		$w.f.left.hue.scale set $xhue
+	}
+	set xchromau [resource chromau]
+	if { $xchromau != 0} {
+		$w.f.left.chromau.scale  set $xchromau
+	}
+	set xsaturation [resource saturation]
+	if { $xsaturation != 0 }  {
+		$w.f.left.saturation.scale  set $xsaturation
+	}
+	set xchromav [resource chromav]
+	if { $xchromav }  {
+		$w.f.left.chromav.scale  set $xchromav
+	}
+	set xbrightness [resource brightness]
+	if { $xbrightness!=0 } {
+		$w.f.right.brightness.scale  set $xbrightness
+	}
+	set xcontrast [resource contrast]
+	if { $xcontrast != 0 } {
+		$w.f.right.contrast.scale  set $xcontrast
+	}
+}
+
+
 proc build.slicvideo w {
 	set f [smallfont]
 	label $w.title -text "Grabber"
 	frame $w.f -relief sunken -borderwidth 2
 
-	frame $w.f.h -relief flat
-       
-	label $w.f.h.label  -font $f -anchor e -text "Hue"
-       
-	scale $w.f.h.scale -orient horizontal -width 12 -length 20 \
-		           -relief groove -showvalue 0 -from -128 -to 127 \
-                          -command "grabber set HUE"
-	pack  $w.f.h.label $w.f.h.scale -side left -fill x -expand 1
+        frame $w.f.h -relief flat
+ 
+        label $w.f.h.label  -font $f -anchor e -text "Hue"
+ 
+        scale $w.f.h.scale -orient horizontal -width 12 -length 20 \
+                           -relief groove -showvalue 1 -from -128 -to 127 \
+                            -command "grabber set HUE"
+        pack  $w.f.h.label $w.f.h.scale -side left -fill x -expand 1
+
 
 	frame $w.f.ll -relief flat 
        
@@ -66,11 +409,11 @@ proc build.slicvideo w {
 	frame $w.f.l  -relief flat
        
 	scale $w.f.l.cscale   -orient horizontal -width 12 -relief groove \
-                              -showvalue 0 -from 0 -to 127 \
+                              -showvalue 1 -from 0 -to 127 \
                               -command "grabber set LUMA_CONTRAST"
        
 	scale $w.f.l.bscale -orient horizontal -width 12 -relief groove \
-                            -showvalue 0 -from 0 -to 255 \
+                            -showvalue 1 -from 0 -to 255 \
                             -command "grabber set LUMA_BRIGHTNESS"
 	pack  $w.f.l.cscale $w.f.l.bscale  -side left -fill x -expand 1
 
@@ -87,11 +430,11 @@ proc build.slicvideo w {
 	frame $w.f.c -relief flat
        
 	scale $w.f.c.gscale -orient horizontal -width 12 -relief groove \
-                             -showvalue 0 -from 0 -to 255 \
+                             -showvalue 1 -from 0 -to 255 \
                              -command "grabber set CHROMA_GAIN"
        
 	scale $w.f.c.sscale -orient horizontal -width 12 -relief groove \
-                            -showvalue 0 -from 0 -to 127 \
+                            -showvalue 1 -from 0 -to 127 \
                             -command "grabber set CHROMA_SATURATION"
 	pack  $w.f.c.gscale $w.f.c.sscale -side left -fill x -expand 1
 
@@ -189,4 +532,33 @@ proc build.qcam {w} {
     set qcamwindow(setcont) "$w.f.s.s.cont set"
     set qcamwindow(setwbal) "$w.f.s.s.wbal.scale set"
     set qcamwindow(setbpp) "set qcambpp"
+}
+
+
+proc build.cosmo w {
+	global fieldButtonState
+	set fieldButtonState 0
+
+	set f [smallfont]
+	label $w.title -text "Grabber"
+
+	frame $w.f -relief sunken -borderwidth 2
+
+	frame $w.f.b -relief flat
+       
+# would be ok, if we could change the button text after pressing, hm.
+	button $w.f.b.fieldbutton -text "Toggle send both/even fields" \
+		-relief raised -command "grabber even_only" \
+		-anchor w -font $f \
+		-width 20 \
+		-state normal -highlightthickness 0
+
+# would be nice if this would work, sigh
+#	checkbutton $w.f.b.fieldbutton -text "Send both fields" \
+#	-relief raised -command "grabber even_only $fieldButtonState" \
+#	-anchor w -variable fieldButtonState -font $f \
+#	-state normal -highlightthickness 0
+
+	pack  $w.f.b $w.f.b.fieldbutton -fill x -padx 1m
+	pack $w.title $w.f -fill x -expand 1
 }

@@ -173,9 +173,9 @@ OBJ_H261DUMP = h261_dump.o p64/p64.o p64/p64dump.o huffcode.o dct.o bv.o
 #	rm -f $@
 #	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(LIB) $(STATIC)
 
-vic: tmndec/libh263.a tmn-x/libh263coder.a $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)
+vic: tmndec/libh263.a tmn-x/libh263coder.a $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)  $(OBJ_XIL)
 	rm -f $@
-	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(OBJ_CRYPT) $(LIB) $(STATIC)
+	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER)  $(OBJ_XIL) $(OBJ_CRYPT) $(LIB) $(STATIC) @V_LIB_XIL@
 
 vic.dyn: $(OBJ) $(OBJ_GRABBER) $(JV_LIB)
 	rm -f $@

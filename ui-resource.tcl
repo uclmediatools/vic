@@ -151,8 +151,22 @@ proc init_resources {} {
 	option add Vic.useHardwareDecode false startupFile
 	option add Vic.infoHighlightColor LightYellow2 startupFile
 	option add Vic.useJPEGforH261 false startupFile
+	option add Vic.useHardwareComp true startupFile
 	option add Vic.stillGrabber false startupFile
 	option add Vic.siteDropTime "300" startupFile
+	option add Vic.quality "0" startupFile
+
+	option add Vic.brightness "0" startupFile
+	option add Vic.contrast "0" startupFile
+	option add Vic.chromau "0" startupFile
+	option add Vic.chromav "0" startupFile
+	option add Vic.saturation "0" startupFile
+	option add Vic.hue "0" startupFile
+
+	option add Vic.chroma_saturation "0" startupFile
+	option add Vic.chroma_gain "0" startupFile
+	option add Vic.luma_brightness "0" startupFile
+	option add Vic.luma_contrast "0" startupFile
 
 	#
 	# color resources

@@ -380,7 +380,10 @@ proc attach_renderer { src w } {
 	global win_target win_is_slow win_use_hw V
 	set d [$src handler]
 	set target ""
-	if { $win_use_hw($w) } {
+	if { ! [info exists win_use_hw($w) ] } {
+		set win_use_hw($w) "software"
+	}
+	if { $win_use_hw($w) == "magic" } {
 		set fmt [rtp_format $src]
 		if { $fmt == "jpeg" } {
 			set fmt $fmt/[$d decimation]
@@ -388,8 +391,22 @@ proc attach_renderer { src w } {
 		set target [new assistor $fmt]
 		if { $target != "" } {
 			$target window $w
+		} else {
+			set win_use_hw($w) software
 		}
-	}
+	} else { if { $win_use_hw($w) != "software" } {
+		set fmt [rtp_format $src]
+		if { $fmt == "jpeg" } {
+			set fmt $fmt/[$d decimation]
+		}
+		set target [new assistor $win_use_hw($w)/$fmt]
+		if { $target != "" } {
+			$target window $w
+		} else {
+			set win_use_hw($w) software
+		}
+	}}
+
 	if { $target == "" } {
 		set target [$V(colorModel) renderer $w [$d decimation]]
 	}
@@ -511,7 +528,7 @@ proc build.src { w src color } {
 
 	pack $w.r.ctrl.mute -side left -fill x -expand 1
 	pack $w.r.ctrl.color -side left -fill x -expand 1
-	pack $w.r.ctrl.info -side left -fill x -fill y -expand 1
+	pack $w.r.ctrl.info -side left -fill x -expand 1
 #	pack $w.r.ctrl.options -side left -fill x -expand 1
 
 	global colorbutton

@@ -45,8 +45,9 @@ char* Module::fttoa(int ft)
 	case FT_YUV_422:  return ("422");
 	case FT_YUV_CIF:  return ("cif");
 	case FT_JPEG:	  return ("jpeg");
+	case FT_H261:	  return ("h261");
+	case FT_CELLB:	  return ("cellb");
 	case FT_DCT:	  return ("dct");
-	case FT_RAW:	  return ("raw");
 	}
 	return ("");
 }
@@ -61,10 +62,12 @@ int Module::atoft(const char* s)
 		return FT_YUV_CIF;
 	if (strcasecmp(s, "jpeg") == 0)
 		return FT_JPEG;
+	if (strcasecmp(s, "h261") == 0)
+		return FT_H261;
+	if (strcasecmp(s, "cellb") == 0)
+		return FT_CELLB;
 	if (strcasecmp(s, "dct") == 0)
 		return FT_DCT;
-	if (strcasecmp(s, "raw") == 0)
-		return FT_RAW;
 	return (-1);
 }
 

@@ -33,7 +33,6 @@
 # @(#) $Header$ (LBL)
 #
 
-
 #
 # destroy a viewing window but remember where it was
 # and what size it was
@@ -124,7 +123,25 @@ proc create_video_widget { w width height } {
 	set win_is_switched($w) 0
 	set win_is_timed($w) 0
 	set win_is_slow($w) 0
-	set win_use_hw($w) $V(useHardwareDecode)
+#	set win_use_hw($w) $V(useHardwareDecode)
+	if { $V(useHardwareDecode) } {
+		set win_use_hw($w) "magic"
+	} else {
+		set win_use_hw($w) "software"
+	}
+}
+
+proc HACK_detach_xil {} {
+	global win_use_hw
+
+	foreach xx [array names win_use_hw] {
+		if { $win_use_hw($xx) == "xil" } {
+			set win_use_hw($xx) "software"
+			if [info exists win_src($xx) ] {
+				reallocate_renderer $xx
+			}
+		}
+	}
 }
 
 #
@@ -139,6 +156,7 @@ proc open_window src {
 		-colormap .top
 	catch "wm resizable $w false false"
 	frame $w.frame
+
 
 	global size$w userwin_x userwin_y userwin_size
 	if [info exists userwin_x($src)] {
@@ -174,9 +192,6 @@ proc open_window src {
 	$m add checkbutton -label Save-CPU \
 		-command "window_set_slow $v" \
 		-font $f -variable win_is_slow($v)
-	$m add checkbutton -label Use-Hardware \
-		-command "reallocate_renderer $v" \
-		-font $f -variable win_use_hw($v)
 
 	if ![have cb] {
 		$m entryconfigure Voice-switched -state disabled
@@ -209,15 +224,49 @@ proc open_window src {
 		-command "resize $v 192 144" \
 		-font $f -value 192x144 -variable size$w
 	$m add radiobutton -label "1/4 PAL" \
-		-command "resize $v 384 284" \
-		-font $f -value 384x284 -variable size$w
+		-command "resize $v 384 288" \
+		-font $f -value 384x288 -variable size$w
 	$m add radiobutton -label PAL \
-		-command "resize $v 768 568" \
-		-font $f -value 768x568 -variable size$w
+		-command "resize $v 768 576" \
+		-font $f -value 768x576 -variable size$w
+
+
+# Marcus ... 
+	set m $w.bar.decoder.menu
+	menubutton $w.bar.decoder -text Decoder... -menu $m -relief raised -width 8 -font $f
+	menu $m
+	$m add radiobutton -label Use-Magic \
+		-command "reallocate_renderer $v" \
+		-font $f -variable win_use_hw($v) -value magic
+	
+	global assistorlist
+
+	if ![info exists assistorlist]  {
+		set assistorlist [new assistorlist xx]
+	}
+	set d [$src handler]
+	set fmt [rtp_format $src]
+	if { $fmt == "jpeg" } {
+		set fmt $fmt/[$d decimation]
+	}
+	set targets [$assistorlist assistors $fmt]
+	foreach xname $targets {
+		if { $xname != "" } {
+			$m add radiobutton -label "Use-$xname-Assistor" \
+				-command "reallocate_renderer $v" \
+				-font $f -variable win_use_hw($v) -value $xname
+		}
+	}
+
+	$m add radiobutton -label "Use-VIC Software" \
+		-command "reallocate_renderer $v" \
+		-font $f -variable win_use_hw($v) -value software
+
+# ... Marcus
 
 	label $w.bar.label -text "" -anchor w -relief raised
 	pack $w.bar.label -expand 1 -side left -fill both
-	pack $w.bar.size $w.bar.mode $w.bar.dismiss -side left -fill y
+	pack $w.bar.decoder $w.bar.size $w.bar.mode $w.bar.dismiss -side left -fill y
 
 	pack $w.frame.video -anchor c
 	pack $w.frame -expand 1 -fill both
@@ -255,7 +304,11 @@ proc windowname { w name } {
 
 proc window_switch { w src } {
 	global win_src
-	set oldsrc $win_src($w)
+	if { [info exists win_src($w)] } {
+		set oldsrc $win_src($w)
+	} else {
+		set oldsrc "lost"
+	}
 	if { $oldsrc != $src } {
 		detach_window $oldsrc $w
 		attach_window $src $w

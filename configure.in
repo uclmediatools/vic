@@ -160,7 +160,7 @@ case "$target" in
 sparc-sun-solaris*)
 	V_STATIC=""
 	have_xil=no
-	xil_dir=/opt/SUNWits/Graphics-sw/xil
+	xil_dir=/usr/openwin
 	if test -d $xil_dir ; then
 		if test ! -d $xil_dir/include ; then
 			echo "You don't have the XIL developer's kit!"
@@ -179,10 +179,10 @@ sparc-sun-solaris*)
 			V_ALL="$V_PROG $V_PROG.xil"
 			V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I$xil_dir/include"
 			V_LIB_XIL="-L$xil_dir/lib -R$xil_dir/lib -lxil"
-			V_OBJ_XIL=grabber-xil.o
+			V_OBJ_XIL=grabber-xil.o framer-h261hw.o framer-cellb.o assistor-xil.o assistor-list.o
 		fi
 	elif test "$have_xil" = yes ; then
-		V_OBJ_XIL=grabber-xil.o
+		V_OBJ_XIL=grabber-xil.o framer-h261hw.o framer-cellb.o assistor-xil.o assistor-list.o
 		V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I$xil_dir/include"
 		V_LIB_GRABBER="$V_LIB_GRABBER -L$xil_dir/lib -R$xil_dir/lib -lxil"
 	fi

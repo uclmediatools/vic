@@ -42,6 +42,9 @@ static const char rcsid[] =
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <sys/errno.h>
+extern int errno;
 
 #include "module.h"
 #include "Tcl.h"
@@ -49,134 +52,121 @@ static const char rcsid[] =
 #include <tk.h>
 #include <sys/param.h>
 #include <xil/xil.h>
-#include "grabber.h"
-#include "crdef.h"
-#include "iohandler.h"
-#include "device-input.h"
 
-class XILGrabber : public Grabber {
- protected:
-	XILGrabber();
- public:
-	virtual ~XILGrabber();
-	virtual void start();
-	virtual void stop();
-	virtual int command(int argc, const char*const* argv);
-	virtual void fps(int);
-	inline int is_pal() { return (max_fps_ == 25); }
- protected:
-	int attr(const char* name, int value);
-	int attr(const char* name);
-	const char* cattr(const char* name);
-	virtual void setsize() {}
-	void suppress(const u_char* devbuf, int istride);
+#include "xil.h"
 
-	int port_;		/* XIL input port */
-	XilSystemState xil_;
-	XilImage source_;
-	XilImage image_;
-	double scale_;
-	u_int decimate_;
-	u_int basewidth_;
-	u_int baseheight_;
-	u_int max_fps_;		/* 25 (PAL) or 30 (NTSC) */
+XILDevices xil_devices;
 
-};
+XILDevices::XILDevices() {
+	struct deviceattributes deviceattributes_[] = XIL_ATTRIBUTES;
+	xildevices_=NULL;nrofxildevices_=0;
+	int	found = 0;
 
-class XILYuvGrabber : public XILGrabber {
- public:
-	XILYuvGrabber();
-	virtual ~XILYuvGrabber();
- protected:
-	virtual int grab();
-	virtual void setsize();
-	void saveblk(const u_char* in, u_char* yp, u_char* up, u_char* vp,
-		     int stride, int istride);
-	void saveblks(const u_char* in, int istride);
-};
+#if 0
+	extern void osprey_open();
 
-
-class XILCIFGrabber : public XILYuvGrabber {
- public:
-	XILCIFGrabber();
- protected:
-	virtual int grab();
-	virtual void setsize();
-	void saveblk(const u_char* in, u_char* yp, u_char* up, u_char* vp,
-		     int stride, int istride);
-	void saveblks(const u_char* in, int istride);
-};
-
-#ifdef notdef
-class XIL411Grabber : public XILCIFGrabber {
-    public:
-	XIL411Grabber();
-    protected:
-	virtual void setsize(int xsize, int ysize);
-};
+	osprey_open();
 #endif
 
-class XILCodecGrabber : public XILGrabber {
- public:
-	XILCodecGrabber(const char* type);
-	virtual ~XILCodecGrabber();
- protected:
-	int cattr(const char* name, int value);
-	u_char* capture(int& length);
-	XilCis cis_;
-};
+	for (int i=0;i<XIL_NROFDEVICES;i++) {
+		for (int j=0;j<10;j++) {
+			char	buf[200],fn[200];
+			struct	stat stbuf;
 
-class XILJpegGrabber : public XILCodecGrabber {
- public:
-	XILJpegGrabber();
- protected:
-	virtual int command(int argc, const char*const* argv);
-	void setq(int q);
-	int grab();
-	int q_;
-};
-
-#ifdef notdef
-class XILp64Grabber : public XILCodecGrabber {
- public:
-	XILp64Grabber();
- protected:
-	int grab();
-};
-#endif
-
-class XILDevice : public InputDevice {
- public:
-	XILDevice(const char* s);
-	virtual int command(int argc, const char*const* argv);
-};
-
-static XILDevice xil_device("xil");
+			sprintf(fn,deviceattributes_[i].devname,j);
+			if (-1==stat(fn,&stbuf)) {
+				/*fprintf(stderr,"stat %s:%s\n",fn,strerror(errno));*/
+				break;
+			}
+			if (-1==access(fn,R_OK)) {
+				fprintf(stderr,"access %s:%s\n",fn,strerror(errno));
+				if (errno!=EBUSY)
+					break;
+			}
+			/* We check that the device name from /dev
+			 * points directly to ../devices/ otherwise
+			 * it's an emulated device (like sunvideo emulation
+			 * for slicvideo or osprey-1k and we ignore it
+			 */
+			{
+				char link[BUFSIZ];
+				if(readlink(fn, link, sizeof link) > 0) {
+					if(! strstr(link, "/devices/")) {
+						break; 
+					}
+				}
+			}
+			/* good, we seem to have one of those devices */
+			found = 1;
+			xildevices_ = (XILDevice**)realloc(xildevices_,sizeof(XILDevice*)*(++nrofxildevices_));
+			sprintf(buf,"xil %s-%d",deviceattributes_[i].nickname,j+1);
+			xildevices_[nrofxildevices_-1] = new XILDevice(strdup(buf),fn,&(deviceattributes_[i]));
+			if (deviceattributes_[i].capabilities & XILCAP_OUTPUT) {
+				new XILOutputDevice(strdup(buf),fn,&(deviceattributes_[i]));
+			}
+		}
+	}
+	if (!found)
+		new XILDevice("xil (no device)","none",NULL);
+}
 
 /*
  * XXX gcc 2.5.8 needs this useless stub.
  */
-XILDevice::XILDevice(const char* s) : InputDevice(s)
+XILDevice::XILDevice(
+	const char* s,const char*fn,const struct deviceattributes *devattr
+) : InputDevice(s)
 {
+//	fprintf(stderr,"XILDevice::XILDevice(fn=%s)\n",fn);
+	char	*attributes;
+	if (!strcmp(fn,"none")) {
+		attributes_ = "disabled";
+		return;
+	}
+	memcpy(&deviceattributes_,devattr,sizeof(*devattr));
+	filename_ = strdup(fn);
+	nickname_ = strdup(s);
 	/*XXX ports should be queried from xil */
-	attributes_ = "\
-format { 411 422 jpeg } \
-size { small large cif } \
-port { Composite-1 Composite-2 S-Video }";
+	attributes = (char*)malloc(2000);
+	attributes[0]='\0';
+	strcat(attributes,"format { 411 422 jpeg cellb ");
+	if (deviceattributes_.capabilities & XILCAP_HWGRAB_H261)
+		strcat(attributes,"h261 ");
+	strcat(attributes,"}\n");
+	strcat(attributes,"size { small large cif }\n");
+	strcat(attributes,"port { ");
+	if (deviceattributes_.ports & XILPORT_IN_COMPOSITE_1)
+		strcat(attributes,"Composite-1 ");
+	if (deviceattributes_.ports & XILPORT_IN_COMPOSITE_2)
+		strcat(attributes,"Composite-2 ");
+	if (deviceattributes_.ports & XILPORT_IN_S_VIDEO)
+		strcat(attributes,"S-Video ");
+	strcat(attributes,"}\n");
+
+	attributes_ = (const char*)attributes;//EAT THIS!!!!
 }
 
 int XILDevice::command(int argc, const char*const* argv)
 {
 	Tcl& tcl = Tcl::instance();
+/*	fprintf(stderr,"XILDevice(%s)::command(%d,",filename_,argc);
+	for (int i=1;i<argc;i++)
+		fprintf(stderr,"%s,",argv[i]);
+	fprintf(stderr,")\n");
+ */
 	if (argc == 3) {
 		if (strcmp(argv[1], "open") == 0) {
 			TclObject* o = 0;
 			if (strcmp(argv[2], "422") == 0)
-				o = new XILYuvGrabber;
+				o = new XILYuvGrabber(filename_,&deviceattributes_);
 			else if (strcmp(argv[2], "cif") == 0)
-				o = new XILCIFGrabber;
+				o = new XILCIFGrabber(filename_,&deviceattributes_);
 			else if (strcmp(argv[2], "jpeg") == 0)
-				o = new XILJpegGrabber;
+				o = new XILJpegGrabber(filename_,&deviceattributes_);
+			else if (strcmp(argv[2], "cellb") == 0)
+				o = new XILCellBGrabber(filename_,&deviceattributes_);
+			else if ((strcmp(argv[2], "h261") == 0) && (deviceattributes_.capabilities & XILCAP_HWGRAB_H261))
+				o = new XILp64Grabber(filename_,&deviceattributes_);
 			if (o != 0)
 				tcl.result(o->name());
 			return (TCL_OK);
@@ -185,56 +175,125 @@ int XILDevice::command(int argc, const char*const* argv)
 	return (InputDevice::command(argc, argv));
 }
 
-XILGrabber::XILGrabber()
-{
-  xil_ = NULL;
-  source_ = NULL;
-  image_ = NULL;
 
-  xil_ = xil_open();
-  if (xil_ == 0) {
-    status_ = -1;
-    return;
-  }
-  
-  source_ = xil_create_from_device(xil_, "MMACo1k", 0);
-  
-  if (source_ == 0) {
-    xil_close(xil_);
-    status_ = -1;
-    return;
-  }
-  
-  attr("PORT_V", 1);
-  attr("IMAGE_SKIP", 1);
-  attr("MAX_BUFFERS", 1);
-  
-  XilDataType datatype;
-  u_int nbands;
-  xil_get_info(source_, &basewidth_, &baseheight_, &nbands, &datatype);
-  image_ = xil_create(xil_, basewidth_ >> 1, baseheight_ >> 1,
-                      nbands, datatype);
-  decimate_ = 2;
-  scale_ = .5;
-  frame_ = 0;
-  
-  max_fps_ = attr("FORMAT_V") == 1? 25 : 30;
+XILGrabber::XILGrabber(char *devname,struct deviceattributes *devattr)
+{
+	XilDevice device_;
+
+//	fprintf(stderr,"%s\n",__FUNCTION__);
+	memcpy(&deviceattributes_,devattr,sizeof(*devattr));
+	filename_ = strdup(devname);
+#ifdef OSPREY_RAT_HACK
+	osprey_open();
+#endif
+	xil_ = xil_open();
+	if (xil_ == 0) {
+		status_ = -1;
+		return;
+	}
+
+	device_ = xil_device_create(xil_, deviceattributes_.name);
+	xil_device_set_value(device_,"DEVICE_NAME",(void*)filename_);
+
+	source_ = xil_create_from_device(xil_, deviceattributes_.name, device_);
+	xil_device_destroy(device_);
+	if (source_ == 0) {
+		xil_close(xil_);xil_ = 0;
+		status_ = -1;
+		return;
+	}
+
+
+	Tcl &tcl = Tcl::instance();
+	char	buf[200];
+
+	tcl.evalf("proc build.\"%s\" w { build.xil $w \"%s\"}\n",
+		deviceattributes_.name,
+		deviceattributes_.name
+	);
+
+	update_grabber_panel();
+
+	vformat_ = attr("FORMAT_V");
+	sprintf(buf,"%d",vformat_);		\
+	Tcl_SetVar(tcl.interp(),"vformat",buf,TCL_GLOBAL_ONLY);\
+
+	attr("H261_PIP", 1);
+	attr("PORT_V", 1);
+	attr("FLUSH_BUFFERS", 0);
+	attr("IMAGE_SKIP", 0);
+	attr("MAX_BUFFERS", 1);
+
+	xil_get_info(source_, &basewidth_, &baseheight_, &nbands_, &datatype_);
+
+	image_ = xil_create(xil_, basewidth_ >> 1, baseheight_ >> 1,
+			    nbands_, datatype_);
+	decimate_ = 2;
+	scale_ = .5;
+	frame_ = 0;
+
+	fd_ = attr("FILE_DESCRIPTOR");
+//	fd_ = 0;
+	max_fps_ = vformat_==1 ?25:30;
 }
 
 XILGrabber::~XILGrabber()
 {
-  if (status_ >= 0){
-    if (image_)
-      xil_destroy(image_);
-    image_ = NULL;
-    if (source_)
-      xil_destroy(source_);
-    source_ = NULL;
-    if (xil_)
-      xil_close(xil_);        
-    xil_ = NULL;
-  }
+	Tcl &tcl = Tcl::instance();
+//	fprintf(stderr,"XILGrabber::~XILGrabber\n");
+	if (status_ >= 0) {
+	    if (image_)
+	    	xil_destroy(image_);
+	    image_ = NULL;
+	    if (source_)
+		xil_destroy(source_);
+	    source_ = NULL;
+	    if (xil_)
+	      xil_close(xil_);        
+	    xil_ = NULL;
+//      fprintf(stderr,"XILGrabber::~XILGrabber:xil_close\n");
+	}
+	tcl.evalf("HACK_detach_xil");
+}
 
+void XILGrabber::update_grabber_panel() {
+	Tcl &tcl = Tcl::instance();
+	char	buf[200];
+
+	
+	return ;
+#define CHECKATTR(attrname,varname) 					\
+	{								\
+		static int last##attrname = -1;				\
+		int	attrval;					\
+		if (	(deviceattributes_.capabilities & XILCAP_ATTR_##attrname) &&\
+			attrval!=last##attrname) {			\
+			sprintf(buf,"%d",(int)attr(#attrname));		\
+			Tcl_SetVar(tcl.interp(),#varname,buf,TCL_GLOBAL_ONLY);\
+		}							\
+	}
+#define CHECKATTR2(attrname,varname) 					\
+	{								\
+		static int last##attrname = -1;				\
+		int	attrval;					\
+		if (	(deviceattributes_.capabilities & XILCAP_ATTR_##attrname) &&\
+			attrval!=last##attrname				\
+		) {							\
+			sprintf(buf,"%d",(int)attr(#attrname)-256);	\
+			Tcl_SetVar(tcl.interp(),#varname,buf,TCL_GLOBAL_ONLY);\
+		}							\
+	}
+
+	CHECKATTR(HUE,xilHue);
+	CHECKATTR(BRIGHTNESS,xilBrightness);
+	CHECKATTR2(CONTRAST,xilContrast);
+	CHECKATTR2(CHROMA_GAIN_U,xilChromaGainU);
+	CHECKATTR2(CHROMA_GAIN_V,xilChromaGainV);
+
+	CHECKATTR(LUMA_BRIGHTNESS,xilLumaBrightness);
+	CHECKATTR(LUMA_CONTRAST,xilLumaContrast);
+	CHECKATTR(CHROMA_GAIN,xilChromaGain);
+	CHECKATTR(CHROMA_SATURATION,xilChromaSaturation);
 }
 
 int XILGrabber::attr(const char* name, int value)
@@ -252,7 +311,7 @@ int XILGrabber::attr(const char* name)
 	int value;
 	int s = xil_get_device_attribute(source_, (char*)name, (void**)&value);
 	if (s != XIL_SUCCESS) {
-		fprintf(stderr, "vic: can't set XIL attribute: %s\n", name);
+		fprintf(stderr, "vic: can't get XIL attribute: %s\n", name);
 		return (-1);
 	}
 	return (value);
@@ -263,7 +322,7 @@ const char* XILGrabber::cattr(const char* name)
 	const char* value;
 	int s = xil_get_device_attribute(source_, (char*)name, (void**)&value);
 	if (s != XIL_SUCCESS) {
-		fprintf(stderr, "vic: can't set XIL attribute: %s\n", name);
+		fprintf(stderr, "vic: can't get XIL attribute: %s\n", name);
 		return (0);
 	}
 	return (value);
@@ -271,6 +330,11 @@ const char* XILGrabber::cattr(const char* name)
 
 int XILGrabber::command(int argc, const char*const* argv)
 {
+/*	fprintf(stderr,"XILGrabber(%s)::command(%d,",filename_,argc);
+	for (int i=1;i<argc;i++)
+		fprintf(stderr,"%s,",argv[i]);
+	fprintf(stderr,")\n");
+*/
 	if (argc == 3) {
 		if (strcmp(argv[1], "port") == 0) {
 			int newport;
@@ -283,10 +347,8 @@ int XILGrabber::command(int argc, const char*const* argv)
 
 			attr("PORT_V", newport);
 			/* video format may have changed when port changed */
-			XilDataType datatype;
-			u_int nbands;
 			xil_get_info(source_, &basewidth_, &baseheight_,
-				     &nbands, &datatype);
+				     &nbands_, &datatype_);
 			setsize();
 			/* need to kick-start frame grabbing process */
 			if (running_) {
@@ -294,7 +356,8 @@ int XILGrabber::command(int argc, const char*const* argv)
 				start();
 			}
 			return (TCL_OK);
-		} else if (strcmp(argv[1], "decimate") == 0) {
+		}
+		if (strcmp(argv[1], "decimate") == 0) {
 			int d = atoi(argv[2]);
 			if (d <= 0) {
 				Tcl& tcl = Tcl::instance();
@@ -306,6 +369,86 @@ int XILGrabber::command(int argc, const char*const* argv)
 			setsize();
 			return (TCL_OK);
 		}
+		if (strcmp(argv[1], "q") == 0) {
+			// just ignore it
+			return (TCL_OK);
+		}
+		if (strcmp(argv[1],"get")==0) {
+			if (strcmp(argv[1], "vformat") == 0) {	
+				Tcl& tcl = Tcl::instance();
+				fprintf (stderr,"%s: vformat: %d",__FUNCTION__,vformat_);
+				switch (vformat_) {
+					case 1:	tcl.resultf("%s","pal");
+						break;
+
+					case 2: tcl.resultf("%s", "ntsc");
+                                       		break;
+
+					case 0:	tcl.resultf("%s", "auto");
+				}
+				return (TCL_OK);	
+			}
+		}
+	}
+	if (argc==4) {
+		if (strcmp(argv[1],"set")==0) {
+			if (strcmp(argv[2],"HUE")==0) {
+				attr("HUE",atoi(argv[3]));
+				return (TCL_OK);
+			} else if (strcmp(argv[2],"SATURATION")==0) {
+				attr("CHROMA_GAIN_U",atoi(argv[3])+256);
+				attr("CHROMA_GAIN_V",atoi(argv[3])+256);
+				return (TCL_OK);
+			} else if (strcmp(argv[2],"CHROMA_GAIN_U")==0) {
+				attr("CHROMA_GAIN_U",atoi(argv[3])+256);
+				return (TCL_OK);
+			} else if (strcmp(argv[2],"CHROMA_GAIN")==0) {
+				attr("CHROMA_GAIN",atoi(argv[3]));
+				return (TCL_OK);
+			} else if (strcmp(argv[2],"CHROMA_SATURATION")==0) {
+				attr("CHROMA_SATURATION",atoi(argv[3]));
+				return (TCL_OK);
+			} else if (strcmp(argv[2],"CHROMA_GAIN_V")==0) {
+				attr("CHROMA_GAIN_V",atoi(argv[3])+256);
+				return (TCL_OK);
+			} else if (strcmp(argv[2],"CONTRAST")==0) {
+				attr("CONTRAST",atoi(argv[3])+256);
+				return (TCL_OK);
+			} else if (strcmp(argv[2],"LUMA_BRIGHTNESS")==0) {
+				attr("LUMA_BRIGHTNESS",atoi(argv[3]));
+				return (TCL_OK);
+			} else if (strcmp(argv[2],"LUMA_CONTRAST")==0) {
+				attr("LUMA_CONTRAST",atoi(argv[3]));
+				return (TCL_OK);
+			} else if (strcmp(argv[2],"BRIGHTNESS")==0) {
+				attr("BRIGHTNESS",atoi(argv[3]));
+				return (TCL_OK);
+			} else if (strcmp(argv[2], "vformat") == 0) {
+
+				if (strcasecmp(argv[3], "pal") == 0)
+					vformat_ = 1;
+				else if (strcasecmp(argv[3], "ntsc") == 0)
+					vformat_ = 2;
+				else if (strcasecmp(argv[3], "auto") == 0)
+					vformat_ = 0;
+				if (running_) {
+					stop();
+				}
+				fprintf (stderr,"%s: set vformat: %d",__FUNCTION__,vformat_);
+				attr("FORMAT_V", vformat_);
+				/* video format may have changed when port changed */
+				xil_get_info(source_, &basewidth_, &baseheight_,
+					     &nbands_, &datatype_);
+				setsize();
+				max_fps_ = vformat_==1 ?25:30;
+				/* need to kick-start frame grabbing process */
+				if (running_) {
+					start();
+				}
+				return (TCL_OK);
+			}
+		} 
+				
 	}
 	return (Grabber::command(argc, argv));
 }
@@ -324,15 +467,41 @@ void XILGrabber::fps(int f)
 
 void XILGrabber::start()
 {
-  if (running_) return;
+	Grabber::start();
+//	return ;
 
-  Grabber::start();  
+	//link(fd_, TK_READABLE);
+	double now = gettimeofday();
+	frameclock_ = now;
+	nextframetime_ = now + tick(grab());
 }
-
 
 void XILGrabber::stop()
 {
-  Grabber::stop();  
+	Grabber::stop();
+	unlink();
+}
+
+void XILGrabber::dispatch(int mask)
+{
+	double now = gettimeofday();
+	if (nextframetime_ > now) {
+#if 0
+		if (fd_) {
+			/*
+			 * the frame is too early & we want to flush it.
+			 * unfortunately, the sunvideo driver doesn't provide
+			 * a hook for flushing a frame.  So, we have to do
+			 * a 2MB read to get rid of the sucker.
+			 */
+			char* buf = new char[768 * 576 * 3];
+			(void)pread(fd_, (void*)buf, sizeof(buf), (off_t)0x01000000);
+			delete buf;
+		}
+		/* else do nothing */
+#endif
+	} else
+		nextframetime_ = tick(grab()) + now;
 }
 
 /*
@@ -363,22 +532,23 @@ void XILGrabber::suppress(const u_char* devbuf, int is)
 		  hstart_, hstop_, vstart_, vstop_);
 }
 
-XILYuvGrabber::XILYuvGrabber()
+XILYuvGrabber::XILYuvGrabber(char *devname,struct deviceattributes *devattr)
+	:XILGrabber(devname,devattr)
 {
 	setsize();
 }
 
 XILYuvGrabber::~XILYuvGrabber()
 {
-  if (image_)
-    xil_destroy(image_);
-  image_= NULL;
-  delete frame_;
+	xil_destroy(image_);image_=0;
+	delete frame_;
 }
 
 void XILYuvGrabber::setsize()
 {
+	xil_destroy(image_);
 	set_size_422(basewidth_ / decimate_, baseheight_ / decimate_);
+	image_ = xil_create(xil_, basewidth_/decimate_, baseheight_/decimate_, nbands_, datatype_);
 }
 
 inline void 
@@ -452,13 +622,16 @@ int XILYuvGrabber::grab()
 		abort();
 	}
 	XilMemoryStorage layout;
+	unsigned int xw,xh,xb;
+	XilDataType xd;
+	xil_get_info(image_, &xw, &xh, &xb, &xd);
 	if (xil_get_memory_storage(image_, &layout) == 0) {
 		fprintf(stderr, "vic: xil_get_memory_storage failed\n");
 		abort();
 	}
 	int istride = layout.byte.scanline_stride;
 	if (layout.byte.pixel_stride != 3) {
-		fprintf(stderr, "vic: xil: bad pixel stride\n");
+		fprintf(stderr, "vic: xil: bad pixel stride (%d)\n",layout.byte.pixel_stride);
 		abort();
 	}
 	register u_char* data = layout.byte.data;
@@ -470,14 +643,17 @@ int XILYuvGrabber::grab()
 	return (target_->consume(&f));
 }
 
-XILCIFGrabber::XILCIFGrabber()
+XILCIFGrabber::XILCIFGrabber(char *devname,struct deviceattributes *devattr)
+	:XILYuvGrabber(devname,devattr)
 {
 	setsize();
 }
 
 void XILCIFGrabber::setsize()
 {
+	xil_destroy(image_);
 	set_size_cif(basewidth_ / decimate_, baseheight_ / decimate_);
+	image_ = xil_create(xil_, basewidth_/decimate_, baseheight_/decimate_, nbands_, datatype_);
 }
 
 /* 411 */
@@ -592,70 +768,167 @@ int XILCIFGrabber::grab()
 	return (target_->consume(&f));
 }
 
-XILCodecGrabber::XILCodecGrabber(const char* type)
+XILCodecGrabber::XILCodecGrabber(const char* type,char *devname,struct deviceattributes *devattr)
+	: XILGrabber(devname,devattr)
 {
+	//fprintf(stderr,"XILCodecGrabber::"__FUNCTION__"\n");
 	cis_ = xil_cis_create(xil_, (char*)type);
-	xil_cis_set_keep_frames(cis_, 1);
-	xil_cis_set_max_frames(cis_, 1);
+	xil_cis_set_keep_frames(cis_, 3);
+	xil_cis_set_max_frames(cis_, 3);
 }
 
 XILCodecGrabber::~XILCodecGrabber()
 {
-  if (image_)
+//	fprintf(stderr,"XILCodecGrabber::~XILCodecGrabber\n");
+	xil_cis_sync(cis_);
 	xil_destroy(image_);
-  image_ = NULL;
-  
-  xil_cis_destroy(cis_);
+	xil_cis_destroy(cis_);
+	cis_ = NULL;
+}
+
+void XILCodecGrabber::update_grabber_panel() {
+	char	buf[20];
+	Tcl &tcl = Tcl::instance();
+
+	XILGrabber::update_grabber_panel();
 }
 
 int XILCodecGrabber::cattr(const char* name, int value)
 {
+//	fprintf(stderr,__FUNCTION__"(%s,%d)\n",name,value);
 	(void)xil_cis_set_attribute(cis_, (char*)name, (void*)value);
 	return (0);
 }
 
 u_char* XILCodecGrabber::capture(int& length)
 {
+//	fprintf(stderr,__FUNCTION__":scale=%g\n",scale_);
+
 	xil_scale(source_, image_, "nearest", scale_, scale_);
 	xil_compress(image_, cis_);
+	update_grabber_panel();
 	xil_cis_sync(cis_);
 	xil_toss(image_);
-	if (!xil_cis_has_frame(cis_)){
-      printf("capture no frame in cis\n");
-      return (0);
-    }
+	if (!xil_cis_has_frame(cis_))
+		return (0);
+
 	int cc, nf;
 	u_char* p = (u_char*)xil_cis_get_bits_ptr(cis_, &cc, &nf);
 	length = cc;
 	return (p);
 }
 
-XILJpegGrabber::XILJpegGrabber()
-	: XILCodecGrabber("Jpeg"), q_(50)
+XILCellBGrabber::XILCellBGrabber(char*devname,struct deviceattributes *devattr)
+	: XILCodecGrabber("CellB",devname,devattr)
+{
+}
+
+int XILCellBGrabber::grab()
+{
+	/*XXX can get timestamp from xil */
+	int cc;
+
+	u_char* p = capture(cc);
+
+	if (!p) return cc;
+	CellBFrame f(media_ts(),(short*)p,cc,basewidth_/decimate_,baseheight_/decimate_); 
+	return target_->consume(&f);
+}
+
+int XILCellBGrabber::command(int argc, const char*const* argv)
+{
+/*	fprintf(stderr,"XILCellBGrabber(%s)::command(%d,",filename_,argc);
+	for (int i=1;i<argc;i++)
+		fprintf(stderr,"%s,",argv[i]);
+	fprintf(stderr,")\n");
+*/
+	if (argc == 3) {
+		if (strcmp(argv[1], "decimate") == 0) {
+			int		d = atoi(argv[2]);
+			u_int		nbands;
+			XilDataType	datatype;
+			
+			if ((d!=2) && (d!=4) && (d!=1))
+				return (TCL_ERROR);
+			decimate_ = d;
+			scale_ = 1. / double(d);
+			int targetwidth_ = basewidth_/decimate_;
+			int targetheight_ = baseheight_/decimate_;
+			//fprintf(stderr,"new w is %d,h is %d\n",targetwidth_,targetheight_);
+			xil_cis_sync(cis_);
+			xil_destroy(image_);
+			xil_cis_destroy(cis_);
+			cis_ = xil_cis_create(xil_, "CellB");
+			xil_cis_set_keep_frames(cis_, 3);
+			xil_cis_set_max_frames(cis_, 3);
+			xil_get_info(source_, &basewidth_, &baseheight_, &nbands, &datatype);
+			//fprintf(stderr,"new grabbing cis, w=%d,h=%d\n",targetwidth_,targetheight_);
+			image_ = xil_create(xil_, targetwidth_, targetheight_, nbands, datatype);
+			return (TCL_OK);
+		}
+	}
+	return (XILCodecGrabber::command(argc, argv));
+}
+
+
+XILJpegGrabber::XILJpegGrabber(char*devname,struct deviceattributes *devattr)
+	: XILCodecGrabber("Jpeg",devname,devattr), q_(50)
 {
 	cattr("ENCODE_411_INTERLEAVED", 1);
 }
 
 int XILJpegGrabber::command(int argc, const char*const* argv)
 {
+/*	fprintf(stderr,"XILJpegGrabber(%s)::command(%d,",filename_,argc);
+	for (int i=1;i<argc;i++)
+		fprintf(stderr,"%s,",argv[i]);
+	fprintf(stderr,")\n");
+ */
 	if (argc == 3) {
 		if (strcmp(argv[1], "q") == 0) {
 			int q = atoi(argv[2]);
 			setq(q);
 			return (TCL_OK);
 		}
-	} else if (argc == 2 && strcmp(argv[1], "decimate") == 0) {
-		// silently ignore decimate command
-		return (TCL_OK);
+		if (!strcmp(argv[1], "decimate")) {
+			int		d = atoi(argv[2]);
+			u_int		nbands;
+			XilDataType	datatype;
+			
+			if ((d!=2) && (d!=4) && (d!=1))
+				return (TCL_ERROR);
+			//fprintf(stderr,"new decimate is %d\n",d);
+			decimate_ = d;
+			scale_ = 1. / double(d);
+			if (cis_) {
+				xil_cis_sync(cis_);
+				xil_cis_destroy(cis_);
+				cis_= 0;
+			}
+
+			if (image_) xil_destroy(image_);image_=0;
+			cis_ = xil_cis_create(xil_, "Jpeg");
+			xil_cis_set_keep_frames(cis_, 3);
+			xil_cis_set_max_frames(cis_, 3);
+			cattr("ENCODE_411_INTERLEAVED", 1);
+			xil_get_info(source_, &basewidth_, &baseheight_, &nbands, &datatype);
+			image_ = xil_create(xil_, basewidth_/decimate_, baseheight_/decimate_, nbands, datatype);
+			return (TCL_OK);
+		}
 	}
 	return (XILGrabber::command(argc, argv));
 }
-
+ 
 extern void jpeg_chroma_qt(int q, int* qt);
 extern void jpeg_luma_qt(int q, int* qt);
 
 void XILJpegGrabber::setq(int q)
 {
+	Tcl &tcl = Tcl::instance();
+	char	buf[20];
+
+	sprintf(buf,"%d",q);
+	Tcl_SetVar(tcl.interp(),"QUALITY",buf,TCL_GLOBAL_ONLY);
 	/*
 	 * NB - if any entry of any quantization table is < 8, XIL
 	 * will refuse to use the CL4000 for compression & instead
@@ -665,10 +938,12 @@ void XILJpegGrabber::setq(int q)
 	q_ = q;
 	int qt[8][8];
 	XilJpegQTable xq;
+
 	jpeg_luma_qt(q, (int*)qt);
 	xq.table = 0;
 	xq.value = qt;
 	(void)xil_cis_set_attribute(cis_, "QUANTIZATION_TABLE", (void*)&xq);
+
 	jpeg_chroma_qt(q, (int*)qt);
 	xq.table = 1;
 	xq.value = qt;
@@ -679,13 +954,13 @@ int XILJpegGrabber::grab()
 {
 	/*XXX can get timestamp from xil */
 	int cc;
-
 	u_char* p = capture(cc);
 	if (p == 0)
 		return (0);
-	/* get rid of the jfif header that xil prepends to each frame */
-	u_char* ep;
 
+	/* get rid of the jfif header that xil prepends to each frame */
+	u_char *ep,*bp;
+	bp = p;
 	for (ep = p + cc; p < ep; ++p) {
 		if (*p == 0xff) {
 			++p;
@@ -701,27 +976,140 @@ int XILJpegGrabber::grab()
 			}
 		}
 	}
+#undef DEBUG_JFIF
+#ifdef DEBUG_JFIF
+	int wrapc = 0, injfifhdr = 1;
+	for (int i = 0;i<cc;i++) {
+		if (i==(p-bp)) {
+			fprintf(stderr,"\n	begin of stream \n");
+			injfifhdr = 0;
+			wrapc=0;
+		}
+		if (injfifhdr && (bp[i]==0xff)) {
+			fprintf(stderr,"\n");
+			wrapc=0;
+		}
+		fprintf(stderr,"%02x ",bp[i]);
+		if (((wrapc++)% 20) == 19) {
+			fprintf(stderr,"\n");
+			wrapc=0;
+		}
+	}
+	fprintf(stderr,"\n	end of stream \n");
+#endif
 
 	if (p >= ep)
 		return (0);
-
+	// the 1 is the type and means 411 encoding.
 	JpegFrame f(media_ts(), p, ep - p, q_, 1,
 		    basewidth_ / decimate_, baseheight_ / decimate_);
-
 	return (target_->consume(&f));
 }
 
-#ifdef notdef
-XILp64Grabber::XILp64Grabber()
-	: XILCodecGrabber("H261")
+XILp64Grabber::XILp64Grabber(char *devname,struct deviceattributes *devattr)
+	 :XILCodecGrabber("H261",devname,devattr)
 {
+        XilDataType datatype;
+        u_int nbands;
+ 
+	attr("H261_BIT_RATE",500);
+	attr("H261_MAX_QUANT",10);
+
+        xil_get_info(source_, &basewidth_, &baseheight_, &nbands, &datatype);
+        targetwidth_ = 352*2/decimate_;
+        targetheight_ = 288*2/decimate_;
+        /* XXX: free old image */
+        image_ = xil_create(xil_, targetwidth_, targetheight_, nbands, datatype);
+	xil_cis_set_keep_frames(cis_, 3);
+	xil_cis_set_max_frames(cis_, 3);
+
+}
+
+u_char* XILp64Grabber::capture(int& length)
+{
+
+	u_char *p = NULL;
+	int cc, nf;
+	static incis = 0;
+
+	update_grabber_panel();
+
+	xil_scale(source_, image_, "nearest", 1.0*targetwidth_/basewidth_, 1.0*targetheight_/baseheight_);
+	xil_compress(image_, cis_);
+	xil_cis_sync(cis_);
+	xil_toss(image_);
+	if (xil_cis_has_frame(cis_)) {
+		p = (u_char*)xil_cis_get_bits_ptr(cis_, &cc, &nf);
+		//fprintf(stderr,"capture, cc=%d?\n",cc);
+		length = cc;
+		return p;
+	}
+	return NULL;
+}
+void XILp64Grabber::setq(int q)
+{
+	attr("H261_MAX_QUANT",q);
 }
 
 int XILp64Grabber::grab()
 {
 	/*XXX can get timestamp from xil */
 	int cc;
+
 	u_char* p = capture(cc);
-	return (framer_->send(p, cc, media_ts()));
+
+	if (!p) return cc;
+	H261Frame f(media_ts(),(short*)p,cc,targetwidth_,targetheight_); 
+	return target_->consume(&f);
 }
-#endif
+
+int XILp64Grabber::command(int argc, const char*const* argv)
+{
+/*	fprintf(stderr,"XILp64Grabber(%s)::command(%d,",filename_,argc);
+	for (int i=1;i<argc;i++)
+		fprintf(stderr,"%s,",argv[i]);
+	fprintf(stderr,")\n");
+*/
+	if (argc == 3) {
+		if (!strcmp(argv[1],"bps")) {
+			int	xbps;
+
+			//fprintf(stderr,"bitrate set to %d\n",atoi(argv[2]));
+			xbps = atoi(argv[2]);
+			if (xbps < 30)
+				xbps = 30;
+			attr("H261_BIT_RATE",xbps);
+			// fall through to ::command()... 
+		}
+		if (strcmp(argv[1], "q") == 0) {
+			int q = atoi(argv[2]);
+			setq(q);
+			return (TCL_OK);
+		}
+		if (strcmp(argv[1], "decimate") == 0) {
+			int		d = atoi(argv[2]);
+			u_int		nbands;
+			XilDataType	datatype;
+			
+			if ((d!=2) && (d!=4))
+				return (TCL_ERROR);
+			//fprintf(stderr,"new decimate is %d\n",d);
+			decimate_ = d;
+			scale_ = 1. / double(d);
+			targetwidth_ = 352*2/decimate_;
+			targetheight_ = 288*2/decimate_;
+			//fprintf(stderr,"new w is %d,h is %d\n",targetwidth_,targetheight_);
+			xil_cis_sync(cis_);
+			xil_destroy(image_);
+			xil_cis_destroy(cis_);
+			cis_ = xil_cis_create(xil_, "H261");
+			xil_cis_set_keep_frames(cis_, 3);
+			xil_cis_set_max_frames(cis_, 3);
+			xil_get_info(source_, &basewidth_, &baseheight_, &nbands, &datatype);
+			//fprintf(stderr,"new grabbing cis, w=%d,h=%d\n",targetwidth_,targetheight_);
+			image_ = xil_create(xil_, targetwidth_, targetheight_, nbands, datatype);
+			return (TCL_OK);
+		}
+	}
+	return (XILCodecGrabber::command(argc, argv));
+}

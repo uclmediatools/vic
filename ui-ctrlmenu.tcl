@@ -552,6 +552,7 @@ proc insert_grabber_panel devname {
 		incr k -1
 		set devname [string range $devname 0 $k]
 	}
+	regsub -all " " $devname "_" devname
 	set w .menu.$devname
 	global grabberPanel
 	if [info exists grabberPanel] {
@@ -1153,7 +1154,7 @@ set qscale_val(raw) 1
 set lastFmt ""
 
 proc select_format fmt {
-	global qscale qlabel videoFormat qscale_val lastFmt
+	global qscale qlabel videoDevice videoFormat qscale_val lastFmt
 
 	if { $fmt == "h261" } {
 		# H.261 supports only QCIF/CIF
@@ -1173,12 +1174,28 @@ proc select_format fmt {
 		$qscale configure -state disabled 
 		$qlabel configure -foreground gray40
 	}
-	if [info exists qscale_val($fmt)] {
+	set qual [resource quality]
+	if { $qual > 0 } {
+		puts "vic: quality found "
+		$qscale set [resource quality]
+	} else { if [info exists qscale_val($fmt)] {
 		$qscale set $qscale_val($fmt)
-	}
+	}}
 	if [have grabber] {
 		global V
 		set encoder [create_encoder $videoFormat]
+
+# MM
+#		if { [info procs build.$devname\_$videoFormat] != "" } {
+#			if ![winfo exists $w] {
+#				frame $w
+#				build.$devname $w
+#			}
+#			pack $w -before .menu.encoder -padx 6 -fill x
+#			set grabberPanel $w
+#		}
+# MM
+
 		set ff [$encoder frame-format]
 		if { "$ff" == "[$V(encoder) frame-format]" } {
 			#
@@ -1215,7 +1232,13 @@ proc init_grabber { grabber } {
 		# don't map it until after we call "$grabber decimate"
 		# to specify it's size
 		#
-		toplevel .capture -class Vic
+		set rgd [option get . localPlxDisplay $V(class)]
+		if { $rgd != "" } {
+			open_dialog "Using Remote Grabbing Display $rgd"
+			toplevel .capture -class Vic -screen $rgd
+		} else {
+			toplevel .capture -class Vic
+		}
 		wm title .capture "Video Capture Window"
 		$grabber create-capwin .capture.video
 		set V(capwin) .capture.video
