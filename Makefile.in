@@ -128,7 +128,7 @@ OBJ2 =	main.o net.o net-ip.o source.o \
 OBJ3 =	cm0.o cm1.o huffcode.o version.o bv.o \
 	$(TCL_VIC:.tcl=.o) tk.o
 SRC =	$(OBJ1:.o=.c) $(OBJ2:.o=.cc) $(BROKEN_OBJ:.o=.c) \
-	$(RTIP_OBJ:.o=.c) $(SRC_GRABBER) $(OBJ_XIL:.o=.cc) $(OBJ_CRYPT:.o=.cc)
+	$(RTIP_OBJ:.o=.c) $(SRC_GRABBER) $(OBJ_XIL:.o=.cc) $(OBJ_CRYPT:.o=.c)
 OBJ =	$(OBJ1) $(OBJ2) $(OBJ3) $(BROKEN_OBJ) $(RTIP_OBJ)
 
 OBJ_VDD = vdd.o p64/p64.o p64/p64dump.o \
@@ -158,15 +158,11 @@ OBJ_JPEGPLAY = jpeg_play.o jpeg/jpeg.o \
 LIB_CB = @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ -lm
 OBJ_CB = cbAppInit.o cb.o confbus.o group-ipc.o iohandler.o \
 	net.o net-ip.o crypt.o crypt-dull.o $(OBJ_CRYPT) communicator.o \
-	ppm.o Tcl.o Tcl2.o inet.o md5c.o
+	ppm.o Tcl.o Tcl2.o inet.o md5c.o 
 
 OBJ_H261DUMP = h261_dump.o p64/p64.o p64/p64dump.o huffcode.o dct.o bv.o
 
-vic:	$(OBJ) $(OBJ_GRABBER) $(JV_LIB)
-	rm -f $@
-	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(LIB) $(STATIC)
-
-vic.des: $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)
+vic: $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)
 	rm -f $@
 	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(OBJ_CRYPT) $(LIB) $(STATIC)
 
