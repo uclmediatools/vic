@@ -31,7 +31,7 @@
 # SUCH DAMAGE.
 #
 
-set rtp_type(21) raw
+set rtp_type(126) raw
 set rtp_type(22) bvc
 set rtp_type(25) cellb
 set rtp_type(26) jpeg
