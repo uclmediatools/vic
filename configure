@@ -209,6 +209,14 @@ else
 	${ECHO} "yes"
 fi
 
+${ECHO} "Searching for vsnprintf in <stdio.h>... \c"
+T1=`grep -c vsnprintf /usr/include/stdio.h`
+if [ $T1 = 0 ]; then
+	DEFS="$DEFS -DNEED_VSNPRINTF"
+	${ECHO} "no - unsafe replacement enabled"
+else 
+	${ECHO} "yes"
+fi
 
 # Process options to the configure script...
 DEBUG2=""

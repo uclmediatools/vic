@@ -52,6 +52,16 @@
 #define MBUS_MAX_PD	    10
 #define MBUS_MAX_QLEN	    50 /* Number of messages we can queue with mbus_qmsg() */
 
+#ifdef NEED_VSNPRINTF
+int vsnprintf(char *s, int buf_size, const char *format, va_list ap)
+{
+	/* Quick hack replacement for vsnprintf... note that this */
+	/* doesm't check for buffer overflows, and so it open to  */
+	/* many really nasty attacks!                             */
+        return vsprintf(s,format,ap);
+}
+#endif
+
 struct mbus_key{
 	char	*algorithm;
 	char	*key;
