@@ -31,165 +31,10 @@
 # SUCH DAMAGE.
 #
 
-#
 # $dst has form addr/port/fmt/ttl (last two optional)
 #
 proc net_open_ip { sessionType session dst } {
-	global V numLayers
-	set c $V(class)
-	set dst [split $dst /]
-	set n [llength $dst]
-	if { $n < 2 } {
-		warn "must specify both address and port in the form addr/port"
-		exit 1
-	} else {
-		set addr [lindex $dst 0]
-		set port [lindex $dst 1]
-		if { ![string match \[0-9\]* $port] || $port >= 65536 } {
-			warn "illegal port '$port'"
-			exit 1
-		}
-		if { $n >= 3 } {
-			if { $sessionType == "vat" } {
-				set confid [lindex $dst 2]
-				if { $n >= 4 } {
-					set fmt [lindex $dst 3]
-					if { $n >= 5 } {
-						set ttl [lindex $dst 4]
-						if { $n > 5 } {
-							usage
-						}
-					}
-				}
-			} else {
-				set fmt [lindex $dst 2]
-				if { $n >= 4 } {
-					set ttl [lindex $dst 3]
-					if { $n > 4 } {
-						usage
-					}
-				}
-			}
-		}
-		if { [info exists fmt] && $fmt != "" } {
-			option add $c.defaultFormat $fmt interactive
-			#XXX compat with vat
-			option add $c.audioFormat $fmt interactive
-		}	
-		if [info exists confid] {
-			option add $c.confid $confid interactive
-		}	
-		if [info exists ttl] {
-			option add $c.defaultTTL $ttl interactive
-		}	
-	}
-	set ttl [resource defaultTTL]
-	if { $ttl < 0 || $ttl > 255 } {
-		warn "invalid ttl ($ttl)"
-		exit 1
-	}
-	if { $sessionType == "rtp" } {
-		set port [expr $port &~ 1]
-	}
-
-#Layer 0
-	set layer 0
-	set dn [new network ip]
-	if { [$dn open $addr $port $ttl] == 0 } {
-		warn "Problem opening IPv4 data socket"
-		exit 1
-	}
-	$session data-net $dn
-	if { $sessionType != "nv" } {
-		if { $sessionType == "ivs" } {
-			incr port 2
-		} else {
-			incr port
-		}
-		set cn [new network ip]
-		$cn open $addr $port $ttl
-		$session ctrl-net $cn
-		set V(ctrl-net) $cn
-	}
-	set V(data-net) $dn
-
-	if { $numLayers > 0 } {
-		set oct [split $addr .]
-		set base [lindex $oct 0].[lindex $oct 1].[lindex $oct 2]
-		set off [lindex $oct 3]
-		set ismulticast [in_multicast $addr]
-
-		while { $numLayers > $layer } {
-			incr port 
-			incr layer
-			if { $ismulticast } {
-				incr off
-			}
-			set dn [new network ip]
-			$dn open $base.$off $port $ttl
-			$session data-net $dn $layer
-
-			if { $sessionType != "nv" } {
-				if { $sessionType == "ivs" } {
-					incr port 2
-				} else {
-					incr port
-				}
-				set cn [new network ip]
-				$cn open $base.$off $port $ttl
-				$session ctrl-net $cn $layer
-			}
-		}
-	}
-	#
-	# if the max bandwidth wasn't set, pick one based on the
-	# session ttl.  Then use the max bandwidth to compute the
-	# fraction allocated to rtcp (control) traffic.  We have
-	# to do this before creating the session manager since it
-	# will use the result to compute a time to the first report.
-	# bw is in kbits/sec and we want bytes/ms so we divide by 8.
-	#
-	set maxbw [resource maxbw]
-	if { $maxbw < 0 } {
-		if { $V(app) == "vat" } {
-			# maxbandwidth wasn't set - pick one based on
-			# the data format assuming the format was picked
-			# to match some bottleneck bandwidth.
-			switch [resource audioFormat] {
-				pcm  { set maxbw 78 }
-				pcm2 { set maxbw 71 }
-				pcm4 { set maxbw 68 }
-				dvi  { set maxbw 46 }
-				dvi2 { set maxbw 39 }
-				dvi4 { set maxbw 36 }
-				gsm  { set maxbw 17 }
-				lpc4 { set maxbw 9 }
-				default { set maxbw 71 }
-			}
-		} else {
-			if { $ttl <= 16 || ![in_multicast [$dn addr]] } {
-				set maxbw 3072
-			} elseif { $ttl <= 64 } {
-				set maxbw 1024
-			} elseif  { $ttl <= 128 } {
-				set maxbw 128
-			} elseif { $ttl <= 192 } {
-				set maxbw 53
-			} else {
-				set maxbw 32
-			}
-		}
-		option add $c.maxbw $maxbw interactive
-	}
-}
-
-
-# IPv6 network type
-#
-# $dst has form addr/port/fmt/ttl (last two optional)
-#
-proc net_open_ip6 { sessionType session dst } {
-	global V numLayers 
+	global V numLayers IPaddrFamily
 
 	set c $V(class)
 	set dst [split $dst /]
@@ -246,13 +91,13 @@ proc net_open_ip6 { sessionType session dst } {
 	if { $sessionType == "rtp" } {
 		set port [expr $port &~ 1]
 	}
-	set dn [new network ip6]
+	set dn [new network $IPaddrFamily]
 	if { $dn == "" } {
-		warn "Not compiled with IPv6 support"
+		warn "Not compiled with $IPaddrFamily support"
 		exit 1
 	}
 	if { [$dn open $addr $port $ttl] == 0 } {
-		warn "Problem opening IPv6 data socket"
+		warn "Problem opening $IPaddrFamily data socket"
 		exit 1
 	}
 	$session data-net $dn
@@ -262,7 +107,7 @@ proc net_open_ip6 { sessionType session dst } {
 		} else {
 			incr port
 		}
-		set cn [new network ip6]
+		set cn [new network $IPaddrFamily]
 		$cn open $addr $port $ttl
 		$session ctrl-net $cn
 		set V(ctrl-net) $cn
@@ -270,10 +115,18 @@ proc net_open_ip6 { sessionType session dst } {
 	set V(data-net) $dn
 
 	if { $numLayers > 0 } {
-		set base [string range $addr 0 [string last : $addr]]
-		set off [string range $addr [expr {[string last : $addr]+1}] end]
-
-		set ismulticast [in6_multicast $addr]
+		if { $IPaddrFamily == "ip6" } {
+			set base [string range $addr 0 [string last : $addr]]
+			set offset [string range $addr [expr {[string last : $addr]+1}] end]
+			set ismulticast [in6_multicast $addr]
+			set separator :
+		} else {
+			set oct [split $addr .]
+			set base [lindex $oct 0].[lindex $oct 1].[lindex $oct 2]
+			set offset [lindex $oct 3]
+			set ismulticast [in_multicast $addr]
+			set separator .
+		}
 
 		while { $numLayers > $layer } {
 			incr port 
@@ -281,7 +134,7 @@ proc net_open_ip6 { sessionType session dst } {
 			if { $ismulticast } {
 				incr off
 			}
-			set dn [new network ip]
+			set dn [new network $IPaddrFamily]
 			$dn open $base.$off $port $ttl
 			$session data-net $dn $layer
 
@@ -291,7 +144,7 @@ proc net_open_ip6 { sessionType session dst } {
 				} else {
 					incr port
 				}
-				set cn [new network ip]
+				set cn [new network $IPaddrFamily]
 				$cn open $base.$off $port $ttl
 				$session ctrl-net $cn $layer
 			}
@@ -399,18 +252,20 @@ proc net_open_rtip { sessionType session dst } {
 }
 
 proc init_network {} {
-	global numLayers numEncoderLayers
+	global numLayers numEncoderLayers IPaddrFamily
 	
 	set numLayers [resource numLayers]
 	set numEncoderLayers $numLayers
 	set netType [resource network]
+	set IPaddrFamily [resource network]
+
 	# Auto detect IPv6 addresses
 	if { [string first ":" [resource defaultHostSpec]] > 0 } {
-		set netType ip6
+		set IPaddrFamily ip6
 	}
 	# Check for ipv6 as well as ip6 as a netType
-	if { $netType == "ipv6" } {
-		set netType ip6
+	if { $IPaddrFamily == "ipv6" } {
+		set IPaddrFamily ip6
 	}
 	if { [info procs net_open_$netType] == "" } {
 		warn "$netType not a recognized network type"
