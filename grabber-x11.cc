@@ -146,8 +146,8 @@ class X11Grabber : public Grabber {
         int (X11Grabber::*c_grab)(void);
 
 	uint8 *rgb2y_ ;
-	int8 *rgb2u_ ;
-	int8 *rgb2v_ ;
+	uint8 *rgb2u_ ;
+	uint8 *rgb2v_ ;
 
         ximage_t *ximage_ ;
 
@@ -155,7 +155,7 @@ class X11Grabber : public Grabber {
 	int mode_;		/* input mode */
 	Window theroot_ ;
 
-//	Tcl_Interp *interp_=NULL;
+/*	Tcl_Interp *interp_=NULL;*/
 
 	int screen, xerror ;
   	Window vRoot_ ;
@@ -585,7 +585,7 @@ X11Grabber::X11Grab_Initialize(Window rw, int w, int h)
                 c_grab = X11Grab_Pseudo8;
                 break;
             default:
-                c_grab = NULL;
+                c_grab = (int)NULL;
                 break;
             }
             config = VID_GREYSCALE|VID_COLOR;
@@ -608,14 +608,14 @@ X11Grabber::X11Grab_Initialize(Window rw, int w, int h)
                 {
                 c_grab = X11Grab_TrueXBGR24;
             } else
-                c_grab = NULL;
+                c_grab = (int)NULL;
             config = VID_GREYSCALE|VID_COLOR;
             break;
 
         default:
 	    fprintf(stderr, "don't know how to grab %d bits\n",
 		root_depth_);
-            c_grab = NULL;
+            c_grab = (int)NULL;
             break;
         }
     }
@@ -983,7 +983,7 @@ X11Device::command(int argc, const char*const* argv)
 
 X11Grabber::X11Grabber(const char* name, const char* format)
 {
-	c_grab = NULL ; /* XXX */
+	c_grab = (int)NULL ; /* XXX */
 	theroot_ = None ; /* XXX */
 	ximage_ = NULL ;
 	color = NULL ;
@@ -1052,7 +1052,7 @@ X11Grabber::~X11Grabber()
 }
 
 void
-+X11Grabber::setsize()
+X11Grabber::setsize()
 {
 	int rows, columns;
 

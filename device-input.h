@@ -36,7 +36,7 @@
 #ifndef vic_device_input_h
 #define vic_device_input_h
 
-#include <Tcl.h>
+#include "Tcl.h"
 
 class Grabber;
 class Framer;
