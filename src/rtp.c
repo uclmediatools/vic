@@ -2001,7 +2001,6 @@ void rtp_update(struct rtp *session)
 		return;
 	}
 	session->last_update = curr_time;
-	debug_msg("Cleaning up RTP database...\n");
 
 	for (h = 0; h < RTP_DB_SIZE; h++) {
 		for (s = session->db[h]; s != NULL; s = n) {
