@@ -71,6 +71,8 @@
 #define RTP_SEQ_MOD        0x10000
 #define RTP_MAX_SDES_LEN   256
 
+#define RTP_LOWER_LAYER_OVERHEAD 28	/* IP+UDP */
+
 #define RTCP_SR   200
 #define RTCP_RR   201
 #define RTCP_SDES 202
@@ -960,7 +962,7 @@ struct rtp *rtp_init_if(const char *addr, char *iface, uint16_t rx_port, uint16_
 	session->ssrc_count_prev    = 0;
 	session->sender_count       = 0;
 	session->initial_rtcp       = TRUE;
-	session->avg_rtcp_size      = 70.0;	/* Guess for a sensible starting point... */
+	session->avg_rtcp_size      = 70.0 + RTP_LOWER_LAYER_OVERHEAD;	/* Guess for a sensible starting point... */
 	session->we_sent            = FALSE;
 	session->rtcp_bw            = rtcp_bw;
 	session->sdes_count_pri     = 0;
@@ -1634,7 +1636,7 @@ static void rtp_process_ctrl(struct rtp *session, uint8_t *buffer, int buflen)
 				first  = FALSE;
 			}
 			/* The constants here are 1/16 and 15/16 (section 6.3.3 of draft-ietf-avt-rtp-new-02.txt) */
-			session->avg_rtcp_size = (0.0625 * buflen) + (0.9375 * session->avg_rtcp_size);
+			session->avg_rtcp_size = (0.0625 * (buflen + RTP_LOWER_LAYER_OVERHEAD)) + (0.9375 * session->avg_rtcp_size);
 			/* Signal that we've finished processing this packet */
 			if (!filter_event(session, packet_ssrc)) {
 				event.ssrc = packet_ssrc;
