@@ -299,6 +299,7 @@ v1.2.2	- Fix bug in mbus transmit code which caused messages to have the same se
 
 v1.2.3	- Add prototype for rtp_del_csrc() which will be needed by the
  	  mixer in rat.
+	* 8 September 2000 [rat v4.2.9]
 
 
 Still to do...
