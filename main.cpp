@@ -452,7 +452,7 @@ main(int argc, const char** argv)
 #endif
 	// Option list; If letter is followed by ':' then it takes an argument
 	const char* options = 
-		"A:B:C:c:D:d:f:F:HI:j:K:lL:M:m:N:n:o:Pq:rsST:t:U:u:V:w:X:y";
+		"A:B:C:c:D:d:f:F:HI:j:K:lL:M:m:N:n:o:Pq:rsST:t:U:u:vV:w:X:y";
 	/* process display and window (-use) options before initialising tcl/tk */
 	char buf[256], tmp[256];
 	const char *display=0, *use=0;
@@ -650,7 +650,8 @@ main(int argc, const char** argv)
 			break;
 
 		case 'v':
-            printf("VIC %s\n", version);
+            		printf("VIC %s\n", version);
+			exit(0);
 			break;
 
 		case 'V':
