@@ -63,7 +63,8 @@ proc vic_main {} {
 	}
 	if [yesno logFrameRate] {
 		global logFrameChannel
-		set logFrameChannel [open [resource logFrameFile] "w"]
+		set logFrameFile "vic-[clock seconds]-[$V(data-net) interface]-[user_heuristic]"
+		set logFrameChannel [open $logFrameFile w ]
 	}
 	init_late
 	build.menu

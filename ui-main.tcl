@@ -35,6 +35,17 @@
 
 set updated 0
 
+proc adios {} {
+
+	if {[yesno logFrameRate]} {
+		global logFrameChannel
+		close $logFrameChannel
+	}
+	# just call C++ based routine that sends a RTCP bye: SessionManager->send_bye()
+	adios_rtcp
+}
+
+
 proc session args {
 	global V
 	eval $V(session) $args

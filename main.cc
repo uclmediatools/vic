@@ -159,7 +159,7 @@ ciao(SIGARGS)
 
 static class AdiosCommand : public TclObject {
 public:
-	AdiosCommand() : TclObject("adios") {}
+	AdiosCommand() : TclObject("adios_rtcp") {}
 	int command(int argc, const char*const* argv) {
 		adios();
 		/*NOTREACHED*/
@@ -418,7 +418,7 @@ main(int argc, const char** argv)
 	opterr = 0;
 #endif
 	const char* options = 
-		"A:B:C:c:D:d:f:F:Hl:I:K:L:M:m:N:n:o:Pq:re:sT:t:U:u:V:w:X:yy:";
+		"A:B:C:c:D:d:f:F:H:I:K:lL:M:m:N:n:o:Pq:re:sT:t:U:u:V:w:X:yy:";
 	/* process display and window (-use) options before initialising tcl/tk */
 	char buf[128], tmp[16];
 	const char *display=0, *use=0;
@@ -546,7 +546,7 @@ main(int argc, const char** argv)
 
 		case 'l':
 			tcl.add_option("logFrameRate", "true");
-			tcl.add_option("logFrameFile", optarg);
+			//tcl.add_option("logFrameFile", optarg);
 			break;
 
 		case 'L':
