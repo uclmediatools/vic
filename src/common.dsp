@@ -85,11 +85,19 @@ LIB32=link.exe -lib
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=.\base64.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\crypt_random.c
 # End Source File
 # Begin Source File
 
 SOURCE=.\debug.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\hmac.c
 # End Source File
 # Begin Source File
 
@@ -121,6 +129,10 @@ SOURCE=.\util.c
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=.\base64.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\config_unix.h
 # End Source File
 # Begin Source File
@@ -134,6 +146,10 @@ SOURCE=.\crypt_random.h
 # Begin Source File
 
 SOURCE=.\debug.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\hmac.h
 # End Source File
 # Begin Source File
 
