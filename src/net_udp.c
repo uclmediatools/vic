@@ -279,9 +279,7 @@ static socket_udp *udp_init6(char *addr, u_int16 port, int ttl)
         }
 
 	if (IN6_IS_ADDR_MULTICAST(&(s->addr6))) {
-#if 0
-		char              loop = 1;
-#endif
+		unsigned int      loop = 1;
 		struct ipv6_mreq  imr;
 		imr.ipv6mr_multiaddr = s->addr6;
 		imr.ipv6mr_interface = 0;
@@ -290,16 +288,14 @@ static socket_udp *udp_init6(char *addr, u_int16 port, int ttl)
 			socket_error("setsockopt IPV6_ADD_MEMBERSHIP");
 			abort();
 		}
-#if 0
 		if (setsockopt(s->fd, IPPROTO_IPV6, IPV6_MULTICAST_LOOP, &loop, sizeof(loop)) != 0) {
 			socket_error("setsockopt IPV6_MULTICAST_LOOP");
 			abort();
 		}
-		if (setsockopt(s->fd, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, (unsigned char *) &s->ttl, sizeof(s->ttl)) != 0) {
+		if (setsockopt(s->fd, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, (int *) &ttl, sizeof(ttl)) != 0) {
 			socket_error("setsockopt IPV6_MULTICAST_HOPS");
 			abort();
 		}
-#endif
 	}
 	assert(s != NULL);
 	return s;

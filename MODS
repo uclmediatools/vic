@@ -13,6 +13,7 @@ v1.0.1	- Added HMAC authentication code
 	  on Win32, to save/restore settings
 	- Add udp_host_addr() to get a text-version of the address to which
 	  a socket is bound.
+	- Set IPv6 ttl and loopback state correctly on Solaris
 
 Still to do...
 	- Mbus still uses old-style addressing scheme
