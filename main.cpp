@@ -168,7 +168,7 @@ public:
 } cmd_usage;
 
 #ifndef SIGARGS
-#ifdef __SUNPRO_CC
+#if defined(__SUNPRO_CC) || defined(Linux)
 #define SIGARGS int arg
 #else
 #define SIGARGS ... 
