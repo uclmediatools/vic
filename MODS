@@ -301,6 +301,8 @@ v1.2.3	- Add prototype for rtp_del_csrc() which will be needed by the
  	  mixer in rat.
 	* 8 September 2000 [rat v4.2.9]
 
+v1.2.4	- Implement rtp_add_csrc() and rtp_del_csrc().
+
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
