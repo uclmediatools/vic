@@ -433,10 +433,21 @@ main(int argc, const char** argv)
 	if (display == NULL)
 		display = "localhost:0";
 #endif
+#ifdef sgi
+	if (display == NULL) {
+        		display=getenv("DISPLAY");
+      		if ((display != NULL) && (strcmp(display,":0.0") == 0)) {
+			strcpy(buf,"-name vic -display ");
+			gethostname(&buf[19],sizeof(buf)-19);
+			strcat(buf,":0");
+                	}
+	}
+#else
    	sprintf(buf,display?
 		    "-name vic -display %s" :
 		    "-name vic",
 		  display);
+#endif
 	sprintf(tmp,use?" -use %s":"",use);
 	strncat(buf,tmp,strlen(tmp));
 	Tcl_SetVar(tcl.interp(), "argv", buf, TCL_GLOBAL_ONLY);
