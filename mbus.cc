@@ -37,6 +37,7 @@
  * SUCH DAMAGE.
  */
 
+#ifndef WIN32
 #include <strings.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -49,9 +50,15 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <unistd.h>
+#endif
+
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
 #include <assert.h>
 #include "mbus.h"
-
 
 #define MBUS_ADDR 	0xe0ffdeef	/* 224.255.222.239 */
 #define MBUS_PORT 	47000
@@ -189,7 +196,7 @@ void  MBusHandler::mbus_retransmit()
 			memcpy((char *) &saddr.sin_addr.s_addr, (char *) &addr, sizeof(addr));
 			saddr.sin_family = AF_INET;
 			saddr.sin_port   = htons(MBUS_PORT+m_->channel);
-			b                = malloc(strlen(curr->dest)+strlen(curr->cmnd)+strlen(curr->args)+strlen(curr->srce)+80);
+			b                = (char *)malloc(strlen(curr->dest)+strlen(curr->cmnd)+strlen(curr->args)+strlen(curr->srce)+80);
 			sprintf(b, "mbus/1.0 %d R (%s) %s ()\n%s (%s)\n", curr->seqn, curr->srce, curr->dest, curr->cmnd, curr->args);
 			if ((sendto(m_->fd, b, strlen(b), 0, (struct sockaddr *) &saddr, sizeof(saddr))) < 0) {
 				perror("mbus_send: sendto");
@@ -288,7 +295,9 @@ MBusHandler::~MBusHandler()
 
 	struct mbus_ack *tmp;	
 	if (m_) {
+#ifndef WIN32
 		close(m_->fd);
+#endif
 		if (mbus_audio_addr)
 			free(mbus_audio_addr);
 		for (i=0; i<MBUS_MAX_ADDR; i++)
@@ -471,13 +480,19 @@ int MBusHandler::mbus_parse_flt(double *d)
 
 char *MBusHandler::mbus_decode_str(char *s)
 {
-	int   l = strlen(s);
+	int   l = strlen(s), i, j;
 
 	/* Check that this an encoded string... */
 	assert(s[0]   == '\"');
 	assert(s[l-1] == '\"');
 
-	bcopy(s+1, s, l-2);
+	for (i=1, j=0; i< l-1; j++, i++) {
+		if (s[i] == '\\') {
+			i++;
+		}
+		s[j] = s[i];
+	}
+
 	s[l-2] = '\0';
 	return s;
 }

@@ -42,13 +42,15 @@
 
 #include "iohandler.h"
 #include "mbus_engine.h"
-
+#include <winsock.h>
 
 #define MBUS_ADDR       0xe0ffdeef      /* 224.255.222.239 */
 #define MBUS_PORT       47000
 #define MBUS_BUF_SIZE   1024
 #define MBUS_MAX_ADDR   10
 #define MBUS_MAX_PD     10
+
+extern "C" int gettimeofday(struct timeval *, struct timezone *);
 
 struct mbus_ack {
         struct mbus_ack *next;
