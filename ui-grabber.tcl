@@ -277,8 +277,14 @@ proc xil_set_vformat { value } {
 	}
 }
 
+proc xil_set_hsbc { w param value } {
+	$w configure -text $value
+	grabber set $param $value
+}
+
 proc build.xil_Osprey_1k w {
 	# .menu.xil
+	global xilHue xilSaturation xilBrightness xilContrast
 	set f [smallfont]
 	label $w.title -text "XIL Grabber"
 	frame $w.f -relief sunken -borderwidth 2
@@ -294,8 +300,9 @@ proc build.xil_Osprey_1k w {
 	scale $w.f.hue.scale -orient horizontal -width 12 \
 			   -variable xilHue \
 		           -relief groove -showvalue 0 -from -128 -to 127 \
-                           -command " $w.f.hue.val configure -text \$xilHue
-        grabber set HUE "
+                           -command "xil_set_hsbc $w.f.hue.val HUE"
+#                           -command " $w.f.hue.val configure -text \$xilHue
+#        grabber set HUE "
 #                           -command "xil_grabber_set HUE $w.f.hue.val"
 	pack $w.f.hue.scale $w.f.hue.val -fill x -expand 1 -side left
 
@@ -321,8 +328,9 @@ proc build.xil_Osprey_1k w {
 	scale $w.f.saturation.scale -orient horizontal -width 12 \
 		           -relief groove -showvalue 0 -from -256 -to 255 \
 			   -variable xilSaturation \
-                          -command "$w.f.saturation.val configure -text \$xilSaturation 
-grabber set SATURATION "
+                           -command "xil_set_hsbc $w.f.saturation.val SATURATION"
+#                          -command "$w.f.saturation.val configure -text \$xilSaturation 
+#grabber set SATURATION "
 	pack $w.f.saturation.scale $w.f.saturation.val -fill x -expand 1 -side left
 
 
@@ -334,8 +342,7 @@ grabber set SATURATION "
 	scale $w.f.brightness.scale -orient horizontal -width 12 \
 		           -relief groove -showvalue 0 -from -128 -to 127 \
 			   -variable xilBrightness \
-			-command "$w.f.brightness.val configure -text \$xilBrightness
-grabber set BRIGHTNESS "
+                           -command "xil_set_hsbc $w.f.brightness.val BRIGHTNESS"
 	pack $w.f.brightness.scale $w.f.brightness.val -fill x -expand 1 -side left
 
 	frame $w.f.contrast -relief flat
@@ -344,8 +351,7 @@ grabber set BRIGHTNESS "
 	scale $w.f.contrast.scale -orient horizontal -width 12 \
 			   -variable xilContrast \
 		           -relief groove -showvalue 0 -from -256 -to 255 \
-                           -command "$w.f.contrast.val configure -text \$xilContrast
-grabber set CONTRAST "
+                           -command "xil_set_hsbc $w.f.contrast.val CONTRAST"
 	pack  $w.f.contrast.scale $w.f.contrast.val -fill x -expand 1 -side left
 
 	#pack $w.f.brightness $w.f.contrast -side top -fill x -expand 1 -anchor w
