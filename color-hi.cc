@@ -44,6 +44,17 @@ static const char rcsid[] =
 #include "inet.h"
 #include "Tcl.h"
 #include "vw.h"
+#define swapbyte32(x) \
+        ((u_int)( \
+                (((u_int)(x) & (u_int)0x000000ffUL) << 24) | \
+                (((u_int)(x) & (u_int)0x0000ff00UL) <<  8) | \
+                (((u_int)(x) & (u_int)0x00ff0000UL) >>  8) | \
+                (((u_int)(x) & (u_int)0xff000000UL) >> 24) ))
+#define swapbyte32l(x) \
+        ((u_int)( \
+                (((u_int)(x) & (u_int)0x000000ffUL) <<  8) | \
+                (((u_int)(x) & (u_int)0x0000ff00UL) >>  8) ))
+
 
 class HiColorModel : public ColorModel {
     public:
@@ -123,13 +134,24 @@ int HiColorModel::alloc_colors()
 	 * do the job & there's no standard library that does.  For
 	 * now we ignore this problem.
 	 */
+//printf("HI:rmask: %d(%d), gmask: %d(%d), bmask: %d(%d)\n",rmask,htonl(rmask),gmask,htonl(gmask),bmask,htonl(bmask));
+
 #if BYTE_ORDER == LITTLE_ENDIAN
 	if (ImageByteOrder(dpy_) == MSBFirst) {
 		rmask = htonl(rmask);
 		gmask = htonl(gmask);
 		bmask = htonl(bmask);
 	}
+#else
+        if (ImageByteOrder(dpy_) != MSBFirst) {
+
+                rmask = swapbyte32l(rmask);
+                gmask = swapbyte32l(gmask);
+                bmask = swapbyte32l(bmask);
+        }
+
 #endif
+
 	u_int rshft = mtos(rmask);
 	u_int rlose = 8 - mtos(~(rmask >> rshft));
 	u_int gshft = mtos(gmask);

@@ -55,6 +55,13 @@ typedef RGBTRIPLE* RGBPointer;
 #else
 typedef u_int* RGBPointer;
 #endif
+#define swapbyte32(x) \
+        ((u_int)( \
+                (((u_int)(x) & (u_int)0x000000ffUL) << 24) | \
+                (((u_int)(x) & (u_int)0x0000ff00UL) <<  8) | \
+                (((u_int)(x) & (u_int)0x00ff0000UL) >>  8) | \
+                (((u_int)(x) & (u_int)0xff000000UL) >> 24) ))
+
 
 class TrueColorModel : public ColorModel {
 public:
@@ -109,15 +116,15 @@ int TrueColorModel::alloc_grays()
 
 int TrueColorModel::alloc_colors()
 {
-#if BYTE_ORDER == LITTLE_ENDIAN
+/*#if BYTE_ORDER != LITTLE_ENDIAN
 	u_int bmask = visual_->red_mask;
 	u_int gmask = visual_->green_mask;
 	u_int rmask = visual_->blue_mask;
-#else
+#else*/
 	u_int rmask = visual_->red_mask;
 	u_int gmask = visual_->green_mask;
 	u_int bmask = visual_->blue_mask;
-#endif
+//#endif
 	/* XXX
 	 * we would expect the masks we get back from the server to
 	 * reflect the byte position of the color *from the server's
@@ -133,12 +140,22 @@ int TrueColorModel::alloc_colors()
 	 * do the job & there's no standard library that does.  For
 	 * now we ignore this problem.
 	 */
+//printf("rmask: %d(%d), gmask: %d(%d), bmask: %d(%d);\n",rmask,htonl(rmask),gmask,htonl(gmask),bmask,htonl(bmask));
+
 #if BYTE_ORDER == LITTLE_ENDIAN
 	if (ImageByteOrder(dpy_) == MSBFirst) {
 		rmask = htonl(rmask);
 		gmask = htonl(gmask);
 		bmask = htonl(bmask);
 	}
+#else
+	if (ImageByteOrder(dpy_) != MSBFirst) {
+
+		rmask = swapbyte32(rmask);
+		gmask = swapbyte32(gmask);
+		bmask = swapbyte32(bmask);
+	}
+
 #endif
 	u_int rshft = mtos(rmask);
 	u_int rlose = 8 - mtos(~(rmask >> rshft));
@@ -288,10 +305,12 @@ int TrueColorModel::command(int argc, const char*const* argv)
 		VideoWindow* vw = VideoWindow::lookup(argv[2]);
 		int decimation = atoi(argv[3]);
 		if (vw->bpp() == 24) {
+			printf("24bpp\n");
 			Renderer* r = new TrueWindowRenderer24(vw, decimation, *this);
 			tcl.result(r->name());
 		}
 		if (vw->bpp() == 32) {
+			printf("32bpp\n");
 			Renderer* r = new TrueWindowRenderer32(vw, decimation, *this);
 			tcl.result(r->name());
 		}
@@ -1205,13 +1224,13 @@ void TrueWindowRenderer32::map_gray_up2(register const u_char *yp,
 // XXX might be possible to replace char* by u_int* somehow
 //     or to do other optimizations
 
-#if BYTE_ORDER == LITTLE_ENDIAN
+#if  0 && (BYTE_ORDER == LITTLE_ENDIAN)
 #define PONERGB(dst, rgb)						\
     (&(dst))[0] = (rgb);						\
     (&(dst))[1] = (rgb)>>8;						\
     (&(dst))[2] = (rgb)>>16;
 
-#else*/
+#else
 #define PONERGB(dst, rgb)						\
     (&(dst))[0] = (rgb)>>16;						\
     (&(dst))[1] = (rgb)>>8;						\
