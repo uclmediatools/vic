@@ -238,4 +238,4 @@ fi
 ###############################################################################
 # Done, create the output files....
 AC_CONFIG_HEADER(src/uclconf.h:src/config.h.in)
-AC_OUTPUT(src/Makefile)
+AC_OUTPUT(src/Makefile tests/Makefile)
