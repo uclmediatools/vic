@@ -557,9 +557,7 @@ static char *udp_host_addr6(socket_udp *s)
 #endif /*MS_IPV6*/
 		return hname;
 	}
-		debug_msg("get getsockname !");
-	if (inet_ntop(AF_INET6, &local.sin6_addr, hname, MAXHOSTNAMELEN) ==
-NULL) {
+	if (inet_ntop(AF_INET6, &local.sin6_addr, hname, MAXHOSTNAMELEN) == NULL) {
 		debug_msg("inet_ntop: %s: \n", hname);
                 abort();
         }
