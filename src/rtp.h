@@ -182,7 +182,9 @@ typedef struct {
 typedef enum {
         RTP_OPT_PROMISC =	    1,
         RTP_OPT_WEAK_VALIDATION	=   2,
-        RTP_OPT_FILTER_MY_PACKETS = 3
+        RTP_OPT_FILTER_MY_PACKETS = 3,
+	RTP_OPT_REUSE_PACKET_BUFS = 4  /* Each data packet is written into the same buffer, */
+	                               /* rather than malloc()ing a new buffer each time.   */
 } rtp_option;
 
 /* API */

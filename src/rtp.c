@@ -202,6 +202,7 @@ typedef struct {
 	int 	promiscuous_mode;
 	int	wait_for_rtcp;
 	int	filter_my_packets;
+	int	reuse_bufs;
 } options;
 
 /*
@@ -927,6 +928,7 @@ static void init_opt(struct rtp *session)
 	rtp_set_option(session, RTP_OPT_PROMISC,           FALSE);
 	rtp_set_option(session, RTP_OPT_WEAK_VALIDATION,   FALSE);
 	rtp_set_option(session, RTP_OPT_FILTER_MY_PACKETS, FALSE);
+	rtp_set_option(session, RTP_OPT_REUSE_PACKET_BUFS, FALSE);
 }
 
 static void init_rng(const char *s)
@@ -1165,6 +1167,9 @@ int rtp_set_option(struct rtp *session, rtp_option optname, int optval)
 	        case RTP_OPT_FILTER_MY_PACKETS:
 			session->opt->filter_my_packets = optval;
 			break;
+		case RTP_OPT_REUSE_PACKET_BUFS:
+			session->opt->reuse_bufs = optval;
+			break;
         	default:
 			debug_msg("Ignoring unknown option (%d) in call to rtp_set_option().\n", optname);
                         return FALSE;
@@ -1194,6 +1199,9 @@ int rtp_get_option(struct rtp *session, rtp_option optname, int *optval)
                         break;
 	        case RTP_OPT_FILTER_MY_PACKETS:
 			*optval = session->opt->filter_my_packets;
+			break;
+		case RTP_OPT_REUSE_PACKET_BUFS:
+			*optval = session->opt->reuse_bufs;
 			break;
         	default:
                         *optval = 0;
@@ -1233,58 +1241,6 @@ uint32_t rtp_my_ssrc(struct rtp *session)
 	return session->my_ssrc;
 }
 
-static int validate_rtp(rtp_packet *packet, int len)
-{
-	/* This function checks the header info to make sure that the packet */
-	/* is valid. We return TRUE if the packet is valid, FALSE otherwise. */
-	/* See Appendix A.1 of the RTP specification.                        */
-
-	/* We only accept RTPv2 packets... */
-	if (packet->v != 2) {
-		debug_msg("rtp_header_validation: v != 2\n");
-		return FALSE;
-	}
-
-	if (session->opt->wait_for_rtcp) {
-		/* We prefer speed over accuracy... */
-		return TRUE;
-	}
-
-	/* Check for valid payload types..... 72-76 are RTCP payload type numbers, with */
-	/* the high bit missing so we report that someone is running on the wrong port. */
-	if (packet->pt >= 72 && packet->pt <= 76) {
-		debug_msg("rtp_header_validation: payload-type invalid");
-		if (packet->m) {
-			debug_msg(" (RTCP packet on RTP port?)");
-		}
-		debug_msg("\n");
-		return FALSE;
-	}
-	/* Check that the length of the packet is sensible... */
-	if (len < (12 + (4 * packet->cc))) {
-		debug_msg("rtp_header_validation: packet length is smaller than the header\n");
-		return FALSE;
-	}
-	/* Check that the amount of padding specified is sensible. */
-	/* Note: have to include the size of any extension header! */
-	if (packet->p) {
-		int	payload_len = len - 12 - (packet->cc * 4);
-                if (packet->x) {
-                        /* extension header and data */
-                        payload_len -= 4 * (1 + packet->extn_len);
-                }
-                if (packet->data[packet->data_len - 1] > payload_len) {
-                        debug_msg("rtp_header_validation: padding greater than payload length\n");
-                        return FALSE;
-                }
-                if (packet->data[packet->data_len - 1] < 1) {
-			debug_msg("rtp_header_validation: padding zero\n");
-			return FALSE;
-		}
-        }
-	return TRUE;
-}
-
 static void process_rtp(struct rtp *session, uint32_t curr_rtp_ts, rtp_packet *packet, source *s)
 {
 	int		 i, d, transit;
@@ -1320,17 +1276,78 @@ static void process_rtp(struct rtp *session, uint32_t curr_rtp_ts, rtp_packet *p
 	}
 }
 
+static int validate_rtp2(rtp_packet *packet, int len)
+{
+	/* Check for valid payload types..... 72-76 are RTCP payload type numbers, with */
+	/* the high bit missing so we report that someone is running on the wrong port. */
+	if (packet->pt >= 72 && packet->pt <= 76) {
+		debug_msg("rtp_header_validation: payload-type invalid");
+		if (packet->m) {
+			debug_msg(" (RTCP packet on RTP port?)");
+		}
+		debug_msg("\n");
+		return FALSE;
+	}
+	/* Check that the length of the packet is sensible... */
+	if (len < (12 + (4 * packet->cc))) {
+		debug_msg("rtp_header_validation: packet length is smaller than the header\n");
+		return FALSE;
+	}
+	/* Check that the amount of padding specified is sensible. */
+	/* Note: have to include the size of any extension header! */
+	if (packet->p) {
+		int	payload_len = len - 12 - (packet->cc * 4);
+                if (packet->x) {
+                        /* extension header and data */
+                        payload_len -= 4 * (1 + packet->extn_len);
+                }
+                if (packet->data[packet->data_len - 1] > payload_len) {
+                        debug_msg("rtp_header_validation: padding greater than payload length\n");
+                        return FALSE;
+                }
+                if (packet->data[packet->data_len - 1] < 1) {
+			debug_msg("rtp_header_validation: padding zero\n");
+			return FALSE;
+		}
+        }
+	return TRUE;
+}
+
+static inline int 
+validate_rtp(struct rtp *session, rtp_packet *packet, int len)
+{
+	/* This function checks the header info to make sure that the packet */
+	/* is valid. We return TRUE if the packet is valid, FALSE otherwise. */
+	/* See Appendix A.1 of the RTP specification.                        */
+
+	/* We only accept RTPv2 packets... */
+	if (packet->v != 2) {
+		debug_msg("rtp_header_validation: v != 2\n");
+		return FALSE;
+	}
+
+	if (!session->opt->wait_for_rtcp) {
+		/* We prefer speed over accuracy... */
+		return TRUE;
+	}
+	return validate_rtp2(packet, len);
+}
+
 static void 
 rtp_recv_data(struct rtp *session, uint32_t curr_rtp_ts)
 {
 	/* This routine preprocesses an incoming RTP packet, deciding whether to process it. */
-	rtp_packet	*packet = NULL;
-	uint8_t		*buffer = NULL;
-	int		 buflen;
-	source		*s;
+	static rtp_packet	*packet   = NULL;
+	static uint8_t		*buffer   = NULL;
+	static uint8_t		*buffer12 = NULL;
+	int			 buflen;
+	source			*s;
 
-	packet = (rtp_packet *) xmalloc(RTP_MAX_PACKET_LEN);
-	buffer = ((uint8_t *) packet) + RTP_PACKET_HEADER_SIZE;
+	if (!session->opt->reuse_bufs || (packet == NULL)) {
+		packet   = (rtp_packet *) xmalloc(RTP_MAX_PACKET_LEN);
+		buffer   = ((uint8_t *) packet) + RTP_PACKET_HEADER_SIZE;
+		buffer12 = buffer + 12;
+	}
 
 	buflen = udp_recv(session->rtp_socket, buffer, RTP_MAX_PACKET_LEN - RTP_PACKET_HEADER_SIZE);
 	if (buflen > 0) {
@@ -1345,7 +1362,7 @@ rtp_recv_data(struct rtp *session, uint32_t curr_rtp_ts)
 		/* Setup internal pointers, etc... */
 		if (packet->cc) {
 			int	i;
-			packet->csrc = (uint32_t *)(buffer + 12);
+			packet->csrc = (uint32_t *)(buffer12);
 			for (i = 0; i < packet->cc; i++) {
 				packet->csrc[i] = ntohl(packet->csrc[i]);
 			}
@@ -1353,7 +1370,7 @@ rtp_recv_data(struct rtp *session, uint32_t curr_rtp_ts)
 			packet->csrc = NULL;
 		}
 		if (packet->x) {
-			packet->extn      = buffer + 12 + (packet->cc * 4);
+			packet->extn      = buffer12 + (packet->cc * 4);
 			packet->extn_len  = (packet->extn[2] << 8) | packet->extn[3];
 			packet->extn_type = (packet->extn[0] << 8) | packet->extn[1];
 		} else {
@@ -1361,7 +1378,7 @@ rtp_recv_data(struct rtp *session, uint32_t curr_rtp_ts)
 			packet->extn_len  = 0;
 			packet->extn_type = 0;
 		}
-		packet->data     = buffer + 12 + (packet->cc * 4);
+		packet->data     = buffer12 + (packet->cc * 4);
 		packet->data_len = buflen -  (packet->cc * 4) - 12;
 		if (packet->extn != NULL) {
 			packet->data += ((packet->extn_len + 1) * 4);
@@ -1401,7 +1418,9 @@ rtp_recv_data(struct rtp *session, uint32_t curr_rtp_ts)
 			debug_msg("Invalid RTP packet discarded\n");
 		}
 	}
-	xfree(packet);
+	if (!session->opt->reuse_bufs) {
+		xfree(packet);
+	}
 }
 
 static int validate_rtcp(uint8_t *packet, int len)

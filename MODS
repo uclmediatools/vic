@@ -384,7 +384,7 @@ v1.2.5	- More informative error message when the lock on the mbus configuration
 	- Make RTP_OPT_WEAK_VALIDATION more aggressive (only use when speed
 	  is more important than correctness) (Colin Perkins)
 	- Assorted performance tweaks (Colin Perkins)
-
+	- Add RTP_OPT_REUSE_PACKET_BUFS (Colin Perkins)
 
 
 
