@@ -256,7 +256,7 @@ struct rtp {
  	int 		 encryption_enabled;
  	rtp_encrypt_func encrypt_func;
  	rtp_decrypt_func decrypt_func;
- 	int encryption_pad_length;
+ 	int 		 encryption_pad_length;
  	union {
  		struct {
  			keyInstance keyInstEncrypt;
@@ -271,15 +271,14 @@ struct rtp {
 	uint32_t	 magic;				/* For debugging...  */
 };
 
-static int filter_event(struct rtp *session, uint32_t ssrc)
+static inline int 
+filter_event(struct rtp *session, uint32_t ssrc)
 {
-	int	filter;
-
-	rtp_get_option(session, RTP_OPT_FILTER_MY_PACKETS, &filter);
-	return filter && (ssrc == rtp_my_ssrc(session));
+	return session->opt->filter_my_packets && (ssrc == rtp_my_ssrc(session));
 }
 
-static double tv_diff(struct timeval curr_time, struct timeval prev_time)
+static inline double 
+tv_diff(struct timeval curr_time, struct timeval prev_time)
 {
     /* Return curr_time - prev_time */
     double	ct, pt;
@@ -499,13 +498,19 @@ static const rtcp_rr* get_rr(struct rtp *session, uint32_t reporter_ssrc, uint32
         return NULL;
 }
 
-static void check_source(source *s)
+static inline void 
+check_source(source *s)
 {
+#ifdef DEBUG
 	assert(s != NULL);
 	assert(s->magic == 0xc001feed);
+#else
+	UNUSED(s);
+#endif
 }
 
-static void check_database(struct rtp *session)
+static inline void 
+check_database(struct rtp *session)
 {
 	/* This routine performs a sanity check on the database. */
 	/* This should not call any of the other routines which  */
@@ -514,10 +519,9 @@ static void check_database(struct rtp *session)
 	source 	 	*s;
 	int	 	 source_count;
 	int		 chain;
-#endif
+
 	assert(session != NULL);
 	assert(session->magic == 0xfeedface);
-#ifdef DEBUG
 	/* Check that we have a database entry for our ssrc... */
 	/* We only do this check if ssrc_count > 0 since it is */
 	/* performed during initialisation whilst creating the */
@@ -555,10 +559,13 @@ static void check_database(struct rtp *session)
 	/* Check that the number of entries in the hash table  */
 	/* matches session->ssrc_count                         */
 	assert(source_count == session->ssrc_count);
+#else 
+	UNUSED(session);
 #endif
 }
 
-static source *get_source(struct rtp *session, uint32_t ssrc)
+static inline source *
+get_source(struct rtp *session, uint32_t ssrc)
 {
 	source *s;
 
@@ -572,7 +579,8 @@ static source *get_source(struct rtp *session, uint32_t ssrc)
 	return NULL;
 }
 
-static source *create_source(struct rtp *session, uint32_t ssrc, int probation)
+static source *
+create_source(struct rtp *session, uint32_t ssrc, int probation)
 {
 	/* Create a new source entry, and add it to the database.    */
 	/* The database is a hash table, using the separate chaining */
@@ -714,7 +722,8 @@ static void delete_source(struct rtp *session, uint32_t ssrc)
 	check_database(session);
 }
 
-static void init_seq(source *s, uint16_t seq)
+static inline void 
+init_seq(source *s, uint16_t seq)
 {
 	/* Taken from draft-ietf-avt-rtp-new-01.txt */
 	check_source(s);
@@ -781,7 +790,8 @@ static int update_seq(source *s, uint16_t seq)
 	return 1;
 }
 
-static double rtcp_interval(struct rtp *session)
+static double 
+rtcp_interval(struct rtp *session)
 {
 	/* Minimum average time between RTCP packets from this site (in   */
 	/* seconds).  This time prevents the reports from `clumping' when */
@@ -915,7 +925,7 @@ static void init_opt(struct rtp *session)
 {
 	/* Default option settings. */
 	rtp_set_option(session, RTP_OPT_PROMISC,           FALSE);
-	rtp_set_option(session, RTP_OPT_WEAK_VALIDATION,   TRUE);
+	rtp_set_option(session, RTP_OPT_WEAK_VALIDATION,   FALSE);
 	rtp_set_option(session, RTP_OPT_FILTER_MY_PACKETS, FALSE);
 }
 
@@ -1234,6 +1244,12 @@ static int validate_rtp(rtp_packet *packet, int len)
 		debug_msg("rtp_header_validation: v != 2\n");
 		return FALSE;
 	}
+
+	if (session->opt->wait_for_rtcp) {
+		/* We prefer speed over accuracy... */
+		return TRUE;
+	}
+
 	/* Check for valid payload types..... 72-76 are RTCP payload type numbers, with */
 	/* the high bit missing so we report that someone is running on the wrong port. */
 	if (packet->pt >= 72 && packet->pt <= 76) {
@@ -1304,19 +1320,22 @@ static void process_rtp(struct rtp *session, uint32_t curr_rtp_ts, rtp_packet *p
 	}
 }
 
-static void rtp_recv_data(struct rtp *session, uint32_t curr_rtp_ts)
+static void 
+rtp_recv_data(struct rtp *session, uint32_t curr_rtp_ts)
 {
 	/* This routine preprocesses an incoming RTP packet, deciding whether to process it. */
-	rtp_packet	*packet = (rtp_packet *) xmalloc(RTP_MAX_PACKET_LEN);
-	uint8_t		*buffer = ((uint8_t *) packet) + RTP_PACKET_HEADER_SIZE;
+	rtp_packet	*packet = NULL;
+	uint8_t		*buffer = NULL;
 	int		 buflen;
 	source		*s;
-	uint8_t 	 initVec[8] = {0,0,0,0,0,0,0,0};
+
+	packet = (rtp_packet *) xmalloc(RTP_MAX_PACKET_LEN);
+	buffer = ((uint8_t *) packet) + RTP_PACKET_HEADER_SIZE;
 
 	buflen = udp_recv(session->rtp_socket, buffer, RTP_MAX_PACKET_LEN - RTP_PACKET_HEADER_SIZE);
 	if (buflen > 0) {
-		if (session->encryption_enabled)
-		{
+		if (session->encryption_enabled) {
+			uint8_t 	 initVec[8] = {0,0,0,0,0,0,0,0};
 			(session->decrypt_func)(session, buffer, buflen, initVec);
 		}
 		/* Convert header fields to host byte order... */
@@ -1348,16 +1367,13 @@ static void rtp_recv_data(struct rtp *session, uint32_t curr_rtp_ts)
 			packet->data += ((packet->extn_len + 1) * 4);
 			packet->data_len -= ((packet->extn_len + 1) * 4);
 		}
-		if (validate_rtp(packet, buflen)) {
-                        int weak = 0, promisc = 0;
-                        rtp_get_option(session, RTP_OPT_WEAK_VALIDATION, &weak);
-			if (weak) {
-				s = get_source(session, packet->ssrc);
-			} else {
+		if (validate_rtp(session, packet, buflen)) {
+			if (session->opt->wait_for_rtcp) {
 				s = create_source(session, packet->ssrc, TRUE);
+			} else {
+				s = get_source(session, packet->ssrc);
 			}
-                        rtp_get_option(session, RTP_OPT_PROMISC, &promisc);
-			if (promisc) {
+			if (session->opt->promiscuous_mode) {
 				if (s == NULL) {
 					create_source(session, packet->ssrc, FALSE);
 					s = get_source(session, packet->ssrc);

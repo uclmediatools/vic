@@ -376,10 +376,15 @@ v1.2.5	- More informative error message when the lock on the mbus configuration
 
 1.2.11	- Fix _xrealloc() in debug mode (Chris Greenhalgh)
 	- Update configure script to better support IPv6 (Suzuki Shinsuke)
-	- Fix count of CSRCs in mixer
+	- Fix count of CSRCs in mixer (Ladan Gharai)
 	- Fixes for MacOS X and Win32 (Bill May)
 	- Add udp_sendv() (Colin Perkins/Bill May)
-	- Explicitly set send/recv buffer sizes (1Mbyte)
+	- Explicitly set send/recv buffer sizes to 1Mbyte (Colin Perkins)
+	- Fix sense of RTP_OPT_WEAK_VALIDATION (Colin Perkins)
+	- Make RTP_OPT_WEAK_VALIDATION more aggressive (only use when speed
+	  is more important than correctness) (Colin Perkins)
+	- Assorted performance tweaks (Colin Perkins)
+
 
 
 
