@@ -55,6 +55,7 @@
 #include "drand48.h"
 #include "gettimeofday.h"
 #include "qfDES.h"
+#include "md5.h"
 #include "rtp.h"
 
 #define SECS_BETWEEN_1900_1970 2208988800u
@@ -2106,6 +2107,9 @@ int rtp_set_encryption_key(struct rtp* session, const char *passphrase)
 	/* phrase to canonical form before taking the MD5 hash, and so will    */
 	/* not be compatible for keys which are non-invarient under this step. */
 	char	*canonical_passphrase;
+	u_char	 hash[16];
+	MD5_CTX	 context;
+	int	 i, j, k;
 
         if (session->encryption_key != NULL) {
                 xfree(session->encryption_key);
@@ -2123,11 +2127,34 @@ int rtp_set_encryption_key(struct rtp* session, const char *passphrase)
 	/*   d) convert all letters to lower case and replace sequences of     */
 	/*      characters and non-spacing accents with a single character,    */
 	/*      where possible.                                                */
-	canonical_passphrase = (char *) xmalloc(strlen(passphrase));
+	canonical_passphrase = (char *) xstrdup(passphrase);	/* FIXME */
 
 	/* Step 2: derive an MD5 hash */
+	MD5Init(&context);
+	MD5Update(&context, (u_char *) canonical_passphrase, strlen(canonical_passphrase));
+	MD5Final((u_char *) hash, &context);
+
 	/* Step 3: take first 56 bits of the MD5 hash */
+	session->encryption_key[0] = hash[0];
+	session->encryption_key[1] = hash[0] << 7 | hash[1] >> 1;
+	session->encryption_key[2] = hash[1] << 6 | hash[2] >> 2;
+	session->encryption_key[3] = hash[2] << 5 | hash[3] >> 3;
+	session->encryption_key[4] = hash[3] << 4 | hash[4] >> 4;
+	session->encryption_key[5] = hash[4] << 3 | hash[5] >> 5;
+	session->encryption_key[6] = hash[5] << 2 | hash[6] >> 6;
+	session->encryption_key[7] = hash[6] << 1;
+
 	/* Step 4: add parity bits */
+	for (i = 0; i < 8; ++i) {
+		k = session->encryption_key[i] & 0xfe;
+		j = k;
+		j ^= j >> 4;
+		j ^= j >> 2;
+		j ^= j >> 1;
+		j = (j & 1) ^ 1;
+		session->encryption_key[i] = k | j;
+	}
+
 	return TRUE;
 }
 
