@@ -18,9 +18,13 @@ v1.0.1	- Added HMAC authentication code
 	- Remove key expiry from the mbus code, since it created race
 	  conditions when multiple tools for a single conference were
 	  started either side of the expiry time.
+	- Update mbus addressing scheme - names are now sets of tokens, if the
+	  set of tokens in the destination address is a subset of the address 
+	  of the entity receiving that message then the message is accepted. An
+	  empty set is a valid destination address for a message, and that will
+	  be accepted by all receivers (ie: a wildcard).
 
 Still to do...
-	- Mbus still uses old-style addressing scheme
 	- Mbus code doesn't support encryption
 	- IPv6 code sometimes doesn't get the correct interface address,
 	  since it does a gethostbyname() and looks that up, yet that can

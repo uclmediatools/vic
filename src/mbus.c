@@ -444,32 +444,36 @@ static void mbus_get_hashkey(struct mbus *m, struct mbus_key *key)
 
 static int mbus_addr_match(char *a, char *b)
 {
+	/* Compare the addresses "a" and "b". These may optionally be */
+	/* surrounded by "(" and ")" and may have an arbitrary amount */
+	/* of white space between components of the addresses. There  */
+	/* is a match if every word of address b is in address a.     */
+	/* NOTE: The strings passed to this function are stored for   */
+	/* later use and MUST NOT be modified by this routine.        */
+	char	*y, c;
+
 	assert(a != NULL);
 	assert(b != NULL);
 
-	while ((*a != '\0') && (*b != '\0')) {
-		while (isspace((unsigned char)*a)) a++;
+	/* Skip leading whitespace and '('... */
+	while (isspace((unsigned char)*a) || (*a == '(')) a++;
+	while (isspace((unsigned char)*b) || (*b == '(')) b++;
+
+	while ((*b != '\0') && (*b != ')')) {
 		while (isspace((unsigned char)*b)) b++;
-		if (*a == '*') {
-			a++;
-			if ((*a != '\0') && !isspace((unsigned char)*a)) {
-				return FALSE;
-			}
-			while(!isspace((unsigned char)*b) && (*b != '\0')) b++;
+		for (y = b; ((*y != ' ') && (*y != ')') && (*y != '\0')); y++) {
+			/* do nothing */
 		}
-		if (*b == '*') {
-			b++;
-			if ((*b != '\0') && !isspace((unsigned char)*b)) {
-				return FALSE;
-			}
-			while(!isspace((unsigned char)*a) && (*a != '\0')) a++;
-		}
-		if (*a != *b) {
+		c = *y;
+		*y = '\0';
+		if (strstr(a, b) == NULL) {
+			/* ...this word not found */
+			*y = c;
 			return FALSE;
 		}
-		a++;
-		b++;
-	}
+		*y = c;
+		b = y;
+	}		
 	return TRUE;
 }
 
@@ -544,7 +548,7 @@ void mbus_heartbeat(struct mbus *m, int interval)
 	gettimeofday(&curr_time, NULL);
 
 	if (curr_time.tv_sec - m->last_heartbeat.tv_sec > interval) {
-		mbus_qmsg(m, "(* * * *)", "mbus.hello", "", FALSE);
+		mbus_qmsg(m, "()", "mbus.hello", "", FALSE);
 		m->last_heartbeat = curr_time;
 	}
 }
