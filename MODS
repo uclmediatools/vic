@@ -88,6 +88,11 @@ v1.0.7  - Add udp_exit to close sockets and leave multicast groups if necessary.
 	  fix X but in RTP header, add support for sending BYE packets.
 	- Add inet_pton() and inet_ntop() implementations, for those platforms
 	  which are missing them.
+	- Add gettimeofday() workaround for win32
+	- Add drand48() workaround for win32
+	* Released 20 August 1999
+
+v1.0.8	
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
@@ -105,6 +110,4 @@ Still to do...
 	  into it.
 	- rtp_recv should split into rtp_select and rtp_recv. Jitter issues
 	  otherwise, as pointed out by Orion.
-	- Add win32 versions of gettimeofday() and drand48() since they're
-	  missing but used (use the versions from rat?)
 
