@@ -16,18 +16,9 @@
  * SOFTWARE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$Id$";
-#endif /* LIBC_SCCS and not lint */
-
-#include <sys/param.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <string.h>
-#include <errno.h>
-#include <stdio.h>
+#ifdef NEED_INET_NTOP
+#include "config_unix.h"
+#include "config_win32.h"
 #include "inet_ntop.h"
 
 #define	IN6ADDRSZ	16
@@ -197,3 +188,6 @@ inet_ntop6(src, dst, size)
 	strcpy(dst, tmp);
 	return (dst);
 }
+
+#endif
+

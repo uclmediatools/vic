@@ -86,6 +86,8 @@ v1.0.7  - Add udp_exit to close sockets and leave multicast groups if necessary.
 	- Updates to the IPv6 code for the Detexis Musica IPv6 stack
 	- Updates to the RTP code from Markus Germeier: time-out and delete sources,
 	  fix X but in RTP header, add support for sending BYE packets.
+	- Add inet_pton() and inet_ntop() implementations, for those platforms
+	  which are missing them.
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,

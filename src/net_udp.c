@@ -43,6 +43,8 @@
 #include "config_win32.h"
 #include "debug.h"
 #include "memory.h"
+#include "inet_pton.h"
+#include "inet_ntop.h"
 #include "net_udp.h"
 
 #define IPv4	4
@@ -174,31 +176,6 @@ int inet_aton(const char *name, struct in_addr *addr)
 {
 	addr->s_addr = inet_addr(name);
 	return (addr->s_addr != (in_addr_t) INADDR_NONE);
-}
-#endif
-
-#ifdef NEED_INET_PTON
-#ifdef NEED_INET_PTON_STATIC
-static 
-#endif
-int inet_pton(int family, const char *name, void *addr)
-{
-	if (family == AF_INET) {
-		struct in_addr	in_val;
-		
-		if (inet_aton(name, &in_val)) {
-			memcpy(addr, &in_val, sizeof(struct in_addr));
-			return 1;
-		}
-		return 0;
-#if defined (NEED_INET_PTON) && defined(HAVE_IPv6)
-	} else if (family == AF_INET6) {
-		return inet6_addr(name, addr);
-#endif
-	} else {
-		debug_msg("Unknown address family\n");
-		return -1;
-	}
 }
 #endif
 

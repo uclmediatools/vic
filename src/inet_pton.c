@@ -16,17 +16,9 @@
  * SOFTWARE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$Id$";
-#endif /* LIBC_SCCS and not lint */
-
-#include <sys/param.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <string.h>
-#include <errno.h>
+#ifdef NEED_INET_PTON
+#include "config_unix.h"
+#include "config_win32.h"
 #include "inet_pton.h"
 
 #define	IN6ADDRSZ	16
@@ -223,3 +215,6 @@ inet_pton6(src, dst)
 	memcpy(dst, tmp, IN6ADDRSZ);
 	return (1);
 }
+
+#endif
+
