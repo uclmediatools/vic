@@ -557,7 +557,7 @@ void mbus_get_net_addr(struct mbus_config *m, char *net_addr, uint16_t *net_port
 
 	buffer = (char *) xmalloc(MBUS_BUF_SIZE);
 	buflen = MBUS_BUF_SIZE;
-	status = RegQueryValueEx(m->cfgKey, "ADDRESS", 0, &type, buffer, &buflen);
+	status = RegQueryValueEx(m->cfgKey, "SCOPE", 0, &type, buffer, &buflen);
 	if (status != ERROR_SUCCESS) {
 		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, status, 0, buffer, MBUS_BUF_SIZE, NULL);
 		debug_msg("Unable to get scope: %s\n", buffer);
