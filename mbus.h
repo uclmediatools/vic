@@ -121,6 +121,7 @@ class MBusHandler : public IOHandler {
 
 	char *mbus_audio_addr;  /* the mbus addr of the audio tool */
 	int msgs;
+	char name[128];
 
     private:
 	int mbus_addr_match(char *a, char *b);

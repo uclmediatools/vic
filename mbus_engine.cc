@@ -106,16 +106,50 @@ static void func_source_playout(char *srce, char *args, MBusHandler *mb)
 	mb->mbus_parse_done();
 }
 
+static void func_powermeter(char *srce, char *args, MBusHandler *mb)
+{
+	int value;
+
+	mb->mbus_parse_init(args);
+	if (mb->mbus_parse_int(&value)) {
+		if (strcmp(mb->name, "") == 1) {
+			Tcl::instance().evalf("catch {relate_power {%s %i}}", mb->name, value);
+		}
+	} else {
+		printf("mbus: usage \"powermeter <value>\"\n");
+	}
+	mb->mbus_parse_done();
+}
+
+static void func_source_active(char *srce, char *args, MBusHandler *mb)
+{
+	char *cname;
+
+	mb->mbus_parse_init(args);
+	if (mb->mbus_parse_str(&cname)) {
+		strcpy(mb->name, mb->mbus_decode_str(cname));
+	} else {
+		printf("mbus: usage \"source_active_now <cname>\"\n");
+	}
+	mb->mbus_parse_done();
+}
+
 
 char *mbus_cmnd[] = {
 	//"sync",
 	"source_playout",
+	"powermeter.output",
+	"powermeter.input",
+	"source.active.now",
 	""
 };
 
 void (*mbus_func[])(char *srce, char *args, MBusHandler *mb) = {
 	//func_sync,
 	func_source_playout,
+	func_powermeter,
+	func_powermeter,
+	func_source_active,
 };
 
 void mbus_handler_engine(char *srce, char *cmnd, char *args, void *data)

@@ -273,7 +273,6 @@ MBusHandler::MBusHandler(int  channel,
 	: msgs(0)
 {
 	int i;
-
 	m_ = (struct mbus *) malloc(sizeof(struct mbus));
 	m_->fd = mbus_socket_init(channel);
 	unlink();
@@ -289,8 +288,8 @@ MBusHandler::MBusHandler(int  channel,
 		m_->addr[i] = NULL;
 	for (i=0; i<MBUS_MAX_PD; i++) 
 		m_->parse_buffer[i] = NULL;
-	/* XXX 0 should eventually be replaced by pid */
-	mbus_addr("(video engine vic *)"); 
+	/*receive messages to 'audio ui * *' (for powerbars) and 'video engine * *' (for lipsync)*/
+	mbus_addr("(* * * *)");
 	mbus_audio_addr = strdup("(audio engine * *)");
 }
 
