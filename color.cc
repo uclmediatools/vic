@@ -53,8 +53,10 @@ extern "C" {
 }
 #include <string.h>
 #ifdef WIN32
+#undef Status
 #include <windows.h>
 #include <tk.h>
+
 struct TkWinColormap {
 	HPALETTE palette;	/* Palette handle used when drawing. */
 	UINT size;		/* Number of entries in the palette. */
@@ -71,8 +73,8 @@ extern "C" int win32NColors;
 
 #endif
 #include "color.h"
-#include "Tcl.h"
-#include "config.h"
+//#include "Tcl.h"
+//#include "config.h"
 
 ColorModel::ColorModel() :
 	ncolor_(0), visual_(0), depth_(0), colormap_(0), gamma_(1.)
