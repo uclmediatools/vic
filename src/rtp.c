@@ -56,9 +56,9 @@
 #include "gettimeofday.h"
 #include "qfDES.h"
 #include "md5.h"
-#include "rtp.h"
+#include "ntp.h"
 
-#define SECS_BETWEEN_1900_1970 2208988800u
+#include "rtp.h"
 
 #define MAX_DROPOUT    3000
 #define MAX_MISORDER   100
@@ -1777,7 +1777,7 @@ static int format_report_blocks(rtcp_rr *rrp, int remaining_length, struct rtp *
        				int	received_interval = s->received - s->received_prior;
        				int 	lost_interval     = expected_interval - received_interval;
 				int	fraction;
-				uint32_t	lsr;
+				uint32_t lsr;
 				uint32_t dlsr;
 
        				s->expected_prior = expected;
@@ -1792,7 +1792,7 @@ static int format_report_blocks(rtcp_rr *rrp, int remaining_length, struct rtp *
 					lsr = 0;
 					dlsr = 0;
 				} else {
-					lsr = ((s->sr->ntp_sec & 0x0000ffff) << 16) | ((s->sr->ntp_frac & 0xffff0000) >> 16);
+					lsr = ntp64_to_ntp32(s->sr->ntp_sec, s->sr->ntp_frac);
 					dlsr = (uint32_t)(tv_diff(now, s->last_sr) * 65536);
 				}
 				rrp->ssrc       = htonl(s->ssrc);
@@ -1822,7 +1822,6 @@ static uint8_t *format_rtcp_sr(uint8_t *buffer, int buflen, struct rtp *session,
 	/* the next byte after the header we have just written. */
 	rtcp_t		*packet = (rtcp_t *) buffer;
 	int		 remaining_length;
-	struct timeval	 curr_time;
 	uint32_t	 ntp_sec, ntp_frac;
 
 	assert(buflen >= 28);	/* ...else there isn't space for the header and sender report */
@@ -1833,9 +1832,7 @@ static uint8_t *format_rtcp_sr(uint8_t *buffer, int buflen, struct rtp *session,
 	packet->common.pt      = RTCP_SR;
 	packet->common.length  = htons(1);
 
-	gettimeofday(&curr_time, NULL);
-	ntp_sec  = curr_time.tv_sec + SECS_BETWEEN_1900_1970;
-	ntp_frac = (curr_time.tv_usec << 12) + (curr_time.tv_usec << 8) - ((curr_time.tv_usec * 3650) >> 6);
+        ntp64_time(&ntp_sec, &ntp_frac);
 
 	packet->r.sr.sr.ssrc          = htonl(rtp_my_ssrc(session));
 	packet->r.sr.sr.ntp_sec       = htonl(ntp_sec);
