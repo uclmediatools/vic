@@ -150,3 +150,4 @@ const rtcp_rr	*rtp_get_rr(struct rtp *session, u_int32 reporter, u_int32 reporte
 void		 rtp_send_bye(struct rtp *session);
 void		 rtp_done(struct rtp *session);
 int              rtp_set_encryption_key(struct rtp *session, const char *key);
+const char      *rtp_get_encryption_key(struct rtp *session);
