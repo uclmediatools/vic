@@ -976,8 +976,6 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 					break;
 				}
 			}
-		} else {
-			debug_msg("Address doesn't match (%s) (%s)\n", m->addr, dst);
 		}
 		mbus_parse_done(mp);
 	}
