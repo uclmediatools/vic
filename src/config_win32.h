@@ -1,4 +1,3 @@
-
 /*
  *  config-win32.h
  *
@@ -103,6 +102,7 @@ typedef unsigned long	in_addr_t;
 
 #define DIFF_BYTE_ORDER	1
 #define NEED_INET_ATON
+#define NEED_DRAND48
 
 #ifdef NDEBUG
 #define assert(x) if ((x) == 0) fprintf(stderr, "%s:%u: failed assertion\n", __FILE__, __LINE__)
@@ -176,7 +176,6 @@ int getopt(int, char * const *, const char *);
 int strncasecmp(const char *, const char*, int len);
 int srandom(int);
 int random(void);
-double drand48();
 int gettimeofday(struct timeval *p, struct timezone *z);
 int gethostid(void);
 int getuid(void);

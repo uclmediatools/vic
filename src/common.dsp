@@ -147,6 +147,10 @@ SOURCE=.\debug.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\drand48.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\hmac.c
 # End Source File
 # Begin Source File
@@ -212,6 +216,10 @@ SOURCE=.\crypt_random.h
 # Begin Source File
 
 SOURCE=.\debug.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\drand48.h
 # End Source File
 # Begin Source File
 
