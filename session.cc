@@ -450,7 +450,8 @@ void SessionManager::send_report(int bye)
 		v |= (sp->ns() - sp->np()) & 0xffffff;
 		rr->rr_loss = htonl(v);
 		rr->rr_ehsr = htonl(sp->ehs());
-		rr->rr_dv = (sp->handler() != 0) ? sp->handler()->delvar() : 0;
+		rr->rr_dv = (sp->handler() != 0) ? 
+                        htonl(sp->handler()->delvar()) : 0;
 		rr->rr_lsr = htonl(sp->sts_ctrl());
 		if (sp->lts_ctrl().tv_sec == 0)
 			rr->rr_dlsr = 0;
@@ -656,6 +657,12 @@ void SessionManager::demux(rtphdr* rh, u_char* bp, int cc, Address & addr)
 	                s->runt(1);
  	               return;
 	        }
+                int pad = 0;
+                if (flags & RTP_P) {
+                        /* P bit set - trim off padding */
+                        pad = *(bp + hlen + cc - 1);
+                        cc -= pad;
+                }
 	        if (!s->mute())
 	                h->recv(rh, bp + hlen, cc);
 	} /* not sync-ed */
