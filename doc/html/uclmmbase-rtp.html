@@ -2256,11 +2256,12 @@ HREF="RTP"
 ></TR
 ></TABLE
 ><P
->Frees state associated with given RTP session.  Should be called
-after <A
+>Free the state associated with the given RTP session. This function does 
+not send any packets (e.g. an RTCP BYE) - an application which wishes to
+exit in a clean manner should call <A
 HREF="uclmmbase-rtp.html#RTP-SEND-BYE"
 >rtp_send_bye</A
->().</P
+>() first.</P
 ><P
 ></P
 ><DIV
@@ -3315,7 +3316,10 @@ CLASS="EMPHASIS"
 WIDTH="80%"
 ALIGN="LEFT"
 VALIGN="TOP"
-> My SSRC for this session.</TD
+> The SSRC we are currently using in this session. Note that our
+SSRC can change at any time (due to collisions) so applications must not
+store the value returned, but rather should call this function each time 
+they need it.</TD
 ></TR
 ></TBODY
 ></TABLE
