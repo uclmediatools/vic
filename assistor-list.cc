@@ -9,15 +9,8 @@ static char rcsid[] =
 #endif
 
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
 #include <sys/types.h>
-#include <sys/ipc.h>
-
-#include <X11/X.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-
 
 #include "Tcl.h"
 #include "assistor-list.h"
