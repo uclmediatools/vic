@@ -135,7 +135,7 @@ typedef struct _rtcp_rr_wrapper {
 typedef struct _source {
 	struct _source	*next;
 	struct _source	*prev;
-	uint32_t		 ssrc;
+	uint32_t	 ssrc;
 	char		*cname;
 	char		*name;
 	char		*email;
@@ -148,16 +148,17 @@ typedef struct _source {
 	struct timeval	 last_active;
 	int		 sender;
 	int		 got_bye;	/* TRUE if we've received an RTCP bye from this source */
-	uint32_t		 base_seq;
-	uint16_t		 max_seq;
-	uint32_t		 bad_seq;
-	uint32_t		 cycles;
+	uint32_t	 base_seq;
+	uint16_t	 max_seq;
+	uint32_t	 bad_seq;
+	uint32_t	 cycles;
 	int		 received;
 	int		 received_prior;
 	int		 expected_prior;
 	int		 probation;
-	uint32_t		 jitter;
-	uint32_t		 transit;
+	uint32_t	 jitter;
+	uint32_t	 transit;
+	uint32_t	 magic;		/* For debugging... */
 } source;
 
 /* The size of the hash table used to hold the source database. */
@@ -218,6 +219,7 @@ struct rtp {
 	uint32_t	 rtp_bcount;
         char            *encryption_key;
 	void (*callback)(struct rtp *session, rtp_event *event);
+	uint32_t	 magic;				/* For debugging...  */
 };
 
 static int filter_event(struct rtp *session, uint32_t ssrc)
@@ -420,17 +422,25 @@ static const rtcp_rr* get_rr(struct rtp *session, uint32_t reporter_ssrc, uint32
         return NULL;
 }
 
+static void check_source(source *s)
+{
+	assert(s != NULL);
+	assert(s->magic == 0xc001feed);
+}
+
 static void check_database(struct rtp *session)
 {
-#ifdef DEBUG
 	/* This routine performs a sanity check on the database. */
-	/* If the DEBUG symbol is not defined, it does nothing.  */
 	/* This should not call any of the other routines which  */
 	/* manipulate the database, to avoid common failures.    */
+#ifdef DEBUG
 	source 	 	*s;
 	int	 	 source_count;
 	int		 chain;
-
+#endif
+	assert(session != NULL);
+	assert(session->magic == 0xfeedface);
+#ifdef DEBUG
 	/* Check that we have a database entry for our ssrc... */
 	/* We only do this check if ssrc_count > 0 since it is */
 	/* performed during initialisation whilst creating the */
@@ -449,6 +459,7 @@ static void check_database(struct rtp *session)
 		/* Check that the linked lists making up the chains in */
 		/* the hash table are correctly linked together...     */
 		for (s = session->db[chain]; s != NULL; s = s->next) {
+			check_source(s);
 			source_count++;
 			if (s->prev == NULL) {
 				assert(s == session->db[chain]);
@@ -467,8 +478,6 @@ static void check_database(struct rtp *session)
 	/* Check that the number of entries in the hash table  */
 	/* matches session->ssrc_count                         */
 	assert(source_count == session->ssrc_count);
-#else
-        UNUSED(session);
 #endif
 }
 
@@ -479,6 +488,7 @@ static source *get_source(struct rtp *session, uint32_t ssrc)
 	check_database(session);
 	for (s = session->db[ssrc_hash(ssrc)]; s != NULL; s = s->next) {
 		if (s->ssrc == ssrc) {
+			check_source(s);
 			return s;
 		}
 	}
@@ -505,6 +515,7 @@ static source *create_source(struct rtp *session, uint32_t ssrc)
 	/* This is a new source, we have to create it... */
 	h = ssrc_hash(ssrc);
 	s = (source *) xmalloc(sizeof(source));
+	s->magic          = 0xc001feed;
 	s->next           = session->db[h];
 	s->prev           = NULL;
 	s->ssrc           = ssrc;
@@ -566,6 +577,7 @@ static void delete_source(struct rtp *session, uint32_t ssrc)
 
 	gettimeofday(&event_ts, NULL);
 
+	check_source(s);
 	check_database(session);
 	if (session->db[h] == s) {
 		/* It's the first entry in this chain... */
@@ -629,6 +641,7 @@ static void delete_source(struct rtp *session, uint32_t ssrc)
 static void init_seq(source *s, uint16_t seq)
 {
 	/* Taken from draft-ietf-avt-rtp-new-01.txt */
+	check_source(s);
 	s->base_seq = seq;
 	s->max_seq = seq;
 	s->bad_seq = RTP_SEQ_MOD + 1;
@@ -647,6 +660,7 @@ static int update_seq(source *s, uint16_t seq)
 	 * Source is not valid until MIN_SEQUENTIAL packets with
 	 * sequential sequence numbers have been received.
 	 */
+	check_source(s);
 	if (s->probation) {
 		  /* packet is in sequence */
 		  if (seq == s->max_seq + 1) {
@@ -814,6 +828,7 @@ struct rtp *rtp_init(char *addr, uint16_t rx_port, uint16_t tx_port, int ttl, do
 	srand48(time(NULL));
 
 	session 		= (struct rtp *) xmalloc(sizeof(struct rtp));
+	session->magic		= 0xfeedface;
 	session->opt		= (options *) xmalloc(sizeof(options));
 	session->userdata	= userdata;
 	session->addr		= xstrdup(addr);
@@ -944,12 +959,13 @@ int rtp_getopt(struct rtp *session, int optname, int *optval)
 
 void *rtp_get_userdata(struct rtp *session)
 {
+	check_database(session);
 	return session->userdata;
 }
 
 uint32_t rtp_my_ssrc(struct rtp *session)
 {
-	assert(session != NULL);
+	check_database(session);
 	return session->my_ssrc;
 }
 
@@ -1231,7 +1247,7 @@ static void process_report_blocks(struct rtp *session, rtcp_t *packet, uint32_t 
 
 static void process_rtcp_sr(struct rtp *session, rtcp_t *packet, struct timeval *event_ts)
 {
-	uint32_t		 ssrc;
+	uint32_t	 ssrc;
 	rtp_event	 event;
 	rtcp_sr		*sr;
 	source		*s;
@@ -1365,6 +1381,7 @@ static void process_rtcp_bye(struct rtp *session, rtcp_t *packet, struct timeval
 		/* since some packets may be delayed and arrive after the BYE...              */
 		s = get_source(session, ssrc);
 		s->got_bye = TRUE;
+		check_source(s);
 	}
 }
 
@@ -1376,6 +1393,7 @@ static void process_rtcp_app(struct rtp *session, rtcp_t *packet, struct timeval
 	source          *s;
 	int              data_len;
 
+
 	/* Update the database for this source. */
 	ssrc = ntohl(packet->r.app.ssrc);
 	create_source(session, ssrc);
@@ -1385,6 +1403,7 @@ static void process_rtcp_app(struct rtp *session, rtcp_t *packet, struct timeval
 	        debug_msg("Source 0x%08x invalid, skipping...\n", ssrc);
 	        return;
 	}
+	check_source(s);
 
 	/* Copy the entire packet, converting the header (only) into host byte order. */
 	app = (rtcp_app *) xmalloc(RTP_MAX_PACKET_LEN);
@@ -1515,6 +1534,7 @@ static void rtp_process_ctrl(struct rtp *session, uint8_t *buffer, int buflen)
 
 int rtp_recv(struct rtp *session, struct timeval *timeout, uint32_t curr_time)
 {
+	check_database(session);
 	udp_fd_zero();
 	udp_fd_set(session->rtp_socket);
 	udp_fd_set(session->rtcp_socket);
@@ -1528,27 +1548,33 @@ int rtp_recv(struct rtp *session, struct timeval *timeout, uint32_t curr_time)
                         buflen = udp_recv(session->rtcp_socket, buffer, RTP_MAX_PACKET_LEN);
 			rtp_process_ctrl(session, buffer, buflen);
 		}
+		check_database(session);
                 return TRUE;
 	}
+	check_database(session);
         return FALSE;
 }
 
 int rtp_add_csrc(struct rtp *session, uint32_t csrc)
 {
-	UNUSED(session);
+	check_database(session);
 	UNUSED(csrc);
 	return FALSE;
 }
 
 int rtp_set_sdes(struct rtp *session, uint32_t ssrc, uint8_t type, char *value, int length)
 {
-	source	*s = get_source(session, ssrc);
+	source	*s;
 	char	*v;
 
+	check_database(session);
+
+	s = get_source(session, ssrc);
 	if (s == NULL) {
 		debug_msg("Invalid source 0x%08x\n", ssrc);
 		return FALSE;
 	}
+	check_source(s);
 
 	v = (char *) xmalloc(length + 1);
 	memset(v, '\0', length + 1);
@@ -1586,19 +1612,25 @@ int rtp_set_sdes(struct rtp *session, uint32_t ssrc, uint8_t type, char *value, 
 		default :
 			debug_msg("Unknown SDES item (type=%d, value=%s)\n", type, v);
                         xfree(v);
+			check_database(session);
 			return FALSE;
 	}
+	check_database(session);
 	return TRUE;
 }
 
 const char *rtp_get_sdes(struct rtp *session, uint32_t ssrc, uint8_t type)
 {
-	source	*s = get_source(session, ssrc);
+	source	*s;
 
+	check_database(session);
+
+	s = get_source(session, ssrc);
 	if (s == NULL) {
 		debug_msg("Invalid source 0x%08x\n", ssrc);
 		return NULL;
 	}
+	check_source(s);
 
 	switch (type) {
 		case RTCP_SDES_CNAME: 
@@ -1624,16 +1656,21 @@ const rtcp_sr *rtp_get_sr(struct rtp *session, uint32_t ssrc)
 {
 	/* Return the last SR received from this ssrc. The */
 	/* caller MUST NOT free the memory returned to it. */
-	source	*s = get_source(session, ssrc);
+	source	*s;
 
+	check_database(session);
+
+	s = get_source(session, ssrc);
 	if (s == NULL) {
 		return NULL;
 	} 
+	check_source(s);
 	return s->sr;
 }
 
 const rtcp_rr *rtp_get_rr(struct rtp *session, uint32_t reporter, uint32_t reportee)
 {
+	check_database(session);
         return get_rr(session, reporter, reportee);
 }
 
@@ -1644,6 +1681,8 @@ int rtp_send_data(struct rtp *session, uint32_t ts, char pt, int m, int cc, uint
 	uint8_t		*buffer;
 	rtp_packet	*packet;
 	uint8_t 	 initVec[8] = {0,0,0,0,0,0,0,0};
+
+	check_database(session);
 
 	buffer_len = data_len + extn_len + 12 + (4 * cc);
 
@@ -1710,6 +1749,7 @@ int rtp_send_data(struct rtp *session, uint32_t ts, char pt, int m, int cc, uint
 	session->rtp_pcount += 1;
 	session->rtp_bcount += buffer_len;
 
+	check_database(session);
 	return rc;
 }
 
@@ -1724,6 +1764,7 @@ static int format_report_blocks(rtcp_rr *rrp, int remaining_length, struct rtp *
 
 	for (h = 0; h < RTP_DB_SIZE; h++) {
 		for (s = session->db[h]; s != NULL; s = s->next) {
+			check_source(s);
 			if ((nblocks == 31) || (remaining_length < 24)) {
 				break; /* Insufficient space for more report blocks... */
 			}
@@ -1782,7 +1823,7 @@ static uint8_t *format_rtcp_sr(uint8_t *buffer, int buflen, struct rtp *session,
 	rtcp_t		*packet = (rtcp_t *) buffer;
 	int		 remaining_length;
 	struct timeval	 curr_time;
-	uint32_t		 ntp_sec, ntp_frac;
+	uint32_t	 ntp_sec, ntp_frac;
 
 	assert(buflen >= 28);	/* ...else there isn't space for the header and sender report */
 
@@ -1982,6 +2023,7 @@ static void send_rtcp(struct rtp *session, uint32_t ts,
 	rtcp_app  *app;
 	uint8_t    initVec[8] = {0,0,0,0,0,0,0,0};
 
+	check_database(session);
 	/* If encryption is enabled, add a 32 bit random prefix to the packet */
 	if (session->encryption_key != NULL) {
 		*((uint32_t *) ptr) = lbl_random();
@@ -2050,6 +2092,7 @@ static void send_rtcp(struct rtp *session, uint32_t ts,
         /* query own stats when using unicast or multicast with no  */
         /* loopback.                                                */
         rtp_process_ctrl(session, buffer, ptr - buffer);
+	check_database(session);
 }
 
 void rtp_send_ctrl(struct rtp *session, uint32_t ts,
@@ -2058,6 +2101,7 @@ void rtp_send_ctrl(struct rtp *session, uint32_t ts,
 	/* Send an RTCP packet, if one is due... */
 	struct timeval	 curr_time;
 
+	check_database(session);
 	gettimeofday(&curr_time, NULL);
 	if (tv_gt(curr_time, session->next_rtcp_send_time)) {
 		/* The RTCP transmission timer has expired. The following */
@@ -2082,6 +2126,7 @@ void rtp_send_ctrl(struct rtp *session, uint32_t ts,
 			session->sender_count = 0;
 			for (h = 0; h < RTP_DB_SIZE; h++) {
 				for (s = session->db[h]; s != NULL; s = s->next) {
+					check_source(s);
 					s->sender = FALSE;
 				}
 			}
@@ -2091,6 +2136,7 @@ void rtp_send_ctrl(struct rtp *session, uint32_t ts,
 		}
 		session->ssrc_count_prev = session->ssrc_count;
 	} 
+	check_database(session);
 }
 
 void rtp_update(struct rtp *session)
@@ -2101,15 +2147,18 @@ void rtp_update(struct rtp *session)
 	struct timeval	 curr_time;
 	double		 delay;
 
+	check_database(session);
 	gettimeofday(&curr_time, NULL);
 	if (tv_diff(curr_time, session->last_update) < session->rtcp_interval) {
 		/* We only cleanup once per RTCP reporting interval... */
+		check_database(session);
 		return;
 	}
 	session->last_update = curr_time;
 
 	for (h = 0; h < RTP_DB_SIZE; h++) {
 		for (s = session->db[h]; s != NULL; s = n) {
+			check_source(s);
 			n = s->next;
 			/* Expire sources which haven't been heard from for a long time.   */
 			/* Section 6.2.1 of the RTP specification details the timers used. */
@@ -2135,6 +2184,7 @@ void rtp_update(struct rtp *session)
 
 	/* Timeout those reception reports which haven't been refreshed for a long time */
 	timeout_rr(session, &curr_time);
+	check_database(session);
 }
 
 void rtp_send_bye(struct rtp *session)
@@ -2148,6 +2198,7 @@ void rtp_send_bye(struct rtp *session)
 	rtcp_common	*common;
 	uint8_t    	 initVec[8] = {0,0,0,0,0,0,0,0};
 
+	check_database(session);
 	/* If encryption is enabled, add a 32 bit random prefix to the packet */
 	if (session->encryption_key != NULL) {
 		*((uint32_t *) ptr) = lbl_random();
@@ -2193,6 +2244,7 @@ void rtp_send_bye(struct rtp *session)
 		/* loopback.                                                */
 		rtp_process_ctrl(session, buffer, ptr - buffer);
 	}
+	check_database(session);
 }
 
 void rtp_done(struct rtp *session)
@@ -2200,6 +2252,7 @@ void rtp_done(struct rtp *session)
 	int i;
         source *s, *n;
 
+	check_database(session);
         /* In delete_source, check database gets called and this assumes */
         /* first added and last removed is us.                           */
 	for (i = 0; i < RTP_DB_SIZE; i++) {
@@ -2243,6 +2296,7 @@ int rtp_set_encryption_key(struct rtp* session, const char *passphrase)
 	MD5_CTX	 context;
 	int	 i, j, k;
 
+	check_database(session);
         if (session->encryption_key != NULL) {
                 xfree(session->encryption_key);
         }
@@ -2250,6 +2304,7 @@ int rtp_set_encryption_key(struct rtp* session, const char *passphrase)
 	if (passphrase == NULL) {
 		/* A NULL passphrase means disable encryption... */
 		session->encryption_key = NULL;
+		check_database(session);
 		return TRUE;
 	}
 
@@ -2295,26 +2350,31 @@ int rtp_set_encryption_key(struct rtp* session, const char *passphrase)
 		session->encryption_key[i] = k | j;
 	}
 
+	check_database(session);
 	return TRUE;
 }
 
 char *rtp_get_addr(struct rtp *session)
 {
+	check_database(session);
 	return session->addr;
 }
 
 uint16_t rtp_get_rx_port(struct rtp *session)
 {
+	check_database(session);
 	return session->rx_port;
 }
 
 uint16_t rtp_get_tx_port(struct rtp *session)
 {
+	check_database(session);
 	return session->tx_port;
 }
 
 int rtp_get_ttl(struct rtp *session)
 {
+	check_database(session);
 	return session->ttl;
 }
 

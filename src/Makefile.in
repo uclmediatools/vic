@@ -39,7 +39,7 @@ clean:
 	-rm -f $(OBJS) $(TEST_OBJS) version.h $(TARGET) tags test-libcommon
 
 distclean:	clean
-	-rm -f Makefile config.status config.cache config.h
+	-rm -f Makefile config.status config.cache uclconf.h
 
 etags:
 	etags *.[ch]
