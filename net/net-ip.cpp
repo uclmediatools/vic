@@ -61,7 +61,7 @@ static const char rcsid[] =
 
 class IPAddress : public Address {
 public:
-	IPAddress() { text_ = new char[INET_ADDRSTRLEN]; }
+	IPAddress() { text_ = new char[INET_ADDRSTRLEN]; text_[0]='\0';}
   	virtual int operator=(const char* text);
 	int operator=(const struct in_addr& addr);
 
@@ -96,7 +96,7 @@ public:
 
 class IPNetwork : public Network {
     public:
-	IPNetwork() : Network(*(new IPAddress), *(new IPAddress)) {;}
+		IPNetwork() : Network(*(new IPAddress), *(new IPAddress)) {;}
 	virtual int command(int argc, const char*const* argv);
 	virtual void reset();
     protected:
@@ -193,6 +193,8 @@ int IPNetwork::command(int argc, const char*const* argv)
 		if (strcmp(argv[1], "open") == 0) {
 			int port = htons(atoi(argv[3]));
 			int ttl = atoi(argv[4]);
+			if (strlen(tcl.attr("ifAddr"))>1)
+				(IPAddress&)local_ = tcl.attr("ifAddr");
 			if (open(argv[2], port, ttl) < 0)
 				tcl.result("0");
 			else
@@ -227,6 +229,7 @@ int IPNetwork::open(const char * host, int port, int ttl)
 		(void)::close(ssock_);
 		return (-1);
 	}
+
 	lport_ = local.sin_port;
 	last_reset_ = 0;
 	return (0);
@@ -261,6 +264,10 @@ int IPNetwork::localname(sockaddr_in* p)
 	if (p->sin_addr.s_addr == 0) {
 		p->sin_addr.s_addr = LookupLocalAddr();
 		result = ((p->sin_addr.s_addr != 0) ? (0) : (-1));
+	}
+	// Use Local interface name if already set via command line
+	if (((const char*)local_)[0]!='\0') {
+		p->sin_addr.s_addr=(IPAddress&)local_;
 	}
 
 	return (result);
@@ -447,6 +454,18 @@ int IPNetwork::openssock(Address & addr, u_short port, int ttl)
 			perror("IP_MULTICAST_TTL");
 			exit(1);
 		}
+		/* Slightly nasty one here - set Mcast iface if local inteface
+		 * is specified on command line
+		 */
+		if (((const char*)local_)[0]!='\0') {
+			u_int32_t locali = (IPAddress&)local_;
+			if (setsockopt(fd, IPPROTO_IP, IP_MULTICAST_IF,
+						   (char*)&locali, sizeof(locali)) < 0) {
+				perror("IP_MULTICAST_IF");
+			}
+		}
+
+
 #else
 		fprintf(stderr, "\
 not compiled with support for IP multicast\n\

@@ -78,7 +78,7 @@ struct	in6_addr		in6addr_any = {IN6ADDR_ANY_INIT};
 
 class IP6Address : public Address {
   public:
-	IP6Address() { text_ = new char[INET6_ADDRSTRLEN]; };
+	IP6Address() { text_ = new char[INET6_ADDRSTRLEN]; text_[0]='\0';};
 	virtual int operator=(const char*);
 	int operator=(const struct in6_addr& addr);
 
@@ -113,7 +113,7 @@ public:
 
 class IP6Network : public Network {
   public:
-	IP6Network() : Network(*(new IP6Address), *(new IP6Address)) {;}
+	  IP6Network() : Network(*(new IP6Address), *(new IP6Address))  {;}
 	virtual int command(int argc, const char*const* argv);
 	virtual void reset();
   protected:
@@ -124,7 +124,8 @@ class IP6Network : public Network {
 	int openssock(Address & addr, u_short port, int ttl);
 	int openrsock(Address & addr, u_short port, Address & local);
 	time_t last_reset_;
-	unsigned int flowLabel_;
+	unsigned int flowLabel_;	/* Flowlabel for all traffic */
+	int ifIndex_;		/* Interface index to bind to on all layers */
 };
 
 static class IP6NetworkMatcher : public Matcher {
@@ -222,6 +223,9 @@ int IP6Network::command(int argc, const char*const* argv)
 			int port = htons(atoi(argv[3]));
 			int ttl = atoi(argv[4]);
 			flowLabel_ = htonl(atoi(tcl.attr("flowLabel")));
+			ifIndex_ = atoi(tcl.attr("ifIndex"));
+			if (strlen(tcl.attr("ifAddr"))>1)
+				(IP6Address&)local_ = tcl.attr("ifAddr");
 			if (open(host, port, ttl) < 0)
 				tcl.result("0");
 			else
@@ -251,6 +255,7 @@ int IP6Network::open(const char * host, int port, int ttl)
 		return (-1);
 	}
 	(IP6Address&)local_ = local.sin6_addr;
+
 	rsock_ = openrsock(addr_, port, local_);
 	if (rsock_ < 0) {
 		(void)::close(ssock_);
@@ -287,6 +292,13 @@ int IP6Network::localname(sockaddr_in6* p) {
   if (!getsockopt(ssock_, IPPROTO_IPV6, IP_MULTICAST_IF, (char *)&p->sin6_addr,&len))
 			return (0);
   */
+
+	// Use Local name if already set via command line
+	// But use port derived from getsockname
+	if (((const char*)local_)[0]!='\0') {
+		p->sin6_addr=(IP6Address&)local_;
+		return (result);
+	}
 
 #ifdef MUSICA_IPV6
   if (IS_SAME_IN6_ADDR(p->sin6_addr, in6addr_any)) {
@@ -371,10 +383,10 @@ int IP6Network::openrsock(Address & addr, u_short port, Address & local)
 
 /* __IPV6 memcopy address */
 #ifdef MUSICA_IPV6
-		mr.i6mr_interface = 1;
+		mr.i6mr_interface = ifIndex_;
 		mr.i6mr_multiaddr = (IP6Address&)addr;
 #else
-		mr.ipv6mr_interface = 0;
+		mr.ipv6mr_interface = ifIndex_;
 		mr.ipv6mr_multiaddr = (IP6Address&)addr;
 #endif
 
@@ -483,17 +495,17 @@ int IP6Network::openssock(Address & addr, u_short port, int ttl)
 				noloopback_broken_ = 1;
 		}
 		/* set the multicast TTL */
-//#if defined(SOLARIS7_IPV6) || defined(WIN32) && !defined(MUSICA_IPV6)
 		u_int t;
-//#else
-//		INT32_T t;
-//#endif
 		t = (ttl > 255) ? 255 : (ttl < 0) ? 0 : ttl;
-
 
 		if (setsockopt(fd, IPPROTO_IPV6, IPV6_MULTICAST_HOPS,
 			       (const char*)&t, sizeof(t)) < 0) {
 			perror("IPV6_MULTICAST_HOPS");
+			exit(1);
+		}
+		if (setsockopt(fd, IPPROTO_IPV6, IPV6_MULTICAST_IF,
+			       (const char*)&ifIndex_, sizeof(ifIndex_)) < 0) {
+			perror("IPV6_MULTICAST_IF");
 			exit(1);
 		}
 #else
@@ -530,15 +542,20 @@ int IP6Network::dorecv(u_char* buf, int len, Address& from, int fd)
 	}
 	(IP6Address&)from = sfrom.sin6_addr;
 
-	if (noloopback_broken_)
-		if ((sfrom.sin6_addr.s6_addr[0] == 0xfe) && 
-			(sfrom.sin6_addr.s6_addr[1] == 0x80) && sfrom.sin6_port == lport_) {
-			/*IP6Address llocal = local_;
-			int i=2;
-			while (sfrom.sin6_addr.s6_addr[i++]==0);
-			while (sfrom.sin6_addr.s6_addr[i++]*/
-			return (0);}
-
+	/* Check for loopback - then compare last auto conf bit of addresses
+	 * XXX Probaby should do this at rtp level.
+	 */
+	if (noloopback_broken_ && sfrom.sin6_port == lport_) {
+		struct in6_addr local;
+		local=(IP6Address&)local_;
+		if (((sfrom.sin6_addr.s6_addr[12] == local.s6_addr[12]) &&
+			 (sfrom.sin6_addr.s6_addr[13] == local.s6_addr[13]) &&
+			 (sfrom.sin6_addr.s6_addr[14] == local.s6_addr[14]) &&
+			 (sfrom.sin6_addr.s6_addr[15] == local.s6_addr[15])   ) ||
+			 from == local_) {
+				return (0);
+		}
+	}
 	return (cc);
 }
 

@@ -134,11 +134,11 @@ For more details see:\n\n\
 http://www-mice.cs.ucl.ac.uk/multimedia/software/vic/faq.html\n\
 Options: vic [-HPs] [-A nv|ivs|rtp] [-B maxbps] [-C conf]\n\
 \t[-c ed|gray|od|quantize] [-D device] [-d display]\n\
-\t[-f bvc|cellb|h261|jpeg|nv] [-F maxfps] [-I channel]\n\
+\t[-f bvc|cellb|h261|jpeg|nv] [-F maxfps] [-i ifAddr ] [-I channel]\n\
 \t[-K key ] [-L flowLabel (ip6 only)] [-l (creates log file)]\n\
 \t[-M colormap] [-m mtu] [-N session] [-n atm|ip|ip6|rtip]\n\
-\t[-o clipfile] [-t ttl] [-U interval] [-u script] [-v version]\n\
-\t[-V visual] [-X resource=value] [-j numlayers] dest/port[/fmt/ttl]\n";
+\t[-o clipfile] [-t ttl] [-U interval] [-u script] [-v version] [-V visual]\n\
+\t[-x ifIndex (ip6 only)] [-X resource=value] [-j numlayers] dest/port[/fmt/ttl]\n";
 
 if (szOffending == NULL) {
         szOffending = win_usage;
@@ -452,7 +452,7 @@ main(int argc, const char** argv)
 #endif
 	// Option list; If letter is followed by ':' then it takes an argument
 	const char* options = 
-		"A:B:C:c:D:d:f:F:HI:j:K:lL:M:m:N:n:o:Pq:rsST:t:U:u:vV:w:X:y";
+		"A:B:C:c:D:d:f:F:HI:i:j:K:lL:M:m:N:n:o:Pq:rsST:t:U:u:vV:w:x:X:y";
 	/* process display and window (-use) options before initialising tcl/tk */
 	char buf[256], tmp[256];
 	const char *display=0, *use=0;
@@ -569,6 +569,10 @@ main(int argc, const char** argv)
 			tcl.add_option("useHardwareDecode", "true");
 			break;
 
+		case 'i':
+			tcl.add_option("ifAddr", optarg);
+			break;
+
 		case 'I':
 			tcl.add_option("confBusChannel", optarg);
 			break;
@@ -660,6 +664,10 @@ main(int argc, const char** argv)
 
 		/* window for application embedding - same as use */
 		case 'w':
+			break;
+
+		case 'x':
+			tcl.add_option("ifIndex", optarg);
 			break;
 
 		case 'X':

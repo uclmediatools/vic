@@ -68,7 +68,7 @@ extern "C" {
 #include <arpa/inet.h>
 #endif
 
-#include "config.h"
+//#include "config.h"
 
 #ifdef __cplusplus
 extern "C" {

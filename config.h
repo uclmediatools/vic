@@ -165,10 +165,6 @@ char   *ctime(const time_t *);
 
 #define IN6_ARE_ADDR_EQUAL IN6_ADDR_EQUAL
 
-#define IN6ADDR_ANY_INIT { (unsigned char)0, (unsigned char)0, (unsigned char)0, (unsigned char)0, \
-                            (unsigned char)0, (unsigned char)0, (unsigned char)0, (unsigned char)0, \
-                            (unsigned char)0, (unsigned char)0, (unsigned char)0, (unsigned char)0, \
-                            (unsigned char)0, (unsigned char)0, (unsigned char)0, (unsigned char)0 } 
 #define IN6_IS_ADDR_UNSPECIFIED(addr) \
         (((addr)->s6_addr[0] == 0) && \
         ((addr)->s6_addr[1] == 0) && \
@@ -190,15 +186,6 @@ char   *ctime(const time_t *);
 #define IN6_IS_ADDR_MULTICAST(addr) \
         ((addr)->s6_addr[0] == 0xffU)
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-const char *inet_ntop(int af, const void *src, char *dst, size_t size);
-int			inet_pton(int af,const char *src,void *dst);
-#if defined(__cplusplus)
-}
-#endif 
-
 #define INET6_ADDRSTRLEN        46      /* max len of IPv6 addr in ascii */
                                         /* standard colon-hex notation. */ 
 #define EAFNOSUPPORT -1
@@ -209,6 +196,15 @@ int			inet_pton(int af,const char *src,void *dst);
 #endif /* HAVE_IPV6 */
 
 #ifdef MUSICA_IPV6
+#if defined(__cplusplus)
+extern "C" {
+#endif
+const char *inet_ntop(int af, const void *src, char *dst, size_t size);
+int			inet_pton(int af,const char *src,void *dst);
+#if defined(__cplusplus)
+}
+#endif 
+
 #include <winsock6.h>
 /* These DEF's are required as MUSICA's winsock6.h causes a clash with some of the 
  * standard ws2tcpip.h definitions (eg struct in_addr6).
@@ -222,6 +218,10 @@ int			inet_pton(int af,const char *src,void *dst);
 #define	IP_MULTICAST_LOOP      11 /*set/get IP multicast loopback */
 #define	IP_ADD_MEMBERSHIP      12 /* add an IP group membership */
 #define	IP_DROP_MEMBERSHIP     13/* drop an IP group membership */
+/*#define IN6ADDR_ANY_INIT { (unsigned char)0, (unsigned char)0, (unsigned char)0, (unsigned char)0, \
+                            (unsigned char)0, (unsigned char)0, (unsigned char)0, (unsigned char)0, \
+                            (unsigned char)0, (unsigned char)0, (unsigned char)0, (unsigned char)0, \
+                            (unsigned char)0, (unsigned char)0, (unsigned char)0, (unsigned char)0 } */
 struct ip_mreq {
 	struct in_addr imr_multiaddr;	/* IP multicast address of group */
 	struct in_addr imr_interface;	/* local IP address of interface */

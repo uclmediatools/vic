@@ -244,7 +244,7 @@ printf(const char *fmt, ...)
     return(retval);
 }
 
-/*
+
 int
 fprintf(FILE *f, const char *fmt, ...)
 {
@@ -262,7 +262,7 @@ int retval;
   retval = vfprintf(f, fmt, ap);
   
     return(retval);
-}*/
+}
 
 void
 perror(const char *msg)
@@ -277,10 +277,12 @@ perror(const char *msg)
 		MAKELANGID(0, SUBLANG_ENGLISH_US),
 		(LPTSTR) &msgBuf, 512,
 		NULL);
-    if (!cMsgLen)
+    if (!cMsgLen) {
+		debug_msg("%s%sError code %lu\n", msg?msg:"", msg?": ":"", dwError);
 		fprintf(stderr, "%s%sError code %lu\n",
 		msg?msg:"", msg?": ":"", dwError);
-    else {
+	} else {
+		debug_msg("%s%s%s\n", msg?msg:"", msg?": ":"", msgBuf);
 		fprintf(stderr, "%s%s%s\n", msg?msg:"", msg?": ":"", msgBuf);
 		LocalFree((HLOCAL)msgBuf);
     }

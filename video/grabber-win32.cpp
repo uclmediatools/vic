@@ -801,7 +801,7 @@ void VfwGrabber::start()
 
 	/*1e6 / double(max_fps_);*/
 	/*(DWORD)frametime_*/
-	parms_.dwRequestMicroSecPerFrame = 1e6 / double(max_fps_);
+	parms_.dwRequestMicroSecPerFrame = (unsigned long) (1e6 / double(max_fps_));
 	parms_.wPercentDropForError = 100;
 	parms_.fUsingDOSMemory = FALSE;
 	parms_.wNumVideoRequested = 3;

@@ -114,10 +114,10 @@ static const char rcsid[] =
 	u_int extra = (nbb) - NBIT;					\
 	bb |= (BB_INT)(bits) >> extra;					\
 	STORE_BITS(bb, bc)						\
-	bb = (BB_INT)(bits) << NBIT - extra;				\
+	bb = (BB_INT)(bits) << (NBIT - extra);				\
 	nbb = extra;							\
     } else								\
-	bb |= (BB_INT)(bits) << NBIT - (nbb);				\
+	bb |= (BB_INT)(bits) << (NBIT - (nbb));				\
 }
 
 class JpegEncoder : public TransmitterModule {

@@ -198,6 +198,12 @@ proc init_resources {} {
 
 	option add Vic.flowLabel 0 startupFile
 
+# Interface Index to bind to in IPv6
+	option add Vic.ifIndex 0 startupFile
+
+# Interface addr to bind to and use in CNAME
+	option add Vic.ifAddr 0 startupFile
+
 	option add Vic.numLayers 0 startupFile
 
 	option add Vic.foundry adobe startupFile
