@@ -104,6 +104,7 @@ v1.0.8	- Add mbus_sent_all()
 	  reporting interval. Fix by Bill Fenner.
 	- Make the RTP create_source() routine return a pointer to the
 	  source. Patch from Bill Fenner.
+	- Changes to the probation code in rtp.c from Bill Fenner.
 
 
 Still to do...
