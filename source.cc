@@ -599,7 +599,7 @@ Source::process(struct rtphdr* rh, u_char *bp, int len)
 	}
 }
 
-/*
+
 u_int32_t 
 Source::convert_time(u_int32_t ts)
 {
@@ -607,7 +607,7 @@ Source::convert_time(u_int32_t ts)
 	t += (ts >> 2) + (ts >> 3) - (ts >> 9) + (ts >> 12);
 	return (t);
 }
-*/
+
 
 void
 Source::recv(u_char *pkt, struct rtphdr* rh, u_char *vh, int cc)
