@@ -970,9 +970,7 @@ int JpegDecoder_422::decode(const u_char* in, int len, u_char *marks, int mark)
 				 * If we found above that the luminance
 				 * planes exceeded the threhold, decode
 				 * the choma planes unconditionally.
-				 * Otherwise, see if they c
-
-an be
+				 * Otherwise, see if they can be
 				 * suppressed too.
 				 */
 				short dummy[6];
@@ -1346,7 +1344,8 @@ int JpegDCTDecoder_411::decode(const u_char* in, int len, u_char *marks, int mar
 	marks += m.marktopskip;
 	
 	for (int y = 0; y < nrow_; ++y) {
-		int ycrop = (y < topcrop_ || y >= botcrop_		if (!ycrop) {
+		int ycrop = (y < topcrop_ || y >= botcrop_);
+		if (!ycrop) {
 			marks += m.marklskip;
 			fp += m.flskip;
 		}
@@ -1976,3 +1975,5 @@ u_short* JpegDecoder::huffbuild(const u_char* bits, const u_char* vals) const
 		for (int n = 1 << nbit; --n >= 0; )
 			ht[code | n] = map;
 	}
+	return (ht);
+}
