@@ -1526,13 +1526,13 @@ static u_int8 *format_rtcp_sdes(u_int8 *buffer, int buflen, u_int32 ssrc, struct
 
 	remaining_len = buflen - (packet - buffer);
 	item = rtp_get_sdes(session, ssrc, RTCP_SDES_CNAME);
-	if ((item != NULL) && ((strlen(item) + 2) <= remaining_len)) {
+	if ((item != NULL) && ((strlen(item) + (size_t) 2) <= remaining_len)) {
 		packet += add_sdes_item(packet, RTCP_SDES_CNAME, item);
 	}
 
 	remaining_len = buflen - (packet - buffer);
 	item = rtp_get_sdes(session, ssrc, RTCP_SDES_NOTE);
-	if ((item != NULL) && ((strlen(item) + 2) <= remaining_len)) {
+	if ((item != NULL) && ((strlen(item) + (size_t) 2) <= remaining_len)) {
 		packet += add_sdes_item(packet, RTCP_SDES_NOTE, item);
 	}
 
@@ -1542,22 +1542,22 @@ static u_int8 *format_rtcp_sdes(u_int8 *buffer, int buflen, u_int32 ssrc, struct
 		if ((session->sdes_count_sec % 8) == 0) {
 			switch (session->sdes_count_ter % 4) {
 			case 0: item = rtp_get_sdes(session, ssrc, RTCP_SDES_EMAIL);
-				if ((item != NULL) && ((strlen(item) + 2) <= remaining_len)) {
+				if ((item != NULL) && ((strlen(item) + (size_t) 2) <= remaining_len)) {
 					packet += add_sdes_item(packet, RTCP_SDES_EMAIL, item);
 					break;
 				}
 			case 1: item = rtp_get_sdes(session, ssrc, RTCP_SDES_PHONE);
-				if ((item != NULL) && ((strlen(item) + 2) <= remaining_len)) {
+				if ((item != NULL) && ((strlen(item) + (size_t) 2) <= remaining_len)) {
 					packet += add_sdes_item(packet, RTCP_SDES_PHONE, item);
 					break;
 				}
 			case 2: item = rtp_get_sdes(session, ssrc, RTCP_SDES_LOC);
-				if ((item != NULL) && ((strlen(item) + 2) <= remaining_len)) {
+				if ((item != NULL) && ((strlen(item) + (size_t) 2) <= remaining_len)) {
 					packet += add_sdes_item(packet, RTCP_SDES_LOC, item);
 					break;
 				}
 			case 3: item = rtp_get_sdes(session, ssrc, RTCP_SDES_TOOL);
-				if ((item != NULL) && ((strlen(item) + 2) <= remaining_len)) {
+				if ((item != NULL) && ((strlen(item) + (size_t) 2) <= remaining_len)) {
 					packet += add_sdes_item(packet, RTCP_SDES_TOOL, item);
 					break;
 				}
