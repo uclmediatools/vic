@@ -35,6 +35,9 @@ v1.0.2	- Assorted fixes to RTP library
 	- Add mbus_qmsgf()
 	- Cleanup mbus transmission path
 	- Add support for DES encryption to the mbus
+	- Mbus defaults to no encryption, but if the config file specifies
+	  DES encryption we will use it (although until the DES code is
+	  fixed, this is probably not much use).
 
 
 Still to do...
@@ -50,4 +53,5 @@ Still to do...
 	  messages if it decreases, as a hinderance to replay attacks.
 	- Mbus should keep a cache of other entities, and only allow sending 
 	  of reliable messages to known unicast addresses. 
+	- DES code is broken: array bounds overruns in a couple of places.
 

@@ -100,13 +100,14 @@ struct mbus {
 
 static char *mbus_new_encrkey(void)
 {
+	char		*key;	/* The key we are going to return... */
+#ifdef MBUS_ENCRYPT_BY_DEFAULT
 	/* Create a new key, for use by the hashing routines. Returns */
 	/* a key of the form (DES,MTIzMTU2MTg5MTEyMQ==)               */
 	char		 random_string[MBUS_ENCRKEY_LEN];
 	char		 encoded_string[(MBUS_ENCRKEY_LEN*4/3)+4];
 	int		 encoded_length;
 	int		 i;
-	char		*key;
 
 	/* Step 1: generate a random string for the key... */
 	for (i = 0; i < MBUS_ENCRKEY_LEN; i++) {
@@ -119,7 +120,10 @@ static char *mbus_new_encrkey(void)
 	/* Step 3: put it all together to produce the key... */
 	key = (char *) xmalloc(encoded_length + 18);
 	sprintf(key, "(DES,%s)", encoded_string);
-
+#else
+	key = (char *) xmalloc(9);
+	sprintf(key, "(NOENCR)");
+#endif
 	return key;
 }
 
@@ -340,15 +344,18 @@ static void mbus_get_key(struct mbus *m, struct mbus_key *key, char *id)
 	while (pos < s.st_size) {
 		sscanf(buf+pos, "%s", line);
 		pos += strlen(line) + 1;
-		if (strncmp(line, id, 9) == 0) {
-			key->algorithm   = (char *) strdup(strtok(line+9, ","));
-			key->key         = (char *) strtok(NULL  , ")");
-			key->key_len     = strlen(key->key);
-
-			tmp = (char *) xmalloc(key->key_len);
-			key->key_len = base64decode(key->key, key->key_len, tmp, key->key_len);
-			key->key = tmp;
-
+		if (strncmp(line, id, strlen(id)) == 0) {
+			key->algorithm   = (char *) strdup(strtok(line+strlen(id), ",)"));
+			if (strcmp(key->algorithm, "NOENCR") != 0) {
+				key->key     = (char *) strtok(NULL  , ")");
+				key->key_len = strlen(key->key);
+				tmp = (char *) xmalloc(key->key_len);
+				key->key_len = base64decode(key->key, key->key_len, tmp, key->key_len);
+				key->key = tmp;
+			} else {
+				key->key     = NULL;
+				key->key_len = 0;
+			}
 			xfree(buf);
 			xfree(line);
 			return;
@@ -401,36 +408,39 @@ static void mbus_get_encrkey(struct mbus *m, struct mbus_key *key)
 #else
 	mbus_get_key(m, key, "ENCRYPTIONKEY=(");
 #endif
-	assert(key->key_len == 7);
-	/* Take the first 56-bits of the input key and spread it across   */
-	/* the 64-bit DES key space inserting a bit-space of garbage      */
-	/* (for parity) every 7 bits. The garbage will be taken care of   */
-	/* below. The library we're using expects the key and parity bits */
-	/* in the following MSB order: K0 K1...K6 P0 K8 K9...K14 P1...    */
-	des_key = (unsigned char *) xmalloc(8);
-	des_key[0] = key->key[0];
-	des_key[1] = key->key[0] << 7 | key->key[1] >> 1;
-	des_key[2] = key->key[1] << 6 | key->key[2] >> 2;
-	des_key[3] = key->key[2] << 5 | key->key[3] >> 3;
-	des_key[4] = key->key[3] << 4 | key->key[4] >> 4;
-	des_key[5] = key->key[4] << 3 | key->key[5] >> 5;
-	des_key[6] = key->key[5] << 2 | key->key[6] >> 6;
-	des_key[7] = key->key[6] << 1;
+	if (strcmp(key->algorithm, "DES") == 0) {
+		assert(key->key != NULL);
+		assert(key->key_len == 7);
+		/* Take the first 56-bits of the input key and spread it across   */
+		/* the 64-bit DES key space inserting a bit-space of garbage      */
+		/* (for parity) every 7 bits. The garbage will be taken care of   */
+		/* below. The library we're using expects the key and parity bits */
+		/* in the following MSB order: K0 K1...K6 P0 K8 K9...K14 P1...    */
+		des_key = (unsigned char *) xmalloc(8);
+		des_key[0] = key->key[0];
+		des_key[1] = key->key[0] << 7 | key->key[1] >> 1;
+		des_key[2] = key->key[1] << 6 | key->key[2] >> 2;
+		des_key[3] = key->key[2] << 5 | key->key[3] >> 3;
+		des_key[4] = key->key[3] << 4 | key->key[4] >> 4;
+		des_key[5] = key->key[4] << 3 | key->key[5] >> 5;
+		des_key[6] = key->key[5] << 2 | key->key[6] >> 6;
+		des_key[7] = key->key[6] << 1;
 
-	/* fill in parity bits to make DES library happy */
-	for (i = 0; i < 8; ++i) 
-	{
-		k = des_key[i] & 0xfe;
-		j = k;
-		j ^= j >> 4;
-		j ^= j >> 2;
-		j ^= j >> 1;
-		j = (j & 1) ^ 1;
-		des_key[i] = k | j;
+		/* fill in parity bits to make DES library happy */
+		for (i = 0; i < 8; ++i) 
+		{
+			k = des_key[i] & 0xfe;
+			j = k;
+			j ^= j >> 4;
+			j ^= j >> 2;
+			j ^= j >> 1;
+			j = (j & 1) ^ 1;
+			des_key[i] = k | j;
+		}
+		xfree(key->key);
+		key->key     = des_key;
+		key->key_len = 8;
 	}
-	xfree(key->key);
-	key->key     = des_key;
-	key->key_len = 8;
 }
 
 static void mbus_get_hashkey(struct mbus *m, struct mbus_key *key)
