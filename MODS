@@ -151,6 +151,7 @@ v1.0.9	- Ignore ECONNREFUSED in net_udp.c
   	  more than 5 times the RTCP reporting interval.
 	* 2 November 1999 [rat v4.1.1]
 
+v1.0.10	- 
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
