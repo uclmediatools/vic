@@ -97,7 +97,7 @@ SOURCE=.\convex_hull.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\getopt.c
+SOURCE=..\..\getopt.c
 # End Source File
 # Begin Source File
 
