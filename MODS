@@ -122,6 +122,9 @@ v1.0.8	- Add mbus_sent_all()
 	  packets were processed, FALSE otherwise.
 	- Timeout RRs from the RTP database, if they're not refreshed for
 	  1.5 times the RTCP reporting interval
+	- rtp_update() only expires sources once per reporting interval, to
+	  avoid burning too many cycles.
+
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,
