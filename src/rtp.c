@@ -90,7 +90,7 @@ typedef struct {
 			rtcp_sdes_item 	item[1];	/* list of SDES */
 		} sdes;
 		struct {
-			u_int32         src[1];		/* list of sources */
+			u_int32         ssrc[1];	/* list of sources */
 							/* can't express the trailing text... */
 		} bye;
 	} r;
@@ -120,6 +120,7 @@ typedef struct _source {
 	char		*note;
 	rtcp_sr		*sr;
 	rtcp_rr_wrapper	*rr;
+	struct timeval	 last_active;
 } source;
 
 /*
@@ -131,8 +132,8 @@ struct rtp {
 	socket_udp	*rtcp_socket;
 	u_int32		 my_ssrc;
 	source		*db;
-	int		 invalid_rtp;
-	int		 invalid_rtcp;
+	int		 invalid_rtp_count;
+	int		 invalid_rtcp_count;
 	int		 ssrc_count;
 	void (*callback)(struct rtp *session, rtp_event *event);
 };
@@ -205,58 +206,65 @@ static source *get_source(struct rtp *session, u_int32 ssrc)
 
 static void create_source(struct rtp *session, u_int32 ssrc)
 {
-	/* Create a new source in the database, if that source doesn't exist already. */
-	/* If the source is pre-existing, then we do nothing.                         */
-	source	*new_source ;
-
-	if (get_source(session, ssrc) != NULL) {
-		return;
-	}
-	new_source = (source *) xmalloc(sizeof(source));
-	if (new_source == NULL) {
-		debug_msg("Unable to create source 0x%08x, insufficient memory\n", ssrc);
-		return;
-	}
-	debug_msg("Created source 0x%08x\n", ssrc);
-	new_source->l_link = NULL;
-	new_source->r_link = NULL;
-	new_source->ssrc   = ssrc;
-	new_source->cname  = NULL;
-	new_source->name   = NULL;
-	new_source->email  = NULL;
-	new_source->phone  = NULL;
-	new_source->loc    = NULL;
-	new_source->tool   = NULL;
-	new_source->note   = NULL;
-	new_source->sr     = NULL;
-	new_source->rr     = NULL;
-	/* Add the new_source to the database. We build up a binary tree of sources */
-	/* indexed by ssrc.  This is likely to work, on average, since ssrc values  */
-	/* are chosen at random, but has really bad worst case behaviour.           */
-	session->ssrc_count++;
-	if (session->db == NULL) {
-		session->db = new_source;
+	source	*new_source = get_source(session, ssrc);
+	if (new_source != NULL) {
+		/* Source exists already... update the last_active time, but otherwise do nothing. */
+		gettimeofday(&(new_source->last_active), NULL);
 		return;
 	} else {
-		source	*tmp = session->db;
-		while (1) {
-			if (tmp->ssrc < ssrc) {
-				if (tmp->l_link != NULL) {
-					tmp = tmp->l_link;
+		/* Source doesn't exist... create it. */
+		new_source = (source *) xmalloc(sizeof(source));
+		if (new_source == NULL) {
+			debug_msg("Unable to create source 0x%08x, insufficient memory\n", ssrc);
+			return;
+		}
+		debug_msg("Created source 0x%08x\n", ssrc);
+		new_source->l_link = NULL;
+		new_source->r_link = NULL;
+		new_source->ssrc   = ssrc;
+		new_source->cname  = NULL;
+		new_source->name   = NULL;
+		new_source->email  = NULL;
+		new_source->phone  = NULL;
+		new_source->loc    = NULL;
+		new_source->tool   = NULL;
+		new_source->note   = NULL;
+		new_source->sr     = NULL;
+		new_source->rr     = NULL;
+		gettimeofday(&(new_source->last_active), NULL);
+		/* Add the new_source to the database. We build up a binary tree of sources */
+		/* indexed by ssrc.  This is likely to work, on average, since ssrc values  */
+		/* are chosen at random, but has really bad worst case behaviour.           */
+		session->ssrc_count++;
+		if (session->db == NULL) {
+			session->db = new_source;
+			return;
+		} else {
+			source	*tmp = session->db;
+			while (1) {
+				if (tmp->ssrc < ssrc) {
+					if (tmp->l_link != NULL) {
+						tmp = tmp->l_link;
+					} else {
+						tmp->l_link = new_source;
+						return;
+					}
 				} else {
-					tmp->l_link = new_source;
-					return;
-				}
-			} else {
-				if (tmp->r_link != NULL) {
-					tmp = tmp->r_link;
-				} else {
-					tmp->r_link = new_source;
-					return;
+					if (tmp->r_link != NULL) {
+						tmp = tmp->r_link;
+					} else {
+						tmp->r_link = new_source;
+						return;
+					}
 				}
 			}
 		}
 	}
+}
+
+static void delete_source(struct rtp *session, u_int32 ssrc)
+{
+	
 }
 
 struct rtp *rtp_init(char *addr, u_int16 port, int ttl, void (*callback)(struct rtp *session, rtp_event *e))
@@ -272,8 +280,8 @@ struct rtp *rtp_init(char *addr, u_int16 port, int ttl, void (*callback)(struct 
 	session->my_ssrc      = (u_int32) lbl_random();
 	session->db           = NULL;
 	session->callback     = callback;
-	session->invalid_rtp  = 0;
-	session->invalid_rtcp = 0;
+	session->invalid_rtp_count  = 0;
+	session->invalid_rtcp_count = 0;
 	session->ssrc_count   = 1;
 	return session;
 }
@@ -341,6 +349,7 @@ static void rtp_recv_data(struct rtp *session)
 	int		 buflen;
 	rtp_event	 event;
 	struct timeval	 event_ts;
+	int		 i;
 
 	buflen = udp_recv(session->rtp_socket, buffer, RTP_MAX_PACKET_LEN - RTP_PACKET_HEADER_SIZE);
 	if (buflen > 0) {
@@ -363,10 +372,13 @@ static void rtp_recv_data(struct rtp *session)
 		}
 		packet->data     = buffer + 12 + packet->cc + packet->extn_len;
 		packet->data_len = buflen - packet->extn_len - packet->cc - 12;
-		/* Check that this packet is valid, and comes from a known source...  */
-		/* This implies that we discard RTP packets from a source until we've */
-		/* received a valid RTCP packet from that source.                  */
-		if (validate_rtp(packet, buflen) && (get_source(session, packet->ssrc) != NULL)) {
+		if (validate_rtp(packet, buflen)) {
+			create_source(session, packet->ssrc);
+			if (packet->cc > 0) {
+				for (i = 0; i < packet->cc; i++) {
+					create_source(session, packet->csrc[i]);
+				}
+			}
 			gettimeofday(&event_ts, NULL);
 			event.ssrc = packet->ssrc;
 			event.type = RX_RTP;
@@ -375,7 +387,7 @@ static void rtp_recv_data(struct rtp *session)
 			session->callback(session, &event);
 			return;
 		}
-		session->invalid_rtp++;
+		session->invalid_rtp_count++;
 		debug_msg("Invalid RTP packet discarded\n");
 	}
 	xfree(packet);
@@ -500,6 +512,9 @@ static void process_rtcp_sr(struct rtp *session, rtcp_t *packet, struct timeval 
 		rr->lsr           = ntohl(packet->r.sr.rr[i].lsr);
 		rr->dlsr          = ntohl(packet->r.sr.rr[i].dlsr);
 
+		/* Create a database entry for this SSRC, if one doesn't already exist... */
+		create_source(session, rr->ssrc);
+
 		/* Store the RR for later use... */
 		insert_rr(s, rr);
 
@@ -537,6 +552,9 @@ static void process_rtcp_rr(struct rtp *session, rtcp_t *packet, struct timeval 
 		rr->jitter        = ntohl(packet->r.rr.rr[i].jitter);
 		rr->lsr           = ntohl(packet->r.rr.rr[i].lsr);
 		rr->dlsr          = ntohl(packet->r.rr.rr[i].dlsr);
+
+		/* Create a database entry for this SSRC, if one doesn't already exist... */
+		create_source(session, rr->ssrc);
 
 		/* Store the RR for later use... */
 		insert_rr(s, rr);
@@ -597,10 +615,26 @@ static void process_rtcp_sdes(struct rtp *session, rtcp_t *packet, struct timeva
 
 static void process_rtcp_bye(struct rtp *session, rtcp_t *packet, struct timeval *event_ts)
 {
-	UNUSED(session);
-	UNUSED(packet);
-	UNUSED(event_ts);
-	debug_msg("Got RTCP BYE\n");
+	int		 i;
+	u_int32		 ssrc;
+	rtp_event	 event;
+	source		*s;
+
+	for (i = 0; i < packet->common.count; i++) {
+		ssrc = ntohl(packet->r.bye.ssrc[i]);
+		/* This is kind-of strange, since we create a source we are about to delete. */
+		/* This is done to ensure that the source mentioned in the event which is    */
+		/* passed to the user of the RTP library is valid, and simplify client code. */
+		create_source(session, ssrc);
+		/* Call the event handler... */
+		event.ssrc = ssrc;
+		event.type = RX_BYE;
+		event.data = NULL;
+		event.ts   = event_ts;
+		session->callback(session, &event);
+		/* Now delete the source... */
+		delete_source(session, ssrc);
+	}
 }
 
 static void rtp_recv_ctrl(struct rtp *session)
@@ -637,7 +671,7 @@ static void rtp_recv_ctrl(struct rtp *session)
 			}
 		} else {
 			debug_msg("Invalid RTCP packet discarded\n");
-			session->invalid_rtcp++;
+			session->invalid_rtcp_count++;
 		}
 	}
 }
