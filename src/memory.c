@@ -103,6 +103,58 @@ void xmemchk(void)
 #endif
 }
 
+#ifdef DEBUG_MEM
+static int 
+alloc_blk_cmp_origin(const void *vab1, const void *vab2)
+{
+        alloc_blk *ab1, *ab2;
+        int sc;
+        
+        ab1 = (alloc_blk*)vab1;
+        ab2 = (alloc_blk*)vab2;
+
+        if (ab1->filen == NULL || ab2->filen == NULL) {
+                if (ab1->filen == NULL && ab2->filen == NULL) {
+                        return 0;
+                } else if (ab1->filen == NULL) {
+                        return +1;
+                } else /* (ab2->filen == NULL)*/ {
+                        return -1;
+                }
+        }
+
+        sc = strcmp(ab1->filen, ab2->filen);
+        if (sc == 0) {
+                if (ab1->line > ab2->line) {
+                        return +1;
+                } else if (ab1->line == ab2->line) {
+                        return 0;
+                } else /* (ab1->line < ab2->line) */{
+                        return -1;
+                }
+        }
+
+        return sc;
+}
+
+static int
+alloc_blk_cmp_est(const void *vab1, const void *vab2)
+{
+        alloc_blk *ab1, *ab2;
+
+        ab1 = (alloc_blk*)vab1;        
+        ab2 = (alloc_blk*)vab2;
+        
+        if (ab1->est > ab2->est) {
+                return +1;
+        } else if (ab1->est == ab2->est) {
+                return 0;
+        } else {
+                return -1;
+        }
+}
+#endif /* DEBUG_MEM */
+
 void xmemdmp(void)
 {
 #ifdef DEBUG_MEM
@@ -112,6 +164,9 @@ void xmemdmp(void)
 		printf("ERROR: Too many addresses for xmemchk()!\n");
 		abort();
 	}
+
+        qsort(mem_item, naddr, sizeof(mem_item[0]), alloc_blk_cmp_est);
+
         for (i=0; i<naddr; i++) {
             printf("%5d",i);                              fflush(stdout);
             printf("  addr: %p", mem_item[i].addr);       fflush(stdout);
@@ -158,40 +213,6 @@ void xclaim(void *addr, const char *filen, int line)
 #endif /* DEBUG_MEM */
 } 
 
-#ifdef DEBUG_MEM
-static int 
-alloc_blk_cmp_origin(const void *vab1, const void *vab2)
-{
-        alloc_blk *ab1, *ab2;
-        int sc;
-        
-        ab1 = (alloc_blk*)vab1;
-        ab2 = (alloc_blk*)vab2;
-
-        if (ab1->filen == NULL || ab2->filen == NULL) {
-                if (ab1->filen == NULL && ab2->filen == NULL) {
-                        return 0;
-                } else if (ab1->filen == NULL) {
-                        return +1;
-                } else /* (ab2->filen == NULL)*/ {
-                        return -1;
-                }
-        }
-
-        sc = strcmp(ab1->filen, ab2->filen);
-        if (sc == 0) {
-                if (ab1->line > ab2->line) {
-                        return +1;
-                } else if (ab1->line == ab2->line) {
-                        return 0;
-                } else /* (ab1->line < ab2->line) */{
-                        return -1;
-                }
-        }
-
-        return sc;
-}
-#endif /* DEBUG_MEM */
 
 void 
 xmemdist(FILE *fp)
