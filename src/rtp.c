@@ -252,8 +252,8 @@ struct rtp {
 	uint16_t	 rtp_seq;
 	uint32_t	 rtp_pcount;
 	uint32_t	 rtp_bcount;
-    char *encryption_algorithm;
- 	int encryption_enabled;
+	char 		*encryption_algorithm;
+ 	int 		 encryption_enabled;
  	rtp_encrypt_func encrypt_func;
  	rtp_decrypt_func decrypt_func;
  	int encryption_pad_length;
@@ -1869,9 +1869,11 @@ int rtp_add_csrc(struct rtp *session, uint32_t csrc)
 		debug_msg("Created source 0x%08x as CSRC\n", csrc);
 	}
 	check_source(s);
-	s->should_advertise_sdes = TRUE;
-	session->csrc_count++;
-	debug_msg("Added CSRC 0x%08lx as CSRC %d\n", csrc, session->csrc_count);
+	if (!s->should_advertise_sdes) {
+		s->should_advertise_sdes = TRUE;
+		session->csrc_count++;
+		debug_msg("Added CSRC 0x%08lx as CSRC %d\n", csrc, session->csrc_count);
+	}
 	return TRUE;
 }
 
