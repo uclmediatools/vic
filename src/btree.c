@@ -73,7 +73,7 @@ btree_search(btree_node_t *x, u_int32 key)
                         x = x->right;
                 }
         }
-        return x;
+        return x; 
 }
 
 static void
@@ -226,13 +226,21 @@ btree_remove(btree_t *tree, u_int32 key, void **data)
         return TRUE;
 }
 
-int
-btree_get_root_key(btree_t *tree, u_int32 *key)
+int 
+btree_get_min_key(btree_t *tree, u_int32 *key)
 {
+        btree_node_t *x;
+
         if (tree->root == NULL) {
                 return FALSE;
         }
-        *key = tree->root->key;
+
+        x = btree_min(tree->root);
+        if (x == NULL) {
+                return FALSE;
+        }
+        
+        *key = x->key;
         return TRUE;
 }
 
