@@ -52,6 +52,7 @@ done
 #if test "$CC" = gcc && test -f .devel ; then
 if test "$CC" = gcc  ; then
 	V_CCOPT="$V_CCOPT -g -W -Wall -Wno-implicit-int -Wno-return-type"
+	V_CCOPT_H261="$V_CCOPT_H261 -g -W -Wall -Wno-implicit-int -Wno-return-type"
 	V_DEFINE="$V_DEFINE -fsigned-char"
 fi
 
@@ -60,6 +61,7 @@ AC_SUBST(V_TAR_TARGET)
 
 AC_SUBST(V_ALL)
 AC_SUBST(V_CCOPT)
+AC_SUBST(V_CCOPT_H261)
 AC_SUBST(V_TAR_EXTRA)
 AC_SUBST(V_LIB)
 AC_SUBST(V_DEFINE)

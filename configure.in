@@ -285,13 +285,24 @@ sparc-sun-sunos*)
 		V_DEFINE="$V_DEFINE -DLinux"
 	fi
 	OPSYS=linux
-	;;
+        ;;
 esac
+
+dnl Optimisation in H261 decoder needs to be turned off for GCC 2.96 
+
+if test $CC = gcc ; then
+     echo $ac_n "checking version of GCC""... $ac_c"
+     GCC_version=`$CC --version`
+     echo "$GCC_version"
+     if test "$GCC_version" = 2.96 ; then
+           echo "Turning off optimisation for H261 encoder"
+           V_CCOPT_H261="";
+     fi
+fi
 
 if test -f codec/encoder-bvc.cpp ; then
 	V_OBJ="$V_OBJ codec/encoder-bvc.o codec/decoder-bvc.o"
 fi
-
 
 AC_SUBST(V_INCLUDE_GRABBER)
 AC_SUBST(V_LIB_GRABBER)
