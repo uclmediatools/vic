@@ -193,14 +193,6 @@ void mbus_lock_config_file(struct mbus_config *m)
 		debug_msg("Created new registry entry...\n");
 	} else {
 		debug_msg("Opened existing registry entry...\n");
-		if (mbus_get_version(m) < MBUS_CONFIG_VERSION) {
-			rewrite_config(m);
-			debug_msg("Updated Mbus configuration database.\n");
-		}
-		if (mbus_get_version(m) > MBUS_CONFIG_VERSION) {
-			debug_msg("Mbus configuration database has later version number than expected.\n");
-			debug_msg("Continuing, in the hope that the extensions are backwards compatible.\n");
-		}
 	}
 #else
 	/* Obtain a valid lock on the mbus configuration file. This function */
@@ -287,18 +279,18 @@ void mbus_lock_config_file(struct mbus_config *m)
 			debug_msg("Mbus config file has incorrect header\n");
 			abort();
 		}
-		if (mbus_get_version(m) < MBUS_CONFIG_VERSION) {
-			rewrite_config(m);
-			printf("Updated Mbus configuration database.\n");
-		}
-		if (mbus_get_version(m) > MBUS_CONFIG_VERSION) {
-			printf("Mbus configuration database has later version number than expected.\n");
-			printf("Continuing, in the hope that the extensions are backwards compatible.\n");
-		}
 		xfree(buf);
 	}
 #endif
 	m->cfg_locked = TRUE;
+	if (mbus_get_version(m) < MBUS_CONFIG_VERSION) {
+		rewrite_config(m);
+		debug_msg("Updated Mbus configuration database.\n");
+	}
+	if (mbus_get_version(m) > MBUS_CONFIG_VERSION) {
+		debug_msg("Mbus configuration database has later version number than expected.\n");
+		debug_msg("Continuing, in the hope that the extensions are backwards compatible.\n");
+	}
 }
 
 void mbus_unlock_config_file(struct mbus_config *m)
