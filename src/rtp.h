@@ -39,6 +39,7 @@
 #ifndef __RTP_H__
 #define __RTP_H__
 
+#define RTP_VERSION 2
 #define RTP_PACKET_HEADER_SIZE	((sizeof(char *) * 2) + sizeof(u_int32 *) + (2 * sizeof(int)))
 #define RTP_MAX_PACKET_LEN 1500
 
@@ -110,6 +111,23 @@ typedef struct {
 } rtcp_sdes_item;
 
 typedef struct {
+#ifndef DIFF_BYTE_ORDER
+	unsigned short  version:2;	/* RTP version            */
+	unsigned short  p:1;		/* padding flag           */
+	unsigned short  subtype:5;	/* application dependent  */
+#else
+	unsigned short  subtype:5;	/* application dependent  */
+	unsigned short  p:1;		/* padding flag           */
+	unsigned short  version:2;	/* RTP version            */
+#endif
+	unsigned short  pt:8;		/* packet type            */
+	u_int16         length;		/* packet length          */
+	u_int32         ssrc;
+	char            name[4];        /* four ASCII characters  */
+	char            data[1];        /* variable length field  */
+} rtcp_app;
+
+typedef struct {
 	u_int32		 ssrc;
 	int		 type;
 	void		*data;
@@ -128,6 +146,10 @@ typedef struct {
 #define RX_RTCP_START	108	/* We're about to start processing a compound RTCP packet. The SSRC is not valid in this event. */
 #define RX_RTCP_FINISH	109	/* We've just finished processing a compound RTCP packet. The SSRC is not valid in this event.  */
 #define RR_TIMEOUT	110
+#define RX_APP  	111
+
+/* RTP options */
+#define RTP_PROMISC     1
 
 /* SDES packet types... */
 #define RTCP_SDES_END   0
@@ -142,11 +164,17 @@ typedef struct {
 
 struct rtp;
 
-struct rtp	*rtp_init(char *addr, u_int16 rx_port, u_int16 tx_port, int ttl, double rtcp_bw, void (*callback)(struct rtp *session, rtp_event *e));
+struct rtp	*rtp_init(char *addr, u_int16 rx_port, u_int16 tx_port, int ttl, double rtcp_bw, 
+			  void (*callback)(struct rtp *session, rtp_event *e),
+			  void *user_data);
+int 		 rtp_setopt(struct rtp *session, int optname, char *optval, int  optlen);
+int 		 rtp_getopt(struct rtp *session, int optname, char *optval, int *optlen);
+void 		*rtp_get_userdata(struct rtp *session);
 int 		 rtp_recv(struct rtp *session, struct timeval *timeout, u_int32 curr_time);
 int 		 rtp_send_data(struct rtp *session, u_int32 ts, char pt, int m, int cc, u_int32 csrc[], 
                                char *data, int data_len, char *extn, int extn_len);
-void		 rtp_send_ctrl(struct rtp *session, u_int32 ts);
+void 		 rtp_send_ctrl(struct rtp *session, u_int32 ts, 
+			       rtcp_app *(*appcallback)(struct rtp *session, u_int32 ts, int max_size));
 void 		 rtp_update(struct rtp *session);
 
 u_int32		 rtp_my_ssrc(struct rtp *session);
