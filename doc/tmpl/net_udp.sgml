@@ -1,10 +1,9 @@
 <!-- ##### SECTION Title ##### -->
-NETUDP interface
+NETUDP
 
 <!-- ##### SECTION Short_Description ##### -->
 
-A unified interface for sending and receiving UDP datagrams over IPv4
-and IPv6 networks.
+A UDP interface for IPv4 and IPv6.
 
 <!-- ##### SECTION Long_Description ##### -->
 <para>

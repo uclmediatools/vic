@@ -188,6 +188,7 @@ gettimeofday
 
 <SECTION>
 <FILE>hmac</FILE>
+<INCLUDE>hmac.h</INCLUDE>
 hmac_md5
 </SECTION>
 
@@ -263,6 +264,7 @@ mbus_encode_str
 
 <SECTION>
 <FILE>md5</FILE>
+<INCLUDE>md5.h</INCLUDE>
 MD5_CTX
 MD5Init
 MD5Update

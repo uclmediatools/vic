@@ -334,6 +334,7 @@ v1.2.5	- More informative error message when the lock on the mbus configuration
 	- New directories (src, tests, docs, examples).
 	- Fixed Win32 .{dsw,dsp} files for new directory structure.
 	- Documented net_udp.c.
+	- Move strfind to util.[ch] from mbus_addr.[ch].
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,

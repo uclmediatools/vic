@@ -1,8 +1,8 @@
 <!-- ##### SECTION Title ##### -->
-RTP API
+RTP
 
 <!-- ##### SECTION Short_Description ##### -->
-Real-Time Transport Protocol Implementation.
+Real-Time Transport Protocol (RTP) Implementation.
 
 <!-- ##### SECTION Long_Description ##### -->
 <para>
@@ -13,9 +13,21 @@ of audio, video, and other real-time data across IP capable networks.
 </para>
 
 <!-- ##### SECTION See_Also ##### -->
-<para>
 
-</para>
+<itemizedlist>
+  <listitem>
+    <para><ulink url="http://www.ietf.org/rfc/rfc1889.txt">RFC1889 - RTP: A Transport Protocol for Real-Time Applications </ulink></para>
+  </listitem> 
+
+  <listitem>
+    <para><ulink url="http://www.ietf.org/rfc/rfc1890.txt">RFC1890 - RTP Profile for Audio and Video Conferences with Minimal Control </ulink></para>
+  </listitem>
+
+  <listitem>
+     <para><ulink url="http://www.ietf.org/html.charters/avt-charter.html"> IETF Audio/Video Transport Group</ulink></para>
+  </listitem>
+
+</itemizedlist>
 
 <!-- ##### MACRO RTP_VERSION ##### -->
 <para>

@@ -59,6 +59,12 @@ void purge_chars(char *src, char *to_go);
 /* overlapping_words: returns how many words match in two strings */
 int overlapping_words(const char *s1, const char *s2, int max_words);
 
+/* The strfind() function is mainly for internal use, but might be
+   useful to others... */
+int strfind(const char *haystack, 
+	    const char *needle_start, 
+	    const char *needle_end);
+
 #if defined(__cplusplus)
 }
 #endif
