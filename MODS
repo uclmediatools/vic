@@ -264,6 +264,8 @@ v1.1.5  - Remove SunOS and Solaris defines from the configure script, they
 	- Bound ttl to max 127 in rtp.c rather than asserting <= 127.
 	- Change rtp_init to return NULL in rtp.c if ports or ttl 
 	  inappropriate.
+	- Clarify that rtp_recv(), rtp_send_data() and rtp_send_ctrl() take an
+	  RTP format timestamp for the current time.
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,

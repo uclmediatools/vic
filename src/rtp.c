@@ -1088,7 +1088,7 @@ static int validate_rtp(rtp_packet *packet, int len)
 	return TRUE;
 }
 
-static void process_rtp(struct rtp *session, uint32_t curr_time, rtp_packet *packet, source *s)
+static void process_rtp(struct rtp *session, uint32_t curr_rtp_ts, rtp_packet *packet, source *s)
 {
 	int		 i, d, transit;
 	rtp_event	 event;
@@ -1104,7 +1104,7 @@ static void process_rtp(struct rtp *session, uint32_t curr_time, rtp_packet *pac
 		s->sender = TRUE;
 		session->sender_count++;
 	}
-	transit    = curr_time - packet->ts;
+	transit    = curr_rtp_ts - packet->ts;
 	d      	   = transit - s->transit;
 	s->transit = transit;
 	if (d < 0) {
@@ -1123,7 +1123,7 @@ static void process_rtp(struct rtp *session, uint32_t curr_time, rtp_packet *pac
 	}
 }
 
-static void rtp_recv_data(struct rtp *session, uint32_t curr_time)
+static void rtp_recv_data(struct rtp *session, uint32_t curr_rtp_ts)
 {
 	/* This routine preprocesses an incoming RTP packet, deciding whether to process it. */
 	rtp_packet	*packet = (rtp_packet *) xmalloc(RTP_MAX_PACKET_LEN);
@@ -1170,7 +1170,7 @@ static void rtp_recv_data(struct rtp *session, uint32_t curr_time)
 					create_source(session, packet->ssrc);
 					s = get_source(session, packet->ssrc);
 				}
-				process_rtp(session, curr_time, packet, s);
+				process_rtp(session, curr_rtp_ts, packet, s);
 				return; /* We don't free "packet", that's done by the callback function... */
 			} 
 			if (s != NULL) {
@@ -1179,7 +1179,7 @@ static void rtp_recv_data(struct rtp *session, uint32_t curr_time)
 					s->max_seq   = packet->seq - 1;
 				}
 				if (update_seq(s, packet->seq)) {
-					process_rtp(session, curr_time, packet, s);
+					process_rtp(session, curr_rtp_ts, packet, s);
 					return;	/* we don't free "packet", that's done by the callback function... */
 				} else {
 					/* This source is still on probation... */
@@ -1601,7 +1601,7 @@ static void rtp_process_ctrl(struct rtp *session, uint8_t *buffer, int buflen)
 	}
 }
 
-int rtp_recv(struct rtp *session, struct timeval *timeout, uint32_t curr_time)
+int rtp_recv(struct rtp *session, struct timeval *timeout, uint32_t curr_rtp_ts)
 {
 	check_database(session);
 	udp_fd_zero();
@@ -1609,7 +1609,7 @@ int rtp_recv(struct rtp *session, struct timeval *timeout, uint32_t curr_time)
 	udp_fd_set(session->rtcp_socket);
 	if (udp_select(timeout) > 0) {
 		if (udp_fd_isset(session->rtp_socket)) {
-			rtp_recv_data(session, curr_time);
+			rtp_recv_data(session, curr_rtp_ts);
 		}
 		if (udp_fd_isset(session->rtcp_socket)) {
                         uint8_t		 buffer[RTP_MAX_PACKET_LEN];
@@ -1745,7 +1745,7 @@ const rtcp_rr *rtp_get_rr(struct rtp *session, uint32_t reporter, uint32_t repor
         return get_rr(session, reporter, reportee);
 }
 
-int rtp_send_data(struct rtp *session, uint32_t ts, char pt, int m, int cc, uint32_t csrc[], 
+int rtp_send_data(struct rtp *session, uint32_t rtp_ts, char pt, int m, int cc, uint32_t csrc[], 
                   char *data, int data_len, char *extn, int extn_len)
 {
 	int		 buffer_len, i, rc, pad, pad_len;
@@ -1788,7 +1788,7 @@ int rtp_send_data(struct rtp *session, uint32_t ts, char pt, int m, int cc, uint
 	packet->m    = m;
 	packet->pt   = pt;
 	packet->seq  = htons(session->rtp_seq++);
-	packet->ts   = htonl(ts);
+	packet->ts   = htonl(rtp_ts);
 	packet->ssrc = htonl(rtp_my_ssrc(session));
 	/* ...now the CSRC list... */
 	for (i = 0; i < cc; i++) {
@@ -1887,7 +1887,7 @@ static int format_report_blocks(rtcp_rr *rrp, int remaining_length, struct rtp *
 	return nblocks;
 }
 
-static uint8_t *format_rtcp_sr(uint8_t *buffer, int buflen, struct rtp *session, uint32_t ts)
+static uint8_t *format_rtcp_sr(uint8_t *buffer, int buflen, struct rtp *session, uint32_t rtp_ts)
 {
 	/* Write an RTCP SR into buffer, returning a pointer to */
 	/* the next byte after the header we have just written. */
@@ -1908,7 +1908,7 @@ static uint8_t *format_rtcp_sr(uint8_t *buffer, int buflen, struct rtp *session,
 	packet->r.sr.sr.ssrc          = htonl(rtp_my_ssrc(session));
 	packet->r.sr.sr.ntp_sec       = htonl(ntp_sec);
 	packet->r.sr.sr.ntp_frac      = htonl(ntp_frac);
-	packet->r.sr.sr.rtp_ts        = htonl(ts);
+	packet->r.sr.sr.rtp_ts        = htonl(rtp_ts);
 	packet->r.sr.sr.sender_pcount = htonl(session->rtp_pcount);
 	packet->r.sr.sr.sender_bcount = htonl(session->rtp_bcount);
 
@@ -2078,8 +2078,8 @@ static uint8_t *format_rtcp_app(uint8_t *buffer, int buflen, uint32_t ssrc, rtcp
 	return buffer + pkt_octets;
 }
 
-static void send_rtcp(struct rtp *session, uint32_t ts,
-		     rtcp_app *(*appcallback)(struct rtp *session, uint32_t ts, int max_size))
+static void send_rtcp(struct rtp *session, uint32_t rtp_ts,
+		     rtcp_app *(*appcallback)(struct rtp *session, uint32_t rtp_ts, int max_size))
 {
 	/* Construct and send an RTCP packet. The order in which packets are packed into a */
 	/* compound packet is defined by section 6.1 of draft-ietf-avt-rtp-new-03.txt and  */
@@ -2100,7 +2100,7 @@ static void send_rtcp(struct rtp *session, uint32_t ts,
 
 	/* The first RTCP packet in the compound packet MUST always be a report packet...  */
 	if (session->we_sent) {
-		ptr = format_rtcp_sr(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), session, ts);
+		ptr = format_rtcp_sr(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), session, rtp_ts);
 	} else {
 		ptr = format_rtcp_rr(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), session);
 	}
@@ -2125,7 +2125,7 @@ static void send_rtcp(struct rtp *session, uint32_t ts,
 	/* Finish with as many APP packets as the application will provide. */
 	old_ptr = ptr;
 	if (appcallback) {
-		while ((app = (*appcallback)(session, ts, RTP_MAX_PACKET_LEN - (ptr - buffer)))) {
+		while ((app = (*appcallback)(session, rtp_ts, RTP_MAX_PACKET_LEN - (ptr - buffer)))) {
 			lpt = ptr;
 			ptr = format_rtcp_app(ptr, RTP_MAX_PACKET_LEN - (ptr - buffer), rtp_my_ssrc(session), app);
 			assert(ptr > old_ptr);
@@ -2163,8 +2163,8 @@ static void send_rtcp(struct rtp *session, uint32_t ts,
 	check_database(session);
 }
 
-void rtp_send_ctrl(struct rtp *session, uint32_t ts,
-                   rtcp_app *(*appcallback)(struct rtp *session, uint32_t ts, int max_size))
+void rtp_send_ctrl(struct rtp *session, uint32_t rtp_ts,
+                   rtcp_app *(*appcallback)(struct rtp *session, uint32_t rtp_ts, int max_size))
 {
 	/* Send an RTCP packet, if one is due... */
 	struct timeval	 curr_time;
@@ -2183,7 +2183,7 @@ void rtp_send_ctrl(struct rtp *session, uint32_t ts,
 		new_send_time = session->last_rtcp_send_time;
 		tv_add(&new_send_time, new_interval);
 		if (tv_gt(curr_time, new_send_time)) {
-			send_rtcp(session, ts, appcallback);
+			send_rtcp(session, rtp_ts, appcallback);
 			session->initial_rtcp        = FALSE;
 			session->we_sent             = FALSE;
 			session->last_rtcp_send_time = curr_time;

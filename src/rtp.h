@@ -185,11 +185,11 @@ struct rtp	*rtp_init_if(char *addr, char *iface, uint16_t rx_port, uint16_t tx_p
 int 		 rtp_setopt(struct rtp *session, int optname, int optval);
 int 		 rtp_getopt(struct rtp *session, int optname, int *optval);
 void 		*rtp_get_userdata(struct rtp *session);
-int 		 rtp_recv(struct rtp *session, struct timeval *timeout, uint32_t curr_time);
-int 		 rtp_send_data(struct rtp *session, uint32_t ts, char pt, int m, int cc, uint32_t csrc[], 
+int 		 rtp_recv(struct rtp *session, struct timeval *timeout, uint32_t curr_rtp_ts);
+int 		 rtp_send_data(struct rtp *session, uint32_t rtp_ts, char pt, int m, int cc, uint32_t csrc[], 
                                char *data, int data_len, char *extn, int extn_len);
-void 		 rtp_send_ctrl(struct rtp *session, uint32_t ts, 
-			       rtcp_app *(*appcallback)(struct rtp *session, uint32_t ts, int max_size));
+void 		 rtp_send_ctrl(struct rtp *session, uint32_t rtp_ts, 
+			       rtcp_app *(*appcallback)(struct rtp *session, uint32_t rtp_ts, int max_size));
 void 		 rtp_update(struct rtp *session);
 
 uint32_t	 rtp_my_ssrc(struct rtp *session);
