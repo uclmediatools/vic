@@ -499,8 +499,8 @@ VfwGrabber::VfwGrabber(const int dev) : dev_(dev), connected_(0),
 	devtype_ = get_device_type(deviceName);
 	setport("external");
 	if (is_pal()) {
-		basewidth_ = CIF_BASE_WIDTH;
-		baseheight_ = CIF_BASE_HEIGHT;
+		basewidth_ = PAL_BASE_WIDTH;
+		baseheight_ = PAL_BASE_HEIGHT;
 	} else {
 		basewidth_ = NTSC_BASE_WIDTH;
 		baseheight_ = NTSC_BASE_HEIGHT;
