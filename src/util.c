@@ -251,17 +251,16 @@ purge_chars(char *src, char *to_go)
 static int
 string_to_words(char *s, char**w, int max_words)
 {
-        char *lasts;
         int n;
 
         n = 0;
-        w[0] = strtok_r(s, " ", &lasts);
+        w[0] = strtok(s, " ");
         if (w[0] == NULL) {
                 return n;
         }
 
         while(++n < max_words) {
-                w[n] = strtok_r(NULL, " ", &lasts);
+                w[n] = strtok(NULL, " ");
                 if (w[n] == NULL) break;
         }
         return n;
