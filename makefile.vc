@@ -190,8 +190,8 @@ SBR_H261DUMP = $(OBJ_H261DUMP:.obj=.sbr)
 #vic: vic.exe vic.bsc
 vic: vic.exe
 
-vic.exe:	$(OBJ) $(OBJ_GRABBER)
-	$(link) $(ldebug) $(guilflags) -out:$@ $(OBJ) $(OBJ_GRABBER) $(LIBS)
+vic.exe:	$(OBJ) $(OBJ_GRABBER) tk.res
+	$(link) $(ldebug) $(guilflags) -out:$@ tk.res $(OBJ) $(OBJ_GRABBER) $(LIBS)
 
 vic.bsc : $(OUTDIR)  $(SBR)
     $(BSC32) @<<
@@ -362,6 +362,9 @@ p64dump.obj: p64/p64dump.cc
 
 jpeg.obj: jpeg/jpeg.cc
 	$(cc32) $(cdebug) $(cflags) $(cvars) $(CFLAGS) -o $@ -FR$*.sbr -Tp jpeg/jpeg.cc
+
+tk.res:
+	$(rc32) -fo $@ -r -i $(GENERICDIR) $(RCDIR)/tk.rc
 
 install: vic.exe histtolut.exe
 	-mkdir "\Program Files\MBone"
