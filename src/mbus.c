@@ -70,8 +70,8 @@ static int vsnprintf(char *s, size_t buf_size, const char *format, va_list ap)
 
 struct mbus_msg {
 	struct mbus_msg	*next;
-	struct timeval	 time;	/* Time the message was sent, to trigger a retransmit */
-	struct timeval	 ts;	/* Time the message was composed, the timestamp in the packet header */
+	struct timeval	 send_time;	/* Time the message was sent, to trigger a retransmit */
+	struct timeval	 comp_time;	/* Time the message was composed, the timestamp in the packet header */
 	char		*dest;
 	int		 reliable;
 	int		 complete;	/* Indicates that we've finished adding cmds to this message */
@@ -81,6 +81,7 @@ struct mbus_msg {
 	int		 num_cmds;
 	char		*cmd_list[MBUS_MAX_QLEN];
 	char		*arg_list[MBUS_MAX_QLEN];
+	uint32_t	 idx_list[MBUS_MAX_QLEN];
 	uint32_t	 magic;		/* For debugging... */
 };
 
@@ -103,6 +104,8 @@ struct mbus {
 	void (*cmd_handler)(char *src, char *cmd, char *arg, void *dat);
 	void (*err_handler)(int seqnum, int reason);
 	uint32_t		  magic;			/* For debugging...                                             */
+	uint32_t		  index;
+	uint32_t		  index_sent;
 };
 
 static void mbus_validate(struct mbus *m)
@@ -133,6 +136,9 @@ static void mbus_msg_validate(struct mbus_msg *m)
 	for (i = 0; i < m->num_cmds; i++) {
 		assert(m->cmd_list[i] != NULL);
 		assert(m->arg_list[i] != NULL);
+		if (i > 0) {
+			assert(m->idx_list[i] > m->idx_list[i-1]);
+		}
 	}
 	for (i = m->num_cmds + 1; i < MBUS_MAX_QLEN; i++) {
 		assert(m->cmd_list[i] == NULL);
@@ -323,7 +329,7 @@ static void resend(struct mbus *m, struct mbus_msg *curr)
 
 	mbus_validate(m);
 
-	mb_header(curr->seqnum, curr->ts.tv_sec, (char)(curr->reliable?'R':'U'), m->addr, curr->dest, -1);
+	mb_header(curr->seqnum, curr->comp_time.tv_sec, (char)(curr->reliable?'R':'U'), m->addr, curr->dest, -1);
 	for (i = 0; i < curr->num_cmds; i++) {
 		mb_add_command(curr->cmd_list[i], curr->arg_list[i]);
 	}
@@ -348,7 +354,7 @@ void mbus_retransmit(struct mbus *m)
 	gettimeofday(&time, NULL);
 
 	/* diff is time in milliseconds that the message has been awaiting an ACK */
-	diff = ((time.tv_sec * 1000) + (time.tv_usec / 1000)) - ((curr->time.tv_sec * 1000) + (curr->time.tv_usec / 1000));
+	diff = ((time.tv_sec * 1000) + (time.tv_usec / 1000)) - ((curr->send_time.tv_sec * 1000) + (curr->send_time.tv_usec / 1000));
 	if (diff > 10000) {
 		debug_msg("Reliable mbus message failed!\n");
 		if (m->err_handler == NULL) {
@@ -454,6 +460,8 @@ struct mbus *mbus_init(void  (*cmd_handler)(char *src, char *cmd, char *arg, voi
 	m->cmd_queue	  = NULL;
 	m->waiting_ack	  = NULL;
 	m->magic          = MBUS_MAGIC;
+	m->index          = 0;
+	m->index_sent     = 0;
 
 	mp = mbus_parse_init(xstrdup(addr));
 	if (!mbus_parse_lst(mp, &tmp)) {
@@ -580,8 +588,10 @@ void mbus_send(struct mbus *m)
 			}
 		}
 		/* Create the message... */
-		mb_header(curr->seqnum, curr->ts.tv_sec, (char)(curr->reliable?'R':'U'), m->addr, curr->dest, -1);
+		mb_header(curr->seqnum, curr->comp_time.tv_sec, (char)(curr->reliable?'R':'U'), m->addr, curr->dest, -1);
 		for (i = 0; i < curr->num_cmds; i++) {
+			assert(m->index_sent == (curr->idx_list[i] - 1));
+			m->index_sent = curr->idx_list[i];
 			mb_add_command(curr->cmd_list[i], curr->arg_list[i]);
 		}
 		mb_send(m);
@@ -589,7 +599,7 @@ void mbus_send(struct mbus *m)
 		m->cmd_queue = curr->next;
 		if (curr->reliable) {
 			/* Reliable message, wait for the ack... */
-			gettimeofday(&(curr->time), NULL);
+			gettimeofday(&(curr->send_time), NULL);
 			m->waiting_ack = curr;
 			return;
 		} else {
@@ -627,6 +637,7 @@ void mbus_qmsg(struct mbus *m, const char *dest, const char *cmnd, const char *a
 				curr->reliable |= reliable;
 				curr->cmd_list[curr->num_cmds-1] = xstrdup(cmnd);
 				curr->arg_list[curr->num_cmds-1] = xstrdup(args);
+				curr->idx_list[curr->num_cmds-1] = ++(m->index);
 				curr->message_size += alen;
 				mbus_msg_validate(curr);
 				return;
@@ -651,6 +662,7 @@ void mbus_qmsg(struct mbus *m, const char *dest, const char *cmnd, const char *a
 	curr->num_cmds         = 1;
 	curr->cmd_list[0]      = xstrdup(cmnd);
 	curr->arg_list[0]      = xstrdup(args);
+	curr->idx_list[curr->num_cmds-1] = ++(m->index);
 	for (i = 1; i < MBUS_MAX_QLEN; i++) {
 		curr->cmd_list[i] = NULL;
 		curr->arg_list[i] = NULL;
@@ -660,8 +672,8 @@ void mbus_qmsg(struct mbus *m, const char *dest, const char *cmnd, const char *a
 	} else {
 		prev->next = curr;
 	}
-	gettimeofday(&(curr->time), NULL);
-	gettimeofday(&(curr->ts),   NULL);
+	gettimeofday(&(curr->send_time), NULL);
+	gettimeofday(&(curr->comp_time), NULL);
 	mbus_msg_validate(curr);
 }
 
