@@ -101,6 +101,8 @@ Encode(unsigned char *output, u_int32 * input, unsigned int len)
 {
 	unsigned int    i, j;
 
+	assert((len % 4) == 0);
+
 	for (i = 0, j = 0; j < len; i++, j += 4) {
 		output[j] = (unsigned char) (input[i] & 0xff);
 		output[j + 1] = (unsigned char) ((input[i] >> 8) & 0xff);
@@ -244,9 +246,9 @@ MD5Update(MD5_CTX * context, unsigned char *input, unsigned int inputLen)
 	index = (unsigned int) ((context->count[0] >> 3) & 0x3F);
 
 	/* Update number of bits */
-	if ((context->count[0] += ((u_int32) inputLen << 3))
-	    < ((u_int32) inputLen << 3))
+	if ((context->count[0] += ((u_int32) inputLen << 3)) < ((u_int32) inputLen << 3)) {
 		context->count[1]++;
+	}
 	context->count[1] += ((u_int32) inputLen >> 29);
 
 	partLen = 64 - index;
@@ -256,15 +258,17 @@ MD5Update(MD5_CTX * context, unsigned char *input, unsigned int inputLen)
 		memcpy((unsigned char *) & context->buffer[index], (unsigned char *) input, partLen);
 		MD5Transform(context->state, context->buffer);
 
-		for (i = partLen; i + 63 < inputLen; i += 64)
+		for (i = partLen; i + 63 < inputLen; i += 64) {
 			MD5Transform(context->state, &input[i]);
-
+		}
 		index = 0;
-	} else
+	} else {
 		i = 0;
-
+	}
 	/* Buffer remaining input */
-	memcpy((unsigned char *) & context->buffer[index], (unsigned char *) & input[i], inputLen - i);
+	if ((inputLen - i) != 0) {
+		memcpy((unsigned char *) & context->buffer[index], (unsigned char *) & input[i], inputLen - i);
+	}
 }
 
 /*
