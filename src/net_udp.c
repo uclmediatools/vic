@@ -132,7 +132,7 @@ socket_error(const char *msg, ...)
 #define WSERR(x) {#x,x}
 	struct wse {
 		char  errname[20];
-		int errno;
+		int my_errno;
 	};
 	struct wse ws_errs[] = {
 		WSERR(WSANOTINITIALISED), WSERR(WSAENETDOWN),     WSERR(WSAEACCES),
@@ -147,7 +147,7 @@ socket_error(const char *msg, ...)
 	
 	int i, e = WSAGetLastError();
 	i = 0;
-	while(ws_errs[i].errno && ws_errs[i].errno != e) {
+	while(ws_errs[i].my_errno && ws_errs[i].my_errno != e) {
 		i++;
 	}
 	va_start(ap, msg);
