@@ -93,6 +93,10 @@ v1.0.7  - Add udp_exit to close sockets and leave multicast groups if necessary.
 	* Released 20 August 1999
 
 v1.0.8	- Add mbus_sent_all()
+	- Add loop count to mbus_recv(), so it will always return after 10
+	  packets have been received. The prevents a denial of service attack
+	  if packets are sent faster than the timeout period.
+
 
 Still to do...
 	- IPv6 code sometimes doesn't get the correct interface address,

@@ -727,13 +727,14 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 {
 	char		*auth, *ver, *src, *dst, *ack, *r, *cmd, *param, *npos;
 	char	 	buffer[MBUS_BUF_SIZE];
-	int	 	buffer_len, seq, i, a, rx, ts, authlen;
+	int	 	buffer_len, seq, i, a, rx, ts, authlen, loop_count;
 	char	 	ackbuf[MBUS_ACK_BUF_SIZE];
 	char	 	digest[16];
 	unsigned char	initVec[8] = {0,0,0,0,0,0,0,0};
 
 	rx = FALSE;
-	while (1) {
+	loop_count = 0;
+	while (loop_count++ < 10) {
 		memset(buffer, 0, MBUS_BUF_SIZE);
                 assert(m->s != NULL);
 		udp_fd_zero();
@@ -882,5 +883,6 @@ int mbus_recv(struct mbus *m, void *data, struct timeval *timeout)
 		}
 		mbus_parse_done(m);
 	}
+	return rx;
 }
 
