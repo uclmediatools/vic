@@ -410,7 +410,7 @@ main(int argc, const char** argv)
 
 	opterr = 0;
 	const char* options = 
-		"A:B:C:c:D:d:f:F:Hl:I:K:M:m:N:n:o:Pq:re:sT:t:U:u:V:w:X:";
+		"A:B:C:c:D:d:f:F:Hl:I:K:M:m:N:n:o:Pq:re:sT:t:U:u:V:w:X:yy:";
 	/* process display and window (-use) options before initialising tcl/tk */
 	char buf[128], tmp[16];
 	const char *display=0, *use=0;
@@ -585,6 +585,12 @@ main(int argc, const char** argv)
 			{
 				const char* value = parse_assignment(optarg);
 				tcl.add_option(optarg, value);
+			}
+			break;
+
+		case 'y':
+			{
+				tcl.add_option("bw_control", "true");
 			}
 			break;
 		}

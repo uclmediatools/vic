@@ -134,10 +134,24 @@ proc cb_switcher msg {
 			return
 		}
 	}
+	# if we've received a message and it's not local then default to low bw anyway
+	if { [yesno bw_control] } {
+		set_bps .menu.cb.frame.right.bps.value 32
+	}
 }
 
 proc switcher_focus src {
 	global switcher_ts switcher_method
+
+	# if this is a local source then bump up the frame rate otherwise default to low bw
+	if { [yesno bw_control] } {
+		if {"[srctab local]" == $src } {
+			set_bps .menu.cb.frame.right.bps.value [.menu.cb.frame.right.bps.scale get]
+		} else {
+			set_bps .menu.cb.frame.right.bps.value 32
+		}
+	}
+
 	if ![info exists switcher_ts] {
 		return
 	}

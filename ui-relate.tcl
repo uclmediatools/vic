@@ -175,7 +175,6 @@ proc deactivate_relate src {
 	unset bpshat($src)
 	unset lhat($src)
 	unset shat($src)
-	repack_relate
 }
 
 # -------------------------------------------------
@@ -353,11 +352,15 @@ proc repack_relate { } {
 # -------------------------------------------------
 
 proc build.src.relate { w src color } {
-	global winstate window_no
+	global winstate window_no tcl_platform
 	incr window_no
 	set stamp $w.stamp
 	frame $stamp -relief ridge -borderwidth 2
-	create_video_widget $stamp.video 159 120
+	if {$tcl_platform(platform)=="windows"} {
+		create_video_widget $stamp.video 159 120
+	} else {
+		create_video_widget $stamp.video 159 128
+	}
 	build.powerbars $stamp $src			
 	bind $stamp.name <1> "select_thumbnail_relate $w $src"
 	bind $stamp.video <Enter> { focus %W }
@@ -369,7 +372,7 @@ proc build.src.relate { w src color } {
 	if {[expr $winstate == 1 && $window_no > 4]  || [expr $winstate == 0 && $window_no > 8]} {
 		pack forget $stamp
 	} else {
-		pack $stamp -side left 
+		pack $stamp -side left
 	}
 	bind $stamp.video <d> "$src deactivate"
 	return 1
