@@ -139,6 +139,8 @@ static class UsageCommand : public TclObject {
 public:
 	UsageCommand() : TclObject("usage") {}
 	int command(int argc, const char*const* argv) {
+		UNUSED(argc);
+		UNUSED(argv);
 		usage();
 		/*NOTREACHED*/
 		return (0);
@@ -165,6 +167,8 @@ static class AdiosCommand : public TclObject {
 public:
 	AdiosCommand() : TclObject("adios_rtcp") {}
 	int command(int argc, const char*const* argv) {
+		UNUSED(argc);
+		UNUSED(argv);
 		adios();
 		/*NOTREACHED*/
 		return (0);
@@ -192,6 +196,8 @@ static class GetHostNameCommand : public TclObject {
 public:
 	GetHostNameCommand() : TclObject("gethostname") {}
 	int command(int argc, const char*const* argv) {
+		UNUSED(argc);
+		UNUSED(argv);
 		Tcl& tcl = Tcl::instance();
 		char* bp = tcl.buffer();
 		tcl.result(bp);
@@ -206,6 +212,8 @@ static class VersionCommand : public TclObject {
 public:
 	VersionCommand() : TclObject("version") {}
 	int command(int argc, const char*const* argv) {
+		UNUSED(argc);
+		UNUSED(argv);
 		Tcl::instance().result(version);
 		return (TCL_OK);
 	}
@@ -419,11 +427,11 @@ main(int argc, const char** argv)
 #endif
 
 #ifndef WIN32
-	opterr = 0;
+	opterr = 1;
 #endif
 	// Option list; If letter is followed by ':' then it takes an argument
 	const char* options = 
-		"A:B:C:c:D:d:f:F:HI:j:K:lL:M:m:N:n:o:Pq:re:sST:t:U:u:V:w:X:yy:";
+		"A:B:C:c:D:d:f:F:HI:j:K:lL:M:m:N:n:o:Pq:rsST:t:U:u:V:w:X:y";
 	/* process display and window (-use) options before initialising tcl/tk */
 	char buf[256], tmp[256];
 	const char *display=0, *use=0;
