@@ -123,7 +123,9 @@ typedef struct {
 #define RX_BYE  	104	/* Source is leaving the session, database entry is still valid */
 #define SOURCE_DELETED	105	/* Source has been removed from the database                    */
 #define SOURCE_CREATED	106
-#define RX_RR_EMPTY	107
+#define RX_RR_EMPTY	107	/* We've received an empty reception report block                                               */
+#define RX_RTCP_START	108	/* We're about to start processing a compound RTCP packet. The SSRC is not valid in this event. */
+#define RX_RTCP_FINISH	109	/* We've just finished processing a compound RTCP packet. The SSRC is not valid in this event.  */
 
 /* SDES packet types... */
 #define RTCP_SDES_END   0
