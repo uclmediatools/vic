@@ -57,10 +57,6 @@
 #define IPPROTO_IPV6 IPPROTO_IP
 #endif
 
-#ifdef WIN32
-struct in6_addr     in6addr_any = {IN6ADDR_ANY_INIT};
-#endif
-
 #ifndef INADDR_NONE
 #define INADDR_NONE 0xffffffff
 #endif
