@@ -174,7 +174,8 @@ typedef struct _source {
  */
 
 typedef struct {
-	int 		 promiscuous_mode;
+	int 	promiscuous_mode;
+	int	wait_for_rtcp;
 } options;
 
 /*
@@ -193,7 +194,6 @@ struct rtp {
         rtcp_rr_wrapper  rr[RTP_DB_SIZE][RTP_DB_SIZE]; 	/* Indexed by [hash(reporter)][hash(reportee)] */
 	options		*opt;
 	void		*userdata;
-	int		 wait_for_rtcp;			/* If TRUE, we don't accept RTP packets until we've got an RTCP packet */
 	int		 invalid_rtp_count;
 	int		 invalid_rtcp_count;
 	int		 ssrc_count;
@@ -761,9 +761,8 @@ static char *get_cname(socket_udp *s)
 static void init_opt(struct rtp *session)
 {
 	/* Default option settings. */
-	int promisc_val = FALSE;
-	
-	rtp_setopt(session, RTP_PROMISC, (char *)&promisc_val, sizeof(int));
+	rtp_setopt(session, RTP_OPT_PROMISC,       FALSE);
+	rtp_setopt(session, RTP_OPT_WEAK_VALIDATION, TRUE);
 }
 
 
@@ -799,7 +798,6 @@ struct rtp *rtp_init(char *addr, u_int16 rx_port, u_int16 tx_port, int ttl, doub
 	}
 
 	session->my_ssrc            = (u_int32) lrand48();
-	session->wait_for_rtcp      = TRUE;
 	session->callback           = callback;
 	session->invalid_rtp_count  = 0;
 	session->invalid_rtcp_count = 0;
@@ -844,20 +842,6 @@ struct rtp *rtp_init(char *addr, u_int16 rx_port, u_int16 tx_port, int ttl, doub
 	return session;
 }
 
-void rtp_weak_validation(struct rtp *session)
-{
-	/* Instructs the RTP code to accept RTP packets before we've received   */
-	/* a corresponding RTCP packet. This is not enabled by default because: */
-	/*  - RTP header validity checks are significantly weaker than those    */
-	/*    for RTCP, so we may accept invalid packets and create sources     */
-	/*    based on them (this is a real problem if encryption is used,      */
-	/*    since a user sending to us with the wrong key generates enough    */
-	/*    packets that we are likely to end up with many bogus sources).    */
-	/*  - I work for the protocol police, and want to encourage people to   */
-	/*    implement RTCP. :-)                                         [csp] */
-	session->wait_for_rtcp = FALSE;
-}
-
 int rtp_set_my_ssrc(struct rtp *session, u_int32 ssrc)
 {
         source *s;
@@ -882,46 +866,31 @@ int rtp_set_my_ssrc(struct rtp *session, u_int32 ssrc)
         return TRUE;
 }
 
-int rtp_setopt(struct rtp *session, int optname, char *optval, int  optlen)
+void rtp_setopt(struct rtp *session, int optname, int optval)
 {
+	assert((optval == TRUE) || (optval == FALSE));
+
 	switch (optname) {
-	        case RTP_PROMISC:
-			if (optlen != sizeof(int)) {
-				debug_msg("Incorrect size (%d) for option %d in call to rtp_setopt().\n", 
-					  optlen, optname);
-				return -1;
-			}
-			if (*((int *) optval) != TRUE && *((int *) optval) != FALSE) {
-				debug_msg("Illegal value (%d) for option %d in call to rtp_setopt().\n",
-					  *((int *) optval), optname);
-				return -1;
-			}
-			session->opt->promiscuous_mode = *((int *) optval);
-			return 0;
+		case RTP_OPT_WEAK_VALIDATION:
+			session->opt->wait_for_rtcp = optval;
+	        case RTP_OPT_PROMISC:
+			session->opt->promiscuous_mode = optval;
         	default:
 			debug_msg("Ignoring unknown option (%d) in call to rtp_setopt().\n", optname);
-			return -1;
+			abort();
 	}
 }
 
-int rtp_getopt(struct rtp *session, int optname, char *optval, int *optlen)
+int rtp_getopt(struct rtp *session, int optname)
 {
 	switch (optname) {
-        	case RTP_PROMISC:
-			if (session->opt->promiscuous_mode != TRUE &&
-			    session->opt->promiscuous_mode != FALSE) {
-				debug_msg("Option %d was set to an illegal value (%d): values returned by rtp_getopt() are meaningless.\n",
-					  optname, *((int *) optval));
-				return -1;
-			}
-			*optlen            = sizeof(int);
-			*((int *) optval)  = session->opt->promiscuous_mode;
-			return 0;
-			break;
+		case RTP_OPT_WEAK_VALIDATION:
+			return session->opt->wait_for_rtcp;
+        	case RTP_OPT_PROMISC:
+			return session->opt->promiscuous_mode;
         	default:
 			debug_msg("Ignoring unknown option (%d) in call to rtp_getopt().\n", optname);
-			return -1;
-			break;
+			abort();
 	}
 }
 
@@ -1048,12 +1017,12 @@ static void rtp_recv_data(struct rtp *session, u_int32 curr_time)
 		packet->data     = buffer + 12 + (packet->cc * 4) + packet->extn_len;
 		packet->data_len = buflen - packet->extn_len - (packet->cc * 4) - 12;
 		if (validate_rtp(packet, buflen)) {
-			if (session->wait_for_rtcp) {
+			if (rtp_getopt(session, RTP_OPT_WEAK_VALIDATION)) {
 				s = get_source(session, packet->ssrc);
 			} else {
 				s = create_source(session, packet->ssrc);
 			}
-			if (session->opt->promiscuous_mode) {
+			if (rtp_getopt(session, RTP_OPT_PROMISC)) {
 				if (s == NULL) {
 					create_source(session, packet->ssrc);
 					s = get_source(session, packet->ssrc);

@@ -149,7 +149,8 @@ typedef struct {
 #define RX_APP  	111
 
 /* RTP options */
-#define RTP_PROMISC     1
+#define RTP_OPT_PROMISC     	1
+#define RTP_OPT_WEAK_VALIDATION	2
 
 /* SDES packet types... */
 #define RTCP_SDES_END   0
@@ -167,8 +168,8 @@ struct rtp;
 struct rtp	*rtp_init(char *addr, u_int16 rx_port, u_int16 tx_port, int ttl, double rtcp_bw, 
 			  void (*callback)(struct rtp *session, rtp_event *e),
 			  void *user_data);
-int 		 rtp_setopt(struct rtp *session, int optname, char *optval, int  optlen);
-int 		 rtp_getopt(struct rtp *session, int optname, char *optval, int *optlen);
+void 		 rtp_setopt(struct rtp *session, int optname, int optval);
+int 		 rtp_getopt(struct rtp *session, int optname);
 void 		*rtp_get_userdata(struct rtp *session);
 int 		 rtp_recv(struct rtp *session, struct timeval *timeout, u_int32 curr_time);
 int 		 rtp_send_data(struct rtp *session, u_int32 ts, char pt, int m, int cc, u_int32 csrc[], 
@@ -195,6 +196,5 @@ u_int16		 rtp_get_tx_port(struct rtp *session);
 int		 rtp_get_ttl(struct rtp *session);
 
 int              rtp_set_my_ssrc(struct rtp *session, u_int32 ssrc);
-void 		 rtp_weak_validation(struct rtp *session);
 
 #endif /* __RTP_H__ */
