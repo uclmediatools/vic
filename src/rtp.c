@@ -622,7 +622,7 @@ static source *create_source(struct rtp *session, uint32_t ssrc, int probation)
 			event.ssrc = ssrc;
 			event.type = SOURCE_CREATED;
 			event.data = NULL;
-			event.ts   = &event_ts;
+		event.ts   = &event_ts;
 			session->callback(session, &event);
 		}
         }
@@ -1023,6 +1023,8 @@ struct rtp *rtp_init_if(const char *addr, char *iface,
         }
 
 	session 		= (struct rtp *) xmalloc(sizeof(struct rtp));
+	memset (session, 0, sizeof(struct rtp));
+
 	session->magic		= 0xfeedface;
 	session->opt		= (options *) xmalloc(sizeof(options));
 	session->userdata	= userdata;
