@@ -175,6 +175,7 @@ sparc-sun-solaris*)
 		V_DEFINE="$V_DEFINE -mv8 -msupersparc"
 	fi
 	V_DEFINE="$V_DEFINE -D__svr4__ -DSolaris"
+	OPSYS=solaris
 	if test -f video/grabber-rtvc.cc || test -f video/grabber-rtvc.o ; then
 		V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-rtvc.o"
 		if test "$have_xil" = yes ; then
@@ -194,6 +195,7 @@ sparc-sun-sunos*)
 	;;
 *-sgi-irix*)
 	V_DEFINE="$V_DEFINE -D_BSD_SIGNALS -DIRIX"
+	OPSYS=irix
 	if test "$target_os" = irix6.2 ; then
 		V_DEFINE="$V_DEFINE -DIRIX6_2 -DSIGARGS=__sigargs"
 	fi
@@ -233,9 +235,11 @@ sparc-sun-sunos*)
 *-*-freebsd*)
 	V_STATIC=""
 	V_DEFINE="$V_DEFINE -DFreeBSD"
+	OPSYS=freebsd
 	;;
 *-*-hpux*)
 	V_CCOPT="-O -DHPUX"
+	OPSYS=hpux
 	;;
 *-*-aix3*)
 	V_STATIC=""
@@ -261,6 +265,7 @@ sparc-sun-sunos*)
 	V_STATIC=""
 	V_BROKEN_OBJ=
 	V_DEFINE="$V_DEFINE -DLinux"
+	OPSYS=linux
 	;;
 esac
 

@@ -1,18 +1,24 @@
 dnl autoconf rules to find tcl & tk 
 dnl $Header$ (LBL)
 
-ARCH=`uname`
-case $ARCH in
-IRIX)
-  OPSYS=irix
-  ;;
-*)
-  OPSYS=solaris
-  ;;
-esac
+AC_ARG_WITH(ucltcl,	--with-ucltcl=path	specify a pathname for UCL's tcl, ucltcl=$withval, ucltcl="")
 
 AC_ARG_WITH(tcl,	--with-tcl=path	specify a pathname for tcl, d=$withval, d="")
-if test "$d" != "" ; then 
+if test "$ucltcl" != no; then
+	if test -z "$ucltcl"; then 
+		# UCL defaults
+		ucltcl=../tcl-8.0
+	fi
+	if test ! -d "$ucltcl" ; then
+		echo "'$d' is not a directory"
+		exit 1
+	fi
+	V_INCLUDE_TCL="-I$ucltcl/generic"
+	V_LIB_TCL="$ucltcl/unix/libtcl8.0.a"
+	V_LIBRARY_TCL=$ucltcl/library
+	echo "Using UCL's tcl-8.0: $ucltcl"
+		
+elif test "$d" != "" ; then 
 	if test ! -d $d ; then 
 		echo "'$d' is not a directory"
 		exit 1
@@ -37,7 +43,8 @@ if test "$d" != "" ; then
 		echo "can't find libtcl.a in $d/lib"
 		exit 1
 	fi
-	places="$d/lib/tcl8.0 \
+	places="$d/lib/tcl-8.0 \
+		$d/lib/tcl8.0 \
 		$d/lib/tcl"
 	V_LIBRARY_TCL=FAIL
 	for dir in $places; do
@@ -54,8 +61,8 @@ else
 	AC_TEST_CPP([#include <tcl.h>], V_INCLUDE_TCL="", V_INCLUDE_TCL=FAIL)
 	if test "$V_INCLUDE_TCL" = FAIL; then
 		echo "checking for tcl.h"
-		places="$PWD/../tcl8.0 \
-			$PWD/../tcl-8.0 \
+		places="$PWD/../tcl-8.0 \
+			$PWD/../tcl8.0 \
 			$PWD/../tcl \
 			/cs/research/mice/starship/common/$OPSYS/include/tcl8.0 \
 			/usr/local/include/tcl8.0 \
@@ -81,8 +88,8 @@ else
 	AC_CHECK_LIB(tcl8.0, main, V_LIB_TCL="-ltcl8.0", V_LIB_TCL="FAIL")
 	if test "$V_LIB_TCL" = FAIL; then
 		echo "checking for libtcl.a"
-		places="$PWD/../tcl8.0/unix \
-                        $PWD/../tcl-8.0/unix \
+		places="$PWD/../tcl-8.0/unix \
+                        $PWD/../tcl8.0/unix \
                         $PWD/../tcl/unix \
                         /cs/research/mice/starship/common/$OPSYS/lib \
 			/usr/local/lib \
@@ -93,8 +100,7 @@ else
 			/usr/lib \
 			$PWD/../tcl8.0 \
 			/usr/src/local/tcl8.0 \
-			/import/tcl/lib/tcl8.0 \
-			"
+			/import/tcl/lib/tcl8.0"
 		for dir in $places; do
 			if test -r $dir/libtcl8.0.so -o -r $dir/libtcl8.0.a; then
 				V_LIB_TCL="-L$dir -ltcl8.0"
@@ -116,8 +122,8 @@ else
 	fi
 	echo "checking for tcl/init.tcl"
 	V_LIBRARY_TCL=FAIL
-	places="$PWD/../tcl8.0/library \
-		$PWD/../tcl-8.0/library \
+	places="$PWD/../tcl-8.0/library \
+		$PWD/../tcl8.0/library \
                 $PWD/../tcl/library \
                 /cs/research/mice/starship/common/$OPSYS/lib/tcl8.0 \
 		/usr/local/lib/tcl8.0 \
@@ -129,10 +135,6 @@ else
 		$x_libraries/tcl8.0 \
 		/usr/local/lib/tcl \
 		/usr/lib/tcl \
-		/usr/lib/tk/tcl \
-		/import/tcl/lib/tcl \
-		$prefix/lib/tcl \
-		$x_libraries/tcl \
 		$x_libraries/tcl"
 	for dir in $places; do
 		if test -r $dir/init.tcl; then
@@ -149,8 +151,26 @@ AC_SUBST(V_INCLUDE_TCL)
 AC_SUBST(V_LIB_TCL)
 AC_SUBST(V_LIBRARY_TCL)
 
+AC_ARG_WITH(ucltk,	--with-ucltk=path	specify a pathname for UCL's tk, ucltk=$withval, ucltk="")
+
 AC_ARG_WITH(tk,	--with-tk=path	specify a pathname for tk, d=$withval, d="")
-if test "$d" != "" ; then 
+
+if test "$ucltk" != no; then
+	if test -z "$ucltk"; then 
+		# UCL defaults
+		ucltk=../tk-8.0
+	fi
+	if test ! -d "$ucltk" ; then
+		echo "'$d' is not a directory"
+		exit 1
+	fi
+	V_INCLUDE_TK="-I$ucltk/generic"
+	V_LIB_TK="$ucltk/unix/libtk8.0.a"
+	V_LIBRARY_TK=$ucltk/library
+	echo "Using UCL's tk-8.0: $ucltk"
+		
+elif test "$d" != "" ; then 
+
 	if test ! -d $d ; then 
 		echo "'$d' is not a directory"
 		exit 1
@@ -206,8 +226,7 @@ else
 			$x_includes \
 			$PWD/../tk8.0 \
 			/usr/src/local/tk8.0 \
-			/import/tcl/include/tk8.0 \
-			"
+			/import/tcl/include/tk8.0"
 		for dir in $places; do
 			if test -r $dir/tk.h ; then
 				V_INCLUDE_TK=-I$dir
@@ -222,8 +241,8 @@ else
 	AC_CHECK_LIB(tk8.0, main, V_LIB_TK="-ltk8.0", V_LIB_TK="FAIL")
 	if test "$V_LIB_TK" = FAIL; then
 		echo "checking for libtk.a"
-		places="$PWD/../tk8.0/unix \
-			$PWD/../tk-8.0/unix \
+		places="$PWD/../tk-8.0/unix \
+			$PWD/../tk8.0/unix \
                 	$PWD/../tk/unix \
                 	/cs/research/mice/starship/common/$OPSYS/lib \
 			/usr/local/lib \
@@ -245,7 +264,7 @@ else
 				break
 			fi
 		done
-		if test "$V_LIB_TK" = FAIL; then
+		if test "$V_LIB_TK" = FAIL; then	
 			echo "can't find libtk.a"
 			exit 1
 		else
@@ -256,8 +275,8 @@ else
 	fi
 	echo "checking for tk/tk.tcl"
 	V_LIBRARY_TK=FAIL
-	places="$PWD/../tk8.0/library \
-		$PWD/../tk-8.0/library \
+	places="$PWD/../tk-8.0/library \
+		$PWD/../tk8.0/library \
                	$PWD/../tk/library \
                	/cs/research/mice/starship/common/$OPSYS/lib/tk8.0 \
 		/usr/local/lib/tk8.0 \
@@ -271,10 +290,6 @@ else
 		/usr/src/local/tk8.0/library \
 		/usr/local/lib/tk \
 		/usr/lib/tk \
-		/usr/lib/tk/tk \
-		/import/tcl/lib/tk \
-		$prefix/lib/tk \
-		$x_libraries/tk \
 		$x_libraries/tk"
 	for dir in $places; do
 		if test -r $dir/tk.tcl; then
