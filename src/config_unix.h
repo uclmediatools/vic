@@ -41,6 +41,7 @@
 #ifndef _CONFIG_UNIX_H
 #define _CONFIG_UNIX_H
 
+#include <limits.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/resource.h>

@@ -982,8 +982,13 @@ static int mbus_parse_sym(struct mbus *m, char **s)
 int mbus_parse_int(struct mbus *m, int *i)
 {
 	char	*p;
+
+        while (isspace((unsigned char)*m->parse_buffer[m->parse_depth])) {
+                m->parse_buffer[m->parse_depth]++;
+        }
+
 	*i = strtol(m->parse_buffer[m->parse_depth], &p, 10);
-	if (errno == ERANGE) {
+	if (((*i == LONG_MAX) || (*i == LONG_MIN)) && (errno == ERANGE)) {
 		debug_msg("integer out of range\n");
 		return FALSE;
 	}
@@ -1001,7 +1006,15 @@ int mbus_parse_int(struct mbus *m, int *i)
 int mbus_parse_flt(struct mbus *m, double *d)
 {
 	char	*p;
+        while (isspace((unsigned char)*m->parse_buffer[m->parse_depth])) {
+                m->parse_buffer[m->parse_depth]++;
+        }
+
 	*d = strtod(m->parse_buffer[m->parse_depth], &p);
+	if (errno == ERANGE) {
+		debug_msg("float out of range\n");
+		return FALSE;
+	}
 
 	if (p == m->parse_buffer[m->parse_depth]) {
 		return FALSE;
