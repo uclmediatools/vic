@@ -14,7 +14,15 @@ if test "$ucltcl" != no; then
 		exit 1
 	fi
 	V_INCLUDE_TCL="-I$ucltcl/generic"
-	V_LIB_TCL="$ucltcl/unix/libtcl8.0.a"
+	case "$target" in 
+	  *-*-freebsd*)
+		V_LIB_TCL="$ucltcl/unix/libtcl80.a"
+		;;
+	  *)
+		V_LIB_TCL="$ucltcl/unix/libtcl8.0.a"
+		;;
+	esac
+
 	V_LIBRARY_TCL=$ucltcl/library
 	echo "Using UCL's tcl-8.0: $ucltcl"
 		
@@ -167,7 +175,15 @@ if test "$ucltk" != no; then
 		exit 1
 	fi
 	V_INCLUDE_TK="-I$ucltk/generic"
-	V_LIB_TK="$ucltk/unix/libtk8.0.a"
+
+	case "$target" in 
+	  *-*-freebsd*)
+		V_LIB_TK="$ucltk/unix/libtk80.a"
+		;;
+	  *)
+		V_LIB_TK="$ucltk/unix/libtk8.0.a"
+		;;
+	esac
 	V_LIBRARY_TK=$ucltk/library
 	echo "Using UCL's tk-8.0: $ucltk"
 		
