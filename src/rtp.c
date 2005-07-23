@@ -265,7 +265,7 @@ struct rtp {
  			cipherInstance cipherInst;
  		} rijndael;
  		struct {
- 			char            *encryption_key;
+ 			unsigned char  *encryption_key;
  		} des;
  	} crypto_state;
 	rtp_callback	 callback;
@@ -3103,9 +3103,12 @@ int rtp_set_encryption_key(struct rtp* session, const char *passphrase)
 
 static int des_initialize(struct rtp *session, u_char *hash, int hashlen)
 {
-	char *key;
+	unsigned char *key;
 	int	 i, j, k;
-	
+	unsigned char	*testdata;
+	FILE	*testfile;
+	uint8_t 	 initVec[8] = {0,0,0,0,0,0,0,0};
+
 	UNUSED(hashlen);
 
 	session->encryption_pad_length = 8;
@@ -3116,7 +3119,7 @@ static int des_initialize(struct rtp *session, u_char *hash, int hashlen)
                 xfree(session->crypto_state.des.encryption_key);
         }
 
-        key = session->crypto_state.des.encryption_key = (char *) xmalloc(8);
+        key = session->crypto_state.des.encryption_key = (unsigned char *) xmalloc(8);
 
 	/* Step 3: take first 56 bits of the MD5 hash */
 	key[0] = hash[0];
@@ -3138,6 +3141,23 @@ static int des_initialize(struct rtp *session, u_char *hash, int hashlen)
 		j = (j & 1) ^ 1;
 		key[i] = k | j;
 	}
+
+#ifdef DEBUG
+	debug_msg("DES encryption key: ");
+	for (i = 0; i < 8; i++) {
+		printf("%02x ", key[i]);
+	}
+	printf("\n");
+	testdata = (unsigned char *) xmalloc(64);
+	for (i = 0; i < 64; i++) {
+	    testdata[i] = i;
+	}
+	des_encrypt(session, testdata, 64, initVec);
+	testfile = fopen("testfile", "w");
+	fwrite(testdata, 64, 1, testfile);
+	fclose(testfile);
+	debug_msg("Wrote testfile\n");
+#endif
 
 	check_database(session);
 	return TRUE;
