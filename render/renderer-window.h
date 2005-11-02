@@ -54,10 +54,10 @@ class WindowRenderer : public BlockRenderer {
 		  int minx, int maxx) const;
 	void sync() const;
 	void resize(int w, int h);
-    protected:
-	/*XXX*/
 	void dither_null(const u_char* frm, u_int off, u_int x,
 			 u_int width, u_int height) const;
+    protected:
+	/*XXX*/
 	virtual void setcolor(int c);
 	void compute_scale(int w, int h);
 	virtual void alloc_image() = 0;
