@@ -4,6 +4,7 @@
 	Version="7.10"
 	Name="vic"
 	ProjectGUID="{2F0B9224-B5FC-446E-935E-845FF6C5C733}"
+	RootNamespace="vic"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -40,7 +41,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tklib.lib tcllib.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib uclmm.lib"
+				AdditionalDependencies="tklib.lib tcllib.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib uclmm.lib strmiids.lib quartz.lib"
 				OutputFile=".\Debug/vic.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -106,7 +107,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tklib.lib tcllib.lib uclmm.lib lib44bsd.lib Resolv.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib"
+				AdditionalDependencies="tklib.lib tcllib.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib uclmm.lib strmiids.lib quartz.lib"
 				OutputFile=".\Debug_IPv6_Musica/vic.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -172,7 +173,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tklib.lib tcllib.lib uclmm.lib winmm.lib wsock32.lib Ws2_32.lib msacm32.lib odbc32.lib odbccp32.lib vfw32.lib"
+				AdditionalDependencies="tklib.lib tcllib.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib uclmm.lib strmiids.lib quartz.lib"
 				OutputFile=".\Debug_IPv6_Win2000/vic.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -238,7 +239,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tklib.lib tcllib.lib uclmm.lib winmm.lib wsock32.lib Ws2_32.lib msacm32.lib odbc32.lib odbccp32.lib vfw32.lib"
+				AdditionalDependencies="tklib.lib tcllib.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib uclmm.lib strmiids.lib quartz.lib"
 				OutputFile=".\Release_IPv6_XP/vic.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -302,7 +303,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tklib.lib tcllib.lib uclmm.lib winmm.lib wsock32.lib Ws2_32.lib msacm32.lib odbc32.lib odbccp32.lib vfw32.lib wship6.lib"
+				AdditionalDependencies="tklib.lib tcllib.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib uclmm.lib strmiids.lib quartz.lib"
 				OutputFile=".\Debug_IPv6_MSR/vic.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -368,7 +369,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tklib.lib tcllib.lib uclmm.lib winmm.lib wsock32.lib Ws2_32.lib msacm32.lib odbc32.lib odbccp32.lib vfw32.lib"
+				AdditionalDependencies="tklib.lib tcllib.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib uclmm.lib strmiids.lib quartz.lib"
 				OutputFile=".\Release_IPv6_Win2000/vic.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -433,7 +434,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tklib.lib tcllib.lib uclmm.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib"
+				AdditionalDependencies="tklib.lib tcllib.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib uclmm.lib strmiids.lib quartz.lib"
 				OutputFile=".\Release/vic.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
