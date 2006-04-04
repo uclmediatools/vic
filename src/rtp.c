@@ -3089,7 +3089,8 @@ int rtp_set_encryption_key(struct rtp* session, const char *passphrase)
 	{
 		return des_initialize(session, hash, sizeof(hash));
 	}
-	else if (strcmp(session->encryption_algorithm, "Rijndael") == 0)
+	else if ((strcmp(session->encryption_algorithm, "Rijndael") == 0) ||
+	         (strcmp(session->encryption_algorithm, "AES") == 0))
 	{
 		return rijndael_initialize(session, hash, sizeof(hash));
 	}
