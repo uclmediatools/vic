@@ -16,7 +16,7 @@
  * SOFTWARE.
  */
 
-#include "uclconf.h"
+//#include "uclconf.h" //SV-XXX: already included in config_unix.h, not needed for Win
 #ifdef NEED_INET_NTOP
 #include "config_unix.h"
 #include "config_win32.h"

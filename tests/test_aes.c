@@ -60,7 +60,7 @@ static void blockPrint(FILE *fp, const BYTE *block, const char *tag) {
 static void rijndaelVKKAT(FILE *fp, int keyLength) {
 	int i, j, r;
 	BYTE block[4*4];
-	BYTE keyMaterial[320];
+	BYTE keyMaterial[320]; 
 	BYTE byteVal = (BYTE)'8';
 	keyInstance keyInst;
 	cipherInstance cipherInst;
@@ -249,7 +249,8 @@ static void rijndaelIVKAT (FILE *fp, int keyLength) {
 	fflush(fp);
 	memset(keyMaterial, 0, sizeof (keyMaterial));
 	for (i = 0; i < keyLength/8; i++) {
-		sprintf(&keyMaterial[2*i], "%02X", i);
+		//SV-XXX sprintf(&keyMaterial[2*i], "%02X", i);
+		sprintf((char *)&keyMaterial[2*i], "%02X", i);
 	}
 	fprintf(fp, "KEY=%s\n", keyMaterial);
 	
@@ -453,7 +454,8 @@ static void rijndaelECB_MCT(FILE *fp, int keyLength, BYTE direction) {
 		fprintf(fp, "\nI=%d\n", i);
 		/* prepare key: */
 		for (j = 0; j < keyLength/8; j++) {
-			sprintf(&keyMaterial[2*j], "%02X", binKey[j]);
+			//SV-XXX sprintf(&keyMaterial[2*j], "%02X", binKey[j]);
+			sprintf((char *)&keyMaterial[2*j], "%02X", binKey[j]);
 		}
 		keyMaterial[keyLength/4] = 0;
 		fprintf(fp, "KEY=%s\n", keyMaterial);
@@ -543,7 +545,8 @@ static void rijndaelCBC_MCT(FILE *fp, int keyLength, BYTE direction) {
 		fprintf (fp, "\nI=%d\n", i);
 		/* prepare key: */
 		for (j = 0; j < keyLength/8; j++) {
-			sprintf (&keyMaterial[2*j], "%02X", binKey[j]);
+			//SV-XXX sprintf (&keyMaterial[2*j], "%02X", binKey[j]);
+			sprintf ((char *)&keyMaterial[2*j], "%02X", binKey[j]);
 		}
 		keyMaterial[keyLength/4] = 0;
 		fprintf(fp, "KEY=%s\n", keyMaterial);

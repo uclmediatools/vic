@@ -103,7 +103,7 @@ sap_recv(struct sap *s, struct timeval *timeout)
     if(udp_fd_isset(s->s)) {
       uint8_t buffer[SAP_MAX_PACKET_LEN];
       int     buflen;
-      buflen = udp_recv(s->s, buffer, SAP_MAX_PACKET_LEN);
+      buflen = udp_recv(s->s, (char *)buffer, SAP_MAX_PACKET_LEN); //SV-XXX
       packetptr = buffer;
 
       sap_h = (sap_header *)buffer;
@@ -116,7 +116,7 @@ sap_recv(struct sap *s, struct timeval *timeout)
       sap_p.authentication_data = packetptr;
 
       packetptr += ntohs(sap_h->authentication_length/4);
-      sap_p.payload = strstr(packetptr, "v=0");
+      sap_p.payload = (unsigned char *) strstr((char *)packetptr, "v=0"); //SV-XXX
 
       if(packetptr < sap_p.payload)
 	{
@@ -155,7 +155,7 @@ print_sap_packet(sap_packet *p)
   printf("  Authentication Length: %d\n", 
 	 ntohs(p->header->authentication_length));
   printf("  Authentication Data: %d\n", 
-	 p->header->authentication_length ? strlen(p->authentication_data) : 0);
+	 p->header->authentication_length ? strlen((char *)p->authentication_data) : 0); //SV-XXX
   printf("  Message ID Hash: %d\n", 
 	 ntohs(p->header->message_identifier_hash));
 

@@ -89,7 +89,7 @@ char *mbus_new_encrkey(void)
 
 	/* Step 3: base64 encode that string... */
 	memset(encoded_string, 0, (MBUS_ENCRKEY_LEN*4/3)+4);
-	encoded_length = base64encode(random_string, MBUS_ENCRKEY_LEN, encoded_string, (MBUS_ENCRKEY_LEN*4/3)+4);
+	encoded_length = base64encode((unsigned char *)random_string, MBUS_ENCRKEY_LEN, (unsigned char *)encoded_string, (MBUS_ENCRKEY_LEN*4/3)+4); //SV-XXX
 
 	/* Step 4: put it all together to produce the key... */
 	key = (char *) xmalloc(encoded_length + 18);
@@ -117,7 +117,7 @@ char *mbus_new_hashkey(void)
 	}
 	/* Step 2: base64 encode that string... */
 	memset(encoded_string, 0, (MBUS_HASHKEY_LEN*4/3)+4);
-	encoded_length = base64encode(random_string, MBUS_HASHKEY_LEN, encoded_string, (MBUS_HASHKEY_LEN*4/3)+4);
+	encoded_length = base64encode((unsigned char *)random_string, MBUS_HASHKEY_LEN, (unsigned char *)encoded_string, (MBUS_HASHKEY_LEN*4/3)+4); //SV-XXX
 
 	/* Step 3: put it all together to produce the key... */
 	key = (char *) xmalloc(encoded_length + 26);
@@ -404,7 +404,7 @@ static void mbus_get_key(struct mbus_config *m, struct mbus_key *key, const char
                                 assert(key->key!=NULL);
 				key->key_len = strlen(key->key);
 				tmp = (char *) xmalloc(key->key_len);
-				key->key_len = base64decode(key->key, key->key_len, tmp, key->key_len);
+				key->key_len = base64decode((unsigned char *)key->key, key->key_len, (unsigned char *)tmp, key->key_len); //SV-XXX
 				key->key = tmp;
 			} else {
 				key->key     = NULL;

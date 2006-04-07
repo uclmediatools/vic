@@ -46,6 +46,7 @@
  *
  */
 
+#include <stddef.h> //SV-XXX: needed by Win for offsetof(), removed from config_unix.h too
 #include "config_unix.h"
 #include "config_win32.h"
 #include "memory.h"
@@ -943,7 +944,7 @@ static void init_rng(const char *s)
 	}
         if (seed == 0) {
                 pid_t p = getpid();
-		int32_t i, n;
+		int32_t i=0, n=0;//SV-XXX
                 while (*s) {
                         seed += (uint32_t)*s++;
                         seed = seed * 31 + 1;
@@ -1345,18 +1346,22 @@ rtp_recv_data(struct rtp *session, uint32_t curr_rtp_ts)
 {
 	/* This routine preprocesses an incoming RTP packet, deciding whether to process it. */
 	static rtp_packet	*packet   = NULL;
-	static uint8_t		*buffer   = NULL;
-	static uint8_t		*buffer12 = NULL;
+	static unsigned char		*buffer	  = NULL;
+	//SV-XXX static uint8_t		*buffer   = NULL;
+	//SV-XXX static uint8_t		*buffer12 = NULL;
+	static unsigned char		*buffer12 = NULL;
 	int			 buflen;
 	source			*s;
 
 	if (!session->opt->reuse_bufs || (packet == NULL)) {
 		packet   = (rtp_packet *) xmalloc(RTP_MAX_PACKET_LEN);
-                buffer   = ((uint8_t *) packet) + offsetof(rtp_packet, fields);
+                //SV-XXX buffer   = ((uint8_t *) packet) + offsetof(rtp_packet, fields);
+		buffer   = ((unsigned char *) packet) + offsetof(rtp_packet, fields);
 		buffer12 = buffer + 12;
 	}
 
-        buflen = udp_recv(session->rtp_socket, buffer, RTP_MAX_PACKET_LEN - offsetof(rtp_packet, fields));
+        //SV-XXX buflen = udp_recv(session->rtp_socket, buffer, RTP_MAX_PACKET_LEN - offsetof(rtp_packet, fields));
+	buflen = udp_recv(session->rtp_socket, (char *)buffer, RTP_MAX_PACKET_LEN - offsetof(rtp_packet, fields));
 	if (buflen > 0) {
 		if (session->encryption_enabled) {
 			uint8_t 	 initVec[8] = {0,0,0,0,0,0,0,0};
@@ -1385,7 +1390,8 @@ rtp_recv_data(struct rtp *session, uint32_t curr_rtp_ts)
                         packet->meta.extn_len  = 0;
                         packet->meta.extn_type = 0;
                 }
-                packet->meta.data     = buffer12 + (packet->fields.cc * 4);
+                packet->meta.data     = (char *) buffer12 + (packet->fields.cc * 4);
+		//SV-XXX packet->meta.data     = buffer12 + (packet->fields.cc * 4);
                 packet->meta.data_len = buflen -  (packet->fields.cc * 4) - 12;
                 if (packet->meta.extn != NULL) {
                         packet->meta.data += ((packet->meta.extn_len + 1) * 4);
@@ -1874,10 +1880,12 @@ int rtp_recv(struct rtp *session, struct timeval *timeout, uint32_t curr_rtp_ts)
 			rtp_recv_data(session, curr_rtp_ts);
 		}
 		if (udp_fd_isset(session->rtcp_socket)) {
-                        uint8_t		 buffer[RTP_MAX_PACKET_LEN];
+                        //SV-XXX uint8_t		 buffer[RTP_MAX_PACKET_LEN];
+			char          buffer[RTP_MAX_PACKET_LEN];
                         int		 buflen;
                         buflen = udp_recv(session->rtcp_socket, buffer, RTP_MAX_PACKET_LEN);
-			rtp_process_ctrl(session, buffer, buflen);
+			//SV-XXX rtp_process_ctrl(session, buffer, buflen);
+			rtp_process_ctrl(session, (unsigned char *)buffer, buflen);
 		}
 		check_database(session);
                 return TRUE;
@@ -2156,7 +2164,8 @@ int rtp_send_data(struct rtp *session, uint32_t rtp_ts, char pt, int m,
 		  char *extn, uint16_t extn_len, uint16_t extn_type)
 {
 	int		 buffer_len, i, rc, pad, pad_len;
-	uint8_t		*buffer;
+	//uint8_t		*buffer;
+	char		*buffer;
 	rtp_packet	*packet;
 	uint8_t 	 initVec[8] = {0,0,0,0,0,0,0,0};
 
@@ -2186,13 +2195,15 @@ int rtp_send_data(struct rtp *session, uint32_t rtp_ts, char pt, int m,
 	}
 
 	/* Allocate memory for the packet... */
-        buffer     = (uint8_t *) xmalloc(buffer_len + offsetof(rtp_packet, fields));
+        //SV-XXX buffer     = (uint8_t *) xmalloc(buffer_len + offsetof(rtp_packet, fields));
+        buffer     = (char *) xmalloc(buffer_len + offsetof(rtp_packet, fields));
 	packet     = (rtp_packet *) buffer;
 
 	/* These are internal pointers into the buffer... */
         packet->meta.csrc = (uint32_t *) (buffer + offsetof(rtp_packet, fields) + 12);
         packet->meta.extn = (uint8_t  *) (buffer + offsetof(rtp_packet, fields) + 12 + (4 * cc));
-        packet->meta.data = (uint8_t  *) (buffer + offsetof(rtp_packet, fields) + 12 + (4 * cc));
+        //SV-XXX packet->meta.data = (uint8_t  *) (buffer + offsetof(rtp_packet, fields) + 12 + (4 * cc));
+        packet->meta.data = (char  *) (buffer + offsetof(rtp_packet, fields) + 12 + (4 * cc));
 	if (extn != NULL) {
                 packet->meta.data += (extn_len + 1) * 4;
 	}
@@ -2232,8 +2243,10 @@ int rtp_send_data(struct rtp *session, uint32_t rtp_ts, char pt, int m,
 	if (session->encryption_enabled)
 	{
 		assert((buffer_len % session->encryption_pad_length) == 0);
-                (session->encrypt_func)(session, buffer + offsetof(rtp_packet, fields),
-					buffer_len, initVec); 
+                //SV-XXX (session->encrypt_func)(session, buffer + offsetof(rtp_packet, fields),
+		//			buffer_len, initVec);
+                (session->encrypt_func)(session, (unsigned char *) buffer + offsetof(rtp_packet, fields),
+                                        buffer_len, initVec);
 	}
 
         rc = udp_send(session->rtp_socket, buffer + offsetof(rtp_packet, fields), buffer_len);
@@ -2253,7 +2266,8 @@ int rtp_send_data(struct rtp *session, uint32_t rtp_ts, char pt, int m,
 int rtp_send_data_iov(struct rtp *session, uint32_t rtp_ts, char pt, int m, int cc, uint32_t csrc[], struct iovec *iov, int iov_count, char *extn, uint16_t extn_len, uint16_t extn_type)
 {
 	int		 buffer_len, i, rc;
-	uint8_t		*buffer;
+	//SV-XXX uint8_t		*buffer;
+	char            *buffer;
 	rtp_packet	*packet;
 	int my_iov_count = iov_count + 1;
 	struct iovec *my_iov;
@@ -2271,13 +2285,15 @@ int rtp_send_data_iov(struct rtp *session, uint32_t rtp_ts, char pt, int m, int 
 	}
 
 	/* Allocate memory for the packet... */
-        buffer     = (uint8_t *) xmalloc(buffer_len + offsetof(rtp_packet, fields));
+        //SV-XXX buffer     = (uint8_t *) xmalloc(buffer_len + offsetof(rtp_packet, fields));
+	buffer     = (char *) xmalloc(buffer_len + offsetof(rtp_packet, fields));
 	packet     = (rtp_packet *) buffer;
 
 	/* These are internal pointers into the buffer... */
         packet->meta.csrc = (uint32_t *) (buffer + offsetof(rtp_packet, fields) + 12);
         packet->meta.extn = (uint8_t  *) (buffer + offsetof(rtp_packet, fields) + 12 + (4 * cc));
-        packet->meta.data = (uint8_t  *) (buffer + offsetof(rtp_packet, fields) + 12 + (4 * cc));
+        //SV-XXX packet->meta.data = (uint8_t  *) (buffer + offsetof(rtp_packet, fields) + 12 + (4 * cc));
+        packet->meta.data = (char  *) (buffer + offsetof(rtp_packet, fields) + 12 + (4 * cc));
 	if (extn != NULL) {
                 packet->meta.data += (extn_len + 1) * 4;
 	}
@@ -2671,7 +2687,8 @@ static void send_rtcp(struct rtp *session, uint32_t rtp_ts,
 		}
  		(session->encrypt_func)(session, buffer, ptr - buffer, initVec); 
 	}
-	udp_send(session->rtcp_socket, buffer, ptr - buffer);
+	//SV-XXX udp_send(session->rtcp_socket, buffer, ptr - buffer);
+	udp_send(session->rtcp_socket, (char *) buffer, ptr - buffer);
 
         /* Loop the data back to ourselves so local participant can */
         /* query own stats when using unicast or multicast with no  */
@@ -2859,7 +2876,8 @@ static void rtp_send_bye_now(struct rtp *session)
 		assert(((ptr - buffer) % session->encryption_pad_length) == 0);
 		(session->encrypt_func)(session, buffer, ptr - buffer, initVec);
 	}
-	udp_send(session->rtcp_socket, buffer, ptr - buffer);
+	//SV-XXX udp_send(session->rtcp_socket, buffer, ptr - buffer);
+	udp_send(session->rtcp_socket, (char *) buffer, ptr - buffer);
 	/* Loop the data back to ourselves so local participant can */
 	/* query own stats when using unicast or multicast with no  */
 	/* loopback.                                                */
@@ -2922,7 +2940,8 @@ void rtp_send_bye(struct rtp *session)
 			udp_fd_set(session->rtcp_socket);
 			if ((udp_select(&timeout) > 0) && udp_fd_isset(session->rtcp_socket)) {
 				/* We woke up because an RTCP packet was received; process it... */
-				buflen = udp_recv(session->rtcp_socket, buffer, RTP_MAX_PACKET_LEN);
+				//SV-XXX buflen = udp_recv(session->rtcp_socket, buffer, RTP_MAX_PACKET_LEN);
+				buflen = udp_recv(session->rtcp_socket, (char *) buffer, RTP_MAX_PACKET_LEN);
 				rtp_process_ctrl(session, buffer, buflen);
 			}
 			/* Is it time to send our BYE? */
@@ -3106,10 +3125,11 @@ static int des_initialize(struct rtp *session, u_char *hash, int hashlen)
 {
 	unsigned char *key;
 	int	 i, j, k;
+#ifdef DEBUG	
 	unsigned char	*testdata;
 	FILE	*testfile;
 	uint8_t 	 initVec[8] = {0,0,0,0,0,0,0,0};
-
+#endif
 	UNUSED(hashlen);
 
 	session->encryption_pad_length = 8;
@@ -3189,7 +3209,8 @@ static int rijndael_initialize(struct rtp *session, u_char *hash, int hash_len)
 	session->decrypt_func = rijndael_decrypt;
 
 	rc = makeKey(&session->crypto_state.rijndael.keyInstEncrypt,
-		     DIR_ENCRYPT, hash_len * 8, (char *) hash);
+		     //SV-XXX DIR_ENCRYPT, hash_len * 8, (char *) hash);
+		     DIR_ENCRYPT, hash_len * 8, hash);
 	if (rc < 0)
 	{
 		debug_msg("makeKey failed: %d\n", rc);
@@ -3197,7 +3218,8 @@ static int rijndael_initialize(struct rtp *session, u_char *hash, int hash_len)
 	}
 
 	rc = makeKey(&session->crypto_state.rijndael.keyInstDecrypt,
-		     DIR_DECRYPT, hash_len * 8, (char *) hash);
+		     //SV-XXX DIR_DECRYPT, hash_len * 8, (char *) hash);
+		     DIR_DECRYPT, hash_len * 8, hash);
 	if (rc < 0)
 	{
 		debug_msg("makeKey failed: %d\n", rc);

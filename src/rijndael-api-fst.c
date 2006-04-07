@@ -41,7 +41,8 @@
 #include "rijndael-api-fst.h"
 #include "rijndael-alg-fst.h"
 
-int makeKey(keyInstance *key, BYTE direction, int keyLen, char *keyMaterial) {
+//SV-XXX int makeKey(keyInstance *key, BYTE direction, int keyLen, char *keyMaterial) {
+int makeKey(keyInstance *key, BYTE direction, int keyLen, BYTE *keyMaterial) {
 	int i;
 	char *keyMat;
 	u8 cipherKey[MAXKB];
@@ -63,7 +64,7 @@ int makeKey(keyInstance *key, BYTE direction, int keyLen, char *keyMaterial) {
 	}
 
 	if (keyMaterial != NULL) {
-		strncpy(key->keyMaterial, keyMaterial, keyLen/4);
+		strncpy(key->keyMaterial, (char *)keyMaterial, keyLen/4); //SV-XXX
 	}
 
 	/* initialize key schedule: */

@@ -52,7 +52,7 @@ void test_base64(void)
 	}
 
 	printf("Base64 encode.......................... "); fflush(stdout);
-	i = base64encode(input, strlen(input), output, 100);
+	i = base64encode((const unsigned char *)input, strlen(input), (unsigned char *)output, 100); //SV-XXX
 	if ((i != 16) || (strncmp(output, "SGVsbG8sIHdvcmxk", i) != 0)) {
 		printf("fail\n");
 		return;
@@ -60,7 +60,7 @@ void test_base64(void)
 	printf("pass\n");
 
 	printf("Base64 decode.......................... "); fflush(stdout);
-	i = base64decode(output, i, decode, 100);
+	i = base64decode((unsigned char *)output, i, (unsigned char *)decode, 100); //SV-XXX
 	if ((i != 12) || (strncmp(decode, "Hello, world", i) != 0)) {
 		printf("fail\n");
 		return;

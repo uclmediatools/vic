@@ -62,7 +62,7 @@
 #include <ctype.h>
 
 #include <stdio.h>
-#include <stddef.h>
+//#include <stddef.h> //SV-XXX: already included elsewhere
 #include <stdarg.h>
 #include <memory.h>
 #include <errno.h>

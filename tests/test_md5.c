@@ -66,57 +66,57 @@ test_md5(void)
 	printf("MD5.................................... "); fflush(stdout);
 
 	MD5Init(&context);
-	MD5Update(&context, i1, strlen(i1));
+	MD5Update(&context, i1, strlen((char *)i1)); //SV-XXX
 	MD5Final(digest, &context);
-	if (strncmp(digest, o1, 16) != 0) {
+	if (strncmp((char *)digest, (char *)o1, 16) != 0) { //SV-XXX
 		printf("FAIL\n");
 		return 1;
 	}
 
 	MD5Init(&context);
-	MD5Update(&context, i2, strlen(i2));
+	MD5Update(&context, i2, strlen((char *)i2)); //SV-XXX
 	MD5Final(digest, &context);
-	if (strncmp(digest, o2, 16) != 0) {
+	if (strncmp((char *)digest, (char *)o2, 16) != 0) { //SV-XXX
 		printf("FAIL\n");
 		return 1;
 	}
 
 	MD5Init(&context);
-	MD5Update(&context, i3, strlen(i3));
+	MD5Update(&context, i3, strlen((char *)i3)); //SV-XXX
 	MD5Final(digest, &context);
-	if (strncmp(digest, o3, 16) != 0) {
+	if (strncmp((char *)digest, (char *)o3, 16) != 0) { //SV-XXX
 		printf("FAIL\n");
 		return 1;
 	}
 
 	MD5Init(&context);
-	MD5Update(&context, i4, strlen(i4));
+	MD5Update(&context, i4, strlen((char *)i4)); //SV-XXX
 	MD5Final(digest, &context);
-	if (strncmp(digest, o4, 16) != 0) {
+	if (strncmp((char *)digest, (char *)o4, 16) != 0) { //SV-XXX
 		printf("FAIL\n");
 		return 1;
 	}
 
 	MD5Init(&context);
-	MD5Update(&context, i5, strlen(i5));
+	MD5Update(&context, i5, strlen((char *)i5)); //SV-XXX
 	MD5Final(digest, &context);
-	if (strncmp(digest, o5, 16) != 0) {
+	if (strncmp((char *)digest, (char *)o5, 16) != 0) { //SV-XXX
 		printf("FAIL\n");
 		return 1;
 	}
 
 	MD5Init(&context);
-	MD5Update(&context, i6, strlen(i6));
+	MD5Update(&context, i6, strlen((char *)i6)); //SV-XXX
 	MD5Final(digest, &context);
-	if (strncmp(digest, o6, 16) != 0) {
+	if (strncmp((char *)digest, (char *)o6, 16) != 0) { //SV-XXX
 		printf("FAIL\n");
 		return 1;
 	}
 
 	MD5Init(&context);
-	MD5Update(&context, i7, strlen(i7));
+	MD5Update(&context, i7, strlen((char *)i7)); //SV-XXX
 	MD5Final(digest, &context);
-	if (strncmp(digest, o7, 16) != 0) {
+	if (strncmp((char *)digest, (char *)o7, 16) != 0) { //SV-XXX
 		printf("FAIL\n");
 		return 1;
 	}
