@@ -493,7 +493,8 @@ VfwGrabber::VfwGrabber(const int dev) : dev_(dev), connected_(0),
 	
 	if (!capGetDriverDescription(dev, (LPSTR)deviceName, sizeof(deviceName), (LPSTR)deviceVersion, sizeof(deviceVersion))) {
 		fprintf(stderr, "VfwGrabber: Cannot get driver info!\n");
-		abort();
+		Grabber::status_=-1;
+		return;
 	}
 
 	devtype_ = get_device_type(deviceName);
