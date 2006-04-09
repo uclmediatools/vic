@@ -60,6 +60,7 @@ static const char rcsid[] =
 /*
  * Linux does not have sendmsg
  */
+/* SV-XXX: Linux seems to have sendmsg now...
 #if defined(__linux__) || defined(WIN32)
 #define MAXPACKETSIZE (1500-28)
 
@@ -84,7 +85,7 @@ sendmsg(int s, struct msghdr* mh, int flags)
 	return (send(s, (char*)wrkbuf, cp - wrkbuf, flags));
 }
 #endif
-
+*/
 
 /*
  * Address::operator==() -- compare two addresses
@@ -318,7 +319,7 @@ void Network::send(const msghdr& mh)
 	if (cc < 0) {
 		switch (errno) {
 		case ECONNREFUSED:
-			/* no one listening at some site - ignore *
+			// no one listening at some site - ignore *
 #if defined(__osf__) || defined(_AIX)
 			reset();
 #endif
@@ -326,21 +327,21 @@ void Network::send(const msghdr& mh)
 
 		case ENETUNREACH:
 		case EHOSTUNREACH:
-			/*
-			 * These "errors" are totally meaningless.
-			 * There is some broken host sending
-			 * icmp unreachables for multicast destinations.
-			 * UDP probably aborted the send because of them --
-			 * try exactly once more.  E.g., the send we
-			 * just did cleared the errno for the previous
-			 * icmp unreachable, so we should be able to
-			 * send now.
-			 *
+			//
+			// * These "errors" are totally meaningless.
+			// * There is some broken host sending
+			// * icmp unreachables for multicast destinations.
+			// * UDP probably aborted the send because of them --
+			// * try exactly once more.  E.g., the send we
+			// * just did cleared the errno for the previous
+			// * icmp unreachable, so we should be able to
+			// * send now.
+			// *
 			(void)::sendmsg(ssock_, (msghdr*)&mh, 0);
 			break;
 
 		default:
-			/*perror("sendmsg");*
+			//perror("sendmsg");*
 			return;
 		}
 	}

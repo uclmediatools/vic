@@ -64,6 +64,12 @@
 #include "indices.h"
 #include "sactbls.h"
 
+//SV-XXX: defined UNUSED() macro for unused variables
+#ifndef UNUSED
+#define UNUSED(x) (x) = (x)
+#endif
+
+
 /* private prototypes*/
 static void _clearblock (short block[12][64], int comp);
 static int _motion_decode (int long_vectors, int vec,int pmv);
@@ -712,12 +718,15 @@ int H263parseGOB(H263Global *h263Data,
 
   read_cod:
 
-    if (mbInd != NULL)
-      if (MBA > 0)
+    //SV-XXX: Added explicit braces to avoid ambiguous else
+    if (mbInd != NULL){
+      if (MBA > 0){
 	mbInd[mn] = 8 * (int)(h263Data->bs->BufferPtr - h263Data->bs->ByteBuffer) +
 	h263Data->bs->ValidBits + indOffset;
+      }
       else
 	mbInd[mn] = bsInd + indOffset;
+    }//SV-XXX
     if (mbQuant != NULL)
       mbQuant[mn] = h263Data->quant;
 
@@ -1221,6 +1230,9 @@ void H263parseIFrameMB(Bitstream *bs, int w, int h,
   int dquant;
   int DQ_tab[4] = {-1,-2,1,2};
 
+  //SV-XXX: unused w, h
+  UNUSED(w);
+  UNUSED(h);
 
   do {
     mcbpc = getMCBPCintra_ext(bs, quiet, fault_p);
@@ -1390,6 +1402,8 @@ static void addblock_ext(short *bp, int comp, int bx, int by,
   int cc, i, iincr;
   unsigned char *rfp;
 
+  //SV-XXX:
+  UNUSED(h);
 
   if (comp >= 6) {
     /* This is a component for B-frame forward prediction */

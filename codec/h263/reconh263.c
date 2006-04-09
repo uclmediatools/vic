@@ -55,6 +55,7 @@
 
 #include "h263decoder.h"
 #include "common.h"
+#include "common.p" //SV-XXX: added to avoid implicit declaration of recon_compXXX
 
 
 void reconstructH263(H263Global *h263Data, int bx, int by, int P, int bdx, int bdy)

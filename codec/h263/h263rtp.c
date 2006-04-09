@@ -200,13 +200,13 @@ int split_h263stream(
 	int *mbind,			/* macroblock indices [in] */
 	int *mbquant,			/* quantifiers [in] */
 	MVField mvfield,		/* motion vectors [in] */
-	u_int ts_,			/* timestamp [in] */
+	//SV-XXX: unused: u_int ts_,			/* timestamp [in] */
 	int headersize,			/* headerlength [in] */
 	h263_rtp_packet	**packets	/* rtp packets [out] */
 ) {
 	h263streamheader	h263sh;
 	int			i,sendmodeb,plen,lastgobind,lastsentbit,curind;
-	int			lastind,psize=headersize-HDRSIZE_B,nrofrtps=0;
+	int			lastind=0,psize=headersize-HDRSIZE_B,nrofrtps=0;//SV-XXX: inited "lastind"
 
 	copy_buf_to_streamheader(bs,&h263sh);
 	*packets = NULL;lastsentbit=0;curind=0;sendmodeb=0;

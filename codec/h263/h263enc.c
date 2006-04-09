@@ -13,6 +13,8 @@
 #include "code.h"
 #include "h263encoder.p"
 #include "common.h"
+#include "common.p" //SV-XXX: to avoid implicit declarations of several functions
+
 /* Subsampling factor for SAD measurement */
 extern int subsampleSAD;
 
@@ -263,6 +265,8 @@ int H263intraPictureEncode(int rate, int codingTime, int t, int gfid,
   int        mx, my, mn;
   int        nMbVert = pict->h / MACROBLOCK_SIZE;/* wrong for 4CIF and 16CIF */
 
+  //SV-XXX: unused
+  UNUSED(codingTime);
 
   if (pict->w == SQCIF_WIDTH && pict->h == SQCIF_HEIGHT) {
     sourceFormat = SQCIF;
@@ -396,6 +400,8 @@ int H263intraPictureEncodeQ(int q, int codingTime, int t, int gfid,
   int        mx, my, mn;
   int        nMbVert = pict->h / MACROBLOCK_SIZE;/* wrong for 4CIF and 16CIF */
 
+  //SV-XXX: unused
+  UNUSED(codingTime);
 
   if (pict->w == SQCIF_WIDTH && pict->h == SQCIF_HEIGHT) {
     sourceFormat = SQCIF;
@@ -1001,15 +1007,19 @@ int H263dctMbEncodePFrame(int mx, int my, H263mbStruct *mb, int codingTime,
     }
 
     /* Detect UNCODED mode */
+    //SV-XXX: added explicit braces to avoid ambiguous else
     if (mb->cbp[0] == 0 && mb->cbp[1] == 0 && mb->cbp[2] == 0 &&
-	mb->cbp[3] == 0	&& mb->cbp[4] == 0 && mb->cbp[5] == 0)
+	mb->cbp[3] == 0	&& mb->cbp[4] == 0 && mb->cbp[5] == 0) {
       if (mb->type == MODE_INTER && mb->type == MODE_INTER_Q &&
-	  ZeroMVector2D(mb->mv[0]))
+	  ZeroMVector2D(mb->mv[0])) {
 	mb->type = MODE_UNCODED;
+      }
       else if (mb->type == MODE_INTER4V &&
 	       ZeroMVector2D(mb->mv[0]) && ZeroMVector2D(mb->mv[1]) &&
-	       ZeroMVector2D(mb->mv[2]) && ZeroMVector2D(mb->mv[3]))
-	mb->type = MODE_UNCODED;
+	       ZeroMVector2D(mb->mv[2]) && ZeroMVector2D(mb->mv[3])) {
+		mb->type = MODE_UNCODED;
+           }
+    }
   }
 
   /* Coding */
@@ -1600,6 +1610,8 @@ void H263dequantTable(int *qcoeff, int intradc, int mbQuant, int mode, int cbp,
   int i;
   int *c = coeff, *qc = qcoeff;
 
+  //SV-XXX: unused
+  UNUSED(mbQuant);
 
   if (cbp) {
     if (mode == MODE_INTRA || mode == MODE_INTRA_Q) { /* Intra */

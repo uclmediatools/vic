@@ -214,114 +214,115 @@ struct strip_struct {
 
 static Tk_ConfigSpec configSpecs[] =
 {
+	//SV-XXX: NULL the 8th element of each array element as per definition of Tk_ConfigSpec in tk-8.0/generic/tk.h
 	{TK_CONFIG_BORDER, "-altbackground", "altbackground", "Background",
 	 ALT_STRIPCHART_BG_COLOR, Tk_Offset(Stripchart, altborder),
-	 TK_CONFIG_COLOR_ONLY},
+	 TK_CONFIG_COLOR_ONLY, NULL},
 	{TK_CONFIG_BORDER, "-altbackground", "altbackground", "Background",
 	 ALT_STRIPCHART_BG_MONO, Tk_Offset(Stripchart, altborder),
-	 TK_CONFIG_MONO_ONLY},
+	 TK_CONFIG_MONO_ONLY, NULL},
 	{TK_CONFIG_BORDER, "-altstripcolor", "altstripcolor",
 	 "Foreground", ALT_STRIPCHART_STRIP_COLOR,
-	 Tk_Offset(Stripchart, altstripBorder), TK_CONFIG_COLOR_ONLY},
+	 Tk_Offset(Stripchart, altstripBorder), TK_CONFIG_COLOR_ONLY, NULL},
 	{TK_CONFIG_BORDER, "-altstripcolor", "altstripcolor",
 	 "Foreground", ALT_STRIPCHART_STRIP_MONO,
-	 Tk_Offset(Stripchart, altstripBorder), TK_CONFIG_MONO_ONLY},
+	 Tk_Offset(Stripchart, altstripBorder), TK_CONFIG_MONO_ONLY, NULL},
 	{TK_CONFIG_COLOR, "-alttextcolor", "textcolor", "Foreground",
 	 ALT_STRIPCHART_TEXT_COLOR, Tk_Offset(Stripchart, a_textColor),
-	 TK_CONFIG_COLOR_ONLY},
+	 TK_CONFIG_COLOR_ONLY, NULL},
 	{TK_CONFIG_COLOR, "-alttextcolor", "textcolor", "Foreground",
 	 ALT_STRIPCHART_TEXT_MONO, Tk_Offset(Stripchart, a_textColor),
-	 TK_CONFIG_MONO_ONLY},
+	 TK_CONFIG_MONO_ONLY, NULL},
 	{TK_CONFIG_COLOR, "-alttickcolor", "tickcolor", "Foreground",
 	 ALT_STRIPCHART_TICK_COLOR, Tk_Offset(Stripchart, a_tickColor),
-	 TK_CONFIG_COLOR_ONLY},
+	 TK_CONFIG_COLOR_ONLY, NULL},
 	{TK_CONFIG_COLOR, "-alttickcolor", "tickcolor", "Foreground",
 	 ALT_STRIPCHART_TICK_MONO, Tk_Offset(Stripchart, a_tickColor),
-	 TK_CONFIG_MONO_ONLY},
+	 TK_CONFIG_MONO_ONLY, NULL},
 
 	{TK_CONFIG_BORDER, "-background", "background", "Background",
 	 DEF_STRIPCHART_BG_COLOR, Tk_Offset(Stripchart, border),
-	 TK_CONFIG_COLOR_ONLY},
+	 TK_CONFIG_COLOR_ONLY, NULL},
 	{TK_CONFIG_BORDER, "-background", "background", "Background",
 	 DEF_STRIPCHART_BG_MONO, Tk_Offset(Stripchart, border),
-	 TK_CONFIG_MONO_ONLY},
-	{TK_CONFIG_SYNONYM, "-bd", "borderWidth", 0, 0, 0, 0},
-	{TK_CONFIG_SYNONYM, "-bg", "background", 0, 0, 0, 0},
+	 TK_CONFIG_MONO_ONLY, NULL},
+	{TK_CONFIG_SYNONYM, "-bd", "borderWidth", 0, 0, 0, 0, NULL},
+	{TK_CONFIG_SYNONYM, "-bg", "background", 0, 0, 0, 0, NULL},
 	{TK_CONFIG_INT, "-borderwidth", "borderWidth", "BorderWidth",
-	 DEF_STRIPCHART_BORDER_WIDTH, Tk_Offset(Stripchart, borderWidth), 0},
+	 DEF_STRIPCHART_BORDER_WIDTH, Tk_Offset(Stripchart, borderWidth), 0, NULL},
 	{TK_CONFIG_STRING, "-command", "command", "Command",
-	 0, Tk_Offset(Stripchart, command), 0},
+	 0, Tk_Offset(Stripchart, command), 0, NULL},
 	{TK_CONFIG_STRING, "-rescale_command", "rescale_command", "RescaleCommand",
-	 0, Tk_Offset(Stripchart, rescale_command), 0},
+	 0, Tk_Offset(Stripchart, rescale_command), 0, NULL},
 	{TK_CONFIG_ACTIVE_CURSOR, "-cursor", "cursor", "Cursor",
 	 DEF_STRIPCHART_CURSOR, Tk_Offset(Stripchart, cursor),
-	 TK_CONFIG_NULL_OK},
+	 TK_CONFIG_NULL_OK, NULL},
 
 	{TK_CONFIG_STRING, "-data", "data", "Data",
-	 DEF_USERDATA, Tk_Offset(Stripchart, userdata), 0},
+	 DEF_USERDATA, Tk_Offset(Stripchart, userdata), 0, NULL},
 	{TK_CONFIG_SYNONYM, "-fg", "stripcolor", 0,
-	 0, 0, 0},
+	 0, 0, 0, NULL},
 	{TK_CONFIG_FONT, "-font", "font", "Font",
 	 DEF_STRIPCHART_FONT, Tk_Offset(Stripchart, tkfont),
-	 0},
+	 0, NULL},
 	{TK_CONFIG_BOOLEAN, "-guaranteedrawing", "guaranteedrawing",
 	 "Guaranteedrawing", DEF_GUARANTEE_DRAW,
-	 Tk_Offset(Stripchart, guarantee_draw), 0},
+	 Tk_Offset(Stripchart, guarantee_draw), 0, NULL},
 	{TK_CONFIG_INT, "-height", "height", "Height", DEF_STRIPCHART_HEIGHT,
-	 Tk_Offset(Stripchart, max_height), 0},
+	 Tk_Offset(Stripchart, max_height), 0, NULL},
 	{TK_CONFIG_INT, "-interval", "interval", "Interval",
-      DEF_STRIPCHART_CALLBACK_INTERVAL, Tk_Offset(Stripchart, interval), 0},
+      DEF_STRIPCHART_CALLBACK_INTERVAL, Tk_Offset(Stripchart, interval), 0, NULL},
 	{TK_CONFIG_DOUBLE, "-max", "max", "Max",
-	 DEF_STRIPCHART_MAXVALUE, Tk_Offset(Stripchart, max_value), 0},
+	 DEF_STRIPCHART_MAXVALUE, Tk_Offset(Stripchart, max_value), 0, NULL},
 	{TK_CONFIG_DOUBLE, "-min", "min", "Min",
-	 DEF_STRIPCHART_MINVALUE, Tk_Offset(Stripchart, min_value), 0},
+	 DEF_STRIPCHART_MINVALUE, Tk_Offset(Stripchart, min_value), 0, NULL},
 	{TK_CONFIG_INT, "-numstrips", "numstrips", "Numstrips",
-	 DEF_STRIPCHART_NUMSTRIPS, Tk_Offset(Stripchart, num_strips), 0},
+	 DEF_STRIPCHART_NUMSTRIPS, Tk_Offset(Stripchart, num_strips), 0, NULL},
 	{TK_CONFIG_INT, "-numticks", "numticks", "Numticks",
-	 DEF_STRIPCHART_NUMTICKS, Tk_Offset(Stripchart, num_ticks), 0},
+	 DEF_STRIPCHART_NUMTICKS, Tk_Offset(Stripchart, num_ticks), 0, NULL},
 	{TK_CONFIG_RELIEF, "-relief", "relief", "Relief",
-	 DEF_STRIPCHART_RELIEF, Tk_Offset(Stripchart, relief), 0},
+	 DEF_STRIPCHART_RELIEF, Tk_Offset(Stripchart, relief), 0, NULL},
 	{TK_CONFIG_BOOLEAN, "-showticks", "showticks", "Showticks",
-	 DEF_STRIPCHART_SHOWTICKS, Tk_Offset(Stripchart, showticks), 0},
+	 DEF_STRIPCHART_SHOWTICKS, Tk_Offset(Stripchart, showticks), 0, NULL},
 	{TK_CONFIG_INT, "-autoscale", "autoscale", "Autoscale",
-	 DEF_STRIPCHART_AUTOSCALE, Tk_Offset(Stripchart, autoscale), 0},
+	 DEF_STRIPCHART_AUTOSCALE, Tk_Offset(Stripchart, autoscale), 0, NULL},
 	{TK_CONFIG_INT, "-hticks", "hticks", "Hticks",
-	 DEF_STRIPCHART_HTICKS, Tk_Offset(Stripchart, hticks), 0},
+	 DEF_STRIPCHART_HTICKS, Tk_Offset(Stripchart, hticks), 0, NULL},
 	{TK_CONFIG_INT, "-stripborderwidth", "stripborderwidth",
 	 "Stripborderwidth", DEF_STRIPCHART_STRIPBORDERWIDTH,
-	 Tk_Offset(Stripchart, stripBorderWidth), 0},
+	 Tk_Offset(Stripchart, stripBorderWidth), 0, NULL},
 	{TK_CONFIG_BORDER, "-stripcolor", "stripcolor", "Stripcolor",
 	 DEF_STRIPCHART_STRIP_COLOR, Tk_Offset(Stripchart, stripBorder),
-	 TK_CONFIG_COLOR_ONLY},
+	 TK_CONFIG_COLOR_ONLY, NULL},
 	{TK_CONFIG_BORDER, "-stripcolor", "stripcolor", "Stripcolor",
 	 DEF_STRIPCHART_STRIP_MONO, Tk_Offset(Stripchart, stripBorder),
-	 TK_CONFIG_MONO_ONLY},
+	 TK_CONFIG_MONO_ONLY, NULL},
 	{TK_CONFIG_RELIEF, "-striprelief", "striprelief", "Striprelief",
-	 DEF_STRIPCHART_STRIPRELIEF, Tk_Offset(Stripchart, stripRelief), 0},
+	 DEF_STRIPCHART_STRIPRELIEF, Tk_Offset(Stripchart, stripRelief), 0, NULL},
 	{TK_CONFIG_INT, "-stripwidth", "stripwidth", "Stripwidth",
-	 DEF_STRIPCHART_WIDTH, Tk_Offset(Stripchart, strip_width), 0},
+	 DEF_STRIPCHART_WIDTH, Tk_Offset(Stripchart, strip_width), 0, NULL},
 	{TK_CONFIG_COLOR, "-textcolor", "textcolor", "Textcolor",
 	 DEF_STRIPCHART_TEXT_COLOR, Tk_Offset(Stripchart, textColorPtr),
-	 TK_CONFIG_COLOR_ONLY},
+	 TK_CONFIG_COLOR_ONLY, NULL},
 	{TK_CONFIG_COLOR, "-textcolor", "textcolor", "Textcolor",
 	 DEF_STRIPCHART_TEXT_MONO, Tk_Offset(Stripchart, textColorPtr),
-	 TK_CONFIG_MONO_ONLY},
+	 TK_CONFIG_MONO_ONLY, NULL},
 	{TK_CONFIG_COLOR, "-tickcolor", "tickcolor", "Tickcolor",
 	 DEF_STRIPCHART_TICK_COLOR, Tk_Offset(Stripchart, tickColorPtr),
-	 TK_CONFIG_COLOR_ONLY},
+	 TK_CONFIG_COLOR_ONLY, NULL},
 	{TK_CONFIG_COLOR, "-tickcolor", "tickcolor", "Tickcolor",
 	 DEF_STRIPCHART_TICK_MONO, Tk_Offset(Stripchart, tickColorPtr),
-	 TK_CONFIG_MONO_ONLY},
+	 TK_CONFIG_MONO_ONLY, NULL},
 	{TK_CONFIG_STRING, "-title", "title", "Title",
-	 DEF_STRIPCHART_TITLE, Tk_Offset(Stripchart, title), 0},
+	 DEF_STRIPCHART_TITLE, Tk_Offset(Stripchart, title), 0, NULL},
 	{TK_CONFIG_BOOLEAN, "-up", "up", "Up", "true",
-	 Tk_Offset(Stripchart, grow_up), 0},
+	 Tk_Offset(Stripchart, grow_up), 0, NULL},
 	{TK_CONFIG_INT, "-userbits", "userbits", "Userbits",
-	 DEF_USERBITS, Tk_Offset(Stripchart, userbits), 0},
+	 DEF_USERBITS, Tk_Offset(Stripchart, userbits), 0, NULL},
 	{TK_CONFIG_INT, "-width", "width", "Width", DEF_STRIPCHART_WIDTH,
-	 Tk_Offset(Stripchart, strip_width), 0},
+	 Tk_Offset(Stripchart, strip_width), 0, NULL},
 	{TK_CONFIG_END, 0, 0, 0,
-	 0, 0, 0}
+	 0, 0, 0, NULL}
 };
 
 /*
@@ -880,10 +881,10 @@ static double chose_range(const double* lim, int n, double range)
  */
 static int chose_scale(Stripchart* sp, double min, double max)
 {
-	const static double rlim[] = {
+	static const double rlim[] = { //SV-XXX: was "const static"
 		1.0, 2.0, 5.0, 10.0
 	};
-	const static double blim[] = {
+	static const double blim[] = { //SV-XXX: was "const static"
 		1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0
 	};
 	double range = max - min;
@@ -1077,8 +1078,7 @@ DrawStripi(Stripchart* SPtr, int i)
 	int lineHeight;
 
 	int x = SPtr->borderWidth + PADDING + (i - 1) * SPtr->strip_width;
-	int y = SPtr->borderWidth + PADDING +
-		hasatitle(SPtr) * (lineHeight + PADDING);
+	int y; //SV-XXX: removed initialisation from here, was insane
 	int w = SPtr->strip_width;
 	int h;
 	double maxv = SPtr->max_value;
@@ -1087,6 +1087,10 @@ DrawStripi(Stripchart* SPtr, int i)
 		
 	Tk_GetFontMetrics(SPtr->tkfont, &fm);
 	lineHeight = fm.linespace;
+	
+	//SV-XXX: put initialisation from here, was insane before
+	y = SPtr->borderWidth + PADDING + hasatitle(SPtr) * (lineHeight + PADDING);
+
 
 	if (i < 1 || i > SPtr->num_strips)
 		return;
@@ -1161,15 +1165,19 @@ ScrollStrips(Stripchart* SPtr)
 	Tk_FontMetrics fm;
 	int lineHeight;	
 	int src_x = SPtr->borderWidth + PADDING + SPtr->strip_width;
-	int src_y = SPtr->borderWidth + PADDING +
-		    hasatitle(SPtr) * (lineHeight + PADDING);
+	int src_y; //SV-XXX: removed initialisation from here, was insane
 	int dest_x = src_x - SPtr->strip_width;
-	int dest_y = src_y;
+	int dest_y; //SV-XXX: removed initialisation from here, was insane
 	int w = (SPtr->num_strips - 1) * SPtr->strip_width;
 	int h = SPtr->max_height;
 	
 	Tk_GetFontMetrics(SPtr->tkfont, &fm);
 	lineHeight = fm.linespace;
+
+	//SV-XXX: put initialisation from here, was insane before
+	src_y = SPtr->borderWidth + PADDING + hasatitle(SPtr) * (lineHeight + PADDING);
+	dest_y = src_y;
+	
 
 	XCopyArea(Tk_Display(tkwin), Tk_WindowId(tkwin), Tk_WindowId(tkwin),
 	          Tk_GetGC(tkwin, 0, NULL), src_x, src_y, w, h, dest_x, dest_y);

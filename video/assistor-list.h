@@ -28,4 +28,4 @@ public:
 	int command(int argc,const char *const*argv);
 	void register_assistor(char *name,char *formats);
 };
-#endif _ASSISTOR_LIST_H
+#endif //SV-XXX: don't need "#endif _ASSISTOR_LIST_H" in this case, just #endif is enough

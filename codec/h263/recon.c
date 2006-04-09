@@ -56,6 +56,11 @@
 #include "Util.h"
 #include "defs.h"
 
+//SV-XXX: defined UNUSED() macro for unused variables
+#ifndef UNUSED
+#define UNUSED(x) (x) = (x)
+#endif
+
 
 static int OM[5][8][8] = {
 {
@@ -140,6 +145,9 @@ int chroma;
 {
   int xint, xh, yint, yh;
   unsigned char *s, *d;
+
+  //SV-XXX: unused
+  UNUSED(chroma);
 
   xint = dx>>1;
   xh = dx & 1;
@@ -565,6 +573,10 @@ void recon_comp_obmc(unsigned char *src, unsigned char *dst,
   int nx[5],ny[5],xint[5],yint[5],xh[5],yh[5];
   int p[64],*pd;
   unsigned char *d,*s[5];
+
+  //SV-XXX: unused
+  UNUSED(w);
+  UNUSED(h);
 
   xmb = (x>>4)+1;
   ymb = (y>>4)+1;

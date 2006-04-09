@@ -119,8 +119,9 @@ public:
 	}
 } encoder_matcher_nv;
 
+//SV-XXX: rearranged initialisation order to shut up gcc4
 NvEncoder::NvEncoder() : TransmitterModule(FT_YUV_422),
-	nw_(0), nh_(0), pt_(0), ep_(0), loss_(2), use_dct_(0)
+	nw_(0), nh_(0), loss_(2), use_dct_(0), pt_(0), ep_(0)
 {
 	width_ = 0;
 	height_ = 0;

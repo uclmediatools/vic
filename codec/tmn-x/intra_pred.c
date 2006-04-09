@@ -45,6 +45,12 @@
 
 #include "sim.h"
 
+//SV-XXX: defined UNUSED() macro for unused variables
+#ifndef UNUSED
+#define UNUSED(x) (x) = (x)
+#endif
+
+
 /**********************************************************************
  *
  *	Name:           Choose_AC_DC_Pred
@@ -66,7 +72,6 @@ int Choose_Intra_Mode (int *pcoeff, int *store_coeff, int xpos, int ypos, int ne
   int i, j;
   int SAD0 = 0, SAD1 = 0, SAD2 = 0;
   int Intra_Mode;
-
 
   for (i = 0; i < 6; i++)
   {
@@ -195,6 +200,8 @@ int Choose_Intra_Mode (int *pcoeff, int *store_coeff, int xpos, int ypos, int ne
   }
   printf ("\nSAD0: %4i, SAD1: %4i, SAD2: %4i\n", SAD0, SAD1, SAD2);
 
+#else
+  UNUSED(pcoeff);
 #endif
   return Intra_Mode;
 }

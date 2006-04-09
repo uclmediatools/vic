@@ -47,6 +47,11 @@
 #include "h263coder.h"
 #include "main.h"
 
+//SV-XXX: defined UNUSED() macro for unused variables
+#ifndef UNUSED
+#define UNUSED(x) (x) = (x)
+#endif
+
 
 FILE           *streamfile;
 
@@ -351,7 +356,7 @@ h263_encode_one_frame(struct ENCODER_STATE *s, int i, int tr)
 	s->image = ReadImage(seqfilename, frame_no, headerlength);
 	s->curr_image = FillImage(s->image);
 
-	fprintf(stdout, "Coding B frame... ", frame_no);
+	fprintf(stdout, "Coding B frame... %d ", frame_no); //SV-XXX: malformed format string, missing %d
 	fflush(stdout);
 
 	/* Set QP to b_picture_quant, no rate control for true B yet */
@@ -1398,6 +1403,10 @@ CalculateStatistics(PictImage * curr_image, PictImage * curr_recon,
 		    PictImage * pb_b_image, PictImage * pb_b_recon,
 		    Bits * bits, int QP, Pict * pic)
 {
+    //SV-XXX: dummy initialisations to make gcc-4.0 shut up
+    UNUSED(pb_b_image);
+    UNUSED(pb_b_recon);
+    UNUSED(QP);
 
     fprintf(stdout, "done\n");
 
@@ -1664,7 +1673,7 @@ sed_UpsampleComponent(unsigned char *base, unsigned char *enhanced,
 int
 FrameLayerRC(Pict * pic)
 {
-    int             frameskip;
+    int             frameskip = 0; ///SV-XXX: initialised
 
     switch (rate_control_method) {
     case NO:

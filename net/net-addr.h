@@ -49,6 +49,7 @@ public:
 protected:
   AddressType();
   virtual Address* resolve(const char* name) {name=name; return (0);}
+  virtual ~AddressType(){}; //SV-XXX: This solves the "missing" virtual destructor warning from gcc4
 private:
   static AddressType* all_;
   AddressType* next_;

@@ -44,7 +44,7 @@
 * done by Marcus Meissner in June 1999.
 */
 #ifndef lint
-static char rcsid[] =
+static const char rcsid[] =
 "@(#) $Header$ (LBL)";
 #endif
 
@@ -179,10 +179,11 @@ int H263Encoder::consume(const VideoFrame* vf)
 	Tcl&		tcl = Tcl::instance();
 	pktbuf*		pb;
 	rtphdr*		rh;
+
 #ifdef TIME_ADAPTION
 	struct timeval tv1,tv2;
 	int	timespent;
-#endif TIME_ADAPTION
+#endif //SV-XXX: don't need "#endif TIME_ADAPTION" in this case, just #endif is enough
 
 	//moved up here by Piers
 	tx_->flush();
@@ -263,9 +264,11 @@ int H263Encoder::consume(const VideoFrame* vf)
 	
 	/* and GO */
 	bitstr_.b[bitstr_.size/8-1] = 0x42;
+
 #ifdef TIME_ADAPTION
 	gettimeofday(&tv1,NULL);
-#endif TIME_ADAPTION
+#endif //SV-XXX: don't need "#endif TIME_ADAPTION" in this case, just #endif is enough
+
 	EncodeH263Q(
 		q_,					/* [in] Quantisierer */
 		codingtime_,		/* [in] Codingtime */

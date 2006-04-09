@@ -56,6 +56,7 @@ class Buffer {
 public:
 	virtual Buffer* copy() = 0;
 	virtual void release();
+	virtual ~Buffer() {}; //SV-XXX: This solves the "missing" virtual destructor warning from gcc4
 };
 
 /*

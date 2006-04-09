@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] =
+static const char rcsid[] =
     "@(#) $Header$ (LBL)";
 #endif
 
@@ -69,8 +69,9 @@ extern "C" int win32NColors;
 
 #endif
 
+//SV-XXX: rearranged intialistaion order to shut upp gcc4
 ColorModel::ColorModel() :
-	ncolor_(0), visual_(0), depth_(0), colormap_(0), gamma_(1.)
+	colormap_(0), visual_(0), depth_(0), gamma_(1.), ncolor_(0)
 {
 	Tcl& tcl = Tcl::instance();
 	dpy_ = Tk_Display(tcl.tkmain());

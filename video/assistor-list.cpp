@@ -90,6 +90,7 @@ class ALMatcher : public Matcher {
 public:
 	ALMatcher() : Matcher("assistorlist") { }
 	class TclObject* match(const char *id) {
+		UNUSED(id); //SV-XXX: unused
 		return (TclObject*)&assistorlist;
 	}
 } almatcher;

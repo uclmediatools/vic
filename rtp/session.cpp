@@ -196,14 +196,21 @@ void CtrlHandler::timeout()
 	schedule_timer();
 }
 
+//SV-XXX: rearranged initialization order to shut up gcc4
 SessionManager::SessionManager()
 //	: dh_(*this), ch_(*this), rt_(*this), 
-: badversion_(0), badoptions_(0), badfmt_(0), badext_(0), nrunt_(0),
-last_np_(0),
+: mb_(mbus_handler_engine, NULL),
+lipSyncEnabled_(0),
+badversion_(0), 
+badoptions_(0), 
+badfmt_(0), 
+badext_(0),
+nrunt_(0),
+last_np_(0), 
 sdes_seq_(0),
 rtcp_inv_bw_(0.),
-rtcp_avg_size_(128.), 
-confid_(-1), mb_(mbus_handler_engine, NULL), lipSyncEnabled_(0)
+rtcp_avg_size_(128.),
+confid_(-1)
 {
 	/*XXX For adios() to send bye*/
 	manager = this;
@@ -340,7 +347,7 @@ int SessionManager::command(int argc, const char*const* argv)
 		}
 		if (strcmp(argv[1], "random-srcid") == 0) {
 			Address * addrp;
-			if (addrp = (dh_[0].net())->alloc(argv[2])) {
+			if ((addrp = (dh_[0].net())->alloc(argv[2])) == NULL) { //SV-XXX: placed ()'s against truth check == NULL
 			  sprintf(cp, "%u", alloc_srcid(*addrp));
 			  delete addrp;
 			}
@@ -537,6 +544,8 @@ void SessionManager::announce(CtrlHandler* ch)
 
 void SessionManager::send_report(CtrlHandler* ch, int bye, int app)
 {
+	UNUSED(app); //SV-XXX: unused
+
 	SourceManager& sm = SourceManager::instance();
 	Source& s = *sm.localsrc();
 	rtcphdr* rh = (rtcphdr*)pktbuf_;
@@ -645,18 +654,18 @@ void SessionManager::send_report(CtrlHandler* ch, int bye, int app)
 	
 	/*	rtcp_avg_size_ += RTCP_SIZE_GAIN * (double(len + 28) - rtcp_avg_size_);
 	
-	  /*
-	  * compute the time to the next report.  we do this here
-	  * because we need to know if there were any active sources
-	  * during the last report period (nrr above) & if we were
-	  * a source.  The bandwidth limit for rtcp traffic was set
-	  * on startup from the session bandwidth.  It is the inverse
-	  * of bandwidth (ie., ms/byte) to avoid a divide below.
-	*/
-	/*	double ibw = rtcp_inv_bw_;
+	  
+	  // compute the time to the next report.  we do this here
+	  // because we need to know if there were any active sources
+	  // during the last report period (nrr above) & if we were
+	  // a source.  The bandwidth limit for rtcp traffic was set
+	  // on startup from the session bandwidth.  It is the inverse
+	  // of bandwidth (ie., ms/byte) to avoid a divide below.
+	
+	//	double ibw = rtcp_inv_bw_;
 	if (nrr) {
-	/* there were active sources */
-	/*		if (we_sent) {
+	// there were active sources 
+	//		if (we_sent) {
 	ibw *= 1./RTCP_SENDER_BW_FRACTION;
 	nsrc = nrr;
 	} else {
@@ -743,7 +752,7 @@ void SessionManager::demux(pktbuf* pb, Address & addr)
 	u_int32_t srcid = rh->rh_ssrc;
 	int flags = ntohs(rh->rh_flags);
 	// for LIP SYNC
-	u_char *pkt = pb->data - sizeof(*rh);
+	//SV-XXX: unused: u_char *pkt = pb->data - sizeof(*rh);
 
 	if ((flags & RTP_X) != 0) {
 	/*

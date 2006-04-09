@@ -55,6 +55,12 @@
 
 #include<math.h>
 
+//SV-XXX: defined UNUSED() macro for unused variables
+#ifndef UNUSED
+#define UNUSED(x) (x) = (x)
+#endif
+
+
 /**********************************************************************
  *
  *	Name:        SNRcomp
@@ -80,6 +86,8 @@ void ComputeSNR (PictImage * im1, PictImage * im2, Results * res, int pict_type,
   PictImage *diff_image = NULL;
   /* Diff. image written to diff_filename */
   char *diff_filename = DEF_DIFFILENAME;
+
+  UNUSED(pict_type); //SV-XXX: unused variable
 
   if (write)
   {

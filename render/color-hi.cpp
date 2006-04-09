@@ -294,6 +294,8 @@ void HiWindowRenderer::update()
 void HiWindowRenderer::map_422(const u_char* frm, u_int off,
 				 u_int x, u_int width, u_int height) const
 {
+        UNUSED(x); //SV-XXX: unused
+
 	register u_int iw = width_;
 	register const u_char* yp = frm + off;
 	register const u_char* up = frm + framesize_ + (off >> 1);
@@ -743,6 +745,8 @@ void HiWindowRenderer::map_gray(register const u_char *yp,
 				  u_int off, u_int x,
 				  u_int width, u_int height) const
 {
+        UNUSED(x); //SV-XXX: unused
+
 	register u_int iw = width_;
 	yp += off;
 	register u_short* xip = (u_short*)pixbuf_ + off;

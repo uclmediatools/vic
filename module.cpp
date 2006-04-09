@@ -32,7 +32,7 @@
  */
 
 #ifndef lint
-static char rcsid[] =
+static const char rcsid[] =
     "@(#) $Header$ (LBL)";
 #endif
 #include "module.h"
@@ -79,9 +79,10 @@ int Module::atoft(const char* s)
 	return (-1);
 }
 
+//SV-XXX: rearranged the initalisation order to shut up gcc4
 Module::Module(int ft)
-	: ft_(ft), target_(0),
-	  width_(0), height_(0), framesize_(0)
+	: target_(0), width_(0), 
+	  height_(0), framesize_(0), ft_(ft)
 {
 }
 
@@ -114,7 +115,7 @@ TransmitterModule::~TransmitterModule()
 
 int TransmitterModule::command(int argc, const char*const* argv)
 {
-	Tcl& tcl = Tcl::instance();
+	//SV-XXX: unused: Tcl& tcl = Tcl::instance();
 	if (argc == 3) {
 		if (strcmp(argv[1], "transmitter") == 0) {
 			tx_ = (Transmitter*)TclObject::lookup(argv[2]);

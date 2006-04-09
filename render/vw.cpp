@@ -229,6 +229,8 @@ SharedVideoImage::~SharedVideoImage()
 
 void SharedVideoImage::init(Tk_Window tk)
 {
+        UNUSED(tk); //SV-XXX: unused
+
 /*XXX capture-windows need to be writeable */
 #ifdef notdef
 	shminfo_.readOnly = 1;

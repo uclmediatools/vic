@@ -32,7 +32,7 @@
  */
 
 #ifndef lint
-static char rcsid[] =
+static const char rcsid[] =
     "@(#) $Header$ (LBL)";
 #endif
 
@@ -41,11 +41,14 @@ static char rcsid[] =
  * form of a ppm file) to lookup tables.
  */
 
+#include <stdlib.h> //SV-XXX: for exit()
 #include <stdio.h>
 #include <sys/types.h> 
 #include <math.h>
 #ifdef WIN32
 #include <winsock.h>
+#else
+#include <getopt.h> //SV-XXX: for getopt()
 #endif
 
 /* D65 Reference Whites */
@@ -144,15 +147,15 @@ rgb_to_yuv(struct color *p)
 	p->u = -0.1687 * r - 0.3313 * g + 0.5 * b;
 	p->v = 0.5 * r - 0.4187 * g - 0.0813 * b;
 	if (p->y < 0. || p->y >= 256.) {
-		fprintf(stderr, "ppmtolut: y overflow %d\n", p->y);
+		fprintf(stderr, "ppmtolut: y overflow %f\n", p->y); //SV-XXX: %d -> %f
 		exit(1);
 	}
 	if (p->u < -128. || p->u >= 128.) {
-		fprintf(stderr, "ppmtolut: u overflow %d\n", p->u);
+		fprintf(stderr, "ppmtolut: u overflow %f\n", p->u); //SV-XXX: %d -> %f
 		exit(1);
 	}
 	if (p->v < -128. || p->v >= 128.) {
-		fprintf(stderr, "ppmtolut: v overflow %d\n", p->v);
+		fprintf(stderr, "ppmtolut: v overflow %f\n", p->v); //SV-XXX: %d -> %f
 		exit(1);
 	}
 }
@@ -398,8 +401,8 @@ uv_closest(int ncolor, struct color *colors, struct color* c)
 	while ((int)(colors[i].y + 0.5) != y) {
 		if (--i < 0) {
 			fprintf(stderr,
-				"ppmtolut: couldn't find color at y = %d\n",
-				c->y);
+				"ppmtolut: couldn't find color at y = %f\n",
+				c->y); //SV-XXX: %d -> %f
 			exit(1);
 		}
 	}
@@ -468,7 +471,7 @@ main(int argc, char **argv)
 	double (*distfn)(struct color *, struct color *);
 
 	extern char *optarg;
-	extern int optind, opterr;
+	extern int optind; //SV-XXX: unused: opterr;
 
 	distfn = yuv_distance;
 	factor = 1.0;

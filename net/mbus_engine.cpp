@@ -68,6 +68,10 @@ MBusEngine::MBusEngine() {
 
 void MBusEngine::rx_mbus_hello(char *srce, char *args, MBusHandler *mb)
 {
+	//SV-XXX: all unused, empty function
+	UNUSED(srce);
+        UNUSED(args);
+        UNUSED(mb);
 }
 
 void MBusEngine::rx_source_cname(char *srce, char *args, MBusHandler *mb)
@@ -75,6 +79,10 @@ void MBusEngine::rx_source_cname(char *srce, char *args, MBusHandler *mb)
 	struct mbus_parser *mp;
         char *cname, *ssrc_str;
 	u_int32_t	ssrc;
+
+        //SV-XXX: unused
+        UNUSED(srce);
+        UNUSED(mb);
 	
 	mp = mbus_parse_init(args);
 	
@@ -97,6 +105,10 @@ void MBusEngine::rx_source_playout(char *srce, char *args, MBusHandler *mb)
         int	playout;
 	char	*ssrc_str;
 	unsigned long	ssrc;
+
+ 	//SV-XXX: unused
+        UNUSED(srce);
+        UNUSED(mb);
 	
 	mp = mbus_parse_init(args);
 	if (mbus_parse_str(mp, &ssrc_str) && mbus_parse_int(mp, &playout)) {
@@ -134,6 +146,9 @@ void MBusEngine::rx_powermeter(char *srce, char *args, MBusHandler *mb)
 	int value;
 	struct mbus_parser *mp;
 
+	//SV-XXX: unused
+        UNUSED(srce);
+
 	mp = mbus_parse_init(args);
 	if (mbus_parse_int(mp, &value)) {
 		if (strcmp(mb->name, "") == 1) {
@@ -149,6 +164,9 @@ void MBusEngine::rx_source_active(char *srce, char *args, MBusHandler *mb)
 {
 	char *cname;
 	struct mbus_parser *mp;
+	
+	//SV-XXX: unused
+        UNUSED(srce);
 	
         mp = mbus_parse_init(args);
 	if (mbus_parse_str(mp, &cname)) {

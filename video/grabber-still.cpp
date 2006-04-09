@@ -35,7 +35,7 @@
  */
 
 #ifndef lint
-static char rcsid[] =
+static const char rcsid[] =
     "@(#) $Header$ (LBL)";
 #endif
 
@@ -163,7 +163,7 @@ StillGrabber::~StillGrabber()
 
 int StillGrabber::command(int argc, const char * const * argv)
 {
-    Tcl& tcl = Tcl::instance();
+    //SV-XXX: unused: Tcl& tcl = Tcl::instance();
     
 #ifdef DEBUG
     debug_msg("StillGrabber::command argc=%d ", argc);
@@ -198,7 +198,7 @@ void StillGrabber::stop()
 
 int StillGrabber::grab()
 {
-    int frc;
+    int frc=0; //SV-XXX: gcc4 warns for initialisation
 
     if (still_device.frame_) {
 	JpegFrame f(media_ts(), (u_int8_t *) still_device.frame_,

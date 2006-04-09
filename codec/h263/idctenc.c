@@ -17,6 +17,7 @@
 /************************    INCLUDE FILES    ********************************/
 
 #include <math.h>
+#include <string.h> //SV-XXX: added for memcpy, line 533
 #include "defs.h"
 #include "Util.h"
 

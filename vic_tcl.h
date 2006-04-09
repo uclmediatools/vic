@@ -145,6 +145,7 @@ class Matcher {
     protected:
 	Matcher(const char* classname);
 	virtual TclObject* match(const char* id) = 0;
+        virtual ~Matcher() {}; //SV-XXX: Solves the "missing" virtual destructor warning from gcc4
     private:
 	static Matcher* all_;
 	Matcher* next_;

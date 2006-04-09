@@ -89,6 +89,7 @@ H263plusDecoder::~H263plusDecoder()
 
 void H263plusDecoder::info(char* wrk) const
 {
+	UNUSED(wrk); //SV-XXX: unused
 	/* nop */
 }
 
@@ -106,6 +107,7 @@ void H263plusDecoder::stats(char* wrk)
 
 int H263plusDecoder::colorhist(u_int* hist) const
 {
+        UNUSED(hist); //SV-XXX: unused
 #if 0
 	const u_char* frm = codec_->frame();
 	int w = inw_;
@@ -139,9 +141,13 @@ void H263plusDecoder::recv(pktbuf* pb)
     /* 5 bits reserved */
     int pbit  = (pl[0] >> 2) & 1;          /* 1 bit */
     int vbit  = (pl[0] >> 1) & 1;          /* 1 bit */
+
+//SV-XXX: plen, pebit unused otherwise
+#ifdef DEBUG263
     int plen  = ((pl[0] << 5) & 0x20) |    /* 6 bits */
 		((pl[1] >> 3) & 0x1f);
     int pebit = pl[1] & 0x07;              /* 3 bits */
+#endif
 	
     int     bs    = 0;
     int     tid   = 0;

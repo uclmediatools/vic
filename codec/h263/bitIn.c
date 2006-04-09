@@ -338,15 +338,20 @@ int ErrorProneCheckInBufferH263(FILE *fp, Byte *buffer, int bufferSize,
       }
     } while (loss);
 
-    if (lostPackets > 0)
+    //SV-XXX: Added explicit braces to avoid ambiguous else
+    if (lostPackets > 0) {
       /* Resync */
       if ((*start_p = FindH263Sync(*start_p, *end_p)) != NULL) {
-	if (*start_p < *end_p - 3)   /* Enough bytes left to look for tr? */
-	  if (!ShowH263GOBnumber(*start_p))
+	if (*start_p < *end_p - 3) {   /* Enough bytes left to look for tr? */
+	  if (!ShowH263GOBnumber(*start_p)) {
 	    /* OK, we've got a picture start code */
 	    *tr_p = ShowH263TempRef(*start_p);
-      } else
-	*start_p = *end_p;
+	  }
+	}
+      } else {
+		*start_p = *end_p;
+	}
+    }
   } while (!(*start_p < *end_p - 3) && !feof(fp));
   /* Loop until we've got at least enough bytes to look at the
      temporal reference if there is any */
@@ -395,15 +400,20 @@ int ErrorProneCheckInBufferPyra(FILE *fp, Byte *buffer, int bufferSize,
       }
     } while (loss);
 
-    if (lostPackets > 0)
+    //SV-XXX: Added explicit braces to avoid ambiguous else
+    if (lostPackets > 0) {
       /* Resync */
       if ((*start_p = FindPyraSync(*start_p, *end_p)) != NULL) {
-	if (*start_p < *end_p - 4)   /* Enough bytes left to look for tr? */
-	  if (!ShowPyraGOBnumber(*start_p))
+	if (*start_p < *end_p - 4) {  /* Enough bytes left to look for tr? */
+	  if (!ShowPyraGOBnumber(*start_p)) {
 	    /* OK, we've got a picture start code */
 	    *tr_p = ShowPyraTempRef(*start_p);
-      } else
-	*start_p = *end_p;
+          }
+        }
+      } else {
+		*start_p = *end_p;
+	}
+    }
   } while (!(*start_p < *end_p - 4) && !feof(fp));
   /* Loop until we've got at least enough bytes to look at the
      temporal reference if there is any */

@@ -32,7 +32,7 @@
  */
 
 #ifndef lint
-static char rcsid[] =
+static const char rcsid[] =
     "@(#) $Header$";
 #endif
 
@@ -53,13 +53,13 @@ public:
 	}
 } rtp_bp_matcher;
 	
-/*
- *XXX
- * Sequence numbers are static so when we change the encoding (which causes
- * new encoder to be allocated) we don't reset the sequence counter.
- * Otherwise, receivers will get confused, reset their stats, and generate
- * odd looking streams of reception reports (i.e., the packet counts will
- * drop back to 0).
+
+ // *XXX
+ // * Sequence numbers are static so when we change the encoding (which causes
+ // * new encoder to be allocated) we don't reset the sequence counter.
+ // * Otherwise, receivers will get confused, reset their stats, and generate
+ // * odd looking streams of reception reports (i.e., the packet counts will
+ // * drop back to 0).
  */
 
 RTP_BufferPool::RTP_BufferPool() : srcid_(-1)

@@ -59,8 +59,8 @@ static const char rcsid[] =
 
 /*#ifndef WIN32
 extern "C" int QP,QPI;
-extern "C" unsigned char *h263_frame;          /* encoder input */
-//extern "C" int            h263_streamcount;    /* encoder output */
+extern "C" unsigned char *h263_frame;          // * encoder input */
+//extern "C" int            h263_streamcount;    // * encoder output */
 //extern "C" char          *h263_bitstream;
 //#else
 extern "C" int QP,QPI;
@@ -148,7 +148,10 @@ H263plusEncoder::command(int argc, const char*const* argv)
 void
 dump_paket(const unsigned char *data, int len)
 {
-#ifdef DEBUG263
+#ifndef DEBUG263
+	UNUSED(data); //SV-XXX: unused if DEBUG263 not defined
+	UNUSED(len); //SV-XXX: unused if DEBUG263 not defined
+#else
 	int x,y;
 	
     for (y = 0; y < len; y += 16) {

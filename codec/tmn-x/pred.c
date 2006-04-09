@@ -513,7 +513,7 @@ MB_Structure *Predict_EI( PictImage *curr_image, PictImage *base_recon,
   int curr[16][16];
   MB_Structure *upward_pred = (MB_Structure *)malloc(sizeof(MB_Structure));
   MB_Structure *pred_error = (MB_Structure *) malloc (sizeof (MB_Structure));
-  MotionVector ZERO = {0,0,0,0,0};
+  MotionVector ZERO = {0,0,0,0,0,0}; //SV-XXX: added extra 0 to match defined struct!
   int i,j;
   int SADup;
 
@@ -587,7 +587,7 @@ MB_Structure *MB_Recon_EI( PictImage *base_recon, unsigned char *base_ipol,
 {
   MB_Structure *upward = (MB_Structure *) malloc (sizeof (MB_Structure));
   MB_Structure *recon_data = (MB_Structure *) malloc (sizeof (MB_Structure));
-  MotionVector ZERO = {0,0,0,0,0};
+  MotionVector ZERO = {0,0,0,0,0,0}; //SV-XXX: added extra 0 to init struct according to definition
 
   switch (prediction_type)
   {
@@ -1334,7 +1334,7 @@ MB_Structure *Predict_EP( PictImage *curr_image, PictImage *prev_recon, unsigned
   MB_Structure *upward_pred = (MB_Structure *) malloc (sizeof (MB_Structure));
   MB_Structure *pred_error = (MB_Structure *) malloc (sizeof (MB_Structure));
   MotionVector *forward_MV;
-  MotionVector ZERO = {0,0,0,0,0};
+  MotionVector ZERO = {0,0,0,0,0,0}; //SV-XXX: added extra 0 to init struct according to definition
   int SADbidir, SADforw, SADup, SADmin;
   int dx, dy, xmb, ymb, i, j;
 
@@ -1544,7 +1544,7 @@ MB_Structure *MB_Recon_EP( PictImage *prev_recon, unsigned char *prev_ipol,
   MB_Structure *upward = (MB_Structure *) malloc (sizeof (MB_Structure));
   MB_Structure *recon_data = (MB_Structure *) malloc (sizeof (MB_Structure));
   MotionVector *forward_MV;
-  MotionVector ZERO = {0,0,0,0,0};
+  MotionVector ZERO = {0,0,0,0,0,0}; //SV-XXX: added extra 0 to init struct according to definition
   int dxf, dyf;
   int i, j;
 

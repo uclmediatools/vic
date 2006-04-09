@@ -54,3 +54,4 @@ protected:
 
 #define STAT_BADOFF 0
 #define STAT_HUGEFRM 1
+

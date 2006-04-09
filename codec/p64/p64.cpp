@@ -52,7 +52,7 @@
  */
 
 #ifndef lint
-static char rcsid[] =
+static const char rcsid[] =
     "@(#) $Header$ (LBL)";
 #endif
 
@@ -77,7 +77,9 @@ static char rcsid[] =
 
 void P64Decoder::err(const char* msg ...) const
 {
-#ifdef DEVELOPMENT_VERSION
+#ifndef DEVELOPMENT_VERSION
+	UNUSED(msg); //SV-XXX: unused if DEVELOPMENT_VERSION not defined
+#else
 	va_list ap;
 	va_start(ap, msg);
 	vfprintf(stderr, msg, ap);
@@ -89,12 +91,11 @@ void P64Decoder::err(const char* msg ...) const
 #endif
 }
 
+//SV-XXX: rearranged intialistaion order to shut upp gcc4
 P64Decoder::P64Decoder()
-	: mt_(0), mvdh_(0), mvdv_(0), mba_(0), ngob_(0), ndblk_(0),
-	  gobquant_(0), gob_(0), maxgob_(0),
-	  bad_psc_(0), bad_bits_(0), bad_GOBno_(0), bad_fmt_(0),
-	  fs_(0), front_(0), back_(0),
-	  marks_(0), mark_(0)
+	: fs_(0), front_(0), back_(0),
+	  ngob_(0), maxgob_(0), ndblk_(0), gobquant_(0), mt_(0), gob_(0), mba_(0), mvdh_(0), mvdv_(0),
+	  marks_(0), mark_(0), bad_psc_(0), bad_bits_(0), bad_GOBno_(0), bad_fmt_(0)
 {
 	fmt_ = IT_CIF;/*XXX*/
 	inithuff();
@@ -882,7 +883,7 @@ void P64Decoder::decode_block(u_int tc, u_int x, u_int y, u_int stride,
 #define MASK_VAL	mask[0], mask[1]
 #define MASK_REF	mask
 #endif
-	int nc;
+	int nc=0; //SV-XXX: gcc4 warns for initialisation
 	if (tc != 0)
 		nc = parse_block(blk, MASK_REF);
 

@@ -300,6 +300,10 @@ int XShmPutImage(Display*, Drawable, GC, XImage*, int, int, int, int,
 static int
 ErrHandler(ClientData clientData, XErrorEvent *errevp)
 {
+    //SV-XXX: unused
+    UNUSED(clientData);
+    UNUSED(errevp);
+
     return 0;
 }
 
@@ -1173,6 +1177,9 @@ X11Device::command(int argc, const char*const* argv)
 
 X11Grabber::X11Grabber(const char* name, const char* format)
 {
+	//SV-XXX: unused
+	UNUSED(name);
+
 	c_grab = (int)NULL ; /* XXX */
 	theroot_ = None ; /* XXX */
 	ximage_ = NULL ;

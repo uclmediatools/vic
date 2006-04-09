@@ -261,7 +261,7 @@ int IPNetwork::localname(sockaddr_in* p)
 	memset((char *)p, 0, sizeof(*p));
 	p->sin_family = AF_INET;
 #ifndef WIN32
-	unsigned int len = sizeof(*p), result =0;
+	unsigned int len = sizeof(*p); int result =0; //SV-XXX: redefined "result" as int avoids gcc4 warning further down (see if)
 #else
 	int len = sizeof(*p), result =0;
 #endif

@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] =
+static const char rcsid[] =
     "@(#) $Header$ (LBL)";
 #endif
 
@@ -359,6 +359,8 @@ void EDWindowRenderer::update()
 void EDWindowRenderer::dither_422(const u_char* frm, u_int off, u_int x,
 				  u_int width, u_int height) const
 {
+        UNUSED(x); //SV-XXX: unused
+
 	register u_int iw = width_;
 	register const u_char* yp = frm + off;
 	register const u_char* up = frm + framesize_ + (off >> 1);

@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] =
+static const char rcsid[] =
     "@(#) $Header$ (LBL)";
 #endif
 
@@ -62,15 +62,15 @@ extern "C" {
 extern "C" int gettimeofday(struct timeval*, struct timezone*);
 #endif
 
+//SV-XXX: rearranged initialisation order to shut up gcc4
 Grabber::Grabber()
-	: status_(0), running_(0), delta_(0.),
-	  crvec_(0), ref_(0), rover_(0),
-	  vstart_(0), vstop_(0), 
+	: vstart_(0), vstop_(0), 
 	  hstart_(0), hstop_(0),
-	  framebase_(0), frame_(0),
-	  inw_(0), inh_(0), outw_(0), outh_(0),
 	  threshold_(48),
-	  target_(0), tx_(0)
+	  framebase_(0), frame_(0), crvec_(0), ref_(0),
+	  inw_(0), inh_(0), outw_(0), outh_(0),
+	  target_(0), tx_(0), rover_(0),
+	  running_(0), status_(0), delta_(0.)
 {
 	bps(128);
 	fps(1);

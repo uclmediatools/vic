@@ -417,9 +417,10 @@ int JpegDecoder::q_to_thresh(int q)
 	return (s);
 }
 
+//SV-XXX: rearranged initialisation order to sgut up gcc4
 JpegDecoder::JpegDecoder(const config& c, int decimation, int ow, int oh)
-	: decimation_(decimation), color_(1), width_(-1), height_(-1),
-	  thresh_(0), cthresh_(6), owidth_(ow), oheight_(oh), ndblk_(0)
+	: ndblk_(0), decimation_(decimation), width_(-1), height_(-1), 
+	  owidth_(ow), oheight_(oh), color_(1), thresh_(0), cthresh_(6)
 {
 	// initialize huffman tables
 	for (int i = NUM_HUFF_TBLS; --i >= 0; ) {

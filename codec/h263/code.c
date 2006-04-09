@@ -16,6 +16,7 @@
 
 
 #include <stdlib.h>
+#include <string.h> //SV-XXX: added for strlen(), strcpy()
 
 #include "defs.h"
 #include "structs.h"

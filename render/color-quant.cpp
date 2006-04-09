@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] =
+static const char rcsid[] =
     "@(#) $Header$ (LBL)";
 #endif
 
@@ -179,6 +179,8 @@ void QuantWindowRenderer::update()
 void QuantWindowRenderer::map_422(const u_char* frm, u_int off,
 				  u_int x, u_int width, u_int height) const
 {
+        UNUSED(x); //SV-XXX: unused
+
 	register u_int iw = width_;
 	register const u_char* yp = frm + off;
 	register const u_char* up = frm + framesize_ + (off >> 1);
@@ -598,7 +600,7 @@ void QuantWindowRenderer::map_down2_411(const u_char* frm,
 		y2r = lut + UV0;
 		SPLICE(out, y2r[PIX0(y1) & 0x3f], 24);
 
-		y2r = y2r = lut + UV1;
+		y2r = lut + UV1; //SV-XXX: was: y2r = y2r = lut + UV1; ???????
 		SPLICE(out, y2r[PIX2(y1) & 0x3f], 16);
 
 		y1 = *(const u_int*)(yp + 4);

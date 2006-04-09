@@ -219,7 +219,11 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt) {
    // Create the Filter Graph Manager
    hr = CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER,
                          IID_IGraphBuilder, (void **)&pGraph_);
-   //showErrorMessage(hr);
+   if (FAILED(hr)) {
+   		Grabber::status_=-1;
+		//showErrorMessage(hr);
+		return;
+   }
    debug_msg("DirectShowGrabber::DirectShowGrabber():  graph instance acquired\n");
    
    // Obtain the interface used to run, stop, and pause the graph
@@ -287,6 +291,11 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt) {
                               pCaptureFilter_, pGrabberBaseFilter_, pNullBaseFilter_);
    //showErrorMessage(hr);
    debug_msg("DirectShowGrabber::DirectShowGrabber():  builder render stream\n");
+   
+   if (FAILED(hr)) {
+   		status_=-1;
+		return;
+   }
 }
 
 //--------------------------------

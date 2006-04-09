@@ -32,7 +32,7 @@
  */
 
 #ifndef lint
-static char rcsid[] =
+static const char rcsid[] =
     "@(#) $Header$ (LBL)";
 #endif
 
@@ -300,6 +300,10 @@ gen_multab()
 int
 main(int argc, char **argv)
 {
+	//SV-XXX: unused
+	UNUSED(argc);
+	UNUSED(argv);
+
 	printf("#include <sys/types.h>\n");
 #ifdef WIN32
 	printf("#include \"config.h\"\n");

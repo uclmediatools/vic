@@ -103,6 +103,8 @@ void RawDecoder::stats(char* wrk)
 
 int RawDecoder::colorhist(u_int* hist) const
 {
+	UNUSED(hist); //SV-XXX: unused
+
 	return 1;
 }
 

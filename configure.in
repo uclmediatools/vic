@@ -34,9 +34,23 @@ fi
 
 V_LIB_GRABBER=""
 V_INCLUDE_GRABBER=""
-V_OBJ_GRABBER="video/grabber-x11.o"
+V_OBJ_GRABBER=""
 V_LIB_XIL=""
 V_OBJ_XIL=""
+
+AC_ARG_ENABLE(v4l2old,	--enable-v4l2old    Enable or disable old Video4Linux2 grabber, v4l2old=yes, v4l2old=no)
+if test "$v4l2old" = "yes" ; then
+                V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-v4l2-old.o"
+		echo "Using old Linux grabber-v4l2"
+elif test -r /usr/include/linux/videodev.h ; then
+        if grep V4L2 /usr/include/linux/videodev.h >/dev/null 2>&1  ; then
+                V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-v4l2.o video/grabber-video4linux.o"
+		echo "Using Linux (new)video4linux2(2.6.x compatible) and V4L v1"
+        else
+                V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-video4linux.o"
+		echo "Using Linux video4linux vers 1"
+        fi
+fi
 
 if test -r /usr/lib/libvl.so ; then
 	V_LIB_GRABBER="$V_LIB_GRABBER -lvl -ldmedia"
@@ -50,7 +64,9 @@ if test -r /usr/lib/libsvideo.a ; then
 	V_LIB_GRABBER="$V_LIB_GRABBER -lsvideo"
 	V_OBJ_GRABBER="video/grabber-svideo.o $V_OBJ_GRABBER"
 fi
-if test -r /usr/lib/libXv.a ; then
+
+AC_ARG_ENABLE(XvGrabber,--enable-XvGrabber    Enable or disable old XvGrabber, XvGrabber=yes, XvGrabber=no)
+if test -r /usr/lib/libXv.a -a "$XvGrabber" = "yes" ; then
 	V_LIB_GRABBER="$V_LIB_GRABBER -lXv"
 	V_DEFINE="$V_DEFINE -DXV_PSEUDO8"
 	V_OBJ_GRABBER="video/grabber-xv.o $V_OBJ_GRABBER"
@@ -66,26 +82,13 @@ if test -r /usr/lpp/UMS6000/lib/libUMSobj.a ; then
 	V_DEFINE="$V_DEFINE -DSUNRISE"
 	V_OBJ_GRABBER="video/grabber-sunrise.o video/output-sunrise.o $V_OBJ_GRABBER"
 fi
+
 if test -r /usr/include/machine/ioctl_meteor.h ; then
 	V_OBJ_GRABBER="video/grabber-meteor.o $V_OBJ_GRABBER"
 fi
 
-AC_ARG_ENABLE(v4l2old,	--enable-v4l2old    Enable or disable old Video4Linux2 grabber, v4l2old=yes, v4l2old=no)
-if test "$v4l2old" = "yes" ; then
-                V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-v4l2-old.o"
-		echo "Using old Linux grabber-v4l2"
-elif test -r /usr/include/linux/videodev.h ; then
-        if grep V4L2 /usr/include/linux/videodev.h >/dev/null 2>&1  ; then
-                V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-v4l2.o video/grabber-video4linux.o"
-		echo "Using Linux (new)video4linux2(2.6.x compatible) and v4l1"
-        else
-                V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-video4linux.o"
-		echo "Using Linux video4linux vers 1"
-        fi
-fi
-
 if test -r /usr/include/libdc1394/dc1394_control.h -a -r /usr/include/libraw1394/raw1394.h; then
-      V_OBJ_GRABBER="video/grabber-linux1394.o $V_OBJ_GRABBER"
+      V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-linux1394.o"
       V_LIB_GRABBER="$V_LIB_GRABBER -lraw1394 -ldc1394_control"
 fi
 
@@ -95,6 +98,7 @@ if test -r /usr/local/lib/libspigot.a ; then
 	V_LIB_GRABBER="$V_LIB_GRABBER -lspigot"
 	V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I/usr/local/include"
 fi
+
 if test "$qcamdir" != "" ; then
 	V_OBJ_GRABBER="video/grabber-qcam.o $V_OBJ_GRABBER"
 	V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I$qcamdir"
@@ -158,6 +162,7 @@ for dir in $places; do
     		break
 	fi
 done
+
 
 case "$target" in 
 *-dec-*)
@@ -318,6 +323,8 @@ armv4l-*-linux)
 	OPSYS=linux
         ;;
 esac
+
+V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-x11.o"
 
 dnl Optimisation in H261 decoder needs to be turned off for GCC 2.96 
 

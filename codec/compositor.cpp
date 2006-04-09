@@ -32,7 +32,7 @@
  */
 
 #ifndef lint
-static char rcsid[] =
+static const char rcsid[] =
     "@(#) $Header$ (LBL)";
 #endif
 
@@ -133,7 +133,8 @@ public:
 	}
 } compositor;
 
-Overlay::Overlay() : image_(0), width_(0), height_(0), transparent_(0)
+//SV-XXX: rearrange initialisation order to shut up gcc4
+Overlay::Overlay() : width_(0), height_(0), image_(0), transparent_(0)
 {
 }
 
@@ -263,7 +264,7 @@ void Compositor::attach(Overlay* o, int x, int y, int depth)
 	p->overlay = o;
 	p->x = x;
 	p->y = y;
-	p->depth;
+	p->depth = depth; //SV-XXX: there was no assignment, just p->depth !!!
 	onode** op;
 	for (op = &overlays_; *op != 0; op = &(*op)->next)
 		if (depth > (*op)->depth)
@@ -275,6 +276,8 @@ void Compositor::attach(Overlay* o, int x, int y, int depth)
 
 void Compositor::detach(Overlay* o)
 {
+	UNUSED(o); //SV-XXX: unused
+
 	for (onode** op = &overlays_; *op != 0; op = &(*op)->next) {
 		onode* p = (*op)->next;
 		if (*op == p) {

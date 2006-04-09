@@ -95,9 +95,9 @@ void MotionEstimation (unsigned char *curr, unsigned char *reference, int x_curr
   int xmax, ymax, block, sad, lx;
   int adv_x_curr, adv_y_curr, xvec, yvec;
 #ifndef FULLSEARCH
-  static htp[4] = {-1, 0, 1, 0};
-  static vtp[4] = {0, 1, 0, -1};
-  int j_min_now, i_min_now, i_min_next, j_min_next, sad_layr;
+  static int htp[4] = {-1, 0, 1, 0}; //SV-XXX: added default type int
+  static int vtp[4] = {0, 1, 0, -1}; //SV-XXX: added default type int
+  int j_min_now, i_min_now, i_min_next=0, j_min_next=0, sad_layr=65536; //SV-XXX: inited to 0 and 65536
   int distortion_0, distortion_1, distortion_2;
 #endif
 
@@ -503,9 +503,9 @@ void MotionEstimationBackward (unsigned char *curr, unsigned char *reference,
   int sad, lx;
   int xmax, ymax;
 #ifndef FULLSEARCH
-  static htp[4] = {-1, 0, 1, 0};
-  static vtp[4] = {0, 1, 0, -1};
-  int j_min_now, i_min_now, i_min_next, j_min_next, sad_layr;
+  static int htp[4] = {-1, 0, 1, 0}; //SV-XXX: added default type int
+  static int vtp[4] = {0, 1, 0, -1}; //SV-XXX: added default type int
+  int j_min_now, i_min_now, i_min_next=0, j_min_next=0, sad_layr; //SV-XXX: inited to 0
   int distortion_0, distortion_1, distortion_2;
 #endif
 

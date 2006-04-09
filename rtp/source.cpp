@@ -88,7 +88,7 @@ PacketData::~PacketData()
 	}
 }
 
-static int server_delay = 100;
+//SV-XXX: unused: static int server_delay = 100;
 
 /* gray out src if no ctrl msgs for this many consecutive update intervals */
 #define CTRL_IDLE 8.
@@ -107,11 +107,9 @@ static class SourceLayerMatcher : public Matcher {
 		}
 } SourceLayer_matcher;
 
+//SV-XXX: rearranged initialisation order to shut up gcc4
 Source::Layer::Layer()
-: sts_data_(0),
-sts_ctrl_(0),
-nrunt_(0),
-fs_(0),
+: fs_(0),
 cs_(0),
 np_(0),
 nf_(0),
@@ -119,7 +117,10 @@ nb_(0),
 nm_(0),
 snp_(0),
 sns_(0),
-ndup_(0)
+ndup_(0),
+nrunt_(0),
+sts_data_(0),
+sts_ctrl_(0)
 {
 	
 /*
@@ -156,6 +157,7 @@ void Source::Layer::clear_counters()
 	lts_ctrl_.tv_usec = 0;
 }
 
+//SV-XXX: rearranged initialisation order to shut up gcc4
 Source::Source(u_int32_t srcid, u_int32_t ssrc, Address &addr)
 : TclObject(0),
 next_(0),
@@ -164,6 +166,7 @@ handler_(0),
 srcid_(srcid),
 ssrc_(ssrc),
 addr_(*(addr.copy())),
+rtp2ntp_(0),
 //	  sts_data_(0),
 //	  sts_ctrl_(0),
 map_rtp_time_(0), map_ntp_time_(0),	
@@ -189,11 +192,11 @@ busy_(0),
 ismixer_(0),
 // New for RLM
 reportLoss_(0),
-sync_(0), rtp2ntp_(0),
-skew_(0), delta_(0), delay_(0), dvar_(80. * 90.), pdelay_(0),  
-adapt_init_(0), count_(0), late_(0), apdelay_(0), pending_(0), 
 head_(0), tail_(0), free_(0), 
-now_(0), dtskew_(0), elastic_(1),
+now_(0), dtskew_(0), elastic_(1), 
+skew_(0), delay_(0), dvar_(80. * 90.), delta_(0), 
+pdelay_(0), apdelay_(0), adapt_init_(0), late_(0), 
+count_(0), pending_(0), sync_(0),
 mbus_(0)
 {
 /*	lts_data_.tv_sec = 0;
@@ -489,9 +492,9 @@ int Source::command(int argc, const char*const* argv)
 		}
 		/* Not used 
 		if (strcmp(argv[1], "initlastctrl") == 0) {
-			/*XXX layer-0?
+			// *XXX layer-0?
 			//	time_t now = lts_ctrl_.tv_sec;
-			layer(0).lts_ctrl(unixtime());/*XXX layer-0
+			layer(0).lts_ctrl(unixtime());// *XXX layer-0
 			return (TCL_OK);
 		}*/
 
@@ -663,7 +666,7 @@ void Source::adapt(u_int32_t arr_ts, u_int32_t ts, int flag)
 		if (pending_) {
 			/* prepare mbus msg and send it to mbus, if we have to ... */
 			//sprintf(arg, "%s %d",mbus_->mbus_encode_str(sdes_[RTCP_SDES_CNAME]) , pdelay_);
-			char *arg=mbus_encode_str(sdes_[RTCP_SDES_CNAME]);
+			arg=mbus_encode_str(sdes_[RTCP_SDES_CNAME]); //SV-XXX: arg was redefined as char, hiding the topmost one
 			
 			//mbus_->mbus_send(mbus_->mbus_audio_addr, "rtp.source.playout", arg, 0);
 			mbus_qmsgf(mbus_->m(), mbus_->mbus_audio_addr, FALSE, 
@@ -731,7 +734,7 @@ Source::timeout()
 	u_int start = ntptime();
 	/* Process all packets with this playout point */
 	u_int playout = head_->playout();
-	u_int32_t ts = head_->rtp_hdr()->rh_ts;
+	//SV-XXX unused: u_int32_t ts = head_->rtp_hdr()->rh_ts;
 	
 	do {
 		PacketData *pkt = head_;
@@ -758,6 +761,9 @@ Source::timeout()
 void 
 Source::process(struct rtphdr* rh, u_char *bp, int len)
 {
+	//SV-XXX: unused
+	UNUSED(bp);
+
 	int flags = ntohs(rh->rh_flags);
 	int fmt = flags & 0x7f;
 	

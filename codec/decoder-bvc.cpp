@@ -63,8 +63,9 @@ public:
 #define STAT_BAD_SYNTAX	0
 #define STAT_BAD_GEOM	1
 
+//SV-XXX: rearranged intialistaion order to shut upp gcc4
 BvcDecoder::BvcDecoder() : Decoder(sizeof(bvchdr)),
-	frm_(0), blk_(0), level0_(0)
+	level0_(0), blk_(0), frm_(0)
 {
 	/*XXX*/
 	for (int i = 0; i < 64; ++i)

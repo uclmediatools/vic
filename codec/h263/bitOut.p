@@ -1,5 +1,5 @@
 /* bitOut.c */
-extern Bitstr *AllocBitstr(int n);
+extern Bitstr *AllocBitstr(unsigned int n); //SV-XXX: changed arg to uint
 extern void FreeBitstr(Bitstr **b_p);
 extern int CheckOutBuffer(Bitstr *b);
 extern Bitstr *FopenBitstr(int n, char *name, char *mode);

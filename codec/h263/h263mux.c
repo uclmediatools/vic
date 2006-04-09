@@ -23,6 +23,7 @@
 #include "H263_esclevel.h"
 
 #include "common.h"
+#include "common.p" //SV-XXX: avoids implicit declarations
 
 
 static int izigzag[64] = {
@@ -213,6 +214,9 @@ int PutPLUSPTYPE(int ufep, int sourceFormat, int w, int h,
 {
   int bits = 0;
 
+  //SV-XXX: unused params
+  UNUSED(w);
+  UNUSED(h);
 
   /* UFEP */
   PutNumberX(ufep, 3, bs);

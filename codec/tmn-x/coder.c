@@ -62,6 +62,11 @@
 
 #include"sim.h"
 
+//SV-XXX: defined UNUSED_() macro for unused variables
+#ifndef UNUSED_
+#define UNUSED_(x) (x) = (x)
+#endif
+
 static MotionVector *True_B_Direct_Mode_MV[MBR][MBC];
 
 /**********************************************************************
@@ -89,13 +94,13 @@ void CodeOneOrTwo(PictImage *curr, PictImage *B_image, PictImage *prev,
   PictImage *prev_recon=NULL, *pr_edge = NULL;
   MotionVector *MV[7][MBR+1][MBC+2];
   MotionVector *B_f_MV[7][MBR+1][MBC+2];
-  MotionVector ZERO = {0,0,0,0,0};
+  MotionVector ZERO = {0,0,0,0,0,0}; //SV-XXX: was only 5 zeros in set, but MotionVect struct has 6 elements
   MB_Structure *recon_data_P; 
   MB_Structure *recon_data_B=NULL; 
   MB_Structure *diff; 
   int *qcoeff_P, *rcoeff, *coeff;
   int *qcoeff_B=NULL;
-  int Mode;
+  int Mode=MODE_INTER; //SV-XXX: initialised to MODE_INTER to shut up gcc4
   int CBP, CBPB=0;
   int bquant[] = {5,6,7,8};
   int QP_B;
@@ -105,7 +110,7 @@ void CodeOneOrTwo(PictImage *curr, PictImage *B_image, PictImage *prev,
   /* buffer control vars */
   float QP_cumulative = (float)0.0;
   int abs_mb_num = 0, QuantChangePostponed = 0;
-  int QP_new, QP_prev, dquant, QP_xmitted=QP;
+  int QP_new=0, QP_prev=0, dquant, QP_xmitted=QP; //SV-XXX: inited to 0
 
   /* Rate control variables */
   Bits *bits_prev = (Bits*)calloc(1,sizeof(Bits));
@@ -116,9 +121,12 @@ void CodeOneOrTwo(PictImage *curr, PictImage *B_image, PictImage *prev,
   int PB_pred_type;
 
   /* advanced intra coding variables */
-  int *store_rcoeff, *store_coeff, *pcoeff; /* used to do prediction in advanced intra coding */
+  int *store_rcoeff=NULL, *store_coeff=NULL, *pcoeff=NULL; //SV-XXX: inited to NULL /* used to do prediction in advanced intra coding */
   int store_pb;
   
+  //SV-XXX
+  UNUSED_(prev);
+
   ZeroBits(bits);
 
   /* Currently, the MV info is stored in 7 MV structs per MB. MV[0]
@@ -817,11 +825,11 @@ PictImage *CodeOneIntra(PictImage *curr, int QP, Bits *bits, Pict *pic)
 {
   PictImage *recon;
   MB_Structure *data = (MB_Structure *)malloc(sizeof(MB_Structure));
-  int *qcoeff, *pcoeff, *rcoeff, *coeff;
+  int *qcoeff, *pcoeff = NULL, *rcoeff, *coeff; //SV-XXX inited to NULL
   int Mode = MODE_INTRA;
   int CBP,COD;
   int i,j,k;
-  int *store_coeff, *store_rcoeff; /* used to do prediction in advanced intra coding */
+  int *store_coeff=NULL, *store_rcoeff=NULL; //SV-XXX ininted to NULL /* used to do prediction in advanced intra coding */
   int newgob = 0;
 
   pic ->Intra_Mode = 0;
@@ -983,7 +991,7 @@ void CodeOneTrueB(PictImage *curr, PictImage *B_image, PictImage *prev,
   unsigned char *prev_ipol, *next_ipol, *pi, *ni;
   PictImage *prev_recon=NULL, *next_recon=NULL, *pr_edge = NULL, *nr_edge = NULL;
   MotionVector *MV[7][MBR+1][MBC+2];
-  MotionVector ZERO = {0,0,0,0,0};
+  //MotionVector ZERO = {0,0,0,0,0,0}; //SV-XXX: was only 5 zeros in set, but MotionVect struct has 6 elements
   MB_Structure *recon_data_true_B = NULL;
   MB_Structure *diff; 
   int *rcoeff, *coeff;
@@ -996,13 +1004,18 @@ void CodeOneTrueB(PictImage *curr, PictImage *B_image, PictImage *prev,
 
   /* buffer control vars */
   float QP_cumulative = (float)0.0;
-  int abs_mb_num = 0, QuantChangePostponed = 0;
+  int abs_mb_num = 0; //SV-XXX , QuantChangePostponed = 0; moved down in #ifdef
   int QP_new, QP_prev, QP_xmitted=QP;
 
   MB_Structure *pred = (MB_Structure *)malloc(sizeof(MB_Structure));
 
   /* advanced intra coding variables */
-  int *store_rcoeff, *store_coeff, *pcoeff; 
+  int *store_rcoeff=NULL, *store_coeff=NULL, *pcoeff=NULL; //SV-XXX: inited to NULL 
+
+  //SV-XXX: 
+  UNUSED_(curr);
+  UNUSED_(prev);
+  UNUSED_(frameskip);
 
   ZeroBits(bits);
 
@@ -1244,6 +1257,8 @@ void CodeOneTrueB(PictImage *curr, PictImage *B_image, PictImage *prev,
       abs_mb_num++;
       QP_cumulative += QP_xmitted;     
 #ifdef PRINTQ 
+      int QuantChangePostponed = 0; //SV-XXX: moved here to avoid gcc4 warning
+
       /* most useful when quantizer changes within a picture */
       if (QuantChangePostponed)
         fprintf(stdout,"@%2d",QP_xmitted);
@@ -1318,11 +1333,11 @@ void CodeOneEI(PictImage *curr_image, PictImage *pr,
   MB_Structure *diff = (MB_Structure *)malloc(sizeof(MB_Structure));
   MB_Structure *recon_data_ei = (MB_Structure *)malloc(sizeof(MB_Structure));
   PictImage *base_recon=NULL, *base_recon_edge=NULL;
-  int *qcoeff, *pcoeff, *rcoeff, *coeff;
+  int *qcoeff, *pcoeff=NULL, *rcoeff, *coeff; //SV-XXX: inited to NULL
   int Mode = MODE_INTER;
   int CBP;
   int i,j,k;
-  int *store_coeff, *store_rcoeff; /* used to do prediction in advanced intra coding */
+  int *store_coeff=NULL, *store_rcoeff=NULL; //SV-XXX: inited to NULL /* used to do prediction in advanced intra coding */
   int newgob = 0;
   int ei_prediction_type;
   unsigned char *base_ipol, *bi;
@@ -1330,7 +1345,7 @@ void CodeOneEI(PictImage *curr_image, PictImage *pr,
 
   /* buffer control vars */
   float QP_cumulative = (float)0.0;
-  int abs_mb_num = 0, QuantChangePostponed = 0;
+  int abs_mb_num = 0; //SV-XXX , QuantChangePostponed = 0; moved down in #ifdef
   int QP_new, QP_prev, QP_xmitted=QP;
   
   ZeroBits(bits);
@@ -1529,6 +1544,8 @@ void CodeOneEI(PictImage *curr_image, PictImage *pr,
       abs_mb_num++;
       QP_cumulative += QP_xmitted;     
 #ifdef PRINTQ 
+      int QuantChangePostponed = 0; //SV-XXX: moved here to shut up gcc4
+
       /* most useful when quantizer changes within a picture */
       if (QuantChangePostponed)
         fprintf(stdout,"@%2d",QP_xmitted);
@@ -1593,7 +1610,7 @@ void CodeOneEI(PictImage *curr_image, PictImage *pr,
   unsigned char *prev_ipol, *base_ipol, *pi, *bi;
   PictImage *prev_recon=NULL, *base_recon=NULL, *pr_edge = NULL, *nr_edge = NULL;
   MotionVector *MV[7][MBR+1][MBC+2];
-  MotionVector ZERO = {0,0,0,0,0};
+  MotionVector ZERO = {0,0,0,0,0,0}; //SV-XXX: was only 5 zeros in set, but MotionVect struct has 6 elements
   MB_Structure *recon_data_ep = NULL;
   MB_Structure *diff; 
   int *rcoeff, *coeff;
@@ -1606,13 +1623,17 @@ void CodeOneEI(PictImage *curr_image, PictImage *pr,
 
   /* buffer control vars */
   float QP_cumulative = (float)0.0;
-  int abs_mb_num = 0, QuantChangePostponed = 0;
+  int abs_mb_num = 0; //SV-XXX , QuantChangePostponed = 0; moved down in #ifdef
   int QP_new, QP_prev, QP_xmitted=QP;
 
   MB_Structure *pred = (MB_Structure *)malloc(sizeof(MB_Structure)); 
 
   /* advanced intra coding variables */
-  int *store_rcoeff, *store_coeff, *pcoeff;
+  int *store_rcoeff=NULL, *store_coeff=NULL, *pcoeff=NULL; //SV-XXX: inited to NULL
+
+  //SV-XXX:
+  UNUSED_(frameskip);
+  UNUSED_(prev_enhance_image);
 
   ZeroBits(bits);
 
@@ -1865,6 +1886,7 @@ void CodeOneEI(PictImage *curr_image, PictImage *pr,
       abs_mb_num++;
       QP_cumulative += QP_xmitted;     
 #ifdef PRINTQ 
+      int QuantChangePostponed = 0; //SV-XXX: moved here to shut up gcc4
 
       /* most useful when quantizer changes within a picture */
       if (QuantChangePostponed)

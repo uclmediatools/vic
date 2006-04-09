@@ -59,10 +59,10 @@ int shmctl(int, int, struct shmid_ds*);
 #endif
 }
 
+//SV-XXX: rearranged intialistaion order to shut upp gcc4
 Decoder::Decoder(int hdrlen) : PacketHandler(hdrlen),
-	engines_(0),
-	inw_(0), inh_(0), color_(1), decimation_(422),
-	nstat_(0), rvts_(0), nblk_(0), ndblk_(0)
+	nstat_(0), color_(1), decimation_(422), inw_(0), inh_(0), 
+	engines_(0), rvts_(0), nblk_(0), ndblk_(0)
 {
 	/*XXX*/
 	now_ = 1;
@@ -328,7 +328,7 @@ void Decoder::resize(int width, int height)
 class NullDecoder : public Decoder {
 public:
 	NullDecoder() : Decoder(0) {}
-	int colorhist(u_int* histogram) const { return (0); }
+	int colorhist(u_int* histogram) const { UNUSED(histogram); return (0); } //SV-XXX: unused histogram
 	void redraw() {}
 //	virtual void recv(const struct rtphdr*, const u_char* data, int len) {}
 	virtual void recv(pktbuf* pb) { pb->release();}

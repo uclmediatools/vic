@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] =
+static const char rcsid[] =
     "@(#) $Header$";
 #endif
 
@@ -1185,7 +1185,7 @@ rbent* PvhDecoder::find_first_packet(frment* fe, rbent* base, int chan) const
 		abort();
 
 	int sblk = base->sblk;
-	int eblk = base->eblk;
+	//SV-XXX: unused: int eblk = base->eblk;
 
 	/*
 	 * Find first packet that overlaps left side of base layer packet.

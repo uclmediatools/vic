@@ -236,7 +236,7 @@ void XvWindow::setsize(int w, int h)
 		   0, 0, width_, height_);
 }
 
-XvGrabber::XvGrabber() : capwin_(0), decimate_(0)
+XvGrabber::XvGrabber() : capwin_(0), decimate_(0), grabID_(0)
 {
 	Tcl& tcl = Tcl::instance();
 
@@ -244,10 +244,11 @@ XvGrabber::XvGrabber() : capwin_(0), decimate_(0)
 		status_ = -1;
 		return;
 	}
+		fprintf(stderr, "set to grab port\n");
 	Display* dpy = Tk_Display(Tcl::instance().tkmain());
 	if (XvGrabPort(dpy, grabID_, CurrentTime) != Success) {
-		tcl.result("Unable to reserve grabber.");
 		fprintf(stderr, "Unable to grab port\n");
+		tcl.result("Unable to reserve grabber.");
 		status_ = -1;
 		return;
 	}
@@ -394,21 +395,27 @@ int XvGrabber::getgrabber()
 		return (-1);
 
 	Window root = DefaultRootWindow(dpy);
-	u_int ngrabbers;
+	u_int ngrabbers=0;
 	XvAdaptorInfo* grabbers;
-	if (XvQueryAdaptors(dpy, root, &ngrabbers, &grabbers) != Success ||
-	    ngrabbers == 0)
-		return (-1);
+	if (XvQueryAdaptors(dpy, root, &ngrabbers, &grabbers) != Success)
+	  return (-1);
 	if (ngrabbers > 1)
-		fprintf(stderr, "vic: warning: more than one frame grabber\n");
+	  fprintf(stderr, "XVgrabber: warning: more than one frame grabber\n");
 		
-	strncpy(grabber_name, grabbers[0].name, sizeof(grabber_name));
-	grabID_ = grabbers[0].base_id;
+        for (int i=2; i<ngrabbers; i++) {
+          //if ((grabbers[i].type)&XvOutputMask) {
+          if ((grabbers[i].type)&XvInputMask) {
+	    fprintf(stderr, "Xv %d grabber: %s\n",i,grabbers[i].name);
+	    strncpy(grabber_name, grabbers[i].name, sizeof(grabber_name));
+	    grabID_ = grabbers[i].base_id;
+          }
+        }
+        if (!grabID_) return (-1);
 
 	XvFreeAdaptorInfo(grabbers);
 
 	XvQueryEncodings(dpy, grabID_, &nencodings, &encoding);
-#if 0
+#if 1
 	printf("Encodings(%d): ", nencodings);
 	for (int i=0; i<nencodings; i++)
 	  printf("%s %d %d\n", encoding[i].name,
@@ -424,8 +431,7 @@ int XvGrabber::getgrabber()
 
 	XvGetPortAttribute(dpy, grabID_, XAencoding, (int *)&encodingid_);
 
-	if (!XMatchVisualInfo(dpy, Tk_ScreenNumber(tk), 24,
-			      TrueColor, &vinfo_))
+	if (!XMatchVisualInfo(dpy, Tk_ScreenNumber(tk), 24, TrueColor, &vinfo_))
 		return (-1);
 
 	return (0);

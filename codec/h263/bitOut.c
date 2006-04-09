@@ -15,6 +15,7 @@
 
 
 #include <stdlib.h>
+#include <string.h> //SV-XXX: avoids implicit declaration of strlen, line 454
 
 #include "defs.h"
 #include "structs.h"
@@ -22,7 +23,7 @@
 #include "Util.h"
 
 #include "bitOut.h"
-
+#include "bitOut.p" //SV-XXX: to avoid implicit declarations
 
 
 /***********************************************************CommentBegin******
@@ -61,7 +62,7 @@
  * Modified:         -
  *	
  *****************************************************************************/
-Bitstr *AllocBitstr(int n)
+Bitstr *AllocBitstr(unsigned int n) //SV-XXX: changed arg definition to uint
 /***********************************************************CommentEnd********/
 {
   Bitstr *b = (Bitstr *) malloc(sizeof(Bitstr));
@@ -162,16 +163,16 @@ void FreeBitstr(Bitstr **b_p)
 int CheckOutBuffer(Bitstr *b)
 /***********************************************************CommentEnd********/
 {
-  int i;
-  int r = b->ind;
+  unsigned int i; //SV-XXX
+  unsigned int r = b->ind; //SV-XXX
 
 
   if (b->fp == NULL)
     return (FALSE);
 
   if(b->size!=r) {
-    int rem = b->ind % 8;
-    int quot = b->ind / 8;
+    unsigned int rem = b->ind % 8; //SV-XXX
+    unsigned int quot = b->ind / 8; //SV-XXX
     if(rem > 0) {
       for(i=rem;i<8;++i) {
         UNSETBIT(b->b[quot],7-i);

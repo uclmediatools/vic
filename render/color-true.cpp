@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] =
+static const char rcsid[] =
     "@(#) $Header$ (LBL)";
 #endif
 
@@ -455,6 +455,8 @@ void TrueWindowRenderer32::update()
 void TrueWindowRenderer32::map_422(const u_char* frm, u_int off,
 				 u_int x, u_int width, u_int height) const
 {
+	UNUSED(x); //SV-XXX: unused
+
 	register u_int iw = width_;
 	register const u_char* yp = frm + off;
 	register const u_char* up = frm + framesize_ + (off >> 1);
@@ -1003,6 +1005,8 @@ void TrueWindowRenderer32::map_gray(register const u_char *yp,
 				  u_int off, u_int x,
 				  u_int width, u_int height) const
 {
+        UNUSED(x); //SV-XXX: unused
+
 	register u_int iw = width_;
 	yp += off;
 	register RGBPointer xip = (RGBPointer)pixbuf_ + off;
@@ -1269,6 +1273,8 @@ void TrueWindowRenderer32::map_gray_up2(register const u_char *yp,
 void TrueWindowRenderer24::map_422(const u_char* frm, u_int off,
 				 u_int x, u_int width, u_int height) const
 {
+        UNUSED(x); //SV-XXX: unused
+
 	register u_int iw = width_;
 	register const u_char* yp = frm + off;
 	register const u_char* up = frm + framesize_ + (off >> 1);
@@ -1817,6 +1823,8 @@ void TrueWindowRenderer24::map_gray(register const u_char *yp,
 				  u_int off, u_int x,
 				  u_int width, u_int height) const
 {
+        UNUSED(x); //SV-XXX: unused
+
 	register u_int iw = width_;
 	yp += off;
 	register char* xip = (char*)pixbuf_ + 3*off;

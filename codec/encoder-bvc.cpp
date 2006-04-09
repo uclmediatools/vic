@@ -118,7 +118,7 @@ int BvcEncoder::flush(pktbuf* pb, int sync)
 	int nbit = nbb_ & 7;
 	if (nbit != 0)
 		cc += 1;
-	int ebit = (8 - nbit) & 7;
+	//SV-XXX:unused: int ebit = (8 - nbit) & 7;
 
 	/*XXX*/
 	if (cc == 0 && sync == 0)
@@ -132,7 +132,7 @@ int BvcEncoder::flush(pktbuf* pb, int sync)
 	if (sync)
 		rh->rh_flags |= htons(RTP_M);
 
-	bvchdr* bh = (bvchdr*)(rh + 1);
+	//SV-XXX: unused: bvchdr* bh = (bvchdr*)(rh + 1);
 
 	tx_->send(pb);
 

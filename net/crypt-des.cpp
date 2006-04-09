@@ -125,6 +125,11 @@ int CryptDES::install_key(const u_int8_t* key)
 
 int CryptDES::encrypt(u_int32_t* blk, const u_char* in, int len, u_char* rh)
 {
+	//SV-XXX
+	UNUSED(blk);
+	UNUSED(in);
+	UNUSED(rh);
+
  	// This function is not used in this implementation
   	return (len);
 }

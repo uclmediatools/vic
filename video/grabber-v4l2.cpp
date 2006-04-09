@@ -265,7 +265,7 @@ V4l2Scanner::V4l2Scanner(const char **dev)
 		strcat(attr,"} ");
 
                 nick = new char[strlen((const char*)capability.card)+6];
-                sprintf(nick,"v4l- %s",capability.card);
+                sprintf(nick,"V4L2 %s",capability.card);
                 new V4l2Device(dev[i],nick,attr);
 		fprintf(stderr,"Attached to V4l2 device: %s\n",nick);
 

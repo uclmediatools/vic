@@ -95,7 +95,7 @@ class IP6Address : public Address {
 
 	// conversion from IP6Address to type struct in6_addr
 	operator struct in6_addr() const { return addr_; }
-	operator const struct in6_addr&() const { return addr_; }
+	operator const struct in6_addr&() { return addr_; }
 
   protected:
 	struct in6_addr addr_;
@@ -569,7 +569,7 @@ int IP6Network::dorecv(u_char* buf, int len, Address& from, int fd)
 
 	/* Check for loopback - then compare last auto conf bit of addresses
 	 * XXX Probaby should do this at rtp level.
-	 */
+	 *
 	if (noloopback_broken_ && sfrom.sin6_port == lport_) {
 		struct in6_addr local;
 		local=(IP6Address&)local_;
@@ -580,7 +580,7 @@ int IP6Network::dorecv(u_char* buf, int len, Address& from, int fd)
 			 from == local_) {
 				return (0);
 		}
-	}
+	}*/
 	return (cc);
 }
 

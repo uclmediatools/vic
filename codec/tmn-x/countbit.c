@@ -57,6 +57,11 @@
 #include"indices.h"
 #include "putvlc.h"
 
+//SV-XXX: defined UNUSED() macro for unused variables
+#ifndef UNUSED
+#define UNUSED(x) (x) = (x)
+#endif
+
 int arith_used = 0;
 
 int true_b_length[5][3] = { {0,2,4}, {3,3,5}, {3,3,5}, {5,5,5}, {6,7,9} };
@@ -82,7 +87,9 @@ void CountBitsMB (int Mode, int COD, int CBP, int CBPB, Pict * pic,
                    Bits * bits, int scalability_prediction_type)
 {
   int cbpy, cbpcm, length;
-  int true_B_cbp_present = 0;
+  //SV-XXX unused variable: int true_B_cbp_present = 0;
+
+  UNUSED(scalability_prediction_type); //SV-XXX: unused param
 
   /* COD */
   if (trace)
@@ -284,9 +291,11 @@ void CountBitsScalMB (int Mode, int COD, int CBP, int CBPB, Pict * pic,
                       Bits * bits, int scalability_prediction_type,
                       int MV_present)
 {
-  int cbpy, cbpcm, length, code;
+  int cbpy, cbpcm=0, length=0, code=0; //SV-XXX: init'ed to 0 to shut up gcc4
   int cbp_present = 0;
   int param = 0;
+
+  UNUSED(CBPB); //SV-XXX: unused param
 
   /* COD */
   if (trace)
@@ -325,8 +334,9 @@ void CountBitsScalMB (int Mode, int COD, int CBP, int CBPB, Pict * pic,
 
     case PCT_EI:
 
-      length = ei_length[scalability_prediction_type<<1+((pic->DQUANT) ? 1:0)][CBP&3];
-      code = ei_code[scalability_prediction_type<<1+((pic->DQUANT) ? 1:0)][CBP&3];
+      //SV-XXX: suggest parentheses around + or - inside shift
+      length = ei_length[scalability_prediction_type<<(1+((pic->DQUANT)) ? 1:0)][CBP&3]; 
+      code = ei_code[scalability_prediction_type<<(1+((pic->DQUANT)) ? 1:0)][CBP&3];
 
       break;
 
@@ -931,7 +941,8 @@ int CodeCoeff (int Mode, int *qcoeff, int block, int ncoeffs)
         if (!first)
         {
           /* Encode the previous coefficient */
-          if (advanced_intra_coding && (Mode == MODE_INTRA || Mode == MODE_INTRA_Q)
+          //SV-XXX: suggest parentheses around && within ||
+          if ((advanced_intra_coding && (Mode == MODE_INTRA || Mode == MODE_INTRA_Q))
               || (alternative_inter_vlc && !(Mode == MODE_INTRA || Mode == MODE_INTRA_Q) && use_intra))
           {
             if (prev_level >= 0 && prev_level < 26 && prev_run < 64)
@@ -1021,7 +1032,8 @@ int CodeCoeff (int Mode, int *qcoeff, int block, int ncoeffs)
     {
       fprintf (tf, "Last coeff: ");
     }
-    if (advanced_intra_coding && (Mode == MODE_INTRA || Mode == MODE_INTRA_Q)
+    //SV-XXX: suggest parentheses around && within ||
+    if ((advanced_intra_coding && (Mode == MODE_INTRA || Mode == MODE_INTRA_Q))
         || (alternative_inter_vlc && !(Mode == MODE_INTRA || Mode == MODE_INTRA_Q) && use_intra))
     {
       if (prev_level >= 0 && prev_level < 26 && prev_run < 64)
@@ -1467,7 +1479,7 @@ void CountBitsVectors (MotionVector * MV[7][MBR + 1][MBC + 2], Bits * bits,
 {
   int y_vec, x_vec;
   int pmv0, pmv1;
-  int start, stop, block, blockb;
+  int start, stop, block=0, blockb;//SV-XXX: inited to 0
   int y_vecb, x_vecb;
   int pmv0b, pmv1b;
 

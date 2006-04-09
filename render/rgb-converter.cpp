@@ -37,7 +37,7 @@
 #endif
 
 #ifndef lint
-static char rcsid[] =
+static const char rcsid[] =
     "@(#) $Header$ (LBL)";
 #endif
 
@@ -479,6 +479,11 @@ void RGB_Converter_411::convert16(u_int8_t* p, int inw, int inh, u_int8_t* frm, 
 void RGB_Converter_422::convert8(u_int8_t* p, int inw, int inh, u_int8_t* frm, int outw, int outh, int invert)
 {
 	INIT422
+
+        UNUSED(R); //SV-XXX
+        UNUSED(G); //SV-XXX
+        UNUSED(B); //SV-XXX
+
 	while (--h >= 0) {
 		for (int x = 0; x < w; x += 2) {
 			*yp++ = ymap_[*p];
@@ -496,6 +501,11 @@ void RGB_Converter_422::convert8(u_int8_t* p, int inw, int inh, u_int8_t* frm, i
 void RGB_Converter_411::convert8(u_int8_t* p, int inw, int inh, u_int8_t* frm, int outw, int outh, int invert)
 {
 	INIT411
+
+	UNUSED(R); //SV-XXX
+        UNUSED(G); //SV-XXX
+        UNUSED(B); //SV-XXX
+
 	for (h >>= 1; --h >= 0; ) {
 		for (int x = 0; x < w; x += 2) {
 			yp[0] = ymap_[*p];
@@ -516,6 +526,11 @@ void RGB_Converter_411::convert8(u_int8_t* p, int inw, int inh, u_int8_t* frm, i
 void RGB_Converter_422::convert4(u_int8_t* p, int inw, int inh, u_int8_t* frm, int outw, int outh, int invert)
 {
 	INIT422
+        
+        UNUSED(R); //SV-XXX
+        UNUSED(G); //SV-XXX
+        UNUSED(B); //SV-XXX
+
 	while (--h >= 0) {
 		for (int x = 0; x < w; x += 2) {
 			int v = *p >> 4;
@@ -533,6 +548,11 @@ void RGB_Converter_422::convert4(u_int8_t* p, int inw, int inh, u_int8_t* frm, i
 void RGB_Converter_411::convert4(u_int8_t* p, int inw, int inh, u_int8_t* frm, int outw, int outh, int invert)
 {
 	INIT411
+
+        UNUSED(R); //SV-XXX
+        UNUSED(G); //SV-XXX
+        UNUSED(B); //SV-XXX
+
 	for (h >>= 1; --h >= 0; ) {
 		for (int x = 0; x < w; x += 2) {
 			int v = *p >> 4;
@@ -555,6 +575,11 @@ void RGB_Converter_411::convert4(u_int8_t* p, int inw, int inh, u_int8_t* frm, i
 void RGB_Converter_422::convert1(u_int8_t* p, int inw, int inh, u_int8_t* frm, int outw, int outh, int invert)
 {
 	INIT422
+        
+        UNUSED(R); //SV-XXX
+        UNUSED(G); //SV-XXX
+        UNUSED(B); //SV-XXX
+
 	while (--h >= 0) {
 		for (int x = 0; x < w; x += 8) {
 			int v = *p;
@@ -585,6 +610,11 @@ void RGB_Converter_422::convert1(u_int8_t* p, int inw, int inh, u_int8_t* frm, i
 void RGB_Converter_411::convert1(u_int8_t* p, int inw, int inh, u_int8_t* frm, int outw, int outh, int invert)
 {
 	INIT411
+
+        UNUSED(R); //SV-XXX
+        UNUSED(G); //SV-XXX
+        UNUSED(B); //SV-XXX
+
 	for (h >>= 1; --h >= 0; ) {
 		for (int x = 0; x < w; x += 2) {
 			int v = *p;

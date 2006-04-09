@@ -521,13 +521,17 @@ static Linux1394Scanner scanner;
 
 Linux1394Scanner::Linux1394Scanner()
 {
-    fprintf(stderr, "Starting 1394 bus scan\n");
-
     int  j,i,fd, err;
     char *nick, *attr;
 
     // Find how many OHCI devices we have
     raw1394handle_t handle = raw1394_new_handle();
+
+    if (handle == (raw1394handle_t)NULL) {
+      fprintf(stderr, "Failed to get raw1394 handle - No 1394 devices\n");
+      return;
+    }
+      
     int numbus = raw1394_get_port_info(handle, NULL, 0);
     fprintf(stderr, "Found %d 1394 busses\n", numbus);
     raw1394_destroy_handle(handle);

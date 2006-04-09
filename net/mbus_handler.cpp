@@ -66,7 +66,7 @@ MBusHandler::MBusHandler(void (*cmd_handler)(char *src, char *cmd, char *arg, vo
 {
 	char mbus_vic_addr[100];
 
-        sprintf(mbus_vic_addr, "(media:video module:engine app:vic instance:%lu)", (u_int32_t) getpid());
+        sprintf(mbus_vic_addr, "(media:video module:engine app:vic instance:%lu)", (long unsigned)getpid()); //SV-XXX: was: (u_int32_t) getpid()); check windows to see what happens...
 	mbusp_ = mbus_init(cmd_handler, err_handler, mbus_vic_addr);
 	//unlink();
 
@@ -94,7 +94,7 @@ void MBusHandler::dispatch(int)
 
 void MBusHandler::timeout()
 {
-	double now = gettimeofday();
+	//SV-XXX: double now = gettimeofday();
 	struct timeval     timeout;
 
 	timeout.tv_sec  = 0;

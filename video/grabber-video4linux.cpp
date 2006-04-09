@@ -195,7 +195,7 @@ V4lScanner::V4lScanner(const char **dev)
     for (i = 0; dev[i] != NULL; i++) {
 	debug_msg("V4l: trying %s... ",dev[i]);
 	if (-1 == (fd = open(dev[i],O_RDONLY))) {
-	    debug_msg("Error opening: %s : %s",dev[i], sys_errlist[errno]);
+	    debug_msg("Error opening: %s : %s",dev[i], strerror(errno)); //SV-XXX: sys_errlist deprecated, use strerror()
 	    continue;
 	}
 	if (-1 == ioctl(fd,VIDIOCGCAP,&capability)) {
@@ -870,8 +870,8 @@ void V4lGrabber::vcvt_420p_411p(int width, int height, void *src, void *dst)
    * Conversation 2lines2columns1chroma => 1line4columns1chroma */
   for (line = 0; line < height; line += 2) {
      for (col = 0; col < clinewidth; col += 4){
-       tb = (*su++ + *su++) / 2;
-       tr = (*sv++ + *sv++) / 2;
+       tb = (*su++ + *su++) / 2; //SV-XXX: clarify desired operation using brackets
+       tr = (*sv++ + *sv++) / 2; //SV-XXX: clarify desired operation using brackets
        *tu++ = tb;
        *tv++ = tr;
      }

@@ -42,8 +42,8 @@
  *
  *****************************************************************************/
 typedef struct{
-  int   size;
-  int   ind;
+  unsigned int   size; //SV-XXX
+  unsigned int   ind; //SV-XXX
   int   actualSize;
   Byte  *b;
   FILE  *fp;

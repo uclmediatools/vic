@@ -52,6 +52,11 @@
 
 #include        "sim.h"
 
+//SV-XXX: defined UNUSED() macro for unused variables
+#ifndef UNUSED
+#define UNUSED(x) (x) = (x)
+#endif
+
 #ifdef VIC
 /*extern */
 unsigned char *h263_frame;
@@ -77,6 +82,11 @@ unsigned char *
  ReadImage (char *filename, int frame_no, int headerlength)
 {
 #ifdef VIC
+  //SV-XXX: dummy initialisations to make gcc-4.0 shut up
+  UNUSED(filename);
+  UNUSED(frame_no);
+  UNUSED(headerlength);
+
   return h263_frame;
 #else
   FILE *im_file = NULL;
@@ -191,6 +201,8 @@ PictImage *
 void
  WriteImage (PictImage * image, char *filename)
 {
+  UNUSED(image);
+  UNUSED(filename);
 #ifndef VIC
   int status;
   FILE *f_out;

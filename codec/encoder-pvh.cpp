@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] =
+static const char rcsid[] =
     "@(#) $Header$";
 #endif
 
@@ -429,6 +429,7 @@ static void pone(const char* s, int v, double t)
 	printf("%s\t%d\t(%.1f%%)\n", s, v, 100. * v / t);
 }
 
+/*SV-XXX: this function is never used...
 static void pbits(bit_counter* b)
 {
 	double t = b->dc + b->mba + b->esc + b->vlc + b->mq + 
@@ -473,6 +474,7 @@ static void pbits(bit_counter* b)
 
 	pone("tot", int(t), t);
 }
+*/
 
 void PvhEncoder::refine_old(pvh_layer* lp, int off)
 {

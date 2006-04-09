@@ -53,7 +53,8 @@ static const char rcsid[] =
 #include "bsd-endian.h"
 #include "color-hist.h"
 
-PseudoColorModel::PseudoColorModel() : lut_(0), file_(0)
+//SV-XXX: rearranged intialistaion order to shut upp gcc4
+PseudoColorModel::PseudoColorModel() : file_(0), lut_(0)
 {
 }
 
@@ -179,7 +180,7 @@ void PseudoWindowRenderer::dither_gray_down(const u_char* yp,
 	int e = 0;
 	while (--h >= 0) {
 		for (int w = width; w > 0; w -= 4) {
-			u_int out = 0;
+			//SV-XXX: unused u_int out = 0;
 			e += *yp;
 			yp += scaler;
 			e = map[e];
@@ -211,6 +212,7 @@ void PseudoWindowRenderer::dither_gray(const u_char* yp,
 				       u_int off, u_int x,
 				       u_int width, u_int height) const
 {
+	UNUSED(x); //SV-XXX: unused
 	yp += off;
 	u_int* xip = (u_int*)(pixbuf_ + off);
 	const u_short* const map = graylut_;

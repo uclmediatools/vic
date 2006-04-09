@@ -16,6 +16,7 @@ void debug_free(void *data)
 #if 0
     fprintf(stderr,"%d- ",malloc_count);
 #endif
-    malloc_count;
+    //SV-XXX: was a statement with no effect, i think the intention is to free -> "--"
+    malloc_count--;
     free(data);
 }

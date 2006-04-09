@@ -104,7 +104,6 @@ TCL_VIC = ui-ctrlmenu.tcl ui-main.tcl ui-resource.tcl ui-relate.tcl \
 	ui-switcher.tcl ui-extout.tcl ui-grabber.tcl ui-unix.tcl \
 	cf-main.tcl cf-tm.tcl cf-confbus.tcl cf-network.tcl cf-util.tcl \
 	tkerror.tcl entry.tcl
-TCL_VIC_C = tcl/$(TCL_VIC:.tcl=.cpp)
 
 #
 # These modules are broken in libg++.  Rather than fix libg++
@@ -122,8 +121,9 @@ H263_OBJS = codec/h263/h263rtp.o codec/h263/h263dec.o codec/h263/bitIn.o \
 	codec/h263/idctenc.o codec/h263/sac.o
 
 # .c objects
-OBJ1 =	net/inet.o net/inet6.o codec/cellb_tables.o tkStripchart.o md5c.o random.o \
-	$(H263_OBJS)
+OBJ1 =	net/inet.o net/inet6.o codec/cellb_tables.o tkStripchart.o \
+	md5c.o random.o $(H263_OBJS)
+
 #	session-rtpv1.o session-nv.o session-ivs.o # Not supported anymore
 # .cpp objects
 OBJ2 =	main.o iohandler.o timer.o idlecallback.o media-timer.o \
@@ -146,10 +146,13 @@ OBJ2 =	main.o iohandler.o timer.o idlecallback.o media-timer.o \
 	render/color-ed.o render/color-quant.o render/color-hi.o \
 	render/color-gray.o render/color-mono.o render/color-hist.o \
 	render/rgb-converter.o render/vw.o @V_OBJ@
-OBJ3 =	cm0.o cm1.o huffcode.o version.o bv.o codec/pvh-huff.o\
+
+OBJ3 =	cm0.o cm1.o huffcode.o version.o bv.o codec/pvh-huff.o \
 	$(TCL_VIC:.tcl=.o) tk.o
+
 SRC =	$(OBJ1:.o=.c) $(OBJ2:.o=.cpp) $(BROKEN_OBJ:.o=.c) \
 	$(RTIP_OBJ:.o=.c) $(SRC_GRABBER) $(OBJ_XIL:.o=.cpp) $(OBJ_CRYPT:.o=.c)
+
 OBJ =	$(OBJ1) $(OBJ2) $(OBJ3) $(BROKEN_OBJ) $(RTIP_OBJ)
 
 OBJ_VDD = vdd.o p64/p64.o p64/p64dump.o \
@@ -341,9 +344,10 @@ install: force
 
 clean:
 	rm -f *.o codec/jpeg/*.o codec/p64/*.o codec/h263/*.o \
-		huffcode.c win32/*.o core tcl2c++ mkbv bv.c \
+		histtolut render/histtolut/*.o huffcode.c win32/*.o \
+		core tcl2c++ mkbv bv.c \
 		codec/*.o render/*.o video/*.o net/*.o rtp/*.o mkhuff \
-		$(TCL_VIC_C) tk.tcl vic_tcl.c h261_play_tcl.c tmp.c \
+		tk.tcl vic_tcl.c h261_play_tcl.c tmp.c \
 		vic vic.dyn vic.xil h261_play h261_dump jpeg_play cb_wish \
 		mkcube rgb-cube.ppm yuv-map.ppm cm0.c cm1.c ppmtolut \
 		config.cache config.log domake.* dotar.*

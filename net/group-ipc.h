@@ -58,6 +58,7 @@ struct ipchdr {
 class IPCHandler {
  protected:
 	IPCHandler(int typemask);
+	virtual ~IPCHandler(){}; //SV-XXX: This solves the "missing" virtual destructor warning from gcc4
  public:
 	virtual void ipc_input(int type, int frompid,
 			       u_char* msg, int len) = 0;
