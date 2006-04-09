@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.10"
+	Version="7.00"
 	Name="vic"
 	ProjectGUID="{2F0B9224-B5FC-446E-935E-845FF6C5C733}"
 	RootNamespace="vic"
@@ -502,7 +502,7 @@
 				OutputFile="$(ConfigurationName)/vic.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="..\tcl-8.0\win\Debug,..\tk-8.0\win\Debug,..\common\src\Debug_IPv6,codec\tmndec,codec\tmn-x"
+				AdditionalLibraryDirectories="..\tcl-8.0\win\Debug,..\tk-8.0\win\Debug,..\common\src\Debug,codec\tmndec,codec\tmn-x"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\Debug_IPv6_Win2000/vic.pdb"
 				SubSystem="2"
