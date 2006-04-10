@@ -251,11 +251,10 @@ V4lScanner::V4lScanner(const char **dev)
 
 	strcat(attr,"type {auto pal ntsc secam}");
 
-	nick = new char[strlen(capability.name)+6];
-	sprintf(nick,"v4l- %s",capability.name);
+	nick = new char[strlen(capability.name)+7];
+	sprintf(nick,"V4L1:%s",capability.name);
 	new V4lDevice(dev[i],nick,attr);
         fprintf(stderr,"Attached to V4l device: %s\n",nick);
-
 
 	close(fd);
     }
@@ -270,6 +269,8 @@ V4lGrabber::V4lGrabber(const char *cformat, const char *dev)
 
     struct video_capability  capability;
     /* Taken from MASH - need to update code using this approach
+     * which checks for palettes with multiple resolutions
+     * Helps various Webcams...
     int palettes[] = {
         VIDEO_PALETTE_YUV422,   // BT878 (OS driver broken, so listed first)
         VIDEO_PALETTE_YUV422P,  // BT878 (untested)
@@ -289,12 +290,16 @@ V4lGrabber::V4lGrabber(const char *cformat, const char *dev)
     if (fd_ < 0) {
 	printf("on: %d\n", fd_);
 	perror("open");
-	exit(1);
+        status_=-1;
+	return;
     }
     if (-1 == ioctl (fd_, VIDIOCGCAP, &capability)) {
             perror ("ioctl VIDIOCGCAP");
             close (fd_);
+        status_=-1;
+	return;
     }
+      printf("dssssddDevice capture VIDEO_PALETTE_YUV420P\n");
 
     vid_mmap.format = VIDEO_PALETTE_YUV420P;
     vid_mmap.frame = 0;
@@ -344,10 +349,12 @@ V4lGrabber::V4lGrabber(const char *cformat, const char *dev)
 
     if( !( have_422P || have_422 || have_420P))   {
       debug_msg("No suituable palette found\n");
-      exit(1);
+      close(fd_);
+      status_=-1;
+      return;
     }
 
-    /* Release device */
+    /* Release device *
     close(fd_);
 
     fd_ = open(dev, O_RDWR);
@@ -355,13 +362,14 @@ V4lGrabber::V4lGrabber(const char *cformat, const char *dev)
 	perror("open");
 	exit(1);
     }
-    /* ask for capabilities */
+    * ask for capabilities */
     if (-1 == ioctl(fd_,VIDIOCGCAP,&capability)) {
 	perror("ioctl VIDIOCGCAP");
-	exit(1);
+        status_=-1;
+      return;
     }
     channels = (struct video_channel*)
-	calloc(capability.channels,sizeof(struct video_channel));
+    calloc(capability.channels,sizeof(struct video_channel));
     for (i = 0; i < capability.channels; i++) {
 	channels[i].channel = i;
 	if (-1 == ioctl(fd_,VIDIOCGCHAN,&channels[i])) {
@@ -389,7 +397,6 @@ V4lGrabber::V4lGrabber(const char *cformat, const char *dev)
 		gb_buffers.size);
 	have_mmap = 1;
     }
- 
  
     /* fill in defaults */
     if(!strcmp(cformat, "411"))

@@ -192,7 +192,7 @@ V4l2Scanner::V4l2Scanner(const char **dev)
         for (i = 0; dev[i] != NULL; i++) {
                 debug_msg("V4l2: trying %s... ",dev[i]);
                 if (-1 == (fd = open(dev[i],O_RDWR))) {
-			perror("V4l2: open" );
+			debug_msg("V4l2: open" );
                         continue;
                 }
                 if (-1 == ioctl(fd,VIDIOC_QUERYCAP,&capability)) {
@@ -225,8 +225,7 @@ V4l2Scanner::V4l2Scanner(const char **dev)
                         } else {
                                 input.index=j;
                                 if (-1 == ioctl(fd,VIDIOC_ENUMINPUT,&input)) {
-					debug_msg("VIDIOC_ENUMINPUT:%d\n",j);
-                                        perror("ioctl VIDIOC_ENUMINPUT");
+					debug_msg("VIDIOC_ENUMINPUT for input:%d\n",j);
 				break;
                                 } else {
                                         debug_msg(" %s: ",input.name);
@@ -264,8 +263,8 @@ V4l2Scanner::V4l2Scanner(const char **dev)
 
 		strcat(attr,"} ");
 
-                nick = new char[strlen((const char*)capability.card)+6];
-                sprintf(nick,"V4L2 %s",capability.card);
+                nick = new char[strlen((const char*)capability.card)+7];
+                sprintf(nick,"V4L2:%s",capability.card);
                 new V4l2Device(dev[i],nick,attr);
 		fprintf(stderr,"Attached to V4l2 device: %s\n",nick);
 
@@ -277,52 +276,55 @@ V4l2Scanner::V4l2Scanner(const char **dev)
 
 V4l2Grabber::V4l2Grabber(const char *cformat, const char *dev)
 {
+  fd_ = open(dev, O_RDWR);
+  if (fd_ < 0) {
+    perror("open");
+    status_=-1;
+    return;
+  }
 
-        fd_ = open(dev, O_RDWR);
-        if (fd_ < 0) {
-                perror("open");
-                return;
-        }
+  have_mmap = 0;
 
+  struct v4l2_capability cap;
+  struct v4l2_requestbuffers reqbuf;
+  if (-1 == ioctl(fd_,VIDIOC_QUERYCAP,&cap)) {
+    perror("ioctl VIDIOC_QUERYCAP");
+    status_=-1;
+    return;
+  } else {
+    if ( !(cap.capabilities & V4L2_CAP_READWRITE) && !(cap.capabilities & V4L2_CAP_STREAMING )) {
+      fprintf(stderr,"v4l2: fatal: device does not support read() call or streaming capture.\n");
+      status_=-1;
+      return;
+    }
+
+    reqbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    reqbuf.memory = V4L2_MEMORY_MMAP;
+    reqbuf.count = 20;
+    have_mmap = 1;
+
+    if (-1 == ioctl (fd_, VIDIOC_REQBUFS, &reqbuf)) {
+      if (errno == EINVAL) {
+        printf ("Video capturing or mmap-streaming is not supported\n");
         have_mmap = 0;
+        status_=-1;
+      } else {
+        perror ("VIDIOC_REQBUFS");
+        have_mmap = 0;
+      }}
+  }
+  /* fill in defaults */
+  if(!strcmp(cformat, "411"))
+    cformat_ = CF_411;
+  if(!strcmp(cformat, "422"))
+    cformat_ = CF_422;
+  if(!strcmp(cformat, "cif"))
+    cformat_ = CF_CIF;
 
-        struct v4l2_capability cap;
-	struct v4l2_requestbuffers reqbuf;
-        if (-1 == ioctl(fd_,VIDIOC_QUERYCAP,&cap)) {
-                perror("ioctl VIDIOC_QUERYCAP");
-        } else {
-                if ( !(cap.capabilities & V4L2_CAP_READWRITE) && !(cap.capabilities & V4L2_CAP_STREAMING )) {
-                        fprintf(stderr,"v4l2: fatal: device does not support read() call or streaming capture.\n");
-                        return;
-                }
-
-	reqbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-	reqbuf.memory = V4L2_MEMORY_MMAP;
-	reqbuf.count = 20;
-        have_mmap = 1;
-
-	if (-1 == ioctl (fd_, VIDIOC_REQBUFS, &reqbuf)) {
-        if (errno == EINVAL) {
-                printf ("Video capturing or mmap-streaming is not supported\n");
-		have_mmap = 0;
-        } else {
-		perror ("VIDIOC_REQBUFS");
-		have_mmap = 0;
-	}}
-}
-        /* fill in defaults */
-        if(!strcmp(cformat, "411"))
-                cformat_ = CF_411;
-        if(!strcmp(cformat, "422"))
-                cformat_ = CF_422;
-        if(!strcmp(cformat, "cif"))
-                cformat_ = CF_CIF;
-
-        port_      = 0;
-        norm_      =  0; 
-        decimate_  = 2;
-        running_ = 0;
-
+  port_     = 0;
+  norm_     = 0; 
+  decimate_ = 2;
+  running_  = 0;
 }
 
 
