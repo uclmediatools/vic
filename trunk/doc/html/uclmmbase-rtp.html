@@ -1,0 +1,5000 @@
+<HTML
+><HEAD
+><TITLE
+>RTP</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.59"><LINK
+REL="HOME"
+TITLE="UCL Common Library Reference"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Overview"
+HREF="uclmmbase.html"><LINK
+REL="PREVIOUS"
+TITLE="NETUDP"
+HREF="uclmmbase-net-udp.html"><LINK
+REL="NEXT"
+TITLE="Debug"
+HREF="uclmmbase-debug.html"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+BGCOLOR="#000000"
+CELLPADDING="1"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="4"
+ALIGN="center"
+><FONT
+COLOR="#FFFFFF"
+SIZE="5"
+>UCL Common Library Reference</FONT
+></TH
+></TR
+><TR
+><TD
+WIDTH="25%"
+BGCOLOR="#C00000"
+ALIGN="left"
+><A
+HREF="uclmmbase-net-udp.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>&#60;&#60;&#60; Previous Page</B
+></FONT
+></A
+></TD
+><TD
+WIDTH="25%"
+BGCOLOR="#0000C0"
+ALIGN="center"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+><A
+HREF="book1.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Home</B
+></FONT
+></A
+></B
+></FONT
+></TD
+><TD
+WIDTH="25%"
+BGCOLOR="#00C000"
+ALIGN="center"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+><A
+HREF="uclmmbase.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Up</B
+></FONT
+></A
+></B
+></FONT
+></TD
+><TD
+WIDTH="25%"
+BGCOLOR="#C00000"
+ALIGN="right"
+><A
+HREF="uclmmbase-debug.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Next Page &#62;&#62;&#62;</B
+></FONT
+></A
+></TD
+></TR
+></TABLE
+></DIV
+><H1
+><A
+NAME="UCLMMBASE-RTP"
+>RTP</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN489"
+></A
+><H2
+>Name</H2
+>RTP&nbsp;--&nbsp;Real-Time Transport Protocol (RTP) Implementation.</DIV
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A
+NAME="AEN492"
+></A
+><H2
+>Synopsis</H2
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="SYNOPSIS"
+>&#13;#include &lt;rtp.h&gt;
+
+
+#define     <A
+HREF="uclmmbase-rtp.html#RTP-VERSION-CAPS"
+>RTP_VERSION</A
+>
+#define     <A
+HREF="uclmmbase-rtp.html#RTP-MAX-PACKET-LEN-CAPS"
+>RTP_MAX_PACKET_LEN</A
+>
+typedef     <A
+HREF="uclmmbase-rtp.html#RTP-PACKET"
+>rtp_packet</A
+>;
+#define     <A
+HREF="uclmmbase-rtp.html#RTP-PACKET-HEADER-SIZE-CAPS"
+>RTP_PACKET_HEADER_SIZE</A
+>
+typedef     <A
+HREF="uclmmbase-rtp.html#RTCP-SR"
+>rtcp_sr</A
+>;
+typedef     <A
+HREF="uclmmbase-rtp.html#RTCP-RR"
+>rtcp_rr</A
+>;
+enum        <A
+HREF="uclmmbase-rtp.html#RTCP-SDES-TYPE"
+>rtcp_sdes_type</A
+>;
+typedef     <A
+HREF="uclmmbase-rtp.html#RTCP-SDES-ITEM"
+>rtcp_sdes_item</A
+>;
+typedef     <A
+HREF="uclmmbase-rtp.html#RTCP-APP"
+>rtcp_app</A
+>;
+<A
+HREF="uclmmbase-rtp.html#RTCP-APP"
+>rtcp_app</A
+>*   (<A
+HREF="uclmmbase-rtp.html#RTCP-APP-CALLBACK"
+>*rtcp_app_callback</A
+>)            (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> rtp_ts,
+                                             int max_size);
+enum        <A
+HREF="uclmmbase-rtp.html#RTP-EVENT-TYPE"
+>rtp_event_type</A
+>;
+typedef     <A
+HREF="uclmmbase-rtp.html#RTP-EVENT"
+>rtp_event</A
+>;
+void        (<A
+HREF="uclmmbase-rtp.html#RTP-CALLBACK"
+>*rtp_callback</A
+>)                 (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <A
+HREF="uclmmbase-rtp.html#RTP-EVENT"
+>rtp_event</A
+> *e);
+enum        <A
+HREF="uclmmbase-rtp.html#RTP-OPTION"
+>rtp_option</A
+>;
+<GTKDOCLINK
+HREF="RTP-T"
+>rtp_t</GTKDOCLINK
+>       <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>                        (const char *addr,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> rx_port,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> tx_port,
+                                             int ttl,
+                                             <GTKDOCLINK
+HREF="DOUBLE"
+>double</GTKDOCLINK
+> rtcp_bw,
+                                             <A
+HREF="uclmmbase-rtp.html#RTP-CALLBACK"
+>rtp_callback</A
+> callback,
+                                             <GTKDOCLINK
+HREF="UINT8-T"
+>uint8_t</GTKDOCLINK
+> *userdata);
+<GTKDOCLINK
+HREF="RTP-T"
+>rtp_t</GTKDOCLINK
+>       <A
+HREF="uclmmbase-rtp.html#RTP-INIT-IF"
+>rtp_init_if</A
+>                     (const char *addr,
+                                             char *iface,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> rx_port,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> tx_port,
+                                             int ttl,
+                                             <GTKDOCLINK
+HREF="DOUBLE"
+>double</GTKDOCLINK
+> rtcp_bw,
+                                             <A
+HREF="uclmmbase-rtp.html#RTP-CALLBACK"
+>rtp_callback</A
+> callback,
+                                             <GTKDOCLINK
+HREF="UINT8-T"
+>uint8_t</GTKDOCLINK
+> *userdata);
+void        <A
+HREF="uclmmbase-rtp.html#RTP-SEND-BYE"
+>rtp_send_bye</A
+>                    (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);
+void        <A
+HREF="uclmmbase-rtp.html#RTP-DONE"
+>rtp_done</A
+>                        (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);
+int         <A
+HREF="uclmmbase-rtp.html#RTP-SET-OPTION"
+>rtp_set_option</A
+>                  (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <A
+HREF="uclmmbase-rtp.html#RTP-OPTION"
+>rtp_option</A
+> optname,
+                                             int optval);
+int         <A
+HREF="uclmmbase-rtp.html#RTP-GET-OPTION"
+>rtp_get_option</A
+>                  (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <A
+HREF="uclmmbase-rtp.html#RTP-OPTION"
+>rtp_option</A
+> optname,
+                                             int *optval);
+int         <A
+HREF="uclmmbase-rtp.html#RTP-RECV"
+>rtp_recv</A
+>                        (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             struct <GTKDOCLINK
+HREF="TIMEVAL"
+>timeval</GTKDOCLINK
+> *timeout,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> curr_rtp_ts);
+int         <A
+HREF="uclmmbase-rtp.html#RTP-SEND-DATA"
+>rtp_send_data</A
+>                   (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> rtp_ts,
+                                             char pt,
+                                             int m,
+                                             int cc,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> csrc[],
+                                             char *data,
+                                             int data_len,
+                                             char *extn,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> extn_len,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> extn_type);
+void        <A
+HREF="uclmmbase-rtp.html#RTP-SEND-CTRL"
+>rtp_send_ctrl</A
+>                   (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> rtp_ts,
+                                             <A
+HREF="uclmmbase-rtp.html#RTCP-APP-CALLBACK"
+>rtcp_app_callback</A
+> appcallback);
+void        <A
+HREF="uclmmbase-rtp.html#RTP-UPDATE"
+>rtp_update</A
+>                      (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);
+<GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+>    <A
+HREF="uclmmbase-rtp.html#RTP-MY-SSRC"
+>rtp_my_ssrc</A
+>                     (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);
+int         <A
+HREF="uclmmbase-rtp.html#RTP-ADD-CSRC"
+>rtp_add_csrc</A
+>                    (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> csrc);
+int         <A
+HREF="uclmmbase-rtp.html#RTP-DEL-CSRC"
+>rtp_del_csrc</A
+>                    (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> csrc);
+int         <A
+HREF="uclmmbase-rtp.html#RTP-SET-SDES"
+>rtp_set_sdes</A
+>                    (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> ssrc,
+                                             <A
+HREF="uclmmbase-rtp.html#RTCP-SDES-TYPE"
+>rtcp_sdes_type</A
+> type,
+                                             const char *value,
+                                             int length);
+const char* <A
+HREF="uclmmbase-rtp.html#RTP-GET-SDES"
+>rtp_get_sdes</A
+>                    (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> ssrc,
+                                             <A
+HREF="uclmmbase-rtp.html#RTCP-SDES-TYPE"
+>rtcp_sdes_type</A
+> type);
+const <A
+HREF="uclmmbase-rtp.html#RTCP-SR"
+>rtcp_sr</A
+>* <A
+HREF="uclmmbase-rtp.html#RTP-GET-SR"
+>rtp_get_sr</A
+>                   (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> ssrc);
+const <A
+HREF="uclmmbase-rtp.html#RTCP-RR"
+>rtcp_rr</A
+>* <A
+HREF="uclmmbase-rtp.html#RTP-GET-RR"
+>rtp_get_rr</A
+>                   (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> reporter,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> reportee);
+int         <A
+HREF="uclmmbase-rtp.html#RTP-SET-ENCRYPTION-KEY"
+>rtp_set_encryption_key</A
+>          (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             const char *passphrase);
+int         <A
+HREF="uclmmbase-rtp.html#RTP-SET-MY-SSRC"
+>rtp_set_my_ssrc</A
+>                 (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> ssrc);
+char*       <A
+HREF="uclmmbase-rtp.html#RTP-GET-ADDR"
+>rtp_get_addr</A
+>                    (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);
+<GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+>    <A
+HREF="uclmmbase-rtp.html#RTP-GET-RX-PORT"
+>rtp_get_rx_port</A
+>                 (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);
+<GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+>    <A
+HREF="uclmmbase-rtp.html#RTP-GET-TX-PORT"
+>rtp_get_tx_port</A
+>                 (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);
+int         <A
+HREF="uclmmbase-rtp.html#RTP-GET-TTL"
+>rtp_get_ttl</A
+>                     (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);
+<GTKDOCLINK
+HREF="UINT8-T"
+>uint8_t</GTKDOCLINK
+>*    <A
+HREF="uclmmbase-rtp.html#RTP-GET-USERDATA"
+>rtp_get_userdata</A
+>                (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);</PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN598"
+></A
+><H2
+>Description</H2
+><P
+>&#13;The Real-Time Transport Protocol (RTP) is a protocol for the transport
+of audio, video, and other real-time data across IP capable networks.&#13;</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN601"
+></A
+><H2
+>Details</H2
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN603"
+></A
+><H3
+><A
+NAME="RTP-VERSION-CAPS"
+></A
+>RTP_VERSION</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>#define RTP_VERSION 2</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN608"
+></A
+><H3
+><A
+NAME="RTP-MAX-PACKET-LEN-CAPS"
+></A
+>RTP_MAX_PACKET_LEN</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>#define RTP_MAX_PACKET_LEN 1500</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN613"
+></A
+><H3
+><A
+NAME="RTP-PACKET"
+></A
+>rtp_packet</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef struct {
+	/* The following are pointers to the data in the packet as    */
+	/* it came off the wire. The packet it read in such that the  */
+	/* header maps onto the latter part of this struct, and the   */
+	/* fields in this first part of the struct point into it. The */
+	/* entire packet can be freed by freeing this struct, without */
+	/* having to free the csrc, data and extn blocks separately.  */
+	/* WARNING: Don't change the size of the first portion of the */
+	/* struct without changing RTP_PACKET_HEADER_SIZE to match.   */
+	uint32_t	*csrc;
+	char		*data;
+	int		 data_len;
+	unsigned char	*extn;
+	uint16_t	 extn_len;	/* Size of the extension in 32 bit words minus one */
+	uint16_t	 extn_type;	/* Extension type field in the RTP packet header   */
+	/* The following map directly onto the RTP packet header...   */
+#ifdef WORDS_BIGENDIAN
+	unsigned short   v:2;		/* packet type                */
+	unsigned short   p:1;		/* padding flag               */
+	unsigned short   x:1;		/* header extension flag      */
+	unsigned short   cc:4;		/* CSRC count                 */
+	unsigned short   m:1;		/* marker bit                 */
+	unsigned short   pt:7;		/* payload type               */
+#else
+	unsigned short   cc:4;		/* CSRC count                 */
+	unsigned short   x:1;		/* header extension flag      */
+	unsigned short   p:1;		/* padding flag               */
+	unsigned short   v:2;		/* packet type                */
+	unsigned short   pt:7;		/* payload type               */
+	unsigned short   m:1;		/* marker bit                 */
+#endif
+	uint16_t          seq;		/* sequence number            */
+	uint32_t          ts;		/* timestamp                  */
+	uint32_t          ssrc;		/* synchronization source     */
+	/* The csrc list, header extension and data follow, but can't */
+	/* be represented in the struct.                              */
+} rtp_packet;</PRE
+></TD
+></TR
+></TABLE
+><P
+>The struct begins with pointers to the data in the packet as
+it came off the wire. The packet is read in such that the
+header maps onto the latter part of this struct, and the
+fields in this first part of the struct point into it. The
+entire packet can be freed by freeing this struct, without
+having to free the csrc, data and extn blocks separately.
+WARNING: Don't change the size of the first portion of the
+struct without changing RTP_PACKET_HEADER_SIZE to match.</P
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN618"
+></A
+><H3
+><A
+NAME="RTP-PACKET-HEADER-SIZE-CAPS"
+></A
+>RTP_PACKET_HEADER_SIZE</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>#define RTP_PACKET_HEADER_SIZE	((sizeof(char *) * 2) + sizeof(uint32_t *) + (2 * sizeof(int)))</PRE
+></TD
+></TR
+></TABLE
+><P
+>This macro MUST resolve to the offset of the first packet
+field in the <A
+HREF="uclmmbase-rtp.html#RTP-PACKET"
+>rtp_packet</A
+> struct, including all padding.
+If you change rtp_packet, make sure to change this too.</P
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN624"
+></A
+><H3
+><A
+NAME="RTCP-SR"
+></A
+>rtcp_sr</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef struct {
+	uint32_t         ssrc;
+	uint32_t         ntp_sec;
+	uint32_t         ntp_frac;
+	uint32_t         rtp_ts;
+	uint32_t         sender_pcount;
+	uint32_t         sender_bcount;
+} rtcp_sr;</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN629"
+></A
+><H3
+><A
+NAME="RTCP-RR"
+></A
+>rtcp_rr</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef struct {
+	uint32_t	ssrc;		/* The ssrc to which this RR pertains */
+#ifdef WORDS_BIGENDIAN
+	uint32_t	fract_lost:8;
+	uint32_t	total_lost:24;
+#else
+	uint32_t	total_lost:24;
+	uint32_t	fract_lost:8;
+#endif	
+	uint32_t	last_seq;
+	uint32_t	jitter;
+	uint32_t	lsr;
+	uint32_t	dlsr;
+} rtcp_rr;</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN634"
+></A
+><H3
+><A
+NAME="RTCP-SDES-TYPE"
+></A
+>enum rtcp_sdes_type</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef enum {
+        RTCP_SDES_END   = 0,
+        RTCP_SDES_CNAME = 1,
+        RTCP_SDES_NAME  = 2,
+        RTCP_SDES_EMAIL = 3,
+        RTCP_SDES_PHONE = 4,
+        RTCP_SDES_LOC   = 5,
+        RTCP_SDES_TOOL  = 6,
+        RTCP_SDES_NOTE  = 7,
+        RTCP_SDES_PRIV  = 8
+} rtcp_sdes_type;</PRE
+></TD
+></TR
+></TABLE
+><P
+>Possible values of Session Description (SDES) identifiers.  SDES items
+are announced via <A
+HREF="uclmmbase-rtp.html#RTP-CALLBACK"
+>rtp_callback</A
+> (with RX_SDES events) when they are
+received.  SDES items may be configured and queried with <A
+HREF="uclmmbase-rtp.html#RTP-SET-SDES"
+>rtp_set_sdes</A
+>
+and <A
+HREF="uclmmbase-rtp.html#RTP-GET-SDES"
+>rtp_get_sdes</A
+>.  The RTP guidelines recommend keeping SDES items
+constant during an RTP session to avoid confusing end users.</P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN642"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#F0F0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RTCP_SDES_END</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>Indicates the end of SDES item processing when SDES data is received.  Has no meaning with <A
+HREF="uclmmbase-rtp.html#RTP-SET-SDES"
+>rtp_set_sdes</A
+> and <A
+HREF="uclmmbase-rtp.html#RTP-GET-SDES"
+>rtp_get_sdes</A
+>.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RTCP_SDES_CNAME</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>The canonical name associated with participant. It is algorithmically derived and should never be changed.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RTCP_SDES_NAME</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>The local participant's name, typically displayed in RTP session participant list. The name can take any form, and should remain constant during a session to avoid confusion.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RTCP_SDES_EMAIL</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>The local participant's email address (optional).</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RTCP_SDES_PHONE</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>The local participant's telephone number (optional).</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RTCP_SDES_LOC</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>The local participant's geographic location (optional).</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RTCP_SDES_TOOL</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>The local participant's tool (optional).</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RTCP_SDES_NOTE</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>Any additional information the local participant wishes to communicate about themselves (optional).</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RTCP_SDES_PRIV</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>Private extension SDES item see <A
+HREF="http://www.ietf.org/rfc/rfc1889.txt"
+TARGET="_top"
+>RFC1889</A
+> for details.&#13;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN686"
+></A
+><H3
+><A
+NAME="RTCP-SDES-ITEM"
+></A
+>rtcp_sdes_item</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef struct {
+	rtcp_sdes_type	type;		/* type of SDES item              */
+	uint8_t		length;		/* length of SDES item (in bytes) */
+	char		data[1];	/* text, not zero-terminated      */
+} rtcp_sdes_item;</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN691"
+></A
+><H3
+><A
+NAME="RTCP-APP"
+></A
+>rtcp_app</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef struct {
+#ifdef WORDS_BIGENDIAN
+	unsigned short  version:2;	/* RTP version            */
+	unsigned short  p:1;		/* padding flag           */
+	unsigned short  subtype:5;	/* application dependent  */
+#else
+	unsigned short  subtype:5;	/* application dependent  */
+	unsigned short  p:1;		/* padding flag           */
+	unsigned short  version:2;	/* RTP version            */
+#endif
+	unsigned short  pt:8;		/* packet type            */
+	uint16_t        length;		/* packet length          */
+	uint32_t        ssrc;
+	char            name[4];        /* four ASCII characters  */
+	char            data[1];        /* variable length field  */
+} rtcp_app;</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN696"
+></A
+><H3
+><A
+NAME="RTCP-APP-CALLBACK"
+></A
+>rtcp_app_callback ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+><A
+HREF="uclmmbase-rtp.html#RTCP-APP"
+>rtcp_app</A
+>*   (*rtcp_app_callback)            (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> rtp_ts,
+                                             int max_size);</PRE
+></TD
+></TR
+></TABLE
+><P
+>This callback function crafts an RTCP APP packet to be sent with
+an RTCP RR.</P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN704"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>the session pointer (returned by <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>())</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>rtp_ts</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>the current time expressed in units of the media timestamp.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>max_size</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>the max allowed size of an APP packet.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>A fully-formed RTCP APP packet as an <A
+HREF="uclmmbase-rtp.html#RTCP-APP"
+>rtcp_app</A
+>, or NULL (???)
+if no APP packet needs to be sent at this time.
+&#13;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN727"
+></A
+><H3
+><A
+NAME="RTP-EVENT-TYPE"
+></A
+>enum rtp_event_type</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef enum {
+        RX_RTP,
+        RX_SR,
+        RX_RR,
+        RX_SDES,
+        RX_BYE,         /* Source is leaving the session, database entry is still valid */
+        SOURCE_CREATED,
+        SOURCE_DELETED, /* Source has been removed from the database                    */
+        RX_RR_EMPTY,    /* We've received an empty reception report block                                               */
+        RX_RTCP_START,  /* Processing a compound RTCP packet about to start. The SSRC is not valid in this event. */
+        RX_RTCP_FINISH,	/* Processing a compound RTCP packet finished. The SSRC is not valid in this event.  */
+        RR_TIMEOUT,
+        RX_APP
+} rtp_event_type;</PRE
+></TD
+></TR
+></TABLE
+><P
+>The possible values for the type field in <A
+HREF="uclmmbase-rtp.html#RTP-EVENT"
+>rtp_event</A
+>.
+Each value represents an event in RTP or RTCP processing.</P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN733"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#F0F0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RX_RTP</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>An RTP data packet was received.
+The ssrc field contains the RTP data packet's SSRC.
+The data field points to a <A
+HREF="uclmmbase-rtp.html#RTP-PACKET"
+>rtp_packet</A
+> containing the RTP data packet.
+The callback must free the rtp_packet when it's done with it using the <A
+HREF="uclmmbase-memory.html#XFREE"
+>xfree</A
+>() function.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RX_SR</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>An RTCP SR packet was received.
+The ssrc field contains the SR packet's SSRC.
+The data field points to an <A
+HREF="uclmmbase-rtp.html#RTCP-SR"
+>rtcp_sr</A
+>.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RX_RR</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>An RTCP RR packet was received.
+The ssrc field contains the RR packet's SSRC.
+The data field points to an <A
+HREF="uclmmbase-rtp.html#RTCP-RR"
+>rtcp_rr</A
+>.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RX_SDES</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>An RTCP SDES packet was received.
+The ssrc field contains the SDES packet's SSRC.
+The data field points to an <A
+HREF="uclmmbase-rtp.html#RTCP-SDES-ITEM"
+>rtcp_sdes_item</A
+>.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RX_BYE</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>An RTCP BYE packet was received.
+The ssrc field contains the BYE packet's SSRC.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>SOURCE_CREATED</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>A new session participant was heard from.
+The ssrc field contains the new participant's SSRC.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>SOURCE_DELETED</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>A source was deleted from the database.
+The ssrc field contains the ex-participant's SSRC.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RX_RR_EMPTY</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>An RTCP RR packet with no sources listed was received.
+The ssrc field contains the RR packet's SSRC.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RX_RTCP_START</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>Called at the start of parsing an RTCP packet.
+Neither the ssrc nor data fields are valid.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RX_RTCP_FINISH</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>Called at the end of parsing an RTCP packet.
+Neither the ssrc nor data fields are valid.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RR_TIMEOUT</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>An RR from the given receiver has not been refreshed recently enough.
+The ssrc field contains the RR packet's SSRC.
+The data field points to the expiring <A
+HREF="uclmmbase-rtp.html#RTCP-RR"
+>rtcp_rr</A
+>.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RX_APP</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>An APP packet was received.
+The ssrc field contains the APP packet's SSRC.
+The data field points to an <A
+HREF="uclmmbase-rtp.html#RTCP-APP"
+>rtcp_app</A
+>.
+The callback must free the app packet when it's done with it.&#13;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN793"
+></A
+><H3
+><A
+NAME="RTP-EVENT"
+></A
+>rtp_event</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef struct {
+	uint32_t	 ssrc;
+	rtp_event_type	 type;
+	void		*data;
+	struct timeval	*ts;
+} rtp_event;</PRE
+></TD
+></TR
+></TABLE
+><P
+>The event structure as passed to <A
+HREF="uclmmbase-rtp.html#RTP-CALLBACK"
+>rtp_callback</A
+>().
+The callback type is carried in the type field; see <A
+HREF="uclmmbase-rtp.html#RTP-EVENT-TYPE"
+>rtp_event_type</A
+>
+for a description of each callback.
+Unless otherwise noted, the ssrc field contains the SSRC of the participant
+triggering this callback.  The data field points to any data contained in
+this callback; it must be cast to the appropriate type.  The ts field
+contains the timestamp of the packet reception that caused this event.</P
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN800"
+></A
+><H3
+><A
+NAME="RTP-CALLBACK"
+></A
+>rtp_callback ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>void        (*rtp_callback)                 (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <A
+HREF="uclmmbase-rtp.html#RTP-EVENT"
+>rtp_event</A
+> *e);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Handles RTP events in an application-specific way.
+See <A
+HREF="uclmmbase-rtp.html#RTP-EVENT"
+>rtp_event</A
+> for a description of the possible events and
+how <A
+HREF="uclmmbase-rtp.html#RTP-CALLBACK"
+>rtp_callback</A
+>() should handle each.&#13;</P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN809"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>The RTP Session.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>e</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>The RTP Event information.  See <A
+HREF="uclmmbase-rtp.html#RTP-EVENT"
+>rtp_event</A
+>.
+&#13;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN823"
+></A
+><H3
+><A
+NAME="RTP-OPTION"
+></A
+>enum rtp_option</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef enum {
+        RTP_OPT_PROMISC =	    1,
+        RTP_OPT_WEAK_VALIDATION	=   2,
+        RTP_OPT_FILTER_MY_PACKETS = 3
+} rtp_option;</PRE
+></TD
+></TR
+></TABLE
+><P
+>The possible options for a session that affect which RTP packets are
+passed to the application and when internal state for sources is created.</P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN828"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#F0F0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RTP_OPT_PROMISC</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>Pass RTP packets to application irrespective of
+whether a sender report has been received.  Normally, participant
+state is created when a sender report is received and RTP packets that
+arrive prior to the sender report are discarded.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RTP_OPT_WEAK_VALIDATION</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>Create source state when RTP packets arrive
+if none exists.  This option is set by default.  Disabling the option
+means source state is only created when sender reports are received.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>RTP_OPT_FILTER_MY_PACKETS</TT
+></TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>Filter out packets from local participant
+if they are received.  With multicast sessions, packets may be looped
+back, causing senders packets to be received locally.  This may be
+filtered out with this option.&#13;</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN845"
+></A
+><H3
+><A
+NAME="RTP-INIT"
+></A
+>rtp_init ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+><GTKDOCLINK
+HREF="RTP-T"
+>rtp_t</GTKDOCLINK
+>       rtp_init                        (const char *addr,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> rx_port,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> tx_port,
+                                             int ttl,
+                                             <GTKDOCLINK
+HREF="DOUBLE"
+>double</GTKDOCLINK
+> rtcp_bw,
+                                             <A
+HREF="uclmmbase-rtp.html#RTP-CALLBACK"
+>rtp_callback</A
+> callback,
+                                             <GTKDOCLINK
+HREF="UINT8-T"
+>uint8_t</GTKDOCLINK
+> *userdata);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN857"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>addr</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> IP destination of this session (unicast or multicast),
+as an ASCII string.  May be a host name, which will be looked up,
+or may be an IPv4 dotted quad or IPv6 literal adddress.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>rx_port</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The port to which to bind the UDP socket</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>tx_port</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The port to which to send UDP packets</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>ttl</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The TTL with which to send multicasts</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>rtcp_bw</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The total bandwidth (in units of bytes per second) that is
+allocated to RTCP.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>callback</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> See section on <A
+HREF="uclmmbase-rtp.html#RTP-CALLBACK"
+>rtp_callback</A
+>.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>userdata</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> Opaque data associated with the session.  See
+<A
+HREF="uclmmbase-rtp.html#RTP-GET-USERDATA"
+>rtp_get_userdata</A
+>().</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> An opaque session identifier to be used in future calls to
+the RTP library functions, or NULL on failure.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN896"
+></A
+><H3
+><A
+NAME="RTP-INIT-IF"
+></A
+>rtp_init_if ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+><GTKDOCLINK
+HREF="RTP-T"
+>rtp_t</GTKDOCLINK
+>       rtp_init_if                     (const char *addr,
+                                             char *iface,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> rx_port,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> tx_port,
+                                             int ttl,
+                                             <GTKDOCLINK
+HREF="DOUBLE"
+>double</GTKDOCLINK
+> rtcp_bw,
+                                             <A
+HREF="uclmmbase-rtp.html#RTP-CALLBACK"
+>rtp_callback</A
+> callback,
+                                             <GTKDOCLINK
+HREF="UINT8-T"
+>uint8_t</GTKDOCLINK
+> *userdata);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Creates and initializes an RTP session.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN908"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>addr</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> IP destination of this session (unicast or multicast),
+as an ASCII string.  May be a host name, which will be looked up,
+or may be an IPv4 dotted quad or IPv6 literal adddress.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>iface</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> If the destination of the session is multicast,
+the optional interface to bind to.  May be NULL, in which case
+the default multicast interface as determined by the system
+will be used.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>rx_port</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The port to which to bind the UDP socket</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>tx_port</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The port to which to send UDP packets</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>ttl</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The TTL with which to send multicasts</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>rtcp_bw</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The total bandwidth (in units of ___) that is
+allocated to RTCP.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>callback</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> See section on <A
+HREF="uclmmbase-rtp.html#RTP-CALLBACK"
+>rtp_callback</A
+>.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>userdata</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> Opaque data associated with the session.  See
+<A
+HREF="uclmmbase-rtp.html#RTP-GET-USERDATA"
+>rtp_get_userdata</A
+>().</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> An opaque session identifier to be used in future calls to
+the RTP library functions, or NULL on failure.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN951"
+></A
+><H3
+><A
+NAME="RTP-SEND-BYE"
+></A
+>rtp_send_bye ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>void        rtp_send_bye                    (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Sends a BYE message on the RTP session, indicating that this
+system is leaving the session.
+Should implement reverse reconsideration; right now it sends a
+BYE if there are less than 50 members and sends nothing otherwise.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN958"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The RTP session</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN967"
+></A
+><H3
+><A
+NAME="RTP-DONE"
+></A
+>rtp_done ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>void        rtp_done                        (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Free the state associated with the given RTP session. This function does 
+not send any packets (e.g. an RTCP BYE) - an application which wishes to
+exit in a clean manner should call <A
+HREF="uclmmbase-rtp.html#RTP-SEND-BYE"
+>rtp_send_bye</A
+>() first.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN975"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> the RTP session to finish</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN984"
+></A
+><H3
+><A
+NAME="RTP-SET-OPTION"
+></A
+>rtp_set_option ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         rtp_set_option                  (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <A
+HREF="uclmmbase-rtp.html#RTP-OPTION"
+>rtp_option</A
+> optname,
+                                             int optval);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Sets the value of a session option.  See <A
+HREF="uclmmbase-rtp.html#RTP-OPTION"
+>rtp_option</A
+> for
+documentation on the options and their legal values.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN993"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The RTP session.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>optname</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The option name, see <A
+HREF="uclmmbase-rtp.html#RTP-OPTION"
+>rtp_option</A
+>.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>optval</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The value to set.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> TRUE on success, else FALSE.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN1015"
+></A
+><H3
+><A
+NAME="RTP-GET-OPTION"
+></A
+>rtp_get_option ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         rtp_get_option                  (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <A
+HREF="uclmmbase-rtp.html#RTP-OPTION"
+>rtp_option</A
+> optname,
+                                             int *optval);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Retrieves the value of a session option.  See <A
+HREF="uclmmbase-rtp.html#RTP-OPTION"
+>rtp_option</A
+> for
+documentation on the options and their legal values.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN1024"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The RTP session.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>optname</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The option name, see <A
+HREF="uclmmbase-rtp.html#RTP-OPTION"
+>rtp_option</A
+>.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>optval</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The return value.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> TRUE and the value of the option in optval on success, else FALSE.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN1046"
+></A
+><H3
+><A
+NAME="RTP-RECV"
+></A
+>rtp_recv ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         rtp_recv                        (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             struct <GTKDOCLINK
+HREF="TIMEVAL"
+>timeval</GTKDOCLINK
+> *timeout,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> curr_rtp_ts);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Receive RTP packets and dispatch them.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN1055"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> the session pointer (returned by <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>())</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>timeout</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> the amount of time that <GTKDOCLINK
+HREF="RTCP-RECV"
+>rtcp_recv</GTKDOCLINK
+>() is allowed to block</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>curr_rtp_ts</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> the current time expressed in units of the media
+timestamp.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> TRUE if data received, FALSE if the timeout occurred.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN1078"
+></A
+><H3
+><A
+NAME="RTP-SEND-DATA"
+></A
+>rtp_send_data ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         rtp_send_data                   (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> rtp_ts,
+                                             char pt,
+                                             int m,
+                                             int cc,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> csrc[],
+                                             char *data,
+                                             int data_len,
+                                             char *extn,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> extn_len,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> extn_type);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Send an RTP packet.  Most media applications will only set the
+<TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>, <TT
+CLASS="PARAMETER"
+><I
+>rtp_ts</I
+></TT
+>, <TT
+CLASS="PARAMETER"
+><I
+>pt</I
+></TT
+>, <TT
+CLASS="PARAMETER"
+><I
+>m</I
+></TT
+>, <TT
+CLASS="PARAMETER"
+><I
+>data</I
+></TT
+>, <TT
+CLASS="PARAMETER"
+><I
+>data_len</I
+></TT
+> arguments.</P
+><P
+>Mixers and translators typically set additional contributing sources 
+arguments (<TT
+CLASS="PARAMETER"
+><I
+>cc</I
+></TT
+>, <TT
+CLASS="PARAMETER"
+><I
+>csrc</I
+></TT
+>).</P
+><P
+>Extensions fields (<TT
+CLASS="PARAMETER"
+><I
+>extn</I
+></TT
+>, <TT
+CLASS="PARAMETER"
+><I
+>extn_len</I
+></TT
+>, <TT
+CLASS="PARAMETER"
+><I
+>extn_type</I
+></TT
+>) are for including
+application specific information.  When the widest amount of
+inter-operability is required these fields should be avoided as
+some applications discard packets with extensions they do not
+recognize.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN1102"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> the session pointer (returned by <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>())</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>rtp_ts</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The timestamp reflects the sampling instant of the first octet of the RTP data to be sent.  The timestamp is expressed in media units.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>pt</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The payload type identifying the format of the data.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>m</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> Marker bit, interpretation defined by media profile of payload.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>cc</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> Number of contributing sources (excluding local participant)</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>csrc</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> Array of SSRC identifiers for contributing sources.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>data</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The RTP data to be sent.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>data_len</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The size <TT
+CLASS="PARAMETER"
+><I
+>data</I
+></TT
+> in bytes.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>extn</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> Extension data (if present).</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>extn_len</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> size of <TT
+CLASS="PARAMETER"
+><I
+>extn</I
+></TT
+> in bytes.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>extn_type</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> extension type indicator.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> Number of bytes transmitted.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN1158"
+></A
+><H3
+><A
+NAME="RTP-SEND-CTRL"
+></A
+>rtp_send_ctrl ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>void        rtp_send_ctrl                   (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> rtp_ts,
+                                             <A
+HREF="uclmmbase-rtp.html#RTCP-APP-CALLBACK"
+>rtcp_app_callback</A
+> appcallback);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Checks RTCP timer and sends RTCP data when nececessary.  The
+interval between RTCP packets is randomized over an interval that
+depends on the session bandwidth, the number of participants, and
+whether the local participant is a sender.  This function should be
+called at least once per second, and can be safely called more
+frequently.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN1167"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> the session pointer (returned by <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>())</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>rtp_ts</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> the current time expressed in units of the media timestamp.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>appcallback</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> a callback to create an APP RTCP packet, if needed.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN1185"
+></A
+><H3
+><A
+NAME="RTP-UPDATE"
+></A
+>rtp_update ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>void        rtp_update                      (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Trawls through the internal data structures and performs
+housekeeping.  This function should be called at least once per
+second.  It uses an internal timer to limit the number of passes
+through the data structures to once per second, it can be safely
+called more frequently.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN1192"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> the session pointer (returned by <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>())</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN1202"
+></A
+><H3
+><A
+NAME="RTP-MY-SSRC"
+></A
+>rtp_my_ssrc ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+><GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+>    rtp_my_ssrc                     (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN1210"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The RTP Session.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The SSRC we are currently using in this session. Note that our
+SSRC can change at any time (due to collisions) so applications must not
+store the value returned, but rather should call this function each time 
+they need it.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN1223"
+></A
+><H3
+><A
+NAME="RTP-ADD-CSRC"
+></A
+>rtp_add_csrc ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         rtp_add_csrc                    (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> csrc);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Adds <TT
+CLASS="PARAMETER"
+><I
+>csrc</I
+></TT
+> to list of contributing sources used in SDES items.
+Used by mixers and transcoders.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN1232"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> the session pointer (returned by <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>()) </TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>csrc</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> Constributing SSRC identifier</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> TRUE.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN1250"
+></A
+><H3
+><A
+NAME="RTP-DEL-CSRC"
+></A
+>rtp_del_csrc ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         rtp_del_csrc                    (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> csrc);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Removes <TT
+CLASS="PARAMETER"
+><I
+>csrc</I
+></TT
+> from list of contributing sources used in SDES items.
+Used by mixers and transcoders.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN1259"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> the session pointer (returned by <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>()) </TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>csrc</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> Constributing SSRC identifier</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> TRUE on success, FALSE if <TT
+CLASS="PARAMETER"
+><I
+>csrc</I
+></TT
+> is not a valid source.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN1278"
+></A
+><H3
+><A
+NAME="RTP-SET-SDES"
+></A
+>rtp_set_sdes ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         rtp_set_sdes                    (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> ssrc,
+                                             <A
+HREF="uclmmbase-rtp.html#RTCP-SDES-TYPE"
+>rtcp_sdes_type</A
+> type,
+                                             const char *value,
+                                             int length);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Sets session description information associated with participant
+<TT
+CLASS="PARAMETER"
+><I
+>ssrc</I
+></TT
+>.  Under normal circumstances applications always use the
+<TT
+CLASS="PARAMETER"
+><I
+>ssrc</I
+></TT
+> of the local participant, this SDES information is
+transmitted in receiver reports.  Setting SDES information for
+other participants affects the local SDES entries, but are not
+transmitted onto the network.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN1289"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> the session pointer (returned by <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>()) </TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>ssrc</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> the SSRC identifier of a participant</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>type</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> the SDES type represented by <TT
+CLASS="PARAMETER"
+><I
+>value</I
+></TT
+></TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>value</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> the SDES description</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>length</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> the length of the description</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> Returns TRUE if participant exists, FALSE otherwise.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN1320"
+></A
+><H3
+><A
+NAME="RTP-GET-SDES"
+></A
+>rtp_get_sdes ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>const char* rtp_get_sdes                    (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> ssrc,
+                                             <A
+HREF="uclmmbase-rtp.html#RTCP-SDES-TYPE"
+>rtcp_sdes_type</A
+> type);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Recovers session description (SDES) information on participant
+identified with <TT
+CLASS="PARAMETER"
+><I
+>ssrc</I
+></TT
+>.  The SDES information associated with a
+source is updated when receiver reports are received.  There are
+several different types of SDES information, e.g. username,
+location, phone, email.  These are enumerated by <A
+HREF="uclmmbase-rtp.html#RTCP-SDES-TYPE"
+>rtcp_sdes_type</A
+>.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN1331"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> the session pointer (returned by <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>()) </TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>ssrc</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> the SSRC identifier of a participant</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>type</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> the SDES information to retrieve</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> pointer to string containing SDES description if
+received, NULL otherwise.  </TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN1353"
+></A
+><H3
+><A
+NAME="RTP-GET-SR"
+></A
+>rtp_get_sr ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>const <A
+HREF="uclmmbase-rtp.html#RTCP-SR"
+>rtcp_sr</A
+>* rtp_get_sr                   (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> ssrc);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Retrieve the latest sender report made by sender with <TT
+CLASS="PARAMETER"
+><I
+>ssrc</I
+></TT
+> identifier.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN1363"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> the session pointer (returned by <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>()) </TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>ssrc</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> identifier of source</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> A pointer to an rtcp_sr structure on success, NULL
+otherwise.  The pointer must not be freed.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN1381"
+></A
+><H3
+><A
+NAME="RTP-GET-RR"
+></A
+>rtp_get_rr ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>const <A
+HREF="uclmmbase-rtp.html#RTCP-RR"
+>rtcp_rr</A
+>* rtp_get_rr                   (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> reporter,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> reportee);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Retrieve the latest receiver report on <TT
+CLASS="PARAMETER"
+><I
+>reportee</I
+></TT
+> made by <TT
+CLASS="PARAMETER"
+><I
+>reporter</I
+></TT
+>.
+Provides an indication of other receivers reception service.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN1393"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> the session pointer (returned by <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>())</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>reporter</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> participant originating receiver report</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>reportee</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> participant included in receiver report</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> A pointer to a rtcp_rr structure on success, NULL
+otherwise.  The pointer must not be freed.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN1415"
+></A
+><H3
+><A
+NAME="RTP-SET-ENCRYPTION-KEY"
+></A
+>rtp_set_encryption_key ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         rtp_set_encryption_key          (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             const char *passphrase);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Converts the user supplied key into a form suitable for use with RTP
+and install it as the active key. Passing in NULL as the passphrase
+disables encryption. The passphrase is converted into a DES key as
+specified in RFC1890, that is:</P
+><P
+>- convert to canonical form</P
+><P
+>- derive an MD5 hash of the canonical form</P
+><P
+>- take the first 56 bits of the MD5 hash</P
+><P
+>- add parity bits to form a 64 bit key</P
+><P
+>Note that versions of rat prior to 4.1.2 do not convert the passphrase
+to canonical form before taking the MD5 hash, and so will
+not be compatible for keys which are non-invarient under this step.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN1427"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The RTP session.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>passphrase</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The user-provided "pass phrase" to map to an encryption key.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> TRUE on success, FALSE on failure.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN1444"
+></A
+><H3
+><A
+NAME="RTP-SET-MY-SSRC"
+></A
+>rtp_set_my_ssrc ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         rtp_set_my_ssrc                 (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session,
+                                             <GTKDOCLINK
+HREF="UINT32-T"
+>uint32_t</GTKDOCLINK
+> ssrc);</PRE
+></TD
+></TR
+></TABLE
+><P
+>This function coerces the local SSRC identifer to be ssrc.  For
+this function to succeed it must be called immediately after
+rtp_init or rtp_init_if.  The intended purpose of this
+function is to co-ordinate SSRC's between layered sessions, it
+should not be used otherwise.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN1452"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> the RTP session </TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>ssrc</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> the SSRC to be used by the RTP session</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> TRUE on success, FALSE otherwise.  </TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN1469"
+></A
+><H3
+><A
+NAME="RTP-GET-ADDR"
+></A
+>rtp_get_addr ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>char*       rtp_get_addr                    (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN1476"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The RTP Session.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The session's destination address, as set when creating the
+session with <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>() or <A
+HREF="uclmmbase-rtp.html#RTP-INIT-IF"
+>rtp_init_if</A
+>().</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN1491"
+></A
+><H3
+><A
+NAME="RTP-GET-RX-PORT"
+></A
+>rtp_get_rx_port ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+><GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+>    rtp_get_rx_port                 (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN1499"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The RTP Session.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The UDP port to which this session is bound, as set when
+creating the session with <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>() or <A
+HREF="uclmmbase-rtp.html#RTP-INIT-IF"
+>rtp_init_if</A
+>().</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN1514"
+></A
+><H3
+><A
+NAME="RTP-GET-TX-PORT"
+></A
+>rtp_get_tx_port ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+><GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+>    rtp_get_tx_port                 (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN1522"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The RTP Session.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The UDP port to which RTP packets are transmitted, as set
+when creating the session with <A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>() or <A
+HREF="uclmmbase-rtp.html#RTP-INIT-IF"
+>rtp_init_if</A
+>().</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN1537"
+></A
+><H3
+><A
+NAME="RTP-GET-TTL"
+></A
+>rtp_get_ttl ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         rtp_get_ttl                     (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN1544"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The RTP Session.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The session's TTL, as set when creating the session with
+<A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>() or <A
+HREF="uclmmbase-rtp.html#RTP-INIT-IF"
+>rtp_init_if</A
+>().</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN1559"
+></A
+><H3
+><A
+NAME="RTP-GET-USERDATA"
+></A
+>rtp_get_userdata ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+><GTKDOCLINK
+HREF="UINT8-T"
+>uint8_t</GTKDOCLINK
+>*    rtp_get_userdata                (struct <GTKDOCLINK
+HREF="RTP"
+>rtp</GTKDOCLINK
+> *session);</PRE
+></TD
+></TR
+></TABLE
+><P
+>This function returns the userdata pointer that was passed to the
+<A
+HREF="uclmmbase-rtp.html#RTP-INIT"
+>rtp_init</A
+>() or <A
+HREF="uclmmbase-rtp.html#RTP-INIT-IF"
+>rtp_init_if</A
+>() function when creating this session.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN1569"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>session</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> The RTP session.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> pointer to userdata.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN1582"
+></A
+><H2
+>See Also</H2
+><P
+></P
+><UL
+><LI
+><P
+><A
+HREF="http://www.ietf.org/rfc/rfc1889.txt"
+TARGET="_top"
+>RFC1889 - RTP: A Transport Protocol for Real-Time Applications </A
+></P
+></LI
+><LI
+><P
+><A
+HREF="http://www.ietf.org/rfc/rfc1890.txt"
+TARGET="_top"
+>RFC1890 - RTP Profile for Audio and Video Conferences with Minimal Control </A
+></P
+></LI
+><LI
+><P
+><A
+HREF="http://www.ietf.org/html.charters/avt-charter.html"
+TARGET="_top"
+> IETF Audio/Video Transport Group</A
+></P
+></LI
+></UL
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><BR
+CLEAR="all"><BR><TABLE
+WIDTH="100%"
+BORDER="0"
+BGCOLOR="#000000"
+CELLPADDING="1"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="25%"
+BGCOLOR="#C00000"
+ALIGN="left"
+><A
+HREF="uclmmbase-net-udp.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>&#60;&#60;&#60; Previous Page</B
+></FONT
+></A
+></TD
+><TD
+WIDTH="25%"
+BGCOLOR="#0000C0"
+ALIGN="center"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+><A
+HREF="book1.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Home</B
+></FONT
+></A
+></B
+></FONT
+></TD
+><TD
+WIDTH="25%"
+BGCOLOR="#00C000"
+ALIGN="center"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+><A
+HREF="uclmmbase.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Up</B
+></FONT
+></A
+></B
+></FONT
+></TD
+><TD
+WIDTH="25%"
+BGCOLOR="#C00000"
+ALIGN="right"
+><A
+HREF="uclmmbase-debug.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Next Page &#62;&#62;&#62;</B
+></FONT
+></A
+></TD
+></TR
+><TR
+><TD
+COLSPAN="2"
+ALIGN="left"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>NETUDP</B
+></FONT
+></TD
+><TD
+COLSPAN="2"
+ALIGN="right"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Debug</B
+></FONT
+></TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

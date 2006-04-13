@@ -1,0 +1,146 @@
+<!-- ##### SECTION Title ##### -->
+NETUDP
+
+<!-- ##### SECTION Short_Description ##### -->
+
+A UDP interface for IPv4 and IPv6.
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+These functions provide a unified interface for sending are receiving
+UDP datagrams over IPv4 and IPv6 networks.  
+</para>
+
+<para>
+For IPv6 addresses to work the common library must be built with IPv6
+enabled.  On UNIX, the <application>configure</application> script has an option <option>--enable-ip-v6</option>
+for this purpose.  On Win32, there is a project configuration to use
+the Microsoft IPv6 stack when installed.
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT socket_udp ##### -->
+<para>
+An opaque data structure containing information for a UDP session.
+</para>
+
+
+<!-- ##### FUNCTION udp_addr_valid ##### -->
+<para>
+
+</para>
+
+@addr: 
+@Returns: 
+
+
+<!-- ##### FUNCTION udp_init ##### -->
+<para>
+
+</para>
+
+@addr: 
+@rx_port: 
+@tx_port: 
+@ttl: 
+@Returns: 
+
+
+<!-- ##### FUNCTION udp_init_if ##### -->
+<para>
+
+</para>
+
+@addr: 
+@iface: 
+@rx_port: 
+@tx_port: 
+@ttl: 
+@Returns: 
+
+
+<!-- ##### FUNCTION udp_exit ##### -->
+<para>
+
+</para>
+
+@s: 
+
+
+<!-- ##### FUNCTION udp_send ##### -->
+<para>
+
+</para>
+
+@s: 
+@buffer: 
+@buflen: 
+@Returns: 
+
+
+<!-- ##### FUNCTION udp_recv ##### -->
+<para>
+
+</para>
+
+@s: 
+@buffer: 
+@buflen: 
+@Returns: 
+
+
+<!-- ##### FUNCTION udp_select ##### -->
+<para>
+
+</para>
+
+@timeout: 
+@Returns: 
+
+
+<!-- ##### FUNCTION udp_fd_zero ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION udp_fd_set ##### -->
+<para>
+
+</para>
+
+@s: 
+
+
+<!-- ##### FUNCTION udp_fd_isset ##### -->
+<para>
+
+</para>
+
+@s: 
+@Returns: 
+
+
+<!-- ##### FUNCTION udp_host_addr ##### -->
+<para>
+
+</para>
+
+@s: 
+@Returns: 
+
+
+<!-- ##### FUNCTION udp_fd ##### -->
+<para>
+
+</para>
+
+@s: 
+@Returns: 
+
+

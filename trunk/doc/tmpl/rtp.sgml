@@ -1,0 +1,460 @@
+<!-- ##### SECTION Title ##### -->
+RTP
+
+<!-- ##### SECTION Short_Description ##### -->
+Real-Time Transport Protocol (RTP) Implementation.
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+The Real-Time Transport Protocol (RTP) is a protocol for the transport
+of audio, video, and other real-time data across IP capable networks.
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+
+<itemizedlist>
+  <listitem>
+    <para><ulink url="http://www.ietf.org/rfc/rfc1889.txt">RFC1889 - RTP: A Transport Protocol for Real-Time Applications </ulink></para>
+  </listitem> 
+
+  <listitem>
+    <para><ulink url="http://www.ietf.org/rfc/rfc1890.txt">RFC1890 - RTP Profile for Audio and Video Conferences with Minimal Control </ulink></para>
+  </listitem>
+
+  <listitem>
+     <para><ulink url="http://www.ietf.org/html.charters/avt-charter.html"> IETF Audio/Video Transport Group</ulink></para>
+  </listitem>
+
+</itemizedlist>
+
+<!-- ##### MACRO RTP_VERSION ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO RTP_MAX_PACKET_LEN ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### TYPEDEF rtp_packet ##### -->
+<para>
+The struct begins with pointers to the data in the packet as
+it came off the wire. The packet is read in such that the
+header maps onto the latter part of this struct, and the
+fields in this first part of the struct point into it. The
+entire packet can be freed by freeing this struct, without
+having to free the csrc, data and extn blocks separately.
+WARNING: Don't change the size of the first portion of the
+struct without changing RTP_PACKET_HEADER_SIZE to match.
+</para>
+
+
+<!-- ##### MACRO RTP_PACKET_HEADER_SIZE ##### -->
+<para>
+This macro MUST resolve to the offset of the first packet
+field in the #rtp_packet struct, including all padding.
+If you change rtp_packet, make sure to change this too.
+</para>
+
+
+
+<!-- ##### TYPEDEF rtcp_sr ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### TYPEDEF rtcp_rr ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ENUM rtcp_sdes_type ##### -->
+<para>
+Possible values of Session Description (SDES) identifiers.  SDES items
+are announced via #rtp_callback (with RX_SDES events) when they are
+received.  SDES items may be configured and queried with #rtp_set_sdes
+and #rtp_get_sdes.  The RTP guidelines recommend keeping SDES items
+constant during an RTP session to avoid confusing end users.
+</para>
+
+@RTCP_SDES_END: Indicates the end of SDES item processing when SDES data is received.  Has no meaning with #rtp_set_sdes and #rtp_get_sdes.
+@RTCP_SDES_CNAME: The canonical name associated with participant. It is algorithmically derived and should never be changed.
+@RTCP_SDES_NAME: The local participant's name, typically displayed in RTP session participant list. The name can take any form, and should remain constant during a session to avoid confusion.
+@RTCP_SDES_EMAIL: The local participant's email address (optional).
+@RTCP_SDES_PHONE: The local participant's telephone number (optional).
+@RTCP_SDES_LOC: The local participant's geographic location (optional).
+@RTCP_SDES_TOOL: The local participant's tool (optional).
+@RTCP_SDES_NOTE: Any additional information the local participant wishes to communicate about themselves (optional).
+@RTCP_SDES_PRIV: Private extension SDES item see <ulink url="http://www.ietf.org/rfc/rfc1889.txt">RFC1889</ulink> for details.
+
+<!-- ##### TYPEDEF rtcp_sdes_item ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### TYPEDEF rtcp_app ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### USER_FUNCTION rtcp_app_callback ##### -->
+<para>
+This callback function crafts an RTCP APP packet to be sent with
+an RTCP RR.
+</para>
+
+@session: the session pointer (returned by rtp_init())
+@rtp_ts: the current time expressed in units of the media timestamp.
+@max_size: the max allowed size of an APP packet.
+@Returns: A fully-formed RTCP APP packet as an #rtcp_app, or NULL (???)
+if no APP packet needs to be sent at this time.
+
+
+<!-- ##### ENUM rtp_event_type ##### -->
+<para>
+The possible values for the type field in #rtp_event.
+Each value represents an event in RTP or RTCP processing.
+</para>
+
+@RX_RTP: An RTP data packet was received.
+The ssrc field contains the RTP data packet's SSRC.
+The data field points to a #rtp_packet containing the RTP data packet.
+The callback must free the rtp_packet when it's done with it using the xfree() function.
+@RX_SR: An RTCP SR packet was received.
+The ssrc field contains the SR packet's SSRC.
+The data field points to an #rtcp_sr.
+@RX_RR: An RTCP RR packet was received.
+The ssrc field contains the RR packet's SSRC.
+The data field points to an #rtcp_rr.
+@RX_SDES: An RTCP SDES packet was received.
+The ssrc field contains the SDES packet's SSRC.
+The data field points to an #rtcp_sdes_item.
+@RX_BYE: An RTCP BYE packet was received.
+The ssrc field contains the BYE packet's SSRC.
+@SOURCE_CREATED: A new session participant was heard from.
+The ssrc field contains the new participant's SSRC.
+@SOURCE_DELETED: A source was deleted from the database.
+The ssrc field contains the ex-participant's SSRC.
+@RX_RR_EMPTY: An RTCP RR packet with no sources listed was received.
+The ssrc field contains the RR packet's SSRC.
+@RX_RTCP_START: Called at the start of parsing an RTCP packet.
+Neither the ssrc nor data fields are valid.
+@RX_RTCP_FINISH: Called at the end of parsing an RTCP packet.
+Neither the ssrc nor data fields are valid.
+@RR_TIMEOUT: An RR from the given receiver has not been refreshed recently enough.
+The ssrc field contains the RR packet's SSRC.
+The data field points to the expiring #rtcp_rr.
+@RX_APP: An APP packet was received.
+The ssrc field contains the APP packet's SSRC.
+The data field points to an #rtcp_app.
+The callback must free the app packet when it's done with it.
+
+<!-- ##### TYPEDEF rtp_event ##### -->
+<para>
+The event structure as passed to rtp_callback().
+The callback type is carried in the type field; see #rtp_event_type
+for a description of each callback.
+Unless otherwise noted, the ssrc field contains the SSRC of the participant
+triggering this callback.  The data field points to any data contained in
+this callback; it must be cast to the appropriate type.  The ts field
+contains the timestamp of the packet reception that caused this event.
+</para>
+
+
+<!-- ##### USER_FUNCTION rtp_callback ##### -->
+<para>
+Handles RTP events in an application-specific way.
+See #rtp_event for a description of the possible events and
+how rtp_callback() should handle each.
+
+</para>
+
+@session: The RTP Session.
+@e: The RTP Event information.  See #rtp_event.
+
+
+<!-- ##### ENUM rtp_option ##### -->
+<para>
+The possible options for a session that affect which RTP packets are
+passed to the application and when internal state for sources is created.
+</para>
+
+@RTP_OPT_PROMISC: Pass RTP packets to application irrespective of
+whether a sender report has been received.  Normally, participant
+state is created when a sender report is received and RTP packets that
+arrive prior to the sender report are discarded.
+@RTP_OPT_WEAK_VALIDATION: Create source state when RTP packets arrive
+if none exists.  This option is set by default.  Disabling the option
+means source state is only created when sender reports are received.
+@RTP_OPT_FILTER_MY_PACKETS: Filter out packets from local participant
+if they are received.  With multicast sessions, packets may be looped
+back, causing senders packets to be received locally.  This may be
+filtered out with this option.
+
+<!-- ##### FUNCTION rtp_init ##### -->
+<para>
+
+</para>
+
+@addr: 
+@rx_port: 
+@tx_port: 
+@ttl: 
+@rtcp_bw: 
+@callback: 
+@userdata: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_init_if ##### -->
+<para>
+
+</para>
+
+@addr: 
+@iface: 
+@rx_port: 
+@tx_port: 
+@ttl: 
+@rtcp_bw: 
+@callback: 
+@userdata: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_send_bye ##### -->
+<para>
+
+</para>
+
+@session: 
+
+
+<!-- ##### FUNCTION rtp_done ##### -->
+<para>
+
+</para>
+
+@session: 
+
+
+<!-- ##### FUNCTION rtp_set_option ##### -->
+<para>
+
+</para>
+
+@session: 
+@optname: 
+@optval: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_get_option ##### -->
+<para>
+
+</para>
+
+@session: 
+@optname: 
+@optval: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_recv ##### -->
+<para>
+
+</para>
+
+@session: 
+@timeout: 
+@curr_rtp_ts: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_send_data ##### -->
+<para>
+
+</para>
+
+@session: 
+@rtp_ts: 
+@pt: 
+@m: 
+@cc: 
+@csrc: 
+@data: 
+@data_len: 
+@extn: 
+@extn_len: 
+@extn_type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_send_ctrl ##### -->
+<para>
+
+</para>
+
+@session: 
+@rtp_ts: 
+@appcallback: 
+
+
+<!-- ##### FUNCTION rtp_update ##### -->
+<para>
+
+</para>
+
+@session: 
+
+
+<!-- ##### FUNCTION rtp_my_ssrc ##### -->
+<para>
+
+</para>
+
+@session: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_add_csrc ##### -->
+<para>
+
+</para>
+
+@session: 
+@csrc: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_del_csrc ##### -->
+<para>
+
+</para>
+
+@session: 
+@csrc: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_set_sdes ##### -->
+<para>
+
+</para>
+
+@session: 
+@ssrc: 
+@type: 
+@value: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_get_sdes ##### -->
+<para>
+
+</para>
+
+@session: 
+@ssrc: 
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_get_sr ##### -->
+<para>
+
+</para>
+
+@session: 
+@ssrc: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_get_rr ##### -->
+<para>
+
+</para>
+
+@session: 
+@reporter: 
+@reportee: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_set_encryption_key ##### -->
+<para>
+
+</para>
+
+@session: 
+@passphrase: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_set_my_ssrc ##### -->
+<para>
+
+</para>
+
+@session: 
+@ssrc: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_get_addr ##### -->
+<para>
+
+</para>
+
+@session: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_get_rx_port ##### -->
+<para>
+
+</para>
+
+@session: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_get_tx_port ##### -->
+<para>
+
+</para>
+
+@session: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_get_ttl ##### -->
+<para>
+
+</para>
+
+@session: 
+@Returns: 
+
+
+<!-- ##### FUNCTION rtp_get_userdata ##### -->
+<para>
+
+</para>
+
+@session: 
+@Returns: 
+
+

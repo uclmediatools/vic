@@ -1,0 +1,1592 @@
+<HTML
+><HEAD
+><TITLE
+>NETUDP</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.59"><LINK
+REL="HOME"
+TITLE="UCL Common Library Reference"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Overview"
+HREF="uclmmbase.html"><LINK
+REL="PREVIOUS"
+TITLE="MD5"
+HREF="uclmmbase-md5.html"><LINK
+REL="NEXT"
+TITLE="RTP"
+HREF="uclmmbase-rtp.html"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+BGCOLOR="#000000"
+CELLPADDING="1"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="4"
+ALIGN="center"
+><FONT
+COLOR="#FFFFFF"
+SIZE="5"
+>UCL Common Library Reference</FONT
+></TH
+></TR
+><TR
+><TD
+WIDTH="25%"
+BGCOLOR="#C00000"
+ALIGN="left"
+><A
+HREF="uclmmbase-md5.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>&#60;&#60;&#60; Previous Page</B
+></FONT
+></A
+></TD
+><TD
+WIDTH="25%"
+BGCOLOR="#0000C0"
+ALIGN="center"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+><A
+HREF="book1.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Home</B
+></FONT
+></A
+></B
+></FONT
+></TD
+><TD
+WIDTH="25%"
+BGCOLOR="#00C000"
+ALIGN="center"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+><A
+HREF="uclmmbase.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Up</B
+></FONT
+></A
+></B
+></FONT
+></TD
+><TD
+WIDTH="25%"
+BGCOLOR="#C00000"
+ALIGN="right"
+><A
+HREF="uclmmbase-rtp.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Next Page &#62;&#62;&#62;</B
+></FONT
+></A
+></TD
+></TR
+></TABLE
+></DIV
+><H1
+><A
+NAME="UCLMMBASE-NET-UDP"
+>NETUDP</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN162"
+></A
+><H2
+>Name</H2
+>NETUDP&nbsp;--&nbsp;A UDP interface for IPv4 and IPv6.</DIV
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A
+NAME="AEN165"
+></A
+><H2
+>Synopsis</H2
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="SYNOPSIS"
+>&#13;#include &lt;net_udp.h&gt;
+
+
+struct      <A
+HREF="uclmmbase-net-udp.html#SOCKET-UDP"
+>socket_udp</A
+>;
+int         <A
+HREF="uclmmbase-net-udp.html#UDP-ADDR-VALID"
+>udp_addr_valid</A
+>                  (const char *addr);
+<A
+HREF="uclmmbase-net-udp.html#SOCKET-UDP"
+>socket_udp</A
+>* <A
+HREF="uclmmbase-net-udp.html#UDP-INIT"
+>udp_init</A
+>                        (const char *addr,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> rx_port,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> tx_port,
+                                             int ttl);
+<A
+HREF="uclmmbase-net-udp.html#SOCKET-UDP"
+>socket_udp</A
+>* <A
+HREF="uclmmbase-net-udp.html#UDP-INIT-IF"
+>udp_init_if</A
+>                     (const char *addr,
+                                             const char *iface,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> rx_port,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> tx_port,
+                                             int ttl);
+void        <A
+HREF="uclmmbase-net-udp.html#UDP-EXIT"
+>udp_exit</A
+>                        (<A
+HREF="uclmmbase-net-udp.html#SOCKET-UDP"
+>socket_udp</A
+> *s);
+int         <A
+HREF="uclmmbase-net-udp.html#UDP-SEND"
+>udp_send</A
+>                        (<A
+HREF="uclmmbase-net-udp.html#SOCKET-UDP"
+>socket_udp</A
+> *s,
+                                             char *buffer,
+                                             int buflen);
+int         <A
+HREF="uclmmbase-net-udp.html#UDP-RECV"
+>udp_recv</A
+>                        (<A
+HREF="uclmmbase-net-udp.html#SOCKET-UDP"
+>socket_udp</A
+> *s,
+                                             char *buffer,
+                                             int buflen);
+int         <A
+HREF="uclmmbase-net-udp.html#UDP-SELECT"
+>udp_select</A
+>                      (struct <GTKDOCLINK
+HREF="TIMEVAL"
+>timeval</GTKDOCLINK
+> *timeout);
+void        <A
+HREF="uclmmbase-net-udp.html#UDP-FD-ZERO"
+>udp_fd_zero</A
+>                     (void);
+void        <A
+HREF="uclmmbase-net-udp.html#UDP-FD-SET"
+>udp_fd_set</A
+>                      (<A
+HREF="uclmmbase-net-udp.html#SOCKET-UDP"
+>socket_udp</A
+> *s);
+int         <A
+HREF="uclmmbase-net-udp.html#UDP-FD-ISSET"
+>udp_fd_isset</A
+>                    (<A
+HREF="uclmmbase-net-udp.html#SOCKET-UDP"
+>socket_udp</A
+> *s);
+const char* <A
+HREF="uclmmbase-net-udp.html#UDP-HOST-ADDR"
+>udp_host_addr</A
+>                   (<A
+HREF="uclmmbase-net-udp.html#SOCKET-UDP"
+>socket_udp</A
+> *s);
+int         <A
+HREF="uclmmbase-net-udp.html#UDP-FD"
+>udp_fd</A
+>                          (<A
+HREF="uclmmbase-net-udp.html#SOCKET-UDP"
+>socket_udp</A
+> *s);</PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN195"
+></A
+><H2
+>Description</H2
+><P
+>These functions provide a unified interface for sending are receiving
+UDP datagrams over IPv4 and IPv6 networks.  </P
+><P
+>For IPv6 addresses to work the common library must be built with IPv6
+enabled.  On UNIX, the <SPAN
+CLASS="APPLICATION"
+>configure</SPAN
+> script has an option <TT
+CLASS="OPTION"
+>--enable-ip-v6</TT
+>
+for this purpose.  On Win32, there is a project configuration to use
+the Microsoft IPv6 stack when installed.</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN201"
+></A
+><H2
+>Details</H2
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN203"
+></A
+><H3
+><A
+NAME="SOCKET-UDP"
+></A
+>struct socket_udp</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>struct socket_udp;</PRE
+></TD
+></TR
+></TABLE
+><P
+>An opaque data structure containing information for a UDP session.</P
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN208"
+></A
+><H3
+><A
+NAME="UDP-ADDR-VALID"
+></A
+>udp_addr_valid ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         udp_addr_valid                  (const char *addr);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN214"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>addr</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> string representation of IPv4 or IPv6 network address.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+>TRUE if <TT
+CLASS="PARAMETER"
+><I
+>addr</I
+></TT
+> is valid, FALSE otherwise.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN228"
+></A
+><H3
+><A
+NAME="UDP-INIT"
+></A
+>udp_init ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+><A
+HREF="uclmmbase-net-udp.html#SOCKET-UDP"
+>socket_udp</A
+>* udp_init                        (const char *addr,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> rx_port,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> tx_port,
+                                             int ttl);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Creates a session for sending and receiving UDP datagrams over IP
+networks.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN237"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>addr</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> character string containing an IPv4 or IPv6 network address.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>rx_port</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> receive port.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>tx_port</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> transmit port.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>ttl</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> time-to-live value for transmitted packets.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> a pointer to a valid socket_udp structure on success, NULL otherwise.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN262"
+></A
+><H3
+><A
+NAME="UDP-INIT-IF"
+></A
+>udp_init_if ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+><A
+HREF="uclmmbase-net-udp.html#SOCKET-UDP"
+>socket_udp</A
+>* udp_init_if                     (const char *addr,
+                                             const char *iface,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> rx_port,
+                                             <GTKDOCLINK
+HREF="UINT16-T"
+>uint16_t</GTKDOCLINK
+> tx_port,
+                                             int ttl);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Creates a session for sending and receiving UDP datagrams over IP
+networks.  The session uses <TT
+CLASS="PARAMETER"
+><I
+>iface</I
+></TT
+> as the interface to send and
+receive datagrams on.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN272"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>addr</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> character string containing an IPv4 or IPv6 network address.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>iface</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> character string containing an interface name.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>rx_port</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> receive port.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>tx_port</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> transmit port.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>ttl</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> time-to-live value for transmitted packets.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> a pointer to a socket_udp structure on success, NULL otherwise.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN301"
+></A
+><H3
+><A
+NAME="UDP-EXIT"
+></A
+>udp_exit ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>void        udp_exit                        (<A
+HREF="uclmmbase-net-udp.html#SOCKET-UDP"
+>socket_udp</A
+> *s);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Closes UDP session.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN308"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>s</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> UDP session to be terminated.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN317"
+></A
+><H3
+><A
+NAME="UDP-SEND"
+></A
+>udp_send ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         udp_send                        (<A
+HREF="uclmmbase-net-udp.html#SOCKET-UDP"
+>socket_udp</A
+> *s,
+                                             char *buffer,
+                                             int buflen);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Transmits a UDP datagram containing data from <TT
+CLASS="PARAMETER"
+><I
+>buffer</I
+></TT
+>.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN325"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>s</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> UDP session.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>buffer</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> pointer to buffer to be transmitted.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>buflen</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> length of <TT
+CLASS="PARAMETER"
+><I
+>buffer</I
+></TT
+>.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> 0 on success, -1 on failure.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN347"
+></A
+><H3
+><A
+NAME="UDP-RECV"
+></A
+>udp_recv ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         udp_recv                        (<A
+HREF="uclmmbase-net-udp.html#SOCKET-UDP"
+>socket_udp</A
+> *s,
+                                             char *buffer,
+                                             int buflen);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Reads from datagram queue associated with UDP session.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN354"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>s</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> UDP session.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>buffer</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> buffer to read data into.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>buflen</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> length of <TT
+CLASS="PARAMETER"
+><I
+>buffer</I
+></TT
+>.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> number of bytes read, returns 0 if no data is available.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN376"
+></A
+><H3
+><A
+NAME="UDP-SELECT"
+></A
+>udp_select ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         udp_select                      (struct <GTKDOCLINK
+HREF="TIMEVAL"
+>timeval</GTKDOCLINK
+> *timeout);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Waits for data to arrive for UDP sessions.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN383"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>timeout</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> maximum period to wait for data to arrive.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> number of UDP sessions ready for reading.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN396"
+></A
+><H3
+><A
+NAME="UDP-FD-ZERO"
+></A
+>udp_fd_zero ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>void        udp_fd_zero                     (void);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Clears file descriptor from set associated with UDP sessions (see select(2)).</P
+><P
+></P
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN402"
+></A
+><H3
+><A
+NAME="UDP-FD-SET"
+></A
+>udp_fd_set ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>void        udp_fd_set                      (<A
+HREF="uclmmbase-net-udp.html#SOCKET-UDP"
+>socket_udp</A
+> *s);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Adds file descriptor associated of <TT
+CLASS="PARAMETER"
+><I
+>s</I
+></TT
+> to set associated with UDP sessions.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN410"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>s</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> UDP session.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN419"
+></A
+><H3
+><A
+NAME="UDP-FD-ISSET"
+></A
+>udp_fd_isset ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         udp_fd_isset                    (<A
+HREF="uclmmbase-net-udp.html#SOCKET-UDP"
+>socket_udp</A
+> *s);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Checks if file descriptor associated with UDP session is ready for
+reading.  This function should be called after <A
+HREF="uclmmbase-net-udp.html#UDP-SELECT"
+>udp_select</A
+>().</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN427"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>s</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> UDP session.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> non-zero if set, zero otherwise.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN440"
+></A
+><H3
+><A
+NAME="UDP-HOST-ADDR"
+></A
+>udp_host_addr ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>const char* udp_host_addr                   (<A
+HREF="uclmmbase-net-udp.html#SOCKET-UDP"
+>socket_udp</A
+> *s);</PRE
+></TD
+></TR
+></TABLE
+><P
+></P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN447"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>s</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> UDP session.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> character string containing network address
+associated with session <TT
+CLASS="PARAMETER"
+><I
+>s</I
+></TT
+>.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN461"
+></A
+><H3
+><A
+NAME="UDP-FD"
+></A
+>udp_fd ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>int         udp_fd                          (<A
+HREF="uclmmbase-net-udp.html#SOCKET-UDP"
+>socket_udp</A
+> *s);</PRE
+></TD
+></TR
+></TABLE
+><P
+>This function allows applications to apply their own <GTKDOCLINK
+HREF="SOCKETOPT"
+>socketopt</GTKDOCLINK
+>()'s
+and <GTKDOCLINK
+HREF="IOCTL"
+>ioctl</GTKDOCLINK
+>()'s to the UDP session.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN470"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>s</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> UDP session.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><I
+CLASS="EMPHASIS"
+>Returns</I
+> :</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> file descriptor of socket used by session <TT
+CLASS="PARAMETER"
+><I
+>s</I
+></TT
+>.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><BR
+CLEAR="all"><BR><TABLE
+WIDTH="100%"
+BORDER="0"
+BGCOLOR="#000000"
+CELLPADDING="1"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="25%"
+BGCOLOR="#C00000"
+ALIGN="left"
+><A
+HREF="uclmmbase-md5.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>&#60;&#60;&#60; Previous Page</B
+></FONT
+></A
+></TD
+><TD
+WIDTH="25%"
+BGCOLOR="#0000C0"
+ALIGN="center"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+><A
+HREF="book1.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Home</B
+></FONT
+></A
+></B
+></FONT
+></TD
+><TD
+WIDTH="25%"
+BGCOLOR="#00C000"
+ALIGN="center"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+><A
+HREF="uclmmbase.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Up</B
+></FONT
+></A
+></B
+></FONT
+></TD
+><TD
+WIDTH="25%"
+BGCOLOR="#C00000"
+ALIGN="right"
+><A
+HREF="uclmmbase-rtp.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Next Page &#62;&#62;&#62;</B
+></FONT
+></A
+></TD
+></TR
+><TR
+><TD
+COLSPAN="2"
+ALIGN="left"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>MD5</B
+></FONT
+></TD
+><TD
+COLSPAN="2"
+ALIGN="right"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>RTP</B
+></FONT
+></TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

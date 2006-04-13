@@ -1,0 +1,28 @@
+#
+# Makefile for the common code library project. 
+# This probably requires GNU make.
+#
+
+SUBDIRS=src tests examples @OPTDOC@
+
+all: all-recursive
+
+all-recursive:
+	for s in $(SUBDIRS) ; do (cd $$s && $(MAKE)) || exit 1 ; done
+	@echo ""
+	@echo "*** run \"tests/test-libcommon\" to run the test suite"
+	@echo ""
+
+clean: clean-recursive
+
+clean-recursive:
+	for s in $(SUBDIRS) ; do (cd $$s && $(MAKE) clean) ; done
+
+distclean: distclean-recursive
+	rm -f Makefile config.cache config.log
+
+distclean-recursive:
+	for s in $(SUBDIRS) ; do (cd $$s && $(MAKE) distclean) ; done
+
+.PHONY: clean clean-recursive distclean
+

@@ -1,0 +1,35 @@
+<!-- ##### SECTION Title ##### -->
+HMAC
+
+<!-- ##### SECTION Short_Description ##### -->
+
+cryptographic message authentication.
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+HMAC is a cryptographic mechanism for message authentication described
+in RFC2104.  It allows a sender and receiver with a shared
+cryptographic key to verify the authenticity of a message.
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+<ulink url="http://www.ietf.org/rfc/rfc2104.txt">RFC2104 - HMAC: Keyed-Hashing for Message Authentication</ulink>
+
+</para>
+
+<!-- ##### FUNCTION hmac_md5 ##### -->
+<para>
+
+</para>
+
+@data: 
+@data_len: 
+@key: 
+@key_len: 
+@digest: 
+
+

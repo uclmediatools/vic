@@ -1,0 +1,625 @@
+<HTML
+><HEAD
+><TITLE
+>MD5</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.59"><LINK
+REL="HOME"
+TITLE="UCL Common Library Reference"
+HREF="book1.html"><LINK
+REL="UP"
+TITLE="Overview"
+HREF="uclmmbase.html"><LINK
+REL="PREVIOUS"
+TITLE="HMAC"
+HREF="uclmmbase-hmac.html"><LINK
+REL="NEXT"
+TITLE="NETUDP"
+HREF="uclmmbase-net-udp.html"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+BGCOLOR="#000000"
+CELLPADDING="1"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="4"
+ALIGN="center"
+><FONT
+COLOR="#FFFFFF"
+SIZE="5"
+>UCL Common Library Reference</FONT
+></TH
+></TR
+><TR
+><TD
+WIDTH="25%"
+BGCOLOR="#C00000"
+ALIGN="left"
+><A
+HREF="uclmmbase-hmac.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>&#60;&#60;&#60; Previous Page</B
+></FONT
+></A
+></TD
+><TD
+WIDTH="25%"
+BGCOLOR="#0000C0"
+ALIGN="center"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+><A
+HREF="book1.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Home</B
+></FONT
+></A
+></B
+></FONT
+></TD
+><TD
+WIDTH="25%"
+BGCOLOR="#00C000"
+ALIGN="center"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+><A
+HREF="uclmmbase.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Up</B
+></FONT
+></A
+></B
+></FONT
+></TD
+><TD
+WIDTH="25%"
+BGCOLOR="#C00000"
+ALIGN="right"
+><A
+HREF="uclmmbase-net-udp.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Next Page &#62;&#62;&#62;</B
+></FONT
+></A
+></TD
+></TR
+></TABLE
+></DIV
+><H1
+><A
+NAME="UCLMMBASE-MD5"
+>MD5</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN67"
+></A
+><H2
+>Name</H2
+>MD5&nbsp;--&nbsp;Message Digest-5 algorithm.</DIV
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A
+NAME="AEN70"
+></A
+><H2
+>Synopsis</H2
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="SYNOPSIS"
+>&#13;#include &lt;md5.h&gt;
+
+
+typedef     <A
+HREF="uclmmbase-md5.html#MD5-CTX-CAPS"
+>MD5_CTX</A
+>;
+void        <A
+HREF="uclmmbase-md5.html#MD5INIT"
+>MD5Init</A
+>                         (<A
+HREF="uclmmbase-md5.html#MD5-CTX-CAPS"
+>MD5_CTX</A
+> *context);
+void        <A
+HREF="uclmmbase-md5.html#MD5UPDATE"
+>MD5Update</A
+>                       (<A
+HREF="uclmmbase-md5.html#MD5-CTX-CAPS"
+>MD5_CTX</A
+> *context,
+                                             unsigned char *input,
+                                             unsigned int inputLen);
+void        <A
+HREF="uclmmbase-md5.html#MD5FINAL"
+>MD5Final</A
+>                        (unsigned char digest[16],
+                                             <A
+HREF="uclmmbase-md5.html#MD5-CTX-CAPS"
+>MD5_CTX</A
+> *context);</PRE
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN80"
+></A
+><H2
+>Description</H2
+><P
+>The MD5 algorithm calculates a 128-bit digest of an arbitrary length
+stream of data.  The digest is a fingerprint that can be used to
+verify the integrity of a transmitted message.  The sender and receiver
+of the message independently calculate the message digest and compare
+values to ascertain the integrity of the message.  The probability of
+two messages having the same digest is miniscule.</P
+><P
+>The MD5 algorithm is the intellectual property of RSA Data Security, Inc.</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN84"
+></A
+><H2
+>Details</H2
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN86"
+></A
+><H3
+><A
+NAME="MD5-CTX-CAPS"
+></A
+>MD5_CTX</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef struct {
+  uint32_t state[4];            /* state (ABCD) */
+  uint32_t count[2];        	/* number of bits, modulo 2^64 (lsb first) */
+  unsigned char buffer[64];     /* input buffer */
+} MD5_CTX;</PRE
+></TD
+></TR
+></TABLE
+><P
+>The state for the MD5 calculation.</P
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN91"
+></A
+><H3
+><A
+NAME="MD5INIT"
+></A
+>MD5Init ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>void        MD5Init                         (<A
+HREF="uclmmbase-md5.html#MD5-CTX-CAPS"
+>MD5_CTX</A
+> *context);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Initializes MD5 context for the start of message digest computation.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN98"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>context</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> MD5 context to be initialized.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN107"
+></A
+><H3
+><A
+NAME="MD5UPDATE"
+></A
+>MD5Update ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>void        MD5Update                       (<A
+HREF="uclmmbase-md5.html#MD5-CTX-CAPS"
+>MD5_CTX</A
+> *context,
+                                             unsigned char *input,
+                                             unsigned int inputLen);</PRE
+></TD
+></TR
+></TABLE
+><P
+>MD5 block update operation. Continues an MD5 message-digest operation,
+processing another message block, and updating the context.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN114"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>context</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> MD5 context to be updated.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>input</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> pointer to data to be fed into MD5 algorithm.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>inputLen</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> size of <TT
+CLASS="PARAMETER"
+><I
+>input</I
+></TT
+> data in bytes.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><HR><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN132"
+></A
+><H3
+><A
+NAME="MD5FINAL"
+></A
+>MD5Final ()</H3
+><TABLE
+BORDER="0"
+BGCOLOR="#D6E8FF"
+WIDTH="100%"
+CELLPADDING="6"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>void        MD5Final                        (unsigned char digest[16],
+                                             <A
+HREF="uclmmbase-md5.html#MD5-CTX-CAPS"
+>MD5_CTX</A
+> *context);</PRE
+></TD
+></TR
+></TABLE
+><P
+>Ends an MD5 message-digest operation, writing the the message
+digest and zeroing the context.  The context must be initialized
+with <A
+HREF="uclmmbase-md5.html#MD5INIT"
+>MD5Init</A
+>() before being used for other MD5 checksum calculations.</P
+><P
+></P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN140"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+WIDTH="100%"
+BGCOLOR="#FFD0D0"
+CELLSPACING="0"
+CELLPADDING="4"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>digest</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> 16-byte buffer to write MD5 checksum.</TD
+></TR
+><TR
+><TD
+WIDTH="20%"
+ALIGN="RIGHT"
+VALIGN="TOP"
+><TT
+CLASS="PARAMETER"
+><I
+>context</I
+></TT
+>&nbsp;:</TD
+><TD
+WIDTH="80%"
+ALIGN="LEFT"
+VALIGN="TOP"
+> MD5 context to be finalized.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN153"
+></A
+><H2
+>See Also</H2
+><P
+><A
+HREF="http://www.ietf.org/rfc/rfc1321.txt"
+TARGET="_top"
+>RFC1321 - The MD5
+Message Digest Algorithm</A
+></P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><BR
+CLEAR="all"><BR><TABLE
+WIDTH="100%"
+BORDER="0"
+BGCOLOR="#000000"
+CELLPADDING="1"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="25%"
+BGCOLOR="#C00000"
+ALIGN="left"
+><A
+HREF="uclmmbase-hmac.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>&#60;&#60;&#60; Previous Page</B
+></FONT
+></A
+></TD
+><TD
+WIDTH="25%"
+BGCOLOR="#0000C0"
+ALIGN="center"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+><A
+HREF="book1.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Home</B
+></FONT
+></A
+></B
+></FONT
+></TD
+><TD
+WIDTH="25%"
+BGCOLOR="#00C000"
+ALIGN="center"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+><A
+HREF="uclmmbase.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Up</B
+></FONT
+></A
+></B
+></FONT
+></TD
+><TD
+WIDTH="25%"
+BGCOLOR="#C00000"
+ALIGN="right"
+><A
+HREF="uclmmbase-net-udp.html"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>Next Page &#62;&#62;&#62;</B
+></FONT
+></A
+></TD
+></TR
+><TR
+><TD
+COLSPAN="2"
+ALIGN="left"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>HMAC</B
+></FONT
+></TD
+><TD
+COLSPAN="2"
+ALIGN="right"
+><FONT
+COLOR="#FFFFFF"
+SIZE="3"
+><B
+>NETUDP</B
+></FONT
+></TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

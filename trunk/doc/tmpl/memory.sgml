@@ -1,0 +1,111 @@
+<!-- ##### SECTION Title ##### -->
+Memory
+
+<!-- ##### SECTION Short_Description ##### -->
+
+Memory allocation and debugging functions.
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+This set of functions is semantically similar functions to standard C
+library memory allocation routines.  When memory debugging is enabled
+these functions include support to detect buffer overruns.  When
+memory debugging is not enabled the allocation and free calls are
+wrappers around the standard C allocation routines, and checking
+routines are null ops.
+
+</para>
+
+<para>
+Memory debugging is enabled when DEBUG_MEM is defined at compilation
+time.  On Unix systems, the <filename>configure</filename> script has
+a command-line option <option>--enable-debug-mem</option>.  On Win32,
+a memory debugging is enabled in the debug configuration.
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### MACRO xmalloc ##### -->
+<para>
+Allocates a block of memory.  Semantically equivalent to malloc().
+</para>
+
+@x: size of allocation.
+
+
+<!-- ##### MACRO xrealloc ##### -->
+<para>
+Re-sizes a block of memory. Semantically equivalent to realloc().
+</para>
+
+@p: Pointer to block to be re-dimensioned.
+@x: New size.
+
+
+<!-- ##### MACRO xstrdup ##### -->
+<para>
+xmalloc()'s sufficient memory to store @str, copies @str into it, and
+returns pointer to new string.  Semantically equivalent to strdup().
+</para>
+
+@str: 
+<!-- # Unused Parameters # -->
+@x: String to duplicate.
+
+
+<!-- ##### FUNCTION xdoneinit ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION xmemchk ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION xmemdmp ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION xclaim ##### -->
+<para>
+
+</para>
+
+@addr: 
+@filen: 
+@line: 
+<!-- # Unused Parameters # -->
+@p: 
+
+
+<!-- ##### FUNCTION xmemdist ##### -->
+<para>
+
+</para>
+
+@fp: 
+
+
+<!-- ##### FUNCTION xfree ##### -->
+<para>
+
+</para>
+
+@p: 
+<!-- # Unused Parameters # -->
+@x: 
+
+

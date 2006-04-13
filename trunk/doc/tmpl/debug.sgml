@@ -1,0 +1,75 @@
+<!-- ##### SECTION Title ##### -->
+Debug
+
+<!-- ##### SECTION Short_Description ##### -->
+
+Functions for outputing diagnostics.
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+These functions relate to outputing diagnostic messages and
+information.
+
+</para>
+
+<para>
+
+Use of these functions requires DEBUG to be defined at compilation
+time.  On Unix systems, the <filename>configure</filename> script has
+a command-line option <option>--enable-debug</option>.  On Win32 a
+debug configuration exists.
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### MACRO UNUSED ##### -->
+<para>
+
+Available for use to prevent compiler warnings when a function
+argument is not used.  Sometimes this is unavoidable because function
+has to conform to an interface.
+
+</para>
+
+@x: unused function argument that generates compiler warning.
+
+
+<!-- ##### MACRO debug_msg ##### -->
+<para>
+
+When DEBUG is defined this will write a formatted message to the
+platform defined error stream.  The format of the message has the same
+semantics as standard C library call <function>printf()</function>.  The error
+message displayed is prepended by the process id, the file and the
+line number, where debug_msg() was called.
+
+On Unix the message is rendered on the standard error stream.  On
+Win32 a debug message is created using the Win32 API function
+<function>OutputDebugString()</function>.
+
+</para>
+
+
+
+<!-- ##### FUNCTION debug_dump ##### -->
+<para>
+
+</para>
+
+@lp: 
+@len: 
+
+
+<!-- ##### FUNCTION debug_set_core_dir ##### -->
+<para>
+
+</para>
+
+@argv0: 
+
+

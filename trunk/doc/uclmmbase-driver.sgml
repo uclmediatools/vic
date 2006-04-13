@@ -1,0 +1,32 @@
+<!doctype book PUBLIC "-//Davenport//DTD DocBook V3.0//EN" [
+<!entity hmac SYSTEM "sgml/hmac.sgml">
+<!entity md5 SYSTEM "sgml/md5.sgml">
+<!entity netudp SYSTEM "sgml/net_udp.sgml">
+<!entity rtp SYSTEM "sgml/rtp.sgml">
+<!entity debug SYSTEM "sgml/debug.sgml">
+<!entity memory SYSTEM "sgml/memory.sgml">
+]>
+
+<book>
+  <bookinfo>
+   <title>UCL Common Library Reference</title>
+  </bookinfo>
+
+<chapter id="uclmmbase">
+  <title>Overview</title>
+
+<para> The UCL Common Multimedia Library provides a number of useful
+features for multimedia applications.  It includes several protocols
+and functions related to IETF multimedia applications.</para>
+
+    &hmac;
+    &md5;
+    &netudp;
+    &rtp; 
+
+    &debug;
+    &memory;
+
+</chapter>
+
+</book>
