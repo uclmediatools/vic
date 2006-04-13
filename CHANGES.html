@@ -8,17 +8,20 @@
 <BODY LINK="#0000ff" VLINK="#800080">
 
 <P><!-- @(#) $Header$ (LBL)--></P>
+<H1>vic: Change History</H1>
 <H3>v2.8ucl-1.1.7</H3><UL>
-<LI>Updated configure so it includes both v4l1 v4l2 drivers as there are still devices that use v4l1 even in 2.6.x kernel - like the Philips USB cams. 
-<LI> Updated v4l1 to cope with some more v4l1 devices (Philips USB) - based
-vaguely on MASH <a href="http://www.openmash.org/lxr/source/video/video-v4l.cc">v4l</a> - not quite finished.
-<LI>Updated video4linux2 driver so it works with latest API - i.e. with linux kernel 2.6.1. Modified configure to so it can be selected. The old v4l2 driver is
-still there as grabber-v4l2-old. 
-</ul><H3>v2.8ucl-1.1.6</H3><UL>
+<LI>New Windows DirectX/WDM Grabber - contributed Earthlink.net
+<LI>Updated video4linux2 driver so it works with latest API - i.e. with linux kernel 2.6.x. Modified configure to so it can be selected. The old v4l2 driver is still there as grabber-v4l2-old. 
+<LI>Updated configure so it includes both v4l1 v4l2 drivers as there are still devices that use v4l1 in 2.6.x kernel - like the Philips USB cams. 
+<LI>Updated v4l1 to cope with some more v4l1 devices (Philips USB) - based
+on MASH <a href="http://www.openmash.org/lxr/source/video/video-v4l.cc">v4l</a> 
+<LI>Modified grabbers to set status_= -1 for graceful tcl error handling (instead of curret exit() or abort()).
+<LI>Added Visual Studio Project files (*.vcproj)
+<LI>Modified xv-grabber so it's optional in configure. Also modified it to handle mulitple devices - though none to test with. </ul>
+<H3>v2.8ucl-1.1.6</H3><UL>
 <LI>Modified Windows grabber so 'configure on Transmit' is required for any video grabber config dialogues to appear.
 <LI>Fixed tcl to handle hostnames properly
 </UL> 
-<H1>vic: Change History</H1>
 <H3>v2.8ucl-1.1.5</H3><UL>
 <LI>Added generic case to vfw grabber that doesn't abort.
 <LI>Added support for Intel Smart Video Recorderer to vfw grabber.
@@ -618,10 +621,8 @@ unless it receives a lbl message from rat to say you are sending audio.
 
 <P><HR></P>
 <H3>v2.0alpha <I>Tue Oct 19 17:48:26 PDT 1993</H3>
-
 <UL>
 </I><LI>Initial alpha binary release to xunet sites. </LI></UL>
 
-<P><HR></P>
-<P><A HREF="file:///M:/vic/vic/vic.html">[Return to main vic page]</A> </P></BODY>
+</BODY>
 </HTML>
