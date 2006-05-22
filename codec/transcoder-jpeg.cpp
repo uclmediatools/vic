@@ -209,7 +209,7 @@ JpegTranscoder::configure(JpegFrame *jf)
 	norow_ = oheight_ / 8;
 	oblocks_ = nocol_ * norow_;
 
-	delete crvec_;
+	delete[] crvec_; //SV-XXX: Debian
 	crvlen_  = oblocks_ / 4;
 	crvec_ = new u_char[crvlen_];
 

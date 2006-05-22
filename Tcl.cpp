@@ -66,6 +66,7 @@ void Tcl::init(Tcl_Interp* tcl, const char* application)
 {
 	instance_.tcl_ = tcl;
 	instance_.application_ = application;
+	Tcl_Init(tcl); //SV-XXX: FreeBSD
 }
 
 void Tcl::evalc(const char* s)
@@ -81,7 +82,7 @@ void Tcl::evalc(const char* s)
 		char* p = new char[n + 1];
 		strcpy(p, s);
 		eval(p);
-		delete p;
+		delete[] p; //SV-XXX: Debian
 	}
 }
 
@@ -93,7 +94,7 @@ void Tcl::eval(char* s)
 		char* wrk = new char[n + 80];
 		sprintf(wrk, "tkerror \"%s: %s\"", application_, s);
 		Tcl_GlobalEval(tcl_, wrk);
-		delete wrk;
+		delete[] wrk; //SV-XXX: Debian
 		//exit(1);
 	}
 }
@@ -164,12 +165,12 @@ TclObject::~TclObject()
 	if (!tcl.dark())
 		tcl.DeleteCommand(name_);
 	if (name_ != 0)
-		delete name_;
+		delete[] name_; //SV-XXX: Debian
 	TclObject** p;
 	for (p = &all_; *p != this; p = &(*p)->next_)
 		;
 	*p = (*p)->next_;
-	delete class_name_;
+	delete[] class_name_; //SV-XXX: Debian
 }
 
 /*
@@ -203,7 +204,7 @@ void TclObject::setproc(const char* s)
 	if (name_ != 0) {
 		if (!tcl.dark())
 			tcl.DeleteCommand(name_);
-		delete name_;
+		delete[] name_; //SV-XXX: Debian
 	}
 	int n = strlen(s);
 	name_ = new char[n + 1];
@@ -263,7 +264,7 @@ TclObject* TclObject::lookup(const char* name)
 
 void TclObject::class_name(const char* s)
 {
-	delete class_name_;
+	delete[] class_name_; //SV-XXX: Debian
 	class_name_ = new char[strlen(s) + 1];
 	strcpy(class_name_, s);
 }

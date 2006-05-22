@@ -86,7 +86,7 @@ CryptDES::CryptDES()
 
 CryptDES::~CryptDES()
 {
-	delete wrkbuf_;
+	delete[] wrkbuf_; //SV-XXX: Debian
 }
 
 int CryptDES::install_key(const u_int8_t* key)

@@ -49,8 +49,7 @@
 
 #include "memory.h"
 #include "mbus.h"
-#include "mbus_config.h"
-
+//#include "mbus_config.h" //SV-XXX: FreeBSD
 
 #ifdef WIN32
 extern "C" int gettimeofday(struct timeval *, struct timezone *);

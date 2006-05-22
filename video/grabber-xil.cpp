@@ -496,7 +496,7 @@ void XILGrabber::dispatch(int mask)
 			 */
 			char* buf = new char[768 * 576 * 3];
 			(void)pread(fd_, (void*)buf, sizeof(buf), (off_t)0x01000000);
-			delete buf;
+			delete[] buf; //SV-XXX: Debian
 		}
 		/* else do nothing */
 #endif
@@ -541,7 +541,7 @@ XILYuvGrabber::XILYuvGrabber(char *devname,struct deviceattributes *devattr)
 XILYuvGrabber::~XILYuvGrabber()
 {
 	xil_destroy(image_);image_=0;
-	delete frame_;
+	delete[] frame_; //SV-XXX: Debian
 }
 
 void XILYuvGrabber::setsize()

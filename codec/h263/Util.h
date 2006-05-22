@@ -6,7 +6,7 @@
 #ifndef _UTIL_
 #define _UTIL_
 
-#include <malloc.h>
+//#include <malloc.h> //SV-XXX: FreeBSD
 #include "error.h"
 #include <stdlib.h>
 #include <stdio.h>

@@ -169,7 +169,7 @@ SlowVideoImage::SlowVideoImage(Tk_Window tk, int w, int h)
 
 SlowVideoImage::~SlowVideoImage()
 {
-	delete image_->data;
+	delete[] image_->data; //SV-XXX: Debian
 }
 
 void SlowVideoImage::putimage(Display* dpy, Window window, GC gc,

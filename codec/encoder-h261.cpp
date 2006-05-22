@@ -217,9 +217,9 @@ H261Encoder::~H261Encoder()
 {
 	for (int q = 0; q < 32; ++q) {
 		if (llm_[q] != 0)
-			delete (void *)llm_[q];
+			delete llm_[q]; //SV-XXX: Debian
 		if (clm_[q] != 0)
-			delete (void *)clm_[q];
+			delete clm_[q]; //SV-XXX: Debian
 	}
 }
 

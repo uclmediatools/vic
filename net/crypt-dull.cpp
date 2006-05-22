@@ -78,7 +78,7 @@ CryptDull::CryptDull()
 
 CryptDull::~CryptDull()
 {
-	delete wrkbuf_;
+	delete[] wrkbuf_; //SV-XXX: Debian
 }
 
 int CryptDull::install_key(const u_int8_t* key)

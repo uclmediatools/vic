@@ -89,7 +89,7 @@ SRC_GRABBER = $(OBJ_GRABBER:.o=.cpp)
 OBJ_XIL = @V_OBJ_XIL@
 OBJ_CRYPT = @V_OBJ_CRYPT@
 LIB = $(LIB_GRABBER) @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ \
-	codec/tmndec/libh263.a codec/tmn-x/libh263coder.a ../common/src/libuclmmbase.a -lm
+	codec/tmndec/libh263.a codec/tmn-x/libh263coder.a ../common/src/libuclmmbase.a -lm -lcrypto
 INCLUDE = $(INCLUDE_MISC) $(INCLUDE_GRABBER) $(INCLUDE_TK) $(INCLUDE_TCL) \
 	$(INCLUDE_X11) $(MD_INC) -Icodec/jpeg -Icodec/p64 -I.
 DEFINE = @V_DEFINE@ -DED_YBITS=$(ED_YBITS) -DSIGRET=@V_SIGRET@ -DNLAYER=8
@@ -352,7 +352,7 @@ clean:
 		mkcube rgb-cube.ppm yuv-map.ppm cm0.c cm1.c ppmtolut \
 		config.cache config.log domake.* dotar.*
 	cd codec/tmn && $(MAKE) clean
-	cd codec/tmndec && $(MAKE) clean
+	cd codec/tmndec && $(MAKE) realclean
 	rm -f codec/tmn-x/*.o codec/tmn-x/*.a
 
 realclean:

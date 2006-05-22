@@ -558,7 +558,11 @@ void PvhDecoder::decode_dct_base(rbent* lp, int bit)
 
 	mask_[0] = 0;
 	mask_[1] = 0;
+#ifdef INT_64
+	parse_block(lp, coef_, (INT_64 *)mask_); //SV-XXX: Debian
+#else
 	parse_block(lp, coef_, mask_);
+#endif
 }
 
 void PvhDecoder::decode_dct_refinement(rbent* lp, int bit, int nr)
@@ -870,7 +874,11 @@ void PvhDecoder::decode_dct(spatial_hierarchy* sh, u_int8_t* p, int stride)
 	}
 	/*XXX check dct_bias_ computation*/
 	bias_to_midstep(coef_, 1 << bit, mask_);
+#ifdef INT_64
+	rdct(coef_, *(INT_64 *)mask_, (u_char*)p, stride, (u_char*)0); //SV-XXX: Debian
+#else
 	rdct(coef_, mask_[0], mask_[1], (u_char*)p, stride, (u_char*)0);
+#endif
 }
 
 void PvhDecoder::decode_lum(int8_t* p)

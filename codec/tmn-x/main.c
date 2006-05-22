@@ -1709,6 +1709,7 @@ FrameLayerRC(Pict * pic)
 	frameskip = chosen_frameskip;
 	break;
     default:
+	frameskip = chosen_frameskip; //SV-XXX: Debian
 	break;
 
     }

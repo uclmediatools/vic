@@ -163,7 +163,7 @@ int Overlay::command(int argc, const char*const* argv)
 
 int Overlay::load(const char* file, int w, int h)
 {
-	delete image_;
+	delete[] image_; //SV-XXX: Debian
 	image_ = 0;
 	int fd = open(file, O_RDONLY);
 	if (fd < 0)
@@ -174,7 +174,7 @@ int Overlay::load(const char* file, int w, int h)
 	image_ = new u_char[s];
 	int cc = read(fd, image_, s);
 	if (cc != s) {
-		delete image_;
+		delete[] image_; //SV-XXX: Debian
 		image_ = 0;
 		return (-1);
 	}
@@ -193,8 +193,8 @@ Compositor::Compositor(int ft)
 
 Compositor::~Compositor()
 {
-	delete framebase_;
-	delete damage_;
+	delete[] framebase_; //SV-XXX: Debian
+	delete[] damage_; //SV-XXX: Debian
 	onode* p = overlays_;
 	while (p != 0) {
 		onode* n = p->next;
@@ -335,7 +335,7 @@ void Compositor::crinit(int w, int h)
 	int blkw = w >> 4;
 	int blkh = h >> 4;
 	int n = blkw * blkh;
-	delete damage_;
+	delete[] damage_; //SV-XXX: Debian
 	damage_ = new u_char[n];
 	memset(damage_, 0, n);
 }
@@ -350,7 +350,7 @@ void Compositor422::size(int w, int h)
 {
 	Module::size(w, h);
 	int n = 2 * framesize_ + 2 * GRABBER_VPAD * w;
-	delete framebase_;
+	delete[] framebase_; //SV-XXX: Debian
 	framebase_ = new u_char[n];
 	frm_ = framebase_ + GRABBER_VPAD * w;
 	Compositor::crinit(w, h);
@@ -480,7 +480,7 @@ void Compositor411::size(int w, int h)
 	Module::size(w, h);
 	int fs = framesize_;
 	int n = fs + (fs >> 1) + 2 * GRABBER_VPAD * w;
-	delete framebase_;
+	delete[] framebase_; //SV-XXX: Debian
 	framebase_ = new u_char[n];
 	frm_ = framebase_ + GRABBER_VPAD * w;
 	Compositor::crinit(w, h);

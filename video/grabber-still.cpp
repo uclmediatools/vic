@@ -112,7 +112,7 @@ void StillDevice::load_file(const char * const f)
     
     len_ = s.st_size;
     if (frame_)
-	delete frame_;
+	delete[] frame_; //SV-XXX: Debian
     
     frame_ = new char[len_ + 1];
     fread(frame_, len_, 1, fp);

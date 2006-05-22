@@ -152,8 +152,8 @@ MeteorScanner::MeteorScanner(const int n)
 				new MeteorDevice(nickname, devname, 1);
 			}
 		} else {
-			delete nickname;
-			delete devname;
+			delete[] nickname; //SV-XXX: Debian
+			delete[] devname; //SV-XXX: Debian
 		}
 			}
 		}

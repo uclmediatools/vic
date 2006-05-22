@@ -211,8 +211,8 @@ SlicVideoScanner::SlicVideoScanner(const int n)
 				new SlicVideoDevice(nickname, devname, 0);
 			}
 		} else {
-			delete nickname;
-			delete devname;
+			delete[] nickname; //SV-XXX: Debian
+			delete[] devname; //SV-XXX: Debian
 		}
 	}
 }

@@ -75,7 +75,7 @@ Decoder::Decoder(int hdrlen) : PacketHandler(hdrlen),
 Decoder::~Decoder()
 {
 	if (rvts_)
-		delete rvts_;
+		delete[] rvts_; //SV-XXX: Debian
 }
 
 int Decoder::command(int argc, const char*const* argv)
@@ -311,7 +311,7 @@ void Decoder::resize(int width, int height)
 	inw_ = width;
 	inh_ = height;
 	nblk_ = (width * height) / 64;
-	delete rvts_;
+	delete[] rvts_; //SV-XXX: Debian
 	rvts_ = new u_char[nblk_];
 	memset(rvts_, 0, nblk_);
 	redraw();
@@ -350,7 +350,7 @@ PlaneDecoder::PlaneDecoder(int hdrlen) : Decoder(hdrlen), frm_(0)
 
 PlaneDecoder::~PlaneDecoder()
 {
-	delete frm_;
+	delete[] frm_; //SV-XXX: Debian
 }
 
 void PlaneDecoder::redraw()
@@ -360,7 +360,7 @@ void PlaneDecoder::redraw()
 
 void PlaneDecoder::resize(int width, int height)
 {
-	delete frm_;
+	delete[] frm_; //SV-XXX: Debian
 	int size = width * height;
 	frm_ = new u_char[2 * size];
 	/* 

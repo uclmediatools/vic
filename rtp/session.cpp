@@ -127,7 +127,8 @@ void CtrlHandler::dispatch(int)
 
 CtrlHandler::CtrlHandler()
 : ctrl_inv_bw_(0.),
-ctrl_avg_size_(128.)
+ctrl_avg_size_(128.),
+rint_(0.0) //SV-XXX: Debian
 {
 }
 

@@ -60,7 +60,7 @@ PseudoColorModel::PseudoColorModel() : file_(0), lut_(0)
 
 PseudoColorModel::~PseudoColorModel()
 {
-	delete lut_;
+	delete[] lut_; //SV-XXX: Debian
 }
 
 /*
@@ -118,7 +118,7 @@ int PseudoColorModel::allocate(int ncolor, const u_char* cmap, u_char* lut)
 int PseudoColorModel::installLUT(int def_ncolor, const u_char* def_cmap,
 			      const u_char* def_lut)
 {
-	delete lut_;
+	delete[] lut_; //SV-XXX: Debian
 	lut_ = new u_char[65536];
 	u_char cmap[3*256];
 	int ncolor = -1;
@@ -135,7 +135,7 @@ int PseudoColorModel::installLUT(int def_ncolor, const u_char* def_cmap,
 		memcpy(lut_, def_lut, 65536);
 	}
 	if (allocate(ncolor, cmap, lut_) < 0) {
-		delete lut_;
+		delete[] lut_; //SV-XXX: Debian
 		lut_ = 0;
 		return (-1);
 	}

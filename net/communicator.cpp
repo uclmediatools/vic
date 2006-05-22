@@ -75,8 +75,8 @@ Communicator::Communicator() : callback_(0), net_(0), seqno_(0)
 
 Communicator::~Communicator()
 {
-	delete callback_;
-	delete pktbuf_;
+	delete[] callback_; //SV-XXX: Debian
+	delete[] pktbuf_; //SV-XXX: Debian
 }
 
 void Communicator::dispatch(int)
@@ -114,7 +114,7 @@ int Communicator::command(int argc, const char*const* argv)
 		}
 		if (strcmp(argv[1], "handler") == 0) {
 			const char* proc = argv[2];
-			delete callback_;
+			delete[] callback_; //SV-XXX: Debian
 			callback_ = new char[strlen(proc) + 1];
 			strcpy(callback_, proc);
 			return (TCL_OK);

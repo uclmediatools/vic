@@ -56,7 +56,7 @@ class Crypt;
 class Address {
 public:
 	Address() : text_(0) {;}
-	virtual ~Address() { if (text_) delete text_; }
+	virtual ~Address() { if (text_) delete[] text_; } //SV-XXX: Debian
 
 	virtual int operator=(const char*) {return (0);}
 	virtual Address* copy() const { return (0); }

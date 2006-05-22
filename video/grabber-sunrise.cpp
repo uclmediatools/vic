@@ -918,7 +918,7 @@ void SunriseGrabber::allocate_ring_buffers(long n_buffers, long buffer_size)
 #endif /* DEBUG */
 
     if (ring_buffer._buffer != (struct UMSVideoIO_RingBufferElement *) NULL)
-	delete ring_buffer._buffer;
+	delete[] ring_buffer._buffer; //SV-XXX: Debian
 
     ring_buffer._buffer = new UMSVideoIO_RingBufferElement[n_buffers];
 

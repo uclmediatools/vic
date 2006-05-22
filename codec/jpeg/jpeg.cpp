@@ -106,8 +106,8 @@ JpegPixelDecoder::JpegPixelDecoder(const config &c, int dec, int ow, int oh)
 
 JpegPixelDecoder::~JpegPixelDecoder() 
 {
-	delete cache_;
-	delete frm_;
+	delete[] cache_; //SV-XXX: Debian
+	delete[] frm_; //SV-XXX: Debian
 }
 
 JpegDCTDecoder::JpegDCTDecoder(const config& c, int dec, int ow, int oh)
@@ -118,7 +118,7 @@ JpegDCTDecoder::JpegDCTDecoder(const config& c, int dec, int ow, int oh)
 
 JpegDCTDecoder::~JpegDCTDecoder() 
 {
-	delete frm_;
+	delete[] frm_; //SV-XXX: Debian
 }
 
 JpegDecoder_411::JpegDecoder_411(const config& c, int ow, int oh) 

@@ -135,3 +135,4 @@ RawEncoder::command(int argc, const char*const* argv)
 	}
 	return (TransmitterModule::command(argc, argv));
 }
+

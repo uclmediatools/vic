@@ -263,7 +263,7 @@ void JvGrabber::freedma(JvGrabber::dmabuf* p)
 		perror("vic: shmdt");
 		exit(1);
 	}
-	delete p;
+	delete[] p; //SV-XXX: Debian
 }
 
 void JvGrabber::start()

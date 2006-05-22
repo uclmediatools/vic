@@ -508,3 +508,4 @@ RegGetValue(HKEY* key, char *subkey, char *value, char *dst, int dlen)
 	RegCloseKey(lkey);
 	return TRUE;
 }
+

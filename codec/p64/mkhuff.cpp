@@ -41,9 +41,9 @@ static const char rcsid[] =
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
-extern "C" {
+//extern "C" {
 //int getopt(int, char * const *, const char *);
-}
+//}
 #define HUFFSTRINGS
 #include "p64-huff.h"
 #include "config.h"

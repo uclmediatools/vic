@@ -74,7 +74,7 @@ ConfBus::ConfBus(int channel)
 ConfBus::~ConfBus()
 {
 	delete ipc_;
-	delete callback_;
+	delete[] callback_; //SV-XXX: Debian
 }
 
 void ConfBus::ipc_input(int, int, u_char* msg, int cc)
@@ -133,7 +133,7 @@ int ConfBus::command(int argc, const char*const* argv)
 	if (argc == 3) {
 		if (strcmp(argv[1], "handler") == 0) {
 			const char* proc = argv[2];
-			delete callback_;
+			delete[] callback_; //SV-XXX: Debian
 			callback_ = new char[strlen(proc) + 1];
 			strcpy(callback_, proc);
 			return (TCL_OK);

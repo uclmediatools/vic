@@ -73,8 +73,8 @@ class Tcl {
 		if (Tcl_EvalFile(tcl_, (char*)file) != TCL_OK)
 			error(file);
 	}
-	inline char* var(const char* varname, int flags = TCL_GLOBAL_ONLY) {
-		return (Tcl_GetVar(tcl_, (char*)varname, flags));
+	inline char* var(const char* varname, int flags = TCL_GLOBAL_ONLY) { //SV-XXX: FreeBSD
+		return (Tcl_GetVar(tcl_, (char*) varname, flags)); //SV-XXX: FreeBSD
 	}
 	/*
 	 * Hooks for invoking the tcl interpreter:
@@ -124,7 +124,7 @@ class TclObject {
 	virtual void reset();
 	void class_name(const char*);
 	/* make this public for Sun's compiler */
-	static int callback(ClientData, Tcl_Interp*, int ac, char** av);
+	static int callback(ClientData, Tcl_Interp*, int ac, char** av); //SV-XXX: FreeBSD
 	static void reset_all();
     protected:
 	TclObject(const char* name = 0);

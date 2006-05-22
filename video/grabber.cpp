@@ -89,9 +89,9 @@ Grabber::Grabber()
 
 Grabber::~Grabber()
 {
-	delete framebase_;
-	delete crvec_;
-	delete ref_;
+	delete[] framebase_; //SV-XXX: Debian
+	delete[] crvec_; //SV-XXX: Debian
+	delete[] ref_; //SV-XXX: Debian
 }
 
 int Grabber::command(int argc, const char*const* argv)
@@ -266,7 +266,7 @@ void Grabber::crinit(int w, int h)
 	blkh_ = h >> 4;
 	scan_ = 0;
 	nblk_ = blkw_ * blkh_;
-	delete crvec_;
+	delete[] crvec_; //SV-XXX: Debian
 	crvec_ = new u_char[nblk_];
 	for (int i = 0; i < nblk_; ++i)
 		crvec_[i] = CR_MOTION|CR_SEND;
@@ -275,7 +275,7 @@ void Grabber::crinit(int w, int h)
 /* must call after set_size_xxx */
 void Grabber::allocref()
 {
-	delete ref_;
+	delete[] ref_; //SV-XXX: Debian
 	ref_ = new u_char[framesize_];
 	memset((char*)ref_, 0, framesize_);
 }
@@ -399,7 +399,7 @@ void Grabber::age_blocks()
 
 void Grabber::set_size_422(int w, int h)
 {
-	delete framebase_;
+	delete[] framebase_; //SV-XXX: Debian
 
 	inw_ = w;
 	inh_ = h;
@@ -423,7 +423,7 @@ void Grabber::set_size_422(int w, int h)
 
 void Grabber::set_size_411(int w, int h)
 {
-	delete framebase_;
+	delete[] framebase_; //SV-XXX: Debian
 
 	inw_ = w;
 	inh_ = h;
@@ -449,7 +449,7 @@ void Grabber::set_size_411(int w, int h)
 
 void Grabber::set_size_cif(int w, int h)
 {
-	delete framebase_;
+	delete[] framebase_; //SV-XXX: Debian
 	inw_ = w;
 	inh_ = h;
 

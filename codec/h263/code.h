@@ -164,6 +164,9 @@ typedef struct{
   /* private */
   BinTreeNode *codeTree;
 } Code;
+
+Code *InitCode(char *title, int size, int eventDim, int *event, char *cw[]); //SV-XXX: FreeBSD
+
 /***********************************************************CommentEnd********/
 
 

@@ -168,7 +168,7 @@ public:
 } cmd_usage;
 
 #ifndef SIGARGS
-#if defined(__SUNPRO_CC) || defined(Linux)
+#if defined(__SUNPRO_CC) || defined(Linux) || defined(__FreeBSD__)
 #define SIGARGS int arg
 #else
 #define SIGARGS ... 
@@ -378,6 +378,7 @@ heuristic_random()
 		struct  utsname name;
 	} s;
 
+	memset(&s, 0, sizeof(s)); /* Avoid uninitialized padding */ //SV-XXX: Debian
 	gettimeofday(&s.tv, 0);
 	uname(&s.name);
 	s.cpu  = clock();
@@ -432,13 +433,17 @@ void *TkSetPlatformInit(int (*func)(Tcl_Interp *));
 int
 main(int argc, const char** argv)
 {
+#ifdef __FreeBSD__
+        srandomdev(); //SV-XXX: FreeBSD
+#else
 	srandom(heuristic_random());
+#endif
 
 #ifdef SIGHUP
-	signal(SIGHUP, ciao);
+	signal(SIGHUP, (sig_t)ciao); //SV-XXX: Debian
 #endif
-	signal(SIGINT, ciao);
-	signal(SIGTERM, ciao);
+	signal(SIGINT, (sig_t)ciao); //SV-XXX: Debian
+	signal(SIGTERM, (sig_t)ciao); //SV-XXX: Debian
 #ifdef __FreeBSD__
 	signal(SIGSYS, (sig_t)noXShm);
 #endif

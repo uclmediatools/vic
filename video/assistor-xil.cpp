@@ -130,7 +130,7 @@ int XILWindowAssistor::consume(const VideoFrame* vf)
 	}
 	}
 	xil_cis_put_bits(cis_,len,1/*framecount*/,p);
-	if (dofree) delete p; //move this to the end, if you use put_bits_ptr
+	if (dofree) delete[] p; //move this to the end, if you use put_bits_ptr //SV-XXX: Debian
 	outputtype = xil_cis_get_output_type(cis_);
 	xil_imagetype_get_info(outputtype, &cis_xsize, &cis_ysize,&cis_nbands, &cis_datatype);
 
@@ -804,7 +804,7 @@ int XILOutputAssistor::consume(const VideoFrame* vf) {
 	}
 	}
 	xil_cis_put_bits(cis_,len,1/*framecount*/,p);
-	if (dofree) delete p;
+	if (dofree) delete[] p; //SV-XXX: Debian
 	outputtype = xil_cis_get_output_type(cis_);
 	xil_imagetype_get_info(outputtype, &cis_xsize, &cis_ysize,&cis_nbands, &cis_datatype);
 

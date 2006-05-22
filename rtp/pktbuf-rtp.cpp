@@ -62,7 +62,7 @@ public:
  // * drop back to 0).
  */
 
-RTP_BufferPool::RTP_BufferPool() : srcid_(-1)
+RTP_BufferPool::RTP_BufferPool() : srcid_((u_int32_t)-1) //SV-XXX: Debian
 {
 	for (int i = 0; i < NLAYER; ++i)
 		seqno_[i] = 1;

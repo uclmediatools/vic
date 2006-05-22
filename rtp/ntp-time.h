@@ -55,8 +55,8 @@ inline u_int usec2ntp(u_int usec)
 /*
  * Number of seconds between 1-Jan-1900 and 1-Jan-1970
  */
-//SV-XXX: to shut up gcc4, broke into two parts: a) MAX_INT (signed), b) remainder offset
-#define GETTIMEOFDAY_TO_NTP_OFFSET 2147483647 + 61505153 //SV-XXX was: 2208988800
+//SV-XXX: to shut up gcc4
+#define GETTIMEOFDAY_TO_NTP_OFFSET 2208988800U //SV-XXX: Debian (neater fix to gcc4 warning)
 
 /*
  * Return a 64-bit ntp timestamp (UTC time relative to Jan 1, 1970).

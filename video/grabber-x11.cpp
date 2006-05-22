@@ -194,7 +194,8 @@ static X11Device find_x11_devices("x11");
 X11Device::X11Device(const char* nickname):
 			InputDevice(nickname), name_(nickname)
 {
-	if (free)
+	//if (free)
+	if (name_) //SV-XXX: Debian
 		attributes_ = "\
 size {large normal small cif} \
 format {411}" ;

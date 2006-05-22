@@ -1069,7 +1069,8 @@ int P64Decoder::decode(const u_char* bp, int cc, int sbit, int ebit,
 	 * If input buffer not aligned, prime bit-buffer
 	 * with 8 bits; otherwise, prime it with a 16.
 	 */
-	if ((int)bp & 1) {
+	//if ((int)bp & 1) {
+	if ((intptr_t)bp & 1) { //SV-XXX: Debian bug 297949
 		bs_ = (u_short*)(bp + 1);
 		bb_ = *bp;
 		nbb_ = 8 - sbit;
@@ -1121,7 +1122,7 @@ FullP64Decoder::FullP64Decoder()
 
 void FullP64Decoder::allocate()
 {
-	delete fs_;
+	delete[] fs_; //SV-XXX: Debian
 	int n = size_ + (size_ >> 1);
 	fs_ = new u_char[2 * n];
 	/* initialize to gray */
@@ -1228,7 +1229,7 @@ IntraP64Decoder::IntraP64Decoder()
 
 void IntraP64Decoder::allocate()
 {
-	delete fs_;
+	delete[] fs_; //SV-XXX: Debian
 	int n = size_ + (size_ >> 1);
 	fs_ = new u_char[n];
 	/* initialize to gray */

@@ -148,7 +148,7 @@ int EDColorModel::alloc_colors()
 	 */
 	u_char* lut = PseudoColorModel::lut_;
 #define NLUT (1 << (7+7+ED_YBITS))
-	delete lut_;
+	delete[] lut_; //SV-XXX: Debian
 	lut_ = new u_int[NLUT];
 
 	for (int v = 0; v < 1 << 7; ++v) {

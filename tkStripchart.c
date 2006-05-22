@@ -329,19 +329,19 @@ static Tk_ConfigSpec configSpecs[] =
  * Forward declarations for procedures defined later in this file:
  */
 static void Callback(Stripchart* StripchartPtr);
-static void ComputeStripchartGeometry(Stripchart* StripchartPtr);
+static void ComputeStripchartGeometry(Stripchart* StripchartPtr); //SV-XXX: FreeBSD
 static int ConfigureStripchart(Tcl_Interp* interp, Stripchart* StripchartPtr,
-				int argc, char** argv, int flags);
+				int argc, char** argv, int flags); //SV-XXX: FreeBSD
 static void DestroyStripchart(char* clientData);
 static void DisplayStripchart(ClientData clientData);
 static void DrawStripi(Stripchart* StripchartPtr, int i);
 static void EventuallyRedrawStripchart(Stripchart* StripchartPtr,
 				       int displaybits);
-static void ReplaceColours(Stripchart* StripchartPtr, int argc, char** argv);
+static void ReplaceColours(Stripchart* StripchartPtr, int argc, char** argv); //SV-XXX: FreeBSD
 static void ScrollStrips(Stripchart* StripchartPtr);
 static void StripchartEventProc(ClientData clientData, XEvent* eventPtr);
 static int StripchartWidgetCmd(ClientData clientData, Tcl_Interp* interp,
-				int argc, char** argv);
+				int argc, char** argv); //SV-XXX: FreeBSD
 static void SetStripchartValue(Stripchart* StripchartPtr, double value);
 static void SwapColours(Stripchart* StripchartPtr);
 
@@ -364,7 +364,7 @@ static void SwapColours(Stripchart* StripchartPtr);
  */
 int
 Tk_StripchartCmd(ClientData clientData, Tcl_Interp *interp, int argc,
-		 char **argv)
+		 char **argv) //SV-XXX: FreeBSD
  {
 	Tk_Window tkwin = (Tk_Window) clientData;
 	Tk_Window new;
@@ -419,7 +419,7 @@ Tk_StripchartCmd(ClientData clientData, Tcl_Interp *interp, int argc,
  */
 static int
 StripchartWidgetCmd(ClientData clientData, Tcl_Interp *interp,
-		    int argc, char **argv)
+		    int argc, char **argv) //SV-XXX: FreeBSD
 {
 	register Stripchart *StripchartPtr = (Stripchart*)clientData;
 	int result = TCL_OK;
@@ -629,7 +629,7 @@ DestroyStripchart(char* clientData)
  */
 static int
 ConfigureStripchart(Tcl_Interp *interp, Stripchart *StripchartPtr,
-		    int argc, char** argv, int flags)
+		    int argc, char** argv, int flags) //SV-XXX: FreeBSD
 {
 	XGCValues gcValues;
 	GC newGC;
@@ -699,7 +699,7 @@ ConfigureStripchart(Tcl_Interp *interp, Stripchart *StripchartPtr,
  *      None.
  */
 static void
-ComputeStripchartGeometry(Stripchart* StripchartPtr)
+ComputeStripchartGeometry(Stripchart* StripchartPtr) //SV-XXX: FreeBSD
  {
 	int tt = hasatitle(StripchartPtr);
 	int bd = StripchartPtr->borderWidth;
@@ -1040,7 +1040,7 @@ SwapColours(Stripchart * StripchartPtr)
  *     Stripchart is displayed with the new colour scheme.
  */
 static void 
-ReplaceColours(Stripchart* StripchartPtr, int argc, char** argv)
+ReplaceColours(Stripchart* StripchartPtr, int argc, char** argv) //SV-XXX: FreeBSD
 {
 	StripchartPtr->altborder =
 		Tk_Get3DBorder(StripchartPtr->interp, StripchartPtr->tkwin,

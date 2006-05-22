@@ -42,4 +42,6 @@ typedef struct {
 } MVector;
 /***********************************************************CommentEnd********/
 
+MVector *AllocMVector(void); //SV-XXX: FreeBSD
+
 #endif /* _MOTION_STRUCTS_H_ */

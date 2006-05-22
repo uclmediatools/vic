@@ -60,7 +60,7 @@ void PacketTable::grow()
 	bzero((char*)newtable, newsize * sizeof(pktbuf*));
 	bcopy((char*)table_, (char*)newtable, size_*sizeof(pktbuf*));
 	size_ = newsize;
-	delete table_;
+	delete[] table_; //SV-XXX: Debian
 	table_ = newtable;
 }
 
@@ -69,7 +69,7 @@ PacketTable::~PacketTable()
 	for (int i = 0; i < size_; i++)
 		if (table_[i] != 0)
 			pool_->release(table_[i]);
-	delete table_;
+	delete[] table_; //SV-XXX: Debian
 }
 
 int PacketTable::command(int argc, const char*const* argv)

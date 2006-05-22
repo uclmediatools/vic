@@ -87,9 +87,9 @@ BvcDecoder::BvcDecoder() : Decoder(sizeof(bvchdr)),
 
 BvcDecoder::~BvcDecoder()
 {
-	delete level0_;
-	delete frm_;
-	delete blk_;
+	delete[] level0_; //SV-XXX: Debian
+	delete[] frm_; //SV-XXX: Debian
+	delete[] blk_; //SV-XXX: Debian
 }
 
 #define LINEPAD 8
@@ -138,7 +138,7 @@ void BvcDecoder::resize(int width, int height)
 		abort();
 	}
 
-	delete frm_;
+	delete[] frm_; //SV-XXX: Debian
 	int size = width * height;
 	/*XXX 4:1:1*/
 	frm_ = new u_char[2 * size];
@@ -151,7 +151,7 @@ void BvcDecoder::resize(int width, int height)
 	int w = width >> 1;
 	int h = height >> 1;
 	int s = (w + LINEPAD) * (h + 2);
-	delete level0_;
+	delete[] level0_; //SV-XXX: Debian
 	level0_ = new int8_t[3 * s];
 	/*XXX*/
 	memset(level0_, 0, 3 * s);
@@ -159,7 +159,7 @@ void BvcDecoder::resize(int width, int height)
 	ll_ = level0_ + 0 * s + off;
 	lh_ = level0_ + 1 * s + off;
 	hl_ = level0_ + 2 * s + off;
-	delete blk_;
+	delete[] blk_; //SV-XXX: Debian
 	blk_ = new u_char[(width >> 4) * (height >> 4)];
 
 	Decoder::resize(width, height);

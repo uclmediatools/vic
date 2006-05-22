@@ -132,7 +132,7 @@ RTPv1H261Decoder::RTPv1H261Decoder() : Decoder(2)
 
 RTPv1H261Decoder::~RTPv1H261Decoder()
 {
-	delete slotbuf_;
+	delete[] slotbuf_; //SV-XXX: Debian
 	delete codec_;
 }
 
@@ -179,13 +179,13 @@ RTPv1H261Decoder::reassemble(const u_char* bp, int& cc,
 				bp += cc;
 			}
 			if (len > wrkbuflen_) {
-				delete wrkbuf_;
+				delete[] wrkbuf_; //SV-XXX: Debian
 				wrkbuf_ = new u_char[len+4];
 				wrkbuflen_ = len;
 			}
 		} else if ((flags & 0x08) == 0 || cc > packetsize_) {
 			count(STAT_SIZE_CHANGE);
-			delete slotbuf_;
+			delete[] slotbuf_; //SV-XXX: Debian
 			slotbuf_ = 0;
 			packetsize_ = 0;
 			for (int i = 0; i < H261_SLOTS; ++i) {

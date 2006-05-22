@@ -64,6 +64,7 @@ static const char rcsid[] =
 #endif
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <cstring> //SV-XXX: FreeBSD
 
 #ifdef WIN32
 extern "C" {
@@ -144,7 +145,8 @@ yuv_to_rgb(color& c)
  * For further details see "Introduction to Algorithms" by Carmen,
  * Lieserson and Rivest.
  */
-//extern void *memset(void *, int, size_t);
+//extern void *std::memset(void *, int, size_t); //SV-XXX: FreeBSD
+//SV-XXX: FreeBSD: replaced all occurences of memset with std::memset() further down
 
 /* XXX should pass backup array in as argument, that way can create it
    only once. */
@@ -156,7 +158,7 @@ rtn(histItem** h, int idx, int n) \
  \
 	register histItem** hist = &h[idx]; \
 	int j; \
-	memset((void *)aux, 0, 256 * sizeof(int)); \
+	std::memset((void *)aux, 0, 256 * sizeof(int)); \
 	for (j = 0; j < n; j++) \
 		aux[hist[j]->c.fld]++; \
 	 \
@@ -201,7 +203,7 @@ mediancut(u_char* cmap, histItem* hist[], int colors,
 	box* bv = new box[sizeof(box) * newcolors];
 
 	register u_char* colormap = cmap;
-	memset(colormap, 0, 3 * newcolors);
+	std::memset(colormap, 0, 3 * newcolors); //SV-XXX: FreeBSD
 
 	/* Set up the initial box. */
 	bv[0].ind = 0;
@@ -452,7 +454,7 @@ yuv_mediancut(u_char* cmap, histItem* hist[], int colors,
 	box* bv = new box[sizeof(box) * newcolors];
 
 	register u_char* colormap = cmap;
-	memset(colormap, 0, 3 * newcolors);
+	std::memset(colormap, 0, 3 * newcolors); //SV-XXX: FreeBSD
 
 	/* Set up the initial box. */
 	bv[0].ind = 0;
@@ -641,7 +643,7 @@ gen_ed_cmap(u_int* hist, u_char* cmap, int ncolors, int ybits)
 		abort();
 
 	int ncol[MAX_YLEVELS];
-	memset(ncol, 0, sizeof(ncol));
+	std::memset(ncol, 0, sizeof(ncol)); //SV-XXX: FreeBSD
 	/* 
 	 * We do this in two passes so that the size of the table can be 
 	 * calculated.  Otherwise it would be have to be too big:
@@ -659,7 +661,7 @@ gen_ed_cmap(u_int* hist, u_char* cmap, int ncolors, int ybits)
 		table[i] = new histItem[ncol[i]];
 
 	i = 0;
-	memset(ncol, 0, sizeof(ncol));
+	std::memset(ncol, 0, sizeof(ncol)); //SV-XXX: FreeBSD
 	for (v = 0; v < 1 << 5; ++v) {
 		for (int u = 0; u < 1 << 5; ++u) {
 			for (int y = 0; y < 1 << 4; ++y) {
@@ -690,7 +692,7 @@ gen_ed_cmap(u_int* hist, u_char* cmap, int ncolors, int ybits)
 	}
 
 	histItem** histogram[MAX_YLEVELS];
-	memset(histogram, 0, sizeof(histogram));
+	std::memset(histogram, 0, sizeof(histogram)); //SV-XXX: FreeBSD
 	int totcol = 0;
 	for (i = 0; i < ny; ++i) {
 		if (ncol[i] != 0) {

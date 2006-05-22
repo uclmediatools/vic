@@ -449,7 +449,7 @@ Plx422Grabber::Plx422Grabber() : image_(0), converter_(0)
 
 Plx422Grabber::~Plx422Grabber()
 {
-	delete image_;
+	delete[] image_; //SV-XXX: Debian
 }
 
 void Plx422Grabber::capture()

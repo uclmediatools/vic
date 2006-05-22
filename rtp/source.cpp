@@ -60,7 +60,7 @@ MtuAlloc::~MtuAlloc()
 	
 	while ((p = (char**)blk_list_) != NULL) {
 		blk_list_ = *p;
-		delete p;
+		delete[] p; //SV-XXX: Debian
 	}
 }
 
