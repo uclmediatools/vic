@@ -322,6 +322,10 @@ armv4l-*-linux)
 	fi
 	OPSYS=linux
         ;;
+*darwin*)
+	V_STATIC=""
+	V_DEFINE="$V_DEFINE -DHAVE_IPV6"
+	;;
 esac
 
 V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-x11.o"

@@ -719,13 +719,13 @@ echo X"$0" |
   	  /^X\(\/\).*/{ s//\1/; q; }
   	  s/.*/./; q'`
   srcdir=$ac_confdir
-  if test ! -r "$srcdir/$ac_unique_file"; then
+  if test ! -r $srcdir/$ac_unique_file; then
     srcdir=..
   fi
 else
   ac_srcdir_defaulted=no
 fi
-if test ! -r "$srcdir/$ac_unique_file"; then
+if test ! -r $srcdir/$ac_unique_file; then
   if test "$ac_srcdir_defaulted" = yes; then
     { echo "$as_me: error: cannot find sources ($ac_unique_file) in $ac_confdir or .." >&2
    { (exit 1); exit 1; }; }
@@ -734,7 +734,7 @@ if test ! -r "$srcdir/$ac_unique_file"; then
    { (exit 1); exit 1; }; }
   fi
 fi
-(cd $srcdir && test -r "./$ac_unique_file") 2>/dev/null ||
+(cd $srcdir && test -r ./$ac_unique_file) 2>/dev/null ||
   { echo "$as_me: error: sources are in $srcdir, but \`cd $srcdir' does not work" >&2
    { (exit 1); exit 1; }; }
 srcdir=`echo "$srcdir" | sed 's%\([^\\/]\)[\\/]*$%\1%'`
@@ -4509,7 +4509,7 @@ if test "$v4l2old" = "yes" ; then
 elif test -r /usr/include/linux/videodev.h ; then
         if grep V4L2 /usr/include/linux/videodev.h >/dev/null 2>&1  ; then
                 V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-v4l2.o video/grabber-video4linux.o"
-		echo "Using Linux (new)video4linux2(2.6.x compatible) and v4l1"
+		echo "Using Linux (new)video4linux2(2.6.x compatible) and V4L v1"
         else
                 V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-video4linux.o"
 		echo "Using Linux video4linux vers 1"
@@ -4792,6 +4792,10 @@ armv4l-*-linux)
 	fi
 	OPSYS=linux
         ;;
+*darwin*)
+	V_STATIC=""
+	V_DEFINE="$V_DEFINE -DHAVE_IPV6"
+	;;
 esac
 
 V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-x11.o"
