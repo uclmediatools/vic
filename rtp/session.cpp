@@ -348,7 +348,7 @@ int SessionManager::command(int argc, const char*const* argv)
 		}
 		if (strcmp(argv[1], "random-srcid") == 0) {
 			Address * addrp;
-			if ((addrp = (dh_[0].net())->alloc(argv[2])) == NULL) { //SV-XXX: placed ()'s against truth check == NULL
+			if ((addrp = (dh_[0].net())->alloc(argv[2])) !=0 ) { //SV-XXX: placed ()'s against truth check == NULL
 			  sprintf(cp, "%u", alloc_srcid(*addrp));
 			  delete addrp;
 			}
