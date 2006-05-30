@@ -442,8 +442,13 @@ main(int argc, const char** argv)
 #ifdef SIGHUP
 	signal(SIGHUP, (sig_t)ciao); //SV-XXX: Debian
 #endif
+#ifdef WIN32
+	signal(SIGINT, ciao);
+	signal(SIGTERM, ciao);
+#else
 	signal(SIGINT, (sig_t)ciao); //SV-XXX: Debian
 	signal(SIGTERM, (sig_t)ciao); //SV-XXX: Debian
+#endif
 #ifdef __FreeBSD__
 	signal(SIGSYS, (sig_t)noXShm);
 #endif
