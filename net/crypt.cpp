@@ -41,8 +41,11 @@ static const char rcsid[] =
 /*XXX*/
 #define PROTOTYPES 1 
 #include "global.h"
-//#include "md5.h"
+#ifdef WIN32
+#include "md5.h"
+#else
 #include <openssl/md5.h> //SV-XXX: FreeBSD
+#endif
 
 Crypt::Crypt() : badpktlen_(0), badpbit_(0)
 {
@@ -70,9 +73,17 @@ int Crypt::command(int argc, const char*const* argv)
 int Crypt::set_key(const char* key)
 {
 	MD5_CTX context;
-	MD5_Init(&context); //SV-XXX: FreeBSD. Was own copy "MD5Init(&context)"
-	MD5_Update(&context, (u_char*)key, strlen(key)); //SV-XXX: FreeBSD. Was own copy "MD5Update(...)"
 	u_char hash[16];
-	MD5_Final((u_char *)hash, &context); //SV-XXX: FreeBSD. Was own copy "MD5Final(...)"
+
+#ifdef WIN32
+	MD5Init(&context);
+	MD5Update(&context, (u_char*)key, strlen(key));
+	MD5Final((u_char *)hash, &context);
+#else
+	MD5_Init(&context); //SV-XXX: FreeBSD.
+	MD5_Update(&context, (u_char*)key, strlen(key)); //SV-XXX: FreeBSD. 
+	MD5_Final((u_char *)hash, &context); //SV-XXX: FreeBSD.
+#endif
+
 	return (install_key(hash));
 }
