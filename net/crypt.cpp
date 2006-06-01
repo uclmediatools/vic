@@ -41,7 +41,7 @@ static const char rcsid[] =
 /*XXX*/
 #define PROTOTYPES 1 
 #include "global.h"
-#ifdef WIN32
+#ifndef __FreeBSD__
 #include "md5.h"
 #else
 #include <openssl/md5.h> //SV-XXX: FreeBSD
@@ -75,7 +75,7 @@ int Crypt::set_key(const char* key)
 	MD5_CTX context;
 	u_char hash[16];
 
-#ifdef WIN32
+#ifndef __FreeBSD__
 	MD5Init(&context);
 	MD5Update(&context, (u_char*)key, strlen(key));
 	MD5Final((u_char *)hash, &context);
