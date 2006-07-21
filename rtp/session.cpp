@@ -433,6 +433,8 @@ int SessionManager::command(int argc, const char*const* argv)
 		}
 		return (Transmitter::command(argc, argv));
 	}
+	//should not be reached
+	return (TCL_ERROR);
 }
 
 void SessionManager::transmit(pktbuf* pb)

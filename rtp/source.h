@@ -213,7 +213,7 @@ class Source : public TclObject, public Timer {
 		inline u_int32_t np() const { return (np_); }
 		inline u_int32_t nm() const { return (nm_); }
 		inline u_int32_t ns() const { return (cs_ - fs_); } /* no. expected */
-		inline u_int32_t ehs() const { return (-(fs_ & 0xffff0000) | cs_); }
+		inline u_int32_t ehs() const { return ((-1*(fs_ & 0xffff0000)) | cs_); }
 		inline u_int32_t cs() const { return (cs_); }
 		inline u_int32_t snp() const { return (snp_); }
 		inline u_int32_t sns() const { return (sns_); }
