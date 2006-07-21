@@ -82,7 +82,7 @@ strtol(
      */
     if (*p == '-') {
 	p += 1;
-	result = -(strtoul(p, endPtr, base));
+	result = -1*(strtoul(p, endPtr, base));
     } else {
 	if (*p == '+') {
 	    p += 1;
