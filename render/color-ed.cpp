@@ -267,7 +267,7 @@ void EDWindowRenderer::update()
  *
  * 'omask' is the parrallel set of under/overflow check bits.
  */
-#define YERRMASK ((1 << 8 - ED_YBITS) - 1)
+#define YERRMASK ((1 << (8 - ED_YBITS)) - 1) 
 #define DIFFUSION_SETUP \
 	register const u_int* lut = cm_.lut(); \
 	u_int omask = (0x100 << 10) | (0x100 << 21) | 0x100; \
@@ -342,7 +342,7 @@ void EDWindowRenderer::update()
 	t = e &~ (0xf << 18); \
 	t |= (e << 14) & (0xf << 18); \
 	t >>= 11; \
-	t = lut[t & (1 << 7+7+ED_YBITS) - 1]; \
+	t = lut[t & (1 << (7+7+ED_YBITS)) - 1]; \
 	/* y error */ \
 	e &= YERRMASK;  \
 	/* uv error */ \
