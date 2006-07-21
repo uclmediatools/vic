@@ -164,7 +164,7 @@ H263Decoder::reassemble_gobs(u_char **newbp,int *newcc)
 			if (!slot_[x].cc)
 				break;
 			/* A wrong sequence number too. */
-			if ((slot_[x].seqno&0xffff)!= (seqno+(j-H263_SLOTS))&0xffff)
+			if ((slot_[x].seqno & 0xffff) != ((seqno+(j-H263_SLOTS)) & 0xffff)) //SV: vs7 warn fix
 				break;
 			/* A wrong magic at the start (not GSC) is not useful
 			 * as starting block, continue. */
@@ -184,7 +184,7 @@ H263Decoder::reassemble_gobs(u_char **newbp,int *newcc)
 			x=(startblock+j)&H263_SLOTMASK;
 
 			/* wrong sequence number -> leave */
-			if ((slot_[x].seqno&0xffff)!= (seqno+j)&0xffff)
+			if ((slot_[x].seqno & 0xffff)!= ((seqno+j) & 0xffff)) //SV: vs7 warn fix
 				break;
 			/* empty entry is a valid endmarker */
 			if (!slot_[x].cc) {

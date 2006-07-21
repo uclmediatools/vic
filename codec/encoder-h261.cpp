@@ -107,10 +107,10 @@ static const char rcsid[] =
 		bb |= (BB_INT)(bits) >> extra; \
 		STORE_BITS(bb, bc) \
 		bc += sizeof(BB_INT); \
-		bb = (BB_INT)(bits) << NBIT - extra; \
+		bb = (BB_INT)(bits) << (NBIT - extra); \
 		nbb = extra; \
 	} else \
-		bb |= (BB_INT)(bits) << NBIT - (nbb); \
+		bb |= (BB_INT)(bits) << (NBIT - (nbb)); \
 }
 
 

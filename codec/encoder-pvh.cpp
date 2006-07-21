@@ -492,8 +492,7 @@ void PvhEncoder::refine_old(pvh_layer* lp, int off)
 	while ((code = *sc++) != 0) {
 		if ((code & mask) != 0) {
 			int t = (code >> off) & 1;
-			PVH_PUT_BITS(t, 1, lp->nbb, lp->bb,
-				      lp->bs, refine);
+			PVH_PUT_BITS(t, 1, lp->nbb, lp->bb, lp->bs, refine);
 		}
 	}
 }

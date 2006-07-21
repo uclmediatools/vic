@@ -79,10 +79,10 @@ public:
 		bb |= (bits) >> extra; \
 		STORE_BITS(bs, bb) \
 		bs += (NBIT / 8); \
-		bb = (bits) << NBIT - extra; \
+		bb = (bits) << (NBIT - extra);\
 		nbb = extra; \
 	} else \
-		bb |= (bits) << NBIT - (nbb); \
+		bb |= (bits) << (NBIT - (nbb)); \
 }
 
 BvcEncoder::BvcEncoder() : TransmitterModule(FT_YUV_411)

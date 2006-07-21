@@ -54,8 +54,8 @@ static const char rcsid[] =
 #define FP_NBITS 15
 #define FP_MUL(a, b)	((((a) >> 5) * ((b) >> 5)) >> (FP_NBITS - 10))
 #define FP_SCALE(v)	(int)((double)(v) * double(1 << FP_NBITS) + 0.5)
-#define FP_NORM(v)	((v) + (1 << (FP_NBITS-1)) >> FP_NBITS)
-#define FP_JNORM(v)	((v) + (257 << (FP_NBITS-1)) >> FP_NBITS)
+#define FP_NORM(v)	(((v) + (  1 << (FP_NBITS-1))) >> FP_NBITS)
+#define FP_JNORM(v)	(((v) + (257 << (FP_NBITS-1))) >> FP_NBITS)
 
 #define M(n) ((m0 >> (n)) & 1)
 
