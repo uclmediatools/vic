@@ -122,10 +122,10 @@ if (0) printf("pb %d(%x %d%d%d)\n", n, bits, (bits >> 2) & 1, (bits >> 1) & 1, b
 		bb |= (bits) >> extra; \
 		HUFF_STORE_BITS(bs, bb) \
 		bs += (HUFF_NBIT / 8); \
-		bb = (bits) << HUFF_NBIT - extra; \
+		bb = (bits) << (HUFF_NBIT - extra); \
 		nbb = extra; \
 	} else \
-		bb |= (bits) << HUFF_NBIT - (nbb); \
+		bb |= (bits) << (HUFF_NBIT - (nbb)); \
 }
 
 #endif
