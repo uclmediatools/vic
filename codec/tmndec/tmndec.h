@@ -165,3 +165,9 @@
 #define PAR_CIF_STRETCHED               4  /* 0100 */
 #define PAR_525_STRETCHED               5  /* 0101 */
 #define PAR_EXTENDED                    15 /* 1111 */
+
+
+#ifdef WINDOWS
+int initDisplay (int pels, int lines);
+int closeDisplay ();
+#endif

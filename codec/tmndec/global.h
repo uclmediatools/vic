@@ -62,6 +62,7 @@
  * defined) GLOBAL is defined in exactly one file (tmndec.c) */
 
 #include <stdio.h>
+#include <memory.h>
 
 #ifndef GLOBAL
 #define EXTERN extern

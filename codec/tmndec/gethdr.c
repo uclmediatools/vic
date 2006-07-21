@@ -88,7 +88,7 @@ int getheader ()
     {
 
       fprintf (trace_file, "\nPSC: ");
-      printbits ((code << 5 + gob), 22, 22);
+      printbits ((code << (5 + gob)), 22, 22);
     }
     getpicturehdr ();
     if (syntax_arith_coding)    /* reset decoder after receiving */
@@ -100,7 +100,7 @@ int getheader ()
     {
 
       fprintf (trace_file, "\nGBSC: ");
-      printbits ((code << 5 + gob), 22, 22);
+      printbits ((code << (5 + gob)), 22, 22);
     }
   }
   return gob + 1;
@@ -553,7 +553,7 @@ static void getpicturehdr ()
         fprintf (trace_file, "\nextended_temporal_reference: ");
         printbits (extended_temporal_reference, 2, 2);
       }
-      temp_ref = extended_temporal_reference << 8 + temp_ref;
+      temp_ref = extended_temporal_reference << (8 + temp_ref);
 
       if (PCT_B == pict_type)
       {

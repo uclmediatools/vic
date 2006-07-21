@@ -383,6 +383,9 @@ int getMBTYPE (int *cbp_present, int *quant_present)
       break;
 
   }    
+
+  //should not reach here
+  return INVALID_MBTYPE; //XXX
 }
 
 int getMODB ()
