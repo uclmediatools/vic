@@ -1098,9 +1098,11 @@ static void PlotLine(int x1, int y1, int x2, int y2, int value, Picture *pic)
   int sdx = SGN(dx), sdy = SGN(dy);
   int adx = ABS(dx), ady = ABS(dy);
   int e = 0;
+  int res;
 
 
-  switch (ady < adx) {
+  res = (ady < adx);
+  switch (res) {
   case 0:
     for (y = y1; (sdy >= 0) ? y <= y2 : y >= y2; y += sdy) {
       e += 2 * adx;

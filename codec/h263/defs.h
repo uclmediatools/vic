@@ -8,8 +8,10 @@
 
 #define NUM_LAYERS 4
 
+#ifndef _WIN32
 #ifndef RAND_MAX
 # define RAND_MAX 32767		/* sos4 has it not */
+#endif
 #endif
 
 #ifdef FALSE
