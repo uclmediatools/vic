@@ -823,9 +823,10 @@ const u_char* JpegDecoder::parseJFIF(const u_char* in)
 			/* restart interval definition */
 			t = *in++ << 8;
 			t |= *in++;
-			if (t != 4)
+			if (t != 4) {
 				/* XXX bad length */
 				;
+			}
 			rlen_ = *in++ << 8;
 			rlen_ |= *in++;
 			rcnt_ = 0;
