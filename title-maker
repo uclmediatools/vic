@@ -13,8 +13,8 @@ proc ppm_load { object infile outfile } {
 	set object_height($object) [$ppm height]
 	set object_yuv($object) $outfile
 	delete $ppm
-	$cb send "tm_create $object $outfile \
-		 $object_width($object) $object_height($object)"
+	$cb send "\"tm_create\" \"$object\" \"$outfile\" \
+		 \"$object_width($object)\" \"$object_height($object)\""
 }
 
 set channel 1
@@ -31,7 +31,7 @@ proc place_graphic { o x y depth } {
 	set object_x($o) $x
 	set object_y($o) $y
 	set object_depth($o) $depth
-	$cb send "tm_place $o $x $y $depth"
+	$cb send "\"tm_place\" \"$o\" \"$x\" \"$y\" \"$depth\""
 }
 	
 proc float_graphic o {
@@ -48,8 +48,8 @@ proc float_graphic o {
 
 frame .f -width 320 -height 240
 pack .f
-bind .f <1> "position_graphic name %x %y 1"
-bind .f <3> "position_graphic logo %x %y 0"
+bind .f <1> "position_graphic girl \"%x\" \"%y\" \"1\""
+bind .f <3> "position_graphic boy \"%x\" \"%y\" \"0\""
 
 proc position_graphic { o x y depth } {
 	global object_width object_height cb
@@ -71,6 +71,6 @@ bind .f <Enter> "focus %W"
 
 proc quit {} {
 	global cb
-	$cb send tm_disable
+	$cb send \"tm_disable\"
 	exit 0
 }
