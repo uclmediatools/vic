@@ -3,7 +3,7 @@
 proc ppm_load { object infile outfile } {
 	set ppm [new ppm]
 	set f [open $infile r]
-	puts stderr "opened file $infile"
+	
 	$ppm load $f
 	close $f
 	set f [open $outfile w]
