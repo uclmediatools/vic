@@ -44,5 +44,7 @@ int Cb_Init(Tcl_Interp* interp)
 	Tcl& tcl = Tcl::instance();
 	tcl.tkmain(Tk_MainWindow(interp));
 	EmbeddedTcl::init();
+
+	return TCL_OK; //SV-XXX
 }
 }
