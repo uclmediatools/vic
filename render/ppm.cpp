@@ -32,8 +32,7 @@
  */
 
 #ifndef lint
-static char rcsid[] =
-    "@(#) $Header$ (LBL)";
+static const char rcsid[] = "@(#) $Header$ (LBL)";
 #endif
 
 #include <tk.h>
@@ -87,7 +86,7 @@ int PPM::command(int argc, const char*const* argv)
 		if (strcmp(argv[1], "load") == 0) {
 			FILE* f;
 			if (Tcl_GetOpenFile(tcl.interp(), (char*)argv[2],
-					    0, 1, &f) != TCL_OK ||
+					    0, 1, (void **)&f) != TCL_OK ||
 			    load(f) < 0)
 				tcl.result("0");
 			else
@@ -97,7 +96,7 @@ int PPM::command(int argc, const char*const* argv)
 		if (strcmp(argv[1], "dump-yuv") == 0) {
 			FILE* f;
 			if (Tcl_GetOpenFile(tcl.interp(), (char*)argv[2],
-					    1, 1, &f) != TCL_OK ||
+					    1, 1, (void **)&f) != TCL_OK ||
 			    dump(f) < 0)
 				tcl.result("0");
 			else
@@ -153,6 +152,8 @@ int PPM::load(FILE* f)
 		double r = getc(f);
 		double g = getc(f);
 		double b = getc(f);
+
+		printf("%d:\t%d %d %d\n", k, int(r), int(g), int(b));
 		
 		/* can't have overflow in this direction */
 		double y0 = 0.299 * r + 0.587 * g + 0.114 * b;
@@ -163,7 +164,11 @@ int PPM::load(FILE* f)
 		g = getc(f);
 		b = getc(f);
 
+		printf("%d:\t%d %d %d\n", k, int(r), int(g), int(b));
+
 		double y1 = 0.299 * r + 0.587 * g + 0.114 * b;
+
+	//	printf("%d:\t%d %d %d\n", k, int(r), int(g), int(b));
 
 		p[0] = int(y0);
 		p[1] = int(u + 128);

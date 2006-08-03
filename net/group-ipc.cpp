@@ -210,6 +210,7 @@ void GroupIPC::send(int type, int len)
 void GroupIPC::send(int type, const char* msg)
 {
 	strcpy((char*)buffer(), msg);
+	fprintf(stderr, "debug net goup-ipc.cpp: GroupIPC::send()msg=%s\n", msg);
 	/* include null terminator */
 	send(type, strlen(msg) + 1);
 }

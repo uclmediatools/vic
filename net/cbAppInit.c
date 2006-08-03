@@ -12,7 +12,7 @@
  */
 
 #ifndef lint
-static char sccsid[] = "@(#) tkAppInit.c 1.15 95/06/28 13:14:28";
+static const char sccsid[] = "@(#) tkAppInit.c 1.15 95/06/28 13:14:28";
 #endif /* not lint */
 
 #include "tk.h"
@@ -22,9 +22,9 @@ static char sccsid[] = "@(#) tkAppInit.c 1.15 95/06/28 13:14:28";
  * Sun shared libraries to be used for Tcl.
  */
 
-extern int matherr();
-int *tclDummyMathPtr = (int *) matherr;
-
+//extern int matherr();
+//int *tclDummyMathPtr = (int *) matherr;
+
 /*
  *----------------------------------------------------------------------
  *
@@ -50,7 +50,7 @@ main(argc, argv)
     Tk_Main(argc, argv, Tcl_AppInit);
     return 0;			/* Needed only to prevent compiler warning. */
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -107,6 +107,7 @@ Tcl_AppInit(interp)
      * then no user-specific startup file will be run under any conditions.
      */
 
-    tcl_RcFileName = "~/.cbrc";
+    /*tcl_RcFileName = "~/.cbrc";*/
+    Tcl_SetVar(interp, "tcl_RcFileName", "~/.cbrc", TCL_GLOBAL_ONLY);
     return TCL_OK;
 }

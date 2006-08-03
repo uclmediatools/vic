@@ -38,10 +38,13 @@
 
 proc tm_bootstrap {} {
 	global tm411 tm422
+	debug "******************* DEBUG tm_bootstrap: entering ************************"
 	if ![info exists tm411] {
 		set tm411 [new module compositor/411]
 		set tm422 [new module compositor/422]
+		debug "DEBUG tm_bootstrap: in !\"info exists tm411\""
 	}
+	debug "******************* DEBUG tm_bootstrap: leaving ************************\n"
 }
 
 proc tm_init { grabber encoder } {
@@ -67,33 +70,47 @@ proc tm_init { grabber encoder } {
 
 proc tm_enable {} {
 	global tmEnable V
+	debug "********************* DEBUG tm_enable: entering tm_enable ************************"
+
 	if [info exists tmEnable] {
+		debug "DEBUG tm_enable: in \"info exists tmEnable\""
 		return
 	}
 	set tmEnable 1
 	if [have grabber] {
 		tm_init $V(grabber) $V(encoder)
+		debug "DEBUG tm_enable: in \"have grabber\""
 	}
+	debug "********************* DEBUG tm_enable: leaving tm_enable *************************\n"
 }
 
 proc tm_disable {} {
 	global tmEnable V
+
+	debug "****************** DEBUG tm_disable: entering tm_disable ************************"
+
 	catch "unset tmEnable"
 	if [have grabber] {
 		# remove the title-maker from the path
 		# XXX this assumes the title-maker is the only
 		# intervening modules
 		$V(grabber) target $V(encoder)
+		debug "DEBUG tm_disable: in \"have grabber\""
 	}
+        debug "****************** DEBUG tm_disable: leaving tm_disable ************************\n"
 }
 
 proc tm_check id {
 	global tm_obj
+	debug "****************** DEBUG tm_check: into \"info exists tm_obj()\" *************\n"
 	return [info exists tm_obj($id)]
 }
 
 proc tm_create { id file width height } {
 puts create/$id/$file/$width/$height
+
+	debug "****************** DEBUG tm_create: entering tm_create ************************"
+
 	global tm_obj
 	if [tm_check $id] {
 		tm_destroy $id
@@ -102,6 +119,9 @@ puts create/$id/$file/$width/$height
 	#XXX check for error
 	$tm_obj($id) load $file $width $height
 	tm_bootstrap
+	
+	debug "****************** DEBUG tm_create: leaving tm_create ************************\n"
+
 }
 
 proc tm_transparent { id lum } {

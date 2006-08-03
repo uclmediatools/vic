@@ -180,9 +180,10 @@ OBJ_JPEGPLAY = jpeg_play.o jpeg/jpeg.o \
 	ui-jpeg_play.o tk.o random.o
 
 LIB_CB = @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ -lm
-OBJ_CB = cbAppInit.o cb.o confbus.o group-ipc.o iohandler.o \
-	net.o net-ip.o crypt.o crypt-dull.o $(OBJ_CRYPT) net/communicator.o \
-	ppm.o Tcl.o Tcl2.o inet.o md5c.o
+OBJ_CB = net/cbAppInit.o net/cb.o net/confbus.o net/group-ipc.o iohandler.o \
+	render/ppm.cpp \
+	net/net.o net/net-ip.o net/net-addr.o net/crypt.o net/crypt-dull.o $(OBJ_CRYPT) net/communicator.o \
+	Tcl.o Tcl2.o net/inet.o md5c.o
 
 OBJ_H261DUMP = h261_dump.o p64/p64.o p64/p64dump.o huffcode.o dct.o bv.o
 

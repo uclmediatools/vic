@@ -32,8 +32,7 @@
  */
 
 #ifndef lint
-static char rcsid[] =
-    "@(#) $Header$ (LBL)";
+static const char rcsid[] = "@(#) $Header$ (LBL)";
 #endif
 
 #include <ctype.h>
@@ -51,8 +50,8 @@ public:
 	virtual void dispatch(int mask);
 protected:
 	void send(const char* s);
-	Network* net_;
 	char* callback_;
+	Network* net_;
 	u_int16_t seqno_;
 	u_char* pktbuf_;
 };

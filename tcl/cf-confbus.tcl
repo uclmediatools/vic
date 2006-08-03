@@ -51,11 +51,22 @@ proc confbusHandler { cb msg } {
 	#	debug "confbus arg mismatch: $class ($formals)/($actuals)"
 	#	return		
 	#}
-	$proc $actuals
+
+	debug "\nproc=$proc, actuals=$actuals, formals=$formals, cb_dispatch=$cb_dispatch($class), msg=$msg"
+
+        if [catch "$proc $actuals"] {
+                debug "$V(app): something wrong while executing \"proc actuals\""
+                exit 1
+        }
+
+	#debug "DEBUG confbusHandler: after proc actuals"
 }
 
 proc init_confbus {} {
 	set channel [resource confBusChannel]
+
+	debug "DEBUG init_confbus{}: initialising confBus"
+
 	if { $channel != 0 } {
 		global V
 		set V(cb) [new confbus $channel]
