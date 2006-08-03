@@ -35,8 +35,9 @@
 static const char rcsid[] = "@(#) $Header$ (LBL)";
 #endif
 
-#include <tk.h>
 #include "vic_tcl.h"
+#include <tk.h>
+
 
 class PPM : public TclObject {
 public:
@@ -44,8 +45,8 @@ public:
 	~PPM();
 	int command(int argc, const char*const* argv);
 protected:
-	int load(FILE* f);
-	int dump(FILE* f);
+	int load(Tcl_Channel tclChannel);
+	int dump(Tcl_Channel tclChannel);
 	int width_;
 	int height_;
 	u_char* image_;
@@ -68,9 +69,11 @@ PPM::~PPM()
 	delete image_;
 }
 
+
 int PPM::command(int argc, const char*const* argv)
 {
 	Tcl& tcl = Tcl::instance();
+
 	if (argc == 2) {
 		if (strcmp(argv[1], "width") == 0) {
 			sprintf(tcl.buffer(), "%d", width_);
@@ -84,23 +87,47 @@ int PPM::command(int argc, const char*const* argv)
 		}
 	} else if (argc == 3) {
 		if (strcmp(argv[1], "load") == 0) {
-			FILE* f;
-			if (Tcl_GetOpenFile(tcl.interp(), (char*)argv[2],
-					    0, 1, (void **)&f) != TCL_OK ||
-			    load(f) < 0)
+			Tcl_Channel Ch;
+			if ( (Ch = Tcl_OpenFileChannel(tcl.interp(), (char*)argv[2], "r", 0777)) == NULL)
+			{
+				printf("ppm.cpp: Can't obtain channel for open file %s. ErrMsg = %s\n", (char*)argv[2], Tcl_ErrnoMsg(Tcl_GetErrno()));
 				tcl.result("0");
-			else
+				exit(1);
+			}
+			else {
+				//printf("ppm.cpp: Opened file %s\n", (char*)argv[2]);
+				//Tcl_SetChannelOption(tcl.interp(), Ch, "translation", "binary");
 				tcl.result("1");
+			}
+			if (load(Ch) < 0) {
+				//printf("ppm.cpp: Can't load file %s from channel\n", (char*)argv[2]);
+				tcl.result("0");
+				exit(1);
+			} else  {
+				Tcl_Close(tcl.interp(), Ch);
+				//printf("ppm.cpp: Loaded file %s\n", (char*)argv[2]);
+			}
 			return (TCL_OK);
 		}
 		if (strcmp(argv[1], "dump-yuv") == 0) {
-			FILE* f;
-			if (Tcl_GetOpenFile(tcl.interp(), (char*)argv[2],
-					    1, 1, (void **)&f) != TCL_OK ||
-			    dump(f) < 0)
+			Tcl_Channel Ch;
+			if ((Ch = Tcl_OpenFileChannel(tcl.interp(), (char*)argv[2], "w+", 0777)) == NULL)
+			{
+				printf("ppm.cpp: Can't obtain channel for dumping file %s.\nErrMsg = \"%s\"\n", (char*)argv[2], Tcl_ErrnoMsg(Tcl_GetErrno()));
 				tcl.result("0");
-			else
+				exit(1);
+			}
+			else {
+				//Tcl_SetChannelOption(tcl.interp(), Ch, "translation", "binary");
 				tcl.result("1");
+			}
+			if (dump(Ch) < 0) {
+				printf("ppm.cpp: Can't dump file %s into channel %d\n", (char*)argv[2], Ch);
+				tcl.result("0");
+				exit(1);
+			} else {
+				Tcl_Close(tcl.interp(), Ch);
+			}
 			return (TCL_OK);
 		}
 	}
@@ -108,39 +135,53 @@ int PPM::command(int argc, const char*const* argv)
 }
 	
 static int
-readline(FILE *fp, char* line, int size)
+readline(Tcl_Channel tclChannel, char *cline)
 {
+	Tcl_DString line;
+
 	for (;;) {
-		if (fgets(line, size, fp) == 0)
+		Tcl_DStringInit(&line);
+
+		if (Tcl_Gets(tclChannel, &line) == 0)
 			return (-1);
-		if (*line != '#')
+
+		sprintf(cline, "%s", Tcl_DStringValue(&line));
+
+		Tcl_DStringFree(&line);
+
+		if (cline[0] != '#')
 			return (0);
 	}
 }
 
 static int
-readhdr(FILE *fp, int *width, int *height, int *maxval)
+readhdr(Tcl_Channel tclChannel, int *width, int *height, int *maxval)
 {
-	char line[1024];
-	if (readline(fp, line, sizeof(line)) < 0 ||
-	    line[0] != 'P' || line[1] != '6')
+	int gotLine;
+	char cline[1000];
+
+	gotLine = readline(tclChannel, cline);
+	if ( gotLine < 0 || cline[0] != 'P' || cline[1] != '6')
 		return (-1);
 
-	if (readline(fp, line, sizeof(line)) < 0 ||
-	    sscanf(line, "%d %d", width, height) != 2)
+	gotLine = readline(tclChannel, cline);
+	if (gotLine < 0 || sscanf(cline, "%d %d", width, height) != 2)
 		return (-1);
 
-	if (readline(fp, line, sizeof(line)) < 0 ||
-	    sscanf(line, "%d", maxval) != 1)
+	gotLine = readline(tclChannel, cline);
+	if (gotLine < 0 || sscanf(cline, "%d", maxval) != 1)
 		return (-1);
 
 	return (0);
 }
 
-int PPM::load(FILE* f)
+int PPM::load(Tcl_Channel tclChannel)
 {
+	Tcl& tcl = Tcl::instance();
+
 	int maxval;
-	if (readhdr(f, &width_, &height_, &maxval) < 0)
+
+	if (readhdr(tclChannel, &width_, &height_, &maxval) < 0)
 		return (-1);
 	int n = width_ * height_;
 	if (n > 1024*1024)
@@ -148,27 +189,57 @@ int PPM::load(FILE* f)
 	delete image_;
 	image_ = new u_char[2 * n];
 	u_char* p = image_;
+
 	for (int k = n >> 1; --k >= 0; ) {
-		double r = getc(f);
-		double g = getc(f);
-		double b = getc(f);
-
-		printf("%d:\t%d %d %d\n", k, int(r), int(g), int(b));
 		
-		/* can't have overflow in this direction */
-		double y0 = 0.299 * r + 0.587 * g + 0.114 * b;
-		double u = -0.1687 * r - 0.3313 * g + 0.5 * b;
-		double v = 0.5 * r - 0.4187 * g - 0.0813 * b;
+		char R, G, B;
+		int ret;
 		
-		r = getc(f);
-		g = getc(f);
-		b = getc(f);
+		ret = Tcl_Read(tclChannel, &R, sizeof(char));
+		if ( ret < 0)
+		{
+			printf("Tcl_Read: ret = %d. Err = \"%s\"\n", ret, Tcl_ErrnoMsg(Tcl_GetErrno()));
+			return (-1);
+		}
 
-		printf("%d:\t%d %d %d\n", k, int(r), int(g), int(b));
+		ret = Tcl_Read(tclChannel, &G, sizeof(char));
+		if ( ret < 0)
+		{
+			printf("Tcl_Read: ret = %d. Err = \"%s\"\n", ret, Tcl_ErrnoMsg(Tcl_GetErrno()));		
+		}
 
-		double y1 = 0.299 * r + 0.587 * g + 0.114 * b;
+		ret = Tcl_Read(tclChannel, &B, sizeof(char));
+		if ( ret < 0)
+		{
+			printf("Tcl_Read: ret = %d. Err = \"%s\"\n", ret, Tcl_ErrnoMsg(Tcl_GetErrno()));		
+		}
 
-	//	printf("%d:\t%d %d %d\n", k, int(r), int(g), int(b));
+		// can't have overflow in this direction
+		double y0 = 0.299 * (u_char)R + 0.587 * (u_char)G + 0.114 * (u_char)B;
+		double u = -0.1687 * (u_char)R - 0.3313 * (u_char)G + 0.5 * (u_char)B;
+		double v = 0.5 * (u_char)R - 0.4187 * (u_char)G - 0.0813 * (u_char)B;
+		
+
+		ret = Tcl_Read(tclChannel, &R, sizeof(char));
+		if ( ret < 0)
+		{
+			printf("Tcl_Read: ret = %d. Err = \"%s\"\n", ret, Tcl_ErrnoMsg(Tcl_GetErrno()));
+			return (-1);
+		}
+
+		ret = Tcl_Read(tclChannel, &G, sizeof(char));
+		if ( ret < 0)
+		{
+			printf("Tcl_Read: ret = %d. Err = \"%s\"\n", ret, Tcl_ErrnoMsg(Tcl_GetErrno()));		
+		}
+
+		ret = Tcl_Read(tclChannel, &B, sizeof(char));
+		if ( ret < 0)
+		{
+			printf("Tcl_Read: ret = %d. Err = \"%s\"\n", ret, Tcl_ErrnoMsg(Tcl_GetErrno()));		
+		}
+
+		double y1 = 0.299 * (u_char)R + 0.587 * (u_char)G + 0.114 * (u_char)B;
 
 		p[0] = int(y0);
 		p[1] = int(u + 128);
@@ -176,16 +247,20 @@ int PPM::load(FILE* f)
 		p[3] = int(v + 128);
 		p += 4;
 	}
+	return 0;
 }
 
-int PPM::dump(FILE* f)
+int PPM::dump(Tcl_Channel tclChannel)
 {
 	int n = width_ * height_;
 	if (n <= 0)
 		return (-1);
 
-	if (fwrite(image_, 2 * n, 1, f) == 0)
+	if (Tcl_Write(tclChannel, (char *)image_, 2 * n) < 0)
+	{
+		printf("ppm.cpp: Tcl_Write() failed. ErrMsg = %s\n", Tcl_ErrnoMsg(Tcl_GetErrno()));
 		return (-1);
+	}
 
 	return (0);
 }
