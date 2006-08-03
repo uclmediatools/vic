@@ -70,6 +70,9 @@
 
 #include "indices.h"
 #include "sactbls.h"
+#ifdef WIN32
+#include "win.h" //SV-XXX: was warning
+#endif
 
 static int coded_map[MBR + 1][MBC + 1];
 static int quant_map[MBR + 1][MBC + 1];
