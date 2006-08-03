@@ -279,10 +279,11 @@ proc create_encoder fmt {
 	return $encoder
 }
 
-set  transmitButtonState 0
+set transmitButtonState 0
+set logoButtonState 0
 
 proc transmit { } {
-	global transmitButtonState videoFormat videoDevice V useJPEGforH261 useHardwareComp numEncoderLayers
+	global logoButton logoButtonState transmitButtonState videoFormat videoDevice V useJPEGforH261 useHardwareComp numEncoderLayers
 	if ![have grabber] {
 		set DA [$videoDevice attributes]
 		set DF [attribute_class $DA format]
@@ -345,12 +346,14 @@ proc transmit { } {
 				#XXX hack: this happens when we tried to open
 				# a jvideo with a non-jpeg format
 				set transmitButtonState 0
+				set logoButtonState 0
 				open_dialog \
 				    "Can't use jvideo with $videoFormat format"
 				select_device $videoDevice
 				return
 			}
 			set transmitButtonState 0
+			set logoButtonState 0
 			open_dialog \
 			    "can't open [$videoDevice nickname] capture device"
 			return
@@ -390,12 +393,21 @@ proc close_device {} {
 
 proc release_device { } {
 	global transmitButtonState transmitButton
+	global logoButtonState logoButton
+
 	if [have grabber] {
+	
+		if $logoButtonState {
+			$logoButton invoke
+		}
+		logo_quit
+	
 		if $transmitButtonState {
 			$transmitButton invoke
 		}
 		close_device
 	}
+
 }
 
 proc configWinGrabber {} {
@@ -407,6 +419,9 @@ proc build.buttons w {
 	set f [smallfont]
 	global transmitButton
 	set transmitButton $w.send
+	global logoButton
+	set logoButton $w.logo
+
 	checkbutton $w.send -text "Transmit" \
 		-relief raised -command transmit \
 		-anchor w -variable transmitButtonState -font $f \
@@ -418,9 +433,14 @@ proc build.buttons w {
 	button $w.release -text "Release" \
 		-relief raised -command release_device \
 		-font $f -highlightthickness 0
-
+	checkbutton $w.logo -text "Logo" \
+		-relief raised -command logo_transmit \
+		-anchor w -variable logoButtonState -font $f \
+		-state normal -highlightthickness 0
+		
 #	pack $w.send $w.release $w.freeze -fill both
 	pack $w.send $w.release -fill both
+	pack $w.send $w.logo -fill both
 }
 
 proc doNothing { args } {
@@ -453,7 +473,7 @@ proc build.sliders w {
 	label $w.info.label -text "Rate Control" -font $f
 	label $w.info.fps -textvariable ftext($key) -width 6 \
 		-font $f -pady 0 -borderwidth 0
-        label $w.info.bps -textvariable btext($key) -width 8 \
+    label $w.info.bps -textvariable btext($key) -width 8 \
 		-font $f -pady 0 -borderwidth 0
 	pack $w.info.label -side left
 	pack $w.info.bps $w.info.fps -side right
@@ -1264,7 +1284,17 @@ proc pvh_setq value {
 #
 proc restart { } {
 	if [have grabber] {
-		global transmitButtonState videoDevice V
+		global transmitButtonState logoButtonState videoDevice V
+	
+		# HANDLE TRANSMIT LOGO
+		if $logoButtonState {
+			logo_quit
+			logo_transmit
+		} else {
+			logo_quit
+		}
+
+		# HANDLE TRANSMIT VIDEO	
 		if $transmitButtonState {
 			$V(grabber) send 0
 			close_device
@@ -1272,6 +1302,7 @@ proc restart { } {
 		} else {
 			close_device
 		}
+		
 	}
 }
 
@@ -1456,9 +1487,13 @@ proc build.xmit w {
 	build.buttons $w.frame.buttons
 	frame $w.frame.right
 	build.sliders $w.frame.right
+	frame $w.frame.tm
+	build.titlemaker $w.frame.tm
 
 	pack $w.frame.buttons -side left -padx 6 
 	pack $w.frame.right -side right -expand 1 -fill x -padx 10 -anchor c
+	pack $w.frame.tm -side top -expand 1 -fill y -pady 10 -anchor c
+	
 }
 
 proc set_dither {} {
