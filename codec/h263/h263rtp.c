@@ -200,7 +200,7 @@ int split_h263stream(
 	int *mbind,			/* macroblock indices [in] */
 	int *mbquant,			/* quantifiers [in] */
 	MVField mvfield,		/* motion vectors [in] */
-	//SV-XXX: unused: u_int ts_,			/* timestamp [in] */
+	u_int ts_,			/* timestamp [in] */
 	int headersize,			/* headerlength [in] */
 	h263_rtp_packet	**packets	/* rtp packets [out] */
 ) {
