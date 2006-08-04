@@ -34,7 +34,8 @@
 proc build.titlemaker w {
 
 	global selectedFile xcoord ycoord id transparency
-	set selectedFile "C:\\src\\vic_with_overlays\\vic\\tcl\\cbwish\\Debug\\ucl_logo.ppm"
+	set selectedFile [pwd]
+	append selectedFile "/ucl_logo.ppm"
 	set xcoord 0
 	set ycoord 0		
 	set transparency 255
@@ -63,7 +64,9 @@ proc build.titlemaker w {
 
 	frame $w.b.flower -relief sunken
 	mk.entry $w.b.flower tm.update.filename $selectedFile
-	pack $w.b.flower.entry -side left -fill both -expand 1 -pady 2 
+	#entry $w.b.flower.entry -relief sunken
+	pack $w.b.flower.entry -side left -fill both -expand 1 -pady 2
+	#bind $w.b.flower.entry <Return> "tm.update.filename $w.b.flower.entry $selectedFile" 
 
 	frame $w.b.filename -relief sunken
 	pack $w.b.fupper $w.b.flower
@@ -129,13 +132,13 @@ proc logo_fileselect { w } {
 	    {{All Files} *      }
 	}
 	set selectedFile [tk_getOpenFile -filetypes $types -initialdir [pwd]]
-	#"C:\\src\\vic_with_overlays\\vic\\tcl\\cbwish\\Debug\\"
 	if {$selectedFile != ""} {
+	    
 	    puts "Got file: $selectedFile"
 	}
 	# XXX XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-	$w configure -text "$selectedFile"
-	#tm.update.filename $w $selectedFile
+	#$w configure -text "$selectedFile"
+	tm.update.filename $w $selectedFile
 	# XXX XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 }
@@ -148,7 +151,6 @@ proc logo_transmit {} {
 	}
 
 	if $logoButtonState {
-		puts "******* id=$id"
 		if ![tm_check $id ] {
 			ppm_load $id $selectedFile .\\ppmlogo1
 		}
@@ -177,10 +179,8 @@ proc tm.update.transparency { w value } {
 proc tm.update.coordx {w xval} {
 	global xcoord ycoord logoButtonState id
 	
-	puts "******* xval=$xval\n"
 	if { $xval != ""} {
 		$w configure -text "$xval"
-		puts "******* xval=$xval\n"
 	    set xcoord $xval
 	    if $logoButtonState {
 			position_graphic $id $xcoord $ycoord 0
@@ -193,10 +193,8 @@ proc tm.update.coordx {w xval} {
 proc tm.update.coordy {w yval} {
 	global xcoord ycoord logoButtonState id
 	
-	puts "******* yval=$yval\n"
 	if { $yval != ""} {
 		$w configure -text "$yval"
-		puts "******* yval=$yval\n"
 	    set ycoord $yval
 	    if $logoButtonState {
 			position_graphic $id $xcoord $ycoord 0
