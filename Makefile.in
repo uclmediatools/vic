@@ -283,6 +283,7 @@ entry.o: tcl/entry.tcl
 ui-vdd.o: tcl/ui-vdd.tcl
 ui-h261_play.o: tcl/ui-h261_play.tcl
 ui-relate.o: tcl/ui-relate.tcl
+ui-titlemaker.o: tcl/ui-titlemaker.tcl
 
 version.c: VERSION
 	rm -f version.c
