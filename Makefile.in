@@ -145,7 +145,7 @@ OBJ2 =	main.o iohandler.o timer.o idlecallback.o media-timer.o \
 	render/color-true.o render/color-pseudo.o render/color-dither.o \
 	render/color-ed.o render/color-quant.o render/color-hi.o \
 	render/color-gray.o render/color-mono.o render/color-hist.o \
-	render/rgb-converter.o render/vw.o @V_OBJ@
+	render/rgb-converter.o render/vw.o render/ppm.o @V_OBJ@
 
 OBJ3 =	cm0.o cm1.o huffcode.o version.o bv.o codec/pvh-huff.o \
 	$(TCL_VIC:.tcl=.o) tk.o
@@ -181,7 +181,7 @@ OBJ_JPEGPLAY = jpeg_play.o jpeg/jpeg.o \
 
 LIB_CB = @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ -lm
 OBJ_CB = net/cbAppInit.o net/cb.o net/confbus.o net/group-ipc.o iohandler.o \
-	render/ppm.cpp \
+	render/ppm.o \
 	net/net.o net/net-ip.o net/net-addr.o net/crypt.o net/crypt-dull.o $(OBJ_CRYPT) net/communicator.o \
 	Tcl.o Tcl2.o net/inet.o md5c.o
 
