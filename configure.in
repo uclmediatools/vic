@@ -29,6 +29,16 @@ if test "$qcamdir" != "" -a ! -r $qcamdir/qcam.h ; then
 	exit 1
 fi
 
+V_OBJ=""
+V_H261AS=""
+
+dnl h261 as (arbitrary size) 
+AC_ARG_ENABLE(h261as, --enable-h261as    Enable or disable the h261as codec, h261as=yes, h261as=no)
+if test "$h261as" = "yes"; then
+   V_OBJ="$V_OBJ codec/p64/p64as.o codec/decoder-h261as.o codec/encoder-h261as.o"
+   V_H261AS="-DUSE_H261AS"
+fi
+
 # lots of hairy special cases for detecting which frame capture
 # support to compile in
 
@@ -351,7 +361,8 @@ AC_SUBST(V_LIB_GRABBER)
 AC_SUBST(V_OBJ_GRABBER)
 AC_SUBST(V_LIB_XIL)
 AC_SUBST(V_OBJ_XIL)
+AC_SUBST(V_OBJ)
 
-V_DEFINE="$V_DEFINE $V_SHM"
+V_DEFINE="$V_DEFINE $V_SHM $V_H261AS"
 
 builtin(include, configure.in.tail)

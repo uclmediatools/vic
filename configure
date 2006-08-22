@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXX CXXFLAGS ac_ct_CXX CPP EGREP V_INCLUDE_X11 V_LIB_X11 V_INCLUDE_TCL V_LIB_TCL V_LIBRARY_TCL V_TKDOSNAMES V_INCLUDE_TK V_LIB_TK V_LIBRARY_TK V_INCLUDE_GRABBER V_LIB_GRABBER V_OBJ_GRABBER V_LIB_XIL V_OBJ_XIL V_STATIC V_TAR_TARGET V_ALL V_CCOPT V_CCOPT_H261 V_TAR_EXTRA V_LIB V_DEFINE V_SIGRET V_SHELL V_TARCMD V_INCLUDE V_OBJ V_BROKEN_OBJ V_OBJ_CRYPT LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXX CXXFLAGS ac_ct_CXX CPP EGREP V_INCLUDE_X11 V_LIB_X11 V_INCLUDE_TCL V_LIB_TCL V_LIBRARY_TCL V_TKDOSNAMES V_INCLUDE_TK V_LIB_TK V_LIBRARY_TK V_INCLUDE_GRABBER V_LIB_GRABBER V_OBJ_GRABBER V_LIB_XIL V_OBJ_XIL V_OBJ V_STATIC V_TAR_TARGET V_ALL V_CCOPT V_CCOPT_H261 V_TAR_EXTRA V_LIB V_DEFINE V_SIGRET V_SHELL V_TARCMD V_INCLUDE V_BROKEN_OBJ V_OBJ_CRYPT LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -719,13 +719,13 @@ echo X"$0" |
   	  /^X\(\/\).*/{ s//\1/; q; }
   	  s/.*/./; q'`
   srcdir=$ac_confdir
-  if test ! -r $srcdir/$ac_unique_file; then
+  if test ! -r "$srcdir/$ac_unique_file"; then
     srcdir=..
   fi
 else
   ac_srcdir_defaulted=no
 fi
-if test ! -r $srcdir/$ac_unique_file; then
+if test ! -r "$srcdir/$ac_unique_file"; then
   if test "$ac_srcdir_defaulted" = yes; then
     { echo "$as_me: error: cannot find sources ($ac_unique_file) in $ac_confdir or .." >&2
    { (exit 1); exit 1; }; }
@@ -734,7 +734,7 @@ if test ! -r $srcdir/$ac_unique_file; then
    { (exit 1); exit 1; }; }
   fi
 fi
-(cd $srcdir && test -r ./$ac_unique_file) 2>/dev/null ||
+(cd $srcdir && test -r "./$ac_unique_file") 2>/dev/null ||
   { echo "$as_me: error: sources are in $srcdir, but \`cd $srcdir' does not work" >&2
    { (exit 1); exit 1; }; }
 srcdir=`echo "$srcdir" | sed 's%\([^\\/]\)[\\/]*$%\1%'`
@@ -855,6 +855,7 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
 --enable-debug		build with debugging enabled
 --enable-ipv6		build with ipv6 enabled
+--enable-h261as    Enable or disable the h261as codec
 --enable-v4l2old    Enable or disable old Video4Linux2 grabber
 --enable-XvGrabber    Enable or disable old XvGrabber
 
@@ -4487,6 +4488,21 @@ if test "$qcamdir" != "" -a ! -r $qcamdir/qcam.h ; then
 	exit 1
 fi
 
+V_OBJ=""
+V_H261AS=""
+
+# Check whether --enable-h261as or --disable-h261as was given.
+if test "${enable_h261as+set}" = set; then
+  enableval="$enable_h261as"
+  h261as=yes
+else
+  h261as=no
+fi;
+if test "$h261as" = "yes"; then
+   V_OBJ="$V_OBJ codec/p64/p64as.o codec/decoder-h261as.o codec/encoder-h261as.o"
+   V_H261AS="-DUSE_H261AS"
+fi
+
 # lots of hairy special cases for detecting which frame capture
 # support to compile in
 
@@ -4821,7 +4837,8 @@ fi
 
 
 
-V_DEFINE="$V_DEFINE $V_SHM"
+
+V_DEFINE="$V_DEFINE $V_SHM $V_H261AS"
 
 
 # tcl7.5 needs a dynamic loading library (unless built with the
@@ -5708,6 +5725,7 @@ s,@V_LIB_GRABBER@,$V_LIB_GRABBER,;t t
 s,@V_OBJ_GRABBER@,$V_OBJ_GRABBER,;t t
 s,@V_LIB_XIL@,$V_LIB_XIL,;t t
 s,@V_OBJ_XIL@,$V_OBJ_XIL,;t t
+s,@V_OBJ@,$V_OBJ,;t t
 s,@V_STATIC@,$V_STATIC,;t t
 s,@V_TAR_TARGET@,$V_TAR_TARGET,;t t
 s,@V_ALL@,$V_ALL,;t t
@@ -5720,7 +5738,6 @@ s,@V_SIGRET@,$V_SIGRET,;t t
 s,@V_SHELL@,$V_SHELL,;t t
 s,@V_TARCMD@,$V_TARCMD,;t t
 s,@V_INCLUDE@,$V_INCLUDE,;t t
-s,@V_OBJ@,$V_OBJ,;t t
 s,@V_BROKEN_OBJ@,$V_BROKEN_OBJ,;t t
 s,@V_OBJ_CRYPT@,$V_OBJ_CRYPT,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t

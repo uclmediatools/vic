@@ -63,6 +63,9 @@
 /* backward compat hack for decoding RTPv1 ivs streams */
 #define RTP_PT_H261_COMPAT 127
 
+/* non-standard arbitrary sized h261 */
+#define RTP_PT_H261AS           77
+
 /* RTP standard content encodings for audio */
 #define RTP_PT_PCMU		0
 #define RTP_PT_CELP		1
