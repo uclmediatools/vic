@@ -520,7 +520,7 @@ int IP6Network::openssock(Address & addr, u_short port, int ttl)
 	sin.sin6_flowinfo = flowLabel_;
 /* __IPV6 memcopy address */
     // Use Local name if already set via command line
-	if (local_.isset()) {
+	if (local_.is_set()) {
 		sin.sin6_addr = (IP6Address&)local_;
     } else {
 		sin.sin6_addr = in6addr_any;
