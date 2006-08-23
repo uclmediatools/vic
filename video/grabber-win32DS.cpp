@@ -221,7 +221,6 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt) {
                          IID_IGraphBuilder, (void **)&pGraph_);
    if (FAILED(hr)) {
    		Grabber::status_=-1;
-		//showErrorMessage(hr);
 		return;
    }
    debug_msg("DirectShowGrabber::DirectShowGrabber():  graph instance acquired\n");
@@ -229,17 +228,29 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt) {
    // Obtain the interface used to run, stop, and pause the graph
    hr = pGraph_->QueryInterface(IID_IMediaControl, (void **)&pMediaControl_);
    //showErrorMessage(hr);
+   if (FAILED(hr)) {
+   		Grabber::status_=-1;
+		return;
+   }
    debug_msg("DirectShowGrabber::DirectShowGrabber():  graph media control interface acquired\n");
    
    // Create the capture graph builder helper object
    hr = CoCreateInstance(CLSID_CaptureGraphBuilder2, NULL, CLSCTX_INPROC_SERVER,
                          IID_ICaptureGraphBuilder2, (void **)&pBuild_);
    //showErrorMessage(hr);
+   if (FAILED(hr)) {
+   		Grabber::status_=-1;
+		return;
+   }
    debug_msg("DirectShowGrabber::DirectShowGrabber():  graph builder interface acquired\n");
 
    // Tell the capture graph builder about the FGM.
    hr = pBuild_->SetFiltergraph(pGraph_);
    //showErrorMessage(hr);
+   if (FAILED(hr)) {
+   		Grabber::status_=-1;
+		return;
+   }
    debug_msg("DirectShowGrabber::DirectShowGrabber():  graph associated with builder\n");
 
    // Add the capture filter to the filter graph
@@ -266,11 +277,18 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt) {
    hr = CoCreateInstance(CLSID_NullRenderer, NULL, CLSCTX_INPROC_SERVER,
                          IID_IBaseFilter, (LPVOID *)&pNullBaseFilter_);
    //showErrorMessage(hr);
+    if (FAILED(hr)) {
+   		Grabber::status_=-1;
+		return;
+   }
    debug_msg("DirectShowGrabber::DirectShowGrabber():  Null Renderer interface acquired\n");
 
    // Finally, add the Null Renderer "sink" to the graph
    hr = pGraph_->AddFilter(pNullBaseFilter_,L"VicNullRenderer");
-   //showErrorMessage(hr);
+    if (FAILED(hr)) {
+   		Grabber::status_=-1;
+		return;
+   }
    debug_msg("DirectShowGrabber::DirectShowGrabber():  Null Renderer added to graph\n");
 
    setCaptureOutputFormat();
@@ -538,13 +556,15 @@ void DirectShowGrabber::setCaptureOutputFormat() {
    pConfig   = NULL;
    hr        = pBuild_->FindInterface(&PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video,
                                      pCaptureFilter_, IID_IAMStreamConfig, (void**)&pConfig);
-   //showErrorMessage(hr);
+   if (FAILED(hr)) {
+   		Grabber::status_=-1;
+		return;
+   }
+
    debug_msg("DirectShowGrabber::setCaptureOutputFormat(): IAMStreamConfig interface acquired\n");
 
    iCount = iSize = 0;
    hr     = pConfig->GetNumberOfCapabilities(&iCount, &iSize);
-   //showErrorMessage(hr);
-
    // Check the size to make sure we pass in the correct structure.
    // The alternative output of iSize is AUDIO_STREAM_CONFIG_CAPS, btw.
    if ( iSize == sizeof(VIDEO_STREAM_CONFIG_CAPS) ) {
