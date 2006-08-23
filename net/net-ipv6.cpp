@@ -315,7 +315,8 @@ int IP6Network::localname(sockaddr_in6* p) {
 
   memset((char *)p, 0, sizeof(*p));
   p->sin6_family = AF_INET6;
-  socklen_t len = sizeof(*p), result = 0;
+  socklen_t len = sizeof(*p); 
+  int result = 0;
 
   if ((result = getsockname(ssock_, (struct sockaddr *)p, &len)) < 0) {
     perror("getsockname");
@@ -482,7 +483,7 @@ int IP6Network::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, 
 		 */
 		sin.sin6_port = 0;
 /* __IPV6 memcopy address */
-		sin.sin6_addr = (IP6Address&)addr;
+		sin.sin6_addr = (IP6Address&)g_addr;
 		connect(fd, (struct sockaddr *)&sin, sizeof(sin));
 #endif
 	}
