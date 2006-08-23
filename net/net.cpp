@@ -110,7 +110,7 @@ Address * Address::default_alloc() {
 	Address * result = alloc(name);
 	return (result ? result : new Address());
 }
-int Address::isset() {
+int Address::is_set() {
 	if (text_!=0) 
 		if (*text_!='\0') return 1;
 	return 0;

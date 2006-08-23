@@ -225,7 +225,8 @@ int IPNetwork::open(const char * host, int port, int ttl)
 		char s_addr_ssm[MAXHOSTNAMELEN];
 		int i=0;
 		while (&host[i]<g_addr) {
-			s_addr_ssm[i]=host[i++];
+			s_addr_ssm[i]=host[i];
+                        i++;
 		}
 		s_addr_ssm[i]='\0';
 		g_addr_=++g_addr;
@@ -288,7 +289,7 @@ int IPNetwork::localname(sockaddr_in* p)
 		p->sin_port = 0;
 	}
 	// Use Local interface name if already set via command line
-	if (local_.isset()) {
+	if (local_.is_set()) {
 		p->sin_addr.s_addr=(IPAddress&)local_;
 		return (0);
 	}
@@ -363,7 +364,7 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
 #ifdef IP_ADD_SOURCE_MEMBERSHIP  
         struct ip_mreq_source mrs;
 		/* Check if an Src addr - as in S,G has been set */
-        if (s_addr_ssm.isset()) {
+        if (s_addr_ssm.is_set()) {
                 mrs.imr_sourceaddr.s_addr = g_addri_ssm;
                 mrs.imr_multiaddr.s_addr = g_addri;
                 mrs.imr_interface.s_addr = INADDR_ANY;
@@ -422,7 +423,7 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
 		 * (try to) connect the foreign host's address to this socket.
 		 */
 		sin.sin_port = 0;
-		sin.sin_addr.s_addr = (IPAddress&)addr;
+		sin.sin_addr.s_addr = g_addri;
 		connect(fd, (struct sockaddr *)&sin, sizeof(sin));
 #endif
 	}

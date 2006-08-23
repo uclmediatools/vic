@@ -263,7 +263,8 @@ int IP6Network::open(const char * host, int port, int ttl)
 		char s_addr_ssm[MAXHOSTNAMELEN];
 		int i=0;
 		while (&host[i]<g_addr) {
-			s_addr_ssm[i]=host[i++];
+			s_addr_ssm[i]=host[i];
+                        i++;
 		}
 		s_addr_ssm[i]='\0';
 		g_addr_=++g_addr;
@@ -329,7 +330,7 @@ int IP6Network::localname(sockaddr_in6* p) {
 
 	// Use Local name if already set via command line
 	// But use port derived from getsockname
-  if (local_.isset()) {
+  if (local_.is_set()) {
 		p->sin6_addr=(IP6Address&)local_;
 		return (result);
 	}
@@ -406,7 +407,7 @@ int IP6Network::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, 
 #ifdef IPV6_ADD_SOURCE_MEMBERSHIP  
         struct ipv6_mreq_source mrs;
 		/* Check if an Src addr - as in S,G has been set */
-        if (s_addr_ssm.isset()) {
+        if (s_addr_ssm.is_set()) {
                 mrs.ipv6mr_sourceaddr = (IP6Address&)s_addr_ssm;
 				mrs.ipv6mr_interface = (ifIndex_<0)?0:ifIndex_;
 				mrs.ipv6mr_multiaddr = (IP6Address&)g_addr;

@@ -260,7 +260,7 @@ u_int32_t SessionManager::alloc_srcid(Address & addr) const
 	srcid += (u_int32_t)getuid();
 	srcid += (u_int32_t)getpid();
 /* __IPv6 changed srcid computation */
-	for(int i = 0; i < (addr.length() % sizeof(u_int32_t)); i++) {
+	for(unsigned int i = 0; i < (addr.length() % sizeof(u_int32_t)); i++) {
 		srcid += ((u_int32_t*)((const void*)addr))[i];
 	}
 	return (srcid);
@@ -740,7 +740,7 @@ void SessionManager::recv(DataHandler* dh)
 		pb->release();
 		return;
 	}
-	if (cc < sizeof(rtphdr)) {
+	if (cc < (int)sizeof(rtphdr)) {
 		++nrunt_;
 		pb->release();
 		return;

@@ -68,7 +68,7 @@ public:
 
 	static Address * alloc(const char * name);
 	static Address * default_alloc();
-	int isset();
+	int is_set();
 protected:
 	char *text_;
 };
