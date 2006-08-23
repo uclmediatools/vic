@@ -56,6 +56,7 @@ static const char rcsid[] =
 #include "net-addr.h"
 
 #ifndef INET_ADDRSTRLEN
+// IPv4 Address len = 4*3(addr bytes)+3(dots)+1(null terminator)=16
 #define INET_ADDRSTRLEN (16)
 #endif
 
@@ -96,7 +97,7 @@ public:
 
 class IPNetwork : public Network {
     public:
-		IPNetwork() : Network(*(new IPAddress), *(new IPAddress)) {;}
+		IPNetwork() : Network(*(new IPAddress), *(new IPAddress), *(new IPAddress)) {;}
 	virtual int command(int argc, const char*const* argv);
 	virtual void reset();
 	virtual Address* alloc(const char* name) { 
@@ -116,7 +117,7 @@ class IPNetwork : public Network {
 	int close();
 	int localname(sockaddr_in*);
 	int openssock(Address & addr, u_short port, int ttl);
-	int openrsock(Address & addr, u_short port, Address & local);
+	int openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, Address & local);
 	time_t last_reset_;
 };
 
@@ -160,7 +161,7 @@ int IPNetwork::command(int argc, const char*const* argv)
 		}
 		char* cp = tcl.result();
 		if (strcmp(argv[1], "addr") == 0) {
-			strcpy(cp, addr_);
+			strcpy(cp, g_addr_);
 			return (TCL_OK);
 		}
 		if (strcmp(argv[1], "interface") == 0) {
@@ -180,7 +181,7 @@ int IPNetwork::command(int argc, const char*const* argv)
 			return (TCL_OK);
 		}
 		if (strcmp(argv[1], "ismulticast") == 0) {
-			u_int32_t addri = (IPAddress&)addr_;
+			u_int32_t addri = (IPAddress&)g_addr_;
 			tcl.result(IN_CLASSD(ntohl(addri))? "1" : "0");
 			return (TCL_OK);
 		}
@@ -218,11 +219,26 @@ int IPNetwork::command(int argc, const char*const* argv)
 
 int IPNetwork::open(const char * host, int port, int ttl)
 {
-	addr_ = host;
+	char *g_addr;
+	// Check for SSM src address: Src,Group
+	if ((g_addr=strchr(host,(int)','))!=NULL) {
+		char s_addr_ssm[MAXHOSTNAMELEN];
+		int i=0;
+		while (&host[i]<g_addr) {
+			s_addr_ssm[i]=host[i++];
+		}
+		s_addr_ssm[i]='\0';
+		g_addr_=++g_addr;
+		s_addr_ssm_=s_addr_ssm;
+	} else {
+		// No SSM address found - just use group host address
+		g_addr_=host;
+	}
 	port_ = port;
 	ttl_ = ttl;
 
-	ssock_ = openssock(addr_, port, ttl);
+
+	ssock_ = openssock(g_addr_, port, ttl);
 	if (ssock_ < 0)
 		return (-1);
 	/*
@@ -235,7 +251,7 @@ int IPNetwork::open(const char * host, int port, int ttl)
 		return (-1);
 	}
 	(IPAddress&)local_ = local.sin_addr;
-	rsock_ = openrsock(addr_, port, local_);
+	rsock_ = openrsock(g_addr_, s_addr_ssm_, port, local_);
 	if (rsock_ < 0) {
 		(void)::close(ssock_);
 		return (-1);
@@ -272,7 +288,7 @@ int IPNetwork::localname(sockaddr_in* p)
 		p->sin_port = 0;
 	}
 	// Use Local interface name if already set via command line
-	if (((const char*)local_)[0]!='\0') {
+	if (local_.isset()) {
 		p->sin_addr.s_addr=(IPAddress&)local_;
 		return (0);
 	}
@@ -292,16 +308,17 @@ void IPNetwork::reset()
 	if (d > 3) {
 		last_reset_ = t;
 		(void)::close(ssock_);
-		ssock_ = openssock(addr_, port_, ttl_);
+		ssock_ = openssock(g_addr_, port_, ttl_);
 	}
 }
 
-int IPNetwork::openrsock(Address & addr, u_short port, Address & local)
+int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, Address & local)
 {
 	int fd;
 	struct sockaddr_in sin;
 
-	u_int32_t addri = (IPAddress&)addr;
+	u_int32_t g_addri = (IPAddress&)g_addr;
+	u_int32_t g_addri_ssm = (IPAddress&)s_addr_ssm;
 	u_int32_t locali = (IPAddress&)local;
 
 	fd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -327,14 +344,14 @@ int IPNetwork::openrsock(Address & addr, u_short port, Address & local)
 	sin.sin_family = AF_INET;
 	sin.sin_port = port;
 #ifdef IP_ADD_MEMBERSHIP
-	if (IN_CLASSD(ntohl(addri))) {
+	if (IN_CLASSD(ntohl(g_addri))) {
 		/*
 		 * Try to bind the multicast address as the socket
 		 * dest address.  On many systems this won't work
 		 * so fall back to a destination of INADDR_ANY if
 		 * the first bind fails.
 		 */
-		sin.sin_addr.s_addr = addri;
+		sin.sin_addr.s_addr = g_addri;
 		if (bind(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
 			sin.sin_addr.s_addr = INADDR_ANY;
 			if (bind(fd, (struct sockaddr*)&sin, sizeof(sin)) < 0) {
@@ -342,25 +359,43 @@ int IPNetwork::openrsock(Address & addr, u_short port, Address & local)
 				exit(1);
 			}
 		}
-		/* 
-		 * XXX This is bogus multicast setup that really
-		 * shouldn't have to be done (group membership should be
-		 * implicit in the IP class D address, route should contain
-		 * ttl & no loopback flag, etc.).  Steve Deering has promised
-		 * to fix this for the 4.4bsd release.  We're all waiting
-		 * with bated breath.
-		 */
-		struct ip_mreq mr;
+		/* SSM code */
+#ifdef IP_ADD_SOURCE_MEMBERSHIP  
+        struct ip_mreq_source mrs;
+		/* Check if an Src addr - as in S,G has been set */
+        if (s_addr_ssm.isset()) {
+                mrs.imr_sourceaddr.s_addr = g_addri_ssm;
+                mrs.imr_multiaddr.s_addr = g_addri;
+                mrs.imr_interface.s_addr = INADDR_ANY;
+                if (setsockopt(fd, IPPROTO_IP, IP_ADD_SOURCE_MEMBERSHIP,
+                                (char*)&mrs, sizeof(mrs)) < 0) {
+                        perror("IP_ADD_SOURCE_MEMBERSHIP");
+                        exit (1);
+                }
+        } else
+                        
+#endif /* IP_ADD_SOURCE_MEMBERSHIP */
+		{
+				/* 
+				* XXX This is bogus multicast setup that really
+				* shouldn't have to be done (group membership should be
+				* implicit in the IP class D address, route should contain
+				* ttl & no loopback flag, etc.).  Steve Deering has promised
+				* to fix this for the 4.4bsd release.  We're all waiting
+				* with bated breath.
+				*/
+				struct ip_mreq mr;
 
-		mr.imr_multiaddr.s_addr = addri;
-		mr.imr_interface.s_addr = INADDR_ANY;
-		if (setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, 
-			       (char *)&mr, sizeof(mr)) < 0) {
-			perror("IP_ADD_MEMBERSHIP");
-			exit(1);
+				mr.imr_multiaddr.s_addr = g_addri;
+				mr.imr_interface.s_addr = INADDR_ANY;
+				if (setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, 
+						(char *)&mr, sizeof(mr)) < 0) {
+					perror("IP_ADD_MEMBERSHIP");
+					exit(1);
+				}
 		}
 	} else
-#endif
+#endif /* IP_ADD_MEMBERSHIP */
 	{
 		/*
 		 * bind the local host's address to this socket.  If that

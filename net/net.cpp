@@ -110,10 +110,15 @@ Address * Address::default_alloc() {
 	Address * result = alloc(name);
 	return (result ? result : new Address());
 }
-
+int Address::isset() {
+	if (text_!=0) 
+		if (*text_!='\0') return 1;
+	return 0;
+}
 
 Network::Network() :
-	addr_(*(Address::default_alloc())),
+	g_addr_(*(Address::default_alloc())),
+	s_addr_ssm_(*(Address::default_alloc())),
 	local_(*(Address::default_alloc())),
 	lport_(0),
 	port_(0),
@@ -125,8 +130,9 @@ Network::Network() :
 {
 }
 
-Network::Network(Address & addr, Address & local) :
-	addr_(addr),
+Network::Network(Address & g_addr, Address & s_addr_ssm, Address & local) :
+	g_addr_(g_addr),
+	s_addr_ssm_(s_addr_ssm),
 	local_(local),
 	lport_(0),
 	port_(0),
@@ -140,7 +146,8 @@ Network::Network(Address & addr, Address & local) :
 
 Network::~Network()
 {
-	if (&addr_) delete &addr_; 
+	if (&g_addr_) delete &g_addr_; 
+	if (&s_addr_ssm_) delete &s_addr_ssm_; 
 	if (&local_) delete &local_;
 }
 

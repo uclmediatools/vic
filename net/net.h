@@ -68,6 +68,7 @@ public:
 
 	static Address * alloc(const char * name);
 	static Address * default_alloc();
+	int isset();
 protected:
 	char *text_;
 };
@@ -75,7 +76,7 @@ protected:
 class Network : public TclObject {
 public:
 	Network();
-	Network(Address & addr, Address & local);
+	Network(Address & g_addr, Address & s_addr_ssm, Address & local);
 	virtual ~Network();
 	virtual int command(int argc, const char*const* argv);
 	virtual void send(u_char* buf, int len);
@@ -85,7 +86,7 @@ public:
 	virtual int recv(u_char* buf, int len, Address &from);
 	inline int rchannel() const { return (rsock_); }
 	inline int schannel() const { return (ssock_); }
-	inline const Address & addr() const { return (addr_); }
+	inline const Address & addr() const { return (g_addr_); }
 	inline const Address & interface() const { return (local_); }
 	inline int port() const { return (port_); }
 	inline int ttl() const { return (ttl_); }
@@ -100,7 +101,8 @@ protected:
     virtual int dorecv(u_char* buf, int len, u_int32_t& from, int fd);
 	virtual int dorecv(u_char* buf, int len, Address &from, int fd) {UNUSED(buf); UNUSED(len); UNUSED(from); UNUSED(fd); return (0);}
 
-	Address & addr_;
+	Address & g_addr_; // Group or host address
+	Address & s_addr_ssm_; // Src address (as in S,G) for SSM groups
 	Address & local_;
 	u_short lport_;
 	u_short port_;

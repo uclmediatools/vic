@@ -59,7 +59,7 @@ static const char rcsid[] =
 #include "config.h"
 #include "net.h"
 #include "vic_tcl.h"
-//#include "inet_ntop.h" //SV-XXX: FreeBSD
+#include "inet_ntop.h" //SV-XXX: FreeBSD
 
 #include "inet6.h"
 #include "net-addr.h"
@@ -80,6 +80,7 @@ struct	in6_addr		in6addr_any = {IN6ADDR_ANY_INIT};
 #endif
 
 #ifndef INET6_ADDRSTRLEN
+// Max IPv6 Address len = 8*4(addr hex)+7(semicolons)+1(null terminator)=40
 #define INET6_ADDRSTRLEN (46)
 #endif
 
@@ -120,7 +121,7 @@ public:
 
 class IP6Network : public Network {
   public:
-	  IP6Network() : Network(*(new IP6Address), *(new IP6Address))  {;}
+	  IP6Network() : Network(*(new IP6Address), *(new IP6Address), *(new IP6Address))  {;}
 	virtual int command(int argc, const char*const* argv);
 	virtual void reset();
 	virtual Address* alloc(const char* name) { 
@@ -140,7 +141,7 @@ class IP6Network : public Network {
 	int close();
 	int localname(sockaddr_in6*);
 	int openssock(Address & addr, u_short port, int ttl);
-	int openrsock(Address & addr, u_short port, Address & local);
+	int openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, Address & local);
 	time_t last_reset_;
 	unsigned int flowLabel_;	/* Flowlabel for all traffic */
 	int ifIndex_;		/* Interface index to bind to on all layers */
@@ -191,7 +192,7 @@ int IP6Network::command(int argc, const char*const* argv)
 		char* cp = tcl.result();
 		if (strcmp(argv[1], "addr") == 0) {
 /* __IPV6 use Address */
-			strcpy(cp, addr_);
+			strcpy(cp, g_addr_);
 			return (TCL_OK);
 		}
 		if (strcmp(argv[1], "interface") == 0) {
@@ -213,7 +214,7 @@ int IP6Network::command(int argc, const char*const* argv)
 		}
 /* __IPV6 use IN6_IS_ADDR */
 		if (strcmp(argv[1], "ismulticast") == 0) {
-			const in6_addr & addr = (IP6Address&)addr_;
+			const in6_addr & addr = (IP6Address&)g_addr_;
 			tcl.result(IN6_IS_ADDR_MULTICAST(&addr)? "1" : "0");
 			return (TCL_OK);
 /* __IPV6 user IPV6_MULTICAST_LOOP */
@@ -256,11 +257,26 @@ int IP6Network::command(int argc, const char*const* argv)
 
 int IP6Network::open(const char * host, int port, int ttl)
 {
-	addr_ = host;
+	char *g_addr;
+	// Check for SSM src address: Src,Group
+	if ((g_addr=strchr(host,(int)','))!=NULL) {
+		char s_addr_ssm[MAXHOSTNAMELEN];
+		int i=0;
+		while (&host[i]<g_addr) {
+			s_addr_ssm[i]=host[i++];
+		}
+		s_addr_ssm[i]='\0';
+		g_addr_=++g_addr;
+		s_addr_ssm_=s_addr_ssm;
+	} else {
+		// No SSM address found - just use group host address
+		g_addr_=host;
+	}
+	g_addr_ = host;
 	port_ = port;
 	ttl_ = ttl;
 
-	ssock_ = openssock(addr_, port, ttl);
+	ssock_ = openssock(g_addr_, port, ttl);
 	if (ssock_ < 0)
 		return (-1);
 	/*
@@ -274,7 +290,7 @@ int IP6Network::open(const char * host, int port, int ttl)
 	}
 	(IP6Address&)local_ = local.sin6_addr;
 
-	rsock_ = openrsock(addr_, port, local_);
+	rsock_ = openrsock(g_addr_, s_addr_ssm_, port, local_);
 	if (rsock_ < 0) {
 		(void)::close(ssock_);
 		return (-1);
@@ -313,7 +329,7 @@ int IP6Network::localname(sockaddr_in6* p) {
 
 	// Use Local name if already set via command line
 	// But use port derived from getsockname
-	if (((const char*)local_)[0]!='\0') {
+  if (local_.isset()) {
 		p->sin6_addr=(IP6Address&)local_;
 		return (result);
 	}
@@ -337,11 +353,11 @@ void IP6Network::reset()
 	if (d > 3) {
 		last_reset_ = t;
 		(void)::close(ssock_);
-		ssock_ = openssock(addr_, port_, ttl_);
+		ssock_ = openssock(g_addr_, port_, ttl_);
 	}
 }
 
-int IP6Network::openrsock(Address & addr, u_short port, Address & local)
+int IP6Network::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, Address & local)
 {
 	int fd;
 	struct sockaddr_in6 sin;
@@ -367,8 +383,9 @@ int IP6Network::openrsock(Address & addr, u_short port, Address & local)
 #endif
 	memset((char *)&sin, 0, sizeof(sin));
 	sin.sin6_family = AF_INET6;
-	sin.sin6_addr = (IP6Address&)addr;
+	sin.sin6_addr = (IP6Address&)g_addr;
 	sin.sin6_port = port;
+
 #ifdef IPV6_ADD_MEMBERSHIP
 	if (IN6_IS_ADDR_MULTICAST(&sin.sin6_addr)) {
 		/*
@@ -385,33 +402,54 @@ int IP6Network::openrsock(Address & addr, u_short port, Address & local)
 				exit(1);
 			}
 		}
-		/* 
-		 * XXX This is bogus multicast setup that really
-		 * shouldn't have to be done (group membership should be
-		 * implicit in the IP class D address, route should contain
-		 * ttl & no loopback flag, etc.).  Steve Deering has promised
-		 * to fix this for the 4.4bsd release.  We're all waiting
-		 * with bated breath.
-		 */
-                struct ipv6_mreq mr;
 
-/* __IPV6 memcopy address */
-#ifdef MUSICA_IPV6
-		mr.i6mr_interface = (ifIndex_<0)?0:ifIndex_;
-		mr.i6mr_multiaddr = (IP6Address&)addr;
-#else
-		mr.ipv6mr_interface = (ifIndex_<0)?0:ifIndex_;
-		mr.ipv6mr_multiaddr = (IP6Address&)addr;
-#endif
+#ifdef IPV6_ADD_SOURCE_MEMBERSHIP  
+        struct ipv6_mreq_source mrs;
+		/* Check if an Src addr - as in S,G has been set */
+        if (s_addr_ssm.isset()) {
+                mrs.ipv6mr_sourceaddr = (IP6Address&)s_addr_ssm;
+				mrs.ipv6mr_interface = (ifIndex_<0)?0:ifIndex_;
+				mrs.ipv6mr_multiaddr = (IP6Address&)g_addr;
 
-		int mreqsize = sizeof(mr);
-#ifdef WIN2K_IPV6
-		mreqsize += 4;
-#endif
-		if (setsockopt(fd, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, 
-			       (char *)&mr, mreqsize) < 0) {
-			perror("IPV6_ADD_MEMBERSHIP");
-			exit(1);
+				if (setsockopt(fd, IPPROTO_IPV6, IPV6_ADD_SOURCE_MEMBERSHIP,
+                                (char*)&mrs, sizeof(mrs)) < 0) {
+                        perror("IPV6_ADD_SOURCE_MEMBERSHIP");
+                        exit (1);
+                }
+        } else
+                        
+#endif /* IPV6_ADD_SOURCE_MEMBERSHIP */
+		{
+				/* 
+				* XXX This is bogus multicast setup that really
+				* shouldn't have to be done (group membership should be
+				* implicit in the IP class D address, route should contain
+				* ttl & no loopback flag, etc.).  Steve Deering has promised
+				* to fix this for the 4.4bsd release.  We're all waiting
+				* with bated breath.
+				*/
+						struct ipv6_mreq mr;
+
+		/* __IPV6 memcopy address */
+		#ifdef MUSICA_IPV6
+				mr.i6mr_interface = (ifIndex_<0)?0:ifIndex_;
+				mr.i6mr_multiaddr = (IP6Address&)g_addr;
+		#else
+				mr.ipv6mr_interface = (ifIndex_<0)?0:ifIndex_;
+				mr.ipv6mr_multiaddr = (IP6Address&)g_addr;
+		#endif
+
+				int mreqsize = sizeof(mr);
+
+		// Fix for buggy header files in Win2k
+		#ifdef WIN2K_IPV6
+				mreqsize += 4;
+		#endif
+				if (setsockopt(fd, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, 
+						(char *)&mr, mreqsize) < 0) {
+					perror("IPV6_ADD_MEMBERSHIP");
+					exit(1);
+				}
 		}
 	} else
 #endif
@@ -480,10 +518,10 @@ int IP6Network::openssock(Address & addr, u_short port, int ttl)
 	sin.sin6_port = 0;
 	sin.sin6_flowinfo = flowLabel_;
 /* __IPV6 memcopy address */
-        // Use Local name if already set via command line
-        if (((const char*)local_)[0]!='\0') {
+    // Use Local name if already set via command line
+	if (local_.isset()) {
 		sin.sin6_addr = (IP6Address&)local_;
-        } else {
+    } else {
 		sin.sin6_addr = in6addr_any;
 	}
 	if (bind(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
@@ -502,6 +540,7 @@ int IP6Network::openssock(Address & addr, u_short port, int ttl)
 		exit(1);
 	}
 	if (IN6_IS_ADDR_MULTICAST(&sin.sin6_addr)) {
+
 #ifdef IPV6_ADD_MEMBERSHIP
 		char c;
 
