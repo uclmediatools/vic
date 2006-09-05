@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXX CXXFLAGS ac_ct_CXX CPP EGREP V_INCLUDE_X11 V_LIB_X11 V_INCLUDE_TCL V_LIB_TCL V_LIBRARY_TCL V_TKDOSNAMES V_INCLUDE_TK V_LIB_TK V_LIBRARY_TK V_INCLUDE_GRABBER V_LIB_GRABBER V_OBJ_GRABBER V_LIB_XIL V_OBJ_XIL V_OBJ V_STATIC V_TAR_TARGET V_ALL V_CCOPT V_CCOPT_H261 V_TAR_EXTRA V_LIB V_DEFINE V_SIGRET V_SHELL V_TARCMD V_INCLUDE V_BROKEN_OBJ V_OBJ_CRYPT LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXX CXXFLAGS ac_ct_CXX CPP EGREP V_INCLUDE_X11 V_LIB_X11 V_INCLUDE_TCL V_LIB_TCL V_LIBRARY_TCL V_TKDOSNAMES V_INCLUDE_TK V_LIB_TK V_LIBRARY_TK V_INCLUDE_GRABBER V_LIB_GRABBER V_OBJ_GRABBER V_LIB_XIL V_OBJ_XIL V_OBJ V_LIB V_STATIC V_TAR_TARGET V_ALL V_CCOPT V_CCOPT_H261 V_TAR_EXTRA V_DEFINE V_SIGRET V_SHELL V_TARCMD V_INCLUDE V_BROKEN_OBJ V_OBJ_CRYPT LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -855,7 +855,8 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
 --enable-debug		build with debugging enabled
 --enable-ipv6		build with ipv6 enabled
---enable-h261as    Enable or disable the h261as codec
+--enable-h261as         Enable or disable the h261as codec
+--enable-dvdecode       Enable or disable dv decoding
 --enable-v4l2old    Enable or disable old Video4Linux2 grabber
 --enable-XvGrabber    Enable or disable old XvGrabber
 
@@ -1323,6 +1324,9 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 V_PROG="vic"
 V_ALL="$V_PROG"
 V_SHM="-DUSE_SHM"
+
+V_OBJ=""
+V_LIB=""
 
 
 ac_aux_dir=
@@ -4488,7 +4492,6 @@ if test "$qcamdir" != "" -a ! -r $qcamdir/qcam.h ; then
 	exit 1
 fi
 
-V_OBJ=""
 V_H261AS=""
 
 # Check whether --enable-h261as or --disable-h261as was given.
@@ -4501,6 +4504,248 @@ fi;
 if test "$h261as" = "yes"; then
    V_OBJ="$V_OBJ codec/p64/p64as.o codec/decoder-h261as.o codec/encoder-h261as.o"
    V_H261AS="-DUSE_H261AS"
+fi
+
+V_DV=""
+# Check whether --enable-dvdecode or --disable-dvdecode was given.
+if test "${enable_dvdecode+set}" = set; then
+  enableval="$enable_dvdecode"
+  dvdecode=yes
+else
+  dvdecode=no
+fi;
+if test "$dvdecode" = "yes"; then
+
+echo "$as_me:$LINENO: checking for main in -ldv" >&5
+echo $ECHO_N "checking for main in -ldv... $ECHO_C" >&6
+if test "${ac_cv_lib_dv_main+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-ldv  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+main ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_dv_main=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_lib_dv_main=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_dv_main" >&5
+echo "${ECHO_T}$ac_cv_lib_dv_main" >&6
+if test $ac_cv_lib_dv_main = yes; then
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBDV 1
+_ACEOF
+
+  LIBS="-ldv $LIBS"
+
+else
+
+      echo "Error! libdv not available. Please install libdv."
+      exit 1
+
+fi
+
+
+for ac_header in libdv/dv.h
+do
+as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
+if eval "test \"\${$as_ac_Header+set}\" = set"; then
+  echo "$as_me:$LINENO: checking for $ac_header" >&5
+echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6
+if eval "test \"\${$as_ac_Header+set}\" = set"; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+fi
+echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_Header'}'`" >&5
+echo "${ECHO_T}`eval echo '${'$as_ac_Header'}'`" >&6
+else
+  # Is the header compilable?
+echo "$as_me:$LINENO: checking $ac_header usability" >&5
+echo $ECHO_N "checking $ac_header usability... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+#include <$ac_header>
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_header_compiler=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_header_compiler=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
+echo "${ECHO_T}$ac_header_compiler" >&6
+
+# Is the header present?
+echo "$as_me:$LINENO: checking $ac_header presence" >&5
+echo $ECHO_N "checking $ac_header presence... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <$ac_header>
+_ACEOF
+if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
+  (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } >/dev/null; then
+  if test -s conftest.err; then
+    ac_cpp_err=$ac_c_preproc_warn_flag
+    ac_cpp_err=$ac_cpp_err$ac_c_werror_flag
+  else
+    ac_cpp_err=
+  fi
+else
+  ac_cpp_err=yes
+fi
+if test -z "$ac_cpp_err"; then
+  ac_header_preproc=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+  ac_header_preproc=no
+fi
+rm -f conftest.err conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
+echo "${ECHO_T}$ac_header_preproc" >&6
+
+# So?  What about this header?
+case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in
+  yes:no: )
+    { echo "$as_me:$LINENO: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&5
+echo "$as_me: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the compiler's result" >&5
+echo "$as_me: WARNING: $ac_header: proceeding with the compiler's result" >&2;}
+    ac_header_preproc=yes
+    ;;
+  no:yes:* )
+    { echo "$as_me:$LINENO: WARNING: $ac_header: present but cannot be compiled" >&5
+echo "$as_me: WARNING: $ac_header: present but cannot be compiled" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header:     check for missing prerequisite headers?" >&5
+echo "$as_me: WARNING: $ac_header:     check for missing prerequisite headers?" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: see the Autoconf documentation" >&5
+echo "$as_me: WARNING: $ac_header: see the Autoconf documentation" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header:     section \"Present But Cannot Be Compiled\"" >&5
+echo "$as_me: WARNING: $ac_header:     section \"Present But Cannot Be Compiled\"" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the preprocessor's result" >&5
+echo "$as_me: WARNING: $ac_header: proceeding with the preprocessor's result" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: in the future, the compiler will take precedence" >&5
+echo "$as_me: WARNING: $ac_header: in the future, the compiler will take precedence" >&2;}
+    (
+      cat <<\_ASBOX
+## ------------------------------------------ ##
+## Report this to the AC_PACKAGE_NAME lists.  ##
+## ------------------------------------------ ##
+_ASBOX
+    ) |
+      sed "s/^/$as_me: WARNING:     /" >&2
+    ;;
+esac
+echo "$as_me:$LINENO: checking for $ac_header" >&5
+echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6
+if eval "test \"\${$as_ac_Header+set}\" = set"; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  eval "$as_ac_Header=\$ac_header_preproc"
+fi
+echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_Header'}'`" >&5
+echo "${ECHO_T}`eval echo '${'$as_ac_Header'}'`" >&6
+
+fi
+if test `eval echo '${'$as_ac_Header'}'` = yes; then
+  cat >>confdefs.h <<_ACEOF
+#define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+else
+
+      echo "Error! libdv/dv.h not found. Please install libdv developer package."
+      exit 1
+
+fi
+
+done
+
+   V_OBJ="$V_OBJ codec/decoder-dv.o"
+   V_DV="-DUSE_DVDECODER"
+   V_LIB="$V_LIB -ldv"
 fi
 
 # lots of hairy special cases for detecting which frame capture
@@ -4838,7 +5083,8 @@ fi
 
 
 
-V_DEFINE="$V_DEFINE $V_SHM $V_H261AS"
+
+V_DEFINE="$V_DEFINE $V_SHM $V_H261AS $V_DV"
 
 
 # tcl7.5 needs a dynamic loading library (unless built with the
@@ -5726,13 +5972,13 @@ s,@V_OBJ_GRABBER@,$V_OBJ_GRABBER,;t t
 s,@V_LIB_XIL@,$V_LIB_XIL,;t t
 s,@V_OBJ_XIL@,$V_OBJ_XIL,;t t
 s,@V_OBJ@,$V_OBJ,;t t
+s,@V_LIB@,$V_LIB,;t t
 s,@V_STATIC@,$V_STATIC,;t t
 s,@V_TAR_TARGET@,$V_TAR_TARGET,;t t
 s,@V_ALL@,$V_ALL,;t t
 s,@V_CCOPT@,$V_CCOPT,;t t
 s,@V_CCOPT_H261@,$V_CCOPT_H261,;t t
 s,@V_TAR_EXTRA@,$V_TAR_EXTRA,;t t
-s,@V_LIB@,$V_LIB,;t t
 s,@V_DEFINE@,$V_DEFINE,;t t
 s,@V_SIGRET@,$V_SIGRET,;t t
 s,@V_SHELL@,$V_SHELL,;t t
