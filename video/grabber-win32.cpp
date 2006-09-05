@@ -620,17 +620,20 @@ void VfwGrabber::start()
     cb_mutex_ = CreateMutex(NULL,FALSE,NULL);
     WaitForSingleObject(cb_mutex_,INFINITE);
 
-	if ((capwin_ = capCreateCaptureWindow((LPSTR)"Capture Window", WS_POPUP | WS_CAPTION, CW_USEDEFAULT, CW_USEDEFAULT, (basewidth_ / decimate_ + GetSystemMetrics(SM_CXFIXEDFRAME)), (baseheight_ / decimate_ + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYFIXEDFRAME)), (HWND) 0, (int) 0)) == NULL) {
-		fprintf(stderr, "capCreateCaptureWindow: failed - %lu\n", capwin_);
-		abort();
+	if ((capwin_ = capCreateCaptureWindow((LPSTR)"Capture Window", WS_POPUP | WS_CAPTION,
+		CW_USEDEFAULT, CW_USEDEFAULT, (basewidth_ / decimate_ + GetSystemMetrics(SM_CXFIXEDFRAME)), 
+		(baseheight_ / decimate_ + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYFIXEDFRAME)), 
+		(HWND) 0, (int) 0)) == NULL) {
+		  debug_msg("capCreateCaptureWindow: failed - %lu\n", capwin_);
+		  abort();
 	}
 	capSetCallbackOnError(capwin_, ErrorHandler);
 	if (!capSetCallbackOnVideoStream(capwin_, VideoHandler)) {
-		fprintf(stderr, "capSetCallbackOnVideoStream: failed - %lu\n", GetLastError());
+		debug_msg("capSetCallbackOnVideoStream: failed - %lu\n", GetLastError());
 		/*abort();*/
 	}
 	if (!capDriverConnect(capwin_, dev_)) {
-		fprintf(stderr, "capDriverConnect: dev=%d failed - %lu\n", dev_, GetLastError());
+		debug_msg( "capDriverConnect: dev=%d failed - %lu\n", dev_, GetLastError());
 		/*abort();*/
 	}
 
@@ -645,7 +648,7 @@ void VfwGrabber::start()
 	connected_ = 1;
 
 	if (!capDriverGetCaps(capwin_, &caps_, sizeof(caps_))) {
-		fprintf(stderr, "capGetDriverCaps: failed - %lu\n", GetLastError());
+		debug_msg( "capGetDriverCaps: failed - %lu\n", GetLastError());
 		/*abort();*/
 	}
 
@@ -657,8 +660,7 @@ void VfwGrabber::start()
 	fmtsize_ = capGetVideoFormatSize(capwin_);
 	fmt_ = (LPBITMAPINFOHEADER)new u_char[fmtsize_];
 	if (!capGetVideoFormat(capwin_, fmt_, fmtsize_)) {
-		fprintf(stderr, "capGetVideoFormat: failed - %lu\n",
-			GetLastError());
+		debug_msg("capGetVideoFormat: failed - %lu\n", GetLastError());
 		/*abort();*/
 	}
 	int orig_comp = fmt_->biCompression;
