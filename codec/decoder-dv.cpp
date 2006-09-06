@@ -11,6 +11,22 @@
 
 #include <libdv/dv.h>
 
+/*
+ * libdv does either yv12 or yuyv and this is determined at
+ * libdv's compile time. There is no way programatically to 
+ * check this, so we use the following #define depending on
+ * how libdv is compiled. A segfault is likely if libdv 
+ * produces yuy2 and this code assumes yv12 and visa-versa.
+ */
+
+#define ASSUME_YUY2 1
+#if ASSUME_YUY2 == 1
+static void yuy2_to_i420(const u_char *in,
+			 u_int width,
+			 u_int height,
+			 u_char *out);
+#endif // ASSUME_YUY2
+
 class DVDecoder : public Decoder {
     public:
 	DVDecoder();
@@ -27,6 +43,10 @@ class DVDecoder : public Decoder {
         u_char *dv_buffer;
 
         u_char *dv_frame;
+
+#if ASSUME_YUY2 == 1
+	u_char *dv_yuy2_frame;
+#endif 
 
         bool header_received;
         bool headers_received[12];
@@ -61,6 +81,9 @@ DVDecoder::DVDecoder() : Decoder(0),
 			 dv_decoder(0), 
 			 dv_buffer(new u_char[144000]), 
 			 dv_frame(new u_char[(DV_WIDTH * DV_PAL_HEIGHT * 3)/2]), 
+#if ASSUME_YUY2 == 1
+			 dv_yuy2_frame(new u_char[DV_WIDTH * DV_PAL_HEIGHT * 2]),
+#endif 
 			 header_received(false),
 			 difblocks(0)
 {
@@ -72,12 +95,6 @@ DVDecoder::DVDecoder() : Decoder(0),
 	stat_[STAT_BAD_HEADER].name = "H261-Bad-Header";
 	nstat_ = 6;
 
-	/*
-         * libdv does either yv12 or yuyv and this is determined at
-	 * libdv's compile time. There is no way programatically to 
-	 * check this, so the default of yv12 is assumed. yv12 is the
-	 * same as i420 but with the u and v planes swapped.
-	 */
 	decimation_ = 411;
 
 	/*
@@ -100,6 +117,9 @@ DVDecoder::DVDecoder() : Decoder(0),
 
 	memset(dv_buffer, 0, 144000);
 	memset(dv_frame, 127, (DV_WIDTH * DV_PAL_HEIGHT * 3)/2);
+#if ASSUME_YUY2 == 1
+	memset(dv_yuy2_frame, 127, DV_WIDTH * DV_PAL_HEIGHT * 2);
+#endif 
 }
 
 DVDecoder::~DVDecoder()
@@ -217,6 +237,29 @@ void DVDecoder::recv(pktbuf* pb)
 				        break;
 				}
 
+#if ASSUME_YUY2 == 1
+				unsigned char *pixels[3];
+				int pitches[3];
+
+				pixels[0] = dv_yuy2_frame;
+				pixels[1] = 0;
+				pixels[2] = 0;
+
+				pitches[0] = inw_*2;
+				pitches[1] = 0;
+				pitches[2] = 0;
+
+ 				dv_decode_full_frame(dv_decoder,
+ 						     (const uint8_t*)dv_buffer,
+ 						     e_dv_color_yuv,
+ 						     pixels,
+ 						     pitches);
+
+				yuy2_to_i420(dv_yuy2_frame,
+					     inw_,
+					     inh_,
+					     dv_frame);
+#else				
 				unsigned char *pixels[3];
 				int pitches[3];
 
@@ -225,11 +268,17 @@ void DVDecoder::recv(pktbuf* pb)
 				pixels[1] = dv_frame + (inh_ * inw_ * 5)/4;
 				pixels[2] = dv_frame + (inh_ * inw_);
 
-				dv_decode_full_frame(dv_decoder,
-						     (const uint8_t*)dv_buffer,
-						     e_dv_color_yuv,
-						     pixels,
-						     pitches);
+				pitches[0] = inw_;
+				pitches[1] = inw_/2;
+				pitches[2] = inw_/2;
+
+				printf("decoding yv12\n");
+// 				dv_decode_full_frame(dv_decoder,
+// 						     (const uint8_t*)dv_buffer,
+// 						     e_dv_color_yuv,
+// 						     pixels,
+// 						     pitches);
+#endif // ASSUME_YUY2
 				
 				render_frame(dv_frame);
 			}
@@ -244,4 +293,49 @@ void DVDecoder::redraw()
         Decoder::redraw(dv_frame);
 }
 
+static void yuy2_to_i420(const u_char *in,
+			 u_int width,
+			 u_int height,
+			 u_char *out)
+{
+  const u_char *_in[2];
+  u_int in_rowstride = width * 2;
+    
+
+  u_char *out_y[2];
+  u_char *out_u;
+  u_char *out_v;
+
+  u_int half_width = width/2;
+  u_int half_height = height/2;
+
+  _in[0] = in;
+  _in[1] = in + in_rowstride;
+
+  out_y[0] = out;
+  out_y[1] = out + width;
+  out_u = out + width * height;
+  out_v = out + (width * height * 5)/4;
+
+  for (u_int j = 0; j < half_height; j ++) {
+    for (u_int i = 0; i < half_width; i ++, _in[0] += 4, _in[1] += 4, out_y[0] += 2, out_y[1] += 2, out_u ++, out_v ++) {
+
+      out_y[0][0] = _in[0][0];
+      out_y[0][1] = _in[0][2];
+
+      out_y[1][0] = _in[1][0];
+      out_y[1][1] = _in[1][2];
+
+      *out_u = _in[0][1];
+      *out_v = _in[0][3];
+    }
+     _in[0] += in_rowstride;
+     _in[1] += in_rowstride;
+
+     out_y[0] += width;
+     out_y[1] += width;
+  }
+}
+
 #endif // USE_DVDECODER
+
