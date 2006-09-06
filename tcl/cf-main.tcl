@@ -47,6 +47,7 @@ set rtp_type(42) h263+
 set rtp_type(34) h263
 set rtp_type(127) h261v1
 set rtp_type(77) h261as
+set rtp_type(123) dv
 
 proc vic_main {} {
 	global V tcl_platform

@@ -1,38 +1,3 @@
-/*
- * Copyright (c) 1994-1995 The Regents of the University of California.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by the University of
- *      California, Berkeley and the Network Research Group at
- *      Lawrence Berkeley Laboratory.
- * 4. Neither the name of the University nor of the Laboratory may be used
- *    to endorse or promote products derived from this software without
- *    specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- */
-static const char rcsid[] =
-    "@(#) $Header$ (LBL)";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,6 +16,7 @@ static const char rcsid[] =
 #include "module.h"
 
 #define HDRSIZE (sizeof(rtphdr) + 4)
+#define DEFAULT_THRESHOLD 48
 #define	CIF_WIDTH	352
 #define	CIF_HEIGHT	288
 #define	QCIF_WIDTH	176
@@ -116,123 +82,103 @@ static const char rcsid[] =
 
 class H261ASEncoder : public TransmitterModule {
     public:
-	void setq(int q);
-    protected:
-	H261ASEncoder(int ft);
+	H261ASEncoder();
 	~H261ASEncoder();
+	void setq(int q);
+	int consume(const VideoFrame*);
+    protected:
 	int encode(const VideoFrame*, const u_int8_t *crvec);
 	int command(int argc, const char*const* argv);
 	void encode_blk(const short* blk, const char* lm);
 	int flush(pktbuf* pb, int nbit, pktbuf* npb);
 	char* make_level_map(int q, u_int fthresh);
 	void setquantizers(int lq, int mq, int hq);
-
-	virtual void size(int w, int h) = 0;
-	virtual void encode_mb(u_int mba, const u_char* frm,
-		       u_int loff, u_int coff, int how) = 0;
-
-	/* bit buffer */
-	BB_INT bb_;
-	u_int nbb_;
-
-	u_char* bs_;
-	u_char* bc_;
-	int sbit_;
-
-	u_char lq_;		/* low quality quantizer */
-	u_char mq_;		/* medium quality quantizer */
-	u_char hq_;		/* high quality quantizer */
-	u_char mquant_;		/* the last quantizer we sent to other side */
-	int quant_required_;	/* 1 if not quant'd in dct */
-	u_int ngob_;
-	u_int mba_;
-
-	u_int cif_;		/* 1 for CIF, 0 for QCIF */
-	u_int bstride_;
-	u_int lstride_;
-	u_int cstride_;
-
-	u_int loffsize_;	/* amount of 1 luma block */
-	u_int coffsize_;	/* amount of 1 chroma block */
-	u_int bloffsize_;	/* amount of 1 block advance */
-
-	const char* llm_[32];	/* luma dct val -> level maps */
-	const char* clm_[32];	/* chroma dct val -> level maps */
-
-	float lqt_[64];		/* low quality quantizer */
-	float mqt_[64];		/* medium quality quantizer */
-	float hqt_[64];		/* high quality quantizer */
-
-	u_int coff_[12];	/* where to find U given gob# */
-	u_int loff_[12];	/* where to find Y given gob# */
-	u_int blkno_[12];	/* for CR */
-};
-
-class H261ASDCTEncoder : public H261ASEncoder {
-    public:
-	H261ASDCTEncoder();
-	int consume(const VideoFrame*);
 	void size(int w, int h);
-    protected:
 	void encode_mb(u_int mba, const u_char* frm,
 		       u_int loff, u_int coff, int how);
-};
 
-class H261ASPixelEncoder : public H261ASEncoder {
-    public:
-	H261ASPixelEncoder();
-	int consume(const VideoFrame*);
-	void size(int w, int h);
-    protected:
-	void encode_mb(u_int mba, const u_char* frm,
-		       u_int loff, u_int coff, int how);
+        u_int width;
+        u_int height;
+        u_char *frame_buffer;
+        u_int frame_buffer_size;
+
+        u_char *crref;
+        u_char *crvec;
+
+        int nblk;
+        int blkw;
+        int blkh;
+        int rover;
+        int threshold;
+        int scan;
+
+        u_char *bs;
+        u_char *bc;
+        int bb;
+        int nbb;
+        int sbit;
+        int tx;
+        int lq;
+        int mq;
+        int hq;
+        u_int ngob;
+        u_int nblocks;
+        int mquant;
+        int mba;
+
+        int *loff_table;
+        int *coff_table;
+        int *blkno_table;
+
+        float lqt[64];
+        float mqt[64];
+        float hqt[64];
+
+        const char *llm[32];
+        const char *clm[32];
 };
 
 static class H261ASEncoderMatcher : public Matcher {
     public:
 	H261ASEncoderMatcher() : Matcher("module") {}
 	TclObject* match(const char* fmt) {
-		if (strcasecmp(fmt, "h261as/pixel") == 0)
-			return (new H261ASPixelEncoder);
-		if (strcasecmp(fmt, "h261as/dct") == 0)
-			return (new H261ASDCTEncoder);
-		/* XXX for now, this is compatible with ui-ctrlmenu.tcl */
-		if (strcasecmp(fmt, "h261as") == 0)
-			return (new H261ASPixelEncoder);
+		if (strcasecmp(fmt, "h261as") == 0 ||
+		    strcasecmp(fmt, "h.261as") == 0)
+			return (new H261ASEncoder);
 		return (0);
 	}
 } encoder_matcher_h261as;
 
 
-H261ASEncoder::H261ASEncoder(int ft) : TransmitterModule(ft),
-	bs_(0), bc_(0), ngob_(12)
+H261ASEncoder::H261ASEncoder() : TransmitterModule(FT_YUV_411),
+				 frame_buffer(0),
+				 frame_buffer_size(0),
+				 crref(0),
+				 crvec(0),
+				 nblk(0),
+				 blkw(0),
+				 blkh(0),
+				 rover(0),
+				 threshold(DEFAULT_THRESHOLD),
+				 scan(0),
+				 loff_table(0),
+				 coff_table(0)
 {
 	for (int q = 0; q < 32; ++q) {
-		llm_[q] = 0;
-		clm_[q] = 0;
+		llm[q] = 0;
+		clm[q] = 0;
 	}
+	setq(10);
 }
 
 H261ASEncoder::~H261ASEncoder()
 {
 	for (int q = 0; q < 32; ++q) {
-		if (llm_[q] != 0)
-			delete llm_[q]; //SV-XXX: Debian
-		if (clm_[q] != 0)
-			delete clm_[q]; //SV-XXX: Debian
+		if (llm[q] != 0)
+			delete llm[q]; //SV-XXX: Debian
+		if (clm[q] != 0)
+			delete clm[q]; //SV-XXX: Debian
 	}
-}
-
-H261ASPixelEncoder::H261ASPixelEncoder() : H261ASEncoder(FT_YUV_CIF)
-{
-	quant_required_ = 0;
-	setq(10);
-}
-
-H261ASDCTEncoder::H261ASDCTEncoder() : H261ASEncoder(FT_DCT)
-{
-	quant_required_ = 1;
-	setq(10);
 }
 
 /*
@@ -240,53 +186,47 @@ H261ASDCTEncoder::H261ASDCTEncoder() : H261ASEncoder(FT_DCT)
  * INTRA mode operation.
  */
 void
-H261ASEncoder::setquantizers(int lq, int mq, int hq)
+H261ASEncoder::setquantizers(int _lq, int _mq, int _hq)
 {
 	int qt[64];
+        lq = _lq;
 	if (lq > 31)
 		lq = 31;
 	if (lq <= 0)
 		lq = 1;
-	lq_ = lq;
 
+        mq = _mq;
 	if (mq > 31)
 		mq = 31;
 	if (mq <= 0)
 		mq = 1;
-	mq_ = mq;
 
+        hq = _hq;
 	if (hq > 31)
 		hq = 31;
 	if (hq <= 0)
 		hq = 1;
-	hq_ = hq;
 
-	/*
-	 * quant_required_ indicates quantization is not folded
-	 * into fdct [because fdct is not performed]
-	 */
-	if (quant_required_ == 0) {
-		/*
-		 * Set the DC quantizer to 1, since we want to do this
-		 * coefficient differently (i.e., the DC is rounded while
-		 * the AC terms are truncated).
-		 */
-		qt[0] = 1;
-		int i;
-		for (i = 1; i < 64; ++i)
-			qt[i] = lq_ << 1;
-		fdct_fold_q(qt, lqt_);
-
-		qt[0] = 1;
-		for (i = 1; i < 64; ++i)
-			qt[i] = mq_ << 1;
-		fdct_fold_q(qt, mqt_);
-
-		qt[0] = 1;
-		for (i = 1; i < 64; ++i)
-			qt[i] = hq_ << 1;
-		fdct_fold_q(qt, hqt_);
-	}
+        /*
+         * Set the DC quantizer to 1, since we want to do this
+         * coefficient differently (i.e., the DC is rounded while
+         * the AC terms are truncated).
+         */
+        qt[0] = 1;
+        int i;
+        for (i = 1; i < 64; ++i)
+          qt[i] = lq << 1;
+        fdct_fold_q(qt, lqt);
+        
+        qt[0] = 1;
+        for (i = 1; i < 64; ++i)
+          qt[i] = mq << 1;
+        fdct_fold_q(qt, mqt);
+        
+        qt[0] = 1;
+        for (i = 1; i < 64; ++i)
+          qt[i] = hq << 1;
+        fdct_fold_q(qt, hqt);
 }
 
 void
@@ -296,108 +236,74 @@ H261ASEncoder::setq(int q)
 }
 
 void
-H261ASPixelEncoder::size(int w, int h)
+H261ASEncoder::size(int w, int h)
 {
-	Module::size(w, h);
-	if (w == CIF_WIDTH && h == CIF_HEIGHT) {
-		/* CIF */
-		cif_ = 1;
-		ngob_ = 12;
-		bstride_ = 11;
-		lstride_ = 16 * CIF_WIDTH - CIF_WIDTH / 2;
-		cstride_ = 8 * 176 - 176 / 2;
-		loffsize_ = 16;
-		coffsize_ = 8;
-		bloffsize_ = 1;
-	} else if (w == QCIF_WIDTH && h == QCIF_HEIGHT) {
-		/* QCIF */
-		cif_ = 0;
-		ngob_ = 6; /* not really number of GOBs, just loop limit */
-		bstride_ = 0;
-		lstride_ = 16 * QCIF_WIDTH - QCIF_WIDTH;
-		cstride_ = 8 * 88 - 88;
-		loffsize_ = 16;
-		coffsize_ = 8;
-		bloffsize_ = 1;
-	} else {
-		/*XXX*/
-		fprintf(stderr, "H261ASPixelEncoder: H.261 bad geometry: %dx%d\n",
-			w, h);
-		exit(1);
-	}
-	u_int loff = 0;
-	u_int coff = 0;
-	u_int blkno = 0;
-	for (u_int gob = 0; gob < ngob_; gob += 2) {
-		loff_[gob] = loff;
-		coff_[gob] = coff;
-		blkno_[gob] = blkno;
-		/* width of a GOB (these aren't ref'd in QCIF case) */
-		loff_[gob + 1] = loff + 11 * 16;
-		coff_[gob + 1] = coff + 11 * 8;
-		blkno_[gob + 1] = blkno + 11;
+        Module::size(w, h);
+  
+        if (w % 16 != 0) {
+                w += 16 - (w % 16);
+        }
+        if (h % 16 != 0) {
+                h += 16 - (h % 16);
+        }
 
-		/* advance to next GOB row */
-		loff += (16 * 16 * MBPERGOB) << cif_;
-		coff += (8 * 8 * MBPERGOB) << cif_;
-		blkno += MBPERGOB << cif_;
-	}
+        width = w;
+        height = h;
+
+        if (frame_buffer) {
+                delete [] frame_buffer;
+        }
+        frame_buffer_size = (width * height * 3)/2;
+        frame_buffer = new u_char[frame_buffer_size];
+        memset(frame_buffer, 127, frame_buffer_size);
+
+        if (crref) {
+                delete [] crref;
+        }
+        crref = new u_char[width * height];
+        
+        if (crvec) {
+                delete [] crvec;
+        }
+        nblk = (width * height) >> 8;
+        crvec = new u_char[nblk];
+
+        blkw = width/16;
+        blkh = height/16;
+
+        nblocks = blkw * blkh;
+        ngob = nblocks/33;
+        if (ngob * 33 < nblocks) {
+                ngob ++;
+        }
+
+        if (loff_table) {
+                delete [] loff_table;
+        }
+        loff_table = new int[nblocks];
+        if (coff_table) {
+                delete [] coff_table;
+        }
+        coff_table = new int[nblocks];
+
+        int i = 0;
+        int loff = 0;
+        int coff = 0;
+        int l_rs = 15 * width;
+        int c_rs = 7 * width/2;
+        for (int y = 0; y < blkh; y ++) {
+                for (int x = 0; x < blkw; x ++, i ++) {
+                        loff_table[i] = loff;
+                        coff_table[i] = coff;
+
+                        loff += 16;
+                        coff += 8;
+                }
+
+                loff += l_rs;
+                coff += c_rs;
+        }
 }
-
-void
-H261ASDCTEncoder::size(int w, int h)
-{
-
-	Module::size(w, h);
-	if (w == CIF_WIDTH && h == CIF_HEIGHT) {
-		/* CIF */
-		cif_ = 1;
-		ngob_ = 12;
-		bstride_ = 11;
-		lstride_ = - (11 * (64*BMB)) + 2 * 11 * 64 * BMB;
-		cstride_ = - (11 * (64*BMB)) + 2 * 11 * 64 * BMB;
-		loffsize_ = 64 * BMB;
-		coffsize_ = 64 * BMB;
-		bloffsize_ = 1;
-	} else if (w == QCIF_WIDTH && h == QCIF_HEIGHT) {
-		/* QCIF */
-		cif_ = 0;
-		ngob_ = 6; /* not really number of GOBs, just loop limit */
-		bstride_ = 0;
-		lstride_ = 0;
-		cstride_ = 0;
-		loffsize_ = 64 * BMB;
-		coffsize_ = 64 * BMB;
-		bloffsize_ = 1;
-	} else {
-		/*XXX*/
-		fprintf(stderr, "H261ASDCTEncoder: H.261 bad geometry: %dx%d\n",
-			w, h);
-		exit(1);
-	}
-
-	u_int gob;
-	for (gob = 0; gob < ngob_; gob += 2) {
-
-		if (gob != 0) {
-			loff_[gob] = loff_[gob-2] +
-				(MBPERGOB << cif_) * BMB * 64;
-			coff_[gob] = coff_[gob-2] +
-				(MBPERGOB << cif_) * BMB * 64;
-			blkno_[gob] = blkno_[gob-2] +
-				(MBPERGOB << cif_);
-		} else {
-			loff_[0] = 0;
-			coff_[0] = loff_[0] + 4 * 64;	// 4 Y's
-			blkno_[0] = 0;
-		}
-
-		loff_[gob + 1] = loff_[gob] + 11 * BMB * 64;
-		coff_[gob + 1] = coff_[gob] + 11 * BMB * 64;
-		blkno_[gob + 1] = blkno_[gob] + 11;
-	}
-}
-
 
 int
 H261ASEncoder::command(int argc, const char*const* argv)
@@ -427,7 +333,7 @@ H261ASEncoder::make_level_map(int q, u_int fthresh)
 	int i;
 	lm[0] = 0;
 	flm[0] = 0;
-	q = quant_required_? q << 1 : 0;
+	q = 0;
 	for (i = 1; i < 0x800; ++i) {
 		int l = i;
 		if (q)
@@ -450,9 +356,9 @@ H261ASEncoder::make_level_map(int q, u_int fthresh)
 void
 H261ASEncoder::encode_blk(const short* blk, const char* lm)
 {
-	BB_INT bb = bb_;
-	u_int nbb = nbb_;
-	u_char* bc = bc_;
+	BB_INT t_bb = bb;
+	u_int t_nbb = nbb;
+	u_char* t_bc = bc;
 
 	/*
 	 * Quantize DC.  Round instead of truncate.
@@ -468,7 +374,7 @@ H261ASEncoder::encode_blk(const short* blk, const char* lm)
 		/* per Table 6/H.261 */
 		dc = 255;
 	/* Code DC */
-	PUT_BITS(dc, 8, nbb, bb, bc);
+	PUT_BITS(dc, 8, t_nbb, t_bb, t_bc);
 	int run = 0;
 	const u_char* colzag = &COLZAG[0];
 	for (int zag; (zag = *++colzag) != 0; ) {
@@ -487,39 +393,39 @@ H261ASEncoder::encode_blk(const short* blk, const char* lm)
 				val = (1 << 14) | (run << 8) | (level & 0xff);
 				nb = 20;
 			}
-			PUT_BITS(val, nb, nbb, bb, bc);
+			PUT_BITS(val, nb, t_nbb, t_bb, t_bc);
 			run = 0;
 		} else
 			++run;
 	}
 	/* EOB */
-	PUT_BITS(2, 2, nbb, bb, bc);
+	PUT_BITS(2, 2, t_nbb, t_bb, t_bc);
 
-	bb_ = bb;
-	nbb_ = nbb;
-	bc_ = bc;
+	bb = t_bb;
+	nbb = t_nbb;
+	bc = t_bc;
 }
 
 /*
- * H261ASPixelEncoder::encode_mb
+ * H261ASEncoder::encode_mb
  *	encode a macroblock given a set of input YUV pixels
  */
 void
-H261ASPixelEncoder::encode_mb(u_int mba, const u_char* frm,
+H261ASEncoder::encode_mb(u_int mbal, const u_char* frm,
 			    u_int loff, u_int coff, int how)
 {
 	register int q;
 	float* qt;
 	if (how == CR_MOTION) {
-		q = lq_;
-		qt = lqt_;
+		q = lq;
+		qt = lqt;
 	} else if (how == CR_BG) {
-		q = hq_;
-		qt = hqt_; 
+		q = hq;
+		qt = hqt; 
 	} else {
 		/* must be at age threshold */
-		q = mq_;
-		qt = mqt_; 
+		q = mq;
+		qt = mqt; 
 	}
 
 	/*
@@ -529,7 +435,7 @@ H261ASPixelEncoder::encode_mb(u_int mba, const u_char* frm,
 	 */
 	/*XXX this can be u_char instead of short but need smarts in fdct */
 	short blk[64 * 6];
-	register int stride = width_;
+	register int stride = width;
 	/* luminance */
 	const u_char* p = &frm[loff];
 	fdct(p, stride, blk + 0, qt);
@@ -537,7 +443,7 @@ H261ASPixelEncoder::encode_mb(u_int mba, const u_char* frm,
 	fdct(p + 8 * stride, stride, blk + 128, qt);
 	fdct(p + (8 * stride + 8), stride, blk + 192, qt);
 	/* chominance */
-	int fs = framesize_;
+	int fs = stride * height;
 	p = &frm[fs + coff];
 	stride >>= 1;
 	fdct(p, stride, blk + 256, qt);
@@ -580,138 +486,43 @@ H261ASPixelEncoder::encode_mb(u_int mba, const u_char* frm,
 		}
 	}
 
-	u_int m = mba - mba_;
-	mba_ = mba;
+	u_int m = mbal - mba;
+	mba = mbal;
 	huffent* he = &hte_mba[m - 1];
 	/* MBA */
-	PUT_BITS(he->val, he->nb, nbb_, bb_, bc_);
-	if (q != mquant_) {
+	PUT_BITS(he->val, he->nb, nbb, bb, bc);
+	if (q != mquant) {
 		/* MTYPE = INTRA + TC + MQUANT */
-		PUT_BITS(1, 7, nbb_, bb_, bc_);
-		PUT_BITS(q, 5, nbb_, bb_, bc_);
-		mquant_ = q;
+		PUT_BITS(1, 7, nbb, bb, bc);
+		PUT_BITS(q, 5, nbb, bb, bc);
+		mquant = q;
 	} else {
 		/* MTYPE = INTRA + TC (no quantizer) */
-		PUT_BITS(1, 4, nbb_, bb_, bc_);
+		PUT_BITS(1, 4, nbb, bb, bc);
 	}
 
 	/* luminance */
-	const char* lm = llm_[q];
+	const char* lm = llm[q];
 	if (lm == 0) {
 		lm = make_level_map(q, 1);
-		llm_[q] = lm;
-		clm_[q] = make_level_map(q, 2);
+		llm[q] = lm;
+		clm[q] = make_level_map(q, 2);
 	}
 	encode_blk(blk + 0, lm);
 	encode_blk(blk + 64, lm);
 	encode_blk(blk + 128, lm);
 	encode_blk(blk + 192, lm);
 	/* chominance */
-	lm = clm_[q];
+	lm = clm[q];
 	encode_blk(blk + 256, lm);
 	encode_blk(blk + 320, lm);
-}
-
-
-/*
- * H261ASDCTEncoder::encode_mb
- *	encode a macroblock given a set of input DCT coefs
- *	each coef is stored as a short
- */
-void
-H261ASDCTEncoder::encode_mb(u_int mba, const u_char* frm,
-			  u_int loff, u_int coff, int how)
-{
-	short *lblk = (short *)frm + loff;
-	short *ublk = (short *)frm + coff;
-	short *vblk = (short *)frm + coff + 64;
-
-	register u_int q;
-	if (how == CR_MOTION)
-		q = lq_;
-	else if (how == CR_BG)
-		q = hq_;
-	else
-		/* must be at age threshold */
-		q = mq_;
-
-	/*
-	 * if the default quantizer is too small to handle the coef.
-	 * dynamic range, spin through the blocks and see if any
-	 * coef. would significantly overflow.
-	 */
-	if (q < 8) {
-		register int cmin = 0, cmax = 0;
-		register short* bp = lblk;
-		register int i, j;
-
-		// Y U and V blocks
-		for (i = 6; --i >= 0; ) {
-			++bp;	// ignore dc coef
-			for (j = 63; --j >= 0; ) {
-				register int v = *bp++;
-				if (v < cmin)
-					cmin = v;
-				else if (v > cmax)
-					cmax = v;
-			}
-		}
-
-		if (cmax < -cmin)
-			cmax = -cmin;
-		cmax /= (q << 1);
-		if (cmax >= 128) {
-			/* need to re-quantize */
-			register int s;
-
-			for (s = 1; cmax >= (128 << s); ++s) {
-			}
-			q <<= s;
-
-		}
-	}
-
-	u_int m = mba - mba_;
-	mba_ = mba;
-	huffent* he = &hte_mba[m - 1];
-	/* MBA */
-	PUT_BITS(he->val, he->nb, nbb_, bb_, bc_);
-	if (q != mquant_) {
-		/* MTYPE = INTRA + TC + MQUANT */
-		PUT_BITS(1, 7, nbb_, bb_, bc_);
-		PUT_BITS(q, 5, nbb_, bb_, bc_);
-		mquant_ = q;
-	} else {
-		/* MTYPE = INTRA + TC (no quantizer) */
-		PUT_BITS(1, 4, nbb_, bb_, bc_);
-	}
-
-	/* luminance */
-	const char* lm = llm_[q];
-	if (lm == 0) {
-		/*
-		 * the filter thresh is 0 since we assume the jpeg percept.
-		 * quantizer already did the filtering.
-		 */
-		lm = make_level_map(q, 0);
-		llm_[q] = lm;
-		clm_[q] = make_level_map(q, 0);
-	}
-	encode_blk(lblk + 0, lm);
-	encode_blk(lblk + 64, lm);
-	encode_blk(lblk + 128, lm);
-	encode_blk(lblk + 192, lm);
-	/* chominance */
-	lm = clm_[q];
-	encode_blk(ublk, lm);
-	encode_blk(vblk, lm);
 }
 
 int
 H261ASEncoder::flush(pktbuf* pb, int nbit, pktbuf* npb)
 {
 	/* flush bit buffer */
-	STORE_BITS(bb_, bc_);
+	STORE_BITS(bb, bc);
 
 	int cc = (nbit + 7) >> 3;
 	int ebit = (cc << 3) - nbit;
@@ -725,49 +536,22 @@ H261ASEncoder::flush(pktbuf* pb, int nbit, pktbuf* npb)
 	if (npb == 0)
 		rh->rh_flags |= htons(RTP_M);
 
-	int h = *(u_int*)(rh + 1) | ebit << 26 | sbit_ << 29;
+	int h = *(u_int*)(rh + 1) | ebit << 26;
 	*(u_int*)(rh + 1) = htonl(h);
 
 	if (npb != 0) {
-		u_char* nbs = &npb->data[HDRSIZE];
-		u_int bc = (bc_ - bs_) << 3;
-		int tbit = bc + nbb_;
-		int extra = ((tbit + 7) >> 3) - (nbit >> 3);
-		if (extra > 0)
-			memcpy(nbs, bs_ + (nbit >> 3), extra);
-		bs_ = nbs;
-		sbit_ = nbit & 7;
-		tbit -= nbit &~ 7;
-		bc = tbit &~ (NBIT - 1);
-		nbb_ = tbit - bc;
-		bc_ = bs_ + (bc >> 3);
-		/*
-		 * Prime the bit buffer.  Be careful to set bits that
-		 * are not yet in use to 0, since output bits are later
-		 * or'd into the buffer.
-		 */
-		if (nbb_ > 0) {
-			u_int n = NBIT - nbb_;
-			bb_ = (LOAD_BITS(bc_) >> n) << n;
-		} else
-			bb_ = 0;
+		bs = &npb->data[HDRSIZE];
+		bc = bs;
+		bb = 0;
+		nbb = 0;
+		sbit = 0;
 	}
 	tx_->send(pb);
 
 	return (cc + HDRSIZE);
 }
 
-int H261ASDCTEncoder::consume(const VideoFrame *vf)
-{
-	if (!samesize(vf))
-		size(vf->width_, vf->height_);
-
-	DCTFrame* df = (DCTFrame *)vf;
-
-	return(encode(df, df->crvec_));
-}
-
-int H261ASPixelEncoder::consume(const VideoFrame *vf)
+int H261ASEncoder::consume(const VideoFrame *vf)
 {
 	if (!samesize(vf))
 		size(vf->width_, vf->height_);
@@ -782,48 +566,37 @@ H261ASEncoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 {
 	tx_->flush();
 
-	pktbuf* pb = pool_->alloc(vf->ts_, RTP_PT_H261);
-	bs_ = &pb->data[HDRSIZE];
-	bc_ = bs_;
+	pktbuf* pb = pool_->alloc(vf->ts_, RTP_PT_H261AS);
+	bs = &pb->data[HDRSIZE];
+	bc = bs;
 	u_int ec = (tx_->mtu() - HDRSIZE) << 3;
-	bb_ = 0;
-	nbb_ = 0;
-	sbit_ = 0;
+	bb = 0;
+	nbb = 0;
+
 	/* RTP/H.261 header */
 	rtphdr* rh = (rtphdr*)pb->data;
-	*(u_int*)(rh + 1) = 1 << 25 | lq_ << 10;
+	*(u_int*)(rh + 1) = lq << 24 | ((width >> 4) - 1) << 12 | ((height >> 4) - 1);
 
-	/* PSC */
-	PUT_BITS(0x0001, 16, nbb_, bb_, bc_);
-	/* GOB 0 -> picture header */
-	PUT_BITS(0, 4, nbb_, bb_, bc_);
-	/* TR (XXX should do this right) */
-	PUT_BITS(0, 5, nbb_, bb_, bc_);
-	/* PTYPE = CIF */
-	int pt = cif_ ? 4 : 0;
-	PUT_BITS(pt, 6, nbb_, bb_, bc_);
-	/* PEI */
-	PUT_BITS(0, 1, nbb_, bb_, bc_);
-
-	int step = cif_ ? 1 : 2;
 	int cc = 0;
-
 	u_int8_t* frm = vf->bp_;
-	for (u_int gob = 0; gob < ngob_; gob += step) {
-		u_int loff = loff_[gob];
-		u_int coff = coff_[gob];
-		u_int blkno = blkno_[gob];
-		u_int nbit = ((bc_ - bs_) << 3) + nbb_;
+	u_int nbit;
+	u_int blkno;
+
+	for (u_int gob = 0; gob < ngob; gob ++) {
+
+		blkno = 33 * gob;
 
 		/* GSC/GN */
-		PUT_BITS(0x10 | (gob + 1), 20, nbb_, bb_, bc_);
-		/* GQUANT/GEI */
-		mquant_ = lq_;
-		PUT_BITS(mquant_ << 1, 6, nbb_, bb_, bc_);
+		PUT_BITS(0x0001, 16, nbb, bb, bc);
+		PUT_BITS(gob, 20, nbb, bb, bc);
 
-		mba_ = 0;
-		int line = 11;
-		for (u_int mba = 1; mba <= 33; ++mba) {
+		/* GQUANT */
+		mquant = lq;
+		PUT_BITS(mquant, 5, nbb, bb, bc);
+		mba = 0;
+
+
+		for (u_int mbal = 1; mbal <= 33 && blkno < nblocks; ++mbal, blkno++) {
 			/*
 			 * If the conditional replenishment algorithm
 			 * has decided to send any of the blocks of
@@ -832,46 +605,50 @@ H261ASEncoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 			u_int s = crvec[blkno];
 
 			if ((s & CR_SEND) != 0) {
-				u_int mbpred = mba_;
-				encode_mb(mba, frm, loff, coff, CR_STATE(s));
-				u_int cbits = ((bc_ - bs_) << 3) + nbb_;
+
+				nbit = ((bc - bs) << 3) + nbb;
+				encode_mb(mbal, 
+					  frm, 
+					  loff_table[blkno], 
+					  coff_table[blkno], 
+					  CR_STATE(crvec[blkno]));
+				uint32_t cbits = ((bc - bs) << 3) + nbb;
 				if (cbits > ec) {
-					pktbuf* npb;
-					npb = pool_->alloc(vf->ts_, RTP_PT_H261);
-					cc += flush(pb, nbit, npb);
-					cbits -= nbit;
+					pktbuf *npb;
+					npb = pool_->alloc(vf->ts_, 
+							   RTP_PT_H261AS);
+					cc += flush(pb, 
+						    nbit, 
+						    npb);
 					pb = npb;
-					/* RTP/H.261 header */
-					u_int m = mbpred;
-					u_int g;
-					if (m != 0) {
-						g = gob + 1;
-						m -= 1;
-					} else
-						g = 0;
+	  
+					bs = &pb->data[HDRSIZE];
+					bc = bs;
+					bb = 0;
+					nbb = 0;
+					sbit = 0;
 
-					rh = (rtphdr*)pb->data;
-					*(u_int*)(rh + 1) =
-						1 << 25 |
-						m << 15 |
-						g << 20 |
-						mquant_ << 10;
-				}
-				nbit = cbits;
+					rtphdr* rh = (rtphdr*)pb->data;
+					*(u_int*)(rh + 1) = lq << 24 | ((width >> 4) - 1) << 12 | ((height >> 4) - 1);
+
+
+
+					PUT_BITS(0x0001, 16, nbb, bb, bc);
+					PUT_BITS(gob, 20, nbb, bb, bc);
+					PUT_BITS(mquant, 5, nbb, bb, bc);
+
+					mba = 0;
+					encode_mb(mbal, 
+						  frm, 
+						  loff_table[blkno], 
+						  coff_table[blkno], 
+						  CR_STATE(crvec[blkno]));
+				} 
 			}
-
-			loff += loffsize_;
-			coff += coffsize_;
-			blkno += bloffsize_;
-			if (--line <= 0) {
-				line = 11;
-				blkno += bstride_;
-				loff += lstride_;
-				coff += cstride_;
-			}
-
 		}
 	}
-	cc += flush(pb, ((bc_ - bs_) << 3) + nbb_, 0);
+
+	cc += flush(pb, ((bc - bs) << 3) + nbb, 0);
+
 	return (cc);
 }

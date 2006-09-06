@@ -81,6 +81,7 @@ int VideoSessionManager::check_format(int fmt) const
 		case RTP_PT_H263P:
 		case RTP_PT_LDCT:
 		case RTP_PT_PVH:
+	        case RTP_PT_DV:
 #ifdef USE_H261AS
 		case RTP_PT_H261AS:
 #endif 
