@@ -612,7 +612,7 @@ H261ASEncoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 					  loff_table[blkno], 
 					  coff_table[blkno], 
 					  CR_STATE(crvec[blkno]));
-				uint32_t cbits = ((bc - bs) << 3) + nbb;
+				u_int32_t cbits = ((bc - bs) << 3) + nbb;
 				if (cbits > ec) {
 					pktbuf *npb;
 					npb = pool_->alloc(vf->ts_, 
