@@ -564,7 +564,7 @@ proc device_formats device {
 		set fmtList "$fmtList bvc pvh"
 	}
 	if [inList cif $sizes] {
-		set fmtList "$fmtList h261 h263+ h263"
+		set fmtList "$fmtList h261 h261as h263+ h263"
 	}
 	if [inList jpeg $formats] {
 		set fmtList "$fmtList jpeg"
@@ -812,10 +812,11 @@ proc build.format w {
 	format_col $w.p2 h263+ h263
 	format_col $w.p3 raw cellb
 	format_col $w.p4 bvc pvh:
+	format_col $w.p5 h261as null
 	
 	frame $w.glue0
 	frame $w.glue1
-	pack $w.p0 $w.p1 $w.p2 $w.p3 $w.p4 -side left
+	pack $w.p0 $w.p1 $w.p2 $w.p3 $w.p4 $w.p5 -side left
 
 }
 
