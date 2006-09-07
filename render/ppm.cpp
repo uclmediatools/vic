@@ -73,16 +73,17 @@ PPM::~PPM()
 int PPM::command(int argc, const char*const* argv)
 {
 	Tcl& tcl = Tcl::instance();
+	char* TCLresult = tcl.buffer();
 
 	if (argc == 2) {
 		if (strcmp(argv[1], "width") == 0) {
-			sprintf(tcl.buffer(), "%d", width_);
-			tcl.result(tcl.buffer());
+			sprintf(TCLresult, "%d", width_);
+			tcl.result(TCLresult);
 			return (TCL_OK);
 		}
 		if (strcmp(argv[1], "height") == 0) {
-			sprintf(tcl.buffer(), "%d", height_);
-			tcl.result(tcl.buffer());
+			sprintf(TCLresult, "%d", height_);
+			tcl.result(TCLresult);
 			return (TCL_OK);
 		}
 	} else if (argc == 3) {
@@ -90,22 +91,20 @@ int PPM::command(int argc, const char*const* argv)
 			Tcl_Channel Ch;
 			if ( (Ch = Tcl_OpenFileChannel(tcl.interp(), (char*)argv[2], "r", 0777)) == NULL)
 			{
-				printf("ppm.cpp: Can't obtain channel for open file %s. ErrMsg = %s\n", (char*)argv[2], Tcl_ErrnoMsg(Tcl_GetErrno()));
-				tcl.result("0");
-				exit(1);
+				sprintf(TCLresult, "ppm.cpp: Can't obtain channel to open file %s. ErrMsg = %s\n", (char*)argv[2], Tcl_ErrnoMsg(Tcl_GetErrno()));
+				tcl.result(TCLresult);
+				return (TCL_ERROR);
 			}
 			else {
-				//printf("ppm.cpp: Opened file %s\n", (char*)argv[2]);
-				//Tcl_SetChannelOption(tcl.interp(), Ch, "translation", "binary");
-				tcl.result("1");
+				sprintf(TCLresult, "ppm.cpp: Opened file %s\n", (char*)argv[2]);
+				tcl.result(TCLresult);
 			}
 			if (load(Ch) < 0) {
-				//printf("ppm.cpp: Can't load file %s from channel\n", (char*)argv[2]);
-				tcl.result("0");
-				exit(1);
+				sprintf(TCLresult, "ppm.cpp: Can't load overlay image file %s from channel. Is the .ppm the right format?\n", (char*)argv[2]);
+				tcl.result(TCLresult);
+				return (TCL_ERROR);
 			} else  {
 				Tcl_Close(tcl.interp(), Ch);
-				//printf("ppm.cpp: Loaded file %s\n", (char*)argv[2]);
 			}
 			return (TCL_OK);
 		}
@@ -113,18 +112,17 @@ int PPM::command(int argc, const char*const* argv)
 			Tcl_Channel Ch;
 			if ((Ch = Tcl_OpenFileChannel(tcl.interp(), (char*)argv[2], "w+", 0777)) == NULL)
 			{
-				printf("ppm.cpp: Can't obtain channel for dumping file %s.\nErrMsg = \"%s\"\n", (char*)argv[2], Tcl_ErrnoMsg(Tcl_GetErrno()));
-				tcl.result("0");
-				exit(1);
+				sprintf(TCLresult, "ppm.cpp: Can't obtain channel to dump overlay image file %s.\nErrMsg = \"%s\"\n", (char*)argv[2], Tcl_ErrnoMsg(Tcl_GetErrno()));
+				tcl.result(TCLresult);
+				return (TCL_ERROR);
 			}
 			else {
-				//Tcl_SetChannelOption(tcl.interp(), Ch, "translation", "binary");
 				tcl.result("1");
 			}
 			if (dump(Ch) < 0) {
-				printf("ppm.cpp: Can't dump file %s into channel %d\n", (char*)argv[2], Ch);
-				tcl.result("0");
-				exit(1);
+				sprintf(TCLresult, "ppm.cpp: Can't dump overlay image file %s into channel %d\n", (char*)argv[2], Ch);
+				tcl.result(TCLresult);
+				return (TCL_ERROR);
 			} else {
 				Tcl_Close(tcl.interp(), Ch);
 			}
