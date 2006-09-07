@@ -120,7 +120,7 @@ int PPM::command(int argc, const char*const* argv)
 				tcl.result("1");
 			}
 			if (dump(Ch) < 0) {
-				sprintf(TCLresult, "ppm.cpp: Can't dump overlay image file %s into channel %d\n", (char*)argv[2], Ch);
+				sprintf(TCLresult, "ppm.cpp: Can't dump overlay image file %s into channel %d\n", (char*)argv[2], (int)Ch);
 				tcl.result(TCLresult);
 				return (TCL_ERROR);
 			} else {
@@ -175,7 +175,7 @@ readhdr(Tcl_Channel tclChannel, int *width, int *height, int *maxval)
 
 int PPM::load(Tcl_Channel tclChannel)
 {
-	Tcl& tcl = Tcl::instance();
+	//Tcl& tcl = Tcl::instance();
 
 	int maxval;
 
