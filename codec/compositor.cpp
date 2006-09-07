@@ -151,8 +151,10 @@ int Overlay::command(int argc, const char*const* argv)
 			const char* file = argv[2];
 			int w = atoi(argv[3]);
 			int h = atoi(argv[4]);
-			if (load(file, w, h) < 0)
-				tcl.result("-1");
+			if (load(file, w, h) < 0) {
+				tcl.result("overlay load() returned negative");
+				return (TCL_ERROR);
+			}
 			else
 				tcl.result("0");
 			return (TCL_OK);
