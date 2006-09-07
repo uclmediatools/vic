@@ -186,7 +186,6 @@ proc tm.update.coordx {w xval} {
 	global xcoord ycoord logoButtonState id
 	
 	if { $xval != ""} {
-		$w configure -text "$xval"
 	    set xcoord $xval
 	    if $logoButtonState {
 			position_graphic $id $xcoord $ycoord 0
@@ -200,7 +199,6 @@ proc tm.update.coordy {w yval} {
 	global xcoord ycoord logoButtonState id
 	
 	if { $yval != ""} {
-		$w configure -text "$yval"
 	    set ycoord $yval
 	    if $logoButtonState {
 			position_graphic $id $xcoord $ycoord 0
@@ -215,7 +213,8 @@ proc tm.update.filename { w fname } {
 	global selectedFile
 
 	if { $fname != ""} {
-		$w configure -text "$fname"
+		$w delete 0 end
+		$w insert 0 $fname
 		set selectedFile $fname
 		return 0
 	}
