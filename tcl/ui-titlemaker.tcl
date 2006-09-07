@@ -34,10 +34,17 @@
 proc build.titlemaker w {
 
 	global selectedFile xcoord ycoord id transparency
-	set selectedFile [pwd]
-	append selectedFile "/ucl_logo.ppm"
-	set xcoord 0
-	set ycoord 0		
+	set selectedFile [pwd]	
+	append selectedFile "/"
+	append selectedFile "ucl_logo.ppm"
+	
+	set resourceFile [resource overlayFilename]
+	if { $resourceFile != ""} {
+		set selectedFile $resourceFile
+	}
+
+	set xcoord [resource overlayX]
+	set ycoord [resource overlayY]
 	set transparency 255
 	set id logo1
 
@@ -131,9 +138,8 @@ proc logo_fileselect { w } {
 	    {{PPM Files} {.ppm} }
 	    {{All Files} *      }
 	}
-	set selectedFile [tk_getOpenFile -filetypes $types -initialdir [pwd]]
-	if {$selectedFile != ""} {
-	    
+	set selectedFile [tk_getOpenFile -filetypes $types]
+	if {$selectedFile != ""} {	    
 	    puts "Got file: $selectedFile"
 	}
 	# XXX XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX

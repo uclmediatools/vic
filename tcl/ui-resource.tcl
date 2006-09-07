@@ -211,6 +211,11 @@ proc init_resources {} {
 	# Lip sync option
 	option add Vic.lipSync false startupFile
 
+	# Overlay image
+	option add Vic.overlayFilename "" startupFile
+	option add Vic.overlayX "0" startupFile
+	option add Vic.overlayY "0" startupFile
+
 # Init fonts
 
 	init_fonts
