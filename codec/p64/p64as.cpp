@@ -2,9 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../config.h" //SV
-
 #ifdef WIN32
+#include "../config.h"
 //#include <winsock.h>
 #else
 #include <sys/param.h>
