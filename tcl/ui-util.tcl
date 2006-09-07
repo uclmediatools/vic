@@ -207,6 +207,8 @@ proc mk.entry { w action text } {
 	global entryTab
 	set entryTab($w.entry:action) $action
 	set entryTab($w.entry:value) $text
+	set entryTab($w.entry:focus) 0
+
 	$w.entry insert 0 $text
 }
 
