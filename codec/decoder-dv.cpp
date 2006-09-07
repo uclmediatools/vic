@@ -272,13 +272,18 @@ void DVDecoder::recv(pktbuf* pb)
 				pitches[1] = inw_/2;
 				pitches[2] = inw_/2;
 
-				printf("decoding yv12\n");
-// 				dv_decode_full_frame(dv_decoder,
-// 						     (const uint8_t*)dv_buffer,
-// 						     e_dv_color_yuv,
-// 						     pixels,
-// 						     pitches);
+ 				dv_decode_full_frame(dv_decoder,
+ 						     (const uint8_t*)dv_buffer,
+ 						     e_dv_color_yuv,
+ 						     pixels,
+ 						     pitches);
 #endif // ASSUME_YUY2
+
+				// Indicate that the entire frame has updated
+				// as there isn't an easy way to do partial
+				// frame updates with DV.
+				memset(rvts_, now_, nblk_);
+				ndblk_ = nblk_;
 				
 				render_frame(dv_frame);
 			}
