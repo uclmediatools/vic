@@ -1158,6 +1158,15 @@ proc h261_setq value {
 	$qvalue configure -text $value
 }
 
+proc h261as_setq value {
+	set value [expr int((1 - $value / 100.) * 29) + 1]
+	if [have grabber] {
+		encoder q $value
+  	}
+	global qvalue
+	$qvalue configure -text $value
+}
+
 proc h263+_setq value {
 	set value [expr int((1 - $value / 100.) * 29) + 1]
 	if [have grabber] {
@@ -1324,6 +1333,7 @@ proc enable_large_button { } {
 }
 
 set qscale_val(h261) 68
+set qscale_val(h261as) 68
 set qscale_val(h263) 68
 set qscale_val(h263+) 68
 set qscale_val(nv) 80
