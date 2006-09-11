@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="vic"
+	ProjectGUID="{2F0B9224-B5FC-446E-935E-845FF6C5C733}"
 	RootNamespace="vic"
 	SccProjectName=""
 	SccLocalPath="">
@@ -25,7 +26,6 @@
 				AdditionalIncludeDirectories=".\,render,rtp,net,win32,video,codec,codec\tmndec,codec\tmn-x,codec\jpeg,codec\p64,codec\h263,codec\mpeg,..\common\src,..\tk-8.0\win,..\tcl-8.0\win,..\tk-8.0\generic,..\tk-8.0\xlib,..\tcl-8.0\generic,mst_wm\incls"
 				PreprocessorDefinitions="DEBUG;_DEBUG;DEBUG_MEM;WIN32;SIGRET=void;SIGARGS=int;NLAYER=8;ED_YBITS=4;VIC;USE_TIME;WINDOWS"
 				RuntimeLibrary="5"
-				DisableLanguageExtensions="FALSE"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderFile=".\Debug/vic.pch"
 				AssemblerListingLocation=".\Debug/"
@@ -41,9 +41,9 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tklib.lib tcllib.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib uclmm.lib"
+				AdditionalDependencies="tklib.lib tcllib.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib uclmm.lib strmiids.lib quartz.lib"
 				OutputFile=".\Debug/vic.exe"
-				LinkIncremental="1"
+				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\common\src\Debug,..\tcl-8.0\win\Debug,..\tk-8.0\win\Debug,codec\tmndec,codec\tmn-x"
 				GenerateDebugInformation="TRUE"
@@ -107,7 +107,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tklib.lib tcllib.lib uclmm.lib lib44bsd.lib Resolv.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib"
+				AdditionalDependencies="tklib.lib tcllib.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib uclmm.lib strmiids.lib quartz.lib"
 				OutputFile=".\Debug_IPv6_Musica/vic.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -173,7 +173,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tklib.lib tcllib.lib uclmm.lib winmm.lib wsock32.lib Ws2_32.lib msacm32.lib odbc32.lib odbccp32.lib vfw32.lib"
+				AdditionalDependencies="tklib.lib tcllib.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib uclmm.lib strmiids.lib quartz.lib"
 				OutputFile=".\Debug_IPv6_Win2000/vic.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -239,7 +239,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tklib.lib tcllib.lib uclmm.lib winmm.lib wsock32.lib Ws2_32.lib msacm32.lib odbc32.lib odbccp32.lib vfw32.lib"
+				AdditionalDependencies="tklib.lib tcllib.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib uclmm.lib strmiids.lib quartz.lib"
 				OutputFile=".\Release_IPv6_XP/vic.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -303,7 +303,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tklib.lib tcllib.lib uclmm.lib winmm.lib wsock32.lib Ws2_32.lib msacm32.lib odbc32.lib odbccp32.lib vfw32.lib wship6.lib"
+				AdditionalDependencies="tklib.lib tcllib.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib uclmm.lib strmiids.lib quartz.lib"
 				OutputFile=".\Debug_IPv6_MSR/vic.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -369,7 +369,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tklib.lib tcllib.lib uclmm.lib winmm.lib wsock32.lib Ws2_32.lib msacm32.lib odbc32.lib odbccp32.lib vfw32.lib"
+				AdditionalDependencies="tklib.lib tcllib.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib uclmm.lib strmiids.lib quartz.lib"
 				OutputFile=".\Release_IPv6_Win2000/vic.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -434,7 +434,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tklib.lib tcllib.lib uclmm.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib"
+				AdditionalDependencies="tklib.lib tcllib.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib uclmm.lib strmiids.lib quartz.lib"
 				OutputFile=".\Release/vic.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -458,6 +458,72 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
+				Culture="2057"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="Debug IPv6 XP|Win32"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="1"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="/I ../common"
+				Optimization="0"
+				AdditionalIncludeDirectories=".\,render,rtp,net,win32,video,codec,codec\tmndec,codec\tmn-x,codec\jpeg,codec\p64,codec\h263,codec\mpeg,..\common\src,..\tk-8.0\win,..\tcl-8.0\win,..\tk-8.0\generic,..\tk-8.0\xlib,..\tcl-8.0\generic,..\IPv6Kit\inc,mst_wm\incls"
+				PreprocessorDefinitions="DEBUG;_DEBUG;DEBUG_MEM;WIN32;SIGRET=void;SIGARGS=int;NLAYER=8;ED_YBITS=4;VIC;USE_TIME;WINDOWS;HAVE_IPV6;NEED_INET_NTOP;NEED_INET_PTON;WINXP_IPV6"
+				RuntimeLibrary="5"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderFile=".\Debug_IPv6_Win2000/vic.pch"
+				AssemblerListingLocation=".\Debug_IPv6_Win2000/"
+				ObjectFile=".\Debug_IPv6_Win2000/"
+				ProgramDataBaseFileName=".\Debug_IPv6_Win2000/"
+				BrowseInformation="1"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="3"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="tklib.lib tcllib.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib uclmm.lib strmiids.lib quartz.lib"
+				OutputFile="$(ConfigurationName)/vic.exe"
+				LinkIncremental="1"
+				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="..\tcl-8.0\win\Debug,..\tk-8.0\win\Debug,..\common\src\Debug,codec\tmndec,codec\tmn-x"
+				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile=".\Debug_IPv6_Win2000/vic.pdb"
+				SubSystem="2"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\Debug_IPv6_Win2000/vic.tlb"
+				HeaderFileName=""/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
 				Culture="2057"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -535,6 +601,14 @@
 "
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="tcl\cf-main.tcl">
@@ -588,6 +662,14 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
@@ -653,6 +735,14 @@
 "
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="tcl\cf-tm.tcl">
@@ -706,6 +796,14 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
@@ -771,6 +869,14 @@
 "
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="tcl\entry.tcl">
@@ -824,6 +930,14 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
@@ -889,6 +1003,14 @@
 "
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="tcl\ui-ctrlmenu.tcl">
@@ -942,6 +1064,14 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
@@ -1007,6 +1137,14 @@
 "
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="tcl\ui-grabber.tcl">
@@ -1060,6 +1198,14 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
@@ -1125,6 +1271,14 @@
 "
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="tcl\ui-main.tcl">
@@ -1178,6 +1332,14 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
@@ -1243,6 +1405,14 @@
 "
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="tcl\ui-resource.tcl">
@@ -1296,6 +1466,14 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
@@ -1361,6 +1539,14 @@
 "
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="tcl\ui-stats.tcl">
@@ -1414,6 +1600,14 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
@@ -1479,11 +1673,75 @@
 "
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\ui-titlemaker.tcl">
 				<FileConfiguration
 					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 Musica|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 Win2000|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release IPv6 XP|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 MSR|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release IPv6 Win2000|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
@@ -1549,6 +1807,14 @@
 "
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="tcl\ui-win32.tcl">
@@ -1608,6 +1874,14 @@
 "
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="tcl\ui-windows.tcl">
@@ -1661,6 +1935,14 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 &quot;$(InputPath)&quot;  &gt; tcl\generated\&quot;$(InputName)&quot;.cpp
@@ -1734,6 +2016,15 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="tcl\generated\cf-main.cpp">
@@ -1794,6 +2085,15 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
@@ -1862,6 +2162,15 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="tcl\generated\cf-tm.cpp">
@@ -1922,6 +2231,15 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
@@ -1990,6 +2308,15 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="tcl\generated\entry.cpp">
@@ -2050,6 +2377,15 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
@@ -2118,6 +2454,15 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="tcl\generated\ui-ctrlmenu.cpp">
@@ -2178,6 +2523,15 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
@@ -2246,6 +2600,15 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="tcl\generated\ui-grabber.cpp">
@@ -2306,6 +2669,15 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
@@ -2374,6 +2746,15 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="tcl\generated\ui-main.cpp">
@@ -2434,6 +2815,15 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
@@ -2502,6 +2892,15 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="tcl\generated\ui-resource.cpp">
@@ -2562,6 +2961,15 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
@@ -2630,6 +3038,15 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="tcl\generated\ui-stats.cpp">
@@ -2694,6 +3111,15 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="tcl\generated\ui-switcher.cpp">
@@ -2754,6 +3180,15 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
@@ -2825,6 +3260,15 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="tcl\generated\ui-win32.cpp">
@@ -2889,6 +3333,15 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="tcl\generated\ui-windows.cpp">
@@ -2949,6 +3402,15 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
@@ -3022,6 +3484,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="net\confbus.cpp">
@@ -3082,6 +3553,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -3150,6 +3630,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="net\crypt-dull.cpp">
@@ -3210,6 +3699,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -3278,6 +3776,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="net\group-ipc.cpp">
@@ -3338,6 +3845,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -3406,6 +3922,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="net\inet6.c">
@@ -3466,6 +3991,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -3534,6 +4068,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="net\mbus_handler.cpp">
@@ -3594,6 +4137,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -3662,6 +4214,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="net\net-ip.cpp">
@@ -3722,6 +4283,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -3790,6 +4360,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="net\net.cpp">
@@ -3850,6 +4429,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -3918,6 +4506,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="net\pkttbl.cpp">
@@ -3978,6 +4575,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -4087,6 +4693,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="codec\cellb_tables.c">
@@ -4147,6 +4762,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -4215,6 +4839,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="codec\dct.cpp">
@@ -4275,6 +4908,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -4343,6 +4985,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="codec\decoder-cellb.cpp">
@@ -4407,6 +5058,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="codec\decoder-h261.cpp">
@@ -4467,6 +5127,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -4538,6 +5207,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="codec\decoder-h263.cpp">
@@ -4598,6 +5276,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -4666,6 +5353,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="codec\decoder-jpeg.cpp">
@@ -4726,6 +5422,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -4794,6 +5499,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="codec\decoder-pvh.cpp">
@@ -4854,6 +5568,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -4922,6 +5645,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="codec\decoder.cpp">
@@ -4982,6 +5714,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -5050,6 +5791,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="codec\encoder-cellb.cpp">
@@ -5114,6 +5864,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="codec\encoder-h261.cpp">
@@ -5174,6 +5933,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -5245,6 +6013,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="codec\encoder-h263v2.cpp">
@@ -5305,6 +6082,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -5373,6 +6159,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="codec\encoder-nv.cpp">
@@ -5433,6 +6228,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -5501,6 +6305,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="codec\encoder-raw.cpp">
@@ -5561,6 +6374,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -5629,6 +6451,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="codec\huffcode.c">
@@ -5689,6 +6520,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -5757,6 +6597,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="codec\p64\p64.cpp">
@@ -5821,9 +6670,21 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\codec\p64\p64as.cpp">
+			</File>
+			<File
+				RelativePath=".\render\ppm.cpp">
 			</File>
 			<File
 				RelativePath="codec\pvh-huff.c">
@@ -5888,6 +6749,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="codec\transcoder-jpeg.cpp">
@@ -5948,6 +6818,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -6019,6 +6898,15 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="codec\h263\bitOut.c">
@@ -6079,6 +6967,15 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
@@ -6147,6 +7044,15 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="codec\h263\code.c">
@@ -6207,6 +7113,15 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
@@ -6275,6 +7190,15 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="codec\h263\getblk.c">
@@ -6335,6 +7259,15 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
@@ -6403,6 +7336,15 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="codec\h263\gethdr.c">
@@ -6463,6 +7405,15 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
@@ -6531,6 +7482,15 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="codec\h263\h263dec.c">
@@ -6591,6 +7551,15 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
@@ -6659,6 +7628,15 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="codec\h263\h263mux.c">
@@ -6719,6 +7697,15 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
@@ -6787,6 +7774,15 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="codec\h263\idctdec.c">
@@ -6847,6 +7843,15 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
@@ -6915,6 +7920,15 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="codec\h263\input.c">
@@ -6975,6 +7989,15 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
@@ -7043,6 +8066,15 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="codec\h263\recon.c">
@@ -7103,6 +8135,15 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
@@ -7171,6 +8212,15 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="codec\h263\sac.c">
@@ -7231,6 +8281,15 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							Optimization="2"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							BrowseInformation="1"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug IPv6 XP|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
@@ -7449,6 +8508,17 @@
 								ProgramDataBaseFileName="Release\tmndec/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmndec/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmndec/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="codec\tmndec\dither.c">
@@ -7526,6 +8596,17 @@
 								PreprocessorDefinitions=""
 								ObjectFile=".\Release\tmndec/"
 								ProgramDataBaseFileName="Release\tmndec/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmndec/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmndec/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
 					</File>
@@ -7607,6 +8688,17 @@
 								ProgramDataBaseFileName="Release\tmndec/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmndec/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmndec/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="codec\tmndec\getblk.c">
@@ -7684,6 +8776,17 @@
 								PreprocessorDefinitions=""
 								ObjectFile=".\Release\tmndec/"
 								ProgramDataBaseFileName="Release\tmndec/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmndec/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmndec/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
 					</File>
@@ -7765,6 +8868,17 @@
 								ProgramDataBaseFileName="Release\tmndec/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmndec/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmndec/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="codec\tmndec\getpic.c">
@@ -7842,6 +8956,17 @@
 								PreprocessorDefinitions=""
 								ObjectFile=".\Release\tmndec/"
 								ProgramDataBaseFileName="Release\tmndec/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmndec/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmndec/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
 					</File>
@@ -7923,6 +9048,17 @@
 								ProgramDataBaseFileName="Release\tmndec/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmndec/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmndec/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="codec\tmndec\idct.c">
@@ -8000,6 +9136,17 @@
 								PreprocessorDefinitions=""
 								ObjectFile=".\Release\tmndec/"
 								ProgramDataBaseFileName="Release\tmndec/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmndec/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmndec/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
 					</File>
@@ -8081,6 +9228,17 @@
 								ProgramDataBaseFileName="Release\tmndec/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmndec/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmndec/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="codec\tmndec\recon.c">
@@ -8158,6 +9316,17 @@
 								PreprocessorDefinitions=""
 								ObjectFile=".\Release\tmndec/"
 								ProgramDataBaseFileName="Release\tmndec/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmndec/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmndec/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
 					</File>
@@ -8239,6 +9408,17 @@
 								ProgramDataBaseFileName="Release\tmndec/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmndec/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmndec/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="codec\tmndec\store.c">
@@ -8316,6 +9496,17 @@
 								PreprocessorDefinitions=""
 								ObjectFile=".\Release\tmndec/"
 								ProgramDataBaseFileName="Release\tmndec/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmndec/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmndec/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
 					</File>
@@ -8397,6 +9588,17 @@
 								ProgramDataBaseFileName="Release\tmndec/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmndec/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmndec/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="codec\tmndec\win.c">
@@ -8474,6 +9676,17 @@
 								PreprocessorDefinitions=""
 								ObjectFile=".\Release\tmndec/"
 								ProgramDataBaseFileName="Release\tmndec/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmndec/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmndec/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
 					</File>
@@ -8555,6 +9768,17 @@
 								ProgramDataBaseFileName="Release\tmndec/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmndec/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmndec/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="codec\tmndec\yuvrgb24.c">
@@ -8632,6 +9856,17 @@
 								PreprocessorDefinitions=""
 								ObjectFile=".\Release\tmndec/"
 								ProgramDataBaseFileName="Release\tmndec/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmndec/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmndec/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
 					</File>
@@ -8745,6 +9980,17 @@
 								ProgramDataBaseFileName="Release\tmn-x/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmn-x/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmn-x/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="codec\tmn-x\countbit.c">
@@ -8822,6 +10068,17 @@
 								PreprocessorDefinitions=""
 								ObjectFile=".\Release\tmn-x/"
 								ProgramDataBaseFileName="Release\tmn-x/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmn-x/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmn-x/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
 					</File>
@@ -8903,6 +10160,17 @@
 								ProgramDataBaseFileName="Release\tmn-x/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmn-x/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmn-x/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="codec\tmn-x\filter.c">
@@ -8980,6 +10248,17 @@
 								PreprocessorDefinitions=""
 								ObjectFile=".\Release\tmn-x/"
 								ProgramDataBaseFileName="Release\tmn-x/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmn-x/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmn-x/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
 					</File>
@@ -9061,6 +10340,17 @@
 								ProgramDataBaseFileName="Release\tmn-x/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmn-x/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmn-x/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="codec\tmn-x\io.c">
@@ -9138,6 +10428,17 @@
 								PreprocessorDefinitions=""
 								ObjectFile=".\Release\tmn-x/"
 								ProgramDataBaseFileName="Release\tmn-x/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmn-x/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmn-x/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
 					</File>
@@ -9219,6 +10520,17 @@
 								ProgramDataBaseFileName="Release\tmn-x/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmn-x/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmn-x/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="codec\tmn-x\malloc_debug.c">
@@ -9296,6 +10608,17 @@
 								PreprocessorDefinitions=""
 								ObjectFile=".\Release\tmn-x/"
 								ProgramDataBaseFileName="Release\tmn-x/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmn-x/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmn-x/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
 					</File>
@@ -9377,6 +10700,17 @@
 								ProgramDataBaseFileName="Release\tmn-x/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmn-x/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmn-x/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="codec\tmn-x\pred.c">
@@ -9454,6 +10788,17 @@
 								PreprocessorDefinitions=""
 								ObjectFile=".\Release\tmn-x/"
 								ProgramDataBaseFileName="Release\tmn-x/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmn-x/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmn-x/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
 					</File>
@@ -9535,6 +10880,17 @@
 								ProgramDataBaseFileName="Release\tmn-x/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmn-x/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmn-x/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="codec\tmn-x\putvlc.c">
@@ -9612,6 +10968,17 @@
 								PreprocessorDefinitions=""
 								ObjectFile=".\Release\tmn-x/"
 								ProgramDataBaseFileName="Release\tmn-x/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmn-x/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmn-x/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
 					</File>
@@ -9693,6 +11060,17 @@
 								ProgramDataBaseFileName="Release\tmn-x/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmn-x/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmn-x/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="codec\tmn-x\ratectrl.c">
@@ -9770,6 +11148,17 @@
 								PreprocessorDefinitions=""
 								ObjectFile=".\Release\tmn-x/"
 								ProgramDataBaseFileName="Release\tmn-x/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmn-x/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmn-x/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
 					</File>
@@ -9851,6 +11240,17 @@
 								ProgramDataBaseFileName="Release\tmn-x/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmn-x/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmn-x/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="codec\tmn-x\snr.c">
@@ -9928,6 +11328,17 @@
 								PreprocessorDefinitions=""
 								ObjectFile=".\Release\tmn-x/"
 								ProgramDataBaseFileName="Release\tmn-x/"
+								BrowseInformation="1"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug IPv6 XP|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"
+								AdditionalIncludeDirectories=""
+								PreprocessorDefinitions=""
+								ObjectFile=".\Debug_IPv6_Win2000\tmn-x/"
+								ProgramDataBaseFileName="Debug_IPv6_Win2000\tmn-x/"
 								BrowseInformation="1"/>
 						</FileConfiguration>
 					</File>
@@ -10031,6 +11442,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="render\cm1.c">
@@ -10091,6 +11511,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -10159,70 +11588,18 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="render\color-ed.cpp">
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug IPv6 Musica|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug IPv6 Win2000|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release IPv6 XP|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug IPv6 MSR|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release IPv6 Win2000|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"/>
-				</FileConfiguration>
+				RelativePath=".\render\color-ed.cpp">
 			</File>
 			<File
 				RelativePath="render\color-gray.cpp">
@@ -10283,6 +11660,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -10351,6 +11737,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="render\color-hist.cpp">
@@ -10411,6 +11806,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -10479,6 +11883,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="render\color-pseudo.cpp">
@@ -10539,6 +11952,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -10607,6 +12029,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="render\color-true.cpp">
@@ -10667,6 +12098,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -10735,6 +12175,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="render\color.cpp">
@@ -10799,9 +12248,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\render\ppm.cpp">
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="render\renderer-window.cpp">
@@ -10862,6 +12317,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -10930,6 +12394,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="render\rgb-converter.cpp">
@@ -10994,6 +12467,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="render\vw.cpp">
@@ -11054,6 +12536,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -11151,6 +12642,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="rtp\session.cpp">
@@ -11211,6 +12711,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -11279,6 +12788,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="rtp\transmitter.cpp">
@@ -11339,6 +12857,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -11433,6 +12960,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="win32\win32X.c">
@@ -11493,6 +13029,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -11565,6 +13110,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="idlecallback.cpp">
@@ -11625,6 +13179,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -11693,6 +13256,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="main.cpp">
@@ -11753,6 +13325,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -11821,6 +13402,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="media-timer.cpp">
@@ -11881,6 +13471,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -11949,6 +13548,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="random.c">
@@ -12009,6 +13617,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -12077,6 +13694,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="strtol.c">
@@ -12137,6 +13763,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -12205,6 +13840,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="Tcl.cpp">
@@ -12265,6 +13909,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -12333,6 +13986,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="timer.cpp">
@@ -12393,6 +14055,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -12461,6 +14132,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="tkWinColor.c">
@@ -12525,6 +14205,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="version.c">
@@ -12585,6 +14274,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -12664,6 +14362,18 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\video\crossbar.cpp">
 			</File>
 			<File
 				RelativePath="video\device.cpp">
@@ -12724,6 +14434,15 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
@@ -12792,6 +14511,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="video\grabber-win32.cpp">
@@ -12856,6 +14584,18 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\video\grabber-win32DS.cpp">
 			</File>
 			<File
 				RelativePath="video\grabber.cpp">
@@ -12920,6 +14660,15 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"/>
+				</FileConfiguration>
 			</File>
 			<Filter
 				Name="video Header Files"
@@ -12932,6 +14681,9 @@
 				</File>
 				<File
 					RelativePath="video\device-output.h">
+				</File>
+				<File
+					RelativePath=".\video\grabber-win32DS.h">
 				</File>
 				<File
 					RelativePath="video\grabber.h">
@@ -12996,6 +14748,15 @@
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Release|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					CommandLine="render\mkbv\mkbv &gt; codec\bv.c
+"
+					AdditionalDependencies="render\mkbv\mkbv.exe;"
+					Outputs="codec\bv.c"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug IPv6 XP|Win32">
 				<Tool
 					Name="VCCustomBuildTool"
 					CommandLine="render\mkbv\mkbv &gt; codec\bv.c
@@ -13074,6 +14835,17 @@ render\ppmtolut\ppmtolut -n jv_cube jv-cube-128.ppm &gt;&gt; render\cm0.c
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Release|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					CommandLine="render\mkcube\mkcube rgb &gt; &quot;$(InputPath)&quot;
+render\ppmtolut\ppmtolut -n cube rgb-cube.ppm &gt; render\cm0.c
+render\ppmtolut\ppmtolut -n jv_cube jv-cube-128.ppm &gt;&gt; render\cm0.c
+"
+					AdditionalDependencies="render\ppmtolut\ppmtolut.exe;render\mkcube\mkcube.exe;"
+					Outputs="$(InputPath);render\cm0.c"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug IPv6 XP|Win32">
 				<Tool
 					Name="VCCustomBuildTool"
 					CommandLine="render\mkcube\mkcube rgb &gt; &quot;$(InputPath)&quot;
@@ -13201,6 +14973,22 @@ erase win32\vergen.bat
 					AdditionalDependencies="win32\echo.txt;win32\set.txt;win32\null.txt;"
 					Outputs="version.c"/>
 			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug IPv6 XP|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					Description="Generating &quot;version.c&quot;."
+					CommandLine="copy win32\set.txt + VERSION win32\vergen.bat
+copy win32\vergen.bat + win32\null.txt win32\vergen.bat
+copy win32\vergen.bat + win32\echo.txt win32\vergen.bat
+win32\vergen.bat
+move win32\version.c version.c
+erase win32\version.c
+erase win32\vergen.bat
+"
+					AdditionalDependencies="win32\echo.txt;win32\set.txt;win32\null.txt;"
+					Outputs="version.c"/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="yuv-map.ppm">
@@ -13286,6 +15074,18 @@ render\ppmtolut\ppmtolut -n quant cm170.ppm &gt; render\cm1.c
 render\ppmtolut\ppmtolut -Y $ED_YBITS -n ed -e yuv-map.ppm &gt;&gt; render\cm1.c
 "
 					AdditionalDependencies="render\mkcube\mkcube.exe;render\ppmtolut\ppmtolut.exe;"
+					Outputs="$(InputPath);render\cm1.c"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug IPv6 XP|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					CommandLine="set ED_YBITS=4
+render\mkcube\mkcube -Y $ED_YBITS -U 45 -V 45 yuv &gt;  &quot;$(InputPath)&quot;
+render\ppmtolut\ppmtolut -n quant cm170.ppm &gt; render\cm1.c
+render\ppmtolut\ppmtolut -Y $ED_YBITS -n ed -e yuv-map.ppm &gt;&gt; render\cm1.c
+"
+					AdditionalDependencies="render\ppmtolut\ppmtolut.exe;render\mkcube\mkcube.exe;"
 					Outputs="$(InputPath);render\cm1.c"/>
 			</FileConfiguration>
 		</File>
