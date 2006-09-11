@@ -699,7 +699,9 @@ void DirectShowCIFGrabber::setsize() {
 DirectShowDevice::DirectShowDevice(char *friendlyName, IBaseFilter *pCapFilt) : InputDevice(friendlyName) {  
    debug_msg("new DirectShowDevice():  friendlyName=%s\n", friendlyName);
    directShowFilter_  = pCapFilt;           
-   attributes_        = "format { 422 411 } size { large small cif } port { external-in } ";
+   //SV: XXX got rid of 422 format since there's no grabber returned for it and vic crashes
+   //attributes_        = "format { 422 411 } size { large small cif } port { external-in } ";
+   attributes_        = "format { 411 } size { large small cif } port { external-in } ";
 }
 
 //--------------------------------
