@@ -358,10 +358,14 @@ proc transmit { } {
 			    "can't open [$videoDevice nickname] capture device"
 			return
 		}
+		
+		
+		init_grabber $V(grabber)
 		if ![tm_init $V(grabber) $grabtarget] {
 			$V(grabber) target $grabtarget
 		}
-		init_grabber $V(grabber)
+
+		
 		if { $grabq != "" } {
 			$V(grabber) q $grabq
 		}
@@ -611,15 +615,16 @@ proc insert_grabber_panel devname {
 # (and at startup for default device)
 #
 proc select_device device {
-	global transmitButton sizeButtons portButton formatButtons \
+	global transmitButton logoButton sizeButtons portButton formatButtons \
 		videoFormat defaultFormat lastDevice defaultPort inputPort \
-		transmitButtonState typeButton
+		transmitButtonState logoButtonState typeButton
 
 	#
 	# Remember settings of various controls for previous device
 	# and close down the device if it's already open
 	#
 	set wasTransmitting $transmitButtonState
+	set wasOverlaying $logoButtonState
 	if [info exists lastDevice] {
 		set defaultFormat($lastDevice) $videoFormat
 		set defaultPort($lastDevice) $inputPort
@@ -640,6 +645,7 @@ proc select_device device {
 		}
 	}
 	$transmitButton configure -state normal
+	$logoButton configure -state normal
 	if [device_supports $device size small] {
 		$sizeButtons.b0 configure -state normal
 	} else {
@@ -665,6 +671,9 @@ proc select_device device {
 
 	set videoFormat $defaultFormat($device)
 	select_format $videoFormat
+	if $wasOverlaying {
+		$logoButton invoke
+	}
 	if $wasTransmitting {
 		$transmitButton invoke
 	}
@@ -1403,11 +1412,20 @@ proc select_format fmt {
 			# old one.  just replace the old one without
 			# re-initializing the grabber.
 			# XXX doens't work if title-maker is installed
-			#
+			# SV, title-maker fix: see marked code below
 			delete $V(encoder)
 			set V(encoder) $encoder
 			$encoder transmitter $V(session)
-			$V(grabber) target $encoder
+			
+			# SV ######################
+			global logoButtonState			
+			if $logoButtonState {
+				logo_quit
+				logo_transmit
+			} else {
+				logo_quit
+			}			
+			###########################
 		} else {
 			#
 			# Restart the grabber.

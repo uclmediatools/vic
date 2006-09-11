@@ -142,11 +142,8 @@ proc logo_fileselect { w } {
 	if {$selectedFile != ""} {	    
 	    puts "Got file: $selectedFile"
 	}
-	# XXX XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-	#$w configure -text "$selectedFile"
-	tm.update.filename $w $selectedFile
-	# XXX XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+	tm.update.filename $w $selectedFile
 }
 
 proc logo_transmit {} {
@@ -291,8 +288,6 @@ proc logo_quit {} {
 	global id
 
 	tm_disable
-	tm_destroy $id
-	
 }
 
 
