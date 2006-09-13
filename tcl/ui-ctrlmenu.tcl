@@ -437,14 +437,13 @@ proc build.buttons w {
 	button $w.release -text "Release" \
 		-relief raised -command release_device \
 		-font $f -highlightthickness 0
-	checkbutton $w.logo -text "Logo" \
+	checkbutton $w.logo -text "Overlay" \
 		-relief raised -command logo_transmit \
 		-anchor w -variable logoButtonState -font $f \
 		-state normal -highlightthickness 0
 		
 #	pack $w.send $w.release $w.freeze -fill both
-	pack $w.send $w.release -fill both
-	pack $w.send $w.logo -fill both
+	pack $w.send $w.logo $w.release -fill both
 }
 
 proc doNothing { args } {
@@ -1514,14 +1513,20 @@ proc build.xmit w {
 	pack $w.frame -fill both -expand 1
 	frame $w.frame.buttons
 	build.buttons $w.frame.buttons
-	frame $w.frame.right
-	build.sliders $w.frame.right
-	frame $w.frame.tm
-	build.titlemaker $w.frame.tm
+	
+	frame $w.frame.combined
+	
+	frame $w.frame.combined.right
+	build.sliders $w.frame.combined.right
+	frame $w.frame.combined.tm
+	build.titlemaker $w.frame.combined.tm
 
+	pack $w.frame.combined.right -side top -expand 1 -fill x -padx 10 -anchor w
+	pack $w.frame.combined.tm -side bottom -expand 1 -fill y -pady 10 -anchor w
+	
 	pack $w.frame.buttons -side left -padx 6 
-	pack $w.frame.right -side right -expand 1 -fill x -padx 10 -anchor c
-	pack $w.frame.tm -side top -expand 1 -fill y -pady 10 -anchor c
+	pack $w.frame.combined -side right -expand 1 -fill x -padx 10 -anchor c
+
 	
 }
 

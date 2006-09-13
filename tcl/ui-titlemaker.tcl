@@ -31,9 +31,12 @@
 # SUCH DAMAGE.
 #
 
+set icons(file_open) [image create photo -format gif  -data { R0lGODlhEgASAPIAAAAAAICAAMDAwPj8APj8+AAAAAAAAAAAACH5BAEAAAIALAAAAAASABIAAAM7KLrc/jAKQCUDC2N7t6JeA2YDMYDoA5hsWYZk28LfjN4b4AJB7/ue1elHDOl4RKAImQzQcDeOdEp1JAAAO///}]
+
 proc build.titlemaker w {
 
-	global selectedFile xcoord ycoord id transparency
+	#global transparency
+	global selectedFile xcoord ycoord id icons	
 	set selectedFile [pwd]	
 	append selectedFile "/"
 	append selectedFile "ucl_logo.ppm"
@@ -45,7 +48,7 @@ proc build.titlemaker w {
 
 	set xcoord [resource overlayX]
 	set ycoord [resource overlayY]
-	set transparency 255
+	#set transparency 255
 	set id logo1
 
 	set f [smallfont]
@@ -56,76 +59,62 @@ proc build.titlemaker w {
 	#bind $w <Enter> "focus %W"	
 	#bind $w <Enter> "focus $w"
 	
-	frame $w.b -borderwidth 2 -relief sunken
+	frame $w.b 
 	
 	###################### Filename ##############################
-	frame $w.b.fupper -relief sunken
-	label $w.b.fupper.label -text "Filename: " -font $f -width 10
-	pack $w.b.fupper.label -side left
-
-	button $w.selectfile -text "File..." \
-		-relief raised -command "logo_fileselect $w.b.flower.entry" \
-		-font $f -highlightthickness 0
-	pack $w.selectfile -fill both
-
-
-	frame $w.b.flower -relief sunken
-	mk.entry $w.b.flower tm.update.filename $selectedFile
-	#entry $w.b.flower.entry -relief sunken
-	pack $w.b.flower.entry -side left -fill both -expand 1 -pady 2
-	#bind $w.b.flower.entry <Return> "tm.update.filename $w.b.flower.entry $selectedFile" 
-
-	frame $w.b.filename -relief sunken
-	pack $w.b.fupper $w.b.flower
-
+	frame $w.b.file 
+	label $w.b.file.label -text "Overlay Control" -font $f -anchor w -width 15
+	mk.entry $w.b.file tm.update.filename $selectedFile
+	$w.b.file.entry configure -width 57
+	button $w.b.file.selectfile \
+		-relief raised -command "logo_fileselect $w.b.file.entry" \
+		-font $f -highlightthickness 0 \
+		-image $icons(file_open)
+	pack $w.b.file.label -side top -anchor w -fill x -expand 1
+	pack $w.b.file.entry $w.b.file.selectfile -side left -padx 2 -anchor w -fill x -expand 1
+	pack $w.b.file -side top
 
 	###################### X/Y coords #############################
-    frame $w.b.xy -relief sunken
+    frame $w.b.xy 
 
-    frame $w.b.xy.xl -relief sunken
-	label $w.b.xy.xlb -text "X: " -font $f -width 2
-	mk.entry $w.b.xy.xl tm.update.coordx $xcoord
-	#entry $w.b.xy.xl.x -relief raised -borderwidth 1 -exportselection 1 -font [resource entryFont] 
-	#$w.b.xy.xl.x insert 0 $xcoord
-    #bind $w.b.xy.xl.entry <Return> "tm.update.coordx $w.b.xy.xl.entry $xcoord"
+	frame $w.b.xy.x
+	label $w.b.xy.x.label -text "X:" -font $f -anchor w -width 2
+	mk.entry $w.b.xy.x tm.update.coordx $xcoord
+	$w.b.xy.x.entry configure -width 5
+	pack $w.b.xy.x.label $w.b.xy.x.entry -side left -padx 3
 
+	frame $w.b.xy.y
+	label $w.b.xy.y.label -text "Y:" -font $f -anchor w -width 2
+	mk.entry $w.b.xy.y tm.update.coordy $ycoord
+	$w.b.xy.y.entry configure -width 5
+	pack $w.b.xy.y.label $w.b.xy.y.entry -side left -padx 3
 
-    frame $w.b.xy.yl -relief sunken
-	label $w.b.xy.ylb -text "Y: " -font $f -width 2
-	mk.entry $w.b.xy.yl tm.update.coordy $ycoord
-    #bind $w.b.xy.yl.entry <Return> "tm.update.coordy $w.b.xy.yl.entry $ycoord"
+	pack $w.b.xy.x $w.b.xy.y -side left -anchor w
+	pack $w.b.xy -side top
 
-	pack $w.b.xy.xlb $w.b.xy.xl.entry $w.b.xy.xl -side left -fill x
-	pack $w.b.xy.ylb $w.b.xy.yl.entry $w.b.xy.yl -side left -fill x
-
-	pack $w.b.xy $w.b.xy.xl $w.b.xy.yl
-
-
-    
 	###################### Transparency #############################
-	frame $w.b.tupper -relief sunken
-	label $w.b.tupper.value -font $f -width 8 
+	#frame $w.b.tupper -relief sunken
+	#label $w.b.tupper.value -font $f -width 8 
 
-	frame $w.b.tlower -relief sunken
-	scale $w.b.tlower.scale -font $f -orient horizontal \
-		-showvalue 0 -from 0 -to 255 \
-		-command "tm.update.transparency $w.b.tinfo.label" -width 8 \
-		-sliderlength 15 \
-		-relief groove
-	$w.b.tlower.scale set $transparency
-	pack $w.b.tupper.value $w.b.tlower.scale -fill x -side left -expand 1
+	#frame $w.b.tlower -relief sunken
+	#scale $w.b.tlower.scale -font $f -orient horizontal \
+	#	-showvalue 0 -from 0 -to 255 \
+	#	-command "tm.update.transparency $w.b.tinfo.label" -width 8 \
+	#	-sliderlength 15 \
+	#	-relief groove
+	#$w.b.tlower.scale set $transparency
+	#pack $w.b.tupper.value $w.b.tlower.scale -fill x -side left -expand 1
 	
-	global transparency_slider
-	set transparency_slider $w.b.transparency.scale
+	#global transparency_slider
+	#set transparency_slider $w.b.transparency.scale
 
-	frame $w.b.transparency -relief sunken
-	frame $w.b.tinfo -relief sunken
-	label $w.b.tinfo.label -text "Transparency" -font $f
-	pack $w.b.tupper $w.b.tlower 
-	pack $w.b.tinfo.label -side left -expand 1
-
-	pack $w.b.filename $w.b.xy 
-	pack $w.b.transparency $w.b.tinfo -side left -fill x -expand 1
+	#frame $w.b.transparency -relief sunken
+	#frame $w.b.tinfo -relief sunken
+	#label $w.b.tinfo.label -text "Transparency" -font $f
+	#pack $w.b.tupper $w.b.tlower 
+	#pack $w.b.tinfo.label -side left -expand 1
+	##################################################################
+	#pack $w.b.transparency $w.b.tinfo -side left -fill x -expand 1
 	
 	pack $w.b -fill both -expand 1
 }
@@ -147,7 +136,8 @@ proc logo_fileselect { w } {
 }
 
 proc logo_transmit {} {
-	global logoButtonState selectedFile xcoord ycoord id transparency
+	global logoButtonState selectedFile xcoord ycoord id
+	#global transparency
 
 	if ![info exists tmEnable] {
 		tm_enable
@@ -170,13 +160,13 @@ proc logo_transmit {} {
 }
 
 
-proc tm.update.transparency { w value } {
-	global id transparency
+#proc tm.update.transparency { w value } {
+#	global id transparency
 	
-	$w configure -text "Transparency: $value"
-	set transparency $value
-	tm_transparent $id $value
-}
+#	$w configure -text "Transparency: $value"
+#	set transparency $value
+#	tm_transparent $id $value
+#}
 
 
 proc tm.update.coordx {w xval} {
