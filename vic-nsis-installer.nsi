@@ -44,7 +44,7 @@
 ; MUI end ------
 
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
-OutFile "Vic-Installer.exe"
+OutFile "Vic-${PRODUCT_VERSION}-Installer.exe"
 InstallDir "$PROGRAMFILES\UCL Media Tools"
 InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
 ShowInstDetails show
