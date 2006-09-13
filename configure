@@ -4495,11 +4495,11 @@ fi
 V_H261AS=""
 
 # Check whether --enable-h261as or --disable-h261as was given.
-if test "${enable_h261as+set}" = set; then
-  enableval="$enable_h261as"
-  h261as=yes
-else
+if test "${disable_h261as+set}" = set; then
+  enableval="$disable_h261as"
   h261as=no
+else
+  h261as=yes
 fi;
 if test "$h261as" = "yes"; then
    V_OBJ="$V_OBJ codec/p64/p64as.o codec/decoder-h261as.o codec/encoder-h261as.o"
