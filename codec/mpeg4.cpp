@@ -1,0 +1,270 @@
+#include <assert.h>
+#include "mpeg4.h"
+
+MPEG4::MPEG4()
+{
+    state = false;
+    quality = 31;
+    rtp_callback = NULL;
+    enable_hq_encoding = false;
+}
+
+MPEG4::~MPEG4()
+{
+    release();
+}
+
+
+void MPEG4::init(bool encode, CodecID id, PixelFormat fmt)
+{
+    encoding = encode;
+    codecid = id;
+    pixelfmt = fmt;
+    picture_buf = NULL;
+    state = false;
+
+    avcodec_init();
+    avcodec_register_all();
+}
+
+void MPEG4::restart()
+{
+    avcodec_init();
+
+    if (encoding) {
+	init_encoder(width, height, bit_rate, frame_rate, iframe_gap);
+    }
+    else {
+	init_decoder();
+    }
+}
+
+void MPEG4::init_encoder(int width_, int height_,
+			 int bit_rate_, int frame_rate_, int iframe_gap_)
+{
+    if (state) {
+	release();
+    }
+    width = width_;
+    height = height_;
+    bit_rate = bit_rate_;
+    frame_rate = frame_rate_;
+    iframe_gap = iframe_gap_;
+
+    c = avcodec_alloc_context();
+    c->pix_fmt = pixelfmt;
+    picture = avcodec_alloc_frame();
+
+    codec = avcodec_find_encoder(codecid);
+    if (!codec) {
+	debug_msg("codec %d not found\n", codecid);
+	exit(1);
+    }
+
+    // assign rtp callback function
+    c->rtp_callback = rtp_callback;
+    // put sample parameters */
+    c->bit_rate = bit_rate;
+    // resolution must be a multiple of two 
+    c->width = width;
+    c->height = height;
+    // frames per second */
+//    c->frame_rate = frame_rate * FRAME_RATE_BASE; 
+    std::cout << "mpeg4: set framerate: " << frame_rate << "\n";
+    c->time_base.den = frame_rate;
+    c->time_base.num = 1;
+    // emit one intra frame every ten frames 
+    c->gop_size = iframe_gap;
+    c->flags |= CODEC_FLAG_EMU_EDGE;
+    c->flags |= CODEC_FLAG_LOW_DELAY;
+    c->flags |= CODEC_FLAG_PART;
+    // c->flags |= CODEC_FLAG_ALT_SCAN;       
+    c->flags |= CODEC_FLAG_PSNR;
+    c->flags |= CODEC_FLAG_AC_PRED;
+
+    // in loop filter for low bitrate compression
+    // c->flags |= CODEC_FLAG_LOOP_FILTER ;      
+
+
+    if (enable_hq_encoding) {
+	c->flags |= CODEC_FLAG_QPEL;
+	//c->flags |= CODEC_FLAG_GMC;
+	c->flags |= CODEC_FLAG_AC_PRED;
+	c->flags |= CODEC_FLAG_4MV;
+	//c->flags |= CODEC_FLAG_QP_RD;      
+	//c->mb_decision = FF_MB_DECISION_RD;                     
+    }
+
+    c->me_method = ME_EPZS;
+
+    c->rtp_mode = 1;
+    c->rtp_payload_size = 1024;
+
+    /* open it */
+    if (avcodec_open(c, codec) < 0) {
+	//fprintf(stderr, "could not open codec\n");
+	exit(1);
+    }
+
+    /* size for YUV 420 */
+    frame_size = width * height;
+    picture_buf = new UCHAR[(frame_size * 3) / 2];
+    picture->data[0] = picture_buf;
+    picture->data[1] = picture->data[0] + frame_size;
+    picture->data[2] = picture->data[1] + frame_size / 4;
+    picture->linesize[0] = width;
+    picture->linesize[1] = width / 2;
+    picture->linesize[2] = width / 2;
+
+    bitstream = new UCHAR[MAX_CODED_SIZE];
+    state = true;
+    keyFrame = false;
+}
+
+
+void MPEG4::init_decoder()
+{
+    if (state) {
+	release();
+    }
+    width = height = 0;
+
+    picture = avcodec_alloc_frame();
+    c = avcodec_alloc_context();
+    c->flags |= CODEC_FLAG_EMU_EDGE | CODEC_FLAG_PART;
+    // c->flags |= CODEC_FLAG_ALT_SCAN;  
+
+    codec = avcodec_find_decoder(codecid);
+    if (!codec) {
+	//fprintf(stderr, "codec not found\n");
+	exit(1);
+    }
+    /* open it */
+    if (avcodec_open(c, codec) < 0) {
+	//fprintf(stderr, "could not open codec\n");
+	exit(1);
+    }
+
+    state = true;
+}
+
+void MPEG4::release()
+{
+    if (state) {
+	avcodec_close(c);
+	av_free(c);
+	av_free(picture);
+	c = NULL;
+	picture = NULL;
+
+	if (encoding) {
+	    delete picture_buf;
+	    delete bitstream;
+	    picture_buf = bitstream = NULL;
+	}
+	state = false;
+    }
+}
+
+// return: the coding length
+UCHAR *MPEG4::encode(const UCHAR * vf, int &len)
+{
+    memcpy(picture->data[0], vf, frame_size);
+    memcpy(picture->data[1], (vf + frame_size), frame_size / 4);
+    memcpy(picture->data[2], (vf + frame_size * 5 / 4), frame_size / 4);
+
+    len = avcodec_encode_video(c, bitstream, MAX_CODED_SIZE, picture);
+    if (c->coded_frame && c->coded_frame->key_frame) {
+	keyFrame = true;
+    }
+    else {
+	keyFrame = false;
+    }
+    assert(len < MAX_CODED_SIZE);
+    pict_type = c->coded_frame->pict_type;
+
+    return bitstream;
+}
+
+bool MPEG4::isKeyFrame()
+{
+    return keyFrame;
+}
+
+double MPEG4::get_PSNR()
+{
+    double mse1 = c->error[0] / float (frame_size);
+    c->error[0] = 0;
+
+    return 10 * log10(47961 / mse1);
+}
+
+// return: the decoding length
+//         -1 indicates failure decoding
+//         -2  indicates resizing
+int MPEG4::decode(UCHAR * codedstream, int size, UCHAR * vf)
+{
+    int got_picture;
+    int len;
+
+    len = avcodec_decode_video(c, picture, &got_picture, codedstream, size);
+
+    if (c->width != width || c->height != height) {
+	debug_msg("mpeg4enc: resize to %dx%d\n", c->width, c->height);
+	resize(c->width, c->height);
+	return -2;
+
+    }
+
+
+    if (!got_picture || len < 0) {
+	return -1;
+
+    }
+/*
+    if(avpicture_deinterlace((AVPicture *)picture, (AVPicture *)picture,
+                                    c->pix_fmt, c->width, c->height) < 0) {
+          printf("deinterlace error\n");
+    }      	    
+*/
+    pict_type = picture->pict_type;
+    memcpy(vf, picture->data[0], frame_size);
+    memcpy(vf + frame_size, picture->data[1], frame_size / 4);
+    memcpy(vf + frame_size * 5 / 4, picture->data[2], frame_size / 4);
+
+    return len;
+}
+
+void MPEG4::resize(int w, int h)
+{
+    width = w;
+    height = h;
+    frame_size = width * height;
+    assert(frame_size * 3 / 2 < MAX_FRAME_SIZE);
+}
+
+void MPEG4::set_gop(int gop_)
+{
+    iframe_gap = gop_;
+
+    if (state) {
+	MpegEncContext *s = (MpegEncContext *) c->priv_data;
+	s->gop_size = gop_;
+	if (s->gop_size <= 1) {
+	    s->intra_only = 1;
+	    s->gop_size = 12;
+	}
+	else {
+	    s->intra_only = 0;
+	}
+    }
+}
+
+void MPEG4::set_max_quantizer(int q)
+{
+    quality = q;
+    if (state) {
+//    MpegEncContext *s = (MpegEncContext*)c->priv_data;
+//    s->qmax = c->qmax = c->mb_qmax = q;       
+    }
+}

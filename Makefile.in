@@ -58,7 +58,7 @@ CCOPT = @V_CCOPT@
 INCLUDE_TK = @V_INCLUDE_TK@
 INCLUDE_TCL = @V_INCLUDE_TCL@
 INCLUDE_X11 = @V_INCLUDE_X11@
-INCLUDE_MISC = @V_INCLUDE@ -I. -Icodec/tmndec -Icodec/tmn-x -Icodec/h263 -Irtp -Irender -Inet -Ivideo -Icodec -I../common/src
+INCLUDE_MISC = @V_INCLUDE@ -I. -Icodec/x264 -Icodec/ffmpeg  -Icodec/tmndec -Icodec/tmn-x -Icodec/h263 -Irtp -Irender -Inet -Ivideo -Icodec -I../common/src
 
 STATIC = @V_STATIC@
 MKDEP = ./mkdep
@@ -88,11 +88,16 @@ OBJ_GRABBER = @V_OBJ_GRABBER@
 SRC_GRABBER = $(OBJ_GRABBER:.o=.cpp) 
 OBJ_XIL = @V_OBJ_XIL@
 OBJ_CRYPT = @V_OBJ_CRYPT@
-LIB = $(LIB_GRABBER) @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ \
-	codec/tmndec/libh263.a codec/tmn-x/libh263coder.a ../common/src/libuclmmbase.a -lm -lcrypto
+CODEC_LIB = codec/ffmpeg/libavcodec/libavcodec.a codec/x264/libx264.a codec/tmndec/libh263.a codec/tmn-x/libh263coder.a
+VIDEO_LIB = postproc/libswscale.a 
+
+LIB = $(LIB_GRABBER) @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ $(CODEC_LIB) $(VIDEO_LIB) \
+	../common/src/libuclmmbase.a -lm -lz -lcrypto -lpthread -lXv
+
+
 INCLUDE = $(INCLUDE_MISC) $(INCLUDE_GRABBER) $(INCLUDE_TK) $(INCLUDE_TCL) \
 	$(INCLUDE_X11) $(MD_INC) -Icodec/jpeg -Icodec/p64 -I.
-DEFINE = @V_DEFINE@ -DED_YBITS=$(ED_YBITS) -DSIGRET=@V_SIGRET@ -DNLAYER=8
+DEFINE = @V_DEFINE@ -DED_YBITS=$(ED_YBITS) -DSIGRET=@V_SIGRET@ -DNLAYER=8 -DHAVE_AV_CONFIG_H -D_GNU_SOURCE -D__X264__
 BFLAGS = $(DEFINE) $(INCLUDE)
 CFLAGS = $(CCOPT) $(BFLAGS)
 
@@ -133,17 +138,21 @@ OBJ2 =	main.o iohandler.o timer.o idlecallback.o media-timer.o \
 	net/mbus_handler.o net/mbus_engine.o net/group-ipc.o net/confbus.o \
 	rtp/session.o rtp/source.o rtp/transmitter.o rtp/pktbuf-rtp.o \
 	video/device.o video/grabber.o video/grabber-still.o \
+    video/deinterlace.o \
 	codec/encoder-h261.o codec/encoder-jpeg.o codec/encoder-raw.o \
 	codec/encoder-h263.o codec/encoder-h263v2.o codec/encoder-nv.o \
 	codec/encoder-cellb.o codec/encoder-pvh.o codec/compositor.o \
 	codec/jpeg/jpeg.o codec/p64/p64.o codec/dct.o codec/transcoder-jpeg.o \
 	codec/framer-jpeg.o codec/decoder-pvh.o video/assistor-list.o \
 	codec/decoder.o codec/decoder-jpeg.o codec/decoder-nv.o \
+	codec/packetbuffer.o codec/databuffer.o codec/x264encoder.o\
+	codec/encoder-h264.o codec/decoder-h264.o \
+	codec/ffmpeg_codec.o codec/encoder-mpeg4.o codec/decoder-mpeg4.o \
 	codec/decoder-h263.o codec/decoder-h263v2.o codec/decoder-cellb.o \
 	codec/decoder-h261.o codec/decoder-h261v1.o codec/decoder-raw.o \
 	render/renderer.o render/renderer-window.o render/color.o \
 	render/color-true.o render/color-pseudo.o render/color-dither.o \
-	render/color-ed.o render/color-quant.o render/color-hi.o \
+	render/color-ed.o render/color-quant.o render/color-hi.o\
 	render/color-gray.o render/color-mono.o render/color-hist.o \
 	render/rgb-converter.o render/vw.o render/ppm.o @V_OBJ@
 
@@ -192,17 +201,17 @@ OBJ_H261DUMP = h261_dump.o p64/p64.o p64/p64dump.o huffcode.o dct.o bv.o
 #	rm -f $@
 #	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(LIB) $(STATIC)
 
-vic: codec/tmndec/libh263.a codec/tmn-x/libh263coder.a $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)  $(OBJ_XIL)
+vic: $(CODEC_LIB) $(VIDEO_LIB) $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)  $(OBJ_XIL)
 	rm -f $@
 	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(OBJ_CRYPT) $(LIB) $(STATIC)
 
-vic.dyn: $(OBJ) $(OBJ_GRABBER) $(JV_LIB)
+vic.dyn: $(CODEC_LIB) $(VIDEO_LIB) $(OBJ) $(OBJ_GRABBER) $(JV_LIB)
 	rm -f $@
 	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(LIB)
 
 # XIL support 
 #
-vic.xil: codec/tmndec/libh263.a codec/tmn-x/libh263coder.a $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)  $(OBJ_XIL)
+vic.xil: $(CODEC_LIB) $(VIDEO_LIB) $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)  $(OBJ_XIL)
 	rm -f $@
 	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_XIL) $(OBJ_GRABBER) $(OBJ_CRYPT) $(LIB) $(STATIC) @V_LIB_XIL@
 
@@ -355,6 +364,9 @@ clean:
 		config.cache config.log domake.* dotar.*
 	cd codec/tmn && $(MAKE) clean
 	cd codec/tmndec && $(MAKE) realclean
+	cd codec/ffmpeg && $(MAKE) clean
+	cd codec/x264 && $(MAKE) clean
+	cd postproc && $(MAKE) clean
 	rm -f codec/tmn-x/*.o codec/tmn-x/*.a
 
 realclean:
@@ -414,9 +426,19 @@ fulltar: force
 	    "chmod 444 $$name.tar.gz" ; \
 	     chmod 444 $$name.tar.gz
 
+postproc/libswscale.a:
+	(cd postproc; $(MAKE) CC=$(CC) CCOPT="$(CCOPT)" )
+	
+codec/ffmpeg/libavcodec/libavcodec.a:
+	(cd codec/ffmpeg/libavcodec; $(MAKE) CC=$(CC) CCOPT="$(CCOPT)" )
+
+codec/x264/libx264.a:
+	(cd codec/x264; $(MAKE) )
 
 codec/tmn-x/libh263coder.a:
 	(cd codec/tmn-x; $(MAKE) CC=$(CC) CCOPT="$(CCOPT)" )
 
 codec/tmndec/libh263.a:
 	(cd codec/tmndec; $(MAKE) CC=$(CC) CCOPT="$(CCOPT)" -f Makefile.lib)
+strip:	vic
+	strip vic

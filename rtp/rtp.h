@@ -60,6 +60,8 @@
 #define RTP_PT_H263P	42	/* ITU H.263 */
 #define RTP_PT_H263		34 	/* ITU H.263 */
 #define RTP_PT_DV               123     /* DV */
+#define RTP_PT_MPEG4		45
+#define RTP_PT_H264		47
 
 /* backward compat hack for decoding RTPv1 ivs streams */
 #define RTP_PT_H261_COMPAT 127

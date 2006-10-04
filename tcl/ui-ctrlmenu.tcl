@@ -31,6 +31,7 @@
 # SUCH DAMAGE.
 #
 
+
 proc fork_histtolut { } {
 	global V
 	if { $V(dither) == "gray" } {
@@ -283,7 +284,7 @@ set transmitButtonState 0
 set logoButtonState 0
 
 proc transmit { } {
-	global logoButton logoButtonState transmitButtonState videoFormat videoDevice V useJPEGforH261 useHardwareComp numEncoderLayers
+	global logoButton logoButtonState transmitButtonState videoFormat videoDevice V useJPEGforH261 useHardwareComp numEncoderLayers  fps_slider bps_slider
 	if ![have grabber] {
 		set DA [$videoDevice attributes]
 		set DF [attribute_class $DA format]
@@ -379,6 +380,18 @@ proc transmit { } {
 		}
 		update idletasks
 	}
+	if {$videoFormat == "mpeg4"} {
+		encoder fps [$fps_slider get]
+		encoder bps [$bps_slider get]			
+		if [yesno enable_hq] {
+		  encoder hq 1
+		}
+	}
+
+	if {$videoFormat == "h264"} {
+		encoder fps [$fps_slider get]
+		encoder bps [$bps_slider get]
+	}
 	$V(grabber) send $transmitButtonState
 }
 
@@ -452,6 +465,7 @@ proc doNothing { args } {
 proc set_bps { w value } {
 	if [have grabber] {
 		grabber bps $value
+		encoder bps $value
 	#XXX
 		session data-bandwidth $value
 	}
@@ -459,7 +473,10 @@ proc set_bps { w value } {
 }
 
 proc set_fps { w value } {
-	grabber fps $value
+	if [have grabber] {	
+	  grabber fps $value
+	  encoder fps $value
+	}
 	$w configure -text "$value fps"
 }
 
@@ -567,7 +584,7 @@ proc device_formats device {
 		set fmtList "$fmtList bvc pvh"
 	}
 	if [inList cif $sizes] {
-		set fmtList "$fmtList h261 h261as h263+ h263"
+		set fmtList "$fmtList h261 h261as h263+ h263 mpeg4 h264"
 	}
 	if [inList jpeg $formats] {
 		set fmtList "$fmtList jpeg"
@@ -690,6 +707,12 @@ proc build.device w {
 	set videoFormat [option get . defaultFormat Vic]
 	if { $videoFormat == "h.261" } {
 		set videoFormat h261
+	} elseif { $videoFormat == "h.263plus"} {
+		set videoFormat h263+
+	} elseif { $videoFormat == "mpeg4"} {
+		set videoFormat mpeg4
+	} elseif { $videoFormat == "h264"} {
+		set videoFormat h264
 	}
 	#
 	# Disabled the device button if we have no devices or
@@ -816,15 +839,17 @@ proc build.encoderLayer_scale w {
 
 proc build.format w {
 	format_col $w.p0 nv nvdct 
-	format_col $w.p1 jpeg h261
-	format_col $w.p2 h263+ h263
-	format_col $w.p3 raw cellb
-	format_col $w.p4 bvc pvh:
-	format_col $w.p5 h261as null
+	format_col $w.p1 h261 h263
+	format_col $w.p2 h263+ h264
+	format_col $w.p3 mpeg4 h261as
+	format_col $w.p4 raw cellb
+	format_col $w.p5 bvc pvh:
+	format_col $w.p6 jpeg null
+
 	
 	frame $w.glue0
 	frame $w.glue1
-	pack $w.p0 $w.p1 $w.p2 $w.p3 $w.p4 $w.p5 -side left
+	pack $w.p0 $w.p1 $w.p2 $w.p3 $w.p4 $w.p5 $w.p6 -side left
 
 }
 

@@ -56,6 +56,13 @@ if test "$CC" = gcc  ; then
 	V_DEFINE="$V_DEFINE -fsigned-char"
 fi
 
+echo ""
+echo "Configuring FFMpeg package for MPEG4 codec..."
+cd codec/ffmpeg; ./configure
+echo ""
+echo "Configuring x264 for H.264 codec..."
+cd ../x264; ./configure; cd ../..
+
 V_TAR_TARGET=$target_os
 AC_SUBST(V_TAR_TARGET)
 
@@ -78,3 +85,4 @@ AC_OUTPUT(Makefile)
 if test -f .devel ; then
 	make depend
 fi
+
