@@ -134,7 +134,7 @@ For more details see:\n\n\
 http://www-mice.cs.ucl.ac.uk/multimedia/software/vic/faq.html\n\
 Options: vic [-HPs] [-A nv|ivs|rtp] [-B maxbps] [-C conf]\n\
 \t[-c ed|gray|od|quantize] [-D device] [-d display]\n\
-\t[-f bvc|cellb|h261|jpeg|nv] [-F maxfps] [-i ifAddr ] [-I channel]\n\
+\t[-f bvc|cellb|h261|jpeg|nv|mpeg4|h264] [-F maxfps] [-i ifAddr ] [-I channel]\n\
 \t[-K key ] [-L flowLabel (ip6 only)] [-l (creates log file)]\n\
 \t[-M colormap] [-m mtu] [-N session] [-n atm|ip|ip6|rtip]\n\
 \t[-o clipfile] [-t ttl] [-U interval] [-u script] [-v version] [-V visual]\n\

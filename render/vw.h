@@ -39,6 +39,7 @@
 
 #include "vic_tcl.h"
 
+
 extern "C" {
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -46,6 +47,7 @@ extern "C" {
 #include <X11/extensions/XShm.h>
 #endif
 #include <tk.h>
+#include "xvideo.h"
 }
 
 class VideoWindow;
@@ -83,6 +85,27 @@ class StandardVideoImage : public VideoImage {
 	XImage* image_;
 };
 
+/* 
+ * XVideoImage supports shared memory, 
+ * Xvideo extension, and basic X11 rendering
+ */
+
+class XVideoImage : public VideoImage {
+    protected:
+	XVideoImage(Tk_Window, int width, int height);
+    public:
+	static XVideoImage* allocate(Tk_Window, int width, int height);
+	inline u_char* pixbuf() { return ((u_char*)image_->data); }
+	inline IMAGE_TYPE* ximage() { return (image_); }
+	void putimage(Display* dpy, Window window, GC gc,
+		      int sx, int sy, int x, int y,int w, int h) const;
+        static inline bool is_supported() { return enable_xv; }        		      
+        
+    protected:
+	IMAGE_TYPE* image_;
+	XRender render;
+	static bool enable_xv;
+};
 #ifdef USE_SHM
 /*
  * A class for ximages, which will be allocate in shared memory

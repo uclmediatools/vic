@@ -83,6 +83,9 @@ void WindowRenderer::compute_scale(int w, int h)
 	 * On a mismatch, the image will be centered in the window.
 	 */
 	scale_ = 0;
+//	outw_ = (ww_ >> 2) << 2;
+//	outh_ = (wh_ >> 2) << 2;
+
 	int d = distance(ww_, width_);
 	int t = distance(ww_, width_ << 1);
 	if (t < d) {
@@ -90,7 +93,7 @@ void WindowRenderer::compute_scale(int w, int h)
 		outh_ = height_ << 1;
 		scale_ = -1;
 	} else {
-		/*XXX this should be a loop */
+		// XXX this should be a loop 
 		t = distance(ww_, width_ >> 1);
 		if (t < d) {
 			d = t;
@@ -108,6 +111,7 @@ void WindowRenderer::compute_scale(int w, int h)
 		outw_ = width_ >> scale_;
 		outh_ = height_ >> scale_;
 	}
+    
 }
 
 void WindowRenderer::sync() const
@@ -117,6 +121,13 @@ void WindowRenderer::sync() const
 
 void WindowRenderer::push(const u_char*, int miny, int maxy, int minx, int maxx) const
 {
+        if(enable_xv){
+            window_->render(image_, 0, outh_, 0, outw_ );
+        }else{
+            window_->render(image_, 0, 0 , 0, 0);
+	}
+	
+/*
 	if (scale_ >= 0) {
 		miny >>= scale_;
 		maxy >>= scale_;
@@ -129,6 +140,7 @@ void WindowRenderer::push(const u_char*, int miny, int maxy, int minx, int maxx)
 		maxx <<= -scale_;
 	}
 	window_->render(image_, miny, maxy, minx, maxx);
+*/	
 }
 
 /*
@@ -190,6 +202,17 @@ WindowDitherer::WindowDitherer(VideoWindow* vw, int decimation)
 void WindowDitherer::alloc_image()
 {
 	StandardVideoImage* p;
+	if(enable_xv){
+	  XVideoImage *p;		
+	  p = XVideoImage::allocate(window_->tkwin(), width_, height_);	
+	  if(p){
+	    pixbuf_ = p->pixbuf();
+	    image_ = p;
+	    return;
+	  }	  
+	  enable_xv = false;
+	  printf("disable xvideo\n");
+	}
 	p = StandardVideoImage::allocate(window_->tkwin(), outw_, outh_);
 	pixbuf_ = p->pixbuf();
 	image_ = p;

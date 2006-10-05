@@ -4,8 +4,7 @@
 #include "../config_arch.h"
 
 #include "vic_tcl.h"
-extern "C"
-{
+extern "C"{
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <tk.h>
@@ -30,7 +29,7 @@ typedef uint32_t vlc_fourcc_t;
 #   define EXTRA_ARGS     int i_xvport, vlc_fourcc_t i_chroma, int i_bits_per_pixel
 #   define EXTRA_ARGS_SHM int i_xvport, vlc_fourcc_t i_chroma, XShmSegmentInfo *p_shm
 #   define DATA_SIZE(p)   (p)->data_size
-#   define IMAGE_FREE     XFree	/* There is nothing like XvDestroyImage */
+#   define IMAGE_FREE     XFree      /* There is nothing like XvDestroyImage */
 #else
 #   define IMAGE_TYPE     XImage
 #   define EXTRA_ARGS     Visual *p_visual, int i_depth, int i_bytes_per_pixel
@@ -39,35 +38,32 @@ typedef uint32_t vlc_fourcc_t;
 #   define IMAGE_FREE     XDestroyImage
 #endif
 
-class XRender
-{
+class XRender{
   public:
     XRender();
     ~XRender();
-    int init(Display * _dpy, vlc_fourcc_t _chroma, Visual * _p_visual =
-	     NULL, int _depth = 0, int _bytes_per_rgb = 3);
-    IMAGE_TYPE *createImage(int _width, int _height);
-    void displayImage(Window video_window, GC gc, int _o_width,
-		      int _o_height) const;
+    int init(Display *_dpy, vlc_fourcc_t _chroma, Visual *_p_visual=NULL, int _depth=0, int _bytes_per_rgb=3);
+    IMAGE_TYPE* createImage(int _width, int _height);
+    void displayImage(Window video_window, GC gc, int _o_width, int _o_height) const;    
     void release();
     bool enable_shm;
 
-
+        
   protected:
-         IMAGE_TYPE * yuv_image;
+    IMAGE_TYPE *yuv_image;  
     Display *display;
     int i_width, i_height;
     Visual *p_visual;
     int depth, bytes_per_rgb;
-
+        
     // for Xvideo extension
     vlc_fourcc_t i_chroma;
     vlc_fourcc_t o_chroma;
-
+    
     // for shared memory
-#ifdef HAVE_SHM
-    XShmSegmentInfo yuv_shminfo;
-#endif
+    #ifdef HAVE_SHM
+    XShmSegmentInfo  yuv_shminfo;
+    #endif 
 
 };
 
@@ -75,9 +71,9 @@ class XRender
 /*****************************************************************************
  * Fourcc definitions that we can handle internally
  *****************************************************************************/
-#define VLC_FOURCC( a, b, c, d ) \
+ #define VLC_FOURCC( a, b, c, d ) \
         ( ((uint32_t)a) | ( ((uint32_t)b) << 8 ) \
-           | ( ((uint32_t)c) << 16 ) | ( ((uint32_t)d) << 24 ) )
+           | ( ((uint32_t)c) << 16 ) | ( ((uint32_t)d) << 24 ) )     
 #define X11_FOURCC( a, b, c, d ) \
         ( ((uint32_t)a) | ( ((uint32_t)b) << 8 ) \
            | ( ((uint32_t)c) << 16 ) | ( ((uint32_t)d) << 24 ) )
@@ -86,8 +82,8 @@ class XRender
                     ((char *)&i)[3] )
 #define X112VLC_FOURCC( i ) \
         VLC_FOURCC( i & 0xff, (i >> 8) & 0xff, (i >> 16) & 0xff, \
-                    (i >> 24) & 0xff )
-
+                    (i >> 24) & 0xff )  	
+                   
 /* Packed RGB 15bpp, usually 0x7c00, 0x03e0, 0x001f */
 #define FOURCC_RV15         VLC_FOURCC('R','V','1','5')
 

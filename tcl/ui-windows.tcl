@@ -77,6 +77,30 @@ proc resize { vw w h } {
 }
 
 #
+# fit video window size as soure resolution
+#
+proc fit_window { vw } {
+
+	global win_src
+	set src $win_src($vw)
+		
+	set d [$src handler]
+	set iw [$d width]
+	set ih [$d height]	
+
+	resize $vw $iw $ih	
+	resize_window $vw $iw $ih	
+}
+
+proc resize_window {vw width height} {
+
+	set w [winfo parent [winfo parent $vw]]	
+	set old_g [split [wm geometry $w] "x+"]
+	set geo [format "%sx%s+%s+%s" $width $height [lindex $old_g 2] [lindex $old_g 3]]	
+	wm geometry $w $geo
+	global size$w		
+	set size$w [format "%sx%s" $width $height]
+}
 # true if w is a top-level viewing window
 #
 proc viewing_window w {
@@ -150,11 +174,22 @@ proc HACK_detach_xil {} {
 proc open_window src {
 	set f [smallfont]	
 	set uid [uniqueID]
+	set d [$src handler]
+	set iw [$d width]
+	set ih [$d height]
+	if { $iw == 0 || $ih == 0} {
+	   puts "window width or height is zero"
+	   return 
+	}
 	set w .vw$uid
 	toplevel $w -class Vic \
 		-visual "[winfo visual .top] [winfo depth .top]" \
 		-colormap .top
 	catch "wm resizable $w false false"
+	#
+	# make windows become x-y resizeable
+	#
+	#catch "wm resizable $w true false"
 	frame $w.frame
 
 
@@ -165,13 +200,18 @@ proc open_window src {
 		set size$w $userwin_size($src)
 		set d [split $userwin_size($src) x]
 		create_video_widget $w.frame.video [lindex $d 0] [lindex $d 1]
-	} elseif [isCIF [rtp_format $src]] {
-		create_video_widget $w.frame.video 352 288
-		set size$w 352x288
 	} else {
-		create_video_widget $w.frame.video 320 240
-		set size$w 320x240
+	   # show the video frame accroding to it's resolution
+	   create_video_widget $w.frame.video $iw $ih
+	   set size$w [format "%sx%s" $iw $ih]
 	}
+	#elseif [isCIF [rtp_format $src]] {
+	#	create_video_widget $w.frame.video 352 288
+	#	set size$w 352x288
+	#} else {
+	#	create_video_widget $w.frame.video 320 240
+	#	set size$w 320x240
+	#}
 	set v $w.frame.video
 
 	frame $w.bar
@@ -287,7 +327,38 @@ proc open_window src {
 	bind $w <greater> "switcher_next $v"
 	bind $w <less> "switcher_prev $v"
 	bind $w <comma> "switcher_prev $v"
+	# double clicking to toggle fullscreen mode
+	#bind $w <Double-1> {
+	#  destroy_userwin %W
+	#  open_full_window $src	  
+	#}
+	
+	# Resize
+	bind $w <Configure> {	  
+	  global win_src win_target
 
+	  if { [info exists win_src(%W)] & [info exists win_target(%W)]} {
+	    # %W is vw.frame.video
+	    set src $win_src(%W)
+	    
+	    # return Decoder "d" as a PacketHandler
+	    set d [$src handler]
+	    
+	    set iw [$d width]
+	    set ih [$d height]
+
+	    set aspect_r [expr 1.0*$ih / $iw]
+	    
+	    set ow [expr %w + 2*%x]
+	    set oh [expr int($aspect_r * $ow)]
+	
+
+	    if { $iw != $ow || $ih != $oh} {	
+	      # resize_window %W $ow $oh     
+	      # resize %W $ow $oh		       
+	    }    
+	  }	 
+	}		
 	switcher_register $v $src window_switch
 
 	#
@@ -295,6 +366,257 @@ proc open_window src {
 	#
 	attach_window $src $v
 	windowname $w [getid $src]
+}
+
+
+#
+# create a new window for viewing video
+#
+
+proc open_full_window src {
+	set f [minifont]	
+	set uid [uniqueID]
+	set d [$src handler]
+	set iw [$d width]
+	set ih [$d height]
+
+	if { $iw == 0 || $ih == 0} {
+	   puts "window width or height is zero"
+	   return 
+	}
+
+	set w .vw$uid
+	toplevel $w -class Vic \
+		-visual "[winfo visual .top] [winfo depth .top]" \
+		-colormap .top
+	catch "wm resizable $w true false"	
+	# for bordless window	
+	set sw [winfo screenwidth .]
+	set sh [winfo screenheight .]
+	wm overrideredirect $w true	
+	#wm aspect . 4 3 4 3		
+	
+	frame $w.frame
+
+	#debug_show "open_window $src"
+	global size$w userwin_x userwin_y userwin_size
+	
+	
+	create_video_widget $w.frame.video $sw $sh
+	set size$w [format "%sx%s" $sw $sh]
+	
+	set v $w.frame.video
+
+	#frame $w.bar -height 1
+	frame $w.bar
+	button $w.bar.dismiss -text Dismiss -font $f -width 8 \
+		-highlightthickness 0
+
+	set m $w.bar.mode.menu
+	menubutton $w.bar.mode -text Modes... -menu $m -relief raised \
+		-width 8 -font $f
+	menu $m
+
+	$m add checkbutton -label Voice-switched \
+		-command "window_set_switched $v" \
+		-font $f -variable win_is_switched($v)
+	$m add checkbutton -label Timer-switched \
+		-command "window_set_timed $v" \
+		-font $f -variable win_is_timed($v)
+	$m add checkbutton -label Save-CPU \
+		-command "window_set_slow $v" \
+		-font $f -variable win_is_slow($v)
+
+	if ![have cb] {
+		$m entryconfigure Voice-switched -state disabled
+	}
+
+	set m $w.bar.size.menu
+	#menubutton $w.bar.size -text Size... -menu $m -relief raised -width 8 \
+	#	-font $f -height 0
+	menubutton $w.bar.size -text Size... -menu $m -relief raised -width 8 \
+		-font $f
+
+	menu $m
+	$m add radiobutton -label QCIF -command "resize $v 176 144" \
+		-font $f -value 176x144 -variable size$w
+	$m add radiobutton -label CIF -command "resize $v 352 288" \
+		-font $f -value 352x288 -variable size$w
+	$m add radiobutton -label SCIF -command "resize $v 704 576" \
+		-font $f -value 704x576 -variable size$w
+
+	$m add separator
+	$m add radiobutton -label "1/16 NTSC" \
+		-command "resize $v 160 120" \
+		-font $f -value 160x120 -variable size$w
+	$m add radiobutton -label "1/4 NTSC" \
+		-command "resize $v 320 240" \
+		-font $f -value 320x240 -variable size$w
+	$m add radiobutton -label NTSC \
+		-command "resize $v 640 480" \
+		-font $f -value 640x480 -variable size$w
+
+	$m add separator
+	$m add radiobutton -label "1/16 PAL" \
+		-command "resize $v 192 144" \
+		-font $f -value 192x144 -variable size$w
+	$m add radiobutton -label "1/4 PAL" \
+		-command "resize $v 384 288" \
+		-font $f -value 384x288 -variable size$w
+	$m add radiobutton -label PAL \
+		-command "resize $v 768 576" \
+		-font $f -value 768x576 -variable size$w
+
+
+# Marcus ... 
+	set m $w.bar.decoder.menu
+	menubutton $w.bar.decoder -text Decoder... -menu $m -relief raised -width 8 -font $f
+	menu $m
+	$m add radiobutton -label Use-Magic \
+		-command "reallocate_renderer $v" \
+		-font $f -variable win_use_hw($v) -value magic
+	
+	global assistorlist
+
+	if ![info exists assistorlist]  {
+		set assistorlist [new assistorlist xx]
+	}
+	set d [$src handler]
+	set fmt [rtp_format $src]
+	if { $fmt == "jpeg" } {
+		set fmt $fmt/[$d decimation]
+	}
+	set targets [$assistorlist assistors $fmt]
+	foreach xname $targets {
+		if { $xname != "" } {
+			$m add radiobutton -label "Use-$xname-Assistor" \
+				-command "reallocate_renderer $v" \
+				-font $f -variable win_use_hw($v) -value $xname
+		}
+	}
+
+	$m add radiobutton -label "Use-VIC Software" \
+		-command "reallocate_renderer $v" \
+		-font $f -variable win_use_hw($v) -value software
+
+# ... Marcus
+
+	label $w.bar.label -text "" -anchor w -relief raised
+	# pack $w.bar.label -expand 1 -side left -fill both
+	# comment next line to remove buttons
+	# pack $w.bar.decoder $w.bar.size $w.bar.mode $w.bar.dismiss -side left -fill y
+
+	pack $w.frame.video -anchor c
+	pack $w.frame -expand 1 -fill both
+	# comment next line to remove buttons
+	# pack $w.bar -fill x
+
+	bind $w <Enter> { focus %W }
+	#wm focusmodel $w active
+
+	bind $w <d> "destroy_userwin $v"
+	bind $w <q> "destroy_userwin $v"
+#	bind $w <Destroy> "destroy_from_wm $v"
+	wm protocol $w WM_DELETE_WINDOW "destroy_userwin $v"
+	$w.bar.dismiss configure -command "destroy_userwin $v"
+
+	bind $w <Return> "switcher_next $v"
+	bind $w <space> "switcher_next $v"
+	bind $w <greater> "switcher_next $v"
+	bind $w <less> "switcher_prev $v"
+	bind $w <comma> "switcher_prev $v"
+
+	#bind $w <g> "set_window_glue $v 1"
+	#bind $w <G> "set_window_glue $v 0"
+	bind $w <h> "set_hardware_render $v 1"
+	bind $w <H> "set_hardware_render $v 0"
+	bind $w <H> "set_hardware_render $v 0"
+	bind $w <Double-1> {	  	
+	  destroy_userwin %W true
+	  open_window $src	  
+	}
+		
+	
+	switcher_register $v $src window_switch
+
+	global window_glue
+	set window_glue($v) 0
+	global button_active vtk_client
+
+	bind $v <Button-3> {
+	    tk_popup $m %x %y
+	}
+
+#	puts "w is $v"
+
+	bind $v <Control-KeyPress> {
+#	    puts "got ctl keypress %K %x %y"
+	    if { [string length %K] == 1 } {
+		binary scan %K c keyval
+		send_to_vtk K 0 $keyval %x %y %W
+		break
+	    }
+	}
+	bind $v <Button> {
+	    global notifier_id ag_last_x ag_last_y
+
+	    send_to_vtk D 0 %b %x %y %W
+
+	    set button_active %b
+	    set modifier 0
+
+	    set ag_last_x %x
+	    set ag_last_y %y
+
+	    set notifier_id [after 100 ag_update_motion]
+	}
+	bind $v <Control-Button> {
+	    global notifier_id
+	    send_to_vtk D 0 [expr %b | 8] %x %y %W
+
+	    set button_active %b
+	    set notifier_id [after 100 ag_update_motion]
+	}
+	bind $v <Shift-Button> {
+	    global notifier_id
+	    send_to_vtk D 0 [expr %b | 16] %x %y %W
+
+	    set button_active %b
+	    set notifier_id [after 100 ag_update_motion]
+	}
+	bind $v <Shift-Control-Button> {
+	    global notifier_id
+	    send_to_vtk D 0 [expr %b | 8 | 16] %x %y %W
+
+	    set button_active %b
+	    set notifier_id [after 100 ag_update_motion]
+	}
+
+	bind $v <ButtonRelease> {
+	    if $button_active {
+		global notifier_id
+		set button_active 0
+		after cancel $notifier_id
+		send_to_vtk U 0 %b %x %y %W
+	    }
+	}
+	bind $v <Motion> {
+	    if $button_active {
+		global ag_motion_x ag_motion_y ag_motion_W
+#		send_to_vtk M 0 $button_active %x %y %W
+		set ag_motion_x %x
+		set ag_motion_y %y
+		set ag_motion_W %W
+	    }
+	}
+	
+	#
+	# Finally, bind the source to the window.
+	#	
+	# the last parameter indicates whether using Xvideo or not
+	attach_window $src $v true
+	windowname $w [getid $src]
+
 }
 
 proc windowname { w name } {

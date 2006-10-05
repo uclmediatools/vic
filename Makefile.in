@@ -151,10 +151,13 @@ OBJ2 =	main.o iohandler.o timer.o idlecallback.o media-timer.o \
 	codec/decoder-h263.o codec/decoder-h263v2.o codec/decoder-cellb.o \
 	codec/decoder-h261.o codec/decoder-h261v1.o codec/decoder-raw.o \
 	render/renderer.o render/renderer-window.o render/color.o \
-	render/color-true.o render/color-pseudo.o render/color-dither.o \
-	render/color-ed.o render/color-quant.o render/color-hi.o\
+	render/color-x11.o\
+	render/color-pseudo.o render/color-dither.o \
+	render/color-ed.o render/color-quant.o \
 	render/color-gray.o render/color-mono.o render/color-hist.o \
-	render/rgb-converter.o render/vw.o render/ppm.o @V_OBJ@
+	render/rgb-converter.o render/vw.o render/ppm.o render/xvideo.o @V_OBJ@
+        #render/color-true.o render/color-hi.o
+
 
 OBJ3 =	cm0.o cm1.o huffcode.o version.o bv.o codec/pvh-huff.o \
 	$(TCL_VIC:.tcl=.o) tk.o
@@ -167,27 +170,33 @@ OBJ =	$(OBJ1) $(OBJ2) $(OBJ3) $(BROKEN_OBJ) $(RTIP_OBJ)
 OBJ_VDD = vdd.o p64/p64.o p64/p64dump.o \
 	module.o renderer.o renderer-window.o color.o \
 	color-dither.o color-gray.o color-pseudo.o color-ed.o \
-	color-quant.o color-true.o color-hi.o color-mono.o color-hist.o \
+	color-quant.o color-mono.o color-hist.o \
+	color-x11.o \
 	Tcl.o Tcl2.o vw.o cm0.o cm1.o \
 	dct.o huffcode.o bv.o iohandler.o timer.o \
 	ui-vdd.o tk.o random.o
+	# color-true.o color-hi.o
 
 OBJ_H261PLAY = h261_play.o p64/p64.o p64/p64dump.o \
 	module.o renderer.o renderer-window.o color.o \
 	color-dither.o color-gray.o color-pseudo.o color-ed.o \
-	color-quant.o color-true.o color-hi.o color-mono.o color-hist.o \
+	color-quant.o color-mono.o color-hist.o \
+	color-x11.o \
 	Tcl.o Tcl2.o vw.o cm0.o cm1.o \
 	dct.o huffcode.o bv.o iohandler.o timer.o \
 	ui-h261_play.o tk.o random.o
+	# color-true.o color-hi.o
 
 OBJ_JPEGPLAY = jpeg_play.o jpeg/jpeg.o \
 	renderer.o renderer-window.o color.o \
 	color-dither.o color-gray.o color-pseudo.o color-ed.o \
-	color-quant.o color-true.o color-hi.o color-mono.o \
+	color-quant.o color-mono.o \
+	color-x11.o \
 	Tcl.o Tcl2.o vw.o cm0.o cm1.o \
 	dct.o huffcode.o jpeg_play_tcl.o bv.o iohandler.o timer.o \
 	ui-jpeg_play.o tk.o random.o
-
+	# color-true.o color-hi.o
+	
 LIB_CB = @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ -lm
 OBJ_CB = net/cbAppInit.o net/cb.o net/confbus.o net/group-ipc.o iohandler.o \
 	render/ppm.o \

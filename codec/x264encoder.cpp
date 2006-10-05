@@ -106,9 +106,8 @@ bool x264Encoder::encodeFrame(DataBuffer * in)
     memcpy(pic->img.plane[1], (f + frame_size), frame_size / 4);
     memcpy(pic->img.plane[2], (f + frame_size * 5 / 4), frame_size / 4);
 
-    int result =
-	x264_encoder_encode(enc->h, &(enc->nal), &(enc->i_nal), pic,
-			    &(enc->pic_out));
+    int result = x264_encoder_encode(enc->h, &(enc->nal), &(enc->i_nal), pic,
+				     &(enc->pic_out));
 
     if (result < 0) {
 	isFrameEncoded = false;

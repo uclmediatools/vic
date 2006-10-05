@@ -52,6 +52,8 @@ class VideoFrame {
 	inline VideoFrame(u_int32_t ts, u_int8_t* bp, int w, int h,
 			  int layer) :
 		ts_(ts), bp_(bp), width_(w), height_(h), layer_(layer) { }
+	void deinterlace();
+
 	u_int32_t ts_;
 	u_int8_t* bp_;
 	int width_;

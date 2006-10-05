@@ -36,6 +36,7 @@ static const char rcsid[] =
     "@(#) $Header$ (LBL)";
 #endif
 #include "module.h"
+#include "deinterlace.h"
 
 char* Module::fttoa(int ft)
 {
@@ -128,3 +129,8 @@ int TransmitterModule::command(int argc, const char*const* argv)
 	}
 	return (Module::command(argc, argv));
 }
+
+void VideoFrame::deinterlace() {
+   Deinterlace::Render(bp_, width_, height_);
+}
+

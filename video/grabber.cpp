@@ -455,6 +455,12 @@ void Grabber::set_size_cif(int w, int h)
 
 	int ispal;
 	switch (w) {
+	case 640:
+		/* for qcam */
+		ispal = 0;
+		outw_ = 640;
+		outh_ = 480;
+		break;
 	case 320:
 		/* 1/2 NTSC */
 		ispal = 0;

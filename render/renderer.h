@@ -65,6 +65,7 @@ class Renderer : public Module, public Timer {
 	u_int now_;
 	u_int update_interval_;	/* update interval */
 	int need_update_;	/* true to update on next frame */
+	bool enable_xv;
 };
 
 class BlockRenderer : public Renderer {

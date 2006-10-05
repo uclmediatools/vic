@@ -945,8 +945,13 @@ void V4lGrabber::format()
     struct video_channel channel;
     debug_msg("V4l: format\n");
 
-    width_ = CIF_WIDTH * 2 / decimate_;
-    height_ = CIF_HEIGHT * 2 / decimate_;
+    if(decimate_!=1){
+   		width_ = CIF_WIDTH * 2 / decimate_;
+    	height_ = CIF_HEIGHT * 2 / decimate_;
+	}else{
+		width_  = capability.maxwidth;
+		height_ = capability.maxheight;
+	}
 
     // FIXED by barz 2006/9/19:  YUV422 is default
     if (have_420P)

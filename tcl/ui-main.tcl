@@ -399,7 +399,7 @@ proc adjust_voff { win d } {
 #
 # create a renderer for window $w and attach it to $src
 #
-proc attach_renderer { src w } {
+proc attach_renderer { src w {enable_xv false}} {
 	global win_target win_is_slow win_use_hw V
 	set d [$src handler]
 	set target ""
@@ -436,6 +436,7 @@ proc attach_renderer { src w } {
 	if $win_is_slow($w) {
 		$target update-interval [option get . stampInterval Vic]
 	}
+	$target enable_xv $enable_xv
 	adjust_voff $w $d
 	$d attach $target
 	set win_target($w) $target
@@ -453,8 +454,8 @@ proc detach_renderer { src w } {
 # bind a source to a window so that the video stream from
 # source $src appears in window $w
 #
-proc attach_window { src w } {
-	attach_renderer $src $w
+proc attach_window { src w {enable_xv false}} {
+	attach_renderer $src $w $enable_xv
 	global win_src win_list
 	set win_src($w) $src
 	lappend win_list($src) $w

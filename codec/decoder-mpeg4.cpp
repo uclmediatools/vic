@@ -97,12 +97,12 @@ MPEG4Decoder::~MPEG4Decoder()
     delete stream;
 }
 
-     int MPEG4Decoder::colorhist(u_int * hist) const
-     {
-	 return (1);
-     }
+int MPEG4Decoder::colorhist(u_int * hist) const
+{
+    return (1);
+}
 
-     void MPEG4Decoder::recv(pktbuf * pb)
+void MPEG4Decoder::recv(pktbuf * pb)
 {
     rtphdr *rh = (rtphdr *) pb->dp;
     int hdrsize = sizeof(rtphdr);	// sizeof(rtphdr) is 12 bytes

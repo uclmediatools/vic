@@ -40,6 +40,12 @@
 #include "media-timer.h"
 #include "vic_tcl.h"
 
+#ifdef USE_FASTMEMCPY
+extern "C" {
+#include "postproc/fastmemcpy.h"
+}
+#endif
+
 class Module;
 class Transmitter;
 

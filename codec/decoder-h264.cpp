@@ -107,7 +107,7 @@ H264Decoder::~H264Decoder()
     //fclose(fptr);
 }
 
-int H264Decoder::colorhist(u_int * hist) const 
+int H264Decoder::colorhist(u_int * hist)  const
 {
     return (1);
 }

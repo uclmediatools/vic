@@ -930,6 +930,7 @@ proc build.type w {
 
 	global inputType typeButton
 	set inputType auto
+    	#set inputType [string tolower [option get . inputType Vic]]
 	set typeButton $w
 }
 

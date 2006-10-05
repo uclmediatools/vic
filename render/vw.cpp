@@ -41,7 +41,7 @@ static const char rcsid[] =
 #include "vw.h"
 #include "color.h"
 #include "rgb-converter.h"
-
+#include "xvideo.h"
 extern "C" {
 #include <tk.h>
 
@@ -156,6 +156,41 @@ StandardVideoImage::~StandardVideoImage()
 	image_->data = 0;
 	image_->obdata = 0;
 	XDestroyImage(image_);
+}
+
+
+// FIXME: need to detect xvdieo capability
+bool XVideoImage::enable_xv = true;
+
+XVideoImage::XVideoImage(Tk_Window tk, int width, int height)
+  : VideoImage(tk, width, height), image_(NULL)
+{			     
+	if(render.init(dpy_, FOURCC_I420, Tk_Visual(tk), Tk_Depth(tk), 3) >= 0){
+	  image_ = render.createImage(width, height);	  
+	}else{
+	  printf("cannot initialize xvideo extension");
+	  enable_xv = false;
+    }
+}
+
+XVideoImage* XVideoImage::allocate(Tk_Window tk, int width, int height){
+	
+	if(enable_xv){
+	  XVideoImage* p = new XVideoImage(tk, width, height);
+	  if(enable_xv){
+	    printf("using Xvideo extension\n");
+	    return (p);	
+	  }else{
+	    delete p;
+	    return NULL;
+	  }
+	}
+	return NULL;
+}
+
+void XVideoImage::putimage(Display* dpy, Window window, GC gc,
+		      int sx, int sy, int x, int y,int w, int h) const{
+	render.displayImage(window, gc, w, h);
 }
 
 SlowVideoImage::SlowVideoImage(Tk_Window tk, int w, int h)
@@ -450,15 +485,16 @@ void VideoWindow::draw(int y0, int y1, int x0, int x1)
 	int h = y1 - y0;
 	if (h == 0)
 		h = vi_->height();
-	else if (h > vi_->height())
-		h = vi_->height();
+// for fullscreen rendering, video frame is larger than render window size
+//	else if (h > vi_->height())
+//		h = vi_->height();
 	else if (h < 0)
 		return;
 	int w = x1 - x0;
 	if (w == 0)
 		w = vi_->width();
-	else if (w > vi_->width())
-		w = vi_->width();
+//	else if (w > vi_->width())
+//		w = vi_->width();
 	else if (w < 0)
 		return;
 
