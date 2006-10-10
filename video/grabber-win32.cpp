@@ -634,6 +634,8 @@ void VfwGrabber::start()
 	}
 	if (!capDriverConnect(capwin_, dev_)) {
 		debug_msg( "capDriverConnect: dev=%d failed - %lu\n", dev_, GetLastError());
+				Grabber::status_=-1;
+		return;
 		/*abort();*/
 	}
 
@@ -650,6 +652,8 @@ void VfwGrabber::start()
 	if (!capDriverGetCaps(capwin_, &caps_, sizeof(caps_))) {
 		debug_msg( "capGetDriverCaps: failed - %lu\n", GetLastError());
 		/*abort();*/
+				Grabber::status_=-1;
+		return;
 	}
 
 	debug_msg("capdrivercaps: overlay=%d dlgSource=%d dlgFmt=%d dlgDis=%d init=%d pal=%d\n",
