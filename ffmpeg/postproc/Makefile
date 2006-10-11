@@ -1,5 +1,5 @@
 
-include config.mak
+#include config.mak
 
 SWSLIB = libswscale.a
 
@@ -11,15 +11,18 @@ ifeq ($(TARGET_ALTIVEC),yes)
 SWSOBJS +=  yuv2rgb_altivec.o
 endif
 
-CFLAGS  = $(OPTFLAGS) $(MLIB_INC) -I. $(EXTRA_INC)
-# -I/usr/X11R6/include/
+CC=cc
+AR=ar
+RANLIB = true
+OPTFLAGS = -fno-PIC -O4 -pipe -ffast-math -fomit-frame-pointer -D_REENTRANT -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
+CFLAGS  = $(OPTFLAGS) -I. 
 
 .SUFFIXES: .c .o
 
 # .PHONY: all clean
 
 .c.o:
-	$(CC) -c $(CFLAGS) -I.. -o $@ $<
+	$(CC) -c $(CFLAGS) -o $@ $<
 
 all:    $(SWSLIB)
 

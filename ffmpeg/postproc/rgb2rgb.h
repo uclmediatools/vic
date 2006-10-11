@@ -8,6 +8,7 @@
 
 #ifndef RGB2RGB_INCLUDED
 #define RGB2RGB_INCLUDED
+#include <stdio.h>
 
 // Note: do not fix the dependence on stdio.h
 
