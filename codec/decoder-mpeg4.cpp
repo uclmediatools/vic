@@ -81,7 +81,7 @@ MPEG4Decoder::MPEG4Decoder():Decoder(2)
     mpeg4.init_decoder();
     startPkt = false;
     startFrame = false;
-    std::cout << "allocate packet buffer\n";
+    // std::cout << "allocate packet buffer\n";
     stream = new PacketBuffer(1024, 1280);
 
     b_all = 1;
