@@ -54,7 +54,6 @@ untested special converters
 #include <math.h>
 #include <stdio.h>
 #include <unistd.h>
-#include "config.h"
 #include "mangle.h"
 #include <assert.h>
 #ifdef HAVE_MALLOC_H
@@ -1389,34 +1388,48 @@ static SwsFunc getSwsFunc(int flags){
 #ifdef RUNTIME_CPUDETECT
 #if defined(ARCH_X86) || defined(ARCH_X86_64)
 	// ordered per speed fasterst first
-	if(flags & SWS_CPU_CAPS_MMX2)
+	if(flags & SWS_CPU_CAPS_MMX2){
+		printf("SWSCALE: MMX2\n");
 		return swScale_MMX2;
-	else if(flags & SWS_CPU_CAPS_3DNOW)
+	}else if(flags & SWS_CPU_CAPS_MMX){
+		printf("SWSCALE: 3DNow\n");
 		return swScale_3DNow;
-	else if(flags & SWS_CPU_CAPS_MMX)
+	}else if(flags & SWS_CPU_CAPS_3DNOW){
+		printf("SWSCALE: MMX\n");	
 		return swScale_MMX;
-	else
+	}else{
+		printf("SWSCALE: C\n");		
 		return swScale_C;
+	}
 
 #else
 #ifdef ARCH_POWERPC
-	if(flags & SWS_CPU_CAPS_ALTIVEC)
+	if(flags & SWS_CPU_CAPS_ALTIVEC){
+ 	  printf("SWSCALE: Altivec\n");	
 	  return swScale_altivec;
-	else
+	}else{		
+	  printf("SWSCALE: C\n");	
 	  return swScale_C;
+	}
 #endif
+	printf("SWSCALE: C\n");
 	return swScale_C;
 #endif
 #else //RUNTIME_CPUDETECT
 #ifdef HAVE_MMX2
+	printf("SWSCALE: MMX2\n");
 	return swScale_MMX2;
 #elif defined (HAVE_3DNOW)
+	printf("SWSCALE: 3DNow\n");
 	return swScale_3DNow;
 #elif defined (HAVE_MMX)
+	printf("SWSCALE: MMX\n");
 	return swScale_MMX;
 #elif defined (HAVE_ALTIVEC)
+	printf("SWSCALE: Altivec\n");
 	return swScale_altivec;
 #else
+	printf("SWSCALE: C\n");
 	return swScale_C;
 #endif
 #endif //!RUNTIME_CPUDETECT
@@ -1847,6 +1860,7 @@ SwsContext *sws_getContext(int srcW, int srcH, int origSrcFormat, int dstW, int 
 	flags |= SWS_CPU_CAPS_ALTIVEC;
 #endif
 #endif
+
 	if(clip_table[512] != 255) globalInit();
 	if(rgb15to16 == NULL) sws_rgb2rgb_init(flags);
 

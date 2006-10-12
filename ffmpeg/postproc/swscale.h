@@ -28,7 +28,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+	
+#include "config.h"
 #include "img_format.h"
 /* values for the flags, the stuff on the command line is different */
 #define SWS_FAST_BILINEAR 1

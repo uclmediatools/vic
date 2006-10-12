@@ -8,7 +8,22 @@
 #include "../config.h"
 
 /* Runtime CPU detection */
-#undef RUNTIME_CPUDETECT
+#define RUNTIME_CPUDETECT
+
+/* Only use during compliation */
+#if defined(RUNTIME_CPUDETECT) 
+#undef  HAVE_MMX
+#define HAVE_MMX
+#define HAVE_MMX2
+#define HAVE_SSE
+#define HAVE_SSE2
+#define HAVE_3DNOW
+#define HAVE_3DNOWEX
+#endif 
+
+/* Use 3dnow/mmxext/sse/mmx optimized fast memcpy() [maybe buggy... signal 4]*/
+#define USE_FASTMEMCPY 1
+#define HAVE_XVIDEO
 
 /* attribute(used) as needed by some compilers */
 #if (__GNUC__ * 100 + __GNUC_MINOR__ >= 300)
@@ -16,12 +31,4 @@
 #else
 # define attribute_used
 #endif
-
-
-/* Define this if you have shm support */
-#define HAVE_SHM 1
-/* Use 3dnow/mmxext/sse/mmx optimized fast memcpy() [maybe buggy... signal 4]*/
-#define USE_FASTMEMCPY 1
-#define HAVE_XVIDEO
-
 #endif

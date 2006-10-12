@@ -2,6 +2,7 @@
 #define deinterlace_h
 
 #include <string.h>
+#include "config.h"
 
 /*****************************************************************************
  * CPU capabilities
@@ -28,10 +29,6 @@ typedef unsigned short uint16_t;
 #define DEINTERLACE_BOB     4
 #define DEINTERLACE_LINEAR  5
 
-#ifndef WINDOWS
-#define CAN_COMPILE_SSE
-#define CAN_COMPILE_MMX
-#endif
 //****************************************************************************
 
 
@@ -41,8 +38,6 @@ static class Deinterlace{
     static void Render(uint8_t  *source, int w, int h);
    
   protected:
-    void init();
-    void cpu_check();
     static void RenderBlend( uint8_t  *target, uint8_t  *source, int w, int h);  
     
 }deinterlace;  // for gobal initialization

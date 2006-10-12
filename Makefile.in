@@ -92,7 +92,7 @@ CODEC_LIB = ffmpeg/libavcodec/libavcodec.a codec/x264/libx264.a codec/tmndec/lib
 VIDEO_LIB = ffmpeg/postproc/libswscale.a
 
 LIB = $(LIB_GRABBER) @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ $(CODEC_LIB) $(VIDEO_LIB) \
-	../common/src/libuclmmbase.a -lm -lz -lcrypto -lpthread -lXv
+	../common/src/libuclmmbase.a -lm -lz -lcrypto -lpthread 
 
 
 INCLUDE = $(INCLUDE_MISC) $(INCLUDE_GRABBER) $(INCLUDE_TK) $(INCLUDE_TCL) \
@@ -138,7 +138,7 @@ OBJ2 =	main.o iohandler.o timer.o idlecallback.o media-timer.o \
 	net/mbus_handler.o net/mbus_engine.o net/group-ipc.o net/confbus.o \
 	rtp/session.o rtp/source.o rtp/transmitter.o rtp/pktbuf-rtp.o \
 	video/device.o video/grabber.o video/grabber-still.o \
-    video/deinterlace.o \
+    	video/deinterlace.o \
 	codec/encoder-h261.o codec/encoder-jpeg.o codec/encoder-raw.o \
 	codec/encoder-h263.o codec/encoder-h263v2.o codec/encoder-nv.o \
 	codec/encoder-cellb.o codec/encoder-pvh.o codec/compositor.o \
@@ -155,7 +155,7 @@ OBJ2 =	main.o iohandler.o timer.o idlecallback.o media-timer.o \
 	render/color-pseudo.o render/color-dither.o \
 	render/color-ed.o render/color-quant.o \
 	render/color-gray.o render/color-mono.o render/color-hist.o \
-	render/rgb-converter.o render/vw.o render/ppm.o render/xvideo.o @V_OBJ@
+	render/rgb-converter.o render/vw.o render/ppm.o @V_OBJ@
         #render/color-true.o render/color-hi.o
 
 

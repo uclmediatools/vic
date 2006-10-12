@@ -66,7 +66,7 @@ void mp_msg(int mod, int lev, const char *format, ... ){
     va_list va;
     char tmp[MSGSIZE_MAX];
     
-    if (!mp_msg_test(mod, lev)) return; // do not display
+    //if (!mp_msg_test(mod, lev)) return; // do not display
     va_start(va, format);
     vsnprintf(tmp, MSGSIZE_MAX, format, va);
     va_end(va);

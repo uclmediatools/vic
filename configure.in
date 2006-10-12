@@ -58,6 +58,41 @@ if test "$dvdecode" = "yes"; then
    V_LIB="$V_LIB -ldv"
 fi
 
+dnl xvideo rendering support
+V_XV=""
+AC_ARG_ENABLE(xvideo, --enable-xvideo		Enable or disable Xvideo rendering, xvideo=no, xvideo=yes)
+if test "$xvideo" = "yes"; then
+
+   dnl Look for the PIC library first, Debian requires it.
+   AC_CHECK_LIB(Xv_pic, XvQueryExtension,
+                 HAVE_XVIDEO="yes", HAVE_XVIDEO="no",
+                 -lXext)
+   if test $HAVE_XVIDEO = "yes"; then
+	V_LIB="$V_LIB -lXv_pic"
+        V_XV="-DHAVE_XVIDEO"
+        V_OBJ="$V_OBJ render/xvideo.o"
+   else
+   dnl try again using something else if we didn't find it first
+
+   	AC_CHECK_LIB(Xv, XvQueryExtension,
+                HAVE_XVIDEO="yes", HAVE_XVIDEO="no",
+                -lXext)
+
+   	if test $HAVE_XVIDEO = "yes"; then
+       	    V_XV="-DHAVE_XVIDEO"
+       	    V_LIB="$V_LIB -lXv"
+            V_OBJ="$V_OBJ render/xvideo.o"
+   	fi
+   fi
+
+   if test $HAVE_XVIDEO = "yes"; then
+   	AC_CHECK_HEADERS([X11/extensions/Xvlib.h], [], [
+      	echo "Error! \"X11/extensions/Xvlib.h\" not found. Please install \"libxv-dev\" package."
+      		exit 1
+      	])
+   fi
+fi
+
 # lots of hairy special cases for detecting which frame capture
 # support to compile in
 
@@ -383,6 +418,6 @@ AC_SUBST(V_OBJ_XIL)
 AC_SUBST(V_OBJ)
 AC_SUBST(V_LIB)
 
-V_DEFINE="$V_DEFINE $V_SHM $V_H261AS $V_DV"
+V_DEFINE="$V_DEFINE $V_SHM $V_H261AS $V_DV $V_XV"
 
 builtin(include, configure.in.tail)

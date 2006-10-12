@@ -13,7 +13,7 @@
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
  *	This product includes software developed by the University of
- *	California, Berkeley and the Network Research Group at
+ 	California, Berkeley and the Network Research Group at
  *	Lawrence Berkeley Laboratory.
  * 4. Neither the name of the University nor of the Laboratory may be used
  *    to endorse or promote products derived from this software without
@@ -32,7 +32,7 @@
  * SUCH DAMAGE.
  */
 static const char rcsid[] =
-    "@(#) $Header$ (LBL)";
+"@(#) $Header$ (LBL)";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -70,6 +70,7 @@ static const char rcsid[] =
 #include <X11/Xutil.h>
 
 extern "C" {
+#include "postproc/cpudetect.h"
 #include <tk.h>
 #ifdef USE_SHM
 #ifdef sgi
@@ -77,17 +78,17 @@ extern "C" {
 #endif
 #include <X11/extensions/XShm.h>
 #ifdef _AIX
-extern Bool XShmQueryExtension (Display *dpy);
+	extern Bool XShmQueryExtension (Display *dpy);
 #endif
 #ifdef sgi
 #undef XShmAttach
-int XShmAttach(Display*, XShmSegmentInfo*);
+	int XShmAttach(Display*, XShmSegmentInfo*);
 #endif
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #if defined(sun) && !defined(__svr4__)
-int shmget(key_t, int, int);
-int shmctl(int shmid, int cmd, struct shmid_ds *);
+	int shmget(key_t, int, int);
+	int shmctl(int shmid, int cmd, struct shmid_ds *);
 #endif
 #endif
 }
@@ -110,61 +111,61 @@ extern "C" int gethostname(char* name, int len);
 #include <sys/utsname.h>
 #define gethostname(name, len) { \
 	struct utsname _uts_; \
-\
+	\
 	if (uname(&_uts_) < 0) { \
 		perror("uname"); \
 		exit(1); \
 	}\
-\
+	\
 	strcpy((name), _uts_.nodename); \
 }
 #endif
- 
-static void
+
+	static void
 usage(char *szOffending)
 {
-char win_usage[] = "\
-VIC is a multicast (or unicast) video tool. It is best to start it\n\
-using a multicast directory tool, like sdr or multikit. If desired VIC\n\
-can be launched from the command line using:\n\n\
-vic <address>/<port>\n\n\
-where <address> is machine name, or a multicast IP address, and <port> is\n\
-the connection identifier (an even number between 1024-65536).\n\n\
-For more details see:\n\n\
-http://www-mice.cs.ucl.ac.uk/multimedia/software/vic/faq.html\n\
+	char win_usage[] = "\
+			    VIC is a multicast (or unicast) video tool. It is best to start it\n\
+			    using a multicast directory tool, like sdr or multikit. If desired VIC\n\
+			    can be launched from the command line using:\n\n\
+			    vic <address>/<port>\n\n\
+			    where <address> is machine name, or a multicast IP address, and <port> is\n\
+			    the connection identifier (an even number between 1024-65536).\n\n\
+			    For more details see:\n\n\
+			    http://www-mice.cs.ucl.ac.uk/multimedia/software/vic/faq.html\n\
 Options: vic [-HPs] [-A nv|ivs|rtp] [-B maxbps] [-C conf]\n\
-\t[-c ed|gray|od|quantize] [-D device] [-d display]\n\
-\t[-f bvc|cellb|h261|jpeg|nv|mpeg4|h264] [-F maxfps] [-i ifAddr ] [-I channel]\n\
-\t[-K key ] [-L flowLabel (ip6 only)] [-l (creates log file)]\n\
-\t[-M colormap] [-m mtu] [-N session] [-n atm|ip|ip6|rtip]\n\
-\t[-o clipfile] [-t ttl] [-U interval] [-u script] [-v version] [-V visual]\n\
-\t[-x ifIndex (ip6 only)] [-X resource=value] [-j numlayers] dest/port[/fmt/ttl]\n";
+	 \t[-c ed|gray|od|quantize] [-D device] [-d display]\n\
+	 \t[-f bvc|cellb|h261|jpeg|nv|mpeg4|h264] [-F maxfps] [-i ifAddr ] [-I channel]\n\
+	 \t[-K key ] [-L flowLabel (ip6 only)] [-l (creates log file)]\n\
+	 \t[-M colormap] [-m mtu] [-N session] [-n atm|ip|ip6|rtip]\n\
+	 \t[-o clipfile] [-t ttl] [-U interval] [-u script] [-v version] [-V visual]\n\
+	 \t[-x ifIndex (ip6 only)] [-X resource=value] [-j numlayers] dest/port[/fmt/ttl]\n";
 
-if (szOffending == NULL) {
-        szOffending = win_usage;
-}
+	if (szOffending == NULL) {
+		szOffending = win_usage;
+	}
 
 #ifdef WIN32
-MessageBox(NULL, szOffending, "VIC Usage", MB_ICONINFORMATION | MB_OK);
+	MessageBox(NULL, szOffending, "VIC Usage", MB_ICONINFORMATION | MB_OK);
 #else
-printf(win_usage);
-if (szOffending) {
-        printf(szOffending);
-}
+	printf(win_usage);
+	if (szOffending) {
+		printf(szOffending);
+	}
 #endif
 	exit(1);
 }
 
 static class UsageCommand : public TclObject {
-public:
-	UsageCommand() : TclObject("usage") {}
-	int command(int argc, const char*const* argv) {
-		UNUSED(argc);
-		UNUSED(argv);
-		usage(NULL);
-		/*NOTREACHED*/
-		return (0);
-	}
+	public:
+		UsageCommand() : TclObject("usage") {}
+		int command(int argc, const char*const* argv) {
+			UNUSED(argc);
+			UNUSED(argv);
+			usage(NULL);
+			/*NOTREACHED*/
+			return (0);
+		}
 } cmd_usage;
 
 #ifndef SIGARGS
@@ -177,66 +178,66 @@ public:
 
 extern void adios();
 
-static SIGRET
+	static SIGRET
 ciao(SIGARGS)
 {
 	adios();
 }
 
 static class AdiosCommand : public TclObject {
-public:
-	AdiosCommand() : TclObject("adios_rtcp") {}
-	int command(int argc, const char*const* argv) {
-		UNUSED(argc);
-		UNUSED(argv);
-		adios();
-		/*NOTREACHED*/
-		return (0);
-	}
+	public:
+		AdiosCommand() : TclObject("adios_rtcp") {}
+		int command(int argc, const char*const* argv) {
+			UNUSED(argc);
+			UNUSED(argv);
+			adios();
+			/*NOTREACHED*/
+			return (0);
+		}
 } cmd_adios;
 
 static class HaveFontCommand : public TclObject {
-public:
-	HaveFontCommand() : TclObject("havefont") {}
-	int command(int argc, const char*const* argv) {
-		Tcl& t = Tcl::instance();
-		if (argc != 2)
-			t.result("0");
-		else {
-			Tk_Window tk = t.tkmain();
-			Tk_Uid uid = Tk_GetUid((char*)argv[1]);
-			Tk_Font p = Tk_GetFont(t.interp(), tk, uid);
-			t.result(p != 0 ? "1" : "0");
+	public:
+		HaveFontCommand() : TclObject("havefont") {}
+		int command(int argc, const char*const* argv) {
+			Tcl& t = Tcl::instance();
+			if (argc != 2)
+				t.result("0");
+			else {
+				Tk_Window tk = t.tkmain();
+				Tk_Uid uid = Tk_GetUid((char*)argv[1]);
+				Tk_Font p = Tk_GetFont(t.interp(), tk, uid);
+				t.result(p != 0 ? "1" : "0");
+			}
+			return (TCL_OK);
 		}
-		return (TCL_OK);
-	}
 } cmd_havefont;
 
 static class GetHostNameCommand : public TclObject {
-public:
-	GetHostNameCommand() : TclObject("gethostname") {}
-	int command(int argc, const char*const* argv) {
-		UNUSED(argc);
-		UNUSED(argv);
-		Tcl& tcl = Tcl::instance();
-		char* bp = tcl.buffer();
-		tcl.result(bp);
-		gethostname(bp, MAXHOSTNAMELEN);
-		return (TCL_OK);
-	}
+	public:
+		GetHostNameCommand() : TclObject("gethostname") {}
+		int command(int argc, const char*const* argv) {
+			UNUSED(argc);
+			UNUSED(argv);
+			Tcl& tcl = Tcl::instance();
+			char* bp = tcl.buffer();
+			tcl.result(bp);
+			gethostname(bp, MAXHOSTNAMELEN);
+			return (TCL_OK);
+		}
 } cmd_gethostname;
 
 extern "C" char version[];
 
 static class VersionCommand : public TclObject {
-public:
-	VersionCommand() : TclObject("version") {}
-	int command(int argc, const char*const* argv) {
-		UNUSED(argc);
-		UNUSED(argv);
-		Tcl::instance().result(version);
-		return (TCL_OK);
-	}
+	public:
+		VersionCommand() : TclObject("version") {}
+		int command(int argc, const char*const* argv) {
+			UNUSED(argc);
+			UNUSED(argv);
+			Tcl::instance().result(version);
+			return (TCL_OK);
+		}
 } cmd_version;
 
 #ifndef USE_SHM
@@ -253,7 +254,7 @@ Bool XShmQueryExtension(Display* dpy)
 }
 #endif
 
-static int
+	static int
 noXShm(ClientData, XErrorEvent*)
 {
 	/*
@@ -273,29 +274,29 @@ noXShm(ClientData, XErrorEvent*)
  * if the X server says we can, and we're on the same
  * host as the X server, then we are golden.
  */
-static void
+	static void
 checkXShm(Tk_Window tk, const char*)
 {
 	Display* dpy = Tk_Display(tk);
 
 	if (XShmQueryExtension(dpy) == 0) {
 		fprintf(stderr,
-		        "vic: warning: server doesn't support shared memory\n");
+				"vic: warning: server doesn't support shared memory\n");
 		use_shm = 0;
 		return;
 	}
 	XShmSegmentInfo si;
-  	if ((si.shmid = shmget(IPC_PRIVATE, 512, IPC_CREAT|0777)) < 0) {
+	if ((si.shmid = shmget(IPC_PRIVATE, 512, IPC_CREAT|0777)) < 0) {
 		if (use_shm)
 			fprintf(stderr,
-				"vic: warning: no shared memory available\n");
+					"vic: warning: no shared memory available\n");
 		use_shm = 0;
 		return;
 	}
 	si.readOnly = 1;
 	XSync(dpy, 0);
 	Tk_ErrorHandler handler = Tk_CreateErrorHandler(dpy, -1, -1, -1,
-							noXShm, 0);
+			noXShm, 0);
 	XShmAttach(dpy, &si);
 	XSync(dpy, 0);
 	XShmDetach(dpy, &si);
@@ -311,7 +312,7 @@ extern "C" int optind;
 extern "C" int opterr;
 #endif
 
-char*
+	char*
 parse_assignment(char* cp)
 {
 	cp = strchr(cp, '=');
@@ -344,7 +345,7 @@ gethostid()
 		memcpy(&(addru.s_addr), hostp->h_addr_list[0], 4);
 		id = addru.s_addr;
 	}
-  
+
 	return id;
 }
 #endif
@@ -352,7 +353,7 @@ gethostid()
 #ifdef __svr4__
 #include <sys/systeminfo.h>
 #define gethostid xgethostid
-u_int32_t
+	u_int32_t
 gethostid()
 {
 	char wrk[32];
@@ -365,7 +366,7 @@ gethostid()
 /*
  * From the RTP spec.
  */
-u_int32_t
+	u_int32_t
 heuristic_random()
 {
 	struct {
@@ -415,26 +416,26 @@ extern "C" int WinReg(ClientData, Tcl_Interp *, int, char **);
 #endif
 
 extern "C" {
-int
-TkPlatformInit(Tcl_Interp *interp)
-{
-	Tcl_SetVar(interp, "tk_library", ".", TCL_GLOBAL_ONLY);
+	int
+		TkPlatformInit(Tcl_Interp *interp)
+		{
+			Tcl_SetVar(interp, "tk_library", ".", TCL_GLOBAL_ONLY);
 #ifndef WIN32
-	extern void TkCreateXEventSource(void);
-	TkCreateXEventSource();
+			extern void TkCreateXEventSource(void);
+			TkCreateXEventSource();
 #endif
-	return (TCL_OK);
+			return (TCL_OK);
+		}
+
+	void *TkSetPlatformInit(int (*func)(Tcl_Interp *));
+
 }
 
-void *TkSetPlatformInit(int (*func)(Tcl_Interp *));
-
-}
-
-int
+	int
 main(int argc, const char** argv)
 {
 #ifdef __FreeBSD__
-        srandomdev(); //SV-XXX: FreeBSD
+	srandomdev(); //SV-XXX: FreeBSD
 #else
 	srandom(heuristic_random());
 #endif
@@ -480,6 +481,14 @@ main(int argc, const char** argv)
 			usage(NULL);
 	}
 
+	/* CPU capabilities detection */
+	GetCpuCaps(&gCpuCaps);
+	printf("cpudetect: %s\n", gCpuCaps.cpuname);
+	printf("cpudetect: MMX=%d MMX2=%d SSE=%d SSE2=%d 3DNow=%d 3DNowExt=%d\n",  \
+	        gCpuCaps.hasMMX, gCpuCaps.hasMMX2, gCpuCaps.hasSSE, gCpuCaps.hasSSE2, \
+	       	gCpuCaps.has3DNow, gCpuCaps.has3DNowExt );
+
+	
 	Tcl::init("vic");
 	Tcl& tcl = Tcl::instance();
 

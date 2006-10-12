@@ -1,7 +1,7 @@
 #ifndef _XVIDEO_H_
 #define _XVIDEO_H_
 
-#include "../config_arch.h"
+#include "postproc/config.h"
 
 #include "vic_tcl.h"
 extern "C"{
@@ -11,7 +11,7 @@ extern "C"{
 }
 
 // XShm.h should be included before Xvlib.h
-#ifdef HAVE_SHM
+#ifdef USE_SHM
 #   include <X11/extensions/XShm.h>
 #endif
 
@@ -61,7 +61,7 @@ class XRender{
     vlc_fourcc_t o_chroma;
     
     // for shared memory
-    #ifdef HAVE_SHM
+    #ifdef USE_SHM
     XShmSegmentInfo  yuv_shminfo;
     #endif 
 

@@ -1,6 +1,8 @@
 #ifndef CPUDETECT_H
 #define CPUDETECT_H
 
+#include "config.h"
+
 #define CPUTYPE_I386	3
 #define CPUTYPE_I486	4
 #define CPUTYPE_I586	5
@@ -48,6 +50,7 @@ typedef struct cpucaps_s {
 	unsigned cl_size; /* size of cache line */
         int hasAltiVec;
 	int hasTSC;
+	char cpuname[50];
 } CpuCaps;
 
 extern CpuCaps gCpuCaps;

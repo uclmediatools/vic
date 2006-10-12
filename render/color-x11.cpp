@@ -44,6 +44,7 @@ static char rcsid[] =
 #include "vw.h"
 #include "renderer.h"
 #include "postproc/swscale.h"
+#include "postproc/cpudetect.h"
 
 class X11WindowRenderer : public WindowDitherer {
 public:
@@ -79,12 +80,31 @@ public:
 				
 	  if(enable_xv){
 	    memcpy(pixbuf_, frm, framesize_*3/2);	  
-	  }else{ 	
+	  }else{ 
+	    if(!outw_ || !outh_	|| !width_ || !height_)
+	        return;
+
 	    if(resized()){
-	      if(sws_context)
+	      if(sws_context){
 	        sws_freeContext(sws_context);	
+		sws_context = NULL;
+	      }
+	      int flags = SWS_FAST_BILINEAR;
+	      flags |= (gCpuCaps.hasMMX ? SWS_CPU_CAPS_MMX : 0);
+	      flags |= (gCpuCaps.hasMMX2 ? SWS_CPU_CAPS_MMX2 : 0);
+	      flags |= (gCpuCaps.has3DNow ? SWS_CPU_CAPS_3DNOW : 0);
+	      flags |= (gCpuCaps.hasAltiVec ? SWS_CPU_CAPS_ALTIVEC : 0);
+	      
 	      sws_context = sws_getContext(width_, height_, IMGFMT_I420,
-	                 outw_, outh_, out_format, SWS_FAST_BILINEAR, NULL, NULL, NULL); 	   
+	                 outw_, outh_, out_format, flags, NULL, NULL, NULL); 	   
+	      printf("X11WindowRenderer: %dx%d ==> %dx%d\n", width_, height_, outw_, outh_);
+	      
+	      if(sws_context == NULL){
+		printf("X11WindowRenderer: error! cannot allocate memory for swscontext!\n");
+		return;
+	      }
+		      
+			    
 	      sws_src_stride[0] = width_;
 	      sws_src_stride[1] = sws_src_stride[2] = width_/2;
 	    

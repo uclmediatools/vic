@@ -5,16 +5,16 @@
  * Local protypes
  *****************************************************************************/
 static void MergeGeneric ( void *, const void *, const void *, size_t );
-#if defined(CAN_COMPILE_C_ALTIVEC)
+#if defined(HAVE_ALTIVEC)
 static void MergeAltivec ( void *, const void *, const void *, size_t );
 #endif
-#if defined(CAN_COMPILE_MMX)
+#if defined(HAVE_MMX)
 static void MergeMMX     ( void *, const void *, const void *, size_t );
 #endif
-#if defined(CAN_COMPILE_SSE)
+#if defined(HAVE_SSE2)
 static void MergeSSE2    ( void *, const void *, const void *, size_t );
 #endif
-#if defined(CAN_COMPILE_MMX) || defined(CAN_COMPILE_SSE)
+#if defined(HAVE_MMX) || defined(HAVE_SSE2)
 static void EndMMX       ( void );
 #endif
 
@@ -25,45 +25,20 @@ static uint8_t target[1280*1024*3/2];
 static int cpu_info;   
  
 Deinterlace::Deinterlace(){
-  cpu_check();
-  init();
-}
-
-void Deinterlace::cpu_check() { 
-  cpu_info =  CPU_CAPABILITY_SSE2 ; 
-}
-
-void Deinterlace::init(){
-
-#if defined(CAN_COMPILE_C_ALTIVEC)
-    if( cpu_info & CPU_CAPABILITY_ALTIVEC )
-    {
-        Merge = MergeAltivec;
-        EndMerge = NULL;
-    }
-#endif
-#if defined(CAN_COMPILE_SSE)
-    if( cpu_info & CPU_CAPABILITY_SSE2 )
-    {
+    if( gCpuCaps.hasSSE2 ){
         Merge = MergeSSE2;
         EndMerge = EndMMX;
-    }
-    else
-#endif
-#if defined(CAN_COMPILE_MMX)
-    if( cpu_info & CPU_CAPABILITY_MMX )
-    {
+    }else if( gCpuCaps.hasMMX ){
         Merge = MergeMMX;
         EndMerge = EndMMX;
-    }
-    else
-#endif
-    {
+    }else if( gCpuCaps.hasAltivec ){
+        Merge = MergeAltivec;
+	EndMerge = NULL;
+    }else{
         Merge = MergeGeneric;
         EndMerge = NULL;
     }	
 }
-
 
 static void MergeGeneric( void *_p_dest, const void *_p_s1,
                           const void *_p_s2, size_t i_bytes )
@@ -93,7 +68,7 @@ static void MergeGeneric( void *_p_dest, const void *_p_s1,
     }
 }
 
-#if defined(CAN_COMPILE_MMX)
+#if defined(HAVE_MMX)
 static void MergeMMX( void *_p_dest, const void *_p_s1, const void *_p_s2,
                       size_t i_bytes )
 {
@@ -122,7 +97,7 @@ static void MergeMMX( void *_p_dest, const void *_p_s1, const void *_p_s2,
 }
 #endif
 
-#if defined(CAN_COMPILE_SSE)
+#if defined(HAVE_SSE2)
 static void MergeSSE2( void *_p_dest, const void *_p_s1, const void *_p_s2,
                        size_t i_bytes )
 {
@@ -155,14 +130,14 @@ static void MergeSSE2( void *_p_dest, const void *_p_s1, const void *_p_s2,
 }
 #endif
 
-#if defined(CAN_COMPILE_MMX) || defined(CAN_COMPILE_SSE)
+#if defined(HAVE_MMX) || defined(HAVE_SSE2)
 static void EndMMX( void )
 {
     __asm__ __volatile__( "emms" );
 }
 #endif
 
-#ifdef CAN_COMPILE_C_ALTIVEC
+#ifdef HAVE_ALTIVEC
 static void MergeAltivec( void *_p_dest, const void *_p_s1,
                           const void *_p_s2, size_t i_bytes )
 {

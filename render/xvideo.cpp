@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../config_arch.h"
+#include "postproc/config.h"
 
-#ifdef HAVE_SHM
+#ifdef USE_SHM
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #endif
@@ -17,7 +17,7 @@ extern "C"{
 }
 
 IMAGE_TYPE *CreateImage    ( Display *, EXTRA_ARGS, int, int );
-#ifdef HAVE_SHM
+#ifdef USE_SHM
 IMAGE_TYPE *CreateShmImage ( Display *, EXTRA_ARGS_SHM, int, int );
 #endif
 
@@ -315,7 +315,7 @@ static void XVideoReleasePort( Display *p_display, int i_port )
 
 
 
-#ifdef HAVE_SHM
+#ifdef USE_SHM
 /*****************************************************************************
  * CreateShmImage: create an XImage or XvImage using shared memory extension
  *****************************************************************************
@@ -464,7 +464,7 @@ void DisplayVideo( Display *p_display, int i_xvport, Window video_window,
 {
 
 
-#ifdef HAVE_SHM
+#ifdef USE_SHM
     if( shared_memory )
     {
         /* Display rendered image using shared memory extension */
@@ -486,7 +486,7 @@ void DisplayVideo( Display *p_display, int i_xvport, Window video_window,
 #   endif
     }
     else
-#endif /* HAVE_SHM */
+#endif /* USE_SHM */
     {
         /* Use standard XPutImage -- this is gonna be slow ! */
 #ifdef HAVE_XVIDEO
@@ -534,7 +534,7 @@ int XRender::init(Display *_dpy, vlc_fourcc_t _chroma, Visual *_p_visual, int _d
   bytes_per_rgb = _bytes_per_rgb;
   
   
-#ifdef HAVE_SHM 
+#ifdef USE_SHM 
   if (XShmQueryExtension(display)){
     enable_shm = true;  	
     // printf("==> using shared memory.\n");
@@ -568,7 +568,7 @@ IMAGE_TYPE* XRender::createImage(int _width, int _height){
   
   if(yuv_image) IMAGE_FREE(yuv_image);
   
-#ifdef HAVE_SHM    
+#ifdef USE_SHM    
   if(enable_shm){
     yuv_image = CreateShmImage(display, 
     #ifdef HAVE_XVIDEO   
@@ -578,7 +578,7 @@ IMAGE_TYPE* XRender::createImage(int _width, int _height){
     #endif
       i_width, i_height );  
   }else
-#endif  // HAVE_SHM
+#endif  // USE_SHM
   {
     yuv_image = CreateImage(display,
     #ifdef HAVE_XVIDEO  
@@ -605,7 +605,7 @@ void XRender::release(){
     XVideoReleasePort(display, xv_port);
   #endif  
   
-  #ifdef HAVE_SHM
+  #ifdef USE_SHM
   if(enable_shm){
     XShmDetach(display, &yuv_shminfo);
     if(shmdt( yuv_shminfo.shmaddr) <0 )

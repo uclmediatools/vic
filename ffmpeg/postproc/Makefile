@@ -3,7 +3,7 @@
 
 SWSLIB = libswscale.a
 
-SWSSRCS=swscale.c rgb2rgb.c yuv2rgb.c mp_msg.c aclib.c img_format.c
+SWSSRCS=swscale.c rgb2rgb.c yuv2rgb.c mp_msg.c aclib.c img_format.c cpudetect.c
 
 SWSOBJS=$(SWSSRCS:.c=.o)
 
@@ -11,10 +11,10 @@ ifeq ($(TARGET_ALTIVEC),yes)
 SWSOBJS +=  yuv2rgb_altivec.o
 endif
 
-CC=cc
+CC=gcc
 AR=ar
 RANLIB = true
-OPTFLAGS = -fno-PIC -O4 -pipe -ffast-math -fomit-frame-pointer -D_REENTRANT -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
+OPTFLAGS = -g -fno-PIC -O2 -pipe -ffast-math -fomit-frame-pointer -D_REENTRANT -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
 CFLAGS  = $(OPTFLAGS) -I. 
 
 .SUFFIXES: .c .o
