@@ -284,7 +284,7 @@ set transmitButtonState 0
 set logoButtonState 0
 
 proc transmit { } {
-	global logoButton logoButtonState transmitButtonState videoFormat videoDevice V useJPEGforH261 useHardwareComp numEncoderLayers  fps_slider bps_slider
+	global logoButton logoButtonState transmitButtonState videoFormat videoDevice V useJPEGforH261 useHardwareComp numEncoderLayers  fps_slider kbps_slider
 	if ![have grabber] {
 		set DA [$videoDevice attributes]
 		set DF [attribute_class $DA format]
@@ -382,7 +382,7 @@ proc transmit { } {
 	}
 	if {$videoFormat == "mpeg4"} {
 		encoder fps [$fps_slider get]
-		encoder bps [$bps_slider get]			
+		encoder kbps [$kbps_slider get]			
 		if [yesno enable_hq] {
 		  encoder hq 1
 		}
@@ -390,7 +390,7 @@ proc transmit { } {
 
 	if {$videoFormat == "h264"} {
 		encoder fps [$fps_slider get]
-		encoder bps [$bps_slider get]
+		encoder kbps [$kbps_slider get]
 	}
 	$V(grabber) send $transmitButtonState
 }
@@ -524,9 +524,9 @@ proc build.sliders w {
 	$w.bps.scale set [option get . bandwidth Vic]
 	$w.fps.scale set [option get . framerate Vic]
 
-	global fps_slider bps_slider
+	global fps_slider kbps_slider
 	set fps_slider $w.fps.scale
-	set bps_slider $w.bps.scale
+	set kbps_slider $w.bps.scale
 }
 
 proc attribute_class { attr class } {
@@ -1378,7 +1378,7 @@ set qscale_val(raw) 1
 set lastFmt ""
 
 proc select_format fmt {
-	global qscale qlabel videoDevice videoFormat qscale_val lastFmt
+	global qscale qlabel videoDevice videoFormat qscale_val lastFmt fps_slider kbps_slider
 
 	if { $fmt == "h261" || $fmt == "pvh"} {
 		# H.261 supports only QCIF/CIF
@@ -1440,6 +1440,20 @@ proc select_format fmt {
 			# SV, title-maker fix: see marked code below
 			delete $V(encoder)
 			set V(encoder) $encoder
+
+		        if {$videoFormat == "mpeg4"} {
+                	    encoder fps [$fps_slider get]
+ 		            encoder kbps [$kbps_slider get]
+                	    if [yesno enable_hq] {
+                  		encoder hq 1
+                	    }
+        		}
+
+		        if {$videoFormat == "h264"} {
+                	    encoder fps [$fps_slider get]
+	                    encoder kbps [$kbps_slider get]
+		        }
+
 			$encoder transmitter $V(session)
 			
 			# SV ######################
@@ -1492,9 +1506,9 @@ proc init_grabber { grabber } {
 	}
 
 	$grabber transmitter $V(session)
-	global qscale inputSize fps_slider bps_slider videoDevice
+	global qscale inputSize fps_slider kbps_slider videoDevice
 	$grabber fps [$fps_slider get]
-	$grabber bps [$bps_slider get]
+	$grabber bps [$kbps_slider get]
 	$grabber decimate $inputSize
 	if { [lindex [$qscale configure -state] 4] == "normal" } {
 		set cmd [lindex [$qscale configure -command] 4]

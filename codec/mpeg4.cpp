@@ -73,7 +73,7 @@ void MPEG4::init_encoder(int width_, int height_,
     std::cout << "mpeg4: set framerate: " << frame_rate << "\n";
     c->time_base.den = frame_rate;
     c->time_base.num = 1;
-    // emit one intra frame every ten frames 
+    // emit one intra frame every gop_size frames 
     c->gop_size = iframe_gap;
     c->flags |= CODEC_FLAG_EMU_EDGE;
     c->flags |= CODEC_FLAG_LOW_DELAY;
@@ -102,7 +102,7 @@ void MPEG4::init_encoder(int width_, int height_,
 
     /* open it */
     if (avcodec_open(c, codec) < 0) {
-	//fprintf(stderr, "could not open codec\n");
+	fprintf(stderr, "could not open codec\n");
 	exit(1);
     }
 
@@ -136,12 +136,12 @@ void MPEG4::init_decoder()
 
     codec = avcodec_find_decoder(codecid);
     if (!codec) {
-	//fprintf(stderr, "codec not found\n");
+	fprintf(stderr, "codec not found\n");
 	exit(1);
     }
     /* open it */
     if (avcodec_open(c, codec) < 0) {
-	//fprintf(stderr, "could not open codec\n");
+	fprintf(stderr, "could not open codec\n");
 	exit(1);
     }
 
@@ -210,12 +210,11 @@ int MPEG4::decode(UCHAR * codedstream, int size, UCHAR * vf)
     len = avcodec_decode_video(c, picture, &got_picture, codedstream, size);
 
     if (c->width != width || c->height != height) {
-	debug_msg("mpeg4enc: resize to %dx%d\n", c->width, c->height);
+	debug_msg("mpeg4dec: resize to %dx%d\n", c->width, c->height);
 	resize(c->width, c->height);
 	return -2;
 
     }
-
 
     if (!got_picture || len < 0) {
 	return -1;

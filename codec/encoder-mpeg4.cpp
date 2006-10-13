@@ -20,6 +20,8 @@ static u_int32_t ts;
 static int vicEncodedMB;
 static int vicNumMB;
 
+using namespace std;
+
 class MPEG4Encoder:public TransmitterModule
 {
   public:
@@ -35,7 +37,7 @@ class MPEG4Encoder:public TransmitterModule
 			     int num_mb);
 
   protected:
-    int fps, bps, gop;
+    int fps, kbps, gop;
     bool state;
 
     FFMpegCodec mpeg4;
@@ -64,7 +66,7 @@ MPEG4Encoder::MPEG4Encoder():TransmitterModule(FT_YUV_CIF)
     state = false;
     mpeg4.init(true, CODEC_ID_MPEG4, PIX_FMT_YUV420P);
     mpeg4.rtp_callback = rtp_callback;
-    bps = 1000 * 1024;
+    kbps = 1000;
     fps = 20;
     gop = 20;
     vicNumMB = 0;
@@ -97,8 +99,8 @@ int MPEG4Encoder::command(int argc, const char *const *argv)
 	    fps = atoi(argv[2]);
 	    return (TCL_OK);
 	}
-	else if (strcmp(argv[1], "bps") == 0) {
-	    bps = atoi(argv[2]);
+	else if (strcmp(argv[1], "kbps") == 0) {
+	    kbps = atoi(argv[2]);
 	    return (TCL_OK);
 	}
 	else if (strcmp(argv[1], "hq") == 0) {
@@ -114,7 +116,7 @@ int MPEG4Encoder::command(int argc, const char *const *argv)
 void MPEG4Encoder::rtp_callback(AVCodecContext * c, void *data, int size,
 				int num_mb)
 {
-    //printf("packet size = %d, packet num= %d \n", size, packet_number);
+    // cout << "packet size = " << size << "  MB num = "<< num_mb << endl;
 
     pktbuf *pb;
     rtphdr *rh;
@@ -124,7 +126,6 @@ void MPEG4Encoder::rtp_callback(AVCodecContext * c, void *data, int size,
 
     vicEncodedMB += num_mb;
     if (vicEncodedMB == vicNumMB) {
-	//std::cout << "mpeg4enc: set RTP_M\n";
 	rh->rh_flags |= htons(RTP_M);
 	vicEncodedMB = 0;
     }
@@ -136,6 +137,7 @@ void MPEG4Encoder::rtp_callback(AVCodecContext * c, void *data, int size,
 
     pb->len = size + 12;
     tx->send(pb);
+    tx->flush();
 }
 
 
@@ -155,30 +157,20 @@ int MPEG4Encoder::consume(const VideoFrame * vf)
     if (!state) {
 	state = true;
 	size(vf->width_, vf->height_);
-	std::cout << "MPEG4 ENC: WxH:" << vf->width_ << "x" << vf->height_;
-	std::cout << "BPS:" << bps * 1024 << " FPS:" << fps << "\n";
-	mpeg4.init_encoder(vf->width_, vf->height_, bps * 1024, fps, gop);
+	std::cout << "mpeg4enc: WxH:" << vf->width_ << "x" << vf->height_;
+	std::cout << "kbps:" << kbps << " fps:" << fps << "\n";
+	mpeg4.init_encoder(vf->width_, vf->height_, kbps * 1024, fps, gop);
     }
-    tx_->flush();
     bitstream = mpeg4.encode(vf->bp_, len);
-
-    psnr = mpeg4.get_PSNR();
-    char buf[20];
-    //sprintf(buf,"%.1f dB", psnr);    
-    Tcl tcl = Tcl::instance();
-    Tcl_SetVar(tcl.interp(), "psnr", buf, TCL_GLOBAL_ONLY);
-
-    /*
-       if(mpeg4.pict_type == FF_I_TYPE){ 
-       pframe_no=0;
-       return len/2;  // for lag reduction
-       }
-       else 
-       return len; */
+    //    std::cout << "MPEG4 ENC: packet length " << len << endl;
+    
     /*
      * champ:
      * VIC will grab a frame with a time interval according to this return value.
      * Since this module adopts rate-control by bps value, it returns a constant value for a reason of smoothness.
      */
-    return (bps * 100) / fps;
+    // cout << kbps*1024/(fps*8) << " to " << len << endl;
+    return kbps*1024 /(fps*8);
+    //return len;
+    
 }

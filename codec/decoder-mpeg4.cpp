@@ -153,7 +153,7 @@ void MPEG4Decoder::recv(pktbuf * pb)
     }
 
     last_seq = seq;
-    int len;
+    int len = 0;
     if (mbit) {
 	stream->setTotalPkts(pktIdx + 1);
 	debug_msg("receive %d\n", b_off);
@@ -183,7 +183,6 @@ void MPEG4Decoder::recv(pktbuf * pb)
 
 	if (len < 0) {
 	    pb->release();
-	    //printf("mpeg4dec: frame error\n");
 	    debug_msg("mpeg4dec: frame error\n");
 	    stream->clear();
 	    idx = seq + 1;

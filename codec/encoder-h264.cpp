@@ -37,7 +37,7 @@ class H264Encoder:public TransmitterModule
     static void rtp_callback(void *data, int size, int packet_number);
 
   protected:
-    int fps, bps, gop;
+    int fps, kbps, gop;
     bool state;
     //UCHAR* bitstream;
 
@@ -74,7 +74,7 @@ H264Encoder::H264Encoder():TransmitterModule(FT_YUV_CIF)
     fptr = NULL;
     frame_seq = 0;
     fps = 20;
-    bps = 512;
+    kbps = 512;
     gop = 20;
 }
 
@@ -111,22 +111,16 @@ int H264Encoder::command(int argc, const char *const *argv)
 	    std::cout << "H264: fps " << fps << "\n";
 	    return (TCL_OK);
 	}
-	else if (strcmp(argv[1], "bps") == 0) {
-	    bps = atoi(argv[2]);
-	    if (bps < 64)
-		bps = 64;
-	    std::cout << "H264: bps " << bps << "\n";
-	    /*
-	       if(enc->isInitialized()){
-	       printf("set bitrate to %d kbps.\n", bps);
-	       enc->setBitRate(bps);
-	       }
-	     */
+	else if (strcmp(argv[1], "kbps") == 0) {
+	    kbps = atoi(argv[2]);
+	    if (kbps < 64)
+		kbps = 64;
+	    std::cout << "H264: kbps " << kbps << "\n";
 	    return (TCL_OK);
 	}
 	else if (strcmp(argv[1], "hq") == 0) {
 	    int enable_hq = atoi(argv[2]);
-	    printf("enable h264 high quality encoding\n", enable_hq);
+	    // printf("enable h264 high quality encoding\n");
 	    //h264.enable_hq_encoding = bool(enable_hq);
 	    return (TCL_OK);
 	}
@@ -157,9 +151,9 @@ int H264Encoder::consume(const VideoFrame * vf)
 	state = true;
 	size(vf->width_, vf->height_);
 	std::
-	    cout << "init x264 encoder with bps:" << bps << " fps:" << fps <<
+	    cout << "init x264 encoder with kbps:" << kbps << " fps:" << fps <<
 	    "\n";
-	enc->init(vf->width_, vf->height_, bps, fps);
+	enc->init(vf->width_, vf->height_, kbps, fps);
 	enc->setGOP(gop);
 	frame_size = vf->width_ * vf->height_;
 	//fptr = fopen("out.m4v", "w");
@@ -251,5 +245,5 @@ int H264Encoder::consume(const VideoFrame * vf)
      * VIC will grab a frame with a time interval according to this return value.
      * Since this module adopts ratecontrol by bps value, it returns a constant value for a reason of smoonthness.
      */
-    return (bps * 100) / fps;
+    return (kbps*1024) / (fps*8);
 }
