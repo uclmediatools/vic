@@ -37,7 +37,7 @@
 # destroy a viewing window but remember where it was
 # and what size it was
 #
-proc destroy_userwin w {
+proc destroy_userwin {w {bypass false} } {
 
 	global win_src
 	set src $win_src($w)
@@ -52,10 +52,12 @@ proc destroy_userwin w {
 	incr x [winfo vrootx $w]
 	incr y [winfo vrooty $w]
 	set top [winfo toplevel $w]
-	global userwin_x userwin_y userwin_size size$top
-	set userwin_x($src) $x
-	set userwin_y($src) $y
-	set userwin_size($src) [set size$top]
+	if { $bypass == "false" } {
+	  global userwin_x userwin_y userwin_size size$top
+	  set userwin_x($src) $x
+	  set userwin_y($src) $y
+	  set userwin_size($src) [set size$top]
+	}
 	destroy $top
 }
 
@@ -330,8 +332,8 @@ proc open_window src {
 	bind $w <comma> "switcher_prev $v"
 	# double clicking to toggle fullscreen mode
 	bind $w <Double-1> {
-	  #destroy_userwin %W
-	  #open_full_window $src	  
+	  destroy_userwin %W
+	  open_full_window $src	  
 	}
 	
 	# Resize
@@ -385,8 +387,24 @@ proc open_full_window src {
 	catch "wm resizable $w false false"
 
 	# for bordless window	
-	set sw [winfo screenwidth .]
-	set sh [winfo screenheight .]
+	set sw_ [winfo screenwidth .]
+	set sh_ [winfo screenheight .]
+	set sw $sw_
+	set sh $sh_
+
+	puts "original fullscreen size: $sw $sh"
+	if { $sh_ > 1280 || $sw_ > 1024} {
+	  set sw 1280
+	  set sh 1024	   
+	} elseif {$sh_ > 1024 || $sw_ > 726} {
+	  set sw 1024
+	  set sh 768	
+	} elseif {$sh_ > 800 || $sw_ > 600} {
+	  set sw 800
+	  set sh 600	
+	}  
+	puts "new fullscreen size: $sw $sh"
+
 	wm overrideredirect $w true	
 
 	frame $w.frame
@@ -402,7 +420,6 @@ proc open_full_window src {
 
 	bind $w <d> "destroy_userwin $v"
 	bind $w <q> "destroy_userwin $v"
-	$w.bar.dismiss configure -command "destroy_userwin $v"
 
 	# added to catch window close action
 	wm protocol $w WM_DELETE_WINDOW "destroy_userwin $v"
