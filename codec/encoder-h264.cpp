@@ -108,14 +108,14 @@ int H264Encoder::command(int argc, const char *const *argv)
 	}
 	else if (strcmp(argv[1], "fps") == 0) {
 	    fps = atoi(argv[2]);
-	    std::cout << "H264: fps " << fps << "\n";
+	    //std::cout << "H264: fps " << fps << "\n";
 	    return (TCL_OK);
 	}
 	else if (strcmp(argv[1], "kbps") == 0) {
 	    kbps = atoi(argv[2]);
 	    if (kbps < 64)
 		kbps = 64;
-	    std::cout << "H264: kbps " << kbps << "\n";
+	    //std::cout << "H264: kbps " << kbps << "\n";
 	    return (TCL_OK);
 	}
 	else if (strcmp(argv[1], "hq") == 0) {

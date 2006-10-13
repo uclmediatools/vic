@@ -83,9 +83,9 @@ void WindowRenderer::compute_scale(int w, int h)
 	 * On a mismatch, the image will be centered in the window.
 	 */
 	scale_ = 0;
-//	outw_ = (ww_ >> 2) << 2;
-//	outh_ = (wh_ >> 2) << 2;
-
+	outw_ = (ww_ >> 2) << 2;
+	outh_ = (wh_ >> 2) << 2;
+/*
 	int d = distance(ww_, width_);
 	int t = distance(ww_, width_ << 1);
 	if (t < d) {
@@ -111,7 +111,7 @@ void WindowRenderer::compute_scale(int w, int h)
 		outw_ = width_ >> scale_;
 		outh_ = height_ >> scale_;
 	}
-    
+*/    
 }
 
 void WindowRenderer::sync() const

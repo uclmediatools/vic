@@ -182,8 +182,10 @@ void MPEG4Decoder::recv(pktbuf * pb)
 	}
 
 	if (len < 0) {
+	
 	    pb->release();
 	    debug_msg("mpeg4dec: frame error\n");
+	    std::cout << "mpeg4dec: frame error\n";
 	    stream->clear();
 	    idx = seq + 1;
 	    return;
