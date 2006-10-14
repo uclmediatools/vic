@@ -166,7 +166,8 @@ XVideoImage::XVideoImage(Tk_Window tk, int width, int height)
   : VideoImage(tk, width, height), image_(NULL)
 {			     
 	if(render.init(dpy_, FOURCC_I420, Tk_Visual(tk), Tk_Depth(tk), 3) >= 0){
-	  image_ = render.createImage(width, height);	  
+	  image_ = render.createImage(width, height);
+	  printf("xvideo: initialie video with %dx%d\n", width, height); 
 	}else{
 	  printf("cannot initialize xvideo extension");
 	  enable_xv = false;
