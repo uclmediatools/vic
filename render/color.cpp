@@ -49,12 +49,6 @@ static const char rcsid[] =
 #include <fcntl.h>
 #endif
 #include <string.h>
-#include "../config_arch.h"
-#ifdef USE_FASTMEMCPY
-extern "C" {
-#include "postproc/fastmemcpy.h"
-}
-#endif
 #ifdef WIN32
 #include <tk.h>
 

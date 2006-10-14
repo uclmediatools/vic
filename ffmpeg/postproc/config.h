@@ -23,7 +23,6 @@
 
 /* Use 3dnow/mmxext/sse/mmx optimized fast memcpy() [maybe buggy... signal 4]*/
 #define USE_FASTMEMCPY 1
-#define HAVE_XVIDEO
 
 /* attribute(used) as needed by some compilers */
 #if (__GNUC__ * 100 + __GNUC_MINOR__ >= 300)
