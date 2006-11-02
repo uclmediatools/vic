@@ -202,7 +202,10 @@ WindowDitherer::WindowDitherer(VideoWindow* vw, int decimation)
 void WindowDitherer::alloc_image()
 {
 	StandardVideoImage* p;
-	if(enable_xv){
+
+#ifdef HAVE_XVIDEO
+	
+	if (enable_xv){
 	  XVideoImage *p;		
 	  p = XVideoImage::allocate(window_->tkwin(), width_, height_);	
 	  if(p){
@@ -213,6 +216,8 @@ void WindowDitherer::alloc_image()
 	  enable_xv = false;
 	  printf("disable xvideo\n");
 	}
+#endif
+
 	p = StandardVideoImage::allocate(window_->tkwin(), outw_, outh_);
 	pixbuf_ = p->pixbuf();
 	image_ = p;

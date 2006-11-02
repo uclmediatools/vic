@@ -159,6 +159,7 @@ StandardVideoImage::~StandardVideoImage()
 }
 
 
+#ifdef HAVE_XVIDEO
 // FIXME: need to detect xvdieo capability
 bool XVideoImage::enable_xv = true;
 
@@ -193,6 +194,7 @@ void XVideoImage::putimage(Display* dpy, Window window, GC gc,
 		      int sx, int sy, int x, int y,int w, int h) const{
 	render.displayImage(window, gc, w, h);
 }
+#endif /*HAVE_XVIDEO*/
 
 SlowVideoImage::SlowVideoImage(Tk_Window tk, int w, int h)
 	: StandardVideoImage(tk, w, h)

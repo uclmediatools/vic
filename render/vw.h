@@ -103,7 +103,9 @@ class XVideoImage : public VideoImage {
         
     protected:
 	IMAGE_TYPE* image_;
+#ifdef HAVE_XVIDEO
 	XRender render;
+#endif
 	static bool enable_xv;
 };
 #ifdef USE_SHM
