@@ -481,13 +481,14 @@ main(int argc, const char** argv)
 			usage(NULL);
 	}
 
+#ifndef WIN32
 	/* CPU capabilities detection */
 	GetCpuCaps(&gCpuCaps);
 	printf("cpudetect: %s\n", gCpuCaps.cpuname);
 	printf("cpudetect: MMX=%d MMX2=%d SSE=%d SSE2=%d 3DNow=%d 3DNowExt=%d\n",  \
 	        gCpuCaps.hasMMX, gCpuCaps.hasMMX2, gCpuCaps.hasSSE, gCpuCaps.hasSSE2, \
 	       	gCpuCaps.has3DNow, gCpuCaps.has3DNowExt );
-
+#endif
 	
 	Tcl::init("vic");
 	Tcl& tcl = Tcl::instance();

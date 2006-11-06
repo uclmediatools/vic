@@ -123,72 +123,60 @@ int BlockRenderer::consume(const VideoFrame* vf)
 			return (0);
 		need_update_ = 0;
 	}
-
-	render(vf->bp_, 0, 0, 0, 0);
-	
-	// put the image to display
-	// in WindowRenderer::push
-	push(NULL, 0, 0, 0, 0);
-	sync();
-	
 	/*
-		//
-		//  check how many blocks we need to update.  If more than
-		//  12%, do a single image push call for them.  Otherwise,
-		// only push the ones that change.
-		//
-		u_int now = now_;
-		const u_int8_t* ts = p->crvec_;
-		u_int bcnt = 0;
-		int w = width_ >> 3;
-		int y;
-		for (y = height_ >> 3; --y >= 0; ) {
-			for (int x = 0; x < w; ++x)
-				if (!RV_PAST(now, ts[x]))
-					++bcnt;
-			ts += w;
-		}
-		int immed = bcnt < irthresh_;
-	
-	
-	#ifdef WIN32
-		immed = 0;
-	#endif
-	
-		int ymin = height_;
-		int ymax = 0;
-		ts = p->crvec_;
-		for (y = 0; y < height_; y += 8) {
-			for (int x = 0; x < width_; ) {
-				if (RV_PAST(now, ts[x >> 3])) {
-					x += 8;
-					continue;
-				}
-				int sx = x;
-				do {
-					x += 8;
-				} while (x < width_ && !RV_PAST(now, ts[x >> 3]));
-	
-				if (y < ymin)
-					ymin = y;
-				if (y > ymax)
-					ymax = y;
-				// XXX
-				int off = y * width_ + sx;
-				render(p->bp_, off, sx, x - sx, 8);
-				if (immed)
-					push(p->bp_, y, y + 8, sx, x);
-			}
-			ts += width_ >> 3;
-		}
-		// XXX
-		now_ = p->ts_;
-		if (ymin <= ymax) {
-			if (!immed)
-				push(p->bp_, ymin, ymax + 8, 0, 0);
-			sync();
-		}
+	 * check how many blocks we need to update.  If more than
+	 * 12%, do a single image push call for them.  Otherwise,
+	 * only push the ones that change.
+	 */
+	u_int now = now_;
+	const u_int8_t* ts = p->crvec_;
+	u_int bcnt = 0;
+	int w = width_ >> 3;
+	int y;
+	for (y = height_ >> 3; --y >= 0; ) {
+		for (int x = 0; x < w; ++x)
+			if (!RV_PAST(now, ts[x]))
+				++bcnt;
+		ts += w;
 	}
-	*/
+	int immed = bcnt < irthresh_;
+
+#ifdef WIN32
+	immed = 0;
+#endif
+
+	int ymin = height_;
+	int ymax = 0;
+	ts = p->crvec_;
+	for (y = 0; y < height_; y += 8) {
+		for (int x = 0; x < width_; ) {
+			if (RV_PAST(now, ts[x >> 3])) {
+				x += 8;
+				continue;
+			}
+			int sx = x;
+			do {
+				x += 8;
+			} while (x < width_ && !RV_PAST(now, ts[x >> 3]));
+
+			if (y < ymin)
+				ymin = y;
+			if (y > ymax)
+				ymax = y;
+			/*XXX*/
+			int off = y * width_ + sx;
+			render(p->bp_, off, sx, x - sx, 8);
+			if (immed)
+				push(p->bp_, y, y + 8, sx, x);
+		}
+		ts += width_ >> 3;
+	}
+	/*XXX*/
+	now_ = p->ts_;
+	if (ymin <= ymax) {
+		if (!immed)
+			push(p->bp_, ymin, ymax + 8, 0, 0);
+		sync();
+	}
 	return (0);
 }

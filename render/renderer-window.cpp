@@ -85,7 +85,8 @@ void WindowRenderer::compute_scale(int w, int h)
 	scale_ = 0;
 	outw_ = (ww_ >> 2) << 2;
 	outh_ = (wh_ >> 2) << 2;
-/*
+
+// 	should be commented if we use libswscale 
 	int d = distance(ww_, width_);
 	int t = distance(ww_, width_ << 1);
 	if (t < d) {
@@ -111,7 +112,7 @@ void WindowRenderer::compute_scale(int w, int h)
 		outw_ = width_ >> scale_;
 		outh_ = height_ >> scale_;
 	}
-*/    
+// commen end
 }
 
 void WindowRenderer::sync() const
