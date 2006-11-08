@@ -41,7 +41,9 @@ static const char rcsid[] =
 #include "vw.h"
 #include "color.h"
 #include "rgb-converter.h"
+#ifdef HAVE_XVIDEO
 #include "xvideo.h"
+#endif
 extern "C" {
 #include <tk.h>
 

@@ -123,11 +123,22 @@ int BlockRenderer::consume(const VideoFrame* vf)
 			return (0);
 		need_update_ = 0;
 	}
+
+#ifdef ENABLE_SWSCALE
+	render(vf->bp_, 0, 0, 0, 0);
+	
+	// put the image to display
+	// in WindowRenderer::push
+	push(NULL, 0, 0, 0, 0);
+	sync();
+#else
+	
+	
 	/*
 	 * check how many blocks we need to update.  If more than
 	 * 12%, do a single image push call for them.  Otherwise,
 	 * only push the ones that change.
-	 */
+	 */	
 	u_int now = now_;
 	const u_int8_t* ts = p->crvec_;
 	u_int bcnt = 0;
@@ -163,7 +174,7 @@ int BlockRenderer::consume(const VideoFrame* vf)
 				ymin = y;
 			if (y > ymax)
 				ymax = y;
-			/*XXX*/
+			// XXX
 			int off = y * width_ + sx;
 			render(p->bp_, off, sx, x - sx, 8);
 			if (immed)
@@ -171,12 +182,14 @@ int BlockRenderer::consume(const VideoFrame* vf)
 		}
 		ts += width_ >> 3;
 	}
-	/*XXX*/
+	// XXX
 	now_ = p->ts_;
 	if (ymin <= ymax) {
 		if (!immed)
 			push(p->bp_, ymin, ymax + 8, 0, 0);
 		sync();
 	}
+#endif
+
 	return (0);
 }

@@ -188,11 +188,11 @@ proc open_window src {
 	toplevel $w -class Vic \
 		-visual "[winfo visual .top] [winfo depth .top]" \
 		-colormap .top
-	#catch "wm resizable $w false false"
+	catch "wm resizable $w false false"
 	#
 	# make windows become x-y resizeable
 	#
-	catch "wm resizable $w true false"
+	#catch "wm resizable $w true true"
 	frame $w.frame
 
 
@@ -337,7 +337,7 @@ proc open_window src {
 	}
 	
 	# Resize
-	bind $w <Configure> {	  
+	bind $w <B1-Motion> {	  
 	  global win_src win_target
 
 	  if { [info exists win_src(%W)] & [info exists win_target(%W)]} {
@@ -354,11 +354,11 @@ proc open_window src {
 	    
 	    set ow [expr int(%w + 2*%x)]
 	    set oh [expr int($aspect_r * $ow)]
-
-	    if { $iw != $ow || $ih != $oh} {	
-	      #resize_window %W $ow $oh     
-	      resize %W $ow $oh		       
-	    }    
+  
+        # open_dialog "$iw $ih $ow $oh"
+        resize %W $ow $oh		       	      
+	    #resize_window %W $ow $oh   	      
+	       
 	  }	 
 	}		
 	switcher_register $v $src window_switch

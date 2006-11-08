@@ -86,7 +86,7 @@ void WindowRenderer::compute_scale(int w, int h)
 	outw_ = (ww_ >> 2) << 2;
 	outh_ = (wh_ >> 2) << 2;
 
-// 	should be commented if we use libswscale 
+#ifndef ENABLE_SWSCALE
 	int d = distance(ww_, width_);
 	int t = distance(ww_, width_ << 1);
 	if (t < d) {
@@ -112,7 +112,7 @@ void WindowRenderer::compute_scale(int w, int h)
 		outw_ = width_ >> scale_;
 		outh_ = height_ >> scale_;
 	}
-// commen end
+#endif
 }
 
 void WindowRenderer::sync() const
@@ -124,11 +124,12 @@ void WindowRenderer::push(const u_char*, int miny, int maxy, int minx, int maxx)
 {
         if(enable_xv){
             window_->render(image_, 0, outh_, 0, outw_ );
-        }else{
-            window_->render(image_, 0, 0 , 0, 0);
-	}
+			return;
+        }            
 	
-/*
+#ifdef ENABLE_SWSCALE
+	window_->render(image_, 0, 0 , 0, 0);
+#else
 	if (scale_ >= 0) {
 		miny >>= scale_;
 		maxy >>= scale_;
@@ -141,7 +142,8 @@ void WindowRenderer::push(const u_char*, int miny, int maxy, int minx, int maxx)
 		maxx <<= -scale_;
 	}
 	window_->render(image_, miny, maxy, minx, maxx);
-*/	
+#endif	
+
 }
 
 /*
