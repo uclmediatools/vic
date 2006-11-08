@@ -5,10 +5,9 @@
 #ifndef __POSTPROC_CONFIG_H__
 #define __POSTPROC_CONFIG_H__ 1
 
-#include "../config.h"
-
 /* Runtime CPU detection */
 #define RUNTIME_CPUDETECT
+#define HAVE_SWSCALE
 
 /* Only use during compliation */
 #if defined(RUNTIME_CPUDETECT) 
@@ -23,6 +22,9 @@
 
 /* Use 3dnow/mmxext/sse/mmx optimized fast memcpy() [maybe buggy... signal 4]*/
 #define USE_FASTMEMCPY 1
+
+/* Use libswscale */
+#define HAVE_SWSCALE
 
 /* attribute(used) as needed by some compilers */
 #if (__GNUC__ * 100 + __GNUC_MINOR__ >= 300)
