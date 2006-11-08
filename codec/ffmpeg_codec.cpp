@@ -270,6 +270,7 @@ void FFMpegCodec::resize(int w, int h)
 
 void FFMpegCodec::set_gop(int gop_)
 {
+/*
     iframe_gap = gop_;
 
     if (state) {
@@ -283,6 +284,7 @@ void FFMpegCodec::set_gop(int gop_)
 	    s->intra_only = 0;
 	}
     }
+*/
 }
 
 void FFMpegCodec::set_max_quantizer(int q)

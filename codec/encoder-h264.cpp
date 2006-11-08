@@ -88,7 +88,7 @@ H264Encoder::~H264Encoder()
 
 void H264Encoder::size(int w, int h)
 {
-    printf("H264: WxH %dx%d\n", w, h);
+    debug_msg("H264: WxH %dx%d\n", w, h);
     Module::size(w, h);
     fIn = new DataBuffer(w * h * 3 >> 1);
     fOut = new DataBuffer(w * h * 3 >> 1);

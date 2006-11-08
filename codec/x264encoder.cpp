@@ -6,8 +6,8 @@
 
 extern "C"
 {
-#include "common/common.h"
-#include "x264.h"
+#include "x264/common/common.h"
+#include "x264/x264.h"
 }
 
 #include "databuffer.h"
