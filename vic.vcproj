@@ -481,8 +481,8 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/I ../common"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\win32\include,.\ffmpeg,.\,render,rtp,net,win32,video,codec,codec\tmndec,codec\tmn-x,codec\jpeg,codec\p64,codec\h263,codec\mpeg,..\common\src,..\tk-8.0\win,..\tcl-8.0\win,..\tk-8.0\generic,..\tk-8.0\xlib,..\tcl-8.0\generic,..\IPv6Kit\inc,mst_wm\incls"
-				PreprocessorDefinitions="DEBUG;_DEBUG;DEBUG_MEM;WIN32;SIGRET=void;SIGARGS=int;NLAYER=8;ED_YBITS=4;VIC;USE_TIME;WINDOWS;HAVE_IPV6;NEED_INET_NTOP;NEED_INET_PTON;WINXP_IPV6"
+				AdditionalIncludeDirectories=".\,render,rtp,net,win32,video,codec,codec\tmndec,codec\tmn-x,codec\jpeg,codec\p64,codec\h263,codec\mpeg,..\common\src,..\tk-8.0\win,..\tcl-8.0\win,..\tk-8.0\generic,..\tk-8.0\xlib,..\tcl-8.0\generic,..\IPv6Kit\inc,mst_wm\incls"
+				PreprocessorDefinitions="ENABLE_SWSCALE;HAVE_AV_CONFIG_H;__X264__;DEBUG;_DEBUG;DEBUG_MEM;WIN32;SIGRET=void;SIGARGS=int;NLAYER=8;ED_YBITS=4;VIC;USE_TIME;WINDOWS;HAVE_IPV6;NEED_INET_NTOP;NEED_INET_PTON;WINXP_IPV6"
 				RuntimeLibrary="5"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderFile=".\Debug_IPv6_Win2000/vic.pch"
@@ -498,11 +498,11 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tklib.lib tcllib.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib uclmm.lib strmiids.lib quartz.lib"
+				AdditionalDependencies="libswscale.lib avcodec.lib libx264.lib tklib.lib tcllib.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib uclmm.lib strmiids.lib quartz.lib"
 				OutputFile="$(ConfigurationName)/vic.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="..\tcl-8.0\win\Debug,..\tk-8.0\win\Debug,..\common\src\Debug,codec\tmndec,codec\tmn-x"
+				AdditionalLibraryDirectories="&quot;..\tcl-8.0\win\Debug&quot;;&quot;..\tk-8.0\win\Debug&quot;;..\common\src\Debug;codec\tmndec;&quot;codec\tmn-x&quot;;win32\lib"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\Debug_IPv6_Win2000/vic.pdb"
 				SubSystem="2"
@@ -4850,6 +4850,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\codec\databuffer.cpp">
+			</File>
+			<File
 				RelativePath="codec\dct.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -5364,6 +5367,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\codec\decoder-h264.cpp">
+			</File>
+			<File
 				RelativePath="codec\decoder-jpeg.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -5435,6 +5441,9 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\codec\decoder-mpeg4.cpp">
 			</File>
 			<File
 				RelativePath="codec\decoder-nv.cpp">
@@ -6097,6 +6106,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\codec\encoder-h264.cpp">
+			</File>
+			<File
 				RelativePath="codec\encoder-jpeg.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -6168,6 +6180,9 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\codec\encoder-mpeg4.cpp">
 			</File>
 			<File
 				RelativePath="codec\encoder-nv.cpp">
@@ -6387,6 +6402,9 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\codec\ffmpeg_codec.cpp">
 			</File>
 			<File
 				RelativePath="codec\framer-jpeg.cpp">
@@ -6684,6 +6702,9 @@
 				RelativePath=".\codec\p64\p64as.cpp">
 			</File>
 			<File
+				RelativePath=".\codec\packetbuffer.cpp">
+			</File>
+			<File
 				RelativePath=".\render\ppm.cpp">
 			</File>
 			<File
@@ -6831,6 +6852,9 @@
 						PreprocessorDefinitions=""
 						BrowseInformation="1"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\codec\x264encoder.cpp">
 			</File>
 			<Filter
 				Name="H263 Erlangen codec"
@@ -8388,6 +8412,9 @@
 				Name="General codec Headers"
 				Filter="">
 				<File
+					RelativePath=".\codec\databuffer.h">
+				</File>
+				<File
 					RelativePath="codec\dct.h">
 				</File>
 				<File
@@ -8406,6 +8433,12 @@
 					RelativePath="codec\encoder-h263.h">
 				</File>
 				<File
+					RelativePath=".\codec\ffmpeg_codec.h">
+				</File>
+				<File
+					RelativePath=".\codec\ffmpeg_config.h">
+				</File>
+				<File
 					RelativePath="codec\framer-h261.h">
 				</File>
 				<File
@@ -8415,6 +8448,9 @@
 					RelativePath="codec\mpeg2par.h">
 				</File>
 				<File
+					RelativePath=".\codec\packetbuffer.h">
+				</File>
+				<File
 					RelativePath="codec\parser-mpeg.h">
 				</File>
 				<File
@@ -8422,6 +8458,12 @@
 				</File>
 				<File
 					RelativePath="codec\pvh.h">
+				</File>
+				<File
+					RelativePath=".\codec\streambuffer.h">
+				</File>
+				<File
+					RelativePath=".\codec\x264encoder.h">
 				</File>
 			</Filter>
 			<Filter

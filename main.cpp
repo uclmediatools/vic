@@ -70,7 +70,7 @@ static const char rcsid[] =
 #include <X11/Xutil.h>
 
 extern "C" {
-#include "postproc/cpudetect.h"
+#include "ffmpeg/postproc/cpudetect.h"
 #include <tk.h>
 #ifdef USE_SHM
 #ifdef sgi
