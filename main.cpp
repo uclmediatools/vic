@@ -70,7 +70,7 @@ static const char rcsid[] =
 #include <X11/Xutil.h>
 
 extern "C" {
-#include "ffmpeg/postproc/cpudetect.h"
+#include "postproc/cpudetect.h"
 #include <tk.h>
 #ifdef USE_SHM
 #ifdef sgi
@@ -481,7 +481,7 @@ main(int argc, const char** argv)
 			usage(NULL);
 	}
 
-#ifndef WIN32
+#ifdef RUNTIME_CPUDETECT
 	/* CPU capabilities detection */
 	GetCpuCaps(&gCpuCaps);
 	printf("cpudetect: %s\n", gCpuCaps.cpuname);

@@ -157,8 +157,8 @@ int MPEG4Encoder::consume(const VideoFrame * vf)
     if (!state) {
 	state = true;
 	size(vf->width_, vf->height_);
-	std::cout << "mpeg4enc: WxH:" << vf->width_ << "x" << vf->height_;
-	std::cout << "kbps:" << kbps << " fps:" << fps << "\n";
+	// std::cout << "mpeg4enc: WxH:" << vf->width_ << "x" << vf->height_;
+	// std::cout << "kbps:" << kbps << " fps:" << fps << "\n";
 	mpeg4.init_encoder(vf->width_, vf->height_, kbps * 1024, fps, gop);
     }
     bitstream = mpeg4.encode(vf->bp_, len);

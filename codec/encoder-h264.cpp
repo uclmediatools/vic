@@ -150,9 +150,7 @@ int H264Encoder::consume(const VideoFrame * vf)
     if (!state) {
 	state = true;
 	size(vf->width_, vf->height_);
-	std::
-	    cout << "init x264 encoder with kbps:" << kbps << " fps:" << fps <<
-	    "\n";
+	//std::cout << "init x264 encoder with kbps:" << kbps << " fps:" << fps << "\n";
 	enc->init(vf->width_, vf->height_, kbps, fps);
 	enc->setGOP(gop);
 	frame_size = vf->width_ * vf->height_;

@@ -89,7 +89,7 @@ SRC_GRABBER = $(OBJ_GRABBER:.o=.cpp)
 OBJ_XIL = @V_OBJ_XIL@
 OBJ_CRYPT = @V_OBJ_CRYPT@
 CODEC_LIB = ffmpeg/libavcodec/libavcodec.a codec/x264/libx264.a codec/tmndec/libh263.a codec/tmn-x/libh263coder.a
-VIDEO_LIB = ffmpeg/postproc/libswscale.a
+VIDEO_LIB = postproc/libswscale.a
 
 LIB = $(LIB_GRABBER) @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ $(CODEC_LIB) $(VIDEO_LIB) \
 	../common/src/libuclmmbase.a -lm -lz -lcrypto -lpthread 
@@ -374,7 +374,7 @@ clean:
 	cd codec/tmn && $(MAKE) clean
 	cd codec/tmndec && $(MAKE) realclean
 	cd ffmpeg && $(MAKE) clean
-	cd ffmpeg/postproc && $(MAKE) clean
+	cd postproc && $(MAKE) clean
 	cd codec/x264 && $(MAKE) clean
 	rm -f codec/tmn-x/*.o codec/tmn-x/*.a
 
@@ -435,8 +435,8 @@ fulltar: force
 	    "chmod 444 $$name.tar.gz" ; \
 	     chmod 444 $$name.tar.gz
 
-ffmpeg/postproc/libswscale.a:
-	(cd ffmpeg/postproc; $(MAKE) CC=$(CC) CCOPT="$(CCOPT)" )
+postproc/libswscale.a:
+	(cd postproc; $(MAKE) CC=$(CC) CCOPT="$(CCOPT)" )
 
 ffmpeg/libavcodec/libavcodec.a:
 	(cd ffmpeg/libavcodec; $(MAKE) CC=$(CC) CCOPT="$(CCOPT)" )

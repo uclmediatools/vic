@@ -1,14 +1,15 @@
-
-#ifdef HAVE_SWSCALE
-
 #include <stdlib.h>
 #include <stdio.h>
 #include "vic_tcl.h"
 #include "renderer-window.h"
 #include "vw.h"
 #include "renderer.h"
-#include "ffmpeg/postproc/swscale.h"
-#include "ffmpeg/postproc/cpudetect.h"
+
+#include "postproc/config.h"
+#include "postproc/swscale.h"
+#include "postproc/cpudetect.h"
+
+#ifdef HAVE_SWSCALE 
 
 class X11WindowRenderer : public WindowDitherer {
 public:
@@ -54,20 +55,21 @@ public:
 			sws_context = NULL;
 	      }
 	      int flags = SWS_FAST_BILINEAR;
-	      /*flags |= (gCpuCaps.hasMMX ? SWS_CPU_CAPS_MMX : 0);
+#ifdef RUNTIME_CPUDETECT	      
+	      flags |= (gCpuCaps.hasMMX ? SWS_CPU_CAPS_MMX : 0);
 	      flags |= (gCpuCaps.hasMMX2 ? SWS_CPU_CAPS_MMX2 : 0);
 	      flags |= (gCpuCaps.has3DNow ? SWS_CPU_CAPS_3DNOW : 0);
 	      flags |= (gCpuCaps.hasAltiVec ? SWS_CPU_CAPS_ALTIVEC : 0);
-	      */
-		  if(!outw_ || !outh_ || !width_ || !height_) return;
+#endif	      
+	      if(!outw_ || !outh_ || !width_ || !height_) return;
 
 	      sws_context = sws_getContext(width_, height_, IMGFMT_I420,
-	                 outw_, outh_, out_format, flags, NULL, NULL, NULL); 	   
+	             outw_, outh_, out_format, flags, NULL, NULL, NULL); 	   
 	      // printf("X11WindowRenderer: %dx%d ==> %dx%d\n", width_, height_, outw_, outh_);
 	      
 	      if(sws_context == NULL){
-			debug_msg("X11WindowRenderer: error! cannot allocate memory for swscontext!\n");
-			return;
+	          debug_msg("X11WindowRenderer: error! cannot allocate memory for swscontext!\n");
+		  return;
 	      }
 		      
 			    
@@ -85,7 +87,7 @@ public:
 	    sws_src[1] = sws_src[0] + framesize_;
 	    sws_src[2] = sws_src[1] + framesize_/4;
 
-     	sws_scale_ordered(sws_context, sws_src, sws_src_stride, 0, height_, sws_tar, sws_tar_stride);
+     	    sws_scale_ordered(sws_context, sws_src, sws_src_stride, 0, height_, sws_tar, sws_tar_stride);
 	  }	
 	}
 protected:

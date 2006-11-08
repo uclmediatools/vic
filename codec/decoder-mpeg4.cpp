@@ -93,7 +93,7 @@ MPEG4Decoder::MPEG4Decoder():Decoder(2)
 
 MPEG4Decoder::~MPEG4Decoder()
 {
-    std::cout << "destroy mpeg4 decoder\n";
+    // std::cout << "destroy mpeg4 decoder\n";
     delete stream;
 }
 
@@ -185,7 +185,7 @@ void MPEG4Decoder::recv(pktbuf * pb)
 	
 	    pb->release();
 	    debug_msg("mpeg4dec: frame error\n");
-	    std::cout << "mpeg4dec: frame error\n";
+	    // std::cout << "mpeg4dec: frame error\n";
 	    stream->clear();
 	    idx = seq + 1;
 	    return;

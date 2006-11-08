@@ -5,9 +5,12 @@
 #ifndef __POSTPROC_CONFIG_H__
 #define __POSTPROC_CONFIG_H__ 1
 
+#define HAVE_SWSCALE
+#define __CPU__ 586
+#define ARCH_X86 1
+
 /* Runtime CPU detection */
 #define RUNTIME_CPUDETECT
-#define HAVE_SWSCALE
 
 /* Only use during compliation */
 #if defined(RUNTIME_CPUDETECT) 
