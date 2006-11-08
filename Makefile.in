@@ -151,7 +151,7 @@ OBJ2 =	main.o iohandler.o timer.o idlecallback.o media-timer.o \
 	codec/decoder-h263.o codec/decoder-h263v2.o codec/decoder-cellb.o \
 	codec/decoder-h261.o codec/decoder-h261v1.o codec/decoder-raw.o \
 	render/renderer.o render/renderer-window.o render/color.o \
-	render/color-x11.o\
+	render/color-swscale.o\
 	render/color-pseudo.o render/color-dither.o \
 	render/color-ed.o render/color-quant.o \
 	render/color-gray.o render/color-mono.o render/color-hist.o \
