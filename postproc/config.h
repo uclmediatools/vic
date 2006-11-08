@@ -10,7 +10,12 @@
 #define ARCH_X86 1
 
 /* Runtime CPU detection */
+#ifndef WIN32
 #define RUNTIME_CPUDETECT
+#else
+#define HAVE_MMX
+#define HAVE_MMX2
+#endif
 
 /* Only use during compliation */
 #if defined(RUNTIME_CPUDETECT) 

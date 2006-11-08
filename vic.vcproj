@@ -482,7 +482,7 @@
 				AdditionalOptions="/I ../common"
 				Optimization="0"
 				AdditionalIncludeDirectories=".\,render,rtp,net,win32,video,codec,codec\tmndec,codec\tmn-x,codec\jpeg,codec\p64,codec\h263,codec\mpeg,..\common\src,..\tk-8.0\win,..\tcl-8.0\win,..\tk-8.0\generic,..\tk-8.0\xlib,..\tcl-8.0\generic,..\IPv6Kit\inc,mst_wm\incls"
-				PreprocessorDefinitions="ENABLE_SWSCALE;HAVE_AV_CONFIG_H;__X264__;DEBUG;_DEBUG;DEBUG_MEM;WIN32;SIGRET=void;SIGARGS=int;NLAYER=8;ED_YBITS=4;VIC;USE_TIME;WINDOWS;HAVE_IPV6;NEED_INET_NTOP;NEED_INET_PTON;WINXP_IPV6"
+				PreprocessorDefinitions="HAVE_AV_CONFIG_H;__X264__;DEBUG;_DEBUG;DEBUG_MEM;WIN32;SIGRET=void;SIGARGS=int;NLAYER=8;ED_YBITS=4;VIC;USE_TIME;WINDOWS;HAVE_IPV6;NEED_INET_NTOP;NEED_INET_PTON;WINXP_IPV6"
 				RuntimeLibrary="5"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderFile=".\Debug_IPv6_Win2000/vic.pch"
@@ -11717,79 +11717,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="render\color-hi.cpp">
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug IPv6 Musica|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug IPv6 Win2000|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release IPv6 XP|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug IPv6 MSR|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release IPv6 Win2000|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug IPv6 XP|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="render\color-hist.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -12082,80 +12009,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="render\color-true.cpp">
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug IPv6 Musica|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug IPv6 Win2000|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release IPv6 XP|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug IPv6 MSR|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release IPv6 Win2000|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug IPv6 XP|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\render\color-x11.cpp">
+				RelativePath=".\render\color-swscale.cpp">
 			</File>
 			<File
 				RelativePath="render\color-yuv.cpp">
@@ -14734,6 +14588,13 @@
 					RelativePath="video\grabber.h">
 				</File>
 			</Filter>
+		</Filter>
+		<Filter
+			Name="postproc"
+			Filter="">
+			<File
+				RelativePath=".\postproc\config.h">
+			</File>
 		</Filter>
 		<File
 			RelativePath="cm170.ppm">

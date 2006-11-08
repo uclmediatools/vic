@@ -55,12 +55,23 @@ public:
 			sws_context = NULL;
 	      }
 	      int flags = SWS_FAST_BILINEAR;
+
 #ifdef RUNTIME_CPUDETECT	      
 	      flags |= (gCpuCaps.hasMMX ? SWS_CPU_CAPS_MMX : 0);
 	      flags |= (gCpuCaps.hasMMX2 ? SWS_CPU_CAPS_MMX2 : 0);
 	      flags |= (gCpuCaps.has3DNow ? SWS_CPU_CAPS_3DNOW : 0);
 	      flags |= (gCpuCaps.hasAltiVec ? SWS_CPU_CAPS_ALTIVEC : 0);
-#endif	      
+#elif defined(HAVE_MMX)
+		  flags |= SWS_CPU_CAPS_MMX;
+	#if defined(HAVE_MMX2)
+		  flags |= SWS_CPU_CAPS_MMX2;
+	#endif 
+#elif defined(HAVE_3DNOW)
+		  flags |= SWS_CPU_CAPS_3DNOW;
+#elif defined(HAVE_ALTIVEC)
+		  flags |= SWS_CPU_CAPS_ALTIVEC;
+#endif
+
 	      if(!outw_ || !outh_ || !width_ || !height_) return;
 
 	      sws_context = sws_getContext(width_, height_, IMGFMT_I420,
