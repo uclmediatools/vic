@@ -124,7 +124,7 @@ int BlockRenderer::consume(const VideoFrame* vf)
 		need_update_ = 0;
 	}
 
-#ifdef ENABLE_SWSCALE
+#ifdef HAVE_SWSCALE
 	render(vf->bp_, 0, 0, 0, 0);
 	
 	// put the image to display

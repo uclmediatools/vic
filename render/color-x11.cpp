@@ -1,5 +1,5 @@
 
-#ifdef ENABLE_SWSCALE
+#ifdef HAVE_SWSCALE
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -156,4 +156,4 @@ public:
 
 					       
 
-#endif // ENABLE_SWSCALE
+#endif // HAVE_SWSCALE

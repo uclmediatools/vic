@@ -86,7 +86,7 @@ void WindowRenderer::compute_scale(int w, int h)
 	outw_ = (ww_ >> 2) << 2;
 	outh_ = (wh_ >> 2) << 2;
 
-#ifndef ENABLE_SWSCALE
+#ifndef HAVE_SWSCALE
 	int d = distance(ww_, width_);
 	int t = distance(ww_, width_ << 1);
 	if (t < d) {
@@ -127,7 +127,7 @@ void WindowRenderer::push(const u_char*, int miny, int maxy, int minx, int maxx)
 			return;
         }            
 	
-#ifdef ENABLE_SWSCALE
+#ifdef HAVE_SWSCALE
 	window_->render(image_, 0, 0 , 0, 0);
 #else
 	if (scale_ >= 0) {
