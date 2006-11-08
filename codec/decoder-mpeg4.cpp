@@ -135,17 +135,12 @@ void MPEG4Decoder::recv(pktbuf * pb)
     }
 
     if (pktIdx - last_seq > 5) {
-	//printf("sequece interrupt...\n");
+	debug_msg("sequece interrupt...\n");
 	idx = seq;
 	pktIdx = 0;
     }
 
-    last_seq = pktIdx;
-    //printf("%2d%2d%2d%2d\n", pb->dp[12], pb->dp[13], pb->dp[14], pb->dp[15]);
-
-    //printf("%d %d %d\n", pktIdx, cc, idx);
     stream->write(pktIdx, cc, (char *) bp);
-    /* copy packet */
 
     if (last_seq + 1 != seq) {
 	/* oops - missing packet */
@@ -156,8 +151,6 @@ void MPEG4Decoder::recv(pktbuf * pb)
     int len = 0;
     if (mbit) {
 	stream->setTotalPkts(pktIdx + 1);
-	debug_msg("receive %d\n", b_off);
-
 
 	if (stream->isComplete()) {
 	    int ti;
@@ -182,19 +175,12 @@ void MPEG4Decoder::recv(pktbuf * pb)
 	}
 
 	if (len < 0) {
-	
 	    pb->release();
 	    debug_msg("mpeg4dec: frame error\n");
-	    // std::cout << "mpeg4dec: frame error\n";
 	    stream->clear();
 	    idx = seq + 1;
 	    return;
-	}			/*else if(len == -2){
-				   debug_msg("mpeg4dec: resize\n");
-				   mpeg4.release();
-				   mpeg4.init_decoder();
-				   len= mpeg4.decode(bitstream, b_off, xxx_frame);
-				   } */
+	}
 
 	if (inw_ != mpeg4.width || inh_ != mpeg4.height) {
 	    inw_ = mpeg4.width;

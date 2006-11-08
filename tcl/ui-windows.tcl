@@ -332,6 +332,7 @@ proc open_window src {
 	bind $w <comma> "switcher_prev $v"
 	# double clicking to toggle fullscreen mode
 	bind $w <Double-1> {
+	  set src $win_src(%W)
 	  destroy_userwin %W
 	  open_full_window $src	  
 	}
