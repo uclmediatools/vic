@@ -135,7 +135,9 @@ int XVideoGetPort( Display *p_display,
                 continue;
             }
 
-            /* Look for the first available port supporting this format */
+            // Look for the second available port supporting this format 
+	    // Fist port might be used by X server
+	    bool first=1;
             for( i_port = p_adaptor[i_adaptor].base_id;
                  ( i_port < (int)(p_adaptor[i_adaptor].base_id
                                    + p_adaptor[i_adaptor].num_ports) )
@@ -144,8 +146,13 @@ int XVideoGetPort( Display *p_display,
             {
                 if( XvGrabPort( p_display, i_port, CurrentTime ) == Success )
                 {
+		    if(first){
+ 		      first=0;
+		      continue;
+		    }
                     i_selected_port = i_port;
                     *pi_newchroma = p_formats[ i_format ].id;
+		    printf("using XVideo render\n");
                 }
             }
 
@@ -155,15 +162,14 @@ int XVideoGetPort( Display *p_display,
                 continue;
             }
             
-#if 0
             // If we found a port, print information about it 
-            printf( "adaptor %i, port %i, format 0x%x (%4.4s) %s\n",
+            debug_msg( "adaptor %i, port %i, format 0x%x (%4.4s) %s\n",
                      i_adaptor, i_selected_port, p_formats[ i_format ].id,
                      (char *)&p_formats[ i_format ].id,
                      ( p_formats[ i_format ].format == XvPacked ) ?
                          "packed" : "planar" );
 
-
+#if 0
             XvEncodingInfo  *p_enc;
             unsigned int             i_enc, i_num_encodings;
             XvAttribute     *p_attr;
