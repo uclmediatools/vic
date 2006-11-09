@@ -76,7 +76,7 @@ proc resize { vw w h } {
 	#
 	update idletasks
 
-	attach_renderer $src $vw
+	attach_renderer $src $vw true
 }
 
 #
@@ -132,7 +132,7 @@ proc reallocate_renderer w {
 	global win_src
 	set src $win_src($w)
 	detach_window $src $w
-	attach_window $src $w
+	attach_window $src $w true
 }
 
 #
@@ -353,12 +353,14 @@ proc open_window src {
 
 	    set aspect_r [expr 1.0*$ih / $iw]
 	    
-	    set ow [expr int(%w + 2*%x)]
+	    set ow [expr int(%w + %x +%y)]
 	    set oh [expr int($aspect_r * $ow)]
-  
-        # open_dialog "$iw $ih $ow $oh"
-        resize %W $ow $oh		       	      
-	    #resize_window %W $ow $oh   	      
+
+ 	    if { [expr abs(%x) + abs(%y)] > 10 && $ow > 64 } {
+              # open_dialog "$iw $ih $ow $oh"
+              resize %W $ow $oh		       	      
+	      #resize_window %W $ow $oh   	      
+	    }
 	       
 	  }	 
 	}		
@@ -367,7 +369,7 @@ proc open_window src {
 	#
 	# Finally, bind the source to the window.
 	#
-	attach_window $src $v
+	attach_window $src $v true
 	windowname $w [getid $src]
 }
 
@@ -394,16 +396,20 @@ proc open_full_window src {
 	set sh $sh_
 
 	puts "original fullscreen size: $sw $sh"
-	if { $sh_ > 1280 || $sw_ > 1024} {
+	if { $sh_ >= 1280 || $sw_ >= 1024} {
 	  set sw 1280
 	  set sh 1024	   
-	} elseif {$sh_ > 1024 || $sw_ > 726} {
+	} elseif {$sh_ >= 1024 || $sw_ >= 726} {
 	  set sw 1024
 	  set sh 768	
-	} elseif {$sh_ > 800 || $sw_ > 600} {
+	} elseif {$sh_ >= 800 || $sw_ >= 600} {
 	  set sw 800
 	  set sh 600	
-	}  
+	} elseif {$sh_ >= 640 || $sw_ >= 480} {
+          set sw 640
+          set sh 480
+        }
+ 
 	puts "new fullscreen size: $sw $sh"
 
 	wm overrideredirect $w true	
@@ -441,7 +447,7 @@ proc open_full_window src {
 	#
 	# Finally, bind the source to the window.
 	#
-	attach_window $src $v
+	attach_window $src $v true
 	windowname $w [getid $src]
 }
 
