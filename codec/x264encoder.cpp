@@ -3,11 +3,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <stdint.h>
+#include <inttypes.h>
+#include "ffmpeg/avcodec.h"
 extern "C"
 {
-#include "x264/common/common.h"
-#include "x264/x264.h"
+// #include "x264/common/common.h"
+#include "x264.h"
 }
 
 #include "databuffer.h"
@@ -38,10 +40,10 @@ x264Encoder::x264Encoder()
     //DISABLE CABAC for more frame rate
     param->b_cabac = 0;
     //DONOT ENABLE PSNR ANALYSE
-    param->analyse.b_psnr = 0;
-    param->i_keyint_max = 20;
+    // param->analyse.b_psnr = 0;
+    param->i_keyint_max = 60;
     param->i_keyint_min = 20;
-
+ 
     enc->h = NULL;
 
     encoder = (void *) enc;
@@ -65,9 +67,14 @@ bool x264Encoder::init(int w, int h, int bps, int fps)
     x264_param_t *param = &(enc->param);
 
     param->rc.i_bitrate = bps;
-    param->rc.b_cbr = 1;
+    // param->rc.i_rc_method = X264_RC_ABR;
+    param->rc.i_rc_method = X264_RC_CRF;
+    // param->b_cabac = FF_CODER_TYPE_AC;
+    // param->b_deblocking_filter = 1;
     param->i_fps_num = fps * 1000;
     param->i_fps_den = 1000;
+    param->rc.f_qcompress = 0;  /* 0.0 => cbr, 1.0 => constant qp */
+    param->analyse.i_me_method = X264_ME_UMH;
 
     //Currently X264 only handle (16*n)x(16*m)
     if (w % 16 != 0 && h % 16 != 0) {
@@ -150,7 +157,7 @@ void x264Encoder::setGOP(int gop)
 {
     x264 *enc = (x264 *) encoder;
     x264_param_t *param = &(enc->param);
-    param->i_keyint_max = gop;
+    param->i_keyint_max = 2*gop;
     param->i_keyint_min = gop;
 }
 
@@ -158,12 +165,15 @@ void x264Encoder::setBitRate(int br)
 {
     x264 *enc = (x264 *) encoder;
     x264_param_t *param = &(enc->param);
-    if (br > 256)
-	param->rc.i_bitrate = br;
+    param->rc.i_bitrate = br;
 }
 
 void x264Encoder::setFPS(int fps)
 {
+    x264 *enc = (x264 *) encoder;
+    x264_param_t *param = &(enc->param);
+    param->i_fps_num = fps * 1000;
+    param->i_fps_den = 1000;
 }
 
 bool x264Encoder::isInitialized()

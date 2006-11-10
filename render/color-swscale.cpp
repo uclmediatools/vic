@@ -6,8 +6,8 @@
 #include "renderer.h"
 
 #include "config_arch.h"
-#include "swscale.h"
-#include "avutil.h"
+#include "ffmpeg/swscale.h"
+#include "ffmpeg/avutil.h"
 #include "linux/cpudetect.h"
 
 #ifdef HAVE_SWSCALE 
