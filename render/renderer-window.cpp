@@ -175,14 +175,14 @@ void WindowRenderer::resize(int w, int h)
 	 * (but it's not likely because this size is mainly
 	 * dependent on the size of the window).
 	 */
-	if (outw != outw_ || outh != outh_) {
+//	if (outw != outw_ || outh != outh_) {
 		delete image_;
 		window_->setimage(0);
 		alloc_image();
 		/*XXX*/
 		window_->damage();
 		window_->redraw();
-	}
+//	}
 	doupdate();
 }
 
@@ -217,7 +217,7 @@ void WindowDitherer::alloc_image()
 	    return;
 	  }	  
 	  enable_xv = false;
-	  printf("disable xvideo\n");
+	  debug_msg("disable xvideo\n");
 	}
 #endif
 

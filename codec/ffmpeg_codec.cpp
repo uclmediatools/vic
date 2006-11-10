@@ -4,6 +4,7 @@
 #include <string.h>
 #include <iostream>
 #include <math.h>
+#include "config.h"
 #include "ffmpeg_codec.h"
 
 
@@ -88,11 +89,11 @@ void FFMpegCodec::init_encoder(int width_, int height_,
 
     // emit one intra frame every ten frames 
     c->gop_size = iframe_gap;
-    c->flags |= CODEC_FLAG_EMU_EDGE;
+    //c->flags |= CODEC_FLAG_EMU_EDGE;
     c->flags |= CODEC_FLAG_LOW_DELAY;
     //c->flags |= CODEC_FLAG_PART;
     //c->flags |= CODEC_FLAG_ALT_SCAN;       
-    c->flags |= CODEC_FLAG_PSNR;
+    //c->flags |= CODEC_FLAG_PSNR;
     //c->flags |= CODEC_FLAG_AC_PRED;
 
     // in loop filter for low bitrate compression
@@ -109,7 +110,7 @@ void FFMpegCodec::init_encoder(int width_, int height_,
     }
 
     c->me_method = ME_EPZS;
-
+//    c->me_method = ME_UMH;
     c->rtp_mode = 1;
     c->rtp_payload_size = 1024;
 
@@ -210,7 +211,7 @@ bool FFMpegCodec::isKeyFrame()
 
 double FFMpegCodec::get_PSNR()
 {
-#ifndef WINDOWS
+#ifndef WIN32
     double mse1 = c->error[0] / float (frame_size);
     c->error[0] = 0;
 
@@ -222,7 +223,7 @@ double FFMpegCodec::get_PSNR()
 }
 
 // return: the decoding length
-//         -1 indicates failure decoding
+//         -1 indicates decoding failure
 //         -2  indicates resizing
 int FFMpegCodec::decode(UCHAR * codedstream, int size, UCHAR * vf)
 {
@@ -232,11 +233,10 @@ int FFMpegCodec::decode(UCHAR * codedstream, int size, UCHAR * vf)
     len = avcodec_decode_video(c, picture, &got_picture, codedstream, size);
 
     if (c->width != width || c->height != height) {
-	//printf("mpeg4enc: resize to %dx%d\n", c->width, c->height);
+	debug_msg("mpeg4enc: resize to %dx%d\n", c->width, c->height);
 	resize(c->width, c->height);
-	//return -2;
+	return -2;
     }
-
 
     if (!got_picture || len < 0) {
 	return -1;

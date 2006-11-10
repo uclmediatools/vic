@@ -5,9 +5,10 @@
 #include "vw.h"
 #include "renderer.h"
 
-#include "postproc/config.h"
-#include "postproc/swscale.h"
-#include "postproc/cpudetect.h"
+#include "config_arch.h"
+#include "swscale.h"
+#include "avutil.h"
+#include "linux/cpudetect.h"
 
 #ifdef HAVE_SWSCALE 
 
@@ -22,13 +23,19 @@ public:
 	  switch (depth_) {
 	    case 15:
 	    case 16:
-	        out_format = IMGFMT_BGR16;
+		printf("16\n");
+	        out_format = PIX_FMT_RGB565;
 	        bytes_per_pixel	= 2;
 	    	break;
 	    	
 	    case 24:
+		printf("24\n");
+		out_format = PIX_FMT_RGB24;
+		bytes_per_pixel = 3;
+		break;
 	    case 32:
-	        out_format = IMGFMT_BGR32;
+		printf("32\n");
+	        out_format = PIX_FMT_RGB32;
 	        bytes_per_pixel	= 4;
   	  }
 	}
@@ -74,7 +81,7 @@ public:
 
 	      if(!outw_ || !outh_ || !width_ || !height_) return;
 
-	      sws_context = sws_getContext(width_, height_, IMGFMT_I420,
+	      sws_context = sws_getContext(width_, height_, PIX_FMT_YUV420P,
 	             outw_, outh_, out_format, flags, NULL, NULL, NULL); 	   
 	      // printf("X11WindowRenderer: %dx%d ==> %dx%d\n", width_, height_, outw_, outh_);
 	      

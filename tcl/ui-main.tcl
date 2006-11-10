@@ -500,8 +500,8 @@ proc build.src { w src color } {
 	global win_is_slow
 	set win_is_slow($stamp.video) 1
 
-	# enable xvideo
-	attach_window $src $stamp.video true
+	# disable xvideo fro stamp video
+	attach_window $src $stamp.video false 
 	pack $stamp.video -side left -anchor c -padx 2
 	pack $stamp -side left -fill y
 	

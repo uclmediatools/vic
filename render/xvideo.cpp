@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "postproc/config.h"
-
 #ifdef USE_SHM
 #include <sys/ipc.h>
 #include <sys/shm.h>

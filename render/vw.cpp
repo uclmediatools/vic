@@ -182,7 +182,7 @@ XVideoImage* XVideoImage::allocate(Tk_Window tk, int width, int height){
 	if(enable_xv){
 	  XVideoImage* p = new XVideoImage(tk, width, height);
 	  if(enable_xv){
-	    debug_msg("using Xvideo extension\n");
+	    debug_msg("using xvideo extension\n");
 	    return (p);	
 	  }else{
 	    delete p;

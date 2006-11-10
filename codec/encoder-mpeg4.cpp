@@ -71,11 +71,13 @@ MPEG4Encoder::MPEG4Encoder():TransmitterModule(FT_YUV_CIF)
     gop = 20;
     vicNumMB = 0;
     vicEncodedMB = 0;
+
+    debug_msg("mp4enc: initialized");
 }
 
 MPEG4Encoder::~MPEG4Encoder()
 {
-
+    debug_msg("mp4enc: released");
 }
 
 void MPEG4Encoder::size(int w, int h)

@@ -1,7 +1,7 @@
 #ifndef _XVIDEO_H_
 #define _XVIDEO_H_
 
-#include "postproc/config.h"
+#include "config_arch.h"
 
 #include "vic_tcl.h"
 extern "C"{

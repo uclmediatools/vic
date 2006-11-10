@@ -30,7 +30,7 @@ class MPEG4Decoder:public Decoder
 
     /* packet statistics */
     u_int16_t last_seq;		/* sequence number */
-
+    bool first_packet;
     bool startPkt, startFrame;
     PacketBuffer *stream;
 
@@ -44,6 +44,8 @@ class MPEG4Decoder:public Decoder
     /* image */
     UCHAR xxx_frame[MAX_FRAME_SIZE];
     FFMpegCodec mpeg4;
+  
+    
 };
 
 static class MPEG4DecoderMatcher:public Matcher
@@ -81,19 +83,20 @@ MPEG4Decoder::MPEG4Decoder():Decoder(2)
     mpeg4.init_decoder();
     startPkt = false;
     startFrame = false;
-    // std::cout << "allocate packet buffer\n";
     stream = new PacketBuffer(1024, 1280);
 
     b_all = 1;
     b_off = 0;
     last_mbit = 0;
     last_iframe = 0;
-
+    last_seq = 0;
+    first_packet = true;
+    debug_msg("mp4dec: initialized");
 }
 
 MPEG4Decoder::~MPEG4Decoder()
 {
-    // std::cout << "destroy mpeg4 decoder\n";
+    debug_msg("mp4dec: released");
     delete stream;
 }
 
@@ -133,16 +136,19 @@ void MPEG4Decoder::recv(pktbuf * pb)
     if (pktIdx < 0) {
 	pktIdx = (0xFFFF - idx) + seq;
     }
-
+ 
     if (pktIdx - last_seq > 5) {
-	debug_msg("sequece interrupt...\n");
+	debug_msg("mp4dec: sequece interrupt!\n");
 	idx = seq;
 	pktIdx = 0;
+	stream->clear();
     }
-
+    
     stream->write(pktIdx, cc, (char *) bp);
 
-    if (last_seq + 1 != seq) {
+    if (!first_packet && last_seq + 1 != seq) {
+	first_packet = false;
+	
 	/* oops - missing packet */
 	debug_msg("mpeg4dec: missing packet\n");
     }
@@ -150,12 +156,15 @@ void MPEG4Decoder::recv(pktbuf * pb)
     last_seq = seq;
     int len = 0;
     if (mbit) {
+	DataBuffer *f;
+	UCHAR *encData;
+
 	stream->setTotalPkts(pktIdx + 1);
 
 	if (stream->isComplete()) {
 	    int ti;
-	    DataBuffer *f = stream->getStream();
-	    UCHAR *encData = (UCHAR *) f->getData();
+	    f = stream->getStream();
+	    encData = (UCHAR *) f->getData();
 	    /*
 	       for(ti = 0; ti < 12; ti++)
 	       printf("%2d ", encData[ti]);
@@ -174,25 +183,31 @@ void MPEG4Decoder::recv(pktbuf * pb)
 	    len = mpeg4.decode(encData, f->getDataSize(), xxx_frame);
 	}
 
-	if (len < 0) {
-	    pb->release();
-	    debug_msg("mpeg4dec: frame error\n");
-	    stream->clear();
-	    idx = seq + 1;
-	    return;
+        if(len == -2){
+            debug_msg("mpeg4dec: resize\n");
+            mpeg4.release();
+            mpeg4.init_decoder();
+            len = mpeg4.decode(encData, f->getDataSize(), xxx_frame);
 	}
-
-	if (inw_ != mpeg4.width || inh_ != mpeg4.height) {
+	if (len < 0) {
+	     pb->release();
+	     debug_msg("mpeg4dec: frame error\n");
+	     stream->clear();
+	     idx = seq + 1;
+	     return;
+         }
+    
+	 if (inw_ != mpeg4.width || inh_ != mpeg4.height) {
 	    inw_ = mpeg4.width;
 	    inh_ = mpeg4.height;
 	    resize(inw_, inh_);
-	}
-	else {
+	 }
+  	 else {
 	    Decoder::redraw(xxx_frame);
-	}
-	b_off = 0;
-	stream->clear();
-	idx = seq + 1;
+	 }
+	 b_off = 0;
+	 stream->clear();
+	 idx = seq + 1;
     }
     pb->release();
 }
