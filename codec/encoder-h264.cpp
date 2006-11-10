@@ -4,7 +4,7 @@
 #include <math.h>
 #include <errno.h>
 #include <assert.h>
-#include <sys/timeb.h>
+#include <sys/time.h>
 #include "inet.h"
 #include "net.h"
 #include "rtp.h"
@@ -44,7 +44,7 @@ class H264Encoder:public TransmitterModule
     x264Encoder *enc;
     DataBuffer *fIn;
     DataBuffer *fOut;
-    timeb timeStamp;
+    timeval timeStamp;
     time_t prevTime;
     unsigned short prevTimeMS;
 
@@ -152,17 +152,17 @@ int H264Encoder::consume(const VideoFrame * vf)
 	enc->setGOP(gop);
 	frame_size = vf->width_ * vf->height_;
 	//fptr = fopen("out.m4v", "w");
-	ftime(&timeStamp);
-	prevTime = timeStamp.time;
-	prevTimeMS = timeStamp.millitm;
+	gettimeofday(&timeStamp, NULL);
+	prevTime = timeStamp.tv_sec;
+	prevTimeMS = timeStamp.tv_sec;
     }
 
     //Encode
-    ftime(&timeStamp);
+    gettimeofday(&timeStamp, NULL);
     int ms =
-	(timeStamp.time - prevTime) * 1000 + timeStamp.millitm - prevTimeMS;
-    prevTime = timeStamp.time;
-    prevTimeMS = timeStamp.millitm;
+	(timeStamp.tv_sec - prevTime) * 1000 + timeStamp.tv_usec - prevTimeMS;
+    prevTime = timeStamp.tv_sec;
+    prevTimeMS = timeStamp.tv_usec;
     //printf("ms:%d\n", ms);
     frame_size = vf->width_ * vf->height_;
     char *data = fIn->getData();
