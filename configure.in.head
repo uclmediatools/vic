@@ -71,5 +71,14 @@ for f in $places; do
 	fi
 done
 
+case "$target" in
+  *-*-darwin*)
+        aquatcl=yes
+        aquatk=yes
+        ;;
+esac   
+
+if test $aquatk != "yes"; then
 builtin(include, configure.in.x11)
+fi
 builtin(include, configure.in.tk)

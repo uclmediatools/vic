@@ -163,7 +163,7 @@ fi
 
 AC_ARG_WITH(x264inc,       --with-x264inc=dir     specify the directory of x264 header, x264inc=$withval, x264inc="")
 AC_ARG_WITH(x264lib,       --with-x264lib=dir     specify the directory of x264 library, x264lib=$withval, x264lib="")
-if test "x264co" != "yes" ; then
+if test "$x264co" != "yes" ; then
 	if test "$x264inc" != "" ; then
 	   if test ! -r $x264inc/x264.h ; then
 	        echo "Error! you need to have $x264inc/x264.h around."
