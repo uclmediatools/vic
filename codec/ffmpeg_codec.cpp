@@ -90,7 +90,7 @@ void FFMpegCodec::init_encoder(int width_, int height_,
     // emit one intra frame every ten frames 
     c->gop_size = iframe_gap;
     //c->flags |= CODEC_FLAG_EMU_EDGE;
-    c->flags |= CODEC_FLAG_LOW_DELAY;
+    //c->flags |= CODEC_FLAG_LOW_DELAY;
     //c->flags |= CODEC_FLAG_PART;
     //c->flags |= CODEC_FLAG_ALT_SCAN;       
     //c->flags |= CODEC_FLAG_PSNR;

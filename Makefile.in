@@ -88,11 +88,10 @@ OBJ_GRABBER = @V_OBJ_GRABBER@
 SRC_GRABBER = $(OBJ_GRABBER:.o=.cpp) 
 OBJ_XIL = @V_OBJ_XIL@
 OBJ_CRYPT = @V_OBJ_CRYPT@
-CODEC_LIB = codec/tmndec/libh263.a codec/tmn-x/libh263coder.a
+CODEC_LIB = @V_CODEC_LIB@ codec/tmndec/libh263.a codec/tmn-x/libh263coder.a
 
 LIB = $(LIB_GRABBER) @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ $(CODEC_LIB) $(VIDEO_LIB) \
-	../common/src/libuclmmbase.a -lm -lz -lcrypto -lpthread  \
-	@V_LIB_FFMPEG@ @V_LIB_X264@
+	../common/src/libuclmmbase.a -lm -lz -lcrypto -lpthread @V_LIB_FFMPEG@ @V_LIB_X264@ 
 
 
 INCLUDE = $(INCLUDE_MISC) $(INCLUDE_GRABBER) $(INCLUDE_TK) $(INCLUDE_TCL) \
@@ -429,6 +428,18 @@ fulltar: force
 	    echo \
 	    "chmod 444 $$name.tar.gz" ; \
 	     chmod 444 $$name.tar.gz
+
+ffmpeg/lib/libavcodec.a:
+	(cd ffmpeg/libavcodec; make; make install )
+
+ffmpeg/lib/libavutil.a:
+	(cd ffmpeg/libavutil; make; make install )
+
+ffmpeg/lib/libswscale.a:
+	(cd ffmpeg/libswscale; make; make install )
+
+x264/lib/libx264.a:
+	(cd x264; make; make install )
 
 codec/tmn-x/libh263coder.a:
 	(cd codec/tmn-x; $(MAKE) CC=$(CC) CCOPT="$(CCOPT)" )
