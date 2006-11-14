@@ -4,7 +4,12 @@
 #include <math.h>
 #include <errno.h>
 #include <assert.h>
+#ifdef _WIN32
+#include <time.h>
+#else
 #include <sys/time.h>
+#endif
+
 #include "inet.h"
 #include "net.h"
 #include "rtp.h"

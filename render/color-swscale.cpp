@@ -6,9 +6,14 @@
 #include "renderer.h"
 
 #include "config_arch.h"
+#ifdef WIN32
+#undef ARCH_X86
+// #include "ffmpeg_config.h"
+#endif
 #include "ffmpeg/swscale.h"
 #include "ffmpeg/avutil.h"
 #include "linux/cpudetect.h"
+
 
 #ifdef HAVE_SWSCALE 
 
@@ -23,18 +28,18 @@ public:
 	  switch (depth_) {
 	    case 15:
 	    case 16:
-		printf("16\n");
+			// printf("16\n");
 	        out_format = PIX_FMT_RGB565;
 	        bytes_per_pixel	= 2;
 	    	break;
 	    	
 	    case 24:
-		printf("24\n");
-		out_format = PIX_FMT_RGB24;
-		bytes_per_pixel = 3;
-		break;
+		//	printf("24\n");
+			out_format = PIX_FMT_RGB24;
+			bytes_per_pixel = 3;
+			break;
 	    case 32:
-		printf("32\n");
+			// printf("32\n");
 	        out_format = PIX_FMT_RGB32;
 	        bytes_per_pixel	= 4;
   	  }
