@@ -3,10 +3,6 @@
 
 extern "C"
 {
-#ifdef WIN32
-#include "ffmpeg_config.h"
-#endif
-
 #include "ffmpeg/avcodec.h"
 //#include "ffmpeg/libavcodec/dsputil.h"
 //#include "ffmpeg/libavcodec/mpegvideo.h"
