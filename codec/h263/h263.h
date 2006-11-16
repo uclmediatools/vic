@@ -1,6 +1,6 @@
 /*
  */
-#include "config.h"
+#include "../../config.h"
 #include "DataTypes.h"
 #include "structs.h"
 

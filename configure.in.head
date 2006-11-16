@@ -71,14 +71,25 @@ for f in $places; do
 	fi
 done
 
+aquatcl="no"
+aquatk="no"
+cygwin="no"
+mingw="no"
+
 case "$target" in
   *-*-darwin*)
-        aquatcl=yes
-        aquatk=yes
+        aquatcl="yes"
+        aquatk="yes"
         ;;
+  *-*-cygwin*)
+	cygwin="yes"
+	;;
+  *-*-mingw*)
+	mingw="yes"
+	;;
 esac   
 
-if test $aquatk != "yes"; then
+if test "$aquatk" != "yes" -a "$mingw" != "yes"; then
 builtin(include, configure.in.x11)
 fi
 builtin(include, configure.in.tk)

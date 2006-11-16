@@ -5,7 +5,7 @@
 #ifndef __POSTPROC_CONFIG_H__
 #define __POSTPROC_CONFIG_H__ 1
 
-// #define ARCH_X86 1
+#define ARCH_X86 1
 
 /* Runtime CPU detection */
 #define HAVE_MMX
