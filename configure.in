@@ -12,43 +12,27 @@ V_LIB=""
 V_CODEC_LIB=""
 
 #ARCH DETECTION
+v_ARCH=""
 arch=`uname -m`
-cpu="generic"
 case "$arch" in
   i386|i486|i586|i686|i86pc|BePC)
-    arch="x86_32"
+    V_ARCH="ARCH_X86"
   ;;
   x86_64|amd64)
     arch="x86_32"
     canon_arch="`$cc -dumpmachine | sed -e 's,\([^-]*\)-.*,\1,'`"
     if [ x"$canon_arch" = x"x86_64" -o x"$canon_arch" = x"amd64" ]; then
       if [ -z "`echo $CFLAGS | grep -- -m32`"  ]; then
-        arch="x86_64"
+	V_ARCH="ARCH_X86_64"
       fi
     fi
   ;;
   "Power Macintosh"|ppc|ppc64|powerpc)
-    arch="powerpc"
+    V_ARCH="ARCH_PPC"
   ;;
 esac
 
-echo "ARCH             $arch ($cpu)"
-mmx="no"
-altivec="no"
-case $arch in
-    x86_32|x86_64)
-        echo "MMX enabled"
-        mmx="yes"
-    ;;
-    powerpc)
-        echo "AltiVec enabled"
-        altivec="yes"
-    ;;
-    *)
-        echo "Unkknow architecture"
-    ;;
-esac
-#
+echo "Architecture             $V_ARCH"
 
 
 builtin(include, configure.in.head)
@@ -200,12 +184,10 @@ V_CPUDETECT=""
 AC_ARG_ENABLE(cpudetect, --disable-cpudetect     Enable or disable runtime cpu detection, cpudetect="no", cpudetect="yes")
 if test "$cpudetect" = "yes"; then
     echo "using CPU runtime detection..."
-    V_OBJ="$V_OBJ cpu/cpudetect.o"
     V_CPUDETECT="-DRUNTIME_CPUDETECT"
-i
+fi
 
 V_H261AS=""
-
 dnl h261 as (arbitrary size) 
 AC_ARG_ENABLE(h261as, --disable-h261as         Enable or disable the h261as codec, h261as=no, h261as=yes)
 if test "$h261as" = "yes"; then
@@ -587,6 +569,6 @@ AC_SUBST(V_OBJ)
 AC_SUBST(V_LIB)
 AC_SUBST(V_CODEC_LIB)
 
-V_DEFINE="$V_DEFINE $V_SHM $V_H261AS $V_DV $V_XV $V_CPUDETECT"
+V_DEFINE="$V_DEFINE $V_SHM $V_H261AS $V_DV $V_XV $V_CPUDETECT -D$V_ARCH"
 
 builtin(include, configure.in.tail)

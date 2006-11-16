@@ -96,7 +96,7 @@ LIB = $(LIB_GRABBER) @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ $(CODEC_LIB) $(V
 
 INCLUDE = $(INCLUDE_MISC) $(INCLUDE_GRABBER) $(INCLUDE_TK) $(INCLUDE_TCL) \
 	$(INCLUDE_X11) $(MD_INC) -Icodec/jpeg -Icodec/p64 -I. 
-DEFINE = @V_DEFINE@ -DED_YBITS=$(ED_YBITS) -DSIGRET=@V_SIGRET@ -DNLAYER=8 -D_GNU_SOURCE -D__X264__
+DEFINE = @V_DEFINE@ -DED_YBITS=$(ED_YBITS) -DSIGRET=@V_SIGRET@ -DNLAYER=8 -D_GNU_SOURCE
 BFLAGS = $(DEFINE) $(INCLUDE)
 CFLAGS = $(CCOPT) $(BFLAGS)
 
@@ -126,7 +126,7 @@ H263_OBJS = codec/h263/h263rtp.o codec/h263/h263dec.o codec/h263/bitIn.o \
 
 # .c objects
 OBJ1 =	net/inet.o net/inet6.o codec/cellb_tables.o tkStripchart.o \
-	md5c.o random.o $(H263_OBJS)
+	md5c.o random.o cpu/cpudetect.o cpu/cpuid.o $(H263_OBJS)
 
 #	session-rtpv1.o session-nv.o session-ivs.o # Not supported anymore
 # .cpp objects

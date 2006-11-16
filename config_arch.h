@@ -2,13 +2,14 @@
    Note: Any changes in it will be lost when you run configure again. */
 
 /* Protect against multiple inclusion */
-#ifndef __POSTPROC_CONFIG_H__
-#define __POSTPROC_CONFIG_H__ 1
+#ifndef __CONFIG_ARCH_H__
+#define __CONFIG_ARCH_H__ 1
 
-#define ARCH_X86 1
-
-/* Runtime CPU detection */
-#define RUNTIME_CPUDETECT
+#ifdef WIN32
+#define ARCH_X86
+#elif defined(WIN64)
+#define ARCH_X86_64
+#endif
 
 /* Only use during compliation */
 #if defined(RUNTIME_CPUDETECT) 

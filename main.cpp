@@ -32,6 +32,9 @@
  * SUCH DAMAGE.
  */
 
+static const char rcsid[] =
+"@(#) $Header$ (LBL)";
+
 
 #include <stdio.h>
 #include <stdlib.h>
