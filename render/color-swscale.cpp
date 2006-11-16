@@ -8,12 +8,14 @@
 #include "config_arch.h"
 #ifdef WIN32
 #undef ARCH_X86
-// #include "ffmpeg_config.h"
 #endif
 #include "ffmpeg/swscale.h"
 #include "ffmpeg/avutil.h"
-#include "linux/cpudetect.h"
+extern "C"{
+#include "cpu/cpudetect.h"
+}
 
+int available_cpu_flags = cpu_check();
 
 #ifdef HAVE_SWSCALE 
 
@@ -68,11 +70,11 @@ public:
 	      }
 	      int flags = SWS_FAST_BILINEAR;
 
-#ifdef RUNTIME_CPUDETECT	      
-	      flags |= (gCpuCaps.hasMMX ? SWS_CPU_CAPS_MMX : 0);
-	      flags |= (gCpuCaps.hasMMX2 ? SWS_CPU_CAPS_MMX2 : 0);
-	      flags |= (gCpuCaps.has3DNow ? SWS_CPU_CAPS_3DNOW : 0);
-	      flags |= (gCpuCaps.hasAltiVec ? SWS_CPU_CAPS_ALTIVEC : 0);
+#ifdef RUNTIME_CPUDETECT	    
+	      flags |= (available_cpu_flags & FF_CPU_MMX ? SWS_CPU_CAPS_MMX : 0);
+	      flags |= (available_cpu_flags & FF_CPU_MMXEXT ? SWS_CPU_CAPS_MMX2 : 0);
+	      flags |= (available_cpu_flags & FF_CPU_3DNOW ? SWS_CPU_CAPS_3DNOW : 0);
+	      flags |= (available_cpu_flags & FF_CPU_ALTIVEC ? SWS_CPU_CAPS_ALTIVEC : 0);
 #elif defined(HAVE_MMX)
 		  flags |= SWS_CPU_CAPS_MMX;
 	#if defined(HAVE_MMX2)

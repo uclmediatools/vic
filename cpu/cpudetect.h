@@ -48,17 +48,32 @@ typedef struct cpucaps_s {
 	int hasSSE2;
 	int isX86;
 	unsigned cl_size; /* size of cache line */
-        int hasAltiVec;
+    int hasAltiVec;
 	int hasTSC;
 	char cpuname[50];
 } CpuCaps;
 
-extern CpuCaps gCpuCaps;
+enum
+{
+ FF_CPU_MMX     =0x00000001,
+ FF_CPU_MMXEXT  =0x00000002,
+ FF_CPU_SSE     =0x00000004,
+ FF_CPU_SSE2    =0x00000008,
+ FF_CPU_3DNOW   =0x00000010,
+ FF_CPU_3DNOWEXT=0x00000020,
+ FF_CPU_ALTIVEC =0x00000040,
+};
 
+/* return available_cpu_flags defined above */
+int cpu_check();
+
+extern CpuCaps gCpuCaps;
 void GetCpuCaps(CpuCaps *caps);
 
 /* returned value is malloc()'ed so free() it after use */
 char *GetCpuFriendlyName(unsigned int regs[], unsigned int regs2[]);
+
+
 
 #endif /* !CPUDETECT_H */
 

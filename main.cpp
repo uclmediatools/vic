@@ -31,8 +31,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-static const char rcsid[] =
-"@(#) $Header$ (LBL)";
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -70,7 +69,6 @@ static const char rcsid[] =
 #include <X11/Xutil.h>
 
 extern "C" {
-#include "linux/cpudetect.h"
 #include <tk.h>
 #ifdef USE_SHM
 #ifdef sgi
@@ -431,8 +429,8 @@ extern "C" {
 
 }
 
-	int
-main(int argc, const char** argv)
+
+int main(int argc, const char** argv)
 {
 #ifdef __FreeBSD__
 	srandomdev(); //SV-XXX: FreeBSD
@@ -481,15 +479,7 @@ main(int argc, const char** argv)
 			usage(NULL);
 	}
 
-#ifdef RUNTIME_CPUDETECT
-	/* CPU capabilities detection */
-	GetCpuCaps(&gCpuCaps);
-	printf("cpudetect: %s\n", gCpuCaps.cpuname);
-	printf("cpudetect: MMX=%d MMX2=%d SSE=%d SSE2=%d 3DNow=%d 3DNowExt=%d\n",  \
-	        gCpuCaps.hasMMX, gCpuCaps.hasMMX2, gCpuCaps.hasSSE, gCpuCaps.hasSSE2, \
-	       	gCpuCaps.has3DNow, gCpuCaps.has3DNowExt );
-#endif
-	
+
 	Tcl::init("vic");
 	Tcl& tcl = Tcl::instance();
 

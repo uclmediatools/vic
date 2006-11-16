@@ -8,12 +8,10 @@
 #define ARCH_X86 1
 
 /* Runtime CPU detection */
-#define HAVE_MMX
-#define HAVE_MMX2
+#define RUNTIME_CPUDETECT
 
 /* Only use during compliation */
 #if defined(RUNTIME_CPUDETECT) 
-#undef  HAVE_MMX
 #define HAVE_MMX
 #define HAVE_MMX2
 #define HAVE_SSE

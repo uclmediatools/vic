@@ -14596,6 +14596,30 @@
 				RelativePath=".\postproc\config.h">
 			</File>
 		</Filter>
+		<Filter
+			Name="cpu"
+			Filter="">
+			<File
+				RelativePath=".\cpu\cpudetect.h">
+			</File>
+			<File
+				RelativePath=".\cpu\cpuid.asm">
+				<FileConfiguration
+					Name="Debug IPv6 XP|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Assembling $(InputPath)"
+						CommandLine="nasmw -f win32 -DPREFIX -o &quot;$(IntDir)\$(InputName).obj&quot; $(InputPath)"
+						Outputs="&quot;$(IntDir)\$(InputName).obj&quot;"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\cpu\cpuid.cpp">
+			</File>
+			<File
+				RelativePath=".\cpu\cputable.h">
+			</File>
+		</Filter>
 		<File
 			RelativePath="cm170.ppm">
 			<FileConfiguration
