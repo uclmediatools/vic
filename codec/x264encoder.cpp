@@ -1,17 +1,13 @@
-#include "x264encoder.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
+#include "x264encoder.h"
 #include "ffmpeg/avcodec.h"
-extern "C"
-{
-// #include "x264/common/common.h"
+#include "databuffer.h"
+extern "C"{
 #include "x264.h"
 }
-
-#include "databuffer.h"
 
 typedef struct
 {
@@ -28,25 +24,8 @@ x264Encoder::x264Encoder()
 {
     x264 *enc;
     enc = (x264 *) malloc(sizeof(x264));
-
-    x264_param_t *param = &(enc->param);
-
-    x264_param_default(param);
-    //param->analyse.inter = X264_ANALYSE_PSUB16x16;
-    //DISALBE PARTITION MODE
-    param->analyse.inter = 0;
-    //param->analyse.i_direct_mv_pred = X264_DIRECT_PRED_NONE;
-    //DISABLE CABAC for more frame rate
-    param->b_cabac = 0;
-    //DONOT ENABLE PSNR ANALYSE
-    // param->analyse.b_psnr = 0;
-    param->i_keyint_max = 60;
-    param->i_keyint_min = 20;
- 
     enc->h = NULL;
-
     encoder = (void *) enc;
-
     isFrameEncoded = false;
 }
 
@@ -64,21 +43,41 @@ bool x264Encoder::init(int w, int h, int bps, int fps)
 {
     x264 *enc = (x264 *) encoder;
     x264_param_t *param = &(enc->param);
+    x264_param_default(param);
 
+    // * seting rate control
     param->rc.i_bitrate = bps;
-    // param->rc.i_rc_method = X264_RC_ABR;
-    param->rc.i_rc_method = X264_RC_CRF;
-    // param->b_cabac = FF_CODER_TYPE_AC;
-    // param->b_deblocking_filter = 1;
+    param->rc.i_rc_method = X264_RC_ABR;
+    
+    param->analyse.inter = X264_ANALYSE_PSUB16x16;
+    //DISALBE PARTITION MODE
+    param->analyse.inter = 0;
+    param->analyse.i_direct_mv_pred = X264_DIRECT_PRED_NONE;
+
+    //DISABLE CABAC for more frame rate
+    param->b_cabac = 0;
+    
+    //DONOT ENABLE PSNR ANALYSE
+    param->analyse.b_psnr = 1;
+    
+    param->i_keyint_max = 100;
+    param->i_keyint_min = 60;
+    param->i_bframe = 0;
+    
+    // deblocking filter
+    // i_deblocking_filter_alphac0, [-6, 6] -6 light filter, 6 strong    
+    param->b_deblocking_filter = 1;
+    param->i_deblocking_filter_alphac0 = 3;
+    
     param->i_fps_num = fps * 1000;
     param->i_fps_den = 1000;
-    param->rc.f_qcompress = 0;  /* 0.0 => cbr, 1.0 => constant qp */
-    param->analyse.i_me_method = X264_ME_UMH;
 
-    //Currently X264 only handle (16*n)x(16*m)
-    if (w % 16 != 0 && h % 16 != 0) {
-	return 0;
-    }
+    // set frame reference to 1 to reduce encoding latency
+    param->i_frame_reference = 1;
+    // param->b_interlaced = 1;
+    
+    // motion estimation method, using umh if higher quality is essential.
+    param->analyse.i_me_method = X264_ME_HEX;
 
     param->i_width = w;
     param->i_height = h;

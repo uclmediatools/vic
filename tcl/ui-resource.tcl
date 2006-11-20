@@ -132,15 +132,15 @@ proc init_resources {} {
 	option add Vic.geometry 250x225 startupFile
 	option add Vic.mtu 1024 startupFile
 	option add Vic.network ip startupFile
-	option add Vic.framerate 8 startupFile
+	option add Vic.framerate 15 startupFile
 	option add Vic.defaultTTL 16 startupFile
 	option add Vic.maxbw -1 startupFile
-	option add Vic.bandwidth 128 startupFile
+	option add Vic.bandwidth 512 startupFile
 	option add Vic.iconPrefix vic: startupFile
 	option add Vic.priority 10 startupFile
 	option add Vic.confBusChannel 0 startupFile
 
-	option add Vic.defaultFormat h.261 startupFile
+	option add Vic.defaultFormat mpeg4 startupFile
 	option add Vic.sessionType rtpv2 startupFile
 	option add Vic.grabber none startupFile
 	option add Vic.stampInterval 1000 startupFile
@@ -156,6 +156,7 @@ proc init_resources {} {
 	option add Vic.stillGrabber false startupFile 
 	option add Vic.siteDropTime "300" startupFile
 	option add Vic.quality "0" startupFile
+	option add Vic.inputType "ntsc" startupFile
 
 	option add Vic.brightness "0" startupFile
 	option add Vic.contrast "0" startupFile

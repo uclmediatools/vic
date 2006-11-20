@@ -35,8 +35,6 @@ class H264Decoder:public Decoder
     UCHAR bitstream[MAX_CODED_SIZE];	/* bitstream data */
 
     /* collecting data for a frame */
-    int b_off;			/* how much bitstream data we have */
-    int b_all;			/* got all packets for so far? */
     int idx;
     int last_mbit;
     int last_iframe;
@@ -86,8 +84,6 @@ H264Decoder::H264Decoder():Decoder(2)
     h264.init(false, CODEC_ID_H264, PIX_FMT_YUV420P);
     h264.init_decoder();
 
-    b_all = 1;
-    b_off = 0;
     idx = 0;
     last_mbit = 0;
     last_iframe = 0;
@@ -114,108 +110,66 @@ int H264Decoder::colorhist(u_int * hist)  const
 
 void H264Decoder::recv(pktbuf * pb)
 {
-/*    
-    // simulate the pack loss
-    if(rand() % 10 == 0){
-      printf("drop the packet\n");
-      pb->release();
-      return;      
-    }
-    if(rand() % 50 == 0){
-      printf("packet error\n");	
-      int l = rand() % pb->len;
-      for(int i=0; i < l; i++)
-        pb->dp[rand()% pb->len] = u_char(rand() % 256);
-    }    
-*/
     rtphdr *rh = (rtphdr *) pb->dp;
-    int hdrsize = sizeof(rtphdr) + hdrlen() + 2;
+    int hdrsize = sizeof(rtphdr) + hdrlen();
     u_char *bp = pb->dp + hdrsize;
     int cc = pb->len - hdrsize;
     static int iframe_c = 0, pframe_c = 0;
-
-    //(sizeof(*rh) + 4);
-    /* RTP header  */
-    /* Basic RTP header 
-       struct rtphdr {
-       u_int16_t rh_flags;      // T:2 P:1 X:1 CC:4 M:1 PT:7 
-       u_int16_t rh_seqno;      // sequence number 
-       u_int32_t rh_ts; // media-specific time stamp 
-       u_int32_t rh_ssrc;       // synchronization src id 
-       // data sources follow per cc 
-       }; */
 
     int mbit = ntohs(rh->rh_flags) >> 7 & 1;
     int seq = ntohs(rh->rh_seqno);
     int ts = ntohl(rh->rh_ts);
 
-    /* H.263 payload */
-    u_char *pl = (u_char *) (rh + 1);
-    /* 5 bits reserved */
-    int pbit = (pl[0] >> 2) & 1;	/* 1 bit */
-    int ibit = (pl[0] >> 1) & 1;	/* 1 bit */
-
-    int ms = 0x0000FFFF & ntohl(*((u_int *) pl));
-    //std::cout << "dec: "<< ms << "\n";
-
-    if (pbit) {
-	/* start of a new frame */
-	b_all = 1;
-	b_off = 0;
-	stream->clear();
-	idx = seq;
-	startPkt = true;
+    if (!startPkt) {
+       stream->clear();
+       startPkt = true;
+       idx = seq;
+    }
+	  
+    int pktIdx = seq - idx;
+    if (pktIdx < 0) {
+        pktIdx = (0xFFFF - idx) + seq;
     }
 
-
-    if (startPkt) {
-	int pktIdx = seq - idx;
-	if (pktIdx < 0) {
-	    pktIdx = (0xFFFF - idx) + seq;
-	}
-	//copy packet
-	stream->write(pktIdx, cc, (char *) bp);
-	if (last_seq + 1 != seq) {
-	    /* oops - missing packet */
-	    debug_msg("h264 dec: missing packet\n");
-	}
-	last_seq = seq;
-
-	int len;
-	if (mbit) {
+    if (pktIdx - last_seq > 5) {
+       debug_msg("mp4dec: sequece interrupt!\n");
+       idx = seq;
+       pktIdx = 0;
+       stream->clear();
+    }
+    
+    //copy packet
+    stream->write(pktIdx, cc, (char *) bp);
+    // printf("pktIdx=%d, cc=%d, seq=%d\n", pktIdx, cc, seq);
+    
+    if (last_seq + 1 != seq) {
+       /* oops - missing packet */
+       debug_msg("h264dec: missing packet\n");
+    }
+	
+    last_seq = seq;
+    int len=0;
+	
+    if (mbit) {
 	    stream->setTotalPkts(pktIdx + 1);
-	    /* yeah! have a complete frame */
-	    if (ibit) {
-		last_iframe = 1;
-	    }
-	    else if (!last_iframe) {
-		debug_msg("h264dec: no I-frame yet\n");
-		pb->release();
-		return;
-	    }
 
-	    assert(b_off < MAX_CODED_SIZE);
-	    //printf("receive %d\n", b_off);
-	    //fwrite(bitstream, b_off, 1, fptr);    //File decoding problem occurs
-
+	    DataBuffer *f;	    
 	    if (stream->isComplete()) {
-		DataBuffer *f = stream->getStream();
-		len =
-		    h264.decode((UCHAR *) f->getData(), f->getDataSize(),
+		f = stream->getStream();
+		len =  h264.decode((UCHAR *) f->getData(), f->getDataSize(),
 				xxx_frame);
 	    }
-	    else {
-		cout << "packet loss...\n";
-		len = 0;
+	    
+            if(len == -2){
+               debug_msg("h264dec: resize\n");
+    	       h264.release();
+               h264.init_decoder();
+	       len = h264.decode((UCHAR *) f->getData(), f->getDataSize(), xxx_frame);
 	    }
-
-	    if (len < 0) {
-		cout << "decoder : frame error\n";
-		pb->release();
-		debug_msg("h264dec: frame error\n");
-		return;
+	   if (len <= 0) {
+	       debug_msg("h264dec: frame error\n");
 	    }
-
+	   
 	    if (inw_ != h264.width || inh_ != h264.height) {
 		inw_ = h264.width;
 		inh_ = h264.height;
@@ -224,12 +178,9 @@ void H264Decoder::recv(pktbuf * pb)
 	    else {
 		Decoder::redraw(xxx_frame);
 	    }
-
-	    //NEXT Should Be P bit
-	    b_all = 1;
-	    stream->clear();
-	    //b_off = 0;
-	}
+            stream->clear();
+	    idx = seq+1;
+		     
     }
     pb->release();
 }

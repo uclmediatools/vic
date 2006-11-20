@@ -937,8 +937,8 @@ proc build.type w {
 		-value secam -variable inputType -font $f
 
 	global inputType typeButton
-	set inputType auto
-    	#set inputType [string tolower [option get . inputType Vic]]
+	#set inputType auto
+    	set inputType [string tolower [option get . inputType Vic]]
 	set typeButton $w
 }
 

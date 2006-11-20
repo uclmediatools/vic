@@ -38,9 +38,12 @@ bool PacketBuffer::isComplete()
 {
     if (totalPkts == 0)
 	return false;
-    for (int i = 0; i < totalPkts; i++)
-	if (!isDataRecv[i])
-	    return false;
+    for (int i = 0; i < totalPkts; i++){	
+	if (!isDataRecv[i]){
+	    printf("lost packet %d\n", i);	
+	    //return false;
+	}
+    }
     return true;
 }
 

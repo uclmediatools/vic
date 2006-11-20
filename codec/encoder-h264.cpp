@@ -139,7 +139,6 @@ int H264Encoder::consume(const VideoFrame * vf)
     pktbuf *pb;
     rtphdr *rh;
     //int n,ps, len;
-    //int send_psize = tx_->mtu() - 14;      // 12 RTP + 2 Payload
     ts = vf->ts_;
     tx = tx_;
     pool = pool_;
@@ -162,13 +161,6 @@ int H264Encoder::consume(const VideoFrame * vf)
 	prevTimeMS = timeStamp.tv_sec;
     }
 
-    //Encode
-    gettimeofday(&timeStamp, NULL);
-    int ms =
-	(timeStamp.tv_sec - prevTime) * 1000 + timeStamp.tv_usec - prevTimeMS;
-    prevTime = timeStamp.tv_sec;
-    prevTimeMS = timeStamp.tv_usec;
-    //printf("ms:%d\n", ms);
     frame_size = vf->width_ * vf->height_;
     char *data = fIn->getData();
     memcpy(data, vf->bp_, frame_size * 3 >> 1);
@@ -196,39 +188,25 @@ int H264Encoder::consume(const VideoFrame * vf)
 	while (nalSize > 0) {
 	    pb = pool_->alloc(vf->ts_, RTP_PT_H264);
 	    rh = (rtphdr *) pb->data;
-	    *(u_int *) (rh + 1) = 0;
-	    *(u_int *) (rh + 1) = htonl(ms);
 	    if (nalSize > 1000) {
-		if (first) {
-		    first = false;
-		    *(u_int *) (rh + 1) |= htonl(0x04000000);	// set P bit
-		}
-		memcpy(&pb->data[14 + 2], data + offset, 1000);
+		memcpy(&pb->data[14], data + offset, 1000);
 		//DEBUG
 		//fwrite(data+offset, 1000, 1, fptr);
-		pb->len = 1000 + 14 + 2;
+		pb->len = 1000 + 14;
 		offset += 1000;
 		nalSize -= 1000;
-		//sent_size += 14;
 	    }
 	    else {
-		if (first) {
-		    first = false;
-		    *(u_int *) (rh + 1) |= htonl(0x04000000);	// set P bit
-		}
 		if (i == i_nal - 1) {
 		    //Last Packet
 		    rh->rh_flags |= htons(RTP_M);	// set M bit
-		    //Currently we set I bit for every frame
-		    *(u_int *) (rh + 1) |= htonl(0x02000000);	// set I bit
 		}
-		memcpy(&pb->data[14 + 2], data + offset, nalSize);
+		memcpy(&pb->data[14], data + offset, nalSize);
 		//DEBUG
 		//printf("encode a frame...\n");
 		//fwrite(data+offset, nalSize, 1, fptr);
 
-		pb->len = nalSize + 14 + 2;
-		//sent_size += 14;
+		pb->len = nalSize + 14;
 		nalSize = 0;
 	    }
 	    //printf("send out %d\n", pb->len);
@@ -237,13 +215,6 @@ int H264Encoder::consume(const VideoFrame * vf)
 	}
     }
     frame_seq++;
-    //std::cout << "encoder: frame size : " << sent_size << "\n";
-    //return sent_size;
 
-    /*
-     * champ
-     * VIC will grab a frame with a time interval according to this return value.
-     * Since this module adopts ratecontrol by bps value, it returns a constant value for a reason of smoonthness.
-     */
     return (kbps*1024) / (fps*8);
 }
