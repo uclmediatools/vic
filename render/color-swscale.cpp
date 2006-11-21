@@ -31,7 +31,8 @@ public:
 	    case 15:
 	    case 16:
 			// printf("16\n");
-	        out_format = PIX_FMT_RGB565;
+	        //out_format = PIX_FMT_RGB565;
+			out_format = PIX_FMT_BGR555;
 	        bytes_per_pixel	= 2;
 	    	break;
 	    	

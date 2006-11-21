@@ -60,8 +60,8 @@ bool x264Encoder::init(int w, int h, int bps, int fps)
     //DONOT ENABLE PSNR ANALYSE
     param->analyse.b_psnr = 1;
     
-    param->i_keyint_max = 100;
-    param->i_keyint_min = 60;
+    param->i_keyint_max = 50;
+    param->i_keyint_min = 20;
     param->i_bframe = 0;
     
     // deblocking filter

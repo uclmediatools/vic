@@ -1,3 +1,5 @@
+#include "config.h"
+
 #if defined(WIN32) || defined(WIN64)
 #include <windows.h>
 #endif
@@ -95,7 +97,7 @@ int cpu_check(){
    aCpuCaps.has3DNow	= (available_cpu_flags & FF_CPU_3DNOW ? 1:0);
    aCpuCaps.has3DNowExt	= (available_cpu_flags & FF_CPU_3DNOWEXT ? 1:0);
 
-   printf("cpudetect: MMX=%d MMX2=%d SSE=%d SSE2=%d 3DNow=%d 3DNowExt=%d\n",  \
+   debug_msg("cpudetect: MMX=%d MMX2=%d SSE=%d SSE2=%d 3DNow=%d 3DNowExt=%d\n",  \
 	        aCpuCaps.hasMMX, aCpuCaps.hasMMX2, aCpuCaps.hasSSE, aCpuCaps.hasSSE2, \
 	       	aCpuCaps.has3DNow, aCpuCaps.has3DNowExt );
    return available_cpu_flags;

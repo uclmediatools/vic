@@ -1,3 +1,4 @@
+#include "config.h"
 #include "packetbuffer.h"
 #include "databuffer.h"
 
@@ -40,8 +41,8 @@ bool PacketBuffer::isComplete()
 	return false;
     for (int i = 0; i < totalPkts; i++){	
 	if (!isDataRecv[i]){
-	    printf("lost packet %d\n", i);	
-	    //return false;
+	    debug_msg("lost packet %d\n", i);	
+	    return false;
 	}
     }
     return true;

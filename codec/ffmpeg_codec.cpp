@@ -222,9 +222,8 @@ double FFMpegCodec::get_PSNR()
 #endif
 }
 
-// return: the decoding length
+// return:  videoframe size
 //         -1 indicates decoding failure
-//         -2  indicates resizing
 int FFMpegCodec::decode(UCHAR * codedstream, int size, UCHAR * vf)
 {
     int got_picture;
@@ -233,15 +232,15 @@ int FFMpegCodec::decode(UCHAR * codedstream, int size, UCHAR * vf)
     len = avcodec_decode_video(c, picture, &got_picture, codedstream, size);
 
     if (c->width != width || c->height != height) {
-	debug_msg("mpeg4enc: resize to %dx%d\n", c->width, c->height);
-	resize(c->width, c->height);
-	return -2;
+		debug_msg("ffmpegcodec: resize to %dx%d\n", c->width, c->height);
+		resize(c->width, c->height);
+		// return len;
     }
 
     if (!got_picture || len < 0) {
-	return -1;
-
+		return -1;
     }
+
 /*
     if(avpicture_deinterlace((AVPicture *)picture, (AVPicture *)picture,
                                     c->pix_fmt, c->width, c->height) < 0) {

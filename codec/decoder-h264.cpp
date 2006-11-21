@@ -89,9 +89,9 @@ H264Decoder::H264Decoder():Decoder(2)
     last_iframe = 0;
     last_seq = 0;
 
-    //256 packets, each 1024 byte (default will not exceed 1000 byte)
+    //256 packets, each 1600 byte (default will not exceed 1600 byte)
     //cout << "new PacketBuffer..\n";
-    stream = new PacketBuffer(1024, 1024);
+    stream = new PacketBuffer(1024, 1600);
     startPkt = false;
 
     //fptr = fopen("out.m4v", "w");
@@ -124,6 +124,7 @@ void H264Decoder::recv(pktbuf * pb)
        stream->clear();
        startPkt = true;
        idx = seq;
+	   last_seq = seq - 1;
     }
 	  
     int pktIdx = seq - idx;
@@ -131,22 +132,19 @@ void H264Decoder::recv(pktbuf * pb)
         pktIdx = (0xFFFF - idx) + seq;
     }
 
-    if (pktIdx - last_seq > 5) {
-       debug_msg("mp4dec: sequece interrupt!\n");
-       idx = seq;
-       pktIdx = 0;
-       stream->clear();
+    if (abs(seq - last_seq) > 5) {
+	    debug_msg("h264dec: sequece interrupt!\n");
+	    idx = seq;
+	    pktIdx = 0;
+	    stream->clear();
+    }else if (last_seq + 1 != seq) {
+	    /* oops - missing packet */
+	    debug_msg("h264dec: missing packet\n");
     }
-    
+
     //copy packet
     stream->write(pktIdx, cc, (char *) bp);
-    // printf("pktIdx=%d, cc=%d, seq=%d\n", pktIdx, cc, seq);
     
-    if (last_seq + 1 != seq) {
-       /* oops - missing packet */
-       debug_msg("h264dec: missing packet\n");
-    }
-	
     last_seq = seq;
     int len=0;
 	
@@ -155,30 +153,23 @@ void H264Decoder::recv(pktbuf * pb)
 
 	    DataBuffer *f;	    
 	    if (stream->isComplete()) {
-		f = stream->getStream();
-		len =  h264.decode((UCHAR *) f->getData(), f->getDataSize(),
-				xxx_frame);
+			f = stream->getStream();
+		    len =  h264.decode((UCHAR *) f->getData(), f->getDataSize(), xxx_frame);
 	    }
 	    
-            if(len == -2){
-               debug_msg("h264dec: resize\n");
-    	       h264.release();
-               h264.init_decoder();
-	       len = h264.decode((UCHAR *) f->getData(), f->getDataSize(), xxx_frame);
-	    }
-	   if (len <= 0) {
+	    if (len < 0) {
 	       debug_msg("h264dec: frame error\n");
 	    }
 	   
 	    if (inw_ != h264.width || inh_ != h264.height) {
-		inw_ = h264.width;
-		inh_ = h264.height;
-		resize(inw_, inh_);
+			inw_ = h264.width;
+			inh_ = h264.height;
+			resize(inw_, inh_);
 	    }
 	    else {
-		Decoder::redraw(xxx_frame);
+			Decoder::redraw(xxx_frame);
 	    }
-            stream->clear();
+        stream->clear();
 	    idx = seq+1;
 		     
     }
