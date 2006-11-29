@@ -464,7 +464,7 @@ int main(int argc, const char** argv)
 #endif
 	// Option list; If letter is followed by ':' then it takes an argument
 	const char* options = 
-		"A:B:C:c:D:d:f:F:HI:i:j:K:lL:M:m:N:n:o:Pq:rsST:t:U:u:vV:w:x:X:y";
+		"A:B:b:C:c:D:d:f:F:HI:i:j:K:lL:M:m:N:n:o:Pq:rsST:t:U:u:vV:w:x:X:y";
 	/* process display and window (-use) options before initialising tcl/tk */
 	char buf[256], tmp[256];
 	const char *display=0, *use=0;
@@ -553,6 +553,10 @@ int main(int argc, const char** argv)
 
 		case 'B':
 			tcl.add_option("maxbw", optarg);
+			break;
+
+		case 'b':
+			tcl.add_option("interface", optarg);
 			break;
 
 		case 'C':

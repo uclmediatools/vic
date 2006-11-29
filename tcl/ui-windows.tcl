@@ -12,7 +12,7 @@
 #    documentation and/or other materials provided with the distribution.
 # 3. All advertising materials mentioning features or use of this software
 #    must display the following acknowledgement:
-#	This product includes software developed by the Computer Systems
+#	This product includes software developed by the Computer Systems 
 #	Engineering Group at Lawrence Berkeley Laboratory.
 # 4. Neither the name of the University nor of the Laboratory may be used
 #    to endorse or promote products derived from this software without
@@ -170,7 +170,70 @@ proc HACK_detach_xil {} {
 		}
 	}
 }
+#
+# create a new window for viewing video
+#
+proc open_window_frame { src width height id } {
+	global PATH_
+	set uid [uniqueID]
+	set w .vv$uid
+	frame $w
+	#set w [frame .$uid]
+	frame $w.layoutframe	
+	create_video_widget $w.layoutframe.video $width $height		
+	set v $w.layoutframe.video
 
+	frame $w.bar -height 1 
+
+#Morris...    Select List
+	
+	global active radio
+    	set m $w.bar.list.menu
+    	menubutton $w.bar.list -text Select -menu $m -state normal -relief raised -width 8 
+    	menu $m
+    	$m add cascade -label "Switch options..." -menu $m.opt
+    	menu $m.opt -tearoff no
+    	foreach s [session active] {
+    		set name [$s sdes name]
+    		if { $name != "" } {
+    			$m.opt add radiobutton -label $name \
+      	  			-variable radio($w) \
+      	  			-command " window_switch $v $s "
+      	  		set completed 1
+      	  	} else {
+	      	  	set completed 0
+      		}
+       	}
+       	if { $completed != 0 } {
+       		$w.bar.list configure -state normal
+       	}
+       	
+#Morris....     Label - show name
+
+  	global username_ stringlen
+  	set username_($v) [$src sdes name]
+  	if { $stringlen == 10 } {
+  		set username_($v) [string range $username_($v) 0 8]
+  	} elseif { $stringlen == 15 } {
+  		set username_($v) [string range $username_($v) 0 15]
+  	} else {
+  		set username_($v) [$src sdes name]  
+  	}
+        label $w.bar.name -textvariable username_($v) -relief flat
+# comment next line to remove buttons
+	pack $w.bar.name -side left -expand 1 -fill x
+	pack $w.bar.list -side left -fill y
+	pack $w.bar -fill x
+	
+	pack $w.layoutframe.video -anchor c
+	pack $w.layoutframe -expand 1 -fill both
+
+	#
+	# Finally, bind the source to the window.
+	#
+	attach_window $src $v
+	return $w
+}
 #
 # create a new window for viewing video
 #
@@ -460,15 +523,30 @@ proc windowname { w name } {
 }
 
 proc window_switch { w src } {
-	global win_src
+	global win_src interface username_
+
 	if { [info exists win_src($w)] } {
 		set oldsrc $win_src($w)
 	} else {
 		set oldsrc "lost"
 	}
+	
+	#debug_display $win_src($w) $src
+	set oldwin [return_layout_win $src]
+	
 	if { $oldsrc != $src } {
 		detach_window $oldsrc $w
 		attach_window $src $w
+		if { $oldwin != "" } {
+			detach_window $src $oldwin
+   		    attach_window $oldsrc $oldwin
+
+		}
+	}
+	
+	if { $interface == 1 } {
+	    set username_($w) [$src sdes name]
+	    set username_($oldwin) [$oldsrc sdes name]
 	}
 }
 
@@ -488,4 +566,94 @@ proc window_set_timed w {
 	} else {
 		switcher_cancel_timer $w
 	}
+}
+
+######################################################
+##### Switch Video
+######################################################
+#
+# Rebuild the switchable list menu.
+# This menu gets updated whenever the name of a participant
+# changes, or someone gets activated or deactivated.
+#
+proc rebuild_switch_list_menu { path_ } {
+	
+    set m $path_.bar.list.menu
+    #set m $path_.bar.list
+    if { ![winfo exists $m]} {
+	    return ""
+    }
+    
+    # destroy the old menu first
+    global radio active src_listbox add_one
+
+     	#To prevent empty video enter, reduce one error
+    	if { $add_one == 0 } {
+     		return
+     	} else {
+    	     	catch "destroy $m.opt"
+     	} 
+     	
+     	#
+    	# rebuild options menu
+    	# button down a name only if it was clicked before
+    	# remove a name if it is no longer there
+    	#
+	menu $m.opt -tearoff no
+   	# debug_display $path_ $m
+    	#Morris...    Select List
+    	foreach s [session active] {
+    		set name [$s sdes name]
+    	  	if { $name != "" } {
+      	  		 $m.opt add radiobutton -label $name  \
+      	  			-variable radio($path_) \
+      	  			-command " window_switch $path_.layoutframe.video $s "   	 
+  	      	} else {
+	      		set flag 1
+	      	}      	  	
+     	}
+}
+#################################################
+## Rebuild user list on top of client streaming 
+#################################################
+proc rebuild_all_list_menu { } {
+    global win_path count active src_listbox add_one 
+    
+    #for update user list in left window
+    lappend src_listbox "temp"
+    set src_listbox [lreplace $src_listbox 0 end]
+    set list_size [.top.grid.listbox size]
+    .top.grid.listbox delete 0 $list_size
+  
+    foreach s [session active] {
+    	  set name [$s sdes name]
+    	  if { $name != "" } {
+      	  	lappend src_listbox $s
+      	  	.top.grid.listbox insert end $name 
+      	  	##for generate add_one value
+      	  	set list_size [ expr $list_size - 1 ] 
+     	 }
+     }     	
+    set add_one $list_size
+    
+    #rebuild all window list
+    set count [array size active]
+    foreach p [array names win_path] {
+        rebuild_switch_list_menu $p
+    }  
+}
+
+proc return_layout_win { src } {
+    global win_src
+
+    #debug_display [array size win_src] $src
+    foreach win [array names win_src] {
+        set value $win_src($win)       
+        #debug_display [string f $win] $win
+        if { [string first "layoutframe" $win] != -1 && [string compare $value $src] == 0 } {
+            return $win
+        } else {
+        }
+    }
+    return "" 
 }

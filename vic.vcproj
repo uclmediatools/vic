@@ -14609,7 +14609,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Assembling $(InputPath)"
-						CommandLine="nasmw -f win32 -DPREFIX -o &quot;$(IntDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;"
+						CommandLine="&quot;C:\Program Files\NASM\nasmw.exe&quot; -f win32 -DPREFIX -o &quot;$(IntDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+"
 						Outputs="&quot;$(IntDir)\$(InputName).obj&quot;"/>
 				</FileConfiguration>
 			</File>

@@ -215,7 +215,7 @@ WinMain(
 			__progname = p;
 		}
     }
-    
+
     return main(__argc, (const char**)__argv);
 }
 
