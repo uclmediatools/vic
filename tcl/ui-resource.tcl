@@ -139,7 +139,10 @@ proc init_resources {} {
 	option add Vic.iconPrefix vic: startupFile
 	option add Vic.priority 10 startupFile
 	option add Vic.confBusChannel 0 startupFile
-
+	
+  #Morris , user interface , 0 : old , 1: new
+    option add Vic.interface 0 startupFile
+    
 	option add Vic.defaultFormat h.261 startupFile
 	option add Vic.sessionType rtpv2 startupFile
 	option add Vic.grabber none startupFile
