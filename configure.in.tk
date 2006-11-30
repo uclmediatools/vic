@@ -9,6 +9,7 @@ if test "$aquatcl" == yes; then
         V_LIB_TCL="-framework Tcl"
         V_LIBRARY_TCL=/Library/Frameworks/Tcl.framework/Versions/8.4/Resources/Scripts
         V_INCLUDE_TCL="-I/Library/Frameworks/Tcl.framework/Headers -I/Library/Frameworks/Tcl.framework/PrivateHeaders"
+
 elif test "$ucltcl" != no; then
 	if test -z "$ucltcl"; then 
 		# UCL defaults
@@ -117,11 +118,11 @@ else
 			/usr/src/local/tcl8.0 \
 			/import/tcl/lib/tcl8.0"
 		for dir in $places; do
-			if test -r $dir/libtcl8.0.so -o -r $dir/libtcl8.0.a; then
+			if test -r $dir/libtcl8.0.so -o -r $dir/libtcl8.0.dylib -o -r $dir/libtcl8.0.a; then
 				V_LIB_TCL="-L$dir -ltcl8.0"
 				break
 			fi
-			if test -r $dir/libtcl.so -o -r $dir/libtcl.a; then
+			if test -r $dir/libtcl.so -o -r $dir/libtcl.dylib -o -r $dir/libtcl.a; then
 				V_LIB_TCL="-L$dir -ltcl"
 				break
 			fi
@@ -140,6 +141,7 @@ else
 	places="$PWD/../tcl-8.0/library \
 		$PWD/../tcl8.0/library \
                 $PWD/../tcl/library \
+		/System/Library/Frameworks/Tcl.framework/Versions/8.4/Resources/Scripts \
 		/usr/local/lib/tcl8.0 \
 		/usr/contrib/lib/tcl8.0 \
 		/usr/lib/tcl8.0 \
@@ -173,6 +175,7 @@ if test "$aquatk" == yes; then
         V_LIB_TK="-framework Tk"
         V_LIBRARY_TK=/Library/Frameworks/Tk.framework/Versions/8.4/Resources/Scripts
         V_INCLUDE_TK="-I/Library/Frameworks/Tk.framework/Headers -I/Library/Frameworks/Tk.framework/PrivateHeaders"
+
 elif test "$ucltk" != no; then
 	if test -z "$ucltk"; then 
 		# UCL defaults
@@ -280,7 +283,7 @@ else
 			$prefix/lib \
 			$x_libraries"
 		for dir in $places; do
-			if test -r $dir/libtk8.0.so -o -r $dir/libtk8.0.a; then
+			if test -r $dir/libtk8.0.so -o -r $dir/libtk.dylib -o -r $dir/libtk8.0.a; then
 				V_LIB_TK="-L$dir -ltk8.0"
 				break
 			fi
@@ -304,6 +307,7 @@ else
 		$PWD/../tk8.0/library \
                	$PWD/../tk/library \
 		/usr/local/lib/tk8.0 \
+		/System/Library/Frameworks/Tk.framework/Versions/8.4/Resources/Scripts \
 		/usr/contrib/lib/tk8.0 \
 		/usr/lib/tk8.0 \
 		/usr/lib/tk/tk8.0 \

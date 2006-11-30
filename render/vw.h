@@ -165,7 +165,7 @@ class BareWindow : public TclObject {
 
 inline void BareWindow::sync()
 {
-#ifndef WIN32
+#if !defined(WIN32) && !defined(MAC_OSX_TK)
 	XSync(Tk_Display(tk_), 0);
 #endif
 }

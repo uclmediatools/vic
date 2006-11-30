@@ -32,31 +32,39 @@
 #
 
 global font
-set font(helvetica10) {
+if {[string equal [tk windowingsystem] "aqua"]} {
+        font create medfont -family {Lucida Grande} -size 12 -weight bold
+        font create smallfont -family {Lucida Grande} -size 10 -weight bold
+        font create minifont -family {Lucida Grande} -size 4
+        font create helpfont -family {Lucida Grande} -size 12
+        font create entryFont -family {Lucida Grande} -size 10
+} else { 
+    set font(helvetica10) {
 	r-normal--*-100-75-75-*-*-*-*
 	r-normal--10-*-*-*-*-*-*-*
 	r-normal--11-*-*-*-*-*-*-*
 	r-normal--*-100-*-*-*-*-*-*
 	r-normal--*-*-*-*-*-*-*-*
-}
-set font(helvetica12) {
+    }
+    set font(helvetica12) {
 	r-normal--*-120-75-75-*-*-*-*
 	r-normal--12-*-*-*-*-*-*-*
 	r-normal--14-*-*-*-*-*-*-*
 	r-normal--*-120-*-*-*-*-*-*
 	r-normal--*-*-*-*-*-*-*-*
-}
-set font(helvetica14) {
+    }
+    set font(helvetica14) {
 	r-normal--*-140-75-75-*-*-*-*
 	r-normal--14-*-*-*-*-*-*-*
 	r-normal--*-140-*-*-*-*-*-*
 	r-normal--*-*-*-*-*-*-*-*
-}
-set font(times14) {
+    }
+    set font(times14) {
 	r-normal--*-140-75-75-*-*-*-*
 	r-normal--14-*-*-*-*-*-*-*
 	r-normal--*-140-*-*-*-*-*-*
 	r-normal--*-*-*-*-*-*-*-*
+    }
 }
 
 proc search_font { foundry style weight points } {
@@ -102,10 +110,12 @@ proc init_resources {} {
 
 	global tcl_platform
 	#
-	# use 2 pixels of padding by default
+	# use 2 pixels of padding by default, except with MacOSX Aqua
 	#
-	option add *padX 2
-	option add *padY 2
+	if !{[string equal [tk windowingsystem] "aqua"]} {
+	    option add *padX 2
+	    option add *padY 2
+	}
 	#
 	# don't put tearoffs in pull-down menus
 	#
@@ -129,7 +139,7 @@ proc init_resources {} {
 #
 	# These can be overridden.
 	#
-	option add Vic.geometry 250x225 startupFile
+	option add Vic.geometry 400x225 startupFile
 	option add Vic.mtu 1024 startupFile
 	option add Vic.network ip startupFile
 	option add Vic.framerate 15 startupFile
@@ -140,9 +150,6 @@ proc init_resources {} {
 	option add Vic.priority 10 startupFile
 	option add Vic.confBusChannel 0 startupFile
 
-    #Morris , user interface , 0 : old , 1: new
-    option add Vic.interface 0 startupFile
-    
 	option add Vic.defaultFormat mpeg4 startupFile
 	option add Vic.sessionType rtpv2 startupFile
 	option add Vic.grabber none startupFile
@@ -221,8 +228,9 @@ proc init_resources {} {
 	option add Vic.overlayY "0" startupFile
 
 # Init fonts
-
-	init_fonts
+        if !{[string equal [tk windowingsystem] "aqua"]} {
+	    init_fonts
+	}
 
 	option add Vic.suppressUserName true startupFile
 

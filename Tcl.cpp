@@ -215,7 +215,7 @@ void TclObject::setproc(const char* s)
 	}
 }
 
-int TclObject::callback(ClientData cd, Tcl_Interp*, int ac, char** av)
+int TclObject::callback(ClientData cd, Tcl_Interp*, int ac, const char** av)
 {
 	TclObject* tc = (TclObject*)cd;
 	return (tc->command(ac, (const char*const*)av));

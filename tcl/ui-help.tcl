@@ -50,6 +50,7 @@ proc helpitem { w text } {
 
 proc build.help { } {
 	set w .help
+	::tk::unsupported::MacWindowStyle style $w plainDBox help {closeBox resizable}
 	if [winfo exists $w] { return }
 	create_toplevel $w "vic help"
 

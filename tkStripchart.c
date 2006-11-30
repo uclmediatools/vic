@@ -35,6 +35,9 @@ static const char rcsid[] =
 #include "config.h"
 #include "tk.h"
 
+// XXX should move this elsewhere
+void TkClearArea(Tk_Window tkwin, int x, int y, int width, int height);
+	  	 
 #if TK_MINOR_VERSION<1
 #define Tk_Cursor Cursor
 #endif
@@ -771,8 +774,8 @@ DisplayStripchart(ClientData clientData)
 		else
 			x = bd + PADDING;
 
-		XClearArea(Tk_Display(tkwin), Tk_WindowId(tkwin), bd, bd,
-		     Tk_Width(tkwin) - 2 * bd, lineHeight + PADDING, False);
+                TkClearArea(tkwin, bd, bd, 
+		   Tk_Width(tkwin) - 2 * bd, lineHeight + PADDING);
 		Tk_DrawChars(Tk_Display(tkwin), Tk_WindowId(tkwin),
 			     StripchartPtr->textGC, StripchartPtr->tkfont,
 			     StripchartPtr->title,
@@ -1096,8 +1099,7 @@ DrawStripi(Stripchart* SPtr, int i)
 		return;
 
 	/* Clear any strip that might be below this one */
-	XClearArea(Tk_Display(tkwin), Tk_WindowId(tkwin), x, y, w,
-		   SPtr->max_height, FALSE);
+	TkClearArea(tkwin, x, y, w, SPtr->max_height);
 
 	/* Calculate the height of the bar */
 	if (maxv == minv)
@@ -1182,4 +1184,38 @@ ScrollStrips(Stripchart* SPtr)
 	XCopyArea(Tk_Display(tkwin), Tk_WindowId(tkwin), Tk_WindowId(tkwin),
 	          Tk_GetGC(tkwin, 0, NULL), src_x, src_y, w, h, dest_x, dest_y);
 }
+
+#ifdef MAC_OSX_TK
+
+// XXX
+#define HAVE_LIMITS_H
+
+void
+TkClearArea(Tk_Window tkwin, int x, int y, int width, int height)
+{
+        Tk_FakeWin* winPtr = (Tk_FakeWin*) tkwin;
+
+        XGCValues gcVals;
+        GC gc;
+
+        gcVals.foreground = winPtr->atts.background_pixel;
+        gc = Tk_GetGC(tkwin, GCForeground, &gcVals);
+
+        XFillRectangle(Tk_Display(tkwin), Tk_WindowId(tkwin), gc,
+                       x, y, width, height);
+
+        Tk_FreeGC(Tk_Display(tkwin), gc);
+}
+#else
+#ifdef WIN32
+void XClearArea(display, w, x ,y, width, height, exposures);
+#endif
+
+void
+TkClearArea(Tk_Window tkwin, int x, int y, int width, int height)
+{
+        XClearArea(Tk_Display(tkwin), Tk_WindowId(tkwin),
+                   x, y, width, height, False);
+}
+#endif 
 

@@ -121,7 +121,7 @@ proc have_transmit_permission {} {
 proc build.menu { } {
 	set w .menu
 	create_toplevel $w "vic menu"
-	wm withdraw $w
+	#wm withdraw $w
 	catch "wm resizable $w false false"
 
 	frame $w.session
@@ -212,10 +212,17 @@ proc build.session { w dst port srcid ttl name } {
 
 	frame $w.nb.frame.b
 
-	button $w.nb.frame.b.stats -text "Global Stats" -borderwidth 2 \
-		-anchor c -font $f -command create_global_window
-	button $w.nb.frame.b.members -text Members -borderwidth 2 \
-		-anchor c -font $f -command "toggle_window .srclist"
+	if {[string equal [tk windowingsystem] "aqua"]} {
+	        button $w.nb.frame.b.stats -text "Global Stats" -padx 10 \
+	                 -anchor c -font $f -command create_global_window
+ 		button $w.nb.frame.b.members -text Members -padx 10 \
+		 	-anchor c -font $f -command "toggle_window .srclist"
+	} else {
+		button $w.nb.frame.b.stats -text "Global Stats" -borderwidth 2 \
+			-anchor c -font $f -command create_global_window
+		button $w.nb.frame.b.members -text Members -borderwidth 2 \
+			-anchor c -font $f -command "toggle_window .srclist"
+	}
 
 	pack $w.nb.frame.b.stats $w.nb.frame.b.members \
 		-side left -padx 4 -pady 2 -anchor c
@@ -366,7 +373,6 @@ proc transmit { } {
 			$V(grabber) target $grabtarget
 		}
 
-		
 		if { $grabq != "" } {
 			$V(grabber) q $grabq
 		}
@@ -387,9 +393,14 @@ proc transmit { } {
 
 proc close_device {} {
 	global V
-	delete $V(encoder)
-	delete $V(grabber)
-	unset V(grabber) V(encoder)
+	# XXX: bypassing the pure virtual funtion call problem under macosx
+	# need to figure out where is the bug
+        if { ![string equal [tk windowingsystem] "aqua"]} { 
+	    delete $V(encoder)
+	    delete $V(grabber)
+ 	    unset V(grabber) 
+	    unset V(encoder)
+        }
 	if [info exists V(capwin)] {
 		# delete the C++ object, then destrory the tk window
 		delete $V(capwin)
@@ -706,8 +717,12 @@ proc build.device w {
 	set f [smallfont]
 
 	set m $w.menu
-	menubutton $w -menu $m -text Device... \
+	if {[string equal [tk windowingsystem] "aqua"]} {
+            menubutton $w -menu $m -text Device -width 8 -pady 4
+	} else {
+	    menubutton $w -menu $m -text Device... \
 		-relief raised -width 10 -font $f
+	}
 	menu $m
 
 	global defaultFormat inputDeviceList videoFormat
@@ -789,10 +804,10 @@ proc format_col { w n0 n1 } {
 		set reliefn1 flat
 	}
 	radiobutton $w.b0 -text $n0 -relief $reliefn0 -font $f -anchor w \
-		-variable videoFormat -value $n0 -padx 0 -pady 0 \
+		-variable videoFormat -value $n0 -padx 2 -pady 4 \
 		-command "select_format $n0" -state disabled
 	radiobutton $w.b1 -text $n1 -relief $reliefn1 -font $f -anchor w \
-		-variable videoFormat -value $n1 -padx 0 -pady 0 \
+		-variable videoFormat -value $n1 -padx 2 -pady 4 \
 		-command "select_format $n1" -state disabled
 	pack $w.b0 $w.b1 -fill x 
 
@@ -885,8 +900,13 @@ proc build.size w {
 proc build.port w {
 	set f [smallfont]
 	# create the menubutton but don't defer the menu creation until later
-	menubutton $w -menu $w.menu -text Port... \
+	if {[string equal [tk windowingsystem] "aqua"]} {
+	    menubutton $w -menu $w.menu -text Port -width 8 -pady 4 \
+                -state disabled
+	} else {
+ 	    menubutton $w -menu $w.menu -text Port... \
 		-relief raised -width 10 -font $f -state disabled
+        }
 	global portButton inputPort
 	set portButton $w
 	set inputPort undefined
@@ -901,7 +921,7 @@ proc attach_ports device {
 	menu $m
 	foreach port $portnames {
 		$m add radiobutton -label $port \
-			-command "grabber port $port" \
+			-command "grabber port \"$port\"" \
 			-value $port -variable inputPort -font $f
 	}
 	if ![info exists defaultPort($device)] {
@@ -924,8 +944,13 @@ proc build.type w {
 	set f [smallfont]
 
 	set m $w.menu
-	menubutton $w -text Signal... -menu $m -relief raised \
+  	if {[string equal [tk windowingsystem] "aqua"]} {
+	    menubutton $w -text Signal -menu $m -width 8 -pady 4 \
+		-state disabled
+	} else {
+	    menubutton $w -text Signal... -menu $m -relief raised \
 		-width 10 -font $f -state disabled
+	}
 	menu $m
 	$m add radiobutton -label "auto" -command restart \
 		-value auto -variable inputType -font $f
@@ -957,8 +982,12 @@ proc build.encoder_options w {
 	set useHardwareComp [yesno useHardwareComp]
 	set f [smallfont]
 	set m $w.menu
-	menubutton $w -text Options... -menu $m -relief raised -width 10 \
+	if {[string equal [tk windowingsystem] "aqua"]} {
+            menubutton $w -text Options -menu $m -width 8 -pady 4
+	} else {
+	    menubutton $w -text Options... -menu $m -relief raised -width 10 \
 		-font $f
+ 	}
 	menu $m
     	$m add checkbutton -label "Sending Slides" \
 		-variable sendingSlides -font $f -command setFillRate
@@ -966,17 +995,22 @@ proc build.encoder_options w {
 		-variable useJPEGforH261 -font $f -command restart
 		$m add checkbutton -label "Use Hardware Encode" \
 		-variable useHardwareComp -font $f -command restart
-		if {$tcl_platform(platform) == "windows"} {
+        if { $tcl_platform(platform) == "windows" || [string equal [tk windowingsystem] "aqua"] } {
 			$m add checkbutton -label "Configure on Transmit" \
-			-variable configOnTransmit -font $f
+			-variable configOnTransmit -font $f \
+			-command  "grabber useconfig \$configOnTransmit"
 		}
 }
 
 proc build.tile w {
 	set f [smallfont]
 	set m $w.menu
-	menubutton $w -text Tile... -menu $m -relief raised -width 10 \
-		-font $f
+ 	if {[string equal [tk windowingsystem] "aqua"]} {
+	    menubutton $w -text Tile -menu $m -width 8 -pady 4
+	} else {
+	    menubutton $w -text Tile... -menu $m -relief raised -width 10 \
+			-font $f
+	}
 	menu $m
 	$m add radiobutton -label Single -command "redecorate 1" \
 		-value 1 -variable V(ncol) -font $f
@@ -991,8 +1025,12 @@ proc build.tile w {
 proc build.decoder_options w {
 	set f [smallfont]
 	set m $w.menu
-	menubutton $w -text Options... -menu $m -relief raised -width 10 \
+	if {[string equal [tk windowingsystem] "aqua"]} {
+	    menubutton $w -text Options -menu $m -width 8 -pady 4
+	} else {
+ 	    menubutton $w -text Options... -menu $m -relief raised -width 10 \
 		-font $f
+	}
 	menu $m
     	$m add checkbutton -label "Mute New Sources" \
 		-variable V(muteNewSources) -font $f
@@ -1475,7 +1513,7 @@ proc select_format fmt {
 proc init_grabber { grabber } {
 	global V configOnTransmit tcl_platform
 
-	if {$tcl_platform(platform) == "windows"} {
+	if { $tcl_platform(platform) == "windows" || [string equal [tk windowingsystem] "aqua"] } {
 		$grabber useconfig $configOnTransmit
 	}
 
@@ -1504,6 +1542,17 @@ proc init_grabber { grabber } {
 
 	$grabber transmitter $V(session)
 	global qscale inputSize fps_slider bps_slider videoDevice
+        global inputPort inputType portButton typeButton
+        # MacOS-X requires port and input type to be set before decimate
+        # is called otherwise the channel device's input may be busy
+        if {[string equal [tk windowingsystem] "aqua"]} {
+            if { [$portButton cget -state] == "normal" } {
+                  $grabber port $inputPort
+            }
+            if { [$typeButton cget -state] == "normal" } {
+                  $grabber type $inputType
+            }
+        }
 	$grabber fps [$fps_slider get]
 	$grabber bps [$bps_slider get]
 	$grabber decimate $inputSize
@@ -1511,12 +1560,13 @@ proc init_grabber { grabber } {
 		set cmd [lindex [$qscale configure -command] 4]
 		$cmd [$qscale get]
 	}
-	global inputPort inputType portButton typeButton
-	if { [$portButton cget -state] == "normal" } {
+        if !{[string equal [tk windowingsystem] "aqua"]} {
+	    if { [$portButton cget -state] == "normal" } {
 		$grabber port $inputPort
-	}
-	if { [$typeButton cget -state] == "normal" } {
+	    }
+	    if { [$typeButton cget -state] == "normal" } {
 		$grabber type $inputType
+	    }
 	}
 	setFillRate
 	update

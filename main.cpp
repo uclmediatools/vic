@@ -47,6 +47,11 @@ static const char rcsid[] =
 #include <ctype.h>
 
 
+#ifdef MAC_OSX_TK
+   // XXX - MacOS X 10.3 Ptheard workaround
+   extern "C" void find_macosx_capture_devices(void);
+#endif
+
 #ifdef WIN32
 //#include <winsock.h>
 #include <process.h>
@@ -409,7 +414,7 @@ void loadbitmaps(Tcl_Interp* tcl)
 	Tk_DefineBitmap(tcl, Tk_GetUid("fwd"), fwd, 7, 10);
 }
 
-extern "C" int Tk_StripchartCmd(ClientData, Tcl_Interp*, int ac, char** av);
+extern "C" int Tk_StripchartCmd(ClientData, Tcl_Interp*, int ac, const char** av);
 #ifdef WIN32
 extern "C" int WinPutsCmd(ClientData, Tcl_Interp*, int ac, char** av);
 extern "C" int WinGetUserName(ClientData, Tcl_Interp*, int ac, char** av);
@@ -421,7 +426,7 @@ extern "C" {
 		TkPlatformInit(Tcl_Interp *interp)
 		{
 			Tcl_SetVar(interp, "tk_library", ".", TCL_GLOBAL_ONLY);
-#ifndef WIN32
+#if !defined(WIN32) && !defined(MAC_OSX_TK)
 			extern void TkCreateXEventSource(void);
 			TkCreateXEventSource();
 #endif
@@ -462,9 +467,14 @@ int main(int argc, const char** argv)
 #ifndef WIN32
 	opterr = 1;
 #endif
+
+#ifdef MAC_OSX_TK
+       // XXX - MacOS X 10.3 Ptheard workaround
+       find_macosx_capture_devices();
+#endif
 	// Option list; If letter is followed by ':' then it takes an argument
 	const char* options = 
-		"A:B:b:C:c:D:d:f:F:HI:i:j:K:lL:M:m:N:n:o:Pq:rsST:t:U:u:vV:w:x:X:y";
+		"A:B:C:c:D:d:f:F:HI:i:j:K:lL:M:m:N:n:o:Pq:rsST:t:U:u:vV:w:x:X:y";
 	/* process display and window (-use) options before initialising tcl/tk */
 	char buf[256], tmp[256];
 	const char *display=0, *use=0;
@@ -553,10 +563,6 @@ int main(int argc, const char** argv)
 
 		case 'B':
 			tcl.add_option("maxbw", optarg);
-			break;
-
-		case 'b':
-			tcl.add_option("interface", optarg);
 			break;
 
 		case 'C':

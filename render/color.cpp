@@ -167,14 +167,25 @@ int ColorModel::yuv_to_rgb(color& c) const
 
 void ColorModel::free_colors()
 {
+#ifdef MAC_OSX_TK
+       /*
+        * XXX should either figure out the appropriate thing
+        * for macosx or just ditch support for <16 bit depth
+        */
+        abort();
+#else
 	if (ncolor_ > 0) {
 		XFreeColors(dpy_, colormap_, pixel_, ncolor_, 0);
 		ncolor_ = 0;
 	}
+#endif
 }
 
 int ColorModel::alloc_color(color& c)
 {
+#ifdef MAC_OSX_TK
+     abort();
+#else
 	int r = c.r;
 	int g = c.g;
 	int b = c.b;
@@ -240,6 +251,7 @@ int ColorModel::alloc_color(color& c)
 	rgb_to_yuv(p);
 
 	return (pixel);
+#endif // MAC_OSX_TK
 }
 
 int ColorModel::alloc_colors()

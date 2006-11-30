@@ -33,16 +33,48 @@
 # @(#) $Header$ (LBL)
 
 proc smallfont { } {
+        if {[string equal [tk windowingsystem] "aqua"]} {
+            return smallfont
+        }
 	return [resource smallfont]
 }
 
+proc minifont { } {
+        if {[string equal [tk windowingsystem] "aqua"]} {
+            return minifont
+        }
+        return [resource minifont]
+}
+
 proc mediumfont { } {
+        if {[string equal [tk windowingsystem] "aqua"]} {
+            return smallfont
+        } 
 	return [resource medfont]
 }
 
+
+proc helpfont { } {
+        if {[string equal [tk windowingsystem] "aqua"]} {
+                return helpfont
+        }
+        return [resource helpfont]
+} 
+
 proc disfont { } {
+        if {[string equal [tk windowingsystem] "aqua"]} {
+                return disablefont
+        }    	
 	return [resource disablefont]
 }
+
+proc entryfont { } {
+        if {[string equal [tk windowingsystem] "aqua"]} {
+                return entryfont
+        } 
+        return [resource entryfont]
+} 
+     
 
 set nids 0
 proc uniqueID { } {
@@ -74,7 +106,11 @@ proc toggle_window w {
  		# adjust for virtual desktops
 		incr x [winfo vrootx .]
 		incr y [winfo vrooty .]
-		if { $y < 0 } { set y 0 }
+   	        if {[string equal [tk windowingsystem] "aqua"]} {
+		    if { $y < 25 } { set y 25 }
+		} else {
+		    if { $y < 0 } { set y 0 }
+		}
 		if { $x < 0 } {
 			set x 0
 		} else {
@@ -91,6 +127,9 @@ proc toggle_window w {
 	} else {
 		wm deiconify $w
 	}
+        if {[string equal [tk windowingsystem] "aqua"]} {
+           raise $w
+        }
 }
 
 proc create_toplevel { w title } {
@@ -103,6 +142,7 @@ proc create_toplevel { w title } {
 	}
 	set title [resource iconPrefix]$title
 	wm withdraw $w
+	update idletasks
 	wm transient $w .
 	wm title $w $title
 	wm iconname $w $title
@@ -159,7 +199,7 @@ proc helpitem { w text } {
 	set f [resource helpFont]
 	canvas $w.bullet -width 12 -height 12 
 	$w.bullet create oval 6 3 12 9 -fill black
-	message $w.msg -justify left -anchor w -font $f -width 450 -text $text
+	message $w.msg -justify left -anchor w -font [helpfont] -width 450 -text $text
 	pack $w.bullet -side left -anchor ne -pady 5
 	pack $w.msg -side left -expand 1 -fill x -anchor nw
 }
@@ -203,7 +243,7 @@ proc mark_icon mark {
 
 proc mk.entry { w action text } {
 	entry $w.entry -relief raised -borderwidth 1 -exportselection 1 \
-		-font [resource entryFont]
+		-font [entryfont]
 	global entryTab
 	set entryTab($w.entry:action) $action
 	set entryTab($w.entry:value) $text
@@ -247,9 +287,15 @@ proc updateKey { w key } {
 proc mk.key w {
 	global V
 	frame $w.key
-	checkbutton $w.key.button -text Key: -relief flat -font [smallfont] \
-		-command "toggleKey $w.key" -variable V(encrypt) \
-		-disabledforeground gray40
+        if {[string equal [tk windowingsystem] "aqua"]} {
+                checkbutton $w.key.button -text Key: -relief flat \
+                -font [smallfont]  -command "toggleKey $w.key" \
+                -variable V(encrypt) -disabledforeground gray40 -padx 3
+        } else {
+                checkbutton $w.key.button -text Key: -relief flat \
+                -font [smallfont]  -command "toggleKey $w.key" \
+                -variable V(encrypt) -disabledforeground gray40
+        }   
 	mk.entry $w.key updateKey [resource sessionKey]
 	if !$V(encrypt) {
 		$w.key.button configure -state disabled

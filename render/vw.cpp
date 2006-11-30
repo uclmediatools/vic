@@ -38,6 +38,20 @@ static const char rcsid[] =
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef MAC_OSX_TK
+/* stuff needed to include declaration of TkPutImage */
+#include <math.h>
+extern "C" {
+#define HAVE_LIMITS_H 1
+#ifndef WIN32
+#define HAVE_UNISTD_H 1
+#endif
+#include <tkPort.h>
+#undef strcasecmp
+#define TIMEZONE_DEFINED_
+}
+#endif
+
 #include "vw.h"
 #include "color.h"
 #include "rgb-converter.h"
@@ -216,7 +230,11 @@ void SlowVideoImage::putimage(Display* dpy, Window window, GC gc,
 			      int sx, int sy, int x, int y,
 			      int w, int h) const
 {
+#ifdef MAC_OSX_TK
+        TkPutImage(NULL, 0, dpy, window, gc, image_, sx, sy, x, y, w, h);
+#else
 	XPutImage(dpy, window, gc, image_, sx, sy, x, y, w, h);
+#endif
 }
 
 #ifdef USE_SHM
@@ -619,6 +637,7 @@ void CaptureWindow::setsize(int w, int h)
 
 void CaptureWindow::grab_image()
 {
+#ifndef MAC_OSX_TK
 	XImage* image = image_->ximage();
 #ifdef USE_SHM
 	if (image->obdata != 0)
@@ -629,6 +648,7 @@ void CaptureWindow::grab_image()
 		XGetSubImage(Tk_Display(tk_), Tk_WindowId(tk_),
 			     0, 0, image->width, image->height,
 			     AllPlanes, ZPixmap, image, 0, 0);
+#endif
 }
 			
 void CaptureWindow::capture(u_int8_t* frm)

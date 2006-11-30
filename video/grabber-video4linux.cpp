@@ -86,7 +86,7 @@ class V4lGrabber:public Grabber
 {
   public:
     V4lGrabber(const char *cformat, const char *dev);
-         virtual ~ V4lGrabber();
+    virtual ~ V4lGrabber();
 
     virtual int command(int argc, const char *const *argv);
     virtual void start();

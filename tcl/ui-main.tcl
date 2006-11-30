@@ -54,93 +54,44 @@ proc session args {
 }
 
 proc build.bar w {
-	global title
-	frame $w.bar -relief ridge -borderwidth 2
-	label $w.bar.title -text "VIC v[version]" -font [smallfont] \
-		-relief flat -justify left
-	button $w.bar.quit -text Quit -relief raised \
-		-font [smallfont] -command adios \
-		-highlightthickness 1
-	button $w.bar.menu -text Menu -relief raised \
-		-font [smallfont] -highlightthickness 1 \
-		-command "toggle_window .menu"
-	button $w.bar.help -text Help -relief raised \
-		-font [smallfont] -highlightthickness 1 \
-		-command "toggle_window .help"
-	button $w.bar.switch -text Switch -relief raised \
-		-font [smallfont] -highlightthickness 1 \
-		-command "switch_interface 1"
-		
-	pack $w.bar.title -side left -fill both -expand 1
-	pack $w.bar.menu $w.bar.switch $w.bar.help $w.bar.quit -side left -padx 1 -pady 1
+
+    global title
+
+    frame $w.bar  -borderwidth 0
+    if {[string equal [tk windowingsystem] "aqua"]} {
+        global V
+        set net $V(data-net)
+        label $w.bar.title -text "Address: [$net addr]  Port: [$net port]  TTL: [$net ttl]" -font [smallfont] \
+                -justify left
+        button $w.bar.quit -text Quit \
+                -font [smallfont] \
+                -command adios
+        button $w.bar.menu -text Menu  \
+                -font [smallfont] \
+                -command "toggle_window .menu"
+        button $w.bar.help -text Help \
+                -font [smallfont] \
+                -command "toggle_window .help"
+    } else {
+        global V
+        set net $V(data-net)
+        label $w.bar.title -text "Address: [$net addr]  Port: [$net port]  TTL: [$net ttl]" -font [smallfont] \
+                -relief flat -justify left
+        button $w.bar.quit -text Quit -relief raised \
+                -font [smallfont] -command adios \
+                -highlightthickness 1
+        button $w.bar.menu -text Menu -relief raised \
+                -font [smallfont] -highlightthickness 1 \
+                -command "toggle_window .menu"
+        button $w.bar.help -text Help -relief raised \
+                -font [smallfont] -highlightthickness 1 \
+                -command "toggle_window .help"
+                -command "ag_autoplace::show_ui"
+    }                                
+    pack $w.bar.title -side left -fill both -expand 1
+    pack $w.bar.menu $w.bar.help $w.bar.quit -side left -padx 1 -pady 1 
 }
 
-##Morris, interface2
-proc build.bar2 w {
-	global title now PATH_
-	frame $w.bar  -borderwidth 0
-	
-	set now 0
-	label $w.bar.title -text "VIC v[version]" -font [smallfont] \
-		-relief flat -justify left
-	label $w.bar.total_left -text "Time = "
-	label $w.bar.total -textvariable now -relief flat
-	get_time
-	
-	checkbutton $w.bar.send -text "Transmit"  \
-		-relief raised -command " transmit " \
-		-anchor w -variable transmitButtonState
-	button $w.bar.wb -text WhiteBoard -relief raised \
-		#-font [smallfont] -command "exec -telnet.exe D://test/ag-media/vic/Debug/wb.bat"
-		-command "start_whiteboard"
-		#-highlightthickness 1
-	button $w.bar.quit -text Quit -relief raised \
-		-font [smallfont] -command adios \
-		-highlightthickness 1
-	button $w.bar.menu -text Menu -relief raised \
-		-font [smallfont] -highlightthickness 1 \
-		-command "toggle_window .menu"
-	button $w.bar.switch -text Switch -relief raised \
-		-font [smallfont] -highlightthickness 1 \
-		-command "switch_interface 0"
-	button $w.bar.help -text Help -relief raised \
-		-font [smallfont] -highlightthickness 1 \
-		-command "toggle_window .help"
-	###layout
-	menubutton $w.bar.layout -text Layout -menu $w.bar.layout.m -relief raised -padx 5 -pady 6
-	menu $w.bar.layout.m -tearoff 0
-	image create photo .image_1 -file "image/one.gif"
-		$w.bar.layout.m add command -label "1" -image .image_1  -command " build_grid 1 "
-	image create photo .image_2 -file "image/two.gif"
-		$w.bar.layout.m add command -label "2" -image .image_2  -command " build_grid 2 "
-	image create photo .image_3 -file "image/three.gif"
-		$w.bar.layout.m add command -label "3" -image .image_3  -command " build_grid 3 "
-	image create photo .image_5 -file "image/five.gif"
-		$w.bar.layout.m add command -label "5" -image .image_5  -command " build_grid 5 "
-	image create photo .image_6 -file "image/eight.gif"
-		$w.bar.layout.m add command -label "6" -image .image_6  -command " build_grid 8 "
-	image create photo .image_4 -file "image/four.gif"
-		$w.bar.layout.m add command -label "4" -image .image_4  -command " build_grid 4 "
-	image create photo .image_7 -file "image/nine.gif"
-		$w.bar.layout.m add command -label "7" -image .image_7  -command " build_grid 6 "
-	image create photo .image_8 -file "image/sixteen.gif"
-		$w.bar.layout.m add command -label "8" -image .image_8 -command " build_grid 7 "
-	image create photo .image_25 -file "image/25.gif"
-		$w.bar.layout.m add command -label "9" -image .image_25 -command " build_grid 9 "
-	image create photo .image_36 -file "image/36.gif"
-		$w.bar.layout.m add command -label "10" -image .image_36 -command " build_grid 10 "
-	image create photo .image_40 -file "image/40.gif"
-		$w.bar.layout.m add command -label "11" -image .image_40 -command " build_grid 11 "
-	#$m configure -tearoff 1
-	
-	###
-        button $w.bar.autoplace -text Autoplace -relief raised  \
-		-font [smallfont] -highlightthickness 1 \
-		-command "ag_autoplace::show_ui"
-	pack $w.bar.title -side left -fill both -expand 1
-
-	pack $w.bar.total_left $w.bar.total $w.bar.send $w.bar.layout $w.bar.menu $w.bar.switch $w.bar.help -side left -padx 1 -pady 1
-}
 #
 # Look through the list of available visuals, and choose
 # the best one that vic supports.
@@ -248,10 +199,8 @@ proc init_color {} {
 # Build the user-interface.
 #
 proc init_gui {} {
-	global V interface boolean_hide
+	global V
 	init_visual .top
-	set interface [option get . interface Vic]
-
 	if ![init_color] {
 		if { [winfo depth .top] != 8 } {
 			puts stderr "vic: internal error: no colors"
@@ -266,13 +215,6 @@ proc init_gui {} {
 			exit 2
 		}
 	}
- 
-	##Morris, build parameter , src_listbox
-    if { $interface ==1 } {
-       global src_listbox
-       lappend src_listbox
-    } 
-    ### 
     
 	build.srclist
 
@@ -286,39 +228,18 @@ proc init_gui {} {
 	bind . <q> { adios }
 	bind . <Control-c> { adios }
 	bind . <Control-d> { adios }
-	#hind userlist
-   	bind . <h> "hind_userlist"  
 
-	
-    if {$interface == 0} {
-	    foreach i { 1 2 3 4 } {
-		    bind . <Key-$i> "redecorate $i"
-	    }
+	foreach i { 1 2 3 4 } {
+		bind . <Key-$i> "redecorate $i"
+	}
 
-	    build.bar .top
-	    pack .top.bar -fill x -side bottom
-	    pack .top -expand 1 -fill both
+	build.bar .top
+	pack .top.bar -fill x -side bottom
+	pack .top -expand 1 -fill both
 
         label .top.label -text "Waiting for video..."
-	    pack .top.label -before .top.bar -anchor c -expand 1
-	    
-	    set boolean_hide -1
-    } else {
-        frame .top.barholder -relief ridge -borderwidth 1
-	    build.bar2 .top.barholder
-	    pack .top.barholder.bar -fill x -side top
-	    pack .top.barholder -side top -fill x
+	pack .top.label -before .top.bar -anchor c -expand 1
 
-        label .top.label -text ""
-        pack .top.label -side left -expand 0 
-
-        canvas .top.layout
-        layout_widget .top.layout                                                                                                                                                                                                                                  
-	    pack .top.layout -side right -fill both -expand 1
-	    pack .top -expand 1 -fill both
-	   
-	    set boolean_hide 1
-    }
 	#
 	# Withdraw window so that user-placement is deferred
 	# until after initial geometry is computed
@@ -327,17 +248,7 @@ proc init_gui {} {
 	wm withdraw .
 	# added to catch window close action
 	wm protocol . WM_DELETE_WINDOW adios
-	if  { $interface == 1 } {
-	    set h [winfo screenheight .]
-	    set w [winfo screenwidth .]
-	    set wh $w
-	    append wh "x"
-	    append wh $h
-	    append wh "+0+0"
-	    wm geometry . $wh
-	} else {
-	    wm geometry . $geom
-	}
+	wm geometry . $geom
 	update idletasks
 	set minwidth [winfo reqwidth .]
 	set minheight [winfo reqheight .]
@@ -361,30 +272,17 @@ proc init_gui {} {
 }
 
 proc add_active src {
-	global active  interface
+	global active
 	set active($src) 1
 	if { [array size active] == 1 } {
-	    if { $interface  == 0} {
-	        pack forget .top.label
-		    set w .top.gridlist
-		    global V
-		    set V(grid) $w
-		    frame $w
-		    pack $w -fill both -anchor n
-	    } 
-		##Morris..
-  	    if { $interface == 1} {
-            pack forget .top.label
-		    set w .top.grid
-		    global V
-		    set V(grid) $w
-		    frame $w
-		    pack $w -fill both -anchor n
-	        init_left_win
-	    }
-	    ##
-	}
+		pack forget .top.label
 
+		set w .top.grid
+		global V
+		set V(grid) $w
+		frame $w
+		pack $w -fill both -anchor n
+	}
 }
 
 proc rm_active src {
@@ -438,7 +336,6 @@ proc set_rate_vars src {
 proc select_thumbnail { w src } {
 	global win_src
 	set srcid [$src srcid]
-
 	foreach w [winfo children .] {
 		# this is fragile
 		set vw $w.frame.video
@@ -618,30 +515,46 @@ proc build.src { w src color } {
 	set stamp $w.stamp
 	frame $stamp -relief ridge -borderwidth 2
 	bind $stamp <Enter> "%W configure -background gray90"
+        if {[string equal [tk windowingsystem] "aqua"]} {
+                bind $stamp <Enter> "%W configure -background CornflowerBlue"
+        } else {
+                bind $stamp <Enter> "%W configure -background gray90"
+        }   
 	bind $stamp <Leave> "%W configure -background [resource background]"
 	create_video_widget $stamp.video 80 60
-	global win_is_slow interface
+	global win_is_slow
 	set win_is_slow($stamp.video) 1
 
 	# disable xvideo fro stamp video
 	attach_window $src $stamp.video false 
-	if { $interface == 0 } {
-	    pack $stamp.video -side left -anchor c -padx 2
-	    pack $stamp -side left -fill y
-	} else {
-		pack $stamp.video -side top -anchor c -padx 2
-	    pack $stamp -side top -fill y
-	}
-	
-	frame $w.r
+        
+	if {[string equal [tk windowingsystem] "aqua"]} {
+                pack $stamp.video -side left -padx 2 -pady 2
+                pack $stamp -side left -anchor nw -padx {4 2} -pady 2
+                frame $w.r -padx 2
+        } else {
+                pack $stamp.video -side left -anchor c -padx 2
+                pack $stamp -side left -fill y
+                frame $w.r
+        }
+               	
 	frame $w.r.cw -relief groove -borderwidth 2
 
 	pack $w.r.cw -side left -expand 1 -fill both -anchor w -padx 0
 
-	label $w.r.cw.name -textvariable src_nickname($src) -font $f \
-		-pady 1 -borderwidth 0 -anchor w 
-	label $w.r.cw.addr -textvariable src_info($src) -font $f \
-		-pady 1 -borderwidth 0 -anchor w
+
+        if {[string equal [tk windowingsystem] "aqua"]} {
+                label $w.r.cw.name -textvariable src_nickname($src) -font $f \
+                        -padx 2 -pady 1 -borderwidth 0 -anchor w
+                label $w.r.cw.addr -textvariable src_info($src) -font $f \
+                        -padx 2 -pady 1 -borderwidth 0 -anchor w
+        } else {
+                label $w.r.cw.name -textvariable src_nickname($src) -font $f \
+                        -pady 1 -borderwidth 0 -anchor w
+                label $w.r.cw.addr -textvariable src_info($src) -font $f \
+                        -pady 1 -borderwidth 0 -anchor w
+        }          
+
 
 	global ftext btext ltext
 	set ftext($src) "0.0 f/s"
@@ -660,33 +573,53 @@ proc build.src { w src color } {
 	global mutebutton V
 	set mutebutton($src) $V(muteNewSources)
 	$src mute $mutebutton($src)
-	checkbutton $w.r.ctrl.mute -text mute -borderwidth 2 \
-		-highlightthickness 1 \
-		-relief groove -font $f -width 4 \
-		-command "$src mute \$mutebutton($src)" \
-		-variable mutebutton($src)
 
-	checkbutton $w.r.ctrl.color -text color -borderwidth 2 \
-		-highlightthickness 1 \
-		-relief groove -font $f -width 4 \
-		-command "\[$src handler\] color \$colorbutton($src)" \
-		-variable colorbutton($src)
+        if {[string equal [tk windowingsystem] "aqua"]} {
+                checkbutton $w.r.ctrl.mute -text mute -borderwidth 2 \
+                        -font $f -width 4 \
+                        -command "$src mute \$mutebutton($src)" \
+                        -variable mutebutton($src)
 
+                checkbutton $w.r.ctrl.color -text color -borderwidth 2 \
+                        -font $f -width 4 \
+                        -command "\[$src handler\] color \$colorbutton($src)" \
+                        -variable colorbutton($src)
+        } else {
+                checkbutton $w.r.ctrl.mute -text mute -borderwidth 2 \
+                        -highlightthickness 1 \
+                        -relief groove -font $f -width 4 \
+                        -command "$src mute \$mutebutton($src)" \
+                        -variable mutebutton($src)
+
+                checkbutton $w.r.ctrl.color -text color -borderwidth 2 \
+                        -highlightthickness 1 \
+                        -relief groove -font $f -width 4 \
+                        -command "\[$src handler\] color \$colorbutton($src)" \
+                        -variable colorbutton($src)
+        }
+             
 	set m $w.r.ctrl.info.menu$src
-	menubutton $w.r.ctrl.info -text info... -borderwidth 2 \
-		-highlightthickness 1 \
-		-relief groove -font $f -width 5 \
-		-menu $m
+        if {[string equal [tk windowingsystem] "aqua"]} {
+                menubutton $w.r.ctrl.info -text info -borderwidth 2 \
+                        -font $f -pady 4 -menu $m
+        } else {
+                menubutton $w.r.ctrl.info -text info... -borderwidth 2 \
+                        -highlightthickness 1 \
+                        -relief groove -font $f -width 5 \
+                        -menu $m
+        }      
 	build_info_menu $src $m
-    if { $interface == 0 } {
-    	pack $w.r.ctrl.mute -side left -fill x -expand 1
-	    pack $w.r.ctrl.color -side left -fill x -expand 1
-	    pack $w.r.ctrl.info -side left -fill x -expand 1
-	} else {
-        pack $w.r.ctrl.info -side top -fill x -expand 1
-	    pack $w.r.ctrl.mute $w.r.ctrl.color -side left -fill x -expand 1
-    }
-#	pack $w.r.ctrl.options -side left -fill x -expand 1
+
+        if {[string equal [tk windowingsystem] "aqua"]} {
+                pack $w.r.ctrl.mute -side left -expand 1
+                pack $w.r.ctrl.color -side left -expand 1
+                pack $w.r.ctrl.info -side left -fill x -expand 1
+        } else {
+                pack $w.r.ctrl.mute -side left -fill x -expand 1
+                pack $w.r.ctrl.color -side left -fill x -expand 1
+                pack $w.r.ctrl.info -side left -fill x -expand 1
+#               pack $w.r.ctrl.options -side left -fill x -expand 1
+        } 
 
 	global colorbutton
 	set colorbutton($src) 1
@@ -781,27 +714,17 @@ proc really_activate src {
 
 	add_active $src
 
-	global V interface
-
+	global V
 	set w $V(grid).$src
 	frame $w -relief groove -borderwidth 0 \
 		-visual $V(visual) -colormap $V(colormap)
 	#XXX color
-	##Morris, ignore
-    build.src $w $src 1
-    
-	if { $interface == 0 } {
-	   grid $w -row $V(currow) -column $V(curcol) -sticky we
-	   grid columnconfigure $V(grid) $V(curcol) -weight 1
-	}
+	build.src $w $src 1
+	grid $w -row $V(currow) -column $V(curcol) -sticky we
+	grid columnconfigure $V(grid) $V(curcol) -weight 1
 
 	update_decoder $src
 	after 1000 "update_src $src"
-
-    ##morris, update user list
-    if { $interface == 1 } {
-        rebuild_all_list_menu
-    }
 
 	bump
 }
@@ -859,11 +782,7 @@ proc update_decoder src {
 }
 
 proc change_format src {
-	global win_list interface
-	
-	if { $interface == 1} {
-	    destroy_layout_frame
-	}
+	global win_list
 
 	if ![info exists win_list($src)] {
 		#
@@ -930,7 +849,7 @@ proc detach_renderers src {
 }
 
 proc change_name src {
-	global win_list nametag srclist interface
+	global win_list nametag srclist
 	set name [$src sdes name]
 	# update viewing window names to reflect new name
 	if [info exists win_list($src)] {
@@ -944,18 +863,13 @@ proc change_name src {
 	if [info exists srclist] {
 		$srclist itemconfigure $nametag($src) -text $name
 	}
-	
-	##morris, update user list
-    if { $interface==1 } {
-        rebuild_all_list_menu
-    }
 }
 
 #
 # Remove a src from the active senders list. 
 #
 proc deactivate src {
-	global ftext btext ltext fpshat bpshat lhat shat win_list V interface
+	global ftext btext ltext fpshat bpshat lhat shat win_list V
 
 	#catch this if using relate interface
 	if [yesno relateInterface] {deactivate_relate $src} else {
@@ -990,12 +904,6 @@ proc deactivate src {
 	unset lhat($src)
 	unset shat($src)
 	}
-	
-	##morris, update user list
-    if { $interface==1 } {
-        destroy_layout_frame 
-        rebuild_all_list_menu
-    }
 }
 
 proc update_rate src {
@@ -1115,462 +1023,4 @@ proc info_text src {
 		    set fmt "$fmt [$d info] ([$d width]x[$d height])"
 	}
 	return "$fmt"
-}
-
-#########################################################
-##Morris, destroy layout frame
-########################################################
-proc destroy_layout_frame src {
-	globale arr_layout_frame
-	
-	foreach {locate name} [array get arr_layout_frame] {
-		if { $name == $src } {  ##maybe multiframes
-			detach_window $src $locate
-			#debug_display $src $locate
-		} else {
-			
-		}
-	}
-
-}
-####################################################################
-####For left side of window initially
-####################################################################
-proc init_left_win {} {
-	label .top.grid.label2 -text "User List :"
-	pack .top.grid.label2 -side left
-	grid .top.grid.label2 -row 0 -column 0 -columnspan 2 -sticky news
-	
-	scrollbar .top.grid.scroll -command ".top.grid.listbox yview"
-	listbox .top.grid.listbox -yscroll ".top.grid.scroll set" -height 6 -relief groove
-	pack .top.grid.scroll -side left  -expand 0  
-	pack .top.grid.listbox -side left -expand 1 -fill both
-	grid .top.grid.listbox -row 1 -column 0 -sticky news
-	grid .top.grid.scroll -row 1 -column 1 -sticky nws
-	.top.grid.listbox insert end "Loading User List..."
-	
-	bind .top.grid.listbox <Double-1> {
-		   show_property 9 N 0
-	}
-	
-	label .top.grid.label4 -text ""
-	pack .top.grid.label4 -side left -expand 1
-	grid .top.grid.label4 -row 3 -column 0 -columnspan 2 -sticky news
-	
-#	global previous
-
-}
-proc show_property { init_index init_src local } {
-	global src_listbox previous
-	if { $init_index != 0 && $local == 0 } {
-		set index [.top.grid.listbox curselection]
-		set src [lindex $src_listbox $index]
-	} else {
-		set previous "first" 
-		set index $init_index
-		set src $init_src
-	}
-	
-	if [ winfo exists .top.grid.$src ] {
-		destroy .top.grid.$src
-	}
-	
-	if [ winfo exists .top.grid.$previous ] {
-	   	grid forget .top.grid.$previous
-	}
-
-	global V 
-	#debug_display $V(grid) $src
-	set w $V(grid).$src
-	frame $w -relief groove -borderwidth 0 \
-		-visual $V(visual) -colormap $V(colormap)
-	build.src $w $src 1
-	pack $w
-	grid $w -row 4 -column 0 -columnspan 2 -sticky news
-	
-	set previous $src
-}
-####################################################################
-####For layout widget
-####################################################################
-proc layout_widget { w } {
-	global show_label_
-
-	set show_grid_ $w.grid
-	frame $show_grid_
-	
-	set show_frame_ $w.frame
-	frame $show_frame_
-	
-	set show_label_ $w.label
-	label $show_label_ -text "Welcome to Video Conference Room" -font \
-      	                           {-family times -size 32 -weight bold -slant italic} 
-        
-	pack $show_label_ -anchor c -expand 1 -side right -fill both
-	# layout automatically at first time
-	default-layout
-
-}
-proc default-layout {} {
-	global active src_listbox now
-	
-	#set num_ [llength $src_listbox]
-	set num_ [array size active]
-	if  { $num_ > 0} {
-		foreach s [session active] {
-			show_property 0 $s 1
-			break
-		}
-	}
-	
-	if { $num_ == 1} {
-		catch { build_grid 1 }
-	} elseif { $num_ > 0 && $num_ < 3 } {
-		catch { build_grid 2 } 
-	} elseif { $num_ > 0 && $num_ < 4 } {
-		catch { build_grid 3 }
-	} elseif { $num_ > 0 && $num_ < 5 } {
-		catch { build_grid 4 }
-	} elseif { $num_ > 0 && $num_ < 6 } {
-		catch { build_grid 5 }
-	} elseif { $num_ > 0 && $num_ < 9 } {
-		catch { build_grid 8 }
-	} elseif { $num_ > 0 && $num_ < 10 } {
-		catch { build_grid 6 }
-	} elseif { $num_ > 0 && $num_ < 16 } {
-		catch { build_grid 7 }
-	} elseif { $num_ > 0 && $num_ < 25 } {
-		catch { build_grid 9 }
-	} elseif { $num_ > 0 && $num_ < 36 } {
-		catch { build_grid 10 }
-	} elseif { $num_ > 36 } {
-		catch { build_grid 11 }
-	}
-	if { $num_ == 0 } {
-		after 1000 " default-layout "
-	}
-}
-####################################################################
-####Layout
-####################################################################
-proc build_grid { choice } {
-	global active stringlen
-	
-	set num_ [array size active]
-	if { $num_ == 0} {
-		return ""
-	}
-	#debug_display $num_ $num_
-	foreach s [session active] {
-		lappend src_list $s 
-	}
-	set stringlen 0
-	if { $choice == 1 } { 
-		destroy-window-grid
-		video-window-layout [lindex $src_list 0] 0 0 4 4 720 480 one
-	} elseif { $choice == 2 } {
-		destroy-window-grid
-		for {set i 0} {$i < 2} {incr i} {
-		    if { [ expr $i ] == $num_ } {
-		        return ""
-		    }
-			set index [ expr $i % $num_]		
-			video-window-layout [lindex $src_list $index] 0 $i 1 1 384 288 3$i
-		}		
-	} elseif { $choice == 3 } {
-		destroy-window-grid
-		video-window-layout [lindex $src_list 0] 0 0 3 4 720 480 00
-		set temp 0
-		for {set i 0} {$i < 3} {incr i 2} { 
-			set count [ expr $temp + 1 ]
-		    if { [ expr $count ] == $num_ } {
-		        return ""
-		    }
-			set index [ expr $count % $num_]		
-			video-window-layout [lindex $src_list $index] 3 $i 1 1 240 180 3$i
-			set temp [ expr $temp + 1 ]
-		}
-		
-	} elseif { $choice == 4 } {
-		destroy-window-grid
-		for {set i 0} {$i < 2} {incr i} {
-			for {set j 0} {$j < 2} {incr j} {
-				set count [ expr $i*2 + $j ]
-                if { [ expr $count ] == $num_ } {
-		            return ""
-		        }
-				set index [ expr $count % $num_]		
-				video-window-layout [lindex $src_list $index] $i $j 1 1 384 288 $i$j
-			}
-		}		
-	} elseif { $choice == 5 } {
-		destroy-window-grid
-		video-window-layout [lindex $src_list 0] 0 0 4 4 640 480 00
-		for {set i 0} {$i < 4} {incr i} {
-			set count [ expr $i + 1 ]
-            if { [ expr $count ] == $num_ } {
-		            return ""
-		    }
-			set index [ expr $count % $num_]		
-			video-window-layout [lindex $src_list $index] 4 $i 1 1 160 120 3$i
-		}
-	
-	} elseif { $choice == 6 } {
-		destroy-window-grid
-		set stringlen 15
-		for {set i 0} {$i < 3} {incr i} {
-			for {set j 0} {$j < 3} {incr j} {
-				set count [ expr $i*3 + $j ]
-		        if { [ expr $count ] == $num_ } {
-		            return ""
-		        }
-				set index [ expr $count % $num_]		
-				video-window-layout [lindex $src_list $index] $i $j 1 1 192 144 $i$j
-			}
-		}	
-			
-	} elseif { $choice == 7 } {  #for 16
-		destroy-window-grid
-		set stringlen 15
-		for {set i 0} {$i < 4} {incr i} {
-			for {set j 0} {$j < 4} {incr j} {
-				set count [ expr $i*4 + $j ]
-                if { [ expr $count ] == $num_ } {
-		            return ""
-		        }
-				set index [ expr $count % $num_]		
-				video-window-layout [lindex $src_list $index] $i $j 1 1 192 144 $i$j
-			}
-		}
-		
-	} elseif { $choice == 8 } { #for 8
-		destroy-window-grid
-		set stringlen 15
-		video-window-layout [lindex $src_list 0] 0 0 3 3 640 480 00
-		for {set i 0} {$i < 4} {incr i} {
-			set count [ expr $i + 1 ]
-			if { [ expr $count ] == $num_ } {
-		            return ""
-		    }
-			set index [ expr $count % $num_]		
-			video-window-layout [lindex $src_list $index] 3 $i 1 1 160 120 3$i
-		}
-		for {set i 0} {$i < 3} {incr i} {
-			set count [ expr $i + 5 ]
-			if { [ expr $count ] == $num_ } {
-		            return ""
-		    }
-			set index [ expr $count % $num_]		
-			video-window-layout [lindex $src_list $index] $i 3 1 1 160 120 8$i
-		}		
-		
-	} elseif { $choice == 9 } {  #for 25 
-		destroy-window-grid
-		set stringlen 15
-		for {set i 0} {$i < 5} {incr i} {
-			for {set j 0} {$j < 5} {incr j} {
-				set count [ expr $i*5 + $j ]
-                if { [ expr $count ] == $num_ } {
-		            return ""
-		        }
-				set index [ expr $count % $num_]		
-				video-window-layout [lindex $src_list $index] $i $j 1 1 120 90 $i$j
-			}
-		}
-		
-	} elseif { $choice == 10 } {  #for 36
-		destroy-window-grid
-		set stringlen 10
-		for {set i 0} {$i < 6} {incr i} {
-			for {set j 0} {$j < 6} {incr j} {
-				set count [ expr $i*6 + $j ]
-	            if { [ expr $count ] == $num_ } {
-		            return ""
-		        }
-				set index [ expr $count % $num_]		
-				video-window-layout [lindex $src_list $index] $i $j 1 1 120 90 $i$j
-			}
-		}
-	} elseif { $choice == 11 } {   #for 40
-		destroy-window-grid
-		set stringlen 10
-		for {set i 0} {$i < 8} {incr i} {
-			for {set j 0} {$j < 5} {incr j} {
-				set count [ expr $i*8 + $j ]
-                if { [ expr $count ] == $num_ } {
-		            return ""
-		        }
-				set index [ expr $count % $num_]		
-				video-window-layout [lindex $src_list $index] $i $j 1 1 80 60 $i$j
-			}
-		}
-	}
-}
-
-#show one stream in main window
-proc video-window-layout { src x y xspan yspan w h id } {
-	global win_path
-	set one [open_window_frame $src $w $h $id]
-	grid $one -in .top.layout.grid -row $x -column $y -rowspan $xspan -columnspan $yspan -sticky news
-	pack .top.layout.grid -side right -fill both -expand 1
-	set win_path($one) 1
-}
-
-#reset main window
-proc destroy-window-grid {} {
-	global show_label_ win_src
-   
-   	if [array exists win_src] {
-    	foreach win [array names win_src] {
-           set src $win_src($win)
-           if { [string first "layoutframe" $win] != -1 } {
-               detach_window $src $win
-           }
-        }
-	}
-   
-	if  [ winfo exists $show_label_ ] {
-		destroy $show_label_
-	}
-	destroy .top.layout.grid
-	frame .top.layout.grid -bg black
-}
-
-####################################################################
-####Time
-####################################################################
-proc get_time { } {
-	global now
-	set now [ clock format [clock seconds] -format "%a %b %d %H:%M" ]
-	after 1000 "get_time"
-}
-####################################################################
-####Time
-####################################################################
-proc hind_userlist { } {
-	global boolean_hide
-		
-	if { $boolean_hide == 1 } {
-	    pack forget .top.grid
-	    set boolean_hide 0
-	} elseif { $boolean_hide == 0} {
-	    pack .top.grid -fill both -anchor n
-	    set boolean_hide 1
-	} else {
-	}
-}
-####################################################################
-####Switch layout
-####################################################################
-proc switch_interface { skin } {
- 
-    global interface src_listbox active
-    set interface $skin
-    
-	if { $skin == 0} {
-	    pack forget .top.layout
-	    pack forget .top.barholder.bar
-	    pack forget .top.barholder
-	    pack forget .top.grid
-      
-		set geom [option get . geometry Vic]
-		wm geometry . $geom
-		foreach i { 1 2 3 4 } {
-		    bind . <Key-$i> "redecorate $i"
-	    }
-
-		if  [ winfo exists .top.gridlist ] {
-		    global boolean_hide	
-		    set boolean_hide -1
-		    pack .top.bar -fill x -side bottom
-		    pack .top.gridlist -fill both -anchor n
-		#} elseif [ winfo exists .top.label ] {
-		  #  pack .top.bar -fill x -side bottom
-		  #  pack .top.label -before .top.bar -anchor c -expand 1
-		} else {
-			build.bar .top
-	        pack .top.bar -fill x -side bottom
-  	        pack .top -expand 1 -fill both
- 
-			global V boolean_hide
-			set boolean_hide -1
- 			set w .top.gridlist
-			set V(grid) $w
-			frame $w
-			pack $w -fill both -anchor n
-			pack .top.gridlist -fill both -anchor n
-        
-			foreach src [session active] {
-			    really_activate $src
-			}
-	    }
-	} else {
-        pack forget .top.bar
-	    pack forget .top.gridlist
-	    
-	    if [ winfo exists .top.label ] {
-			pack forget .top.label
-	    }
-	    
-	    #resize main window
-	    set h [winfo screenheight .]
-	    set w [winfo screenwidth .]
-	    set wh $w
-	    append wh "x"
-	    append wh $h
-	    append wh "+0+0"
-		wm geometry . $wh
-
-		if  [ winfo exists .top.grid ] {	
-		    pack .top.barholder.bar -fill x -side top
-		    pack .top.barholder -side top -fill x	
-		    pack .top.layout -side right -fill both -expand 1	 
-		    pack .top.grid -fill both -anchor n
-		} else {
-		    #initial src_listbox
-		    global src_listbox active boolean_hide
-            lappend src_listbox
-            set boolean_hide 1
-            
-            frame .top.barholder -relief ridge -borderwidth 1
-	        build.bar2 .top.barholder
-	        pack .top.barholder.bar -fill x -side top
-	        pack .top.barholder -side top -fill x		
-
-	        set w .top.grid
-		    global V
-		    set V(grid) $w
-    	    frame $w
-    	    
-	    	canvas .top.layout
-            layout_widget .top.layout                                                                                                                                                                                                                                  
-	        pack .top.layout -side right -fill both -expand 1
-		    pack $w -fill both -anchor n
-		    	        
-	        init_left_win                  
-			 
-		    rebuild_all_list_menu
-		}
-	} 
-}
-
-####################################################################
-####Test - For Debug
-####################################################################
-proc debug_display { s1 s2 } {
-#	if  [ winfo exists .tl ] {		
-#		toplevel .tG
-#		label .tG.l -text $s1
-#		label .tG.a -text $s2
-#		pack .tG.l .tG.a
-#		pack .tG
-#		return
-#	} else {
-	
-		toplevel .tl
-		label .tl.l -text $s1
-		label .tl.a -text $s2
-		pack .tl.l .tl.a
-		pack .tl
-#	}
 }
