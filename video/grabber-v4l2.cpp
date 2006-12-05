@@ -442,13 +442,13 @@ int V4l2Grabber::command(int argc, const char*const* argv)
 
 
                 if (strcmp(argv[1], "type") == 0 || strcmp(argv[1], "format") == 0) {
-                        
+				
                         for (int k = 0, err = 0; err == 0; ++k)
         		{
                 		struct v4l2_standard     estd;
                 		estd.index = k;
                 		if ( !(err = ioctl(fd_, VIDIOC_ENUMSTD, &estd)) )
-					if ( strcmp(argv[2], (const char *)estd.name) == 0)
+					if (strcasecmp(argv[2], (const char *)estd.name) == 0)
 						norm_ = k;          
 			}     	     
 

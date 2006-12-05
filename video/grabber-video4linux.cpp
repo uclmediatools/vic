@@ -525,6 +525,7 @@ int V4lGrabber::command(int argc, const char *const *argv)
 		norm_ = VIDEO_MODE_SECAM;
 	    else
 		norm_ = VIDEO_MODE_NTSC;
+	    
 	    if (running_)
 		format();
 	    return (TCL_OK);
