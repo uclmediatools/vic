@@ -239,6 +239,9 @@ V4lScanner::V4lScanner(const char **dev)
 
 	debug_msg("V4l:   ports:");
 	strcat(attr, "port { ");
+
+	char attr_tmp[100]="";
+	
 	for (j = 0; j < capability.channels; j++) {
 	    channel.channel = j;
 	    if (-1 == ioctl(fd, VIDIOCGCHAN, &channel)) {
@@ -246,10 +249,18 @@ V4lScanner::V4lScanner(const char **dev)
 	    }
 	    else {
 		debug_msg(" %s", channel.name);
-		strcat(attr, channel.name);
-		strcat(attr, " ");
+		// Using S-Video as default
+		if(strcasecmp(channel.name, "S-Video")==0){
+		  strcat(attr, channel.name);
+		  strcat(attr, " ");
+		}else{
+		  strcat(attr_tmp, channel.name);
+		  strcat(attr_tmp, " ");
+		}
 	    }
 	}
+	strcat(attr, attr_tmp);
+			
 	debug_msg("\n");
 	strcat(attr, "} ");
 

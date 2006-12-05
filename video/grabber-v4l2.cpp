@@ -218,6 +218,8 @@ V4l2Scanner::V4l2Scanner(const char **dev)
 
                 debug_msg("V4l2:   ports:");
                 strcat(attr,"port { ");
+		char attr_tmp[100]="";
+		
                 for (j = 0; j < 16; j++) {
                         if (-1 == ioctl(fd,VIDIOC_S_INPUT,&j)) {
                                 perror("ioctl VIDIOC_S_INPUT");
@@ -231,8 +233,14 @@ V4l2Scanner::V4l2Scanner(const char **dev)
                                         debug_msg(" %s: ",input.name);
                                         for (unsigned int s=0 ; s<strlen((const char*)input.name) ; s++)
                                                 if (input.name[s]==' ') input.name[s]='-';
-                                        strcat(attr,(const char*)input.name);
-                                        strcat(attr," ");
+
+					if(strcasecmp((const char*)input.name, "S-Video")==0){
+					   strcat(attr, (const char*)input.name);
+					   strcat(attr," ");																
+					}else{
+                                           strcat(attr_tmp,(const char*)input.name);
+                                           strcat(attr_tmp," ");
+					}
                                 }
 
                                 pixfmt.index=j;
@@ -242,6 +250,7 @@ V4l2Scanner::V4l2Scanner(const char **dev)
                                 } else debug_msg("%s ",pixfmt.description);
                         }
                 }
+		strcat(attr, attr_tmp);
                 debug_msg("\n");
                 strcat(attr,"} ");
 
