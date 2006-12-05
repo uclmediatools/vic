@@ -354,30 +354,35 @@ proc open_window src {
 	}
 	
 	# Resize
-        if { ![string equal [tk windowingsystem] "aqua"]} {  
-	  bind $w <B1-Motion> {	  
-	    global win_src win_target
+	bind $w <ButtonPress> {
+	   global click_x click_y
+	   set click_x %x
+	   set click_y %y	
+	}
 
-	    if { [info exists win_src(%W)] & [info exists win_target(%W)]} {
+	bind $w <ButtonRelease> {	  
+	  global win_src win_target click_x click_y
+
+	  if { [info exists win_src(%W)] & [info exists win_target(%W)]} {
 	      # %W is vw.frame.video
 	      set src $win_src(%W)
 	    
-	      # return Decoder "d" as a PacketHandler
-	      set d [$src handler]
-	    
-	      set iw [$d width]
-	      set ih [$d height]
+	      # iw/ih mean viewing video size rightnow
+	      set iw [%W width]
+	      set ih [%W height]
 
 	      set aspect_r [expr 1.0*$ih / $iw]
-	      set ow [expr int(%w + %x + %y)]
+	      set diff_x [expr %x - $click_x]
+	      set diff_y [expr %y - $click_y]
+
+	      set ow [expr int($iw + $diff_x + $diff_y)]
 	      set oh [expr int($aspect_r * $ow)]
 
  	      if { $ow > 64 } {
-                resize %W $ow $oh		       	      
-	        #resize_window %W $ow $oh   	      
-	      }	       
-	    }	 
-	  }
+                 resize %W $ow $oh		       	     
+	         #resize_window %W $ow $oh   	      
+	      } 	 
+          }
         }
 
 	switcher_register $v $src window_switch

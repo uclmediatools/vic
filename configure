@@ -981,7 +981,7 @@ esac
     else
       echo "$as_me: WARNING: no configuration information is in $ac_dir" >&2
     fi
-    cd $ac_popdir
+    cd "$ac_popdir"
   done
 fi
 
@@ -2038,8 +2038,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -2097,8 +2096,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -2214,8 +2212,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -2269,8 +2266,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -2315,8 +2311,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -2360,8 +2355,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -2545,8 +2539,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -2604,8 +2597,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -2676,8 +2668,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -2721,8 +2712,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -3039,8 +3029,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -3210,8 +3199,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -3279,8 +3267,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -3438,8 +3425,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -3506,8 +3492,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -3577,8 +3562,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -3817,8 +3801,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -3905,8 +3888,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -3985,7 +3967,7 @@ if test "$aquatcl" == yes; then
         V_LIBRARY_TCL=/Library/Frameworks/Tcl.framework/Versions/8.4/Resources/Scripts
         V_INCLUDE_TCL="-I/Library/Frameworks/Tcl.framework/Headers -I/Library/Frameworks/Tcl.framework/PrivateHeaders"
 
-elif test "$ucltcl" != no; then
+elif test "$ucltcl" == yes; then
 	if test -z "$ucltcl"; then
 		# UCL defaults
 		ucltcl=../tcl-8.0
@@ -4018,9 +4000,9 @@ elif test "$d" != "" ; then
 		echo "can't find tcl.h in $d/include"
 		exit 1
 	fi
-	places="$d/lib/libtcl8.0.so \
-		$d/lib/libtcl8.0.dylib \
-		$d/lib/libtcl8.0.a \
+	places="$d/lib/libtcl8.4.so \
+		$d/lib/libtcl8.4.dylib \
+		$d/lib/libtcl8.4.a \
 		$d/lib/libtcl.so \
 		$d/lib/libtcl.dylib \
 		$d/lib/libtcl.a"
@@ -4035,8 +4017,8 @@ elif test "$d" != "" ; then
 		echo "can't find libtcl.a in $d/lib"
 		exit 1
 	fi
-	places="$d/lib/tcl-8.0 \
-		$d/lib/tcl8.0 \
+	places="$d/lib/tcl-8.4 \
+		$d/lib/tcl8.4 \
 		$d/lib/tcl"
 	V_LIBRARY_TCL=FAIL
 	for dir in $places; do
@@ -4087,12 +4069,12 @@ fi
 rm -f conftest.err conftest.$ac_ext
 	if test "$V_INCLUDE_TCL" = FAIL; then
 		echo "checking for tcl.h"
-		places="$PWD/../tcl-8.0 \
-			$PWD/../tcl8.0 \
+		places="$PWD/../tcl-8.4 \
+			$PWD/../tcl8.4 \
 			$PWD/../tcl \
-			/usr/local/include/tcl8.0 \
-			/usr/src/local/tcl8.0 \
-			/import/tcl/include/tcl8.0 \
+			/usr/local/include/tcl8.4 \
+			/usr/src/local/tcl8.4 \
+			/import/tcl/include/tcl8.4 \
 			$prefix/include \
 			$x_includes/tk \
 			$x_includes \
@@ -4110,13 +4092,13 @@ rm -f conftest.err conftest.$ac_ext
 			exit 1
 		fi
 	fi
-	echo "$as_me:$LINENO: checking for main in -ltcl8.0" >&5
-echo $ECHO_N "checking for main in -ltcl8.0... $ECHO_C" >&6
-if test "${ac_cv_lib_tcl8_0_main+set}" = set; then
+	echo "$as_me:$LINENO: checking for main in -ltcl8.4" >&5
+echo $ECHO_N "checking for main in -ltcl8.4... $ECHO_C" >&6
+if test "${ac_cv_lib_tcl8_4_main+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-ltcl8.0  $LIBS"
+LIBS="-ltcl8.4  $LIBS"
 cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
@@ -4142,8 +4124,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -4155,29 +4136,29 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_cv_lib_tcl8_0_main=yes
+  ac_cv_lib_tcl8_4_main=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-ac_cv_lib_tcl8_0_main=no
+ac_cv_lib_tcl8_4_main=no
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-echo "$as_me:$LINENO: result: $ac_cv_lib_tcl8_0_main" >&5
-echo "${ECHO_T}$ac_cv_lib_tcl8_0_main" >&6
-if test $ac_cv_lib_tcl8_0_main = yes; then
-  V_LIB_TCL="-ltcl8.0"
+echo "$as_me:$LINENO: result: $ac_cv_lib_tcl8_4_main" >&5
+echo "${ECHO_T}$ac_cv_lib_tcl8_4_main" >&6
+if test $ac_cv_lib_tcl8_4_main = yes; then
+  V_LIB_TCL="-ltcl8.4"
 else
   V_LIB_TCL="FAIL"
 fi
 
 	if test "$V_LIB_TCL" = FAIL; then
 		echo "checking for libtcl.a"
-		places="$PWD/../tcl-8.0/unix \
-                        $PWD/../tcl8.0/unix \
+		places="$PWD/../tcl-8.4/unix \
+                        $PWD/../tcl8.4/unix \
                         $PWD/../tcl/unix \
 			/usr/local/lib \
 			$prefix/lib \
@@ -4185,12 +4166,12 @@ fi
 			/usr/contrib/lib \
 			/usr/local/lib \
 			/usr/lib \
-			$PWD/../tcl8.0 \
-			/usr/src/local/tcl8.0 \
-			/import/tcl/lib/tcl8.0"
+			$PWD/../tcl8.4 \
+			/usr/src/local/tcl8.4 \
+			/import/tcl/lib/tcl8.4"
 		for dir in $places; do
-			if test -r $dir/libtcl8.0.so -o -r $dir/libtcl8.0.dylib -o -r $dir/libtcl8.0.a; then
-				V_LIB_TCL="-L$dir -ltcl8.0"
+			if test -r $dir/libtcl8.4.so -o -r $dir/libtcl8.4.dylib -o -r $dir/libtcl8.4.a; then
+				V_LIB_TCL="-L$dir -ltcl8.4"
 				break
 			fi
 			if test -r $dir/libtcl.so -o -r $dir/libtcl.dylib -o -r $dir/libtcl.a; then
@@ -4209,17 +4190,17 @@ fi
 	fi
 	echo "checking for tcl/init.tcl"
 	V_LIBRARY_TCL=FAIL
-	places="$PWD/../tcl-8.0/library \
-		$PWD/../tcl8.0/library \
+	places="$PWD/../tcl-8.4/library \
+		$PWD/../tcl8.4/library \
                 $PWD/../tcl/library \
 		/System/Library/Frameworks/Tcl.framework/Versions/8.4/Resources/Scripts \
-		/usr/local/lib/tcl8.0 \
-		/usr/contrib/lib/tcl8.0 \
-		/usr/lib/tcl8.0 \
-		/usr/lib/tk/tcl8.0 \
-		/import/tcl/lib/tcl8.0 \
-		$prefix/lib/tcl8.0 \
-		$x_libraries/tcl8.0 \
+		/usr/local/lib/tcl8.4 \
+		/usr/contrib/lib/tcl8.4 \
+		/usr/lib/tcl8.4 \
+		/usr/lib/tk/tcl8.4 \
+		/import/tcl/lib/tcl8.4 \
+		$prefix/lib/tcl8.4 \
+		$x_libraries/tcl8.4 \
 		/usr/local/lib/tcl \
 		/usr/lib/tcl \
 		$x_libraries/tcl"
@@ -4261,7 +4242,7 @@ if test "$aquatk" == yes; then
         V_LIBRARY_TK=/Library/Frameworks/Tk.framework/Versions/8.4/Resources/Scripts
         V_INCLUDE_TK="-I/Library/Frameworks/Tk.framework/Headers -I/Library/Frameworks/Tk.framework/PrivateHeaders"
 
-elif test "$ucltk" != no; then
+elif test "$ucltk" == yes; then
 	if test -z "$ucltk"; then
 		# UCL defaults
 		ucltk=../tk-8.0
@@ -4294,8 +4275,8 @@ elif test "$d" != "" ; then
 		echo "can't find tk.h in $d/include"
 		exit 1
 	fi
-	places="$d/lib/libtk8.0.so \
-		$d/lib/libtk8.0.a \
+	places="$d/lib/libtk8.4.so \
+		$d/lib/libtk8.4.a \
 		$d/lib/libtk.so \
 		$d/lib/libtk.a"
 	V_LIB_TK=FAIL
@@ -4309,7 +4290,7 @@ elif test "$d" != "" ; then
 		echo "can't find libtk.a in $d/lib"
 		exit 1
 	fi
-	places="$d/lib/tk8.0 \
+	places="$d/lib/tk8.4 \
 		$d/lib/tk"
 	V_LIBRARY_TK=FAIL
 	for dir in $places; do
@@ -4361,8 +4342,8 @@ rm -f conftest.err conftest.$ac_ext
 	if test "$V_INCLUDE_TK" = FAIL; then
 		echo "checking for tk.h"
 		V_INCLUDE_TK=""
-		places="$PWD/../tk8.0/generic \
-	                $PWD/../tk-8.0/generic \
+		places="$PWD/../tk8.4/generic \
+	                $PWD/../tk-8.4/generic \
        		        $PWD/../tk/generic \
 			/usr/local/include \
 			$prefix/include \
@@ -4371,9 +4352,9 @@ rm -f conftest.err conftest.$ac_ext
 			/usr/include\
 			$x_includes/tk \
 			$x_includes \
-			$PWD/../tk8.0 \
-			/usr/src/local/tk8.0 \
-			/import/tcl/include/tk8.0"
+			$PWD/../tk8.4 \
+			/usr/src/local/tk8.4 \
+			/import/tcl/include/tk8.4"
 		for dir in $places; do
 			if test -r $dir/tk.h ; then
 				V_INCLUDE_TK=-I$dir
@@ -4385,13 +4366,13 @@ rm -f conftest.err conftest.$ac_ext
 			exit 1
 		fi
 	fi
-	echo "$as_me:$LINENO: checking for main in -ltk8.0" >&5
-echo $ECHO_N "checking for main in -ltk8.0... $ECHO_C" >&6
-if test "${ac_cv_lib_tk8_0_main+set}" = set; then
+	echo "$as_me:$LINENO: checking for main in -ltk8.4" >&5
+echo $ECHO_N "checking for main in -ltk8.4... $ECHO_C" >&6
+if test "${ac_cv_lib_tk8_4_main+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-ltk8.0  $LIBS"
+LIBS="-ltk8.4  $LIBS"
 cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
@@ -4417,8 +4398,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -4430,42 +4410,42 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_cv_lib_tk8_0_main=yes
+  ac_cv_lib_tk8_4_main=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-ac_cv_lib_tk8_0_main=no
+ac_cv_lib_tk8_4_main=no
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-echo "$as_me:$LINENO: result: $ac_cv_lib_tk8_0_main" >&5
-echo "${ECHO_T}$ac_cv_lib_tk8_0_main" >&6
-if test $ac_cv_lib_tk8_0_main = yes; then
-  V_LIB_TK="-ltk8.0"
+echo "$as_me:$LINENO: result: $ac_cv_lib_tk8_4_main" >&5
+echo "${ECHO_T}$ac_cv_lib_tk8_4_main" >&6
+if test $ac_cv_lib_tk8_4_main = yes; then
+  V_LIB_TK="-ltk8.4"
 else
   V_LIB_TK="FAIL"
 fi
 
 	if test "$V_LIB_TK" = FAIL; then
-		echo "checking for libtk.a"
-		places="$PWD/../tk-8.0/unix \
-			$PWD/../tk8.0/unix \
+		echo "checking for libtk8.4.a"
+		places="$PWD/../tk-8.4/unix \
+			$PWD/../tk8.4/unix \
                 	$PWD/../tk/unix \
 			/usr/local/lib \
 			/usr/contrib/lib \
 			/usr/lib \
 			/usr/lib/tk \
 			/import/tcl/lib \
-			$PWD/../tk8.0 \
-			/usr/src/local/tk8.0 \
+			$PWD/../tk8.4 \
+			/usr/src/local/tk8.4 \
 			$prefix/lib \
 			$x_libraries"
 		for dir in $places; do
-			if test -r $dir/libtk8.0.so -o -r $dir/libtk.dylib -o -r $dir/libtk8.0.a; then
-				V_LIB_TK="-L$dir -ltk8.0"
+			if test -r $dir/libtk8.4.so -o -r $dir/libtk.dylib -o -r $dir/libtk8.4.a; then
+				V_LIB_TK="-L$dir -ltk8.4"
 				break
 			fi
 			if test -r $dir/libtk.so -o -r $dir/libtk.a; then
@@ -4484,19 +4464,19 @@ fi
 	fi
 	echo "checking for tk/tk.tcl"
 	V_LIBRARY_TK=FAIL
-	places="$PWD/../tk-8.0/library \
-		$PWD/../tk8.0/library \
+	places="$PWD/../tk-8.4/library \
+		$PWD/../tk8.4/library \
                	$PWD/../tk/library \
-		/usr/local/lib/tk8.0 \
+		/usr/local/lib/tk8.4 \
 		/System/Library/Frameworks/Tk.framework/Versions/8.4/Resources/Scripts \
-		/usr/contrib/lib/tk8.0 \
-		/usr/lib/tk8.0 \
-		/usr/lib/tk/tk8.0 \
-		/import/tcl/lib/tk8.0 \
-		$prefix/lib/tk8.0 \
-		$x_libraries/tk8.0 \
-		$PWD/../tk8.0/library \
-		/usr/src/local/tk8.0/library \
+		/usr/contrib/lib/tk8.4 \
+		/usr/lib/tk8.4 \
+		/usr/lib/tk/tk8.4 \
+		/import/tcl/lib/tk8.4 \
+		$prefix/lib/tk8.4 \
+		$x_libraries/tk8.4 \
+		$PWD/../tk8.4/library \
+		/usr/src/local/tk8.4/library \
 		/usr/local/lib/tk \
 		/usr/lib/tk \
 		$x_libraries/tk"
@@ -4668,8 +4648,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -4815,8 +4794,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -4962,8 +4940,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -5124,8 +5101,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -5197,8 +5173,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -5270,8 +5245,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -5384,8 +5358,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -5496,8 +5469,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -5570,8 +5542,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -5744,8 +5715,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -5820,8 +5790,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -5895,8 +5864,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -6322,7 +6290,7 @@ armv4l-*-linux)
         V_SHM=""
         V_STATIC=""
         V_BROKEN_OBJ=
-        V_DEFINE="$V_DEFINE -DHAVE_IPV6 -DMAC_OSX_TCL -DMAC_OSX_TK"
+        V_DEFINE="$V_DEFINE -DHAVE_IPV6 -DMAC_OSX_TCL -DMAC_OSX_TK -DHAVE_FAST_INT"
 	V_LIB="$V_LIB -framework Carbon -framework QuickTime -lssl -lcrypto"
         if test "$target_cpu" = powerpc; then
             V_CCOPT="-O2 -mcpu=G3 -mtune=G4"
@@ -6423,8 +6391,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -6495,8 +6462,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -7436,11 +7402,6 @@ esac
 
 
 
-  if test x"$ac_file" != x-; then
-    { echo "$as_me:$LINENO: creating $ac_file" >&5
-echo "$as_me: creating $ac_file" >&6;}
-    rm -f "$ac_file"
-  fi
   # Let's still pretend it is `configure' which instantiates (i.e., don't
   # use $as_me), people would be surprised to read:
   #    /* config.h.  Generated by config.status.  */
@@ -7479,6 +7440,12 @@ echo "$as_me: error: cannot find input file: $f" >&2;}
 	 fi;;
       esac
     done` || { (exit 1); exit 1; }
+
+  if test x"$ac_file" != x-; then
+    { echo "$as_me:$LINENO: creating $ac_file" >&5
+echo "$as_me: creating $ac_file" >&6;}
+    rm -f "$ac_file"
+  fi
 _ACEOF
 cat >>$CONFIG_STATUS <<_ACEOF
   sed "$ac_vpsub

@@ -36,7 +36,7 @@
 set helpno 0
 proc helpitem { w text } {
 	global helpno
-	set f [option get . helpFont Vic]
+	set f [option get . helpfont Vic]
 	set h $w.h$helpno
 	incr helpno
 	frame $h

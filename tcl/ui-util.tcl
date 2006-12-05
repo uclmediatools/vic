@@ -36,7 +36,7 @@ proc smallfont { } {
         if {[string equal [tk windowingsystem] "aqua"]} {
             return smallfont
         }
-	return [resource smallfont]
+     	return [resource smallfont]
 }
 
 proc minifont { } {
@@ -50,7 +50,7 @@ proc mediumfont { } {
         if {[string equal [tk windowingsystem] "aqua"]} {
             return smallfont
         } 
-	return [resource medfont]
+     	return [resource medfont]
 }
 
 
@@ -65,7 +65,7 @@ proc disfont { } {
         if {[string equal [tk windowingsystem] "aqua"]} {
                 return disablefont
         }    	
-	return [resource disablefont]
+     	return [resource disablefont]
 }
 
 proc entryfont { } {
@@ -196,7 +196,7 @@ proc open_dialog text {
 
 proc helpitem { w text } {
 	global helpno
-	set f [resource helpFont]
+	set f [resource helpfont]
 	canvas $w.bullet -width 12 -height 12 
 	$w.bullet create oval 6 3 12 9 -fill black
 	message $w.msg -justify left -anchor w -font [helpfont] -width 450 -text $text

@@ -66,6 +66,7 @@ proc init_local {} {
 	# make sure we have mandatory resources
 	#
 	set name [resource rtpName]
+
 	if { $name == "" } {
 		set name [resource sessionName]
 		option add *rtpName $name startupFile

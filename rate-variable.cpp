@@ -62,7 +62,7 @@ public:
 	RateVariable(const char* name) : TclObject(name) { }
 protected:
 	static char* update_rate_var(ClientData, Tcl_Interp*, const char* name1,
-				     const char* name2, int flags); //SV-XXX: FreeBSD
+				     const char* name2, int flags);
 	int command(int argc, const char*const* argv);
 } rate_variable_cmd("rate_variable");
 
@@ -80,7 +80,8 @@ char* RateVariable::update_rate_var(ClientData clientData, Tcl_Interp* tcl,
 		 */
 		char res[128];
 		flags &= TCL_GLOBAL_ONLY;
-		const char* cv = Tcl_GetVar2(tcl, name1, name2, flags); //SV-XXX: FreeBSD
+		const char* cv = Tcl_GetVar2(tcl, name1, name2, flags); 
+		
 		if (cv == NULL)
 			return (tcl->result);
 		int curval = atoi(cv);

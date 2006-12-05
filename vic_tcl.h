@@ -124,7 +124,7 @@ class TclObject {
 	virtual void reset();
 	void class_name(const char*);
 	/* make this public for Sun's compiler */
-	static int callback(ClientData, Tcl_Interp*, int ac, const char** av); //SV-XXX: FreeBSD
+	static int callback(ClientData, Tcl_Interp*, int ac, const char** av);
 	static void reset_all();
     protected:
 	TclObject(const char* name = 0);

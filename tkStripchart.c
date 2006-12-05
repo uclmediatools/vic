@@ -367,7 +367,7 @@ static void SwapColours(Stripchart* StripchartPtr);
  */
 int
 Tk_StripchartCmd(ClientData clientData, Tcl_Interp *interp, int argc,
-		 char **argv) //SV-XXX: FreeBSD
+		 const char **argv) //SV-XXX: FreeBSD
  {
 	Tk_Window tkwin = (Tk_Window) clientData;
 	Tk_Window new;

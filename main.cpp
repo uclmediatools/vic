@@ -415,6 +415,7 @@ void loadbitmaps(Tcl_Interp* tcl)
 }
 
 extern "C" int Tk_StripchartCmd(ClientData, Tcl_Interp*, int ac, const char** av);
+
 #ifdef WIN32
 extern "C" int WinPutsCmd(ClientData, Tcl_Interp*, int ac, char** av);
 extern "C" int WinGetUserName(ClientData, Tcl_Interp*, int ac, char** av);
@@ -545,7 +546,7 @@ int main(int argc, const char** argv)
 #endif
 	EmbeddedTcl::init();
 	tcl.evalc("init_resources");
-
+	
 	optind=1;
 	while ((op = getopt(argc, (char**)argv, (char*)options)) != -1) {
 		switch (op) {

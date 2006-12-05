@@ -37,7 +37,7 @@ if {[string equal [tk windowingsystem] "aqua"]} {
         font create smallfont -family {Lucida Grande} -size 10 -weight bold
         font create minifont -family {Lucida Grande} -size 4
         font create helpfont -family {Lucida Grande} -size 12
-        font create entryFont -family {Lucida Grande} -size 10
+        font create entryfont -family {Lucida Grande} -size 10
 } else { 
     set font(helvetica10) {
 	r-normal--*-100-75-75-*-*-*-*
@@ -102,8 +102,8 @@ proc init_fonts {} {
 	option add *Font $helv12b startupFile
 	option add Vic.medfont $helv12b startupFile
 	option add Vic.smallfont $helv10b startupFile
-	option add Vic.helpFont $times14 startupFile
-	option add Vic.entryFont $helv10 startupFile
+	option add Vic.helpfont $times14 startupFile
+	option add Vic.entryfont $helv10 startupFile
 }
 
 proc init_resources {} {
@@ -112,7 +112,7 @@ proc init_resources {} {
 	#
 	# use 2 pixels of padding by default, except with MacOSX Aqua
 	#
-	if !{[string equal [tk windowingsystem] "aqua"]} {
+	if {![string equal [tk windowingsystem] "aqua"]} {
 	    option add *padX 2
 	    option add *padY 2
 	}
@@ -129,17 +129,17 @@ proc init_resources {} {
 	#
 	if {$tcl_platform(platform) != "windows"} {
 		tk_setPalette gray80
-		foreach option [array names tkPalette] {
-			option add *$option $tkPalette($option) 61
+		foreach pal [array names tkPalette] {
+			option add *$pal $tkPalette($pal) 61
 		}
 	}
 
 	option add *Radiobutton.relief flat startupFile
 
-#
+	#
 	# These can be overridden.
 	#
-	option add Vic.geometry 400x225 startupFile
+	option add Vic.geometry 300x225 startupFile
 	option add Vic.mtu 1024 startupFile
 	option add Vic.network ip startupFile
 	option add Vic.framerate 15 startupFile
@@ -205,14 +205,14 @@ proc init_resources {} {
 	option add Vic.rtipU 1000 startupFile
 	option add Vic.rtipType 1 startupFile
 
-# Flow Label info for IPV6
+	# Flow Label info for IPV6
 
 	option add Vic.flowLabel 0 startupFile
 
-# Interface Index to bind to in IPv6
+	# Interface Index to bind to in IPv6
 	option add Vic.ifIndex -1 startupFile
 
-# Interface addr to bind to and use in CNAME
+	# Interface addr to bind to and use in CNAME
 	option add Vic.ifAddr 0 startupFile
 
 	option add Vic.numLayers 0 startupFile
@@ -227,8 +227,8 @@ proc init_resources {} {
 	option add Vic.overlayX "0" startupFile
 	option add Vic.overlayY "0" startupFile
 
-# Init fonts
-        if !{[string equal [tk windowingsystem] "aqua"]} {
+	# Init fonts
+        if {![string equal [tk windowingsystem] "aqua"]} {
 	    init_fonts
 	}
 
@@ -246,5 +246,5 @@ proc init_resources {} {
 	# list of sdes items to display in info window
 	option add Vic.sdesList "cname tool email note"
 
-	catch "option readfile ~/.RTPdefaults startupFile"
+	option readfile ~/.RTPdefaults startupFile
 }

@@ -61,7 +61,7 @@ proc build.bar w {
     if {[string equal [tk windowingsystem] "aqua"]} {
         global V
         set net $V(data-net)
-        label $w.bar.title -text "Address: [$net addr]  Port: [$net port]  TTL: [$net ttl]" -font [smallfont] \
+        label $w.bar.title -text "TTL: [$net ttl]" -font [smallfont] \
                 -justify left
         button $w.bar.quit -text Quit \
                 -font [smallfont] \
@@ -75,7 +75,7 @@ proc build.bar w {
     } else {
         global V
         set net $V(data-net)
-        label $w.bar.title -text "Address: [$net addr]  Port: [$net port]  TTL: [$net ttl]" -font [smallfont] \
+        label $w.bar.title -text "TTL: [$net ttl]" -font [smallfont] \
                 -relief flat -justify left
         button $w.bar.quit -text Quit -relief raised \
                 -font [smallfont] -command adios \
@@ -86,7 +86,6 @@ proc build.bar w {
         button $w.bar.help -text Help -relief raised \
                 -font [smallfont] -highlightthickness 1 \
                 -command "toggle_window .help"
-                -command "ag_autoplace::show_ui"
     }                                
     pack $w.bar.title -side left -fill both -expand 1
     pack $w.bar.menu $w.bar.help $w.bar.quit -side left -padx 1 -pady 1 
