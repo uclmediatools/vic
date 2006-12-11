@@ -230,7 +230,7 @@ void SlowVideoImage::putimage(Display* dpy, Window window, GC gc,
 			      int sx, int sy, int x, int y,
 			      int w, int h) const
 {
-#ifdef MAC_OSX_TK
+#if defined(MAC_OSX_TK) || defined(WIN32)
         TkPutImage(NULL, 0, dpy, window, gc, image_, sx, sy, x, y, w, h);
 #else
 	XPutImage(dpy, window, gc, image_, sx, sy, x, y, w, h);
@@ -637,7 +637,7 @@ void CaptureWindow::setsize(int w, int h)
 
 void CaptureWindow::grab_image()
 {
-#ifndef MAC_OSX_TK
+#if !defined(MAC_OSX_TK) && !defined(WIN32)
 	XImage* image = image_->ximage();
 #ifdef USE_SHM
 	if (image->obdata != 0)

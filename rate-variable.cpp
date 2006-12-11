@@ -61,13 +61,23 @@ class RateVariable : public TclObject {
 public:
 	RateVariable(const char* name) : TclObject(name) { }
 protected:
+#ifdef TCLTK80
+	static char* update_rate_var(ClientData, Tcl_Interp*, char* name1,
+				     char* name2, int flags);
+#else
 	static char* update_rate_var(ClientData, Tcl_Interp*, const char* name1,
 				     const char* name2, int flags);
+#endif
 	int command(int argc, const char*const* argv);
 } rate_variable_cmd("rate_variable");
 
+#ifdef TCLTK80
+char* RateVariable::update_rate_var(ClientData clientData, Tcl_Interp* tcl,
+		 char* name1, char* name2, int flags) 
+#else
 char* RateVariable::update_rate_var(ClientData clientData, Tcl_Interp* tcl,
 		 const char* name1, const char* name2, int flags) 
+#endif
 {
 	rv_data* rv = (rv_data*)clientData;
 	if (rv == NULL)

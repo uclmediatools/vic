@@ -124,7 +124,11 @@ class TclObject {
 	virtual void reset();
 	void class_name(const char*);
 	/* make this public for Sun's compiler */
+#ifdef TCLTK80
+	static int callback(ClientData, Tcl_Interp*, int ac, char** av);
+#else
 	static int callback(ClientData, Tcl_Interp*, int ac, const char** av);
+#endif
 	static void reset_all();
     protected:
 	TclObject(const char* name = 0);

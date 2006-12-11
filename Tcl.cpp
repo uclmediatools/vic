@@ -215,7 +215,11 @@ void TclObject::setproc(const char* s)
 	}
 }
 
+#ifdef TCLTK80
+int TclObject::callback(ClientData cd, Tcl_Interp*, int ac, char** av)
+#else
 int TclObject::callback(ClientData cd, Tcl_Interp*, int ac, const char** av)
+#endif
 {
 	TclObject* tc = (TclObject*)cd;
 	return (tc->command(ac, (const char*const*)av));

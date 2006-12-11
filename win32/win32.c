@@ -188,9 +188,11 @@ WinMain(
 		perror("Windows Sockets init failed");
 		abort();
     }
-    TclHasSockets(NULL);
-	
-    TkWinXInit(hInstance);
+
+#ifdef TCLTK80
+    TclHasSockets(NULL);	
+	TkWinXInit(hInstance);
+#endif
 	
     /*
 	* Increase the application queue size from default value of 8.
@@ -291,8 +293,13 @@ perror(const char *msg)
  * if a file arg is supplied it [used to] does nothing - ie empty file!
  * Now works with other files.
  */
+#ifdef TCLTK80
 int
 WinPutsCmd(ClientData clientData, Tcl_Interp *interp, int argc, char **argv)
+#else
+int
+WinPutsCmd(ClientData clientData, Tcl_Interp *interp, int argc, const char **argv)
+#endif
 {
     int i, newline, length;
     char *fileId;
@@ -388,8 +395,14 @@ error:
     return TCL_OK;
 }
 
+#ifdef TCLTK80
 int
 WinGetUserName(clientData, interp, argc, argv)
+#else
+int
+WinGetUserName(clientData, interp, argc, argv)
+#endif
+
 ClientData clientData;
 Tcl_Interp *interp;			/* Current interpreter. */
 int argc;				/* Number of arguments. */
@@ -422,9 +435,12 @@ char *root;
 		return NULL;
 }
 
-
+#ifdef TCLTK80
 int 
 WinReg(ClientData clientdata, Tcl_Interp *interp, int argc, char **argv)
+#else
+WinReg(ClientData clientdata, Tcl_Interp *interp, int argc, const char **argv)
+#endif
 {
 	static char szBuf[255], szOutBuf[255];
 	char *szRegRoot = NULL, *szRegPath = NULL, *szValueName;

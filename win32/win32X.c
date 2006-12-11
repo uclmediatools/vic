@@ -188,7 +188,7 @@ XClearArea(display, w, x ,y, width, height, exposures)
  *
  *----------------------------------------------------------------------
  */
-
+/*
 void
 XDrawSegments(display, d, gc, segments, nsegments)
     Display* display;
@@ -237,3 +237,4 @@ XDrawSegments(display, d, gc, segments, nsegments)
     
     TkWinReleaseDrawableDC(d, dc, &state);
 }
+*/
