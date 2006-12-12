@@ -509,8 +509,8 @@ int main(int argc, const char** argv)
 	Tcl& tcl = Tcl::instance();
 
 #ifdef WIN32
-	if (display == NULL)
-		display = "localhost:0";
+	//if (display == NULL)
+	//	display = "localhost:0";
 #endif
 #ifdef sgi
 	if (display == NULL) {
@@ -539,13 +539,21 @@ int main(int argc, const char** argv)
 
 	/* initialise tcl/tk but ignore errors under windows. */
 	Tk_Window tk = 0;
-	Tcl_Init(tcl.interp());
-	Tk_Init(tcl.interp());
+
+	if(Tcl_Init(tcl.interp()) != TCL_OK){
+		fprintf(stderr, "vic: %s\n", tcl.result());
+	}
+
+	if(Tk_Init(tcl.interp()) != TCL_OK){
+		fprintf(stderr, "vic: %s\n", tcl.result());
+	}
+
 	tk = Tk_MainWindow(tcl.interp());
 	if (tk == 0) {
 		fprintf(stderr, "vic: %s\n", tcl.result());
 		exit(1);
 	}
+
 	tcl.tkmain(tk);
 
 	loadbitmaps(tcl.interp());

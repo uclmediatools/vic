@@ -218,6 +218,7 @@ WinMain(
 		}
     }
 
+	Tcl_FindExecutable(__argv[0]);
     return main(__argc, (const char**)__argv);
 }
 

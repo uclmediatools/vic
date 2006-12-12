@@ -472,8 +472,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug IPv6 XP|Win32"
-			OutputDirectory="$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory=".\Debug_IPv6_XP"
+			IntermediateDirectory=".\Debug_IPv6_XP"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
@@ -483,12 +483,13 @@
 				Optimization="0"
 				AdditionalIncludeDirectories=".\;render;rtp;net;win32;video;codec;codec\tmndec;&quot;codec\tmn-x&quot;;codec\jpeg;codec\p64;codec\h263;codec\mpeg;..\common\src;..\tk8.4.14\win;..\tcl8.4.14\win;..\tk8.4.14\generic;..\tk8.4.14\xlib;..\tcl8.4.14\generic;..\IPv6Kit\inc;mst_wm\incls"
 				PreprocessorDefinitions="DEBUG;_DEBUG;DEBUG_MEM;WIN32;SIGRET=void;SIGARGS=int;NLAYER=8;ED_YBITS=4;VIC;USE_TIME;WINDOWS;HAVE_IPV6;NEED_INET_NTOP;NEED_INET_PTON;WINXP_IPV6;STATIC_BUILD;TCL_THREADS"
+				BasicRuntimeChecks="1"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile=".\Debug_IPv6_Win2000/vic.pch"
-				AssemblerListingLocation=".\Debug_IPv6_Win2000/"
-				ObjectFile=".\Debug_IPv6_Win2000/"
-				ProgramDataBaseFileName=".\Debug_IPv6_Win2000/"
+				PrecompiledHeaderFile=".\Debug_IPv6_XP/vic.pch"
+				AssemblerListingLocation=".\Debug_IPv6_XP/"
+				ObjectFile=".\Debug_IPv6_XP/"
+				ProgramDataBaseFileName=".\Debug_IPv6_XP/"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
@@ -499,7 +500,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="swscale-0.lib avutil-49.lib avcodec-51.lib libx264.lib tk84tsg.lib tcl84tsg.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib uclmm.lib strmiids.lib quartz.lib Iphlpapi.lib Imm32.lib comctl32.lib"
-				OutputFile="$(ConfigurationName)/vic.exe"
+				OutputFile=".\Debug_IPv6_XP/vic.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\tcl8.4.14\win\Debug_VC7;..\tk8.4.14\win\Debug_VC7;..\common\src\debug_ipv6;codec\tmndec;&quot;codec\tmn-x&quot;;win32\lib"
@@ -516,7 +517,9 @@
 				TypeLibraryName=".\Debug_IPv6_Win2000/vic.tlb"
 				HeaderFileName=""/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCPostBuildEventTool"
+				Description="copying DLL.."
+				CommandLine="copy .\win32\lib\*.dll $(IntDir)"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -14603,19 +14606,18 @@
 				RelativePath=".\cpu\cpudetect.h">
 			</File>
 			<File
-				RelativePath=".\cpu\cpuid.asm">
+				RelativePath=".\cpu\cpuid.cpp">
+			</File>
+			<File
+				RelativePath=".\cpu\cpuid_win.asm">
 				<FileConfiguration
 					Name="Debug IPv6 XP|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Assembling $(InputPath)"
-						CommandLine="&quot;C:\Program Files\NASM\nasmw.exe&quot; -f win32 -DPREFIX -o &quot;$(IntDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
-"
+						CommandLine="nasmw.exe -f win32 -DPREFIX -o &quot;$(IntDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;"
 						Outputs="&quot;$(IntDir)\$(InputName).obj&quot;"/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\cpu\cpuid.cpp">
 			</File>
 			<File
 				RelativePath=".\cpu\cputable.h">
