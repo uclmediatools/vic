@@ -519,7 +519,8 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="copying DLL.."
-				CommandLine="copy .\win32\lib\*.dll $(IntDir)"/>
+				CommandLine="copy .\win32\lib\*.dll $(IntDir)"
+				ExcludedFromBuild="TRUE"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool

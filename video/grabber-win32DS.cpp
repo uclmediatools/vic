@@ -187,20 +187,17 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt) {
    */
 
    debug_msg("new DirectShowGrabber()\n");
+   svideoPort = -1;
+   compositePort = -1;
 
    crossbar = crossbarCursor = NULL;  
 
    pCaptureFilter_ = filt;   
    setport("external");
 
-   if( is_pal() ) {
-      basewidth_  = PAL_BASE_WIDTH;
-      baseheight_ = PAL_BASE_HEIGHT;
-   } else {
-      basewidth_  = NTSC_BASE_WIDTH;
-      baseheight_ = NTSC_BASE_HEIGHT;
-   }
-
+   basewidth_  = CIF_BASE_WIDTH;
+   baseheight_ = CIF_BASE_HEIGHT;
+  
    /*
    ZeroMemory(&mt_, sizeof(AM_MEDIA_TYPE));
    mt_.majortype = MEDIATYPE_Video;
@@ -291,7 +288,8 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt) {
    }
    debug_msg("DirectShowGrabber::DirectShowGrabber():  Null Renderer added to graph\n");
 
-   setCaptureOutputFormat();
+   getCaptureCapabilities();
+   // setCaptureOutputFormat();
    
    findCrossbar(pCaptureFilter_);
    routeCrossbar();   
@@ -384,8 +382,8 @@ void DirectShowGrabber::routeCrossbar() {
     HRESULT     hr;
     long        output           = -1;
     long        input            = -1;
-    int         compositePort    = -1;
     int         videoDecoderPort = -1;
+	int		    port;
     long        related;
     long        pinType;    
     IAMCrossbar *xb;
@@ -401,9 +399,11 @@ void DirectShowGrabber::routeCrossbar() {
 
     for( int i = 0; i < input; ++i ) {
         xb->get_CrossbarPinInfo(TRUE, i, &related, &pinType);
+        if( pinType == PhysConn_Video_SVideo ) {
+            svideoPort = i;            
+        }
         if( pinType == PhysConn_Video_Composite ) {
             compositePort = i;            
-            break;
         }
     }
     for( int i = 0; i < output; ++i ) {
@@ -413,12 +413,21 @@ void DirectShowGrabber::routeCrossbar() {
            break;
        }
     }
-    
-    if( xb->CanRoute(videoDecoderPort, compositePort) == S_FALSE ) 
-        debug_msg("DirectShowGrabber::routeCrossbar():  cannot route input pin %d to output pin %d\n", compositePort, videoDecoderPort);
+
+	
+	if(strcmp(input_port_, "S-Video")==0){
+		port = svideoPort;
+	}else if(strcmp(input_port_, "Composite")==0){
+		port = compositePort;
+	}else{
+		port = 0;
+	}
+
+    if( xb->CanRoute(videoDecoderPort, port) == S_FALSE ) 
+        debug_msg("DirectShowGrabber::routeCrossbar():  cannot route input pin %d to output pin %d\n", port, videoDecoderPort);
     else {
-        debug_msg("DirectShowGrabber::routeCrossbar() routing pin %d to pin %d\n", compositePort, videoDecoderPort);
-        hr = xb->Route(videoDecoderPort, compositePort);
+        debug_msg("DirectShowGrabber::routeCrossbar() routing pin %d to pin %d\n", port, videoDecoderPort);
+        hr = xb->Route(videoDecoderPort, port);
         //showErrorMessage(hr);
     }
 
@@ -431,9 +440,6 @@ void DirectShowGrabber::routeCrossbar() {
 void DirectShowGrabber::start() {
    HRESULT hr;
 
-   basewidth_  = NTSC_BASE_WIDTH;
-   baseheight_ = NTSC_BASE_HEIGHT;
-   max_fps_    = 30;
    setsize();
 
    // callback mutex
@@ -488,7 +494,7 @@ void DirectShowGrabber::fps(int f) {
 
 void DirectShowGrabber::capture(BYTE *frameBuf, long bufLen) {
    last_frame_ = frameBuf;
-   //debug_msg("DirectShowGrabber::capture: frameBuf=%p, last_frame_=%p, bufLen=%ld\n", frameBuf, last_frame_, bufLen);
+   // debug_msg("DirectShowGrabber::capture: frameBuf=%p, last_frame_=%p, bufLen=%ld\n", frameBuf, last_frame_, bufLen);
 }
 
 //--------------------------------
@@ -510,8 +516,8 @@ int DirectShowGrabber::grab() {
       return FALSE;
    }
 
-   converter_->convert((u_int8_t*)last_frame_, basewidth_ / decimate_,
-                       baseheight_ / decimate_, frame_, outw_, outh_, TRUE);
+   converter_->convert((u_int8_t*)last_frame_, width_,
+                       height_, frame_, outw_, outh_, TRUE);
 
    last_frame_ = NULL;
 
@@ -530,13 +536,58 @@ int DirectShowGrabber::grab() {
 //--------------------------------
 
 void DirectShowGrabber::setport(const char *port) {
-   debug_msg("DirectShowGrabber::setport: %s thread=%x\n", port, GetCurrentThreadId());
 
-   /* XXX:  Decision about PAL / NTSC has to be made at this point */
-   max_fps_ = 30;
+   debug_msg("DirectShowGrabber::setport: %s thread=%x\n", port, GetCurrentThreadId());
+   strcpy(input_port_, port);
+   routeCrossbar();
+
 }
 
 //--------------------------------
+
+void DirectShowGrabber::getCaptureCapabilities() {
+   IAMStreamConfig          *pConfig;
+   AM_MEDIA_TYPE            *pmtConfig;
+   int                      iCount;
+   int                      iSize;
+   VIDEO_STREAM_CONFIG_CAPS scc;
+   HRESULT                  hr;
+
+   pConfig   = NULL;
+   hr        = pBuild_->FindInterface(&PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video,
+                                     pCaptureFilter_, IID_IAMStreamConfig, (void**)&pConfig);
+   if (FAILED(hr)) {
+   		Grabber::status_=-1;
+		return;
+   }
+
+   max_width_ = 0;
+   max_height_ = 0;
+   iCount = iSize = 0;
+   hr     = pConfig->GetNumberOfCapabilities(&iCount, &iSize);
+   // Check the size to make sure we pass in the correct structure.
+   // The alternative output of iSize is AUDIO_STREAM_CONFIG_CAPS, btw.
+   if ( iSize == sizeof(VIDEO_STREAM_CONFIG_CAPS) ) {
+
+      for (int iFormat = 0; iFormat < iCount; iFormat++) {
+         hr = pConfig->GetStreamCaps(iFormat, &pmtConfig, (BYTE *)&scc);
+         //showErrorMessage(hr);
+         if( SUCCEEDED(hr) ) {
+            if ((pmtConfig->majortype  == MEDIATYPE_Video)            &&
+                  (pmtConfig->subtype    == MEDIASUBTYPE_RGB24)       &&
+                  (pmtConfig->formattype == FORMAT_VideoInfo)         &&
+                  (pmtConfig->cbFormat   >= sizeof (VIDEOINFOHEADER)) &&
+                  (pmtConfig->pbFormat   != NULL)) {
+
+			   if(scc.MaxOutputSize.cx > max_width_){
+			       max_width_  = scc.MaxOutputSize.cx;
+			       max_height_ =  scc.MaxOutputSize.cy;
+			   }
+			}
+		 }
+	  }
+   }
+}
 
 void DirectShowGrabber::setCaptureOutputFormat() {
    IAMStreamConfig          *pConfig;
@@ -578,12 +629,17 @@ void DirectShowGrabber::setCaptureOutputFormat() {
                   (pmtConfig->subtype    == MEDIASUBTYPE_RGB24)       &&
                   (pmtConfig->formattype == FORMAT_VideoInfo)         &&
                   (pmtConfig->cbFormat   >= sizeof (VIDEOINFOHEADER)) &&
-                  (pmtConfig->pbFormat   != NULL)) {
+				  (pmtConfig->pbFormat   != NULL)					  &&
+				  (scc.MaxOutputSize.cx >= width_)					  &&
+				  (scc.MaxOutputSize.cy >= height_)){
 
-               pVih                        = (VIDEOINFOHEADER *)pmtConfig->pbFormat;
-               pVih->bmiHeader.biWidth     = 320;
-               pVih->bmiHeader.biHeight    = 240;
+               pVih                        = (VIDEOINFOHEADER *)pmtConfig->pbFormat;			  
+               pVih->bmiHeader.biWidth     = width_;
+               pVih->bmiHeader.biHeight    = height_;
                pVih->bmiHeader.biSizeImage = DIBSIZE(pVih->bmiHeader);
+			   // AvgTimePerFrame value that specifies the video frame's
+			   // average display time, in 100-nanosecond units. 
+			   pVih->AvgTimePerFrame	   = 10000000/fps_;
 
                debug_msg("Windows GDI BITMAPINFOHEADER follows:\n");
                debug_msg("biWidth=        %d\n", pVih->bmiHeader.biWidth);
@@ -605,7 +661,7 @@ void DirectShowGrabber::setCaptureOutputFormat() {
                //DeleteMediaType(pmtConfig);
 
                formatSet = 1;
-               break;
+//               break;
 
             }
          }
@@ -637,9 +693,12 @@ int DirectShowGrabber::command(int argc, const char* const* argv) {
             if (running_) {
                stop();
                setsize();
+			   setCaptureOutputFormat();
                start();
-            } else
+			} else{
                setsize();
+			   setCaptureOutputFormat();
+			}
          }
          return (TCL_OK);
       } else if (strcmp(argv[1], "port") == 0) {
@@ -681,15 +740,23 @@ void DirectShowCIFGrabber::start() {
 //--------------------------------
 
 void DirectShowCIFGrabber::setsize() {
-   int w;
-   int h;
 
-   w = basewidth_  / decimate_;
-   h = baseheight_ / decimate_;
+   if(max_width_ >= D1_BASE_WIDTH){
+	  max_width_ = D1_BASE_WIDTH;
+      max_height_ = D1_BASE_HEIGHT;
+   }
 
-   debug_msg("DirectShowCIFGrabber::setsize: %dx%d\n", w, h);
+   if(decimate_ == 1){
+       width_ = max_width_;
+       height_ = max_height_;
+   }else{
+       width_ = basewidth_  / decimate_;
+       height_ = baseheight_ / decimate_;
+   }
 
-   set_size_cif(w, h);
+   debug_msg("DirectShowCIFGrabber::setsize: %dx%d\n", width_, height_);
+
+   set_size_411(width_, height_);
    allocref();
 }
 
@@ -697,22 +764,45 @@ void DirectShowCIFGrabber::setsize() {
 // DirectShowDevice class
 
 DirectShowDevice::DirectShowDevice(char *friendlyName, IBaseFilter *pCapFilt) : InputDevice(friendlyName) {  
+
+   attri = new char[100];
+   attri[0] = 0;
+
    debug_msg("new DirectShowDevice():  friendlyName=%s\n", friendlyName);
    directShowFilter_  = pCapFilt;           
    //SV: XXX got rid of 422 format since there's no grabber returned for it and vic crashes
-   //attributes_        = "format { 422 411 } size { large small cif } port { external-in } ";
-   attributes_        = "format { 411 } size { large small cif } port { external-in } ";
+   attributes_        = "format { 422 411 } size { large small cif } port { external-in } ";
+   DirectShowCIFGrabber o(directShowFilter_); 
+   
+   strcat(attri, "format { 411 } size { large small cif } port { ");
+   if(o.hasSVideo() || o.hasComposite()){
+     if(o.hasSVideo()){
+       strcat(attri, "S-Video ");
+     }
+     if(o.hasComposite()){
+       strcat(attri, "Composite ");
+     }
+   }else{
+	   strcat(attri, "extern-in ");
+   }
+
+   strcat(attri, "} "); 
+   attributes_ = attri;
+
 }
 
+DirectShowDevice::~DirectShowDevice(){
+	delete attri;
+}
 //--------------------------------
 
 int DirectShowDevice::command(int argc, const char* const* argv) {
    Tcl& tcl = Tcl::instance();
    if ((argc == 3) && (strcmp(argv[1], "open") == 0)) {
       TclObject* o = 0;
-      if (strcmp(argv[2], "cif") == 0)
+	  if (strcmp(argv[2], "cif") == 0){
          o = directShowGrabber_ = new DirectShowCIFGrabber(directShowFilter_);                  
-      else if (strcmp(argv[2], "422") == 0)         
+	  }else if (strcmp(argv[2], "422") == 0)         
          o = directShowGrabber_ = 0; // one day oughta be "new DirectShow422Grabber(directShowFilter_);"  // msp
 
       if (o != 0)

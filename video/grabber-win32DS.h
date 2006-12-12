@@ -41,6 +41,9 @@
 
 //extern void ShowErrorMessage(HRESULT, int, char* );
 
+
+static const int D1_BASE_WIDTH  = 720;
+static const int D1_BASE_HEIGHT = 480;
 static const int NTSC_BASE_WIDTH  = 640;
 static const int NTSC_BASE_HEIGHT = 480;
 static const int PAL_BASE_WIDTH   = 768;
@@ -75,9 +78,15 @@ class DirectShowGrabber : public Grabber {
          converter_ = v;
       }
       void         capture(BYTE *, long);
-      inline int   is_pal() const {
-         return (max_fps_ == 25);
-      }
+
+	  bool		   hasComposite(){
+	      return (compositePort >= 0);
+	  }
+
+	  bool		   hasSVideo(){
+		  return (svideoPort >= 0);
+	  }
+
       int          capturing_;
       HANDLE       cb_mutex_;
    protected:
@@ -87,12 +96,20 @@ class DirectShowGrabber : public Grabber {
       virtual void setsize() = 0;
       virtual int  grab();
       void         setport(const char *port);
+	  void getCaptureCapabilities();
       virtual void setCaptureOutputFormat();
 
       int          useconfig_;
       int          basewidth_;
       int          baseheight_;
       u_int        max_fps_;
+	  int		   max_width_;
+	  int		   max_height_;
+	  int		   width_;
+	  int		   height_;
+      int          compositePort;
+	  int		   svideoPort;
+
       u_int        decimate_;    // set in this::command via small/normal/large in vic UI; msp
       BYTE         *last_frame_;
       Converter    *converter_;
@@ -110,9 +127,11 @@ class DirectShowGrabber : public Grabber {
       Callback                       *callback;
       Crossbar                       *crossbar;
       Crossbar                       *crossbarCursor;
+	  char							 input_port_[10];
       void                           findCrossbar(IBaseFilter *);
       void                           addCrossbar(IAMCrossbar *);
       void                           routeCrossbar();
+
 };
 
 //#########################################################################
@@ -163,11 +182,13 @@ class Callback : public ISampleGrabberCB {
 class DirectShowDevice : public InputDevice {
    public:
       DirectShowDevice(char *, IBaseFilter *);
+	  ~DirectShowDevice();
       virtual int command(int argc, const char* const* argv);     
 
    protected:
       IBaseFilter       *directShowFilter_;
       DirectShowGrabber *directShowGrabber_;   
+	  char *attri;
 };
 
 //#########################################################################
