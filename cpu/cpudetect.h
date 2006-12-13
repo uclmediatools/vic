@@ -3,6 +3,11 @@
 
 #include "config_arch.h"
 
+#ifdef __cplusplus
+extern "C" {
+
+#endif
+
 #define CPUTYPE_I386	3
 #define CPUTYPE_I486	4
 #define CPUTYPE_I586	5
@@ -74,6 +79,8 @@ void GetCpuCaps(CpuCaps *caps);
 char *GetCpuFriendlyName(unsigned int regs[], unsigned int regs2[]);
 
 
-
+#ifdef __cplusplus
+}
+#endif
 #endif /* !CPUDETECT_H */
 

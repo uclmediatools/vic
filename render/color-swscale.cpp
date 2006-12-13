@@ -6,14 +6,9 @@
 #include "renderer.h"
 
 #include "config_arch.h"
-#ifdef WIN32
-#undef ARCH_X86
-#endif
 #include "ffmpeg/swscale.h"
 #include "ffmpeg/avutil.h"
-extern "C"{
 #include "cpu/cpudetect.h"
-}
 
 int available_cpu_flags = cpu_check();
 
@@ -113,7 +108,7 @@ public:
 	    sws_src[1] = sws_src[0] + framesize_;
 	    sws_src[2] = sws_src[1] + framesize_/4;
 
-     	    sws_scale_ordered(sws_context, sws_src, sws_src_stride, 0, height_, sws_tar, sws_tar_stride);
+     	sws_scale_ordered(sws_context, sws_src, sws_src_stride, 0, height_, sws_tar, sws_tar_stride);
 	  }	
 	}
 protected:

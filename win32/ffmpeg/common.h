@@ -26,6 +26,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#undef ARCH_X86
+
 #ifndef M_PI
 #define M_PI    3.14159265358979323846
 #endif

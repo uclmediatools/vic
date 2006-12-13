@@ -4,11 +4,7 @@
 #include <math.h>
 #include <errno.h>
 #include <assert.h>
-#ifdef _WIN32
-#include <time.h>
-#else
-#include <sys/time.h>
-#endif
+#include <iostream>
 
 #include "inet.h"
 #include "net.h"
@@ -20,8 +16,7 @@
 
 #include "databuffer.h"
 #include "x264encoder.h"
-
-#include <iostream>
+#include "deinterlace.h"
 
 static Transmitter *tx;
 static RTP_BufferPool *pool;
@@ -47,11 +42,8 @@ class H264Encoder:public TransmitterModule
     //UCHAR* bitstream;
 
     x264Encoder *enc;
-    DataBuffer *fIn;
     DataBuffer *fOut;
-    timeval timeStamp;
-    time_t prevTime;
-    unsigned short prevTimeMS;
+	Deinterlace deinterlacer;
 
     FILE *fptr;
 };
@@ -86,16 +78,13 @@ H264Encoder::H264Encoder():TransmitterModule(FT_YUV_CIF)
 H264Encoder::~H264Encoder()
 {
     delete enc;
-    delete fIn;
     delete fOut;
-    //fclose(fptr);
 }
 
 void H264Encoder::size(int w, int h)
 {
     debug_msg("H264: WxH %dx%d\n", w, h);
     Module::size(w, h);
-    fIn = new DataBuffer(w * h * 3 >> 1);
     fOut = new DataBuffer(w * h * 3 >> 1);
 }
 
@@ -148,23 +137,24 @@ int H264Encoder::consume(const VideoFrame * vf)
     int frame_size = 0;
 
     tx->flush();
+
     if (!state) {
-	state = true;
-	size(vf->width_, vf->height_);
-	debug_msg("init x264 encoder with kbps:%d, fps:%d", kbps, fps);
-	enc->init(vf->width_, vf->height_, kbps, fps);
-	enc->setGOP(gop);
-	frame_size = vf->width_ * vf->height_;
-	//fptr = fopen("out.m4v", "w");
-	gettimeofday(&timeStamp, NULL);
-	prevTime = timeStamp.tv_sec;
-	prevTimeMS = timeStamp.tv_sec;
+	    state = true;
+	    size(vf->width_, vf->height_);
+	    debug_msg("init x264 encoder with kbps:%d, fps:%d", kbps, fps);
+	    enc->init(vf->width_, vf->height_, kbps, fps);
+	    enc->setGOP(gop);
+	    frame_size = vf->width_ * vf->height_;
+	    //fptr = fopen("out.m4v", "w");
     }
 
     frame_size = vf->width_ * vf->height_;
-    char *data = fIn->getData();
-    memcpy(data, vf->bp_, frame_size * 3 >> 1);
-    enc->encodeFrame(fIn);
+    // char *data = fIn->getData();
+    // memcpy(data, vf->bp_, frame_size * 3 >> 1);
+
+	deinterlacer.render(vf->bp_, vf->width_, vf->height_);
+	
+    enc->encodeFrame(vf->bp_);
 
     i_nal = enc->numNAL();
 
@@ -177,7 +167,7 @@ int H264Encoder::consume(const VideoFrame * vf)
 	enc->getNALPacket(i, fOut);
 
 	sent_size += fOut->getDataSize();
-	data = fOut->getData();
+	char *data = fOut->getData();
 	//DEBUG
 	//fwrite(data, fOut->getFrameSize(), 1, fptr);
 

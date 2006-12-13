@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
+
 #include "x264encoder.h"
 #include "ffmpeg/avcodec.h"
 #include "databuffer.h"
@@ -33,8 +34,7 @@ x264Encoder::~x264Encoder()
 {
     x264 *enc = (x264 *) encoder;
     if (enc->h != NULL) {
-	x264_encoder_close(enc->h);
-	x264_picture_clean(&(enc->pic));
+	  x264_encoder_close(enc->h);
     }
     free(enc);
 }
@@ -82,45 +82,50 @@ bool x264Encoder::init(int w, int h, int bps, int fps)
     param->i_width = w;
     param->i_height = h;
 
-    x264_picture_alloc(&(enc->pic), X264_CSP_I420, param->i_width,
-		       param->i_height);
 
     x264_t *handle = x264_encoder_open(param);
     if (handle != NULL) {
-	enc->h = handle;
-	return true;
+	    enc->h = handle;
+	    return true;
     }
     else {
-	return false;
+	    return false;
     }
 }
 
-bool x264Encoder::encodeFrame(DataBuffer * in)
+bool x264Encoder::encodeFrame(uint8 *buf)
 {
     x264 *enc = (x264 *) encoder;
     x264_param_t *param = &(enc->param);
-    x264_picture_t *pic = &(enc->pic);
 
-    char *f = in->getData();
+
     int frame_size = param->i_width * param->i_height;
 
     //refresh 
     enc->i_nal = 0;
 
-    memcpy(pic->img.plane[0], f, frame_size);
-    memcpy(pic->img.plane[1], (f + frame_size), frame_size / 4);
-    memcpy(pic->img.plane[2], (f + frame_size * 5 / 4), frame_size / 4);
+    enc->pic.img.i_csp = X264_CSP_I420;
+	enc->pic.img.i_plane = 3;
+    enc->pic.i_type = X264_TYPE_AUTO;
+	enc->pic.img.i_stride[0] = param->i_width;
+	enc->pic.img.i_stride[1] = param->i_width/2;
+	enc->pic.img.i_stride[2] = param->i_width/2;
 
-    int result = x264_encoder_encode(enc->h, &(enc->nal), &(enc->i_nal), pic,
+
+    enc->pic.img.plane[0] = buf;
+    enc->pic.img.plane[1] = buf + frame_size;
+    enc->pic.img.plane[2] = buf + frame_size*5/4;
+
+    int result = x264_encoder_encode(enc->h, &(enc->nal), &(enc->i_nal), &(enc->pic),
 				     &(enc->pic_out));
 
     if (result < 0) {
-	isFrameEncoded = false;
-	return false;
+	  isFrameEncoded = false;
+	  return false;
     }
     else {
-	isFrameEncoded = true;
-	return true;
+	  isFrameEncoded = true;
+	  return true;
     }
 }
 

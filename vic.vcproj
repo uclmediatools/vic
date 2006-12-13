@@ -499,7 +499,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="swscale-0.lib avutil-49.lib avcodec-51.lib libx264.lib tk84tsg.lib tcl84tsg.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib uclmm.lib strmiids.lib quartz.lib Iphlpapi.lib Imm32.lib comctl32.lib"
+				AdditionalDependencies="swscale-0.lib avutil-49.lib avcodec-51.lib postproc-51.lib libx264.lib tk84tsg.lib tcl84tsg.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib uclmm.lib strmiids.lib quartz.lib Iphlpapi.lib Imm32.lib comctl32.lib"
 				OutputFile=".\Debug_IPv6_XP/vic.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -14279,6 +14279,9 @@
 				RelativePath=".\video\crossbar.cpp">
 			</File>
 			<File
+				RelativePath=".\video\deinterlace.cpp">
+			</File>
+			<File
 				RelativePath="video\device.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -14580,6 +14583,9 @@
 					RelativePath="video\assistor-list.h">
 				</File>
 				<File
+					RelativePath=".\video\deinterlace.h">
+				</File>
+				<File
 					RelativePath="video\device-input.h">
 				</File>
 				<File
@@ -14592,13 +14598,6 @@
 					RelativePath="video\grabber.h">
 				</File>
 			</Filter>
-		</Filter>
-		<Filter
-			Name="postproc"
-			Filter="">
-			<File
-				RelativePath=".\postproc\config.h">
-			</File>
 		</Filter>
 		<Filter
 			Name="cpu"
@@ -14616,7 +14615,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Assembling $(InputPath)"
-						CommandLine="nasmw.exe -f win32 -DPREFIX -o &quot;$(IntDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;"
+						CommandLine="nasmw.exe -f win32 -DPREFIX -o &quot;$(IntDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+"
 						Outputs="&quot;$(IntDir)\$(InputName).obj&quot;"/>
 				</FileConfiguration>
 			</File>

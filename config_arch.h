@@ -7,8 +7,16 @@
 
 #ifdef WIN32
 #define ARCH_X86
+#define RUNTIME_CPUDETECT
 #elif defined(WIN64)
 #define ARCH_X86_64
+#define RUNTIME_CPUDETECT
+#endif
+
+#ifdef ARCH_PPC
+#define HAVE_ALTIVEC_H
+#define ARCH_POWERPC
+#define HAVE_ALTIVEC
 #endif
 
 /* Only use during compliation */
