@@ -36,6 +36,7 @@ x264Encoder::~x264Encoder()
     x264 *enc = (x264 *) encoder;
     if (enc->h != NULL) {
 	  x264_encoder_close(enc->h);
+	  x264_picture_clean(&(enc->pic));
     }
     free(enc);
 }
@@ -83,6 +84,8 @@ bool x264Encoder::init(int w, int h, int bps, int fps)
     param->i_width = w;
     param->i_height = h;
 
+	x264_picture_alloc(&(enc->pic), X264_CSP_I420, param->i_width,
+	       param->i_height);
 
     x264_t *handle = x264_encoder_open(param);
     if (handle != NULL) {
@@ -104,13 +107,6 @@ bool x264Encoder::encodeFrame(uint8 *buf)
 
     //refresh 
     enc->i_nal = 0;
-
-    enc->pic.img.i_csp = X264_CSP_I420;
-    enc->pic.img.i_plane = 3;
-    enc->pic.i_type = X264_TYPE_AUTO;
-    enc->pic.img.i_stride[0] = param->i_width;
-    enc->pic.img.i_stride[1] = param->i_width/2;
-    enc->pic.img.i_stride[2] = param->i_width/2;
     enc->pic.img.plane[0] = buf;
     enc->pic.img.plane[1] = buf + frame_size;
     enc->pic.img.plane[2] = buf + frame_size*5/4;
