@@ -1,10 +1,9 @@
 #ifndef deinterlace_h
 #define deinterlace_h
 
-#include <string.h>
+#include "config.h"
 
 typedef unsigned char uint8_t;
-typedef signed char int8_t;
 
 #include "cpu/cpudetect.h"
 #include <postproc/postprocess.h>
