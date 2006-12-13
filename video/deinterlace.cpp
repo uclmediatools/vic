@@ -9,34 +9,35 @@ int cpu_flags = cpu_check();
 
 Deinterlace::Deinterlace()
 {
-	context = NULL;
-	width_ = height_ = 0;
+    context = NULL;
+    width_ = height_ = 0;
+    mode = 0;
 }
 
 Deinterlace::~Deinterlace()
 {
-	if(context){
-		pp_free_context(context);
-		context = NULL;
-	}
+    if(context){
+ 	pp_free_context(context);
+	context = NULL;
+    }
 }
 
 
 void Deinterlace::init(int width, int height)
 {
-	if(context){
-		pp_free_context(context);
-		context = NULL;
-	}
+    if(context){
+	pp_free_context(context);
+	context = NULL;
+    }
 
     int flags = 0;
-	flags |= (cpu_flags & FF_CPU_MMX ? PP_CPU_CAPS_MMX : 0);
-	flags |= (cpu_flags & FF_CPU_MMXEXT ? PP_CPU_CAPS_MMX2 : 0);
-	flags |= (cpu_flags & FF_CPU_3DNOW ? PP_CPU_CAPS_3DNOW : 0);
-	flags |= (cpu_flags & FF_CPU_ALTIVEC ? PP_CPU_CAPS_ALTIVEC : 0);
+    flags |= (cpu_flags & FF_CPU_MMX ? PP_CPU_CAPS_MMX : 0);
+    flags |= (cpu_flags & FF_CPU_MMXEXT ? PP_CPU_CAPS_MMX2 : 0);
+    flags |= (cpu_flags & FF_CPU_3DNOW ? PP_CPU_CAPS_3DNOW : 0);
+    flags |= (cpu_flags & FF_CPU_ALTIVEC ? PP_CPU_CAPS_ALTIVEC : 0);
 
-	context = pp_get_context(width, height, PP_FORMAT_420 | flags);
-	mode = pp_get_mode_by_name_and_quality("de", 6);
+    context = pp_get_context(width, height, PP_FORMAT_420 | flags);
+    mode = pp_get_mode_by_name_and_quality("lb", 4);
 }
 
 
@@ -56,7 +57,7 @@ void Deinterlace::render(void *buf, int width, int height)
 	src[2] = src[1] + framesize/4;
 
 
-    pp_postprocess(src, srcStride,
+        pp_postprocess(src, srcStride,
                    src, srcStride,
                    width, height,
                    NULL,  0,

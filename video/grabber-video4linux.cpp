@@ -3,9 +3,6 @@
      Copyright (c) 1997 Regents of Koji OKAMURA, oka@kobe-u.ac.jp
      All rights reserved.
 
-     Sloved BTTV palette problems 
-     by Barz Hsu <barz@nchc.org.tw>
-     
      largely rewritten for new bttv/video4linux interface
      by Gerd Knorr <kraxel@cs.tu-berlin.de>
 
@@ -58,6 +55,8 @@ static const char *devlist[] = {
 
 //#define DEBUG(x)
 
+#define D1_WIDTH    720
+#define D1_HEIGHT   480
 #define NTSC_WIDTH  640
 #define NTSC_HEIGHT 480
 #define PAL_WIDTH   768
@@ -135,6 +134,8 @@ class V4lGrabber:public Grabber
     int height_;
     int max_width_;
     int max_height_;
+    int base_width_;
+    int base_height_;
     int decimate_;
 };
 
@@ -338,6 +339,18 @@ V4lGrabber::V4lGrabber(const char *cformat, const char *dev)
 	status_ = -1;
 	return;
     }
+
+    max_width_ = capability.maxwidth;
+    max_height_ = capability.maxheight;
+    
+    if(max_width_ >= D1_WIDTH || max_height_ >= D1_HEIGHT){
+	base_width_ = D1_WIDTH;
+	base_height_ = D1_HEIGHT;	
+    }else{
+	base_width_ = max_width_;
+	base_height_ = max_height_;
+    }
+    
     channels = (struct video_channel *)
 	calloc(capability.channels, sizeof(struct video_channel));
     for (i = 0; i < capability.channels; i++) {
@@ -958,12 +971,12 @@ void V4lGrabber::format()
     debug_msg("V4l: format\n");
 
     if(decimate_!=1){
-   		width_ = CIF_WIDTH * 2 / decimate_;
+   	width_ = CIF_WIDTH * 2 / decimate_;
     	height_ = CIF_HEIGHT * 2 / decimate_;
-	}else{
-		width_  = capability.maxwidth;
-		height_ = capability.maxheight;
-	}
+    }else{
+	width_  = base_width_;
+	height_ = base_height_;
+    }
 
     // FIXED by barz 2006/9/19:  YUV422 is default
     if (have_420P)

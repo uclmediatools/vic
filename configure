@@ -4559,10 +4559,10 @@ if test "$ffmpegco" = "yes" ; then
      echo "checking out ffmpeg from  svn://svn.mplayerhq.hu/ffmpeg/trunk..."
      svn checkout svn://svn.mplayerhq.hu/ffmpeg/trunk ffmpeg
      echo "Configuring ffmpeg..."
-     cd ffmpeg; ./configure --prefix=$V_PATH/ffmpeg --enable-gpl --enable-swscaler; cd ..
+     cd ffmpeg; ./configure --prefix=$V_PATH/ffmpeg --enable-gpl --enable-swscaler --enable-pp; cd ..
    fi
    V_INCLUDE="$V_INCLUDE -Iffmpeg/include"
-   V_CODEC_LIB="$V_CODEC_LIB ffmpeg/lib/libavcodec.a ffmpeg/lib/libavutil.a ffmpeg/lib/libswscale.a"
+   V_CODEC_LIB="$V_CODEC_LIB ffmpeg/lib/libavcodec.a ffmpeg/lib/libavutil.a ffmpeg/lib/libswscale.a ffmpeg/lib/libpostproc.a"
 fi
 
 # Check whether --enable-x264-co or --disable-x264-co was given.
@@ -5065,8 +5065,11 @@ fi
 	        echo "Error! you need to have $ffmpeglib/libavutil.a around"
 	   elif test ! -r $ffmpeglib/libswscale.a ; then
 	        echo "Error! you need to have $ffmpeglib/libswscale.a around"
-	   fi
-	   V_LIB_FFMPEG="-L$ffmpeglib -lavcodec -lavutil -lswscale"
+           elif test ! -r $ffmpeglib/libpostproc.a ; then
+                echo "Error! you need to have $ffmpeglib/libpostproc.a around"
+           fi
+
+	   V_LIB_FFMPEG="-L$ffmpeglib -lavcodec -lavutil -lswscale -lpostproc"
 	else
 
 echo "$as_me:$LINENO: checking for main in -lavcodec" >&5
@@ -5284,7 +5287,81 @@ else
 
 fi
 
-	   V_LIB_FFMPEG="-lavcodec -lavutil -lswscale"
+
+
+echo "$as_me:$LINENO: checking for main in -lpostproc" >&5
+echo $ECHO_N "checking for main in -lpostproc... $ECHO_C" >&6
+if test "${ac_cv_lib_postproc_main+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lpostproc  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+main ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_postproc_main=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_lib_postproc_main=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_postproc_main" >&5
+echo "${ECHO_T}$ac_cv_lib_postproc_main" >&6
+if test $ac_cv_lib_postproc_main = yes; then
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBPOSTPROC 1
+_ACEOF
+
+  LIBS="-lpostproc $LIBS"
+
+else
+
+                echo "Error! you need to have libpostproc around."
+                exit -1
+
+fi
+
+
+	   V_LIB_FFMPEG="-lavcodec -lavutil -lswscale -lpostproc"
 	fi
 fi
 
@@ -6002,7 +6079,8 @@ if test "$v4l2old" = "yes" ; then
 		echo "Using old Linux grabber-v4l2"
 elif test -r /usr/include/linux/videodev.h ; then
         if grep V4L2 /usr/include/linux/videodev.h >/dev/null 2>&1  ; then
-                V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-v4l2.o video/grabber-video4linux.o"
+                #V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-v4l2.o video/grabber-video4linux.o"
+ 		V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-video4linux.o"
 		echo "Using Linux (new)video4linux2(2.6.x compatible) and V4L v1"
         else
                 V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-video4linux.o"

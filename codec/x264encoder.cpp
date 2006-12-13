@@ -3,6 +3,8 @@
 #include <string.h>
 #include <inttypes.h>
 
+#include "config.h"
+
 #include "x264encoder.h"
 #include "ffmpeg/avcodec.h"
 #include "databuffer.h"
@@ -105,19 +107,16 @@ bool x264Encoder::encodeFrame(uint8 *buf)
     enc->i_nal = 0;
 
     enc->pic.img.i_csp = X264_CSP_I420;
-	enc->pic.img.i_plane = 3;
+    enc->pic.img.i_plane = 3;
     enc->pic.i_type = X264_TYPE_AUTO;
-	enc->pic.img.i_stride[0] = param->i_width;
-	enc->pic.img.i_stride[1] = param->i_width/2;
-	enc->pic.img.i_stride[2] = param->i_width/2;
-
-
+    enc->pic.img.i_stride[0] = param->i_width;
+    enc->pic.img.i_stride[1] = param->i_width/2;
+    enc->pic.img.i_stride[2] = param->i_width/2;
     enc->pic.img.plane[0] = buf;
     enc->pic.img.plane[1] = buf + frame_size;
     enc->pic.img.plane[2] = buf + frame_size*5/4;
 
-    int result = x264_encoder_encode(enc->h, &(enc->nal), &(enc->i_nal), &(enc->pic),
-				     &(enc->pic_out));
+    int result = x264_encoder_encode(enc->h, &(enc->nal), &(enc->i_nal), &(enc->pic), &(enc->pic_out));
 
     if (result < 0) {
 	  isFrameEncoded = false;
@@ -150,9 +149,10 @@ bool x264Encoder::getNALPacket(int idx, DataBuffer * f)
     int packetSize;
 
     packetSize = x264_nal_encode(pkt, &data, 1, &(enc->nal[idx]));
-
+   
     f->setSize(packetSize);
-
+    // debug_msg("i_nal=%d, idx=%d, size=%d\n", enc->i_nal, idx, packetSize);
+    
     return isFrameEncoded;
 }
 

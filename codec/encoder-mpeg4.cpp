@@ -12,7 +12,7 @@
 #include "pktbuf-rtp.h"
 #include "module.h"
 #include "ffmpeg_codec.h"
-
+#include "deinterlace.h"
 
 static Transmitter *tx;
 static RTP_BufferPool *pool;
@@ -42,7 +42,7 @@ class MPEG4Encoder:public TransmitterModule
 
     FFMpegCodec mpeg4;
     UCHAR *bitstream;
-
+    Deinterlace deinterlacer;
 };
 
 static class MPEG4EncoderMatcher:public Matcher
@@ -163,6 +163,8 @@ int MPEG4Encoder::consume(const VideoFrame * vf)
 	// std::cout << "kbps:" << kbps << " fps:" << fps << "\n";
 	mpeg4.init_encoder(vf->width_, vf->height_, kbps * 1024, fps, gop);
     }
+    
+    deinterlacer.render(vf->bp_, vf->width_, vf->height_);    
     bitstream = mpeg4.encode(vf->bp_, len);
     //    std::cout << "MPEG4 ENC: packet length " << len << endl;
     

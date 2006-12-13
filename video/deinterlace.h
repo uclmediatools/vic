@@ -4,7 +4,7 @@
 #include <string.h>
 
 typedef unsigned char uint8_t;
-typedef  char int8_t;
+typedef signed char int8_t;
 
 #include "cpu/cpudetect.h"
 #include <postproc/postprocess.h>
@@ -14,17 +14,16 @@ class Deinterlace
 {
   public:
     Deinterlace();
-	~Deinterlace();
+    ~Deinterlace();
     void init(int width, int height);
-	void render(void *buf, int width, int height);
+    void render(void *buf, int width, int height);
 
   private:
     int width_, height_;
-	pp_mode_t	*mode;
-	pp_context_t	*context;
-	int srcStride[3];
-	uint8_t *src[3];
-
+    pp_mode_t	 *mode;
+    pp_context_t *context;
+    int srcStride[3];
+    uint8_t *src[3];
 };			
 
 #endif

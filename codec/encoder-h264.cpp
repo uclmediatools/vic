@@ -43,7 +43,7 @@ class H264Encoder:public TransmitterModule
 
     x264Encoder *enc;
     DataBuffer *fOut;
-	Deinterlace deinterlacer;
+    Deinterlace deinterlacer;
 
     FILE *fptr;
 };
@@ -85,7 +85,7 @@ void H264Encoder::size(int w, int h)
 {
     debug_msg("H264: WxH %dx%d\n", w, h);
     Module::size(w, h);
-    fOut = new DataBuffer(w * h * 3 >> 1);
+    fOut = new DataBuffer(w * h * 3 >> 2);
 }
 
 int H264Encoder::command(int argc, const char *const *argv)
@@ -149,10 +149,8 @@ int H264Encoder::consume(const VideoFrame * vf)
     }
 
     frame_size = vf->width_ * vf->height_;
-    // char *data = fIn->getData();
-    // memcpy(data, vf->bp_, frame_size * 3 >> 1);
 
-	deinterlacer.render(vf->bp_, vf->width_, vf->height_);
+    deinterlacer.render(vf->bp_, vf->width_, vf->height_);
 	
     enc->encodeFrame(vf->bp_);
 

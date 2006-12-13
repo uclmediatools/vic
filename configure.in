@@ -70,10 +70,10 @@ if test "$ffmpegco" = "yes" ; then
      echo "checking out ffmpeg from  svn://svn.mplayerhq.hu/ffmpeg/trunk..."
      svn checkout svn://svn.mplayerhq.hu/ffmpeg/trunk ffmpeg
      echo "Configuring ffmpeg..."
-     cd ffmpeg; ./configure --prefix=$V_PATH/ffmpeg --enable-gpl --enable-swscaler; cd ..
+     cd ffmpeg; ./configure --prefix=$V_PATH/ffmpeg --enable-gpl --enable-swscaler --enable-pp; cd ..
    fi
    V_INCLUDE="$V_INCLUDE -Iffmpeg/include"
-   V_CODEC_LIB="$V_CODEC_LIB ffmpeg/lib/libavcodec.a ffmpeg/lib/libavutil.a ffmpeg/lib/libswscale.a"
+   V_CODEC_LIB="$V_CODEC_LIB ffmpeg/lib/libavcodec.a ffmpeg/lib/libavutil.a ffmpeg/lib/libswscale.a ffmpeg/lib/libpostproc.a"
 fi
 
 AC_ARG_ENABLE(x264-co,        --disable-x264-co      Enable or disable x264 svn checkout, x264co="no", x264co="yes")
@@ -130,8 +130,11 @@ if test "$ffmpegco" != "yes"; then
 	        echo "Error! you need to have $ffmpeglib/libavutil.a around"
 	   elif test ! -r $ffmpeglib/libswscale.a ; then
 	        echo "Error! you need to have $ffmpeglib/libswscale.a around"
-	   fi
-	   V_LIB_FFMPEG="-L$ffmpeglib -lavcodec -lavutil -lswscale"
+           elif test ! -r $ffmpeglib/libpostproc.a ; then
+                echo "Error! you need to have $ffmpeglib/libpostproc.a around"
+           fi
+	   
+	   V_LIB_FFMPEG="-L$ffmpeglib -lavcodec -lavutil -lswscale -lpostproc"
 	else
 	   AC_CHECK_LIB(avcodec, main, [], [
 	        echo "Error! you need to have libavcodec around."
@@ -145,7 +148,13 @@ if test "$ffmpegco" != "yes"; then
 	        echo "Error! you need to have libswscale around."
 	        exit -1
 	   ])
-	   V_LIB_FFMPEG="-lavcodec -lavutil -lswscale"
+
+           AC_CHECK_LIB(postproc, main, [], [
+                echo "Error! you need to have libpostproc around."
+                exit -1
+           ])
+
+	   V_LIB_FFMPEG="-lavcodec -lavutil -lswscale -lpostproc"
 	fi
 fi 
 
@@ -256,7 +265,8 @@ if test "$v4l2old" = "yes" ; then
 		echo "Using old Linux grabber-v4l2"
 elif test -r /usr/include/linux/videodev.h ; then
         if grep V4L2 /usr/include/linux/videodev.h >/dev/null 2>&1  ; then
-                V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-v4l2.o video/grabber-video4linux.o"
+                #V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-v4l2.o video/grabber-video4linux.o"
+ 		V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-video4linux.o"
 		echo "Using Linux (new)video4linux2(2.6.x compatible) and V4L v1"
         else
                 V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-video4linux.o"
