@@ -310,6 +310,7 @@ else
 		/System/Library/Frameworks/Tk.framework/Versions/8.4/Resources/Scripts \
 		/usr/contrib/lib/tk8.4 \
 		/usr/lib/tk8.4 \
+		/usr/share/tk8.4 \
 		/usr/lib/tk/tk8.4 \
 		/import/tcl/lib/tk8.4 \
 		$prefix/lib/tk8.4 \
