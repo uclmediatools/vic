@@ -36,7 +36,7 @@ x264Encoder::~x264Encoder()
     x264 *enc = (x264 *) encoder;
     if (enc->h != NULL) {
 	  x264_encoder_close(enc->h);
-	  x264_picture_clean(&(enc->pic));
+//	  x264_picture_clean(&(enc->pic));
     }
     free(enc);
 }
