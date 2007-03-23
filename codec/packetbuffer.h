@@ -3,25 +3,29 @@
 
 #define MAX_PACKETS 2048
 
+#include "databuffer.h"
 
-class DataBuffer;
+
+//class DataBuffer;
 class PacketBuffer
 {
   public:
     PacketBuffer(int, int);	//maxPackets, maxLength
        ~PacketBuffer();
     void write(int, int, char *);	//pktIdx, length, buffer
+    void writeAppend(int, int, char *);	//pktIdx, length, buffer
+    void setSize(int, int);	//pktIdx, length
     void setTotalPkts(int);
     int getTotalPkts();
     bool isComplete();
     DataBuffer *getStream();
     void clear();
+    DataBuffer *packets[MAX_PACKETS];
   private:
     int totalPkts;
     int maxPkts;
     int maxLen;
     DataBuffer *stream;
-    DataBuffer *packets[MAX_PACKETS];
     bool isDataRecv[MAX_PACKETS];
 };
 

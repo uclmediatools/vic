@@ -28,11 +28,25 @@ PacketBuffer::~PacketBuffer()
 	delete packets[i];
 }
 
+void PacketBuffer::writeAppend(int idx, int size, char *buffer)
+{
+    if (idx > MAX_PACKETS || idx < 0)
+	return;
+    isDataRecv[idx] = packets[idx]->writeAppend(buffer, size);
+}
+
 void PacketBuffer::write(int idx, int size, char *buffer)
 {
     if (idx > MAX_PACKETS || idx < 0)
 	return;
     isDataRecv[idx] = packets[idx]->write(buffer, size);
+}
+
+void PacketBuffer::setSize(int idx, int size)
+{
+    if (idx > MAX_PACKETS || idx < 0)
+	return;
+    isDataRecv[idx] = packets[idx]->setSize(size);
 }
 
 bool PacketBuffer::isComplete()
@@ -41,7 +55,7 @@ bool PacketBuffer::isComplete()
 	return false;
     for (int i = 0; i < totalPkts; i++){	
 	if (!isDataRecv[i]){
-	    debug_msg("lost packet %d\n", i);	
+	    //debug_msg("lost packet %d\n", i);	
 	    return false;
 	}
     }

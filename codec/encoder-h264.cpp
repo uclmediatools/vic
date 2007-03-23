@@ -17,6 +17,10 @@
 #include "databuffer.h"
 #include "x264encoder.h"
 #include "deinterlace.h"
+/*extern "C"
+{
+#include "base64.h"
+}*/
 
 static Transmitter *tx;
 static RTP_BufferPool *pool;
@@ -119,14 +123,18 @@ int H264Encoder::consume(const VideoFrame * vf)
 {
     pktbuf *pb;
     rtphdr *rh;
-    //int n,ps, len;
     ts = vf->ts_;
     tx = tx_;
     pool = pool_;
-    bool first = true;
 
-    int i_nal, i, sent_size;
+    int numNAL, i, sent_size = 0;
     int frame_size = 0;
+    unsigned char f_seq = 0;
+    //unsigned char f_total_pkt = 0;
+    int RTP_HDR_LEN = sizeof(rtphdr);
+    int NAL_FRAG_THRESH = tx->mtu() - RTP_HDR_LEN; /* payload max in one packet */
+    //fprintf(stderr, "MTU=%d, RTP_HDR_LEN=%d\n", NAL_FRAG_THRESH, RTP_HDR_LEN);
+
 
     tx->flush();
 
@@ -140,55 +148,93 @@ int H264Encoder::consume(const VideoFrame * vf)
     }
 
     frame_size = vf->width_ * vf->height_;
-
     deinterlacer.render(vf->bp_, vf->width_, vf->height_);
-	
     enc->encodeFrame(vf->bp_);
+    numNAL = enc->numNAL();
 
-    i_nal = enc->numNAL();
+    //Send out numNAL packets framed according to RFC3984
+    for (i = 0; i < numNAL; i++) {
 
-    sent_size = 0;
-    unsigned char f_seq = 0;
-    unsigned char f_total_pkt = 0;
-    //TODO: send out i_nal packets
-    for (i = 0; i < i_nal; i++) {
+	bool firstFragment = true;
+	int FU_HDR_LEN = 1;
+	int offset = 0;
 
 	enc->getNALPacket(i, fOut);
-
-	sent_size += fOut->getDataSize();
+	int nalSize1 = fOut->getDataSize();
+	int nalSize = nalSize1-5;
+	char *data1 = fOut->getData();
 	char *data = fOut->getData();
+ 	uint8_t NALhdr = data1[4]; //SV-XXX why does our x.264 provide 4-byte StartSync in the NALU?
+	uint8_t NALtype = NALhdr & 0x1f;
+	//fprintf(stderr, "Got NALhdr=0x%02x, NALtype=0x%02x from encoded frame.\n", NALhdr, NALtype);
+	memcpy(data, &data1[5], nalSize);
+
+	sent_size += nalSize;
 
 
-	int nalSize = fOut->getDataSize();
-	if (i == i_nal - 1 && f_total_pkt == 0)
-	    f_total_pkt = f_seq + (nalSize / 1000) + 2;
-	int offset = 0;
 	while (nalSize > 0) {
-	    pb = pool_->alloc(vf->ts_, RTP_PT_H264);
+	    pb = pool->alloc(vf->ts_, RTP_PT_H264);
 	    rh = (rtphdr *) pb->data;
-	    if (nalSize > 1000) {
-		memcpy(&pb->data[14], data + offset, 1000);
 
-		pb->len = 1000 + 14;
-		offset += 1000;
-		nalSize -= 1000;
-	    }
-	    else {
-		if (i == i_nal - 1) {
-		    //Last Packet
-		    rh->rh_flags |= htons(RTP_M);	// set M bit
+	    if (nalSize <= NAL_FRAG_THRESH) {
+		//==============================================
+		//Single NAL or last fragment of FU-A
+		//==============================================
+
+		rh->rh_flags |= htons(RTP_M);	// set M bit
+		pb->len = nalSize + RTP_HDR_LEN + FU_HDR_LEN;
+
+		fprintf(stderr, "NAL : ");
+
+		if (FU_HDR_LEN==2) {
+			//==============================================
+			//Last fragment of FU-A
+			//==============================================
+	       		pb->data[12] = 0x00 | (NALhdr & 0x60) | 28; 	//FU indicator
+       			pb->data[13] = 0x40  | NALtype; 		//FU header
+			
+			fprintf(stderr, "FU_Indicator=0x%02x, FU_Header=0x%02x, ", pb->data[12], pb->data[13]);
+		} 
+		else {
+	       		pb->data[12] = NALhdr; 				//NAL Header
+			fprintf(stderr, "-----------------, --------------, ");
 		}
-		memcpy(&pb->data[14], data + offset, nalSize);
 
-		pb->len = nalSize + 14;
+		memcpy(&pb->data[RTP_HDR_LEN + FU_HDR_LEN], data + offset, nalSize);
+
+		fprintf(stderr, "i=%d/%d, nalSize=%4d len=%4d firstFrag=%d offset=%4d\n", i, numNAL, nalSize, pb->len, firstFragment, offset);
+
 		nalSize = 0;
+		offset = 0;
+
+	    } else {
+		//==============================================
+		//FU-A (not the last fragment though)
+		//==============================================
+
+		FU_HDR_LEN = 2;
+		pb->len = (NAL_FRAG_THRESH - FU_HDR_LEN) + RTP_HDR_LEN + FU_HDR_LEN;
+
+       		pb->data[12] = 0x00 | (NALhdr & 0x60) | 28; 			//FU indicator
+       		pb->data[13] = ( (firstFragment) ? 0x80 : 0x00 ) | NALtype;	//FU header
+
+		memcpy(&pb->data[RTP_HDR_LEN + FU_HDR_LEN], data + offset, NAL_FRAG_THRESH - FU_HDR_LEN);
+
+		fprintf(stderr, "FU-A: FU_Indicator=0x%02x, FU_Header=0x%02x, i=%d/%d, nalSize=%4d len=%4d firstFrag=%d offset=%4d\n",  pb->data[12], pb->data[13], i, numNAL, nalSize, pb->len, firstFragment, offset);
+
+		nalSize -= (NAL_FRAG_THRESH-FU_HDR_LEN);
+		offset += (NAL_FRAG_THRESH-FU_HDR_LEN);
+		firstFragment = false;
 	    }
-	    //printf("send out %d\n", pb->len);
+
 	    tx->send(pb);
 	    f_seq++;
 	}
+
     }
+
     frame_seq++;
+
 
     return (kbps*1024) / (fps*8);
 }

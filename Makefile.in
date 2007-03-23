@@ -147,6 +147,7 @@ OBJ2 =	main.o iohandler.o timer.o idlecallback.o media-timer.o \
 	codec/packetbuffer.o codec/databuffer.o \
 	codec/ffmpeg_codec.o codec/encoder-mpeg4.o codec/decoder-mpeg4.o \
 	codec/x264encoder.o codec/encoder-h264.o codec/decoder-h264.o \
+	codec/rtp_h264_depayloader.o \
 	codec/decoder-h263.o codec/decoder-h263v2.o codec/decoder-cellb.o \
 	codec/decoder-h261.o codec/decoder-h261v1.o codec/decoder-raw.o \
 	render/renderer.o render/renderer-window.o render/color.o \

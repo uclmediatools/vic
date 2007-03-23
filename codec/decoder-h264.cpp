@@ -3,6 +3,7 @@
 #include <string.h>
 #include <assert.h>
 #include <iostream>
+#include <errno.h>
 #include "inet.h"
 #include "rtp.h"
 #include "decoder.h"
@@ -10,12 +11,15 @@
 #include "packetbuffer.h"
 #include "databuffer.h"
 #include "ffmpeg_codec.h"
+#include "rtp_h264_depayloader.h"
+
+
+#define SDP_LINE_LEN 10000
 
 //#define DIRECT_DISPLAY 1
+//using namespace std;
+//extern "C" UCHAR * video_frame;
 
-using namespace std;
-
-extern "C" UCHAR * video_frame;
 
 class H264Decoder:public Decoder
 {
@@ -23,6 +27,7 @@ class H264Decoder:public Decoder
     H264Decoder();
     ~H264Decoder();
 
+    void handleSDP();
     virtual void recv(pktbuf *);
     int colorhist(u_int * hist) const;
   protected:
@@ -30,12 +35,12 @@ class H264Decoder:public Decoder
     virtual void redraw();
 
     /* packet statistics */
-    u_int16_t last_seq;		/* sequence number */
+    uint16_t last_seq;		/* sequence number */
 
     UCHAR bitstream[MAX_CODED_SIZE];	/* bitstream data */
 
     /* collecting data for a frame */
-    int idx;
+    uint16_t idx;
     int last_mbit;
     int last_iframe;
     bool startPkt;
@@ -43,11 +48,12 @@ class H264Decoder:public Decoder
     /* image */
     UCHAR xxx_frame[MAX_FRAME_SIZE];
     FFMpegCodec h264;
-    PacketBuffer *stream;
-
+    PacketBuffer *stream; //SV: probably this is going to be substituted by the AVPacket->data when we call decode()...
+    H264Depayloader *h264depayloader;
 
     //For DEBUG
-    FILE *fptr;
+    //FILE *fptr;
+    FILE *sdp_fptr;
 };
 
 static class H264DecoderMatcher:public Matcher
@@ -67,9 +73,11 @@ static class H264DecoderMatcher:public Matcher
 dm_h264;
 
 
-H264Decoder::H264Decoder():Decoder(2)
+H264Decoder::H264Decoder():Decoder(0 /* 0 byte extra header */)
 {				/* , codec_(0), */
 
+
+    //Barz: =============================================
     decimation_ = 411;
     /*
      * Assume CIF.  Picture header will trigger a resize if
@@ -78,7 +86,8 @@ H264Decoder::H264Decoder():Decoder(2)
     inw_ = 0;
     inh_ = 0;
 
-     /*XXX*/ resize(inw_, inh_);
+     /*XXX*/ 
+    resize(inw_, inh_);
 
     // libavcodec
     h264.init(false, CODEC_ID_H264, PIX_FMT_YUV420P);
@@ -88,23 +97,85 @@ H264Decoder::H264Decoder():Decoder(2)
     last_mbit = 0;
     last_iframe = 0;
     last_seq = 0;
+    //===================================================
+
+
+    //SV: ===============================================
+    //Create payloader
+    h264depayloader = new H264Depayloader;
+
+    handleSDP();
+    //make sure all codec params are set up properly before decoding
+
+    //check whether AVPacket struct can be used in stead of Barz's PacketBuffer
+    //===================================================
+
 
     //256 packets, each 1600 byte (default will not exceed 1600 byte)
     //cout << "new PacketBuffer..\n";
-    stream = new PacketBuffer(1024, 1600);
+    stream = new PacketBuffer(1024, 1600); //SV: 1024 = ??? 
     startPkt = false;
+}
+
+void
+H264Decoder::handleSDP()
+{
+    char SdpFilename[SDP_LINE_LEN];
+    char *line, *sdp_string;
+    char *SdpLine=NULL;
+    int n_char;
+    size_t nBytes = 0;
+    ssize_t SdpRead;
+    char defaultSDP[]="a=rtpmap:96 H264/90000\na=fmtp:96 profile-level-id=00000d; packetization-mode=1\n";
+
+    sprintf(SdpFilename, "%s/default.sdp", getenv("HOME"));
 
     //fptr = fopen("out.m4v", "w");
+    if ((sdp_fptr = fopen(SdpFilename, "r")) != NULL ) {
+	//fprintf(stderr, "H264_RTP: Opened SDP file %s for read.\n", SdpFilename);
+
+      //Read SDP file into struct
+      //fprintf(stderr, "H264_RTP: Spitting SDP ================================================\n");
+      while ((SdpRead = getline(&SdpLine, &nBytes, sdp_fptr)) != -1) {
+	//fprintf(stderr, "H264_RTP: Read %d bytes from SDP file.\n", SdpRead);
+	//fprintf(stderr, "%s", SdpLine);
+	//call SDP parse h264 routine
+	  h264depayloader->parse_h264_sdp_line(h264.c, h264depayloader->h264_extradata, SdpLine);
+      }
+      if (SdpLine)
+	  free(SdpLine);
+	
+    } else {
+	fprintf(stderr, "H264_RTP: Couldn't open SDP file %s to read. Errno = %d\n", SdpFilename, errno);
+	fprintf(stderr, "H264_RTP: Using default SDP: %s \n", defaultSDP);
+
+      line=defaultSDP;
+      do {
+	n_char = strcspn(line, "\n");
+        SdpLine = (char *)malloc(n_char+1);
+	memset(SdpLine, '\0', n_char+1);
+	strncpy(SdpLine, line, n_char);
+	line += n_char + 1;
+	  h264depayloader->parse_h264_sdp_line(h264.c, h264depayloader->h264_extradata, SdpLine);
+	free(SdpLine);
+      } while (n_char != 0);
+    //fprintf(stderr, "H264_RTP: Done spitting SDP ===========================================\n");
+    }
 }
 
 H264Decoder::~H264Decoder()
 {
     delete stream;
+    delete h264depayloader;
     //fclose(fptr);
+    if (sdp_fptr != NULL) fclose(sdp_fptr);
+    //fprintf(stderr, "H264_RTP: Closed SDP file.\n");
 }
 
 int H264Decoder::colorhist(u_int * hist)  const
 {
+    UNUSED(hist);
+
     return (1);
 }
 
@@ -114,17 +185,20 @@ void H264Decoder::recv(pktbuf * pb)
     int hdrsize = sizeof(rtphdr) + hdrlen();
     u_char *bp = pb->dp + hdrsize;
     int cc = pb->len - hdrsize;
-    static int iframe_c = 0, pframe_c = 0;
+    //static int iframe_c = 0, pframe_c = 0;
 
     int mbit = ntohs(rh->rh_flags) >> 7 & 1;
-    int seq = ntohs(rh->rh_seqno);
+    uint16_t seq = ntohs(rh->rh_seqno);
     int ts = ntohl(rh->rh_ts);
 
+
+
+    //Barz: =============================================
     if (!startPkt) {
        stream->clear();
        startPkt = true;
        idx = seq;
-	   last_seq = seq - 1;
+       last_seq = seq - 1;
     }
 	  
     int pktIdx = seq - idx;
@@ -133,32 +207,41 @@ void H264Decoder::recv(pktbuf * pb)
     }
 
     if (abs(seq - last_seq) > 5) {
-	    debug_msg("h264dec: sequece interrupt!\n");
+	    //fprintf(stderr, "H264_RTP: sequece interrupt!\n");
 	    idx = seq;
 	    pktIdx = 0;
 	    stream->clear();
     }else if (last_seq + 1 != seq) {
-	    /* oops - missing packet */
-	    debug_msg("h264dec: missing packet\n");
+	    // oops - missing packet
+	    //fprintf(stderr, "H264_RTP: missing packet\n");
     }
 
+    //===================================================
+
+
     //copy packet
-    stream->write(pktIdx, cc, (char *) bp);
-    
+    //stream->write(pktIdx, cc, (char *) bp);
+    //fprintf(stderr, "H264_RTP: -------------------------------- seq = %d, m=%d, ts=%d, cc=%d\n", seq, mbit, ts, cc);
+    //fprintf(stderr, "H264_RTP: pktIdx = %d\n", pktIdx);
+    int yo = h264depayloader->h264_handle_packet(h264depayloader->h264_extradata, pktIdx, stream, /*ts,*/ bp, cc);
+    //fprintf(stderr, "H264_RTP: h264_handle_packet = %d\n", yo);
+
+
+    //Barz: =============================================
+
     last_seq = seq;
     int len=0;
-	
     if (mbit) {
 	    stream->setTotalPkts(pktIdx + 1);
 
-	    DataBuffer *f;	    
+	    DataBuffer *f;
 	    if (stream->isComplete()) {
-			f = stream->getStream();
+		    f = stream->getStream();
 		    len =  h264.decode((UCHAR *) f->getData(), f->getDataSize(), xxx_frame);
 	    }
 	    
 	    if (len < 0) {
-	       debug_msg("h264dec: frame error\n");
+		//fprintf(stderr, "H264_RTP: frame error\n");
 	    }
 	   
 	    if (inw_ != h264.width || inh_ != h264.height) {
@@ -169,10 +252,12 @@ void H264Decoder::recv(pktbuf * pb)
 	    else {
 			Decoder::redraw(xxx_frame);
 	    }
-        stream->clear();
+	    stream->clear();
 	    idx = seq+1;
-		     
     }
+
+    //===================================================
+
     pb->release();
 }
 

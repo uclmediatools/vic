@@ -13,11 +13,11 @@ class DataBuffer
     bool setSize(int);
     bool write(char *, int);
     bool writeAppend(char *, int);
+    char *data;
 
   private:
     int length;
     int size;
-    char *data;
 
 };
 

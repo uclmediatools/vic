@@ -49,7 +49,7 @@ set rtp_type(127) h261v1
 set rtp_type(77) h261as
 set rtp_type(123) dv
 set rtp_type(45) mpeg4
-set rtp_type(47) h264
+set rtp_type(96) h264
 
 
 proc vic_main {} {
