@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <iostream>
 #include <errno.h>
+#include <fcntl.h>
 #include "inet.h"
 #include "rtp.h"
 #include "decoder.h"
@@ -53,7 +54,7 @@ class H264Decoder:public Decoder
 
     //For DEBUG
     //FILE *fptr;
-    FILE *sdp_fptr;
+    //FILE *sdp_fptr;
 };
 
 static class H264DecoderMatcher:public Matcher
@@ -124,52 +125,51 @@ H264Decoder::handleSDP()
     char *line, *sdp_string;
     char *SdpLine=NULL;
     int n_char;
+    int sdp_fptr;
+    struct stat      s;
     size_t nBytes = 0;
     ssize_t SdpRead;
     char defaultSDP[]="a=rtpmap:96 H264/90000\na=fmtp:96 profile-level-id=00000d; packetization-mode=1\n";
 
     sprintf(SdpFilename, "%s/default.sdp", getenv("HOME"));
 
-    //fptr = fopen("out.m4v", "w");
-    if ((sdp_fptr = fopen(SdpFilename, "r")) != NULL ) {
-	//fprintf(stderr, "H264_RTP: Opened SDP file %s for read.\n", SdpFilename);
+    if ((sdp_fptr = open(SdpFilename, O_RDONLY)) != -1 ) {
+      debug_msg("Open SDP file: %s\n",SdpFilename);
 
-      //Read SDP file into struct
-      //fprintf(stderr, "H264_RTP: Spitting SDP ================================================\n");
-      while ((SdpRead = getline(&SdpLine, &nBytes, sdp_fptr)) != -1) {
-	//fprintf(stderr, "H264_RTP: Read %d bytes from SDP file.\n", SdpRead);
-	//fprintf(stderr, "%s", SdpLine);
-	//call SDP parse h264 routine
-	  h264depayloader->parse_h264_sdp_line(h264.c, h264depayloader->h264_extradata, SdpLine);
+      if (fstat(sdp_fptr, &s) != 0) {
+        debug_msg("Unable to stat config file\n");
+        close(sdp_fptr);
+        sdp_string=defaultSDP;
       }
-      if (SdpLine)
-	  free(SdpLine);
-	
+      sdp_string = (char *)malloc(s.st_size+1);
+      memset(sdp_string, '\0', s.st_size+1);
+      if (read(sdp_fptr, sdp_string, s.st_size) != s.st_size) {
+        debug_msg("Unable to read config file\n");
+	close(sdp_fptr);
+        sdp_string=defaultSDP;
+      }
+      close(sdp_fptr);
     } else {
-	fprintf(stderr, "H264_RTP: Couldn't open SDP file %s to read. Errno = %d\n", SdpFilename, errno);
-	fprintf(stderr, "H264_RTP: Using default SDP: %s \n", defaultSDP);
-
-      line=defaultSDP;
-      do {
-	n_char = strcspn(line, "\n");
-        SdpLine = (char *)malloc(n_char+1);
-	memset(SdpLine, '\0', n_char+1);
-	strncpy(SdpLine, line, n_char);
-	line += n_char + 1;
-	  h264depayloader->parse_h264_sdp_line(h264.c, h264depayloader->h264_extradata, SdpLine);
-	free(SdpLine);
-      } while (n_char != 0);
-    //fprintf(stderr, "H264_RTP: Done spitting SDP ===========================================\n");
+      fprintf(stderr, "H264_RTP: Couldn't open SDP file %s to read. Errno = %d\n", SdpFilename, errno);
+      fprintf(stderr, "H264_RTP: Using default SDP: %s \n", defaultSDP);
+      sdp_string=defaultSDP;
     }
+
+    do {
+      n_char = strcspn(sdp_string, "\n");
+      SdpLine=(char*)realloc((void*)SdpLine, n_char+1);
+      memset(SdpLine, '\0', n_char+1);
+      strncpy(SdpLine, sdp_string, n_char);
+      sdp_string += n_char + 1;
+	h264depayloader->parse_h264_sdp_line(h264.c, h264depayloader->h264_extradata, SdpLine);
+    } while (n_char != 0);
+    free(SdpLine);
 }
 
 H264Decoder::~H264Decoder()
 {
     delete stream;
     delete h264depayloader;
-    //fclose(fptr);
-    if (sdp_fptr != NULL) fclose(sdp_fptr);
-    //fprintf(stderr, "H264_RTP: Closed SDP file.\n");
 }
 
 int H264Decoder::colorhist(u_int * hist)  const
