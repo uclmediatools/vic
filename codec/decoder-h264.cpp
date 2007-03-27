@@ -5,6 +5,8 @@
 #include <iostream>
 #include <errno.h>
 #include <fcntl.h>
+#include <io.h>
+#include <sys/stat.h>
 #include "inet.h"
 #include "rtp.h"
 #include "decoder.h"
@@ -122,13 +124,12 @@ void
 H264Decoder::handleSDP()
 {
     char SdpFilename[SDP_LINE_LEN];
-    char *line, *sdp_string;
+    char *sdp_string;
     char *SdpLine=NULL;
     int n_char;
     int sdp_fptr;
     struct stat      s;
     size_t nBytes = 0;
-    ssize_t SdpRead;
     char defaultSDP[]="a=rtpmap:96 H264/90000\na=fmtp:96 profile-level-id=00000d; packetization-mode=1\n";
 
     sprintf(SdpFilename, "%s/default.sdp", getenv("HOME"));
@@ -150,19 +151,18 @@ H264Decoder::handleSDP()
       }
       close(sdp_fptr);
     } else {
-      fprintf(stderr, "H264_RTP: Couldn't open SDP file %s to read. Errno = %d\n", SdpFilename, errno);
-      fprintf(stderr, "H264_RTP: Using default SDP: %s \n", defaultSDP);
+      debug_msg( "H264_RTP: Couldn't open SDP file %s to read. Errno = %d\n", SdpFilename, errno);
+      debug_msg("H264_RTP: Using default SDP: %s \n", defaultSDP);
       sdp_string=defaultSDP;
     }
 
-    do {
-      n_char = strcspn(sdp_string, "\n");
+    while ((n_char = strcspn(sdp_string, "\n"))!=0) {
       SdpLine=(char*)realloc((void*)SdpLine, n_char+1);
       memset(SdpLine, '\0', n_char+1);
       strncpy(SdpLine, sdp_string, n_char);
       sdp_string += n_char + 1;
-	h264depayloader->parse_h264_sdp_line(h264.c, h264depayloader->h264_extradata, SdpLine);
-    } while (n_char != 0);
+      h264depayloader->parse_h264_sdp_line(h264.c, h264depayloader->h264_extradata, SdpLine);
+    }
     free(SdpLine);
 }
 

@@ -42,23 +42,24 @@
 #include <assert.h>
 #include "config.h"
 
-
+#ifndef WIN32
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#endif
 #include <assert.h>
 //#ifndef __BEOS__
-# include <arpa/inet.h>
 //#else
 //# include "barpainet.h"
 //#endif
-#include <netdb.h>
 
 #include "rtp_h264_depayloader.h"
 #include "packetbuffer.h"
 
-using namespace std;
+//using namespace std;
 
 
 
@@ -231,11 +232,11 @@ void H264Depayloader::sdp_parse_fmtp_config_h264(AVCodecContext *codec, /*AVStre
             uint8_t level_idc;
 
             buffer[0] = value[0]; buffer[1] = value[1]; buffer[2] = '\0';
-            profile_idc = strtol(buffer, NULL, 16);
+            profile_idc = (uint8_t)strtol(buffer, NULL, 16);
             buffer[0] = value[2]; buffer[1] = value[3];
-            profile_iop = strtol(buffer, NULL, 16);
+            profile_iop = (uint8_t)strtol(buffer, NULL, 16);
             buffer[0] = value[4]; buffer[1] = value[5];
-            level_idc = strtol(buffer, NULL, 16);
+            level_idc = (uint8_t)strtol(buffer, NULL, 16);
 
             // set the parameters...
             //fprintf(stderr, /* NULL, AV_LOG_DEBUG,*/ "H.264/RTP Profile IDC: %x Profile IOP: %x Level: %x\n", profile_idc, profile_iop, level_idc);
@@ -296,9 +297,6 @@ int H264Depayloader::h264_handle_packet(h264_rtp_extra_data *data,
                               const uint8_t * buf,
                               int len)
 {
-
-     char *temp; //SV: XXX
-
     //h264_rtp_extra_data *data = s->dynamic_protocol_context;
     uint8_t nal = buf[0];
     uint8_t type = (nal & 0x1f);

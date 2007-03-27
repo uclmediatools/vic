@@ -76,12 +76,13 @@ H264Encoder::H264Encoder():TransmitterModule(FT_YUV_CIF)
     fps = 20;
     kbps = 512;
     gop = 20;
+    fOut=NULL;
 }
 
 H264Encoder::~H264Encoder()
 {
     delete enc;
-    delete fOut;
+    if (fOut) delete fOut;
 }
 
 void H264Encoder::size(int w, int h)
