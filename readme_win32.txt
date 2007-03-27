@@ -1,5 +1,9 @@
 Win32 build instruction written by Barz Hsu
 
+Get and install the following:
+- The latest version of mingw from http://www.mingw.org/
+- Get nasm from http://www.kernel.org/pub/software/devel/nasm/binaries/win32/nasm-0.98.39-win32.zip - rename nasmw.exe to nasm.exe install it in the PATH for X264 build (see below).
+
 # Make FFmpeg DLL under Mingw 
 * check out ffmpeg
 svn co -r 7110 svn://svn.mplayerhq.hu/ffmpeg/trunk ffmpeg
@@ -26,6 +30,7 @@ SM)
 # Copy DLL and LIB files to win32/lib
 ./copy_dll.sh
 
+# Build VIC using Visual studio as normal. 
 ~                                                                                                                                           
 ~                                                                                                                                           
 ~                                                                                                                                           
