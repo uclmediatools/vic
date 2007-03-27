@@ -51,10 +51,6 @@
 #include <netdb.h>
 #endif
 #include <assert.h>
-//#ifndef __BEOS__
-//#else
-//# include "barpainet.h"
-//#endif
 
 #include "rtp_h264_depayloader.h"
 #include "packetbuffer.h"

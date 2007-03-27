@@ -5,7 +5,11 @@
 #include <iostream>
 #include <errno.h>
 #include <fcntl.h>
-#include <io.h>
+#ifdef WIN32
+#include <io.h> //close()
+#else
+#include <unistd.h>
+#endif
 #include <sys/stat.h>
 #include "inet.h"
 #include "rtp.h"
