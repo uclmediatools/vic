@@ -133,7 +133,7 @@ int H264Encoder::consume(const VideoFrame * vf)
     //unsigned char f_total_pkt = 0;
     int RTP_HDR_LEN = sizeof(rtphdr);
     int NAL_FRAG_THRESH = tx->mtu() - RTP_HDR_LEN; /* payload max in one packet */
-    //fprintf(stderr, "MTU=%d, RTP_HDR_LEN=%d\n", NAL_FRAG_THRESH, RTP_HDR_LEN);
+    //debug_msg( "MTU=%d, RTP_HDR_LEN=%d\n", NAL_FRAG_THRESH, RTP_HDR_LEN);
 
 
     tx->flush();
@@ -166,7 +166,7 @@ int H264Encoder::consume(const VideoFrame * vf)
 	char *data = fOut->getData();
  	uint8_t NALhdr = data1[4]; //SV-XXX why does our x.264 provide 4-byte StartSync in the NALU?
 	uint8_t NALtype = NALhdr & 0x1f;
-	//fprintf(stderr, "Got NALhdr=0x%02x, NALtype=0x%02x from encoded frame.\n", NALhdr, NALtype);
+	//debug_msg( "Got NALhdr=0x%02x, NALtype=0x%02x from encoded frame.\n", NALhdr, NALtype);
 	memcpy(data, &data1[5], nalSize);
 
 	sent_size += nalSize;
@@ -184,7 +184,7 @@ int H264Encoder::consume(const VideoFrame * vf)
 		rh->rh_flags |= htons(RTP_M);	// set M bit
 		pb->len = nalSize + RTP_HDR_LEN + FU_HDR_LEN;
 
-		fprintf(stderr, "NAL : ");
+		debug_msg( "NAL : ");
 
 		if (FU_HDR_LEN==2) {
 			//==============================================
@@ -193,16 +193,16 @@ int H264Encoder::consume(const VideoFrame * vf)
 	       		pb->data[12] = 0x00 | (NALhdr & 0x60) | 28; 	//FU indicator
        			pb->data[13] = 0x40  | NALtype; 		//FU header
 			
-			fprintf(stderr, "FU_Indicator=0x%02x, FU_Header=0x%02x, ", pb->data[12], pb->data[13]);
+			debug_msg( "FU_Indicator=0x%02x, FU_Header=0x%02x, ", pb->data[12], pb->data[13]);
 		} 
 		else {
 	       		pb->data[12] = NALhdr; 				//NAL Header
-			fprintf(stderr, "-----------------, --------------, ");
+			debug_msg( "-----------------, --------------, ");
 		}
 
 		memcpy(&pb->data[RTP_HDR_LEN + FU_HDR_LEN], data + offset, nalSize);
 
-		fprintf(stderr, "i=%d/%d, nalSize=%4d len=%4d firstFrag=%d offset=%4d\n", i, numNAL, nalSize, pb->len, firstFragment, offset);
+		debug_msg( "i=%d/%d, nalSize=%4d len=%4d firstFrag=%d offset=%4d\n", i, numNAL, nalSize, pb->len, firstFragment, offset);
 
 		nalSize = 0;
 		offset = 0;
@@ -220,7 +220,7 @@ int H264Encoder::consume(const VideoFrame * vf)
 
 		memcpy(&pb->data[RTP_HDR_LEN + FU_HDR_LEN], data + offset, NAL_FRAG_THRESH - FU_HDR_LEN);
 
-		fprintf(stderr, "FU-A: FU_Indicator=0x%02x, FU_Header=0x%02x, i=%d/%d, nalSize=%4d len=%4d firstFrag=%d offset=%4d\n",  pb->data[12], pb->data[13], i, numNAL, nalSize, pb->len, firstFragment, offset);
+		debug_msg( "FU-A: FU_Indicator=0x%02x, FU_Header=0x%02x, i=%d/%d, nalSize=%4d len=%4d firstFrag=%d offset=%4d\n",  pb->data[12], pb->data[13], i, numNAL, nalSize, pb->len, firstFragment, offset);
 
 		nalSize -= (NAL_FRAG_THRESH-FU_HDR_LEN);
 		offset += (NAL_FRAG_THRESH-FU_HDR_LEN);
