@@ -29,7 +29,7 @@ static const char rcsid[] =
 #include <string.h>
 #include <ctype.h>
 #ifdef WIN32
-//#include <winsock.h>
+//#include <winsock2.h>
 #else
 #include <sys/param.h>
 #include <netdb.h>
@@ -41,14 +41,21 @@ static const char rcsid[] =
 
 #include "inet6.h"
 
-#ifdef NEED_ADDRINFO_H
+#ifdef NEED_INET_PTON
+#include "inet_pton.h"
+#endif
+
+#ifdef NEED_INET_NTOP
+#include "inet_ntop.h"
+#endif
+
+#ifdef NEED_ADDRINFO
 #include "addrinfo.h"
 #endif
 
 int 
 inet6_LookupHostAddr(struct in6_addr *addr, const char* hostname) {
   if (inet_pton(AF_INET6, hostname, addr->s6_addr) != 1) {
-    struct hostent *hp;
     struct addrinfo hints, *ai;
     int i;
     memset(&hints, 0, sizeof(struct addrinfo));
