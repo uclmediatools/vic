@@ -1141,9 +1141,12 @@ DrawStripi(Stripchart* SPtr, int i)
 					PADDING + hasatitle(SPtr) *
 					(lineHeight + PADDING) + i *
 					SPtr->max_height / (SPtr->num_ticks-1);
+			XDrawLine(Tk_Display(tkwin), Tk_WindowId(tkwin),
+			      SPtr->tickGC, ticks[i].x1, ticks[i].y1, ticks[i].x2, ticks[i].y2);
+
 		}
-		XDrawSegments(Tk_Display(tkwin), Tk_WindowId(tkwin),
-			      SPtr->tickGC, ticks, SPtr->num_ticks);
+		//XDrawSegments(Tk_Display(tkwin), Tk_WindowId(tkwin),
+		//	      SPtr->tickGC, ticks, SPtr->num_ticks);
 	}
 
 	/* Draw the bar */
@@ -1190,8 +1193,7 @@ ScrollStrips(Stripchart* SPtr)
 	          Tk_GetGC(tkwin, 0, NULL), src_x, src_y, w, h, dest_x, dest_y);
 }
 
-#ifdef MAC_OSX_TK
-
+#ifndef XClearArea
 // XXX
 #define HAVE_LIMITS_H
 
@@ -1212,15 +1214,10 @@ TkClearArea(Tk_Window tkwin, int x, int y, int width, int height)
         Tk_FreeGC(Tk_Display(tkwin), gc);
 }
 #else
-#ifdef WIN32
-void XClearArea(display, w, x ,y, width, height, exposures);
-#endif
-
 void
 TkClearArea(Tk_Window tkwin, int x, int y, int width, int height)
 {
         XClearArea(Tk_Display(tkwin), Tk_WindowId(tkwin),
                    x, y, width, height, False);
 }
-#endif 
-
+#endif
