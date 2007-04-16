@@ -72,7 +72,7 @@ if test "$ffmpegco" = "yes" ; then
      echo "Configuring ffmpeg..."
      cd ffmpeg; ./configure --prefix=$V_PATH/ffmpeg --enable-gpl --enable-swscaler --enable-pp; cd ..
    fi
-   V_INCLUDE="$V_INCLUDE -Iffmpeg/avformat -Iffmpeg/include/ffmpeg -Iffmpeg/include"
+   V_INCLUDE="$V_INCLUDE -Iffmpeg/libavformat -Iffmpeg/include/ffmpeg -Iffmpeg/include"
    V_CODEC_LIB="$V_CODEC_LIB ffmpeg/lib/libavcodec.a ffmpeg/lib/libavutil.a ffmpeg/lib/libswscale.a ffmpeg/lib/libpostproc.a"
 fi
 
