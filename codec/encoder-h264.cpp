@@ -221,7 +221,7 @@ int H264Encoder::consume(const VideoFrame * vf)
 
 		memcpy(&pb->data[RTP_HDR_LEN + FU_HDR_LEN], data + offset, NAL_FRAG_THRESH - FU_HDR_LEN);
 
-		debug_msg( "FU-A: FU_Indicator=0x%02x, FU_Header=0x%02x, i=%d/%d, nalSize=%4d len=%4d firstFrag=%d offset=%4d\n",  pb->data[12], pb->data[13], i, numNAL, nalSize, pb->len, firstFragment, offset);
+		//debug_msg( "FU-A: FU_Indicator=0x%02x, FU_Header=0x%02x, i=%d/%d, nalSize=%4d len=%4d firstFrag=%d offset=%4d\n",  pb->data[12], pb->data[13], i, numNAL, nalSize, pb->len, firstFragment, offset);
 
 		nalSize -= (NAL_FRAG_THRESH-FU_HDR_LEN);
 		offset += (NAL_FRAG_THRESH-FU_HDR_LEN);
