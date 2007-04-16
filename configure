@@ -4578,11 +4578,11 @@ fi;
 if test "$ffmpegco" = "yes" ; then
    if test ! -r "ffmpeg" ; then
      echo "checking out ffmpeg from  svn://svn.mplayerhq.hu/ffmpeg/trunk..."
-     svn checkout svn://svn.mplayerhq.hu/ffmpeg/trunk ffmpeg
+     svn checkout -r 7110 svn://svn.mplayerhq.hu/ffmpeg/trunk ffmpeg
      echo "Configuring ffmpeg..."
      cd ffmpeg; ./configure --prefix=$V_PATH/ffmpeg --enable-gpl --enable-swscaler --enable-pp; cd ..
    fi
-   V_INCLUDE="$V_INCLUDE -Iffmpeg/include"
+   V_INCLUDE="$V_INCLUDE -Iffmpeg/avformat -Iffmpeg/include/ffmpeg -Iffmpeg/include"
    V_CODEC_LIB="$V_CODEC_LIB ffmpeg/lib/libavcodec.a ffmpeg/lib/libavutil.a ffmpeg/lib/libswscale.a ffmpeg/lib/libpostproc.a"
 fi
 
@@ -4596,7 +4596,7 @@ fi;
 if test "$x264co" = "yes" ; then
    if test ! -r "x264" ; then
      echo "checking out x264 from  svn co svn://svn.videolan.org/x264/trunk..."
-     svn checkout svn://svn.videolan.org/x264/trunk x264
+     svn checkout -r 600 svn://svn.videolan.org/x264/trunk x264
      echo "Configuring x264..."
      cd x264; ./configure --prefix=$V_PATH/x264; cd ..
    fi

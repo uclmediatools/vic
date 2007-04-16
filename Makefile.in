@@ -58,7 +58,7 @@ CCOPT = @V_CCOPT@
 INCLUDE_TK = @V_INCLUDE_TK@
 INCLUDE_TCL = @V_INCLUDE_TCL@
 INCLUDE_X11 = @V_INCLUDE_X11@
-INCLUDE_MISC = @V_INCLUDE@ -I. -Icodec/tmndec -Icodec/tmn-x -Icodec/h263 -Irtp -Irender -Inet -Ivideo -Icodec -I../common/src
+INCLUDE_MISC = -I. -Icodec/tmndec -Icodec/tmn-x -Icodec/h263 -Irtp -Irender -Inet -Ivideo -Icodec -I../common/src @V_INCLUDE@ 
 
 STATIC = @V_STATIC@
 MKDEP = ./mkdep
