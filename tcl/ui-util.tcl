@@ -136,7 +136,7 @@ proc create_toplevel { w title } {
 	global V
 	if [info exists V(visual)] {
 		toplevel $w -class $V(class) \
-			-visual $V(visual) -colormap $V(colormap)
+			-visual "$V(visual)"
 	} else {
 		toplevel $w -class $V(class)
 	}

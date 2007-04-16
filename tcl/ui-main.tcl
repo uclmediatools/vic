@@ -716,7 +716,7 @@ proc really_activate src {
 	global V
 	set w $V(grid).$src
 	frame $w -relief groove -borderwidth 0 \
-		-visual $V(visual) -colormap $V(colormap)
+		-visual $V(visual)
 	#XXX color
 	build.src $w $src 1
 	grid $w -row $V(currow) -column $V(curcol) -sticky we

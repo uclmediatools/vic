@@ -186,8 +186,8 @@ proc open_window src {
 	}
 	set w .vw$uid
 	toplevel $w -class Vic \
-		-visual "[winfo visual .top] [winfo depth .top]" \
-		-colormap .top
+		-visual "[winfo visual .top] [winfo depth .top]" 
+#		-colormap .top
 	catch "wm resizable $w false false"
 	#
 	# make windows become x-y resizeable
