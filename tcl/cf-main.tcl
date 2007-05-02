@@ -85,4 +85,9 @@ proc vic_main {} {
 		global transmitButton
 		$transmitButton invoke
 	}
+
+	set autoquit [option get . autoquit Vic]
+	if { $autoquit != "" } {
+		after $autoquit adios
+	}
 }
