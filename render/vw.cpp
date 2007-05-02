@@ -92,6 +92,24 @@ int XShmPutImage(Display*, Drawable, GC, XImage*, int, int, int, int,
 #endif
 #endif
 }
+#ifdef USE_DDRAW
+
+//  #define DDRAW_USE_BLTFAST
+
+#include <windows.h>
+#include <ddraw.h>
+#include <tkWin.h>
+#include <dvp.h>
+
+char *ddrawErrorString(HRESULT rc);
+
+static totalPixelsDrawn = 0.0;
+
+DDrawVideoImage::MonitorList DDrawVideoImage::monitors_;
+HWND DDrawVideoImage::appMainWindow_;
+
+
+#endif
 
 static class VideoCommand : public TclObject {
 public:
@@ -153,6 +171,33 @@ StandardVideoImage* StandardVideoImage::allocate(Tk_Window tk, int w, int h)
 		delete p;
 	}
 #endif
+#ifdef USE_DDRAW
+	extern int use_ddraw;
+	Tcl tcl = Tcl::instance();
+	if (use_ddraw)
+	{
+		const char *minWS, *minHS;
+		int minW, minH;
+
+		if ((minWS = tcl.attr("ddraw_min_width")) != NULL)
+			minW = atoi(minWS);
+		else
+			minW = 10;
+
+		if ((minHS = tcl.attr("ddraw_min_height")) != NULL)
+			minH = atoi(minHS);
+		else
+			minH = 10;
+
+
+		if (w > minW && h > minH)
+		{
+			DDrawVideoImage *p = new DDrawVideoImage(tk, w, h);
+			return p;
+		}
+	}
+#endif
+
 	return (new SlowVideoImage(tk, w, h));
 }
 
@@ -318,6 +363,957 @@ void SharedVideoImage::putimage(Display* dpy, Window window, GC gc,
 {
 	XShmPutImage(dpy, window, gc, image_, sx, sy, x, y, w, h, 0);
 }
+#endif
+
+#ifdef USE_DDRAW
+DDrawVideoImage::DDrawVideoImage(Tk_Window tk, int w, int h)
+	: StandardVideoImage(tk, w, h)
+{
+	init(tk, w, h);
+}
+
+DDrawVideoImage::DDrawVideoImage(Tk_Window tk, int w, int h, int bpp)
+	: StandardVideoImage(tk, w, h)
+{
+	bpp_ = bpp;
+	init(tk, w, h);
+}
+
+
+
+DDrawVideoImage::~DDrawVideoImage()
+{
+    Tk_DeleteEventHandler(toplevelTkWindow_, StructureNotifyMask, windowConfigureEvent_s, this);
+    Tk_DeleteEventHandler(tk_, StructureNotifyMask, videoWindowConfigureEvent_s, this);
+
+    ImageMonitorList::iterator it;
+    for (it = imageMonitors_.begin(); it != imageMonitors_.end(); it++)
+    {
+	DDrawImageMonitor *im = *it;
+
+	delete im;
+    }
+
+    delete image_->data;
+    image_->data = 0;
+}
+
+void DDrawVideoImage::init(Tk_Window tk, int w, int h)
+{
+    int size = w * h;
+
+    if (bpp_ > 8)
+	size *= bpp_ / 8;
+    image_->data = new char[size];
+
+    window_ = 0;
+    needRecalculate_ = true;
+    
+    /*
+    * Find the toplevel window for this video window
+    */
+    
+    for (toplevelTkWindow_ = tk; !Tk_IsTopLevel(toplevelTkWindow_); )
+	toplevelTkWindow_ = Tk_Parent(toplevelTkWindow_);
+//    debug_msg("got toplevel=%d\n", toplevelTkWindow_);
+     
+    /*
+    * Register for configure events, so that we can recalculate
+    * the monitor/surface drawing stuff.
+    */
+    tk_ = tk;
+    Tk_CreateEventHandler(toplevelTkWindow_, StructureNotifyMask, windowConfigureEvent_s, this);
+    Tk_CreateEventHandler(tk, StructureNotifyMask, videoWindowConfigureEvent_s, this);
+
+    /*
+     * Set up the ImageMonitor objects
+     */
+
+    MonitorList::iterator it;
+    for (it = monitors_.begin(); it != monitors_.end(); it++)
+    {
+	DDrawMonitor *m = (*it);
+
+	DDrawImageMonitor *im = new DDrawImageMonitor(image_, m);
+
+	imageMonitors_.push_back(im);
+    }
+    
+}
+
+/*
+ * Determine which monitors should display this image by 
+ * passing the video window to each ImageMonitor object. If
+ * the ImageMonitor should draw the window, it enables itself.
+ */
+void DDrawVideoImage::calculateCoverage(HWND hwnd)
+{
+    window_ = hwnd;
+//    debug_msg("calculate coverage this=%x window_=%x\n", this, window_);
+    ImageMonitorList::iterator it;
+
+    for (it = imageMonitors_.begin(); it != imageMonitors_.end(); it++)
+    {
+	(*it)->setEnabled(false);
+    }
+
+    RECT win;
+    POINT points[4];
+    int i;
+
+    GetClientRect(window_, &win);
+
+    points[0].x = win.left;
+    points[0].y = win.top;
+
+    points[1].x = win.right;
+    points[1].y = win.top;
+
+    points[2].x = win.left;
+    points[2].y = win.bottom;
+
+    points[3].x = win.right;
+    points[3].y = win.bottom;
+
+    for (i = 0; i < 4; i++)
+	ClientToScreen(window_, &(points[i]));
+
+    for (it = imageMonitors_.begin(); it != imageMonitors_.end(); it++)
+    {
+	DDrawImageMonitor *m = *it;
+	//debug_msg("About to calculate coverage for monitor %x\n", m);
+	CHECK_SENTINELS(m)
+	//debug_msg("Monitor name is %s\n", m->monitor()->driverDescription_);
+	for (i = 0; i < 4; i++)
+	{
+	    CHECK_SENTINELS(m)
+	    //debug_msg("calculate coverage for %d\n", i);
+	    m->calculateCoverage(points[i]);
+	    //debug_msg("done with %d\n", i);
+	    CHECK_SENTINELS(m)
+	}
+
+	m->configureSurface();
+    }
+
+#if 0
+    debug_msg("After calculate, enabled status is:\n");
+    for (it = imageMonitors_.begin(); it != imageMonitors_.end(); it++)
+    {
+	DDrawImageMonitor *m = (*it);
+	debug_msg("%s: %s\n", m->enabled() ? "ENABLED " : "DISABLED",
+	    m->monitor()->driverDescription_);
+   }
+#endif
+}
+
+void DDrawVideoImage::windowConfigureEvent_s(ClientData data, XEvent *eventPtr)
+{
+    DDrawVideoImage *img = (DDrawVideoImage *) data;
+    // debug_msg("got event type=%d\n", eventPtr->type);
+    if (eventPtr->type == ConfigureNotify)
+	img->windowConfigureEvent(&(eventPtr->xconfigure));
+}
+
+void DDrawVideoImage::windowConfigureEvent(XConfigureEvent *event)
+{
+//    debug_msg("Got window configure event for img pos=%d %d\n",
+//	event->x, event->y);
+
+    forceRecalculate();
+
+    std::list<WindowMotionCallback *>::iterator it;
+    for (it = windowMotionCallbacks_.begin(); it != windowMotionCallbacks_.end(); it++)
+    {
+	(*it)->windowMoved();
+    }
+}
+void DDrawVideoImage::videoWindowConfigureEvent_s(ClientData data, XEvent *eventPtr)
+{
+    DDrawVideoImage *img = (DDrawVideoImage *) data;
+    // debug_msg("got video window event type=%d\n", eventPtr->type);
+    if (eventPtr->type == MapNotify)
+	img->videoWindowConfigureEvent(&(eventPtr->xmap));
+}
+
+void DDrawVideoImage::videoWindowConfigureEvent(XMapEvent *event)
+{
+//    debug_msg("Got window map event window=%x \n", event->window);
+
+    forceRecalculate();
+
+    std::list<WindowMotionCallback *>::iterator it;
+    for (it = windowMotionCallbacks_.begin(); it != windowMotionCallbacks_.end(); it++)
+    {
+	(*it)->windowMoved();
+    }
+	
+}
+
+//
+// Find the first enabled monitor.
+//
+DDrawImageMonitor * DDrawVideoImage::currentMonitor()
+{
+
+    DDrawImageMonitor *mon = 0;
+    ImageMonitorList::iterator it;
+    for (it = imageMonitors_.begin(); it != imageMonitors_.end(); it++)
+    {
+	DDrawImageMonitor *m = (*it);
+	if (m->enabled())
+	{
+	    mon = m;
+	    break;
+	}
+    }
+
+    return mon;
+    
+}
+
+void DDrawVideoImage::lockSurface(int sx, int sy, int x, int y, int w, int h,
+				    LockedRegion &lock)
+{
+    DDrawImageMonitor *mon = currentMonitor();
+
+    if (mon == 0)
+	return;
+
+    mon->lockSurface(window_, sx, sy, x, y, w, h, lock);
+}
+
+void DDrawMonitor::init(GUID *g, char *desc, char *name, HMONITOR mon)
+{
+    static int nextIndex = 0;
+
+    myIndex_ = nextIndex++;
+    nPixelsDrawn_ = 0.0;
+
+    if (g != 0)
+    {
+	guid_ = new GUID;
+	memcpy(guid_, g, sizeof(GUID));
+    }
+    else
+	guid_ = 0;
+    if (desc != 0)
+    {
+	driverDescription_ = new char[strlen(desc) + 1];
+	strcpy(driverDescription_, desc);
+    }
+    else
+	driverDescription_ = "none";
+    
+    if (name != 0)
+    {
+	driverName_ = new char[strlen(name) + 1];
+	strcpy(driverName_, name);
+    }
+    else
+	driverName_ = "none";
+    
+    if (guid_ != 0)
+    {
+	WCHAR s[1024];
+	int n = StringFromGUID2(*guid_, s, sizeof(s));
+	if (n > 0)
+	{
+	    WideCharToMultiByte(CP_UTF8, 0, s, n, guidString_, sizeof(guidString_), 0, 0);
+	}
+	else
+	    guidString_[0] = 0;
+    }
+    else
+	guidString_[0] = 0;
+    
+    monitorInfo_.cbSize = sizeof(monitorInfo_);
+    HRESULT rc = GetMonitorInfo(mon, &monitorInfo_);
+    if (rc == 0)
+	debug_msg("getmonitorinfo failed\n");
+    
+    handle_ = mon;
+};
+
+void DDrawMonitor::updatePixelCount(int pixels, int depth)
+{
+    nPixelsDrawn_ += (double) pixels;
+}
+
+void DDrawMonitor::updateRate()
+{
+    Tcl& tcl = Tcl::instance();
+    tcl.evalf("set pixrate(%d) %f", myIndex_, nPixelsDrawn_ / 1000.0);
+}
+
+void DDrawMonitor::allocateDirectDraw(HWND hwnd)
+{
+	HRESULT ddrval;
+
+//	debug_msg("ddraw create for monitor %s\n", driverName_);
+
+	// ddrval = DirectDrawCreate(NULL, &lpDD, NULL);
+
+	ddrval = DirectDrawCreateEx(guid_, (VOID**)&directDraw_, IID_IDirectDraw7, NULL);
+
+//	debug_msg("dd create returns %d\n", ddrval);
+
+	if (ddrval != DD_OK)
+	{
+		debug_msg("ddcreate failed\n");
+		return;
+	}
+
+	ddrval = directDraw_->SetCooperativeLevel(hwnd, DDSCL_NORMAL);
+
+	if (ddrval != DD_OK)
+	{
+		debug_msg("setcoop failed\n");
+		return;
+	}
+
+	DDCAPS caps;
+	ZeroMemory(&caps, sizeof(caps));
+	caps.dwSize = sizeof(caps);
+	ddrval = directDraw_->GetCaps(&caps, NULL);
+
+	if (ddrval != DD_OK)
+	{
+		debug_msg("getcaps failed with %s\n", ddrawErrorString(ddrval));
+		return;
+	}
+
+	debug_msg("got caps: max overlays=%d currently visible overlays=%d\n",
+		caps.dwMaxVisibleOverlays, caps.dwCurrVisibleOverlays);
+}
+
+static HRESULT WINAPI enumPortsCallback(
+  LPDDVIDEOPORTCAPS lpDDVideoPortCaps,  
+  LPVOID lpContext                      
+)
+{
+    debug_msg("Enum ports: \n");
+    return DDENUMRET_OK;
+}
+ 
+
+void DDrawMonitor::createSurface(HWND hwnd)
+{
+    /* Now create the primary surface */
+    
+    HRESULT		        hRet;
+    DDSURFACEDESC2      ddsd;
+    
+    // Create the primary surface
+    ZeroMemory(&ddsd,sizeof(ddsd));
+    ddsd.dwSize = sizeof(ddsd);
+    ddsd.dwFlags = DDSD_CAPS; // | DDSD_PIXELFORMAT;
+    ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
+    ddsd.ddpfPixelFormat.dwFourCC = 0 ;
+    hRet = directDraw_->CreateSurface(&ddsd, &primarySurface_, NULL);
+    if (hRet != DD_OK)
+    {
+	debug_msg("primary surface creation failed\n");
+	return;
+    }
+
+    // What's the pixel format here?
+
+    DDPIXELFORMAT pfmt;
+
+    ZeroMemory(&pfmt, sizeof(DDPIXELFORMAT));
+    pfmt.dwSize = sizeof(pfmt);
+    hRet = primarySurface_->GetPixelFormat(&pfmt);
+    if (hRet == DD_OK)
+    {
+	debug_msg("Pixel format:\n");
+    }
+    else
+	debug_msg("GetPixelFormat failed: %s\n", ddrawErrorString(hRet));
+
+    //
+    // Check out video ports
+    //
+
+    LPDDVIDEOPORTCONTAINER portContainer;
+    hRet = directDraw_->QueryInterface(IID_IDDVideoPortContainer, (void **) &portContainer);
+    if (hRet == S_OK)
+    {
+	debug_msg("Got port container!\n");
+	portContainer->EnumVideoPorts(0, 0, 0, enumPortsCallback);
+    }
+    //
+    // What color codes does this surface support?
+    //
+    DWORD codes[32];
+    DWORD nCodes = 32;
+    hRet = directDraw_->GetFourCCCodes(&nCodes, codes);
+    if (hRet == DD_OK)
+    {
+	unsigned char *c;
+	for (int i= 0; i < nCodes; i++)
+	{
+	    c = (unsigned char *) (&codes[i]);
+	    debug_msg("Code %d: %x %c%c%c%c\n", i, codes[i], c[0], c[1], c[2], c[3]);
+	}
+    }
+
+    
+//    debug_msg("created surface\n");
+    
+#ifndef DDRAW_USE_BLTFAST
+    // Create a clipper object since this is for a Windowed render
+    
+    hRet = directDraw_->CreateClipper(0, &clipper_, NULL);
+    if (hRet != DD_OK)
+    {
+	debug_msg("CreateClipper FAILED");
+	return;
+	
+    }
+    
+//   debug_msg("created clipper\n");
+    
+    primarySurface_->SetClipper(clipper_);
+#endif  
+}
+
+BOOL CALLBACK DDrawVideoImage::enumProc(HMONITOR hMonitor, HDC hdcMon, 
+					LPRECT lprcMon, LPARAM dwData)
+{
+    debug_msg("other enum proc\n");
+    DDrawMonitor *m;
+    
+    m = new DDrawMonitor(0, "primary", "primary", hMonitor);
+    m->print();
+    m->allocateDirectDraw(appMainWindow_);
+    m->createSurface(appMainWindow_);
+    
+    monitors_.push_back(m);
+    return TRUE;
+}
+
+void DDrawVideoImage::initMonitors()
+{
+    HRESULT rc;
+    
+    rc = DirectDrawEnumerateEx(findMonitorsCallback, 0,
+	DDENUM_ATTACHEDSECONDARYDEVICES);
+    
+    if (rc != DD_OK)
+    {
+	debug_msg("device enumeration failed");
+    }
+
+    if (monitors_.size() == 0)
+    {
+	debug_msg("single monitor");
+
+	HDC hdc;
+	RECT rclip;
+
+	hdc = GetDC(NULL);
+	rclip.bottom = 10;
+	rclip.top = 0;
+	rclip.left = 0;
+	rclip.right = 10;
+	EnumDisplayMonitors(hdc, &rclip, enumProc, 0);
+	ReleaseDC(NULL, hdc);
+
+#if 0
+	DDrawMonitor *m;
+	m = new DDrawMonitor();
+	m->print();
+	m->allocateDirectDraw(appMainWindow_);
+	m->createSurface(appMainWindow_);
+	monitors_.push_back(m);
+#endif
+    }
+}
+
+
+BOOL WINAPI DDrawVideoImage::findMonitorsCallback(GUID FAR *lpGUID,    
+						  LPSTR     lpDriverDescription, 
+						  LPSTR     lpDriverName,        
+						  LPVOID    lpContext,           
+						  HMONITOR  hm)
+{
+    debug_msg("monitor enumeration: %x %s %s %x\n",
+	lpGUID, lpDriverDescription, lpDriverName, hm);
+    if (lpGUID != 0)
+    {
+	DDrawMonitor *m;
+	
+	m = new DDrawMonitor(lpGUID, lpDriverDescription, lpDriverName, hm);
+	m->print();
+	m->allocateDirectDraw(appMainWindow_);
+	m->createSurface(appMainWindow_);
+	
+	monitors_.push_back(m);
+    }		
+    return TRUE;
+}
+
+void DDrawVideoImage::initDirectDraw()
+{
+    Tcl& t = Tcl::instance();
+    Tk_Window tkMain = t.tkmain();
+    appMainWindow_ = Tk_GetHWND(Tk_WindowId(tkMain));
+    
+    initMonitors();
+}
+
+void DDrawVideoImage::getTclMonitorList(char *buf)
+{
+    MonitorList::iterator it;
+
+    strcpy(buf, "");
+    for (it = monitors_.begin(); it != monitors_.end(); it++)
+    {
+	char moninfo[60];
+	DDrawMonitor *m = (*it);
+
+	RECT *r = &m->monitorInfo_.rcWork;
+	sprintf(moninfo, "{ %d %d %d %d %d %d } ", 
+	    r->left, r->top, r->right, r->bottom, 
+	   m->myIndex_, m->myIndex_);
+	strcat(buf, moninfo);
+    }
+}
+
+static HRESULT bindImageToSurface(XImage *image, LPDIRECTDRAWSURFACE7 *lpDDS,
+								  LPDIRECTDRAW7 lpDD)
+{ 
+    HRESULT hr;
+    LPVOID  lpSurface  = NULL;
+    HLOCAL  hMemHandle = NULL;
+    DDSURFACEDESC2 ddsd2;
+ 
+ 
+    // Initialize the surface description.
+    ZeroMemory(&ddsd2, sizeof(DDSURFACEDESC2));
+    ZeroMemory(&ddsd2.ddpfPixelFormat, sizeof(DDPIXELFORMAT));
+    ddsd2.dwSize = sizeof(ddsd2);
+    ddsd2.dwFlags = DDSD_WIDTH | DDSD_HEIGHT | DDSD_LPSURFACE |
+                    DDSD_PITCH | DDSD_PIXELFORMAT | DDSD_CAPS;
+    ddsd2.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN |
+                           DDSCAPS_SYSTEMMEMORY;
+    ddsd2.dwWidth = image->width;
+    ddsd2.dwHeight= image->height;
+    ddsd2.lPitch  = image->bytes_per_line;
+    ddsd2.lpSurface = image->data;
+ 
+    // Set up the pixel format for 24-bit RGB (8-8-8).
+    ddsd2.ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
+    ddsd2.ddpfPixelFormat.dwFlags= DDPF_RGB;
+    ddsd2.ddpfPixelFormat.dwRGBBitCount = (DWORD) image->depth;
+
+    if (image->depth == 16)
+    {
+#if 0
+    	ddsd2.ddpfPixelFormat.dwRBitMask = 0x7c00;
+	ddsd2.ddpfPixelFormat.dwGBitMask = 0x03e0;
+	ddsd2.ddpfPixelFormat.dwBBitMask = 0x001f; 
+#else
+    	ddsd2.ddpfPixelFormat.dwRBitMask = 0xf800;
+	ddsd2.ddpfPixelFormat.dwGBitMask = 0x07e0;
+	ddsd2.ddpfPixelFormat.dwBBitMask = 0x001f; 
+#endif
+    }
+    else
+    {
+	ddsd2.ddpfPixelFormat.dwRBitMask    = 0x00FF0000;
+	ddsd2.ddpfPixelFormat.dwGBitMask    = 0x0000FF00;
+	ddsd2.ddpfPixelFormat.dwBBitMask    = 0x000000FF;
+    }
+ 
+    // Create the surface
+    hr = lpDD->CreateSurface(&ddsd2, lpDDS, NULL);
+    return hr;
+}
+
+
+
+DDrawImageMonitor::DDrawImageMonitor(XImage *image, DDrawMonitor *mon) :
+image_(image),
+monitor_(mon),
+enabled_(1)
+{
+    SETUP_SENTINELS()
+
+    imageSurface_ = 0;
+    /*
+     * Delay this until configureSurface() is called.
+     *
+    rc = bindImageToSurface(image_, &imageSurface_, monitor_->directDraw_);
+    if (rc != DD_OK)
+    {
+	debug_msg("monitor image bind failed with %s\n", ddrawErrorString(rc));
+	return;
+    }
+    */
+//    debug_msg("bound monitor ximage to surface\n");
+}
+
+DDrawImageMonitor::~DDrawImageMonitor()
+{
+//    debug_msg("delete DDRawImageMonitor %x\n", this);
+    CHECK_SENTINELS(this);
+
+    
+    if (imageSurface_ != 0)
+    {
+	releaseSurface();
+    }
+}
+
+static DWORD exceptionFilter(LPEXCEPTION_POINTERS p)
+{
+//    LPEXCEPTION_POINTERS p;
+    
+    debug_msg("Exception on surface release!\n");
+//    p = GetExceptionInformation();
+    
+    LPEXCEPTION_RECORD e = p->ExceptionRecord;
+    debug_msg("Code=%d\n", e->ExceptionCode);
+    if (e->ExceptionCode == EXCEPTION_ACCESS_VIOLATION)
+    {
+	debug_msg("access type = %s, address=%x\n",
+	    e->ExceptionInformation[0] == 0 ? "read" : "write",
+	    e->ExceptionInformation[1]);
+    }
+    
+    return EXCEPTION_EXECUTE_HANDLER;
+}
+
+void DDrawImageMonitor::releaseSurface()
+{
+    __try {
+	ULONG oldRefCount = imageSurface_->Release();
+//	debug_msg("oldRefCount=%d\n", oldRefCount);
+    } 
+    __except(exceptionFilter(GetExceptionInformation())) {
+    }
+    imageSurface_ = 0;
+}
+
+
+/*
+ * Determine if this monitor should be enabled by testing
+ * if the given point is in the monitor's coverage.
+ */
+void DDrawImageMonitor::calculateCoverage(POINT pt)
+{
+    if (PtInRect(&monitor_->monitorInfo_.rcWork, pt))
+	enabled_ = true;
+}
+
+/*
+ * If this monitor is enabled, create the surface if one doesn't
+ * yet exist.
+ *
+ * If this monitor is not enabled, release the surface if one
+ * already exists.
+ */
+
+void DDrawImageMonitor::configureSurface()
+{
+    if (enabled_)
+    {
+	if (imageSurface_ == 0)
+	{
+	    int rc;
+	    rc = bindImageToSurface(image_, &imageSurface_, monitor_->directDraw_);
+	    if (rc != DD_OK)
+	    {
+		debug_msg("monitor image bind failed with %s\n", ddrawErrorString(rc));
+		return;
+	    }
+	}
+    }
+    else
+    {
+	if (imageSurface_ != 0)
+	{
+    
+	    releaseSurface();
+	}
+    }
+ }
+
+void DDrawImageMonitor::putimage(HWND hWnd, int sx, int sy, int x, int y, int w, int h)
+{
+    if (!enabled_)
+	return;
+    
+    int dx, dy;
+    
+    // Adjust for display in non-primary monitor
+    
+    dx = x - monitor_->monitorInfo_.rcMonitor.left;
+    dy = y - monitor_->monitorInfo_.rcMonitor.top;
+    
+//    debug_msg("putimage mon %s image %x\n", 
+//	monitor_->driverDescription_, image_);
+    
+#ifdef USE_PROFILING
+    startCounter(STATE_PUTIMAGE_DDRAW);
+#endif
+    RECT srcRect, dstRect;
+    
+#ifndef DDRAW_USE_BLTFAST
+    // Associate the clipper with the window
+    
+    monitor_->clipper_->SetHWnd(0, hWnd);
+#endif		
+
+    GetClientRect(hWnd, &dstRect);
+        
+    ClientToScreen(hWnd, (POINT*)&dstRect.left);
+    ClientToScreen(hWnd, (POINT*)&dstRect.right);
+    
+    dstRect.left += dx;
+    dstRect.right = dstRect.left + w;
+    dstRect.top += dy;
+    dstRect.bottom = dstRect.top + h;
+    
+    SetRect(&srcRect, sx, sy, sx + w, sy + h);
+#ifdef USE_PROFILING
+    startCounter(STATE_BITBLT);
+#endif
+#ifdef DDRAW_USE_BLTFAST
+    HRESULT res = monitor_->primarySurface_->BltFast(dstRect.left, dstRect.top,
+	imageSurface_, 
+	&srcRect, DDBLTFAST_NOCOLORKEY );
+#else
+    HRESULT res = monitor_->primarySurface_->Blt(&dstRect, imageSurface_, 
+	&srcRect, DDBLT_WAIT, 0);
+#endif
+#ifdef USE_PROFILING
+    LARGE_INTEGER elap;
+    stopCounter(STATE_BITBLT, &elap);
+    addBlitEntry(w,h,&elap);
+#endif
+    if (res != DD_OK)
+    {
+	debug_msg("blit failed with %s\n", ddrawErrorString(res));
+	return;
+    }
+    monitor_->updatePixelCount(w * h, image_->depth);
+
+#ifdef USE_PROFILING
+    stopCounter(STATE_PUTIMAGE_DDRAW);
+#endif
+}
+
+bool DDrawImageMonitor::supportsOverlay(int &maxOverlays, int &visibleOverlays)
+{
+    DDCAPS caps;
+    HRESULT rc;
+
+    maxOverlays = visibleOverlays = -1;
+
+    ZeroMemory(&caps, sizeof(caps));
+    caps.dwSize = sizeof(caps);
+
+    rc = monitor()->directDraw_->GetCaps(&caps, 0);
+
+    if (FAILED(rc))
+	return false;
+
+    if (caps.dwCaps & DDCAPS_OVERLAY)
+    {
+	maxOverlays = caps.dwMaxVisibleOverlays;
+	visibleOverlays = caps.dwCurrVisibleOverlays;
+	return true;
+    }
+    else
+	return false;
+}
+
+void DDrawImageMonitor::getDisplayRect(HWND hWnd, int x, int y, int w, int h,
+				    RECT &dstRect)
+{
+    if (!enabled_)
+	return;
+    
+    int dx, dy;
+    
+    // Adjust for display in non-primary monitor
+    
+    dx = x - monitor_->monitorInfo_.rcMonitor.left;
+    dy = y - monitor_->monitorInfo_.rcMonitor.top;
+    
+    GetClientRect(hWnd, &dstRect);
+        
+    ClientToScreen(hWnd, (POINT*)&dstRect.left);
+    ClientToScreen(hWnd, (POINT*)&dstRect.right);
+    
+    dstRect.left += dx;
+    dstRect.right = dstRect.left + w;
+    dstRect.top += dy;
+    dstRect.bottom = dstRect.top + h;
+    
+}
+void DDrawImageMonitor::lockSurface(HWND hWnd, int sx, int sy, int x, int y, int w, int h,
+				    DDrawVideoImage::LockedRegion &lock)
+{
+    if (!enabled_)
+	return;
+    
+    int dx, dy;
+    
+    // Adjust for display in non-primary monitor
+    
+    dx = x - monitor_->monitorInfo_.rcMonitor.left;
+    dy = y - monitor_->monitorInfo_.rcMonitor.top;
+    
+//    debug_msg("putimage mon %s image %x\n", 
+//	monitor_->driverDescription_, image_);
+    
+#ifdef USE_PROFILING
+    startCounter(STATE_PUTIMAGE_DDRAW);
+#endif
+    RECT srcRect, dstRect;
+    
+    GetClientRect(hWnd, &dstRect);
+        
+    ClientToScreen(hWnd, (POINT*)&dstRect.left);
+    ClientToScreen(hWnd, (POINT*)&dstRect.right);
+    
+    dstRect.left += dx;
+    dstRect.right = dstRect.left + w;
+    dstRect.top += dy;
+    dstRect.bottom = dstRect.top + h;
+    
+    SetRect(&srcRect, sx, sy, sx + w, sy + h);
+
+    HRESULT res = monitor_->primarySurface_->Lock(&dstRect, lock.surfaceDesc(), 
+	DDLOCK_WAIT | DDLOCK_SURFACEMEMORYPTR, 0);
+    
+    if (res != DD_OK)
+    {
+	debug_msg("lock failed with %s\n", ddrawErrorString(res));
+	return;
+    }
+
+    lock.setLockParams(monitor_->primarySurface_, dstRect);
+//    debug_msg("Lock succeeded! size=%d %d pitch=%d ptr=%x\n",
+//	surfp->dwWidth, surfp->dwHeight, surfp->lPitch, surfp->lpSurface);
+//    ZeroMemory(surfp->lpSurface, 8192);
+
+//    monitor_->primarySurface_->Unlock(&dstRect);
+}
+
+DDrawVideoImage::LockedRegion::LockedRegion() :
+    locked_(0), surface_(0)
+{
+    ZeroMemory(&surfaceDesc_, sizeof(surfaceDesc_));
+    surfaceDesc_.dwSize = sizeof(surfaceDesc_);
+}
+
+DDrawVideoImage::LockedRegion::~LockedRegion()
+{
+    release();
+}
+
+void  DDrawVideoImage::LockedRegion::release()
+{
+    if (!locked_)
+	return;
+    surface_->Unlock(&lockedRect_);
+    locked_ = 0;
+}
+
+void DDrawVideoImage::LockedRegion::setLockParams(LPDIRECTDRAWSURFACE7 surface, RECT &rect)
+{
+    surface_ = surface;
+    lockedRect_ = rect;
+    locked_ = 1;
+}
+
+int DDrawVideoImage::LockedRegion::width()
+{
+    return surfaceDesc_.dwWidth;
+}
+
+int DDrawVideoImage::LockedRegion::height()
+{
+    return surfaceDesc_.dwWidth;
+}
+
+int DDrawVideoImage::LockedRegion::locked()
+{
+    return locked_;
+}
+
+long DDrawVideoImage::LockedRegion::pitch()
+{
+    return surfaceDesc_.lPitch;
+}
+
+void * DDrawVideoImage::LockedRegion::address()
+{
+    return surfaceDesc_.lpSurface;
+}
+
+/*
+     XPutImage(display, d, gc, image, src_x, src_y, dest_x,
+     dest_y, width, height)
+             Display *display;
+             Drawable d;
+             GC gc;
+             XImage *image;
+             int src_x, src_y;
+             int dest_x, dest_y;
+             unsigned int width, height;
+*/
+
+void DDrawVideoImage::doPutImage(LPDIRECTDRAWSURFACE7 surface,
+				 LPDIRECTDRAWSURFACE7 imageSurface,
+				 LPDIRECTDRAWCLIPPER clipper,
+				 HWND hWnd,
+				 int sx, int sy, int x, int y,
+				 int w, int h) const
+{
+    
+}		
+
+void DDrawVideoImage::checkRecalculate(Window window) 
+{
+    HWND hWnd = Tk_GetHWND(window);
+
+    if (needRecalculate_)
+    {
+	calculateCoverage(hWnd);
+	needRecalculate_ = false;
+    }
+}
+
+void DDrawVideoImage::putimage(Display* dpy, Window window, GC gc,
+			       int sx, int sy, int x, int y,
+			       int w, int h) const
+{
+    HWND hWnd = Tk_GetHWND(window);
+
+
+    ((DDrawVideoImage *) this)->checkRecalculate(window);
+    totalPixelsDrawn += (double) w * h;
+
+    ImageMonitorList::const_iterator it;
+    for (it = imageMonitors_.begin(); it != imageMonitors_.end(); it++)
+    {
+	DDrawImageMonitor *m = *it;
+
+	__try {
+	    
+	    m->putimage(hWnd, sx, sy, x, y, w, h);
+	} 
+	__except(exceptionFilter(GetExceptionInformation())) {
+	}	    
+    }
+}
+
 #endif
 
 BareWindow::BareWindow(const char* name, XVisualInfo* vinfo)
@@ -667,4 +1663,322 @@ void CaptureWindow::capture(u_int8_t* frm)
 		converter_->convert((u_int8_t*)image_->pixbuf(),
 				    width_, height_, frm);
 	}
+}
+
+#ifdef USE_DDRAW
+
+char *ddrawErrorString(HRESULT rc)
+{
+	char *mesg;
+	switch (rc)
+	{
+    case DD_OK:
+        mesg = "DD_OK";
+        break;
+    case DDERR_ALREADYINITIALIZED:
+        mesg = "DDERR_ALREADYINITIALIZED";
+        break;
+    case DDERR_BLTFASTCANTCLIP:
+        mesg = "DDERR_BLTFASTCANTCLIP";
+        break;
+    case DDERR_CANNOTATTACHSURFACE:
+        mesg = "DDERR_CANNOTATTACHSURFACE";
+        break;
+    case DDERR_CANNOTDETACHSURFACE:
+        mesg = "DDERR_CANNOTDETACHSURFACE";
+        break;
+    case DDERR_CANTCREATEDC:
+        mesg = "DDERR_CANTCREATEDC";
+        break;
+    case DDERR_CANTDUPLICATE:
+        mesg = "DDERR_CANTDUPLICATE";
+        break;
+    case DDERR_CANTLOCKSURFACE:
+        mesg = "DDERR_CANTLOCKSURFACE";
+        break;
+    case DDERR_CANTPAGELOCK:
+        mesg = "DDERR_CANTPAGELOCK";
+        break;
+    case DDERR_CANTPAGEUNLOCK:
+        mesg = "DDERR_CANTPAGEUNLOCK";
+        break;
+    case DDERR_CLIPPERISUSINGHWND:
+        mesg = "DDERR_CLIPPERISUSINGHWND";
+        break;
+    case DDERR_COLORKEYNOTSET:
+        mesg = "DDERR_COLORKEYNOTSET";
+        break;
+    case DDERR_CURRENTLYNOTAVAIL:
+        mesg = "DDERR_CURRENTLYNOTAVAIL";
+        break;
+    case DDERR_DCALREADYCREATED:
+        mesg = "DDERR_DCALREADYCREATED";
+        break;
+    case DDERR_DEVICEDOESNTOWNSURFACE:
+        mesg = "DDERR_DEVICEDOESNTOWNSURFACE";
+        break;
+    case DDERR_DIRECTDRAWALREADYCREATED:
+        mesg = "DDERR_DIRECTDRAWALREADYCREATED";
+        break;
+    case DDERR_EXCEPTION:
+        mesg = "DDERR_EXCEPTION";
+        break;
+    case DDERR_EXCLUSIVEMODEALREADYSET:
+        mesg = "DDERR_EXCLUSIVEMODEALREADYSET";
+        break;
+    case DDERR_EXPIRED:
+        mesg = "DDERR_EXPIRED";
+        break;
+    case DDERR_GENERIC:
+        mesg = "DDERR_GENERIC";
+        break;
+    case DDERR_HEIGHTALIGN:
+        mesg = "DDERR_HEIGHTALIGN";
+        break;
+    case DDERR_HWNDALREADYSET:
+        mesg = "DDERR_HWNDALREADYSET";
+        break;
+    case DDERR_HWNDSUBCLASSED:
+        mesg = "DDERR_HWNDSUBCLASSED";
+        break;
+    case DDERR_IMPLICITLYCREATED:
+        mesg = "DDERR_IMPLICITLYCREATED";
+        break;
+    case DDERR_INCOMPATIBLEPRIMARY:
+        mesg = "DDERR_INCOMPATIBLEPRIMARY";
+        break;
+    case DDERR_INVALIDCAPS:
+        mesg = "DDERR_INVALIDCAPS";
+        break;
+    case DDERR_INVALIDCLIPLIST:
+        mesg = "DDERR_INVALIDCLIPLIST";
+        break;
+    case DDERR_INVALIDDIRECTDRAWGUID:
+        mesg = "DDERR_INVALIDDIRECTDRAWGUID";
+        break;
+    case DDERR_INVALIDMODE:
+        mesg = "DDERR_INVALIDMODE";
+        break;
+    case DDERR_INVALIDOBJECT:
+        mesg = "DDERR_INVALIDOBJECT";
+        break;
+    case DDERR_INVALIDPARAMS:
+        mesg = "DDERR_INVALIDPARAMS";
+        break;
+    case DDERR_INVALIDPIXELFORMAT:
+        mesg = "DDERR_INVALIDPIXELFORMAT";
+        break;
+    case DDERR_INVALIDPOSITION:
+        mesg = "DDERR_INVALIDPOSITION";
+        break;
+    case DDERR_INVALIDRECT:
+        mesg = "DDERR_INVALIDRECT";
+        break;
+    case DDERR_INVALIDSTREAM:
+        mesg = "DDERR_INVALIDSTREAM";
+        break;
+    case DDERR_INVALIDSURFACETYPE:
+        mesg = "DDERR_INVALIDSURFACETYPE";
+        break;
+    case DDERR_LOCKEDSURFACES:
+        mesg = "DDERR_LOCKEDSURFACES";
+        break;
+    case DDERR_MOREDATA:
+        mesg = "DDERR_MOREDATA";
+        break;
+    case DDERR_NO3D:
+        mesg = "DDERR_NO3D";
+        break;
+    case DDERR_NOALPHAHW:
+        mesg = "DDERR_NOALPHAHW";
+        break;
+    case DDERR_NOBLTHW:
+        mesg = "DDERR_NOBLTHW";
+        break;
+    case DDERR_NOCLIPLIST:
+        mesg = "DDERR_NOCLIPLIST";
+        break;
+    case DDERR_NOCLIPPERATTACHED:
+        mesg = "DDERR_NOCLIPPERATTACHED";
+        break;
+    case DDERR_NOCOLORCONVHW:
+        mesg = "DDERR_NOCOLORCONVHW";
+        break;
+    case DDERR_NOCOLORKEY:
+        mesg = "DDERR_NOCOLORKEY";
+        break;
+    case DDERR_NOCOLORKEYHW:
+        mesg = "DDERR_NOCOLORKEYHW";
+        break;
+    case DDERR_NOCOOPERATIVELEVELSET:
+        mesg = "DDERR_NOCOOPERATIVELEVELSET";
+        break;
+    case DDERR_NODC:
+        mesg = "DDERR_NODC";
+        break;
+    case DDERR_NODDROPSHW:
+        mesg = "DDERR_NODDROPSHW";
+        break;
+    case DDERR_NODIRECTDRAWHW:
+        mesg = "DDERR_NODIRECTDRAWHW";
+        break;
+    case DDERR_NODIRECTDRAWSUPPORT:
+        mesg = "DDERR_NODIRECTDRAWSUPPORT";
+        break;
+    case DDERR_NOEMULATION:
+        mesg = "DDERR_NOEMULATION";
+        break;
+    case DDERR_NOEXCLUSIVEMODE:
+        mesg = "DDERR_NOEXCLUSIVEMODE";
+        break;
+    case DDERR_NOFLIPHW:
+        mesg = "DDERR_NOFLIPHW";
+        break;
+    case DDERR_NOFOCUSWINDOW:
+        mesg = "DDERR_NOFOCUSWINDOW";
+        break;
+    case DDERR_NOGDI:
+        mesg = "DDERR_NOGDI";
+        break;
+    case DDERR_NOHWND:
+        mesg = "DDERR_NOHWND";
+        break;
+    case DDERR_NOMIPMAPHW:
+        mesg = "DDERR_NOMIPMAPHW";
+        break;
+    case DDERR_NOMIRRORHW:
+        mesg = "DDERR_NOMIRRORHW";
+        break;
+    case DDERR_NONONLOCALVIDMEM:
+        mesg = "DDERR_NONONLOCALVIDMEM";
+        break;
+    case DDERR_NOOPTIMIZEHW:
+        mesg = "DDERR_NOOPTIMIZEHW";
+        break;
+    case DDERR_NOOVERLAYHW:
+        mesg = "DDERR_NOOVERLAYHW";
+        break;
+    case DDERR_NOPALETTEATTACHED:
+        mesg = "DDERR_NOPALETTEATTACHED";
+        break;
+    case DDERR_NOPALETTEHW:
+        mesg = "DDERR_NOPALETTEHW";
+        break;
+    case DDERR_NORASTEROPHW:
+        mesg = "DDERR_NORASTEROPHW";
+        break;
+    case DDERR_NOROTATIONHW:
+        mesg = "DDERR_NOROTATIONHW";
+        break;
+    case DDERR_NOSTEREOHARDWARE:
+        mesg = "DDERR_NOSTEREOHARDWARE";
+        break;
+    case DDERR_NOSTRETCHHW:
+        mesg = "DDERR_NOSTRETCHHW";
+        break;
+    case DDERR_NOSURFACELEFT:
+        mesg = "DDERR_NOSURFACELEFT";
+        break;
+    case DDERR_NOT4BITCOLOR:
+        mesg = "DDERR_NOT4BITCOLOR";
+        break;
+    case DDERR_NOT4BITCOLORINDEX:
+        mesg = "DDERR_NOT4BITCOLORINDEX";
+        break;
+    case DDERR_NOT8BITCOLOR:
+        mesg = "DDERR_NOT8BITCOLOR";
+        break;
+    case DDERR_NOTAOVERLAYSURFACE:
+        mesg = "DDERR_NOTAOVERLAYSURFACE";
+        break;
+    case DDERR_NOTEXTUREHW:
+        mesg = "DDERR_NOTEXTUREHW";
+        break;
+    case DDERR_NOTFLIPPABLE:
+        mesg = "DDERR_NOTFLIPPABLE";
+        break;
+    case DDERR_NOTFOUND:
+        mesg = "DDERR_NOTFOUND";
+        break;
+    case DDERR_NOTINITIALIZED:
+        mesg = "DDERR_NOTINITIALIZED";
+        break;
+	default:
+		mesg = "??";
+	}
+	return mesg;
+}
+#endif
+
+static class MonitorCommand : public TclObject {
+public:
+	MonitorCommand(const char* name) : TclObject(name) { }
+protected:
+	int command(int argc, const char*const* argv);
+} get_monitors_command("get_monitors");
+
+/*
+ * get_monitors
+ */
+int MonitorCommand::command(int argc, const char*const* argv)
+{
+	Tcl& tcl = Tcl::instance();
+	if (argc != 1) {
+		tcl.result("get_monitors arg mismatch");
+		return (TCL_ERROR);
+	}
+
+#ifdef USE_DDRAW
+
+	char * buf = new char[4096];
+	// char buf[1024];
+	DDrawVideoImage::getTclMonitorList(buf);
+	tcl.result(buf);
+	
+#else
+
+	tcl.result("");
+#endif
+
+	return (TCL_OK);
+}
+
+static class UpdateRatesCommand : public TclObject {
+public:
+	UpdateRatesCommand(const char* name) : TclObject(name) { }
+protected:
+	int command(int argc, const char*const* argv);
+} update_rates_command("update_pixrates_vars");
+
+/*
+ * get_monitors
+ */
+int UpdateRatesCommand::command(int argc, const char*const* argv)
+{
+	Tcl& tcl = Tcl::instance();
+	if (argc != 1) {
+		tcl.result("update_pixrates arg mismatch");
+		return (TCL_ERROR);
+	}
+
+	debug_msg("Here in update rates...\n");
+#ifdef USE_DDRAW
+    DDrawVideoImage::MonitorList::iterator it;
+
+    for (it = DDrawVideoImage::monitors_.begin(); it != DDrawVideoImage::monitors_.end(); it++)
+    {
+	DDrawMonitor *im = *it;
+
+	im->updateRate();
+    }
+
+    debug_msg("total %d\n", totalPixelsDrawn);
+    tcl.evalf("set pixrate(total) %f", totalPixelsDrawn / 1000.0);
+
+
+#else
+
+#endif
+
+	return (TCL_OK);
 }

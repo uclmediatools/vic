@@ -115,9 +115,21 @@ int HiColorModel::alloc_colors()
 	u_int gmask = visual_->green_mask;
 	u_int bmask = visual_->blue_mask;
 #else /* WIN32: tcl/tk uses a different bit mask in images and visuals */
+#ifndef USE_DDRAW
 	u_int rmask   = 0x7c00;
 	u_int gmask   = 0x03e0;
 	u_int bmask   = 0x001f; 
+#else
+	u_int rmask   = 0xf800;
+	u_int gmask   = 0x07e0;
+	u_int bmask   = 0x001f; 
+//#else
+//	u_int rmask = visual_->red_mask;
+//	u_int gmask = visual_->green_mask;
+//	u_int bmask = visual_->blue_mask;
+
+
+#endif
 #endif /* WIN32 */
 	/* XXX
 	 * we would expect the masks we get back from the server to
