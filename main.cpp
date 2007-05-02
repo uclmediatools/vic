@@ -113,6 +113,14 @@ extern "C" int gethostname(char* name, int len);
 #include "global.h"
 #include "md5.h"
 
+#ifdef USE_PROFILING
+#include "profiler.h"
+#endif
+
+#ifdef USE_DDRAW
+#include "vw.h"
+#endif
+
 #if defined(sun) && defined(__svr4__)
 #include <sys/utsname.h>
 #define gethostname(name, len) { \
@@ -309,6 +317,12 @@ checkXShm(Tk_Window tk, const char*)
 	Tk_DeleteErrorHandler(handler);
 	(void)shmctl(si.shmid, IPC_RMID, 0);
 }
+#endif
+
+#ifdef USE_DDRAW
+int use_ddraw = 1;
+#else
+int use_ddraw = 0;
 #endif
 
 extern "C" char *optarg;
@@ -565,7 +579,11 @@ int main(int argc, const char** argv)
 #endif
 	EmbeddedTcl::init();
 	tcl.evalc("init_resources");
-	
+#ifdef USE_PROFILING
+	initCounters();
+	startCounter(0);
+#endif
+
 	optind=1;
 	while ((op = getopt(argc, (char**)argv, (char*)options)) != -1) {
 		switch (op) {
@@ -758,6 +776,25 @@ int main(int argc, const char** argv)
 	}
 #endif
 	tcl.evalc("vic_main");
+
+#ifdef USE_DDRAW
+	const char *useDDraw = tcl.attr("use_ddraw");
+	if (useDDraw != NULL)
+	{
+	    if (strcmp(useDDraw, "true") == 0)
+		use_ddraw = 1;
+	    else
+		use_ddraw = 0;
+	}
+	if (use_ddraw)
+	    DDrawVideoImage::initDirectDraw();
+#endif
+
+	/*
+	 * Initialize the stuff that may be dependent on DDraw stuff
+	 * after we initialize direct draw.
+	 */
+	tcl.evalc("init_ag");
 
 	/*
 	 * re-nice the vic process before we start processing video
