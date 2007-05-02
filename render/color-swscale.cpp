@@ -12,7 +12,7 @@
 
 int available_cpu_flags = cpu_check();
 
-#ifdef HAVE_SWSCALE 
+#ifdef HAVE_SWSCALE
 
 class X11WindowRenderer : public WindowDitherer {
 public:
@@ -84,6 +84,7 @@ public:
 
 	      if(!outw_ || !outh_ || !width_ || !height_) return;
 
+		  // Accelerated Colour conversion routines
 	      sws_context = sws_getContext(width_, height_, PIX_FMT_YUV420P,
 	             outw_, outh_, out_format, flags, NULL, NULL, NULL); 	   
 	      // printf("X11WindowRenderer: %dx%d ==> %dx%d\n", width_, height_, outw_, outh_);
