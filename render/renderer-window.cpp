@@ -128,6 +128,8 @@ void WindowRenderer::push(const u_char*, int miny, int maxy, int minx, int maxx)
         }            
 	
 #ifdef HAVE_SWSCALE
+		// swscaler render called - alothough args are zero it uses the global variables
+		// Should probably alter this so that global variables are passed in the args for clarity
 	window_->render(image_, 0, 0 , 0, 0);
 #else
 	if (scale_ >= 0) {
