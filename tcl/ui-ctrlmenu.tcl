@@ -861,10 +861,20 @@ proc build.encoderLayer_scale w {
 }
 
 proc build.format w {
+	set encoder [new module h264]
+	if { $encoder == "" }  {
+	  set gpl 1
+        } else {
+	  delete $encoder
+	  set gpl 0
+        }
+
 	format_col $w.p0 nv nvdct 
 	format_col $w.p1 h261 h263
-	format_col $w.p2 h263+ h264
-	format_col $w.p3 mpeg4 h261as
+	format_col $w.p2 h263+ h261as
+	if { $gpl == 0 } {
+	  format_col $w.p3 mpeg4 h264
+        }
 	format_col $w.p4 raw cellb
 	format_col $w.p5 bvc pvh:
 	format_col $w.p6 jpeg null
@@ -872,7 +882,11 @@ proc build.format w {
 	
 	frame $w.glue0
 	frame $w.glue1
-	pack $w.p0 $w.p1 $w.p2 $w.p3 $w.p4 $w.p5 $w.p6 -side left
+	if { $gpl == 0 } {
+	    pack $w.p0 $w.p1 $w.p2 $w.p3 $w.p4 $w.p5 $w.p6 -side left
+	} else {
+	    pack $w.p0 $w.p1 $w.p2  $w.p4 $w.p5 $w.p6 -side left
+	}
 
 }
 

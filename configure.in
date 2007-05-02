@@ -64,20 +64,37 @@ if test "$qcamdir" != "" -a ! -r $qcamdir/qcam.h ; then
 	exit 1
 fi
 
+AC_ARG_ENABLE(gpl,	--enable-gpl	Enable or disable  use of gpl functionality - H264\, MPEG4\,Swscale, gpl="yes", gpl="no")
+if test "$gpl" = "yes" ; then
+  V_DEFINE="$V_DEFINE -DHAVE_SWSCALE"
+  V_OBJ="$V_OBJ codec/packetbuffer.o codec/databuffer.o \
+    codec/ffmpeg_codec.o codec/encoder-mpeg4.o codec/decoder-mpeg4.o \
+    codec/x264encoder.o codec/encoder-h264.o codec/decoder-h264.o \
+    codec/rtp_h264_depayloader.o render/color-swscale.o video/deinterlace.o"
+else
+  V_OBJ="$V_OBJ render/color-true.o  render/color-hi.o"
+fi
+
 AC_ARG_ENABLE(ffmpeg-co,	--disable-ffmpeg-co	Enable or disable ffmpeg svn checkout, ffmpegco="no", ffmpegco="yes")
 if test "$ffmpegco" = "yes" ; then
+  if test "$gpl" = "yes" ; then
    if test ! -r "ffmpeg" ; then
-     echo "checking out r7110 of ffmpeg from  svn://svn.mplayerhq.hu/ffmpeg/trunk..."
+     echo "checking out r7110 (and 21687 of libswscale) of ffmpeg from  svn://svn.mplayerhq.hu/ffmpeg/trunk..."
      svn checkout -r 7110 svn://svn.mplayerhq.hu/ffmpeg/trunk ffmpeg
+     svn checkout -r 21687 svn://svn.mplayerhq.hu/mplayer/trunk/libswscale  ffmpeg/libswscale
      echo "Configuring ffmpeg..."
      cd ffmpeg; ./configure --prefix=$V_PATH/ffmpeg --enable-gpl --enable-swscaler --enable-pp; cd ..
    fi
    V_INCLUDE="$V_INCLUDE -Iffmpeg/libavformat -Iffmpeg/include/ffmpeg -Iffmpeg/include"
    V_CODEC_LIB="$V_CODEC_LIB ffmpeg/lib/libavcodec.a ffmpeg/lib/libavutil.a ffmpeg/lib/libswscale.a ffmpeg/lib/libpostproc.a"
+  else 
+    echo "ffmpeg not available without --enable-gpl"
+  fi
 fi
 
 AC_ARG_ENABLE(x264-co,        --disable-x264-co      Enable or disable x264 svn checkout, x264co="no", x264co="yes")
 if test "$x264co" = "yes" ; then
+  if test "$gpl" = "yes" ; then
    if test ! -r "x264" ; then
      echo "checking out r650 of x264 from  svn co svn://svn.videolan.org/x264/trunk..."
      svn checkout -r 650 svn://svn.videolan.org/x264/trunk x264
@@ -86,12 +103,16 @@ if test "$x264co" = "yes" ; then
    fi
    V_INCLUDE="$V_INCLUDE -Ix264/include"
    V_CODEC_LIB="$V_CODEC_LIB x264/lib/libx264.a"
+  else 
+    echo "x264 not available without --enable-gpl"
+  fi
 fi
 
 AC_ARG_WITH(ffmpeginc,       --with-ffmpeginc=dir     specify the prefix directory of ffmpeg header, ffmpeginc=$withval, ffmpeginc="")
 AC_ARG_WITH(ffmpeglib,       --with-ffmpeglib=dir     specify the directory of ffmpeg library, ffmpeglib=$withval, ffmpeglib="")
 
-if test "$ffmpegco" != "yes"; then
+if test "$gpl" = "yes" ; then
+  if test "$ffmpegco" != "yes"; then
 
 	if test "$ffmpeginc" != "" ; then
 	   if test ! -r $ffmpeginc/ffmpeg/avcodec.h ; then
@@ -156,11 +177,13 @@ if test "$ffmpegco" != "yes"; then
 
 	   V_LIB_FFMPEG="-lavcodec -lavutil -lswscale -lpostproc"
 	fi
-fi 
+  fi 
+fi
 
 AC_ARG_WITH(x264inc,       --with-x264inc=dir     specify the directory of x264 header, x264inc=$withval, x264inc="")
 AC_ARG_WITH(x264lib,       --with-x264lib=dir     specify the directory of x264 library, x264lib=$withval, x264lib="")
-if test "$x264co" != "yes" ; then
+if test "$gpl" = "yes" ; then
+  if test "$x264co" != "yes" ; then
 	if test "$x264inc" != "" ; then
 	   if test ! -r $x264inc/x264.h ; then
 	        echo "Error! you need to have $x264inc/x264.h around."
@@ -187,13 +210,17 @@ if test "$x264co" != "yes" ; then
 	   ])
 	   V_LIB_X264="-lx264"
 	fi
+ fi
 fi
 
 V_CPUDETECT=""
 AC_ARG_ENABLE(cpudetect, --disable-cpudetect     Enable or disable runtime cpu detection, cpudetect="no", cpudetect="yes")
-if test "$cpudetect" = "yes"; then
+if test "$gpl" = "yes" ; then
+ if test "$cpudetect" = "yes"; then
     echo "using CPU runtime detection..."
     V_CPUDETECT="-DRUNTIME_CPUDETECT"
+    V_CPUDETECT_OBJ="cpu/cpudetect.o cpu/cpuid.o"
+ fi
 fi
 
 V_H261AS=""
@@ -223,7 +250,7 @@ fi
 
 dnl xvideo rendering support
 V_XV=""
-AC_ARG_ENABLE(xvideo, --enable-xvideo		Enable or disable Xvideo rendering, xvideo=no, xvideo=yes)
+AC_ARG_ENABLE(xvideo, --enable-xvideo		Enable or disable Xvideo rendering, xvideo=yes, xvideo=no)
 if test "$xvideo" = "yes"; then
 
    dnl Look for the PIC library first, Debian requires it.

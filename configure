@@ -1297,6 +1297,7 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
 --enable-debug		build with debugging enabled
 --enable-ipv6		build with ipv6 enabled
+--enable-gpl	Enable or disable  use of gpl functionality - H264\
 --disable-ffmpeg-co	Enable or disable ffmpeg svn checkout
 --disable-x264-co      Enable or disable x264 svn checkout
 --disable-cpudetect     Enable or disable runtime cpu detection
@@ -5157,6 +5158,23 @@ if test "$qcamdir" != "" -a ! -r $qcamdir/qcam.h ; then
 	exit 1
 fi
 
+# Check whether --enable-gpl was given.
+if test "${enable_gpl+set}" = set; then
+  enableval=$enable_gpl; MPEG4\
+else
+  Swscale
+fi
+
+if test "$gpl" = "yes" ; then
+  V_DEFINE="$V_DEFINE -DHAVE_SWSCALE"
+  V_OBJ="$V_OBJ codec/packetbuffer.o codec/databuffer.o \
+    codec/ffmpeg_codec.o codec/encoder-mpeg4.o codec/decoder-mpeg4.o \
+    codec/x264encoder.o codec/encoder-h264.o codec/decoder-h264.o \
+    codec/rtp_h264_depayloader.o render/color-swscale.o video/deinterlace.o"
+else
+  V_OBJ="$V_OBJ render/color-true.o  render/color-hi.o"
+fi
+
 # Check whether --enable-ffmpeg-co was given.
 if test "${enable_ffmpeg_co+set}" = set; then
   enableval=$enable_ffmpeg_co; ffmpegco="no"
@@ -5165,14 +5183,19 @@ else
 fi
 
 if test "$ffmpegco" = "yes" ; then
+  if test "$gpl" = "yes" ; then
    if test ! -r "ffmpeg" ; then
-     echo "checking out r7110 of ffmpeg from  svn://svn.mplayerhq.hu/ffmpeg/trunk..."
+     echo "checking out r7110 (and 21687 of libswscale) of ffmpeg from  svn://svn.mplayerhq.hu/ffmpeg/trunk..."
      svn checkout -r 7110 svn://svn.mplayerhq.hu/ffmpeg/trunk ffmpeg
+     svn checkout -r 21687 svn://svn.mplayerhq.hu/mplayer/trunk/libswscale  ffmpeg/libswscale
      echo "Configuring ffmpeg..."
      cd ffmpeg; ./configure --prefix=$V_PATH/ffmpeg --enable-gpl --enable-swscaler --enable-pp; cd ..
    fi
    V_INCLUDE="$V_INCLUDE -Iffmpeg/libavformat -Iffmpeg/include/ffmpeg -Iffmpeg/include"
    V_CODEC_LIB="$V_CODEC_LIB ffmpeg/lib/libavcodec.a ffmpeg/lib/libavutil.a ffmpeg/lib/libswscale.a ffmpeg/lib/libpostproc.a"
+  else
+    echo "ffmpeg not available without --enable-gpl"
+  fi
 fi
 
 # Check whether --enable-x264-co was given.
@@ -5183,6 +5206,7 @@ else
 fi
 
 if test "$x264co" = "yes" ; then
+  if test "$gpl" = "yes" ; then
    if test ! -r "x264" ; then
      echo "checking out r650 of x264 from  svn co svn://svn.videolan.org/x264/trunk..."
      svn checkout -r 650 svn://svn.videolan.org/x264/trunk x264
@@ -5191,6 +5215,9 @@ if test "$x264co" = "yes" ; then
    fi
    V_INCLUDE="$V_INCLUDE -Ix264/include"
    V_CODEC_LIB="$V_CODEC_LIB x264/lib/libx264.a"
+  else
+    echo "x264 not available without --enable-gpl"
+  fi
 fi
 
 
@@ -5210,7 +5237,8 @@ else
 fi
 
 
-if test "$ffmpegco" != "yes"; then
+if test "$gpl" = "yes" ; then
+  if test "$ffmpegco" != "yes"; then
 
 	if test "$ffmpeginc" != "" ; then
 	   if test ! -r $ffmpeginc/ffmpeg/avcodec.h ; then
@@ -5932,6 +5960,7 @@ fi
 
 	   V_LIB_FFMPEG="-lavcodec -lavutil -lswscale -lpostproc"
 	fi
+  fi
 fi
 
 
@@ -5950,7 +5979,8 @@ else
   x264lib=""
 fi
 
-if test "$x264co" != "yes" ; then
+if test "$gpl" = "yes" ; then
+  if test "$x264co" != "yes" ; then
 	if test "$x264inc" != "" ; then
 	   if test ! -r $x264inc/x264.h ; then
 	        echo "Error! you need to have $x264inc/x264.h around."
@@ -6043,6 +6073,7 @@ fi
 
 	   V_LIB_X264="-lx264"
 	fi
+ fi
 fi
 
 V_CPUDETECT=""
@@ -6053,9 +6084,12 @@ else
   cpudetect="yes"
 fi
 
-if test "$cpudetect" = "yes"; then
+if test "$gpl" = "yes" ; then
+ if test "$cpudetect" = "yes"; then
     echo "using CPU runtime detection..."
     V_CPUDETECT="-DRUNTIME_CPUDETECT"
+    V_CPUDETECT_OBJ="cpu/cpudetect.o cpu/cpuid.o"
+ fi
 fi
 
 V_H261AS=""
@@ -6303,9 +6337,9 @@ fi
 V_XV=""
 # Check whether --enable-xvideo was given.
 if test "${enable_xvideo+set}" = set; then
-  enableval=$enable_xvideo; xvideo=no
+  enableval=$enable_xvideo; xvideo=yes
 else
-  xvideo=yes
+  xvideo=no
 fi
 
 if test "$xvideo" = "yes"; then

@@ -33,7 +33,7 @@
 #define USE_FASTMEMCPY 1
 
 /* Use libswscale */
-#define HAVE_SWSCALE
+//#define HAVE_SWSCALE
 
 /* attribute(used) as needed by some compilers */
 #if (__GNUC__ * 100 + __GNUC_MINOR__ >= 300)

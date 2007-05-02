@@ -91,7 +91,7 @@ OBJ_CRYPT = @V_OBJ_CRYPT@
 CODEC_LIB = @V_CODEC_LIB@ codec/tmndec/libh263.a codec/tmn-x/libh263coder.a
 
 LIB = $(LIB_GRABBER) @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ $(CODEC_LIB) $(VIDEO_LIB) \
-	../common/src/libuclmmbase.a -lm -lz -lcrypto -lpthread @V_LIB_FFMPEG@ @V_LIB_X264@ 
+	../common/src/libuclmmbase.a -lm -lz -lpthread @V_LIB_FFMPEG@ @V_LIB_X264@ 
 
 
 INCLUDE = $(INCLUDE_MISC) $(INCLUDE_GRABBER) $(INCLUDE_TK) $(INCLUDE_TCL) \
@@ -107,7 +107,7 @@ TCL_VIC = ui-ctrlmenu.tcl ui-main.tcl ui-resource.tcl ui-relate.tcl  ui-titlemak
 	ui-srclist.tcl ui-stats.tcl ui-util.tcl ui-windows.tcl \
 	ui-switcher.tcl ui-extout.tcl ui-grabber.tcl ui-unix.tcl \
 	cf-main.tcl cf-tm.tcl cf-confbus.tcl cf-network.tcl cf-util.tcl \
-	tkerror.tcl entry.tcl
+	tkerror.tcl entry.tcl accessgrid.tcl ag-pixrate.tcl autoplace_ui.tcl
 
 #
 # These modules are broken in libg++.  Rather than fix libg++
@@ -126,7 +126,7 @@ H263_OBJS = codec/h263/h263rtp.o codec/h263/h263dec.o codec/h263/bitIn.o \
 
 # .c objects
 OBJ1 =	net/inet.o net/inet6.o codec/cellb_tables.o tkStripchart.o \
-	md5c.o random.o cpu/cpudetect.o cpu/cpuid.o $(H263_OBJS)
+	md5c.o random.o @V_CPUDETECT_OBJ@ $(H263_OBJS)
 
 #	session-rtpv1.o session-nv.o session-ivs.o # Not supported anymore
 # .cpp objects
@@ -137,21 +137,15 @@ OBJ2 =	main.o iohandler.o timer.o idlecallback.o media-timer.o \
 	net/mbus_handler.o net/mbus_engine.o net/group-ipc.o net/confbus.o \
 	rtp/session.o rtp/source.o rtp/transmitter.o rtp/pktbuf-rtp.o \
 	video/device.o video/grabber.o video/grabber-still.o \
-	video/deinterlace.o \
 	codec/encoder-h261.o codec/encoder-jpeg.o codec/encoder-raw.o \
 	codec/encoder-h263.o codec/encoder-h263v2.o codec/encoder-nv.o \
 	codec/encoder-cellb.o codec/encoder-pvh.o codec/compositor.o \
 	codec/jpeg/jpeg.o codec/p64/p64.o codec/dct.o codec/transcoder-jpeg.o \
 	codec/framer-jpeg.o codec/decoder-pvh.o video/assistor-list.o \
 	codec/decoder.o codec/decoder-jpeg.o codec/decoder-nv.o \
-	codec/packetbuffer.o codec/databuffer.o \
-	codec/ffmpeg_codec.o codec/encoder-mpeg4.o codec/decoder-mpeg4.o \
-	codec/x264encoder.o codec/encoder-h264.o codec/decoder-h264.o \
-	codec/rtp_h264_depayloader.o \
 	codec/decoder-h263.o codec/decoder-h263v2.o codec/decoder-cellb.o \
 	codec/decoder-h261.o codec/decoder-h261v1.o codec/decoder-raw.o \
 	render/renderer.o render/renderer-window.o render/color.o \
-	render/color-swscale.o\
 	render/color-pseudo.o render/color-dither.o \
 	render/color-ed.o render/color-quant.o \
 	render/color-gray.o render/color-mono.o render/color-hist.o \
@@ -279,6 +273,9 @@ $(TCL_VIC_OBJS): tcl2c++
 		./tcl2c++ 2 tcl/$$base.tcl > tcl/$$base.cpp ; \
 		$(C++) -o $@ -c $(CFLAGS) tcl/$$base.cpp ; rm -f tcl/$$base.cpp
 
+accessgrid.o: tcl/accessgrid.tcl
+ag-pixrate.o: tcl/ag-pixrate.tcl 
+autoplace_ui.o: tcl/autoplace_ui.tcl 
 ui-ctrlmenu.o: tcl/ui-ctrlmenu.tcl
 ui-extout.o: tcl/ui-extout.tcl
 ui-grabber.o: tcl/ui-grabber.tcl
