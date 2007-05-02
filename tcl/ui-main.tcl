@@ -61,8 +61,7 @@ proc build.bar w {
     if {[string equal [tk windowingsystem] "aqua"]} {
         global V
         set net $V(data-net)
-        label $w.bar.title -text "TTL: [$net ttl]" -font [smallfont] \
-                -justify left
+	label $w.bar.title -text "Address: [$net addr]  Port: [$net port]  TTL: [$net ttl]" -font [smallfont] -justify left
         button $w.bar.quit -text Quit \
                 -font [smallfont] \
                 -command adios
@@ -72,11 +71,13 @@ proc build.bar w {
         button $w.bar.help -text Help \
                 -font [smallfont] \
                 -command "toggle_window .help"
+    	button $w.bar.autoplace -text Autoplace \
+				-font [smallfont] \
+				-command "ag_autoplace::show_ui"
     } else {
         global V
         set net $V(data-net)
-        label $w.bar.title -text "TTL: [$net ttl]" -font [smallfont] \
-                -relief flat -justify left
+        label $w.bar.title -text "Address: [$net addr]  Port: [$net port]  TTL: [$net ttl]" -font [smallfont] -relief flat -justify left
         button $w.bar.quit -text Quit -relief raised \
                 -font [smallfont] -command adios \
                 -highlightthickness 1
@@ -86,9 +87,27 @@ proc build.bar w {
         button $w.bar.help -text Help -relief raised \
                 -font [smallfont] -highlightthickness 1 \
                 -command "toggle_window .help"
+	    button $w.bar.autoplace -text Autoplace -relief raised  \
+				-font [smallfont] -highlightthickness 1 \
+				-command "ag_autoplace::show_ui"
     }                                
     pack $w.bar.title -side left -fill both -expand 1
-    pack $w.bar.menu $w.bar.help $w.bar.quit -side left -padx 1 -pady 1 
+    pack $w.bar.menu $w.bar.autoplace $w.bar.help $w.bar.quit -side left -padx 1 -pady 1 
+}
+
+proc build.bar2 w {
+
+	frame $w.bar2 -relief ridge -borderwidth 0
+
+        button $w.bar2.autoplace -text Autoplace -relief raised  \
+		-font [smallfont] -highlightthickness 1 \
+		-command "ag_autoplace::show_ui"
+       button $w.bar2.pixrate -text Pixrate -relief raised \
+		-font [smallfont] -highlightthickness 1 \
+		-command "create_pixrate_stats_window"
+
+
+	pack $w.bar2.autoplace $w.bar2.pixrate -side right -padx 1 -pady 1
 }
 
 #
@@ -207,7 +226,7 @@ proc init_gui {} {
 		}
 		puts stderr \
 		    "vic: warning: ran out of colors; using private colormap"
-		destroy .top
+                destroy .top
 		frame .top -visual $V(visual) -colormap new
 		if ![init_color] {
 			puts stderr "vic: internal error: no colors"
@@ -228,16 +247,22 @@ proc init_gui {} {
 	bind . <Control-c> { adios }
 	bind . <Control-d> { adios }
 
-	foreach i { 1 2 3 4 } {
+	foreach i { 1 2 3 4 5 6 7 8} {
 		bind . <Key-$i> "redecorate $i"
 	}
 
-	build.bar .top
-	pack .top.bar -fill x -side bottom
+        frame .top.barholder -relief ridge -borderwidth 2
+
+        build.bar .top.barholder
+#       build.bar2 .top.barholder
+
+        pack .top.barholder.bar -fill x -side bottom
+#       pack .top.barholder.bar2 -fill x -side bottom
+        pack .top.barholder -side bottom -fill x
 	pack .top -expand 1 -fill both
 
         label .top.label -text "Waiting for video..."
-	pack .top.label -before .top.bar -anchor c -expand 1
+	pack .top.label -before .top.barholder -anchor c -expand 1
 
 	#
 	# Withdraw window so that user-placement is deferred
@@ -282,11 +307,13 @@ proc add_active src {
 		frame $w
 		pack $w -fill both -anchor n
 	}
+	invoke_source_callback activate $src
 }
 
 proc rm_active src {
 	global active V
 	unset active($src)
+        invoke_source_callback deactivate $src
 	if { ![yesno relateInterface] && [array size active] == 0 } {
 		pack forget $V(grid)
 		destroy $V(grid)
@@ -371,6 +398,8 @@ proc update_source_info src {
 		} else {
 			set src_nickname($src) $cname
 			set info "$addr/$fmt"
+
+	invoke_source_callback sdes_update $src
 		}
 	} elseif [cname_redundant $name $cname] {
 		set src_nickname($src) $name
@@ -963,7 +992,7 @@ proc update_rate src {
 }
 
 proc update_src src {
-	global ftext updated
+
 	if ![info exists ftext($src)] {
 		return
 	}
@@ -984,7 +1013,8 @@ If you see the message ``Waiting for video...'', then no one is transmitting \
 video to the conference address you're running on.  Otherwise, you'll \
 see a thumbnail sized image and accompanying information for each source. \
 Click on the thumbnail to open a larger viewing window.  You can tile the \
-thumbnails in multiple columns using the ``Tile'' menu in the ``Menu'' window."
+thumbnails in multiple columns using the ``Tile'' menu in the ``Menu'' window, \
+or by pressing a number key (e.g., press 3 to view three columns)."
 "Clicking on the ``mute'' button for a given source will \
 turn off decoding.  It is usually a good idea to do \
 this for your own, looped-back transmission."
@@ -1006,7 +1036,7 @@ speakers.  See the man page for more details."
 have X resources that conflict with tk.  A common problem is \
 defining ``*background'' and/or ``*foreground''."
 
-"Bugs and suggestions to vic@ee.lbl.gov.  Thanks."
+"Bugs and suggestions to vic@cs.ucl.ac.uk  Thanks."
 	}
 }
 

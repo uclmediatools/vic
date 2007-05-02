@@ -89,10 +89,13 @@ proc init_fonts {} {
 
 	if {$tcl_platform(platform) == "windows"} {
 		set helv10  [search_font $foundry helvetica medium 12]
+		set helv4b [search_font $foundry helvetica bold 10]
 		set helv10b [search_font $foundry helvetica bold 12]
 		set helv12b [search_font $foundry helvetica bold 12]
 		set times14 [search_font $foundry times medium 14]
 	} else {
+	    #ag_puts "in lnonwindows section"
+		set helv4b [search_font $foundry helvetica bold 10]
 		set helv10  [search_font $foundry helvetica medium 10]
 		set helv10b [search_font $foundry helvetica bold 10]
 		set helv12b [search_font $foundry helvetica bold 12]
@@ -102,9 +105,11 @@ proc init_fonts {} {
 	option add *Font $helv12b startupFile
 	option add Vic.medfont $helv12b startupFile
 	option add Vic.smallfont $helv10b startupFile
+	option add Vic.minifont $helv4b startupFile
 	option add Vic.helpfont $times14 startupFile
 	option add Vic.entryfont $helv10 startupFile
-}
+
+    }
 
 proc init_resources {} {
 
@@ -113,8 +118,10 @@ proc init_resources {} {
 	# use 2 pixels of padding by default, except with MacOSX Aqua
 	#
 	if {![string equal [tk windowingsystem] "aqua"]} {
-	    option add *padX 2
-	    option add *padY 2
+	    option add *video*padX 0
+	    option add *video*padY 0
+	    option add *padX 1
+	    option add *padY 1
 	}
 	#
 	# don't put tearoffs in pull-down menus
@@ -139,18 +146,18 @@ proc init_resources {} {
 	#
 	# These can be overridden.
 	#
-	option add Vic.geometry 300x225 startupFile
+	option add Vic.geometry 400x300 startupFile
 	option add Vic.mtu 1024 startupFile
 	option add Vic.network ip startupFile
-	option add Vic.framerate 15 startupFile
+	option add Vic.framerate 8 startupFile
 	option add Vic.defaultTTL 16 startupFile
 	option add Vic.maxbw -1 startupFile
-	option add Vic.bandwidth 512 startupFile
+	option add Vic.bandwidth 128 startupFile
 	option add Vic.iconPrefix vic: startupFile
 	option add Vic.priority 10 startupFile
 	option add Vic.confBusChannel 0 startupFile
 
-	option add Vic.defaultFormat mpeg4 startupFile
+	option add Vic.defaultFormat h.261 startupFile
 	option add Vic.sessionType rtpv2 startupFile
 	option add Vic.grabber none startupFile
 	option add Vic.stampInterval 1000 startupFile
@@ -168,12 +175,12 @@ proc init_resources {} {
 	option add Vic.quality "0" startupFile
 	option add Vic.inputType "ntsc" startupFile
 
-	option add Vic.brightness "0" startupFile
-	option add Vic.contrast "0" startupFile
+	option add Vic.brightness "128" startupFile
+	option add Vic.contrast "128" startupFile
 	option add Vic.chromau "0" startupFile
 	option add Vic.chromav "0" startupFile
-	option add Vic.saturation "0" startupFile
-	option add Vic.hue "0" startupFile
+	option add Vic.saturation "230" startupFile
+	option add Vic.hue "128" startupFile
 
 	option add Vic.chroma_saturation "0" startupFile
 	option add Vic.chroma_gain "0" startupFile
@@ -246,5 +253,5 @@ proc init_resources {} {
 	# list of sdes items to display in info window
 	option add Vic.sdesList "cname tool email note"
 
-	option readfile ~/.RTPdefaults startupFile
+	catch "option readfile ~/.RTPdefaults startupFile"
 }

@@ -24,14 +24,18 @@
 # ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
 # FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
 
+proc build.dc10 w {
+    build.v4l $w
+}
+
 proc build.v4l w {
     set f [smallfont]
     global contrast brightness hue saturation norm 
-    set contrast 128
-    set brightness 128
-    set hue 128
-    set saturation 128
-    set norm 0 
+    set contrast [resource contrast]
+    set brightness [resource brightness]
+    set hue [resource hue]
+    set saturation [resource saturation]
+    set norm 0
 
     label $w.title -text "Video4Linux grabber controls"
     pack $w.title  -fill x -expand 1

@@ -121,7 +121,7 @@ proc create_stats_panel { w stats } {
 	#
 	# Special-case playout estimator since it's not a counter
 	#
-	if { $src != "session" } {
+	if { $src != "session" && $src != "pixrate" } {
 		set r $p.playout
 		frame $r
 		set cmd "create_plot_window $src Playout \{get-playout $src\}"

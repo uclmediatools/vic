@@ -97,6 +97,7 @@ proc register src {
 		incr srclist_bottom 2
 		$srclist config -scrollregion "0 0 2.5i $srclist_bottom"
 	}
+	invoke_source_callback register $src
 }
 
 proc adjustNames { thresh h } {
@@ -118,6 +119,7 @@ proc adjustNames { thresh h } {
 #
 proc unregister src {
 	global name_line info_line nametag srclist
+	invoke_source_callback unregister $src
 
 	destroy_rtp_stats $src
 

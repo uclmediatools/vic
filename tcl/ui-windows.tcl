@@ -37,6 +37,9 @@
 # destroy a viewing window but remember where it was
 # and what size it was
 #
+set server_socket ""
+set button_active 0
+
 proc destroy_userwin {w {bypass false} } {
 
 	global win_src
@@ -187,7 +190,6 @@ proc open_window src {
 	set w .vw$uid
 	toplevel $w -class Vic \
 		-visual "[winfo visual .top] [winfo depth .top]" 
-#		-colormap .top
 	catch "wm resizable $w false false"
 	#
 	# make windows become x-y resizeable
@@ -325,14 +327,26 @@ proc open_window src {
 
 	label $w.bar.label -text "" -anchor w -relief raised
 	pack $w.bar.label -expand 1 -side left -fill both
-	pack $w.bar.decoder $w.bar.size $w.bar.mode $w.bar.dismiss -side left -fill y
+# comment next line to remove buttons
+#	pack $w.bar.decoder $w.bar.size $w.bar.mode $w.bar.dismiss -side left -fill y
 
 	pack $w.frame.video -anchor c
 	pack $w.frame -expand 1 -fill both
-	pack $w.bar -fill x
+# comment next line to remove buttons
+#	pack $w.bar -fill x
 
 	bind $w <Enter> { focus %W }
 	#wm focusmodel $w active
+
+	bind $w <s> "resize $v 176 144"
+	bind $w <m> "resize $v 352 288"
+	bind $w <l> "resize $v 704 576"
+	bind $w <S> "resize $v 160 120"
+	bind $w <M> "resize $v 320 240"
+	bind $w <L> "resize $v 640 480"
+	bind $w <e> "resize $v 1000 750"
+	bind $w <E> "resize $v 1024 768"
+	bind $w <x> "resize $v 640 240"
 
 	bind $w <d> "destroy_userwin $v"
 	bind $w <q> "destroy_userwin $v"
@@ -340,12 +354,92 @@ proc open_window src {
 
 	# added to catch window close action
 	wm protocol $w WM_DELETE_WINDOW "destroy_userwin $v"
+	$w.bar.dismiss configure -command "destroy_userwin $v"
 
 	bind $w <Return> "switcher_next $v"
 	bind $w <space> "switcher_next $v"
 	bind $w <greater> "switcher_next $v"
 	bind $w <less> "switcher_prev $v"
 	bind $w <comma> "switcher_prev $v"
+
+	bind $w <g> "set_window_glue $v 1"
+	bind $w <G> "set_window_glue $v 0"
+	bind $w <h> "set_hardware_render $v 1"
+	bind $w <H> "set_hardware_render $v 0"
+
+	switcher_register $v $src window_switch
+
+	global window_glue
+	set window_glue($v) 0
+	global button_active vtk_client
+
+	bind $v <Button-3> {
+	    tk_popup $m %x %y
+	}
+
+#	puts "w is $v"
+
+	bind $v <Control-KeyPress> {
+#	    puts "got ctl keypress %K %x %y"
+	    if { [string length %K] == 1 } {
+	  binary scan %K c keyval
+	  send_to_vtk K 0 $keyval %x %y %W
+	  break
+	    }
+	}
+	bind $v <Button> {
+	    global notifier_id ag_last_x ag_last_y
+
+	    send_to_vtk D 0 %b %x %y %W
+
+	    set button_active %b
+	    set modifier 0
+
+	    set ag_last_x %x
+	    set ag_last_y %y
+
+	    set notifier_id [after 100 ag_update_motion]
+	}
+	bind $v <Control-Button> {
+	    global notifier_id
+	    send_to_vtk D 0 [expr %b | 8] %x %y %W
+
+	    set button_active %b
+	    set notifier_id [after 100 ag_update_motion]
+	}
+	bind $v <Shift-Button> {
+	    global notifier_id
+	    send_to_vtk D 0 [expr %b | 16] %x %y %W
+
+	    set button_active %b
+	    set notifier_id [after 100 ag_update_motion]
+	}
+	bind $v <Shift-Control-Button> {
+	    global notifier_id
+	    send_to_vtk D 0 [expr %b | 8 | 16] %x %y %W
+
+	    set button_active %b
+	    set notifier_id [after 100 ag_update_motion]
+	}
+
+	bind $v <ButtonRelease> {
+	    if $button_active {
+	  global notifier_id
+	  set button_active 0
+	  after cancel $notifier_id
+	  send_to_vtk U 0 %b %x %y %W
+	    }
+	}
+	bind $v <Motion> {
+	    if $button_active {
+	  global ag_motion_x ag_motion_y ag_motion_W
+#		send_to_vtk M 0 $button_active %x %y %W
+	  set ag_motion_x %x
+	  set ag_motion_y %y
+	  set ag_motion_W %W
+	    }
+	}
+
 	# double clicking to toggle fullscreen mode
 	bind $w <Double-1> {
 	  set src $win_src(%W)
@@ -354,38 +448,38 @@ proc open_window src {
 	}
 	
 	# Resize
-	bind $w <ButtonPress> {
+	bind $w <Meta-ButtonPress> {
 	   global click_x click_y
 	   set click_x %x
 	   set click_y %y	
 	}
 
-	bind $w <ButtonRelease> {	  
-	  global win_src win_target click_x click_y
+        bind $w <Meta-ButtonRelease> { 
+          global win_src win_target click_x click_y
 
-	  if { [info exists win_src(%W)] & [info exists win_target(%W)]} {
-	      # %W is vw.frame.video
-	      set src $win_src(%W)
-	    
-	      # iw/ih mean viewing video size rightnow
-	      set iw [%W width]
-	      set ih [%W height]
+          if { [info exists win_src(%W)] & [info exists win_target(%W)]} {
+              # %W is vw.frame.video
+              set src $win_src(%W)
 
-	      set aspect_r [expr 1.0*$ih / $iw]
-	      set diff_x [expr %x - $click_x]
-	      set diff_y [expr %y - $click_y]
+              # iw/ih mean viewing video size rightnow
+              set iw [%W width]
+              set ih [%W height]
 
-	      set ow [expr int($iw + $diff_x + $diff_y)]
-	      set oh [expr int($aspect_r * $ow)]
+              set aspect_r [expr 1.0*$ih / $iw]
+              set diff_x [expr %x - $click_x]
+              set diff_y [expr %y - $click_y]
 
- 	      if { $ow > 64 } {
-                 resize %W $ow $oh		       	     
-	         #resize_window %W $ow $oh   	      
-	      } 	 
+              set ow [expr int($iw + $diff_x + $diff_y)]
+              set oh [expr int($aspect_r * $ow)]
+
+              if { $ow > 64 } {
+                 resize %W $ow $oh
+                 #resize_window %W $ow $oh            
+              }
           }
         }
 
-	switcher_register $v $src window_switch
+	#switcher_register $v $src window_switch
 
 	#
 	# Finally, bind the source to the window.
@@ -470,6 +564,136 @@ proc open_full_window src {
 	#
 	attach_window $src $v true
 	windowname $w [getid $src]
+}
+
+proc set_hardware_render {v setting} {
+  global win_use_hw
+  if { $win_use_hw($v) == "software" && $setting == 1} {
+    set win_use_hw($v) "magic"
+    reallocate_renderer $v
+  } elseif { $setting == 0 } {
+    set win_use_hw($v) "software"
+    reallocate_renderer $v
+  }
+}
+proc set_window_glue {v setting} {
+  global window_glue
+  set window_glue($v) $setting
+}
+
+
+
+proc ag_update_motion { } {
+    global ag_motion_x ag_motion_y ag_motion_W
+    global ag_last_x ag_last_y
+    global button_active notifier_id
+
+#    puts "update motion"
+
+    if [info exists ag_motion_x] {
+
+#    puts "$ag_last_x $ag_last_y $ag_motion_x $ag_motion_y"
+	if {$ag_last_x != $ag_motion_x || $ag_last_y != $ag_motion_y} {
+	    
+	   send_to_vtk M 0 $button_active $ag_motion_x $ag_motion_y $ag_motion_W
+	}
+	set ag_last_x $ag_motion_x
+	set ag_last_y $ag_motion_y	
+    }
+
+    set notifier_id [after 100 ag_update_motion]
+}
+
+proc init_vtk {} {
+    set vtk_client ""
+    global server_socket
+
+    set server_socket ""
+
+    set v [option get . vtkServer Vic]
+
+    if { $v == "" } {
+        set v "yukon.mcs.anl.gov/46352"
+    }
+
+    if { $v != "" } {
+	set v1 [split $v "/"]
+	set host [lindex $v1 0]
+	set port [lindex $v1 1]
+
+	puts "have host=$host port=$port"
+
+	set server_socket ""
+	catch { 
+	    set server_socket [socket $host $port]
+	    puts -nonewline $server_socket "VIC*"
+	    flush $server_socket
+	}
+
+	if { $server_socket != "" } {
+	    puts "connected to server $server_socket"
+#	    fconfigure $server_socket -translation binary
+	    fconfigure $server_socket -buffering none
+	}
+    }
+
+#    set mysock [socket -server server_connect 10000]
+#    puts "mysock is $mysock"
+}
+
+proc fsend_to_vtk { string } {
+    global server_socket
+
+    if { $server_socket != "" } {
+        puts $server_socket $string
+        flush $server_socket
+    }
+}
+
+proc send_to_vtk_bin { type flags value x y window } {
+    global server_socket
+
+    if { $server_socket != ""} {
+	puts "sending $type $value $x $y"
+	set w [winfo width $window]
+	set h [winfo height $window]
+	set str [binary format a1cSSSSS $type 100 $value $x $y $w $h]
+	set l [string length $str]
+	binary scan $str c12 f
+	puts "sending length $l $f"
+	puts $server_socket $str
+    }
+}
+proc send_to_vtk { type flags value x y window } {
+    global server_socket
+
+    if { $server_socket != ""} {
+  puts "sending $type $value $x $y"
+  set w [winfo width $window]
+  set h [winfo height $window]
+  set str "$type $value $x $y $w $h"
+  set len [string length $str]
+  puts -nonewline $server_socket [format "%03d%s" $len $str]
+    }
+}
+
+proc server_connect { sock addr port } {
+    puts "got server connect $sock $addr $port"
+    global vtk_client
+    set vtk_client $sock
+    puts $vtk_client "hi there"
+}
+
+proc map_coordinates { x y window } {
+    set wx [winfo width $window]
+    set wy [winfo height $window]
+    set mx [expr double($x) / double($wx)]
+    set my [expr double($y) / double($wy)]
+    return [list $mx $my]
+}
+
+proc destroy_from_wm vw {
+    tk_dialog .destroy_dialog "Don't do that" "Press the 'd' key in the window to close a video window" "" 0 "OK"
 }
 
 proc windowname { w name } {
