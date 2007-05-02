@@ -128,8 +128,9 @@ protected:
 	virtual void transmit(pktbuf* pb);
 	void send_report(int bye);
 	int build_bye(rtcphdr* rh, Source& local);
-	int build_sdes(rtcphdr* rh, Source& s);
 	u_char* build_sdes_item(u_char* p, int code, Source&);
+	int build_sdes(rtcphdr* rh, Source& s);
+	int build_app(rtcphdr* rh, Source& ls, char *name, void *data, int datalen);
 
 	void parse_sr(rtcphdr* rh, int flags, u_char* ep,
 		      Source* ps, Address & addr, int layer);

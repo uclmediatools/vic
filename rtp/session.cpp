@@ -528,6 +528,47 @@ int SessionManager::build_sdes(rtcphdr* rh, Source& ls)
 	return (len);
 }
 
+int SessionManager::build_app(rtcphdr* rh, Source& ls, char *name, void *data, int datalen)
+{
+  int flags = RTP_VERSION << 14 | 1 << 8 | RTCP_PT_APP;
+  rh->rh_flags = htons(flags);
+  rh->rh_ssrc = ls.srcid();
+  u_char* p = (u_char*)(rh + 1);
+    int len;
+    
+    // write the name field
+    len = strlen(name);
+    if( len < 4 ) {
+        memcpy(p,name,len);
+        p += len;
+        
+        // pad short names
+        while( p - (u_char*)(rh+1) < 4 )
+            *p++ = 0;
+    }
+    else {
+        // use first four chars of given name
+        memcpy(p,name,4);
+        p += 4;
+    }
+    
+    // write the app data
+    memcpy(p,data,datalen);
+    p += datalen;
+    
+    // pad as needed
+    len = p - (u_char*)rh;
+    int pad = 4 - (len & 3);
+    while( --pad >= 0 )
+        *p++ = 0;
+  len = p - (u_char*)rh;
+
+    // set the length now that it's known
+  rh->rh_len = htons((len >> 2) - 1);
+
+  return (len);
+}
+
 /*void SessionManager::send_report()
 {
 	send_report(0);
@@ -566,6 +607,8 @@ void SessionManager::send_report(CtrlHandler* ch, int bye, int app)
 	sl.lts_ctrl(now);
 	int we_sent = 0;
 	rtcp_rr* rr;
+	Tcl& tcl = Tcl::instance();
+
 	/*
 	 * If we've sent data since our last sender report send a
 	 * new report.  The MediaTimer check is to make sure we still
@@ -658,11 +701,18 @@ void SessionManager::send_report(CtrlHandler* ch, int bye, int app)
 	else
 		len += build_sdes((rtcphdr*)rr, s);
 	
+	// build "site" app data if specified
+	const char *data = tcl.attr("site");
+	if(data) 
+	{
+	    rr = (rtcp_rr*)(((u_char*)rh) + len);
+	    len += build_app((rtcphdr*)rr, s, "site", (void *)data, strlen(data));
+	}
 	//LLL	ch_.send(pktbuf_, len);
 	ch->send(pktbuf_, len);
 	
-	/*	rtcp_avg_size_ += RTCP_SIZE_GAIN * (double(len + 28) - rtcp_avg_size_);
-	
+	/*
+      rtcp_avg_size_ += RTCP_SIZE_GAIN * (double(len + 28) - rtcp_avg_size_);
 	  
 	  // compute the time to the next report.  we do this here
 	  // because we need to know if there were any active sources
