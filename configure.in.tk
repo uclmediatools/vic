@@ -6,6 +6,7 @@ AC_ARG_WITH(ucltcl,	--with-ucltcl=path	specify a pathname for UCL's tcl, ucltcl=
 AC_ARG_WITH(tcl,	--with-tcl=path	specify a pathname for tcl, d=$withval, d="")
 
 if test "$aquatcl" == yes; then
+	echo "On MACOSX - Using Aqua TCL/Tk"
         V_LIB_TCL="-framework Tcl"
         V_LIBRARY_TCL=/Library/Frameworks/Tcl.framework/Versions/8.4/Resources/Scripts
         V_INCLUDE_TCL="-I/Library/Frameworks/Tcl.framework/Headers -I/Library/Frameworks/Tcl.framework/PrivateHeaders"
