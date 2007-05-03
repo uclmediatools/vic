@@ -124,7 +124,7 @@ class TclObject {
 	virtual void reset();
 	void class_name(const char*);
 	/* make this public for Sun's compiler */
-#ifdef TCLTK80
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION == 0)
 	static int callback(ClientData, Tcl_Interp*, int ac, char** av);
 #else
 	static int callback(ClientData, Tcl_Interp*, int ac, const char** av);

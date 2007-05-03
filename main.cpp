@@ -429,14 +429,14 @@ void loadbitmaps(Tcl_Interp* tcl)
 }
 
 
-#ifdef TCLTK80
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION == 0)
 extern "C" int Tk_StripchartCmd(ClientData, Tcl_Interp*, int ac, char** av);
 #else
 extern "C" int Tk_StripchartCmd(ClientData, Tcl_Interp*, int ac, const char** av);
 #endif
 
 #ifdef WIN32
-#ifdef TCLTK80
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION == 0)
 extern "C" int WinPutsCmd(ClientData, Tcl_Interp*, int ac, char** av);
 extern "C" int WinGetUserName(ClientData, Tcl_Interp*, int ac, char** av);
 extern "C" int WinReg(ClientData, Tcl_Interp *, int, char **);

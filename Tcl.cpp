@@ -215,7 +215,7 @@ void TclObject::setproc(const char* s)
 	}
 }
 
-#ifdef TCLTK80
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION == 0)
 int TclObject::callback(ClientData cd, Tcl_Interp*, int ac, char** av)
 #else
 int TclObject::callback(ClientData cd, Tcl_Interp*, int ac, const char** av)

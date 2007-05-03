@@ -189,7 +189,7 @@ WinMain(
 		abort();
     }
 
-#ifdef TCLTK80
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION == 0)
     TclHasSockets(NULL);	
 	TkWinXInit(hInstance);
 #endif
@@ -294,7 +294,7 @@ perror(const char *msg)
  * if a file arg is supplied it [used to] does nothing - ie empty file!
  * Now works with other files.
  */
-#ifdef TCLTK80
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION == 0)
 int
 WinPutsCmd(ClientData clientData, Tcl_Interp *interp, int argc, char **argv)
 #else
@@ -396,7 +396,7 @@ error:
     return TCL_OK;
 }
 
-#ifdef TCLTK80
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION == 0)
 int
 WinGetUserName(clientData, interp, argc, argv)
 #else
@@ -436,7 +436,7 @@ char *root;
 		return NULL;
 }
 
-#ifdef TCLTK80
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION == 0)
 int 
 WinReg(ClientData clientdata, Tcl_Interp *interp, int argc, char **argv)
 #else

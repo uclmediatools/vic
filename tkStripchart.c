@@ -365,7 +365,7 @@ static void SwapColours(Stripchart* StripchartPtr);
  *
  *--------------------------------------------------------------
  */
-#ifdef TCLTK80
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION == 0)
 int
 Tk_StripchartCmd(ClientData clientData, Tcl_Interp *interp, int argc,
 		 char **argv)
