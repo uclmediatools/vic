@@ -169,6 +169,8 @@ namespace eval ag_autoplace {
 	variable grid_top_x
 	variable grid_top_y
 
+	if ![ info exists grid_top_x ] { return }
+
 	set ag_window_grid_base_x $grid_top_x
 	set ag_window_grid_base_y $grid_top_y
 
@@ -193,6 +195,8 @@ namespace eval ag_autoplace {
 	variable ap_active
 
 	global ag_window_grid_mode
+
+	if ![ info exists grid_top_x ] { return }
 
 	if { $ap_active} { set a "true" } else { set a "false" }
 
