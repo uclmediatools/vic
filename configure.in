@@ -221,6 +221,8 @@ if test "$gpl" = "yes" ; then
     V_CPUDETECT="-DRUNTIME_CPUDETECT"
     V_CPUDETECT_OBJ="cpu/cpudetect.o cpu/cpuid.o"
  fi
+ else 
+   echo "No runtime cputect without --enable-gpl"
 fi
 
 V_H261AS=""
@@ -619,6 +621,7 @@ AC_SUBST(V_OBJ_XIL)
 AC_SUBST(V_OBJ)
 AC_SUBST(V_LIB)
 AC_SUBST(V_CODEC_LIB)
+AC_SUBST(V_CPUDETECT_OBJ)
 
 V_DEFINE="$V_DEFINE $V_SHM $V_H261AS $V_DV $V_XV $V_CPUDETECT -D$V_ARCH"
 
