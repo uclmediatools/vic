@@ -143,10 +143,10 @@ proc logo_transmit {} {
 		tm_enable
 	}
 
-	if $logoButtonState {
-		if ![tm_check $id ] {
-			ppm_load $id $selectedFile .\\ppmlogo1
-		}
+	if { $logoButtonState && [file exists $selectedFile] } {
+		ppm_load $id $selectedFile .\\ppmlogo1
+		#if ![tm_check $id ] {
+		#}
 		
 		#tm_transparent $id $transparency
 		#after 1000 "float_graphic $id"
