@@ -73,7 +73,7 @@ static const char rcsid[] =
 struct	in6_addr		in6addr_any = {IN6ADDR_ANY_INIT};
 #endif
 
-#if defined(FreeBSD)
+#if defined(FreeBSD) || defined(MAC_OSX_TK)
 #ifndef IPV6_ADD_MEMBERSHIP
 #define IPV6_ADD_MEMBERSHIP	IPV6_JOIN_GROUP
 #endif
