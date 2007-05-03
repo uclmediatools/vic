@@ -64,7 +64,7 @@ if test "$qcamdir" != "" -a ! -r $qcamdir/qcam.h ; then
 	exit 1
 fi
 
-AC_ARG_ENABLE(gpl,	--enable-gpl	Enable or disable  use of gpl functionality - H264\, MPEG4\,Swscale, gpl="yes", gpl="no")
+AC_ARG_ENABLE(gpl,	--enable-gpl	Enable or disable  use of gpl functionality - H264 MPEG4 Swscale, gpl="yes", gpl="no")
 if test "$gpl" = "yes" ; then
   V_DEFINE="$V_DEFINE -DHAVE_SWSCALE"
   V_OBJ="$V_OBJ codec/packetbuffer.o codec/databuffer.o \
