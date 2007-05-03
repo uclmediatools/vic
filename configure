@@ -694,6 +694,7 @@ V_OBJ_XIL
 V_OBJ
 V_LIB
 V_CODEC_LIB
+V_CPUDETECT_OBJ
 V_STATIC
 V_TAR_TARGET
 V_ALL
@@ -4579,6 +4580,7 @@ fi
 
 
 if test "$aquatcl" == yes; then
+	echo "On MACOSX - Using Aqua TCL/Tk"
         V_LIB_TCL="-framework Tcl"
         V_LIBRARY_TCL=/Library/Frameworks/Tcl.framework/Versions/8.4/Resources/Scripts
         V_INCLUDE_TCL="-I/Library/Frameworks/Tcl.framework/Headers -I/Library/Frameworks/Tcl.framework/PrivateHeaders"
@@ -6090,6 +6092,8 @@ if test "$gpl" = "yes" ; then
     V_CPUDETECT="-DRUNTIME_CPUDETECT"
     V_CPUDETECT_OBJ="cpu/cpudetect.o cpu/cpuid.o"
  fi
+ else
+   echo "No runtime cputect without --enable-gpl"
 fi
 
 V_H261AS=""
@@ -6977,6 +6981,7 @@ fi
 if test -f codec/encoder-bvc.cpp ; then
 	V_OBJ="$V_OBJ codec/encoder-bvc.o codec/decoder-bvc.o"
 fi
+
 
 
 
@@ -7910,6 +7915,7 @@ V_OBJ_XIL!$V_OBJ_XIL$ac_delim
 V_OBJ!$V_OBJ$ac_delim
 V_LIB!$V_LIB$ac_delim
 V_CODEC_LIB!$V_CODEC_LIB$ac_delim
+V_CPUDETECT_OBJ!$V_CPUDETECT_OBJ$ac_delim
 V_STATIC!$V_STATIC$ac_delim
 V_TAR_TARGET!$V_TAR_TARGET$ac_delim
 V_ALL!$V_ALL$ac_delim
@@ -7927,7 +7933,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 96; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
