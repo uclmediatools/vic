@@ -1298,7 +1298,7 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
 --enable-debug		build with debugging enabled
 --enable-ipv6		build with ipv6 enabled
---enable-gpl	Enable or disable  use of gpl functionality - H264\
+--enable-gpl	Enable or disable  use of gpl functionality - H264 MPEG4 Swscale
 --disable-ffmpeg-co	Enable or disable ffmpeg svn checkout
 --disable-x264-co      Enable or disable x264 svn checkout
 --disable-cpudetect     Enable or disable runtime cpu detection
@@ -5162,9 +5162,9 @@ fi
 
 # Check whether --enable-gpl was given.
 if test "${enable_gpl+set}" = set; then
-  enableval=$enable_gpl; MPEG4\
+  enableval=$enable_gpl; gpl="yes"
 else
-  Swscale
+  gpl="no"
 fi
 
 if test "$gpl" = "yes" ; then
