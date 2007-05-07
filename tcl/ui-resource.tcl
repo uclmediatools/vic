@@ -32,7 +32,7 @@
 #
 
 global font
-if {[string equal [tk windowingsystem] "aqua"]} {
+if {[string match [ windowingsystem] "aqua"]} {
         font create medfont -family {Lucida Grande} -size 12 -weight bold
         font create smallfont -family {Lucida Grande} -size 10 -weight bold
         font create minifont -family {Lucida Grande} -size 4
@@ -117,7 +117,7 @@ proc init_resources {} {
 	#
 	# use 2 pixels of padding by default, except with MacOSX Aqua
 	#
-	if {![string equal [tk windowingsystem] "aqua"]} {
+	if {![string match [ windowingsystem] "aqua"]} {
 	    option add *video*padX 0
 	    option add *video*padY 0
 	    option add *padX 1
@@ -235,7 +235,7 @@ proc init_resources {} {
 	option add Vic.overlayY "0" startupFile
 
 	# Init fonts
-        if {![string equal [tk windowingsystem] "aqua"]} {
+        if {![string match [ windowingsystem] "aqua"]} {
 	    init_fonts
 	}
 

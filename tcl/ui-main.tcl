@@ -58,7 +58,7 @@ proc build.bar w {
     global title
 
     frame $w.bar  -borderwidth 0
-    if {[string equal [tk windowingsystem] "aqua"]} {
+    if {[string match [ windowingsystem] "aqua"]} {
         global V
         set net $V(data-net)
 	label $w.bar.title -text "Address: [$net addr]  Port: [$net port]  TTL: [$net ttl]" -font [smallfont] -justify left
@@ -317,7 +317,7 @@ proc rm_active src {
 	if { ![yesno relateInterface] && [array size active] == 0 } {
 		pack forget $V(grid)
 		destroy $V(grid)
-		pack .top.label -before .top.bar -anchor c -expand 1
+		pack .top.label -before .top.barholder -anchor c -expand 1
 	}
 }
 
@@ -543,7 +543,7 @@ proc build.src { w src color } {
 	set stamp $w.stamp
 	frame $stamp -relief ridge -borderwidth 2
 	bind $stamp <Enter> "%W configure -background gray90"
-        if {[string equal [tk windowingsystem] "aqua"]} {
+        if {[string match [ windowingsystem] "aqua"]} {
                 bind $stamp <Enter> "%W configure -background CornflowerBlue"
         } else {
                 bind $stamp <Enter> "%W configure -background gray90"
@@ -556,7 +556,7 @@ proc build.src { w src color } {
 	# disable xvideo fro stamp video
 	attach_window $src $stamp.video false 
         
-	if {[string equal [tk windowingsystem] "aqua"]} {
+	if {[string match [ windowingsystem] "aqua"]} {
                 pack $stamp.video -side left -padx 2 -pady 2
                 pack $stamp -side left -anchor nw -padx {4 2} -pady 2
                 frame $w.r -padx 2
@@ -565,13 +565,19 @@ proc build.src { w src color } {
                 pack $stamp -side left -fill y
                 frame $w.r
         }
-               	
-	frame $w.r.cw -relief groove -borderwidth 2
+        
+	global V	
+# Show sender window as raised
+	if { $src == [srctab local] } {
+	  frame $w.r.cw -relief raised -borderwidth 2
+	} else {
+	  frame $w.r.cw -relief groove -borderwidth 2
+	}
 
 	pack $w.r.cw -side left -expand 1 -fill both -anchor w -padx 0
 
 
-        if {[string equal [tk windowingsystem] "aqua"]} {
+        if {[string match [ windowingsystem] "aqua"]} {
                 label $w.r.cw.name -textvariable src_nickname($src) -font $f \
                         -padx 2 -pady 1 -borderwidth 0 -anchor w
                 label $w.r.cw.addr -textvariable src_info($src) -font $f \
@@ -596,13 +602,14 @@ proc build.src { w src color } {
 	label $w.r.cw.rateinfo.loss -textvariable ltext($src) -width 6 \
 		-font $f -pady 0 -borderwidth 0
 
+
 	frame $w.r.ctrl -borderwidth 0
 
 	global mutebutton V
 	set mutebutton($src) $V(muteNewSources)
 	$src mute $mutebutton($src)
 
-        if {[string equal [tk windowingsystem] "aqua"]} {
+        if {[string match [ windowingsystem] "aqua"]} {
                 checkbutton $w.r.ctrl.mute -text mute -borderwidth 2 \
                         -font $f -width 4 \
                         -command "$src mute \$mutebutton($src)" \
@@ -627,7 +634,7 @@ proc build.src { w src color } {
         }
              
 	set m $w.r.ctrl.info.menu$src
-        if {[string equal [tk windowingsystem] "aqua"]} {
+        if {[string match [ windowingsystem] "aqua"]} {
                 menubutton $w.r.ctrl.info -text info -borderwidth 2 \
                         -font $f -pady 4 -menu $m
         } else {
@@ -638,7 +645,7 @@ proc build.src { w src color } {
         }      
 	build_info_menu $src $m
 
-        if {[string equal [tk windowingsystem] "aqua"]} {
+        if {[string match [ windowingsystem] "aqua"]} {
                 pack $w.r.ctrl.mute -side left -expand 1
                 pack $w.r.ctrl.color -side left -expand 1
                 pack $w.r.ctrl.info -side left -fill x -expand 1
@@ -992,6 +999,7 @@ proc update_rate src {
 }
 
 proc update_src src {
+	global ftext updated
 
 	if ![info exists ftext($src)] {
 		return

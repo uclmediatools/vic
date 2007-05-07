@@ -32,22 +32,29 @@
 #
 # @(#) $Header$ (LBL)
 
+proc windowingsystem {} {
+  if [ catch {set tkws [tk windowingsystem]}] {
+    set tkws x11
+  }
+  return $tkws
+}
+
 proc smallfont { } {
-        if {[string equal [tk windowingsystem] "aqua"]} {
+        if {[string match [windowingsystem] "aqua"]} {
             return smallfont
         }
      	return [resource smallfont]
 }
 
 proc minifont { } {
-        if {[string equal [tk windowingsystem] "aqua"]} {
+        if {[string match [ windowingsystem] "aqua"]} {
             return minifont
         }
         return [resource minifont]
 }
 
 proc mediumfont { } {
-        if {[string equal [tk windowingsystem] "aqua"]} {
+        if {[string match [ windowingsystem] "aqua"]} {
             return smallfont
         } 
      	return [resource medfont]
@@ -55,21 +62,21 @@ proc mediumfont { } {
 
 
 proc helpfont { } {
-        if {[string equal [tk windowingsystem] "aqua"]} {
+        if {[string match [ windowingsystem] "aqua"]} {
                 return helpfont
         }
         return [resource helpfont]
 } 
 
 proc disfont { } {
-        if {[string equal [tk windowingsystem] "aqua"]} {
+        if {[string match [ windowingsystem] "aqua"]} {
                 return disablefont
         }    	
      	return [resource disablefont]
 }
 
 proc entryfont { } {
-        if {[string equal [tk windowingsystem] "aqua"]} {
+        if {[string match [ windowingsystem] "aqua"]} {
                 return entryfont
         } 
         return [resource entryfont]
@@ -106,7 +113,7 @@ proc toggle_window w {
  		# adjust for virtual desktops
 		incr x [winfo vrootx .]
 		incr y [winfo vrooty .]
-   	        if {[string equal [tk windowingsystem] "aqua"]} {
+   	        if {[string match [ windowingsystem] "aqua"]} {
 		    if { $y < 25 } { set y 25 }
 		} else {
 		    if { $y < 0 } { set y 0 }
@@ -127,7 +134,7 @@ proc toggle_window w {
 	} else {
 		wm deiconify $w
 	}
-        if {[string equal [tk windowingsystem] "aqua"]} {
+        if {[string match [ windowingsystem] "aqua"]} {
            raise $w
         }
 }
@@ -288,7 +295,7 @@ proc updateKey { w key } {
 proc mk.key w {
 	global V
 	frame $w.key
-        if {[string equal [tk windowingsystem] "aqua"]} {
+        if {[string match [ windowingsystem] "aqua"]} {
                 checkbutton $w.key.button -text Key: -relief flat \
                 -font [smallfont]  -command "toggleKey $w.key" \
                 -variable V(encrypt) -disabledforeground gray40 -padx 3

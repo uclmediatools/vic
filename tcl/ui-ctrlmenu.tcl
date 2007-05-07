@@ -212,7 +212,7 @@ proc build.session { w dst port srcid ttl name } {
 
 	frame $w.nb.frame.b
 
-	if {[string equal [tk windowingsystem] "aqua"]} {
+	if {[string match [ windowingsystem] "aqua"]} {
 	        button $w.nb.frame.b.stats -text "Global Stats" -padx 10 \
 	                 -anchor c -font $f -command create_global_window
  		button $w.nb.frame.b.members -text Members -padx 10 \
@@ -395,7 +395,7 @@ proc close_device {} {
 	global V
 	# XXX: bypassing the pure virtual funtion call problem under macosx
 	# need to figure out where is the bug
-        if { ![string equal [tk windowingsystem] "aqua"]} { 
+        if { ![string match [ windowingsystem] "aqua"]} { 
 	    delete $V(encoder)
 	    delete $V(grabber)
  	    unset V(grabber) 
@@ -717,7 +717,7 @@ proc build.device w {
 	set f [smallfont]
 
 	set m $w.menu
-	if {[string equal [tk windowingsystem] "aqua"]} {
+	if {[string match [ windowingsystem] "aqua"]} {
             menubutton $w -menu $m -text Device -width 8 -pady 4
 	} else {
 	    menubutton $w -menu $m -text Device... \
@@ -914,7 +914,7 @@ proc build.size w {
 proc build.port w {
 	set f [smallfont]
 	# create the menubutton but don't defer the menu creation until later
-	if {[string equal [tk windowingsystem] "aqua"]} {
+	if {[string match [ windowingsystem] "aqua"]} {
 	    menubutton $w -menu $w.menu -text Port -width 8 -pady 4 \
                 -state disabled
 	} else {
@@ -958,7 +958,7 @@ proc build.type w {
 	set f [smallfont]
 
 	set m $w.menu
-  	if {[string equal [tk windowingsystem] "aqua"]} {
+  	if {[string match [ windowingsystem] "aqua"]} {
 	    menubutton $w -text Signal -menu $m -width 8 -pady 4 \
 		-state disabled
 	} else {
@@ -996,7 +996,7 @@ proc build.encoder_options w {
 	set useHardwareComp [yesno useHardwareComp]
 	set f [smallfont]
 	set m $w.menu
-	if {[string equal [tk windowingsystem] "aqua"]} {
+	if {[string match [ windowingsystem] "aqua"]} {
             menubutton $w -text Options -menu $m -width 8 -pady 4
 	} else {
 	    menubutton $w -text Options... -menu $m -relief raised -width 10 \
@@ -1009,7 +1009,7 @@ proc build.encoder_options w {
 		-variable useJPEGforH261 -font $f -command restart
 		$m add checkbutton -label "Use Hardware Encode" \
 		-variable useHardwareComp -font $f -command restart
-        if { $tcl_platform(platform) == "windows" || [string equal [tk windowingsystem] "aqua"] } {
+        if { $tcl_platform(platform) == "windows" || [string match [ windowingsystem] "aqua"] } {
 			$m add checkbutton -label "Configure on Transmit" \
 			-variable configOnTransmit -font $f \
 			-command  "grabber useconfig \$configOnTransmit"
@@ -1019,7 +1019,7 @@ proc build.encoder_options w {
 proc build.tile w {
 	set f [smallfont]
 	set m $w.menu
- 	if {[string equal [tk windowingsystem] "aqua"]} {
+ 	if {[string match [ windowingsystem] "aqua"]} {
 	    menubutton $w -text Tile -menu $m -width 8 -pady 4
 	} else {
 	    menubutton $w -text Tile... -menu $m -relief raised -width 10 \
@@ -1039,7 +1039,7 @@ proc build.tile w {
 proc build.decoder_options w {
 	set f [smallfont]
 	set m $w.menu
-	if {[string equal [tk windowingsystem] "aqua"]} {
+	if {[string match [ windowingsystem] "aqua"]} {
 	    menubutton $w -text Options -menu $m -width 8 -pady 4
 	} else {
  	    menubutton $w -text Options... -menu $m -relief raised -width 10 \
@@ -1527,7 +1527,7 @@ proc select_format fmt {
 proc init_grabber { grabber } {
 	global V configOnTransmit tcl_platform
 
-	if { $tcl_platform(platform) == "windows" || [string equal [tk windowingsystem] "aqua"] } {
+	if { $tcl_platform(platform) == "windows" || [string match [ windowingsystem] "aqua"] } {
 		$grabber useconfig $configOnTransmit
 	}
 
@@ -1559,7 +1559,7 @@ proc init_grabber { grabber } {
         global inputPort inputType portButton typeButton
         # MacOS-X requires port and input type to be set before decimate
         # is called otherwise the channel device's input may be busy
-        if {[string equal [tk windowingsystem] "aqua"]} {
+        if {[string match [ windowingsystem] "aqua"]} {
             if { [$portButton cget -state] == "normal" } {
                   $grabber port $inputPort
             }
@@ -1574,7 +1574,7 @@ proc init_grabber { grabber } {
 		set cmd [lindex [$qscale configure -command] 4]
 		$cmd [$qscale get]
 	}
-        if !{[string equal [tk windowingsystem] "aqua"]} {
+        if !{[string match [ windowingsystem] "aqua"]} {
 	    if { [$portButton cget -state] == "normal" } {
 		$grabber port $inputPort
 	    }

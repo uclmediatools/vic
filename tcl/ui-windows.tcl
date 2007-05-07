@@ -228,7 +228,7 @@ proc open_window src {
 		-width 8 -font $f
 	menu $m
 
-        if {[string equal [tk windowingsystem] "aqua"]} { 
+        if {[string match [ windowingsystem] "aqua"]} { 
                 menu $w.mbar -tearoff 0
                 $w configure -menu $w.mbar
                 $w.mbar add cascade -label File -menu $w.mbar.file
@@ -256,7 +256,7 @@ proc open_window src {
 	menubutton $w.bar.size -text Size... -menu $m -relief raised -width 8 \
 		-font $f
 	menu $m
-        if {[string equal [tk windowingsystem] "aqua"]} {
+        if {[string match [ windowingsystem] "aqua"]} {
                 $w.mbar add cascade -label Size -menu $m
         }     
 	$m add radiobutton -label QCIF -command "resize $v 176 144" \
@@ -292,7 +292,7 @@ proc open_window src {
 # Marcus ... 
 	set m $w.bar.decoder.menu
 	menubutton $w.bar.decoder -text Decoder... -menu $m -relief raised -width 8 -font $f
-        if {[string equal [tk windowingsystem] "aqua"]} {
+        if {[string match [ windowingsystem] "aqua"]} {
                 $w.mbar add cascade -label Decoder -menu $m
         }    	
 	menu $m
