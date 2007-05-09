@@ -11,6 +11,7 @@
  *
  * SCCS: @(#) tkWinColor.c 1.20 97/10/27 16:39:23
  */
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION == 0)
 
 #include <tkColor.h>
 #include <tkWinInt.h>
@@ -591,3 +592,4 @@ TkWinSelectPalette(dc, colormap)
     RealizePalette(dc);
     return oldPalette;
 }
+#endif
