@@ -63,8 +63,10 @@ struct TkWinColormap {
 				  * counts indexed by pixel value. */
 };
 
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION == 0)
 extern "C" unsigned long *win32Colors;
 extern "C" int win32NColors;
+#endif
 
 #endif
 
@@ -230,10 +232,13 @@ int ColorModel::alloc_color(color& c)
 		fprintf(stderr, "vic: colormap overflow (internal error)\n");
 		exit(1);
 	}
-	/*XXX*/
+
+#if defined(WIN32) && (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION == 0)
 	if (!win32Colors)
 		win32Colors = pixel_;
 	win32NColors = ncolor_;
+#endif
+
 #else
 	int pixel = xc.pixel;
 	pixel_[ncolor_] = pixel;
