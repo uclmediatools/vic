@@ -353,7 +353,7 @@ TclObject* Matcher::lookup(const char* classname, const char* id)
 		}
 	}
 #ifdef DEBUG
-    printf("Failed Matcher::lookup on %s\n", classname);
+    debug_msg("Failed Matcher::lookup on %s\n", classname);
 #endif /* DEBUG */
 	return (0);
 }
