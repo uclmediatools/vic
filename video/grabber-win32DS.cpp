@@ -288,7 +288,10 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt) {
    }
    debug_msg("DirectShowGrabber::DirectShowGrabber():  Null Renderer added to graph\n");
 
-   getCaptureCapabilities();
+   if (!getCaptureCapabilities()) {
+   		Grabber::status_=-1;
+		return;
+   }
    // setCaptureOutputFormat();
    
    findCrossbar(pCaptureFilter_);
@@ -545,7 +548,7 @@ void DirectShowGrabber::setport(const char *port) {
 
 //--------------------------------
 
-void DirectShowGrabber::getCaptureCapabilities() {
+int DirectShowGrabber::getCaptureCapabilities() {
    IAMStreamConfig          *pConfig;
    AM_MEDIA_TYPE            *pmtConfig;
    int                      iCount;
@@ -557,8 +560,7 @@ void DirectShowGrabber::getCaptureCapabilities() {
    hr        = pBuild_->FindInterface(&PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video,
                                      pCaptureFilter_, IID_IAMStreamConfig, (void**)&pConfig);
    if (FAILED(hr)) {
-   		Grabber::status_=-1;
-		return;
+		return FALSE;
    }
 
    max_width_ = 0;
@@ -572,6 +574,9 @@ void DirectShowGrabber::getCaptureCapabilities() {
       for (int iFormat = 0; iFormat < iCount; iFormat++) {
          hr = pConfig->GetStreamCaps(iFormat, &pmtConfig, (BYTE *)&scc);
          //showErrorMessage(hr);
+	 // Need to check for different formats and set up appropriate converter
+	 // e.g // 59565955-0000-0010-8000-00AA00389B71  'UYVY' ==  MEDIASUBTYPE_UYVY
+	 //     for simple firewire cam
          if( SUCCEEDED(hr) ) {
             if ((pmtConfig->majortype  == MEDIATYPE_Video)            &&
                   (pmtConfig->subtype    == MEDIASUBTYPE_RGB24)       &&
@@ -582,11 +587,14 @@ void DirectShowGrabber::getCaptureCapabilities() {
 			   if(scc.MaxOutputSize.cx > max_width_){
 			       max_width_  = scc.MaxOutputSize.cx;
 			       max_height_ =  scc.MaxOutputSize.cy;
+			       		return TRUE;
+
 			   }
 			}
 		 }
 	  }
    }
+   return FALSE;
 }
 
 void DirectShowGrabber::setCaptureOutputFormat() {
@@ -629,17 +637,17 @@ void DirectShowGrabber::setCaptureOutputFormat() {
                   (pmtConfig->subtype    == MEDIASUBTYPE_RGB24)       &&
                   (pmtConfig->formattype == FORMAT_VideoInfo)         &&
                   (pmtConfig->cbFormat   >= sizeof (VIDEOINFOHEADER)) &&
-				  (pmtConfig->pbFormat   != NULL)					  &&
-				  (scc.MaxOutputSize.cx >= width_)					  &&
-				  (scc.MaxOutputSize.cy >= height_)){
+		  (pmtConfig->pbFormat   != NULL)		      &&
+		  (scc.MaxOutputSize.cx >= width_)		      &&
+		  (scc.MaxOutputSize.cy >= height_)){
 
                pVih                        = (VIDEOINFOHEADER *)pmtConfig->pbFormat;			  
                pVih->bmiHeader.biWidth     = width_;
                pVih->bmiHeader.biHeight    = height_;
                pVih->bmiHeader.biSizeImage = DIBSIZE(pVih->bmiHeader);
-			   // AvgTimePerFrame value that specifies the video frame's
-			   // average display time, in 100-nanosecond units. 
-			   pVih->AvgTimePerFrame	   = 10000000/fps_;
+	       // AvgTimePerFrame value that specifies the video frame'
+	       // average display time, in 100-nanosecond units. 
+	       pVih->AvgTimePerFrame	   = 10000000/fps_;
 
                debug_msg("Windows GDI BITMAPINFOHEADER follows:\n");
                debug_msg("biWidth=        %d\n", pVih->bmiHeader.biWidth);
@@ -659,7 +667,6 @@ void DirectShowGrabber::setCaptureOutputFormat() {
 
                // XXX:  leak.  need to deal with this - msp
                //DeleteMediaType(pmtConfig);
-
                formatSet = 1;
 //               break;
 
@@ -844,6 +851,7 @@ DirectShowScanner::DirectShowScanner() {
    IMoniker     *pMoniker = 0;
    IPropertyBag *pPropBag = 0;
    VARIANT      varName;
+   CLSID		clsid;
 
    // Get an enumerator over video capture filters
    hr = pDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory, &pEnum, 0);
@@ -882,20 +890,21 @@ DirectShowScanner::DirectShowScanner() {
          debug_msg("DirectShowScanner::DirectShowScanner():  found nameBuf/FriendlyName=%s\n", nameBuf);
 
          // needs work, but don't add drivers that look like VFW drivers - msp
-         if( (strstr(nameBuf, "VFW") == NULL) ) {
-            hr = pMoniker->BindToObject(0, 0, IID_IBaseFilter, (void **)(pCaptureFilter+devNum));
-            //showErrorMessage(hr);
-			if (FAILED(hr)) {
-				debug_msg("Failed to Get friendly name read on DS dev: %d\n", devNum);
-				continue;
-			}
-			debug_msg("capture filter bound ok= %d\n", hr);
-            devs_[devNum] = new DirectShowDevice(strdup(nameBuf), pCaptureFilter[devNum]);
+         //if( (strstr(nameBuf, "VFW") == NULL) ) {
+         hr = pMoniker->BindToObject(0, 0, IID_IBaseFilter, (void **)(pCaptureFilter+devNum));
+         if (FAILED(hr)) {
+		debug_msg("Failed to Get friendly name read on DS dev: %d\n", devNum);
+		continue;
+	 }
+	 debug_msg("capture filter bound ok= [%d} %s\n", hr, nameBuf);
+         pCaptureFilter[devNum]->GetClassID(&clsid);
+	 if (!IsEqualGUID(clsid,CLSID_VfwCapture))	 {
+		debug_msg("Adding capture filter %d\n", hr);
+		devs_[devNum] = new DirectShowDevice(strdup(nameBuf), pCaptureFilter[devNum]);
          } else {
             debug_msg("discarding an apparent VFW device= %s\n", nameBuf);
-			devs_[devNum] = NULL;
+	    devs_[devNum] = NULL;
          }
-
          VariantClear(&varName);
          pPropBag->Release();
       }
