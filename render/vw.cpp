@@ -38,6 +38,7 @@ static const char rcsid[] =
 #include <stdlib.h>
 #include <string.h>
 
+
 #ifdef MAC_OSX_TK
 /* stuff needed to include declaration of TkPutImage */
 #include <math.h>
@@ -98,7 +99,13 @@ int XShmPutImage(Display*, Drawable, GC, XImage*, int, int, int, int,
 
 #include <windows.h>
 #include <ddraw.h>
+
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION == 0)
 #include <tkWin.h>
+#else
+#include <tkPlatDecls.h>
+#endif
+
 #include <dvp.h>
 
 char *ddrawErrorString(HRESULT rc);
@@ -275,7 +282,8 @@ void SlowVideoImage::putimage(Display* dpy, Window window, GC gc,
 			      int sx, int sy, int x, int y,
 			      int w, int h) const
 {
-#if defined(MAC_OSX_TK) || defined(WIN32)
+
+#if defined(MAC_OSX_TK) || ( defined(WIN32) && (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION != 0))
         TkPutImage(NULL, 0, dpy, window, gc, image_, sx, sy, x, y, w, h);
 #else
 	XPutImage(dpy, window, gc, image_, sx, sy, x, y, w, h);
