@@ -33,6 +33,7 @@
  * This module contributed by John Brezak <brezak@apollo.hp.com>.
  * January 31, 1996
  */
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION == 0)
 
 #ifndef lint
 static char rcsid[] =
@@ -238,3 +239,4 @@ XDrawSegments(display, d, gc, segments, nsegments)
     TkWinReleaseDrawableDC(d, dc, &state);
 }
 */
+#endif
