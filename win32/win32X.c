@@ -33,12 +33,15 @@
  * This module contributed by John Brezak <brezak@apollo.hp.com>.
  * January 31, 1996
  */
-#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION == 0)
 
 #ifndef lint
 static char rcsid[] =
     "@(#) $Header$ (LBL)";
 #endif
+
+#include <tcl.h>
+
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION == 0)
 
 #include "tkWinInt.h"
 
