@@ -47,7 +47,7 @@ static const char rcsid[] =
 #include <ctype.h>
 
 
-#ifdef MAC_OSX_TK
+#if 0
    // XXX - MacOS X 10.3 Ptheard workaround
    extern "C" void find_macosx_capture_devices(void);
 #endif
@@ -494,7 +494,7 @@ int main(int argc, const char** argv)
 	opterr = 1;
 #endif
 
-#ifdef MAC_OSX_TK
+#if 0
        // XXX - MacOS X 10.3 Ptheard workaround
        find_macosx_capture_devices();
 #endif
