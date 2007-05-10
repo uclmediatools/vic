@@ -30,7 +30,12 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 #
-
+proc windowingsystem { } {
+    if { [ catch {set tkws [tk windowingsystem]}] } {
+            set tkws x11
+    }
+    return $tkws
+}
 
 proc fork_histtolut { } {
 	global V
