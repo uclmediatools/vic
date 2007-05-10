@@ -500,8 +500,7 @@ proc open_full_window src {
 	}
 	set w .vw$uid
 	toplevel $w -class Vic \
-		-visual "[winfo visual .top] [winfo depth .top]" \
-		-colormap .top
+		-visual "[winfo visual .top] [winfo depth .top]" 
 	catch "wm resizable $w false false"
 
 	# for bordless window	
