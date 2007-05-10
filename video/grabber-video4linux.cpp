@@ -23,6 +23,7 @@
 #include <string.h>
 #include <signal.h>
 #include <errno.h>
+#include <endian.h>
 
 #include <sys/types.h>
 #include <sys/fcntl.h>
@@ -50,6 +51,8 @@ extern "C"
 /* here you can tune the device names */
 static const char *devlist[] = {
     "/dev/video0", "/dev/video1", "/dev/video2", "/dev/video3",
+    "/dev/video4", "/dev/video5", "/dev/video6", "/dev/video7",
+    "/dev/video8", "/dev/video9", "/dev/video10", "/dev/video11",
     NULL
 };
 
@@ -157,7 +160,7 @@ V4lDevice::V4lDevice(const char *dev, const char *name,
 {
     dev_ = dev;
     attributes_ = attr;
-    debug_msg("V4l:  ==> %s\n", attr);
+    debug_msg("V4L:  ==> %s\n", attr);
 }
 
 int V4lDevice::command(int argc, const char *const *argv)
@@ -202,8 +205,18 @@ V4lScanner::V4lScanner(const char **dev)
     int i, fd;
     char *nick, *attr;
 
+    // AGTk uses VIC_DEVICE env variable to select device
+    const char *myDev = getenv("VIC_DEVICE");
+    if (myDev != 0)
+    {
+	dev = (const char **) new char  *[2];
+	dev[0] = new char[strlen(myDev) + 1];
+	strcpy((char *) dev[0], myDev);
+	dev[1] = NULL;
+    }
+
     for (i = 0; dev[i] != NULL; i++) {
-	debug_msg("V4l: trying %s... ", dev[i]);
+	debug_msg("V4L: trying %s... ", dev[i]);
 	if (-1 == (fd = open(dev[i], O_RDONLY))) {
 	    debug_msg("Error opening: %s : %s", dev[i], strerror(errno));	//SV-XXX: sys_errlist deprecated, use strerror()
 	    continue;
@@ -220,7 +233,7 @@ V4lScanner::V4lScanner(const char **dev)
 	    continue;
 	}
 
-	debug_msg("ok, %s\nV4l:   %s; size: %dx%d => %dx%d%s\n",
+	debug_msg("ok, %s\nV4L:   %s; size: %dx%d => %dx%d%s\n",
 		  capability.name,
 		  capability.type & VID_TYPE_MONOCHROME ? "mono" : "color",
 		  capability.minwidth, capability.minheight,
@@ -238,7 +251,7 @@ V4lScanner::V4lScanner(const char **dev)
 	    strcat(attr, "size { small cif } ");
 	}
 
-	debug_msg("V4l:   ports:");
+	debug_msg("V4L:   ports:");
 	strcat(attr, "port { ");
 
 	char attr_tmp[100]="";
@@ -268,16 +281,16 @@ V4lScanner::V4lScanner(const char **dev)
 	if (-1 == ioctl(fd, VIDIOCGPICT, &pict)) {
 	    perror("ioctl VIDIOCGPICT");
 	}
-	debug_msg("V4l:   depth=%d, palette=%s\n",  pict.depth,
+	debug_msg("V4L:   depth=%d, palette=%s\n",  pict.depth,
 		  (pict.palette < sizeof(palette_name) / sizeof(char *))? 
 		  palette_name[pict.palette] : "??");
 
 	strcat(attr, "type {auto pal ntsc secam}");
 
-	nick = new char[strlen(capability.name) + 7];
-	sprintf(nick, "V4L1:%s", capability.name);
+	nick = new char[strlen(capability.name) + strlen(dev[i]) + 6];
+	sprintf(nick, "V4L-%s %s", capability.name, dev[i]);
 	new V4lDevice(dev[i], nick, attr);
-	fprintf(stderr, "Attached to V4l device: %s\n", nick);
+	fprintf(stderr, "Attached to V4L device: %s\n", nick);
 
 	close(fd);
     }
@@ -376,10 +389,10 @@ V4lGrabber::V4lGrabber(const char *cformat, const char *dev)
 
     if ((char *) -1 == mem) {
 	perror("mmap");
-	debug_msg("V4l: device has no mmap support\n");
+	debug_msg("V4L: device has no mmap support\n");
     }
     else {
-	debug_msg("v4l: mmap()'ed buffer size = 0x%x\n", gb_buffers.size);
+	debug_msg("V4L: mmap()'ed buffer size = 0x%x\n", gb_buffers.size);
 	have_mmap = 1;
     }
 
@@ -424,7 +437,7 @@ V4lGrabber::V4lGrabber(const char *cformat, const char *dev)
 
 V4lGrabber::~V4lGrabber()
 {
-    debug_msg("V4l: destructor\n");
+    debug_msg("V4L: destructor\n");
 
     if (have_mmap)
 	munmap(mem, gb_buffers.size);
@@ -473,7 +486,7 @@ int V4lGrabber::command(int argc, const char *const *argv)
 	    if (-1 == ioctl(fd_, VIDIOCSPICT, &pict))
 		perror("ioctl VIDIOCSPICT");
 
-	    debug_msg("V4l: Brightness = %d\n", val);
+	    debug_msg("V4L: Brightness = %d\n", val);
 	    return (TCL_OK);
 	}
 
@@ -485,7 +498,7 @@ int V4lGrabber::command(int argc, const char *const *argv)
 	    if (-1 == ioctl(fd_, VIDIOCSPICT, &pict))
 		perror("ioctl VIDIOCSPICT");
 
-	    debug_msg("V4l: Contrast = %d\n", val);
+	    debug_msg("V4L: Contrast = %d\n", val);
 	    return (TCL_OK);
 	}
 
@@ -497,7 +510,7 @@ int V4lGrabber::command(int argc, const char *const *argv)
 	    if (-1 == ioctl(fd_, VIDIOCSPICT, &pict))
 		perror("ioctl VIDIOCSPICT");
 
-	    debug_msg("V4l: Hue = %d\n", val);
+	    debug_msg("V4L: Hue = %d\n", val);
 	    return (TCL_OK);
 	}
 
@@ -509,7 +522,7 @@ int V4lGrabber::command(int argc, const char *const *argv)
 	    if (-1 == ioctl(fd_, VIDIOCSPICT, &pict))
 		perror("ioctl VIDIOCSPICT");
 
-	    debug_msg("V4l: Saturation = %d\n", val);
+	    debug_msg("V4L: Saturation = %d\n", val);
 	    return (TCL_OK);
 	}
 
@@ -524,7 +537,7 @@ int V4lGrabber::command(int argc, const char *const *argv)
 		if (-1 == ioctl(fd_, VIDIOCSPICT, &pict))
 		    perror("ioctl VIDIOCSPICT");
 
-		debug_msg("V4l: Resetting controls\n");
+		debug_msg("V4L: Resetting controls\n");
 		return (TCL_OK);
 	    }
 	}
@@ -536,7 +549,7 @@ int V4lGrabber::command(int argc, const char *const *argv)
 
 
 	if (strcmp(argv[1], "fps") == 0) {
-	    debug_msg("V4l: fps %s\n", argv[2]);
+	    debug_msg("V4L: fps %s\n", argv[2]);
 	}
 
 
@@ -562,7 +575,7 @@ int V4lGrabber::command(int argc, const char *const *argv)
 
 void V4lGrabber::start()
 {
-    debug_msg("V4l: start\n");
+    debug_msg("V4L: start\n");
 
     format();
 
@@ -589,7 +602,7 @@ void V4lGrabber::start()
 
 void V4lGrabber::stop()
 {
-    debug_msg("V4l: stop\n");
+    debug_msg("V4L: stop\n");
 
     if (have_mmap) {
 	while (grab_count > sync_count) {
@@ -701,6 +714,7 @@ void V4lGrabber::packed422_to_planar422(char *dest, char *src)
     case BYTE_ORDER_YUYV:
 	while (--i) {
 	    a = *(srca++);
+#if BYTE_ORDER == LITTLE_ENDIAN
 	    *(y++) = a & 0xff;
 	    a >>= 8;
 	    *(u++) = a & 0xff;
@@ -708,12 +722,22 @@ void V4lGrabber::packed422_to_planar422(char *dest, char *src)
 	    *(y++) = a & 0xff;
 	    a >>= 8;
 	    *(v++) = a & 0xff;
+#else
+	    *(v++) = a & 0xff;
+	    a >>= 8;
+	    *(y++) = a & 0xff;
+	    a >>= 8;
+	    *(u++) = a & 0xff;
+	    a >>= 8;
+	    *(y++) = a & 0xff;
+#endif
 	}
 	break;
 
     case BYTE_ORDER_YVYU:
 	while (--i) {
 	    a = *(srca++);
+#if BYTE_ORDER == LITTLE_ENDIAN
 	    *(y++) = a & 0xff;
 	    a >>= 8;
 	    *(v++) = a & 0xff;
@@ -721,12 +745,22 @@ void V4lGrabber::packed422_to_planar422(char *dest, char *src)
 	    *(y++) = a & 0xff;
 	    a >>= 8;
 	    *(u++) = a & 0xff;
+#else
+	    *(u++) = a & 0xff;
+	    a >>= 8;
+	    *(y++) = a & 0xff;
+	    a >>= 8;
+	    *(v++) = a & 0xff;
+	    a >>= 8;
+	    *(y++) = a & 0xff;
+#endif
 	}
 	break;
 
     case BYTE_ORDER_UYVY:
 	while (--i) {
 	    a = *(srca++);
+#if BYTE_ORDER == LITTLE_ENDIAN
 	    *(u++) = a & 0xff;
 	    a >>= 8;
 	    *(y++) = a & 0xff;
@@ -734,12 +768,23 @@ void V4lGrabber::packed422_to_planar422(char *dest, char *src)
 	    *(v++) = a & 0xff;
 	    a >>= 8;
 	    *(y++) = a & 0xff;
+#else
+	    *(y++) = a & 0xff;
+	    a >>= 8;
+	    *(v++) = a & 0xff;
+	    a >>= 8;
+	    *(y++) = a & 0xff;
+	    a >>= 8;
+	    *(u++) = a & 0xff;
+#endif
+
 	}
 	break;
 
     case BYTE_ORDER_VYUY:
 	while (--i) {
 	    a = *(srca++);
+#if BYTE_ORDER == LITTLE_ENDIAN
 	    *(v++) = a & 0xff;
 	    a >>= 8;
 	    *(y++) = a & 0xff;
@@ -747,6 +792,15 @@ void V4lGrabber::packed422_to_planar422(char *dest, char *src)
 	    *(u++) = a & 0xff;
 	    a >>= 8;
 	    *(y++) = a & 0xff;
+#else
+	    *(y++) = a & 0xff;
+	    a >>= 8;
+	    *(u++) = a & 0xff;
+	    a >>= 8;
+	    *(y++) = a & 0xff;
+	    a >>= 8;
+	    *(v++) = a & 0xff;
+#endif
 	}
 	break;
     }
@@ -771,19 +825,28 @@ void V4lGrabber::packed422_to_planar411(char *dest, char *src)
 	for (a1 = height_; a1 > 0; a1 -= 2) {
 	    for (b = width_; b > 0; b -= 2) {
 		a = *(srca++);
-		*(y++) = a & 0xff;
-		a >>= 8;
-		*(u++) = a & 0xff;
-		a >>= 8;
-		*(y++) = a & 0xff;
-		a >>= 8;
+#if BYTE_ORDER == LITTLE_ENDIAN
+		*(y++) = a & 0xff; a >>= 8;
+		*(u++) = a & 0xff; a >>= 8;
+		*(y++) = a & 0xff; a >>= 8;
 		*(v++) = a & 0xff;
+#else
+		*(v++) = a & 0xff; a >>= 8;
+		*(y+1) = a & 0xff; a >>= 8;
+		*(u++) = a & 0xff; a >>= 8;
+		*(y) = a;  y += 2;
+#endif
 	    }
 	    for (b = width_; b > 0; b -= 2) {
 		a = *(srca++);
+#if BYTE_ORDER == LITTLE_ENDIAN
+		*(y++) = a & 0xff; a >>= 16;
 		*(y++) = a & 0xff;
-		a >>= 16;
-		*(y++) = a & 0xff;
+#else
+		a >>= 8;
+		*(y+1) = a & 0xff; a >>= 16;
+		*(y) = a; y += 2;
+#endif
 	    }
 	}
 	break;
@@ -792,19 +855,28 @@ void V4lGrabber::packed422_to_planar411(char *dest, char *src)
 	for (a1 = height_; a1 > 0; a1 -= 2) {
 	    for (b = width_; b > 0; b -= 2) {
 		a = *(srca++);
-		*(y++) = a & 0xff;
-		a >>= 8;
-		*(v++) = a & 0xff;
-		a >>= 8;
-		*(y++) = a & 0xff;
-		a >>= 8;
+#if BYTE_ORDER == LITTLE_ENDIAN
+		*(y++) = a & 0xff; a >>= 8;
+		*(v++) = a & 0xff; a >>= 8;
+		*(y++) = a & 0xff; a >>= 8;
 		*(u++) = a & 0xff;
+#else
+		*(u++) = a & 0xff; a >>= 8;
+		*(y+1) = a & 0xff; a >>= 8;
+		*(v++) = a & 0xff; a >>= 8;
+		*(y) = a;  y += 2;
+#endif
 	    }
 	    for (b = width_; b > 0; b -= 2) {
 		a = *(srca++);
+#if BYTE_ORDER == LITTLE_ENDIAN
+		*(y++) = a & 0xff; a >>= 16;
 		*(y++) = a & 0xff;
-		a >>= 16;
-		*(y++) = a & 0xff;
+#else
+		a >>= 8;
+		*(y+1) = a & 0xff; a >>= 16;
+		*(y) = a; y += 2;
+#endif
 	    }
 	}
 	break;
@@ -813,20 +885,30 @@ void V4lGrabber::packed422_to_planar411(char *dest, char *src)
 	for (a1 = height_; a1 > 0; a1 -= 2) {
 	    for (b = width_; b > 0; b -= 2) {
 		a = *(srca++);
+#if BYTE_ORDER == LITTLE_ENDIAN
+		*(u++) = a & 0xff; a >>= 8;
+		*(y++) = a & 0xff; a >>= 8;
+		*(v++) = a & 0xff; a >>= 8;
+		*(y++) = a & 0xff;
+#else
+		*(y+1) = a & 0xff; a >>= 8;
+		*(v++) = a & 0xff; a >>= 8;
+		*(y) = a & 0xff; a >>= 8;
 		*(u++) = a & 0xff;
-		a >>= 8;
-		*(y++) = a & 0xff;
-		a >>= 8;
-		*(v++) = a & 0xff;
-		a >>= 8;
-		*(y++) = a & 0xff;
+		y += 2;
+#endif
 	    }
 	    for (b = width_; b > 0; b -= 2) {
 		a = *(srca++);
+#if BYTE_ORDER == LITTLE_ENDIAN
 		a >>= 8;
+		*(y++) = a & 0xff; a >>= 16;
 		*(y++) = a & 0xff;
-		a >>= 16;
-		*(y++) = a & 0xff;
+#else
+		*(y+1) = a & 0xff; a >>= 16;
+		*(y) = a; y += 2;
+#endif
+
 	    }
 	}
 	break;
@@ -835,20 +917,29 @@ void V4lGrabber::packed422_to_planar411(char *dest, char *src)
 	for (a1 = height_; a1 > 0; a1 -= 2) {
 	    for (b = width_; b > 0; b -= 2) {
 		a = *(srca++);
+#if BYTE_ORDER == LITTLE_ENDIAN
+		*(v++) = a & 0xff; a >>= 8;
+		*(y++) = a & 0xff; a >>= 8;
+		*(u++) = a & 0xff; a >>= 8;
+		*(y++) = a & 0xff;
+#else
+		*(y+1) = a & 0xff; a >>= 8;
+		*(u++) = a & 0xff; a >>= 8;
+		*(y) = a & 0xff; a >>= 8;
 		*(v++) = a & 0xff;
-		a >>= 8;
-		*(y++) = a & 0xff;
-		a >>= 8;
-		*(u++) = a & 0xff;
-		a >>= 8;
-		*(y++) = a & 0xff;
+		y += 2;
+#endif
 	    }
 	    for (b = width_; b > 0; b -= 2) {
 		a = *(srca++);
+#if BYTE_ORDER == LITTLE_ENDIAN
 		a >>= 8;
+		*(y++) = a & 0xff; a >>= 16;
 		*(y++) = a & 0xff;
-		a >>= 16;
-		*(y++) = a & 0xff;
+#else
+		*(y+1) = a & 0xff; a >>= 16;
+		*(y) = a; y += 2;
+#endif
 	    }
 	}
 	break;
@@ -968,7 +1059,7 @@ void V4lGrabber::vcvt_420p_411p(int width, int height, void *src, void *dst)
 void V4lGrabber::format()
 {
     struct video_channel channel;
-    debug_msg("V4l: format\n");
+    debug_msg("V4L: format\n");
 
     if(decimate_!=1){
    	width_ = CIF_WIDTH * 2 / decimate_;

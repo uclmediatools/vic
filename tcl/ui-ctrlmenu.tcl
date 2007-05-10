@@ -622,7 +622,7 @@ proc insert_grabber_panel devname {
 	set k [string first - $devname]
 	if { $k >= 0 } {
 		incr k -1
-		set devname [string range $devname 0 $k]
+		set devname [string tolower [string range $devname 0 $k]]
 	}
 	regsub -all " " $devname "_" devname
 	set w .menu.$devname

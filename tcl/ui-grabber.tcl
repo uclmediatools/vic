@@ -28,6 +28,12 @@ proc build.dc10 w {
     build.v4l $w
 }
 
+proc build.v4l2 w {
+    build.v4l $w
+    $w.title configure -text "Video4Linux2 grabber controls"
+    pack $w.title  -fill x -expand 1 
+}
+
 proc build.v4l w {
     set f [smallfont]
     global contrast brightness hue saturation norm 
