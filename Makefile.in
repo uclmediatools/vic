@@ -103,8 +103,9 @@ CFLAGS = $(CCOPT) $(BFLAGS)
 #
 # Remember to add a dependency if you add any tcl sources here.
 #
-TCL_VIC = ui-ctrlmenu.tcl ui-main.tcl ui-resource.tcl ui-relate.tcl  ui-titlemaker.tcl \
-	ui-srclist.tcl ui-stats.tcl ui-util.tcl ui-windows.tcl \
+TCL_VIC = ui-util.tcl ui-ctrlmenu.tcl ui-main.tcl ui-resource.tcl \
+	  ui-relate.tcl  ui-titlemaker.tcl \
+	ui-srclist.tcl ui-stats.tcl  ui-windows.tcl \
 	ui-switcher.tcl ui-extout.tcl ui-grabber.tcl ui-unix.tcl \
 	cf-main.tcl cf-tm.tcl cf-confbus.tcl cf-network.tcl cf-util.tcl \
 	tkerror.tcl entry.tcl accessgrid.tcl ag-pixrate.tcl autoplace_ui.tcl
