@@ -22,8 +22,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tcl2c", "..\tcl-8.0\win\tcl2c\tcl2c.2003.vcproj", "{490809D8-6220-4488-AAD6-9EB49282D55B}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tcl2cpp", "tcl\tcl2cpp\tcl2cpp.2003.vcproj", "{2D8B664A-D193-4ED7-BCF8-5E217CE8DBFB}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -31,14 +29,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tcl2cpp", "tcl\tcl2cpp\tcl2
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tcllib", "..\tcl-8.0\win\tcllib.2003.vcproj", "{CF5DA3AB-DA40-465E-B33D-662B99A3C34F}"
 	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
 		{490809D8-6220-4488-AAD6-9EB49282D55B} = {490809D8-6220-4488-AAD6-9EB49282D55B}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tklib", "..\tk-8.0\win\tklib.2003.vcproj", "{995D710B-FAFD-44CE-902B-0A988BB521C8}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
 		{CF5DA3AB-DA40-465E-B33D-662B99A3C34F} = {CF5DA3AB-DA40-465E-B33D-662B99A3C34F}
 	EndProjectSection
@@ -59,14 +53,13 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "common", "..\common\src\common.2003.vcproj", "{326E3115-E442-4F8D-B0FB-5600C1D5B788}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		DDraw Debug = DDraw Debug
 		DDraw Debug GPL = DDraw Debug GPL
 		DDraw Release = DDraw Release
+		DDraw Release GPL = DDraw Release GPL
 		Debug = Debug
 		Debug IPv6 = Debug IPv6
 		Debug IPv6 MSR = Debug IPv6 MSR
@@ -81,6 +74,8 @@ Global
 		{E97385EE-09AD-414F-93CF-FBEDBF93C21E}.DDraw Debug GPL.Build.0 = Debug|Win32
 		{E97385EE-09AD-414F-93CF-FBEDBF93C21E}.DDraw Release.ActiveCfg = Release|Win32
 		{E97385EE-09AD-414F-93CF-FBEDBF93C21E}.DDraw Release.Build.0 = Release|Win32
+		{E97385EE-09AD-414F-93CF-FBEDBF93C21E}.DDraw Release GPL.ActiveCfg = DDraw Release GPL|Win32
+		{E97385EE-09AD-414F-93CF-FBEDBF93C21E}.DDraw Release GPL.Build.0 = DDraw Release GPL|Win32
 		{E97385EE-09AD-414F-93CF-FBEDBF93C21E}.Debug.ActiveCfg = Debug|Win32
 		{E97385EE-09AD-414F-93CF-FBEDBF93C21E}.Debug.Build.0 = Debug|Win32
 		{E97385EE-09AD-414F-93CF-FBEDBF93C21E}.Debug IPv6.ActiveCfg = Debug|Win32
@@ -99,6 +94,8 @@ Global
 		{411F54B7-C71F-4E0F-A8C6-EE79F003E628}.DDraw Debug GPL.Build.0 = Debug|Win32
 		{411F54B7-C71F-4E0F-A8C6-EE79F003E628}.DDraw Release.ActiveCfg = Release|Win32
 		{411F54B7-C71F-4E0F-A8C6-EE79F003E628}.DDraw Release.Build.0 = Release|Win32
+		{411F54B7-C71F-4E0F-A8C6-EE79F003E628}.DDraw Release GPL.ActiveCfg = DDraw Release GPL|Win32
+		{411F54B7-C71F-4E0F-A8C6-EE79F003E628}.DDraw Release GPL.Build.0 = DDraw Release GPL|Win32
 		{411F54B7-C71F-4E0F-A8C6-EE79F003E628}.Debug.ActiveCfg = Debug|Win32
 		{411F54B7-C71F-4E0F-A8C6-EE79F003E628}.Debug.Build.0 = Debug|Win32
 		{411F54B7-C71F-4E0F-A8C6-EE79F003E628}.Debug IPv6.ActiveCfg = Debug|Win32
@@ -117,6 +114,8 @@ Global
 		{75841900-55F8-43A6-A8CF-5B0F2760BD85}.DDraw Debug GPL.Build.0 = Debug|Win32
 		{75841900-55F8-43A6-A8CF-5B0F2760BD85}.DDraw Release.ActiveCfg = Release|Win32
 		{75841900-55F8-43A6-A8CF-5B0F2760BD85}.DDraw Release.Build.0 = Release|Win32
+		{75841900-55F8-43A6-A8CF-5B0F2760BD85}.DDraw Release GPL.ActiveCfg = DDraw Release GPL|Win32
+		{75841900-55F8-43A6-A8CF-5B0F2760BD85}.DDraw Release GPL.Build.0 = DDraw Release GPL|Win32
 		{75841900-55F8-43A6-A8CF-5B0F2760BD85}.Debug.ActiveCfg = Debug|Win32
 		{75841900-55F8-43A6-A8CF-5B0F2760BD85}.Debug.Build.0 = Debug|Win32
 		{75841900-55F8-43A6-A8CF-5B0F2760BD85}.Debug IPv6.ActiveCfg = Debug|Win32
@@ -135,6 +134,8 @@ Global
 		{E9B36171-A284-44B4-B4AF-F52DB37EA7FE}.DDraw Debug GPL.Build.0 = Debug|Win32
 		{E9B36171-A284-44B4-B4AF-F52DB37EA7FE}.DDraw Release.ActiveCfg = Release|Win32
 		{E9B36171-A284-44B4-B4AF-F52DB37EA7FE}.DDraw Release.Build.0 = Release|Win32
+		{E9B36171-A284-44B4-B4AF-F52DB37EA7FE}.DDraw Release GPL.ActiveCfg = DDraw Release GPL|Win32
+		{E9B36171-A284-44B4-B4AF-F52DB37EA7FE}.DDraw Release GPL.Build.0 = DDraw Release GPL|Win32
 		{E9B36171-A284-44B4-B4AF-F52DB37EA7FE}.Debug.ActiveCfg = Debug|Win32
 		{E9B36171-A284-44B4-B4AF-F52DB37EA7FE}.Debug.Build.0 = Debug|Win32
 		{E9B36171-A284-44B4-B4AF-F52DB37EA7FE}.Debug IPv6.ActiveCfg = Debug|Win32
@@ -153,6 +154,8 @@ Global
 		{71134B12-D7FF-4E99-9C5D-9455CF8FC26D}.DDraw Debug GPL.Build.0 = Debug|Win32
 		{71134B12-D7FF-4E99-9C5D-9455CF8FC26D}.DDraw Release.ActiveCfg = Release|Win32
 		{71134B12-D7FF-4E99-9C5D-9455CF8FC26D}.DDraw Release.Build.0 = Release|Win32
+		{71134B12-D7FF-4E99-9C5D-9455CF8FC26D}.DDraw Release GPL.ActiveCfg = DDraw Release GPL|Win32
+		{71134B12-D7FF-4E99-9C5D-9455CF8FC26D}.DDraw Release GPL.Build.0 = DDraw Release GPL|Win32
 		{71134B12-D7FF-4E99-9C5D-9455CF8FC26D}.Debug.ActiveCfg = Debug|Win32
 		{71134B12-D7FF-4E99-9C5D-9455CF8FC26D}.Debug.Build.0 = Debug|Win32
 		{71134B12-D7FF-4E99-9C5D-9455CF8FC26D}.Debug IPv6.ActiveCfg = Debug|Win32
@@ -171,6 +174,8 @@ Global
 		{490809D8-6220-4488-AAD6-9EB49282D55B}.DDraw Debug GPL.Build.0 = Debug|Win32
 		{490809D8-6220-4488-AAD6-9EB49282D55B}.DDraw Release.ActiveCfg = Release|Win32
 		{490809D8-6220-4488-AAD6-9EB49282D55B}.DDraw Release.Build.0 = Release|Win32
+		{490809D8-6220-4488-AAD6-9EB49282D55B}.DDraw Release GPL.ActiveCfg = DDraw Release GPL|Win32
+		{490809D8-6220-4488-AAD6-9EB49282D55B}.DDraw Release GPL.Build.0 = DDraw Release GPL|Win32
 		{490809D8-6220-4488-AAD6-9EB49282D55B}.Debug.ActiveCfg = Debug|Win32
 		{490809D8-6220-4488-AAD6-9EB49282D55B}.Debug.Build.0 = Debug|Win32
 		{490809D8-6220-4488-AAD6-9EB49282D55B}.Debug IPv6.ActiveCfg = Debug|Win32
@@ -186,6 +191,8 @@ Global
 		{2D8B664A-D193-4ED7-BCF8-5E217CE8DBFB}.DDraw Debug GPL.Build.0 = Debug|Win32
 		{2D8B664A-D193-4ED7-BCF8-5E217CE8DBFB}.DDraw Release.ActiveCfg = Release|Win32
 		{2D8B664A-D193-4ED7-BCF8-5E217CE8DBFB}.DDraw Release.Build.0 = Release|Win32
+		{2D8B664A-D193-4ED7-BCF8-5E217CE8DBFB}.DDraw Release GPL.ActiveCfg = DDraw Release GPL|Win32
+		{2D8B664A-D193-4ED7-BCF8-5E217CE8DBFB}.DDraw Release GPL.Build.0 = DDraw Release GPL|Win32
 		{2D8B664A-D193-4ED7-BCF8-5E217CE8DBFB}.Debug.ActiveCfg = Debug|Win32
 		{2D8B664A-D193-4ED7-BCF8-5E217CE8DBFB}.Debug.Build.0 = Debug|Win32
 		{2D8B664A-D193-4ED7-BCF8-5E217CE8DBFB}.Debug IPv6.ActiveCfg = Debug|Win32
@@ -204,6 +211,8 @@ Global
 		{CF5DA3AB-DA40-465E-B33D-662B99A3C34F}.DDraw Debug GPL.Build.0 = Debug|Win32
 		{CF5DA3AB-DA40-465E-B33D-662B99A3C34F}.DDraw Release.ActiveCfg = Release|Win32
 		{CF5DA3AB-DA40-465E-B33D-662B99A3C34F}.DDraw Release.Build.0 = Release|Win32
+		{CF5DA3AB-DA40-465E-B33D-662B99A3C34F}.DDraw Release GPL.ActiveCfg = DDraw Release GPL|Win32
+		{CF5DA3AB-DA40-465E-B33D-662B99A3C34F}.DDraw Release GPL.Build.0 = DDraw Release GPL|Win32
 		{CF5DA3AB-DA40-465E-B33D-662B99A3C34F}.Debug.ActiveCfg = Debug|Win32
 		{CF5DA3AB-DA40-465E-B33D-662B99A3C34F}.Debug.Build.0 = Debug|Win32
 		{CF5DA3AB-DA40-465E-B33D-662B99A3C34F}.Debug IPv6.ActiveCfg = Debug|Win32
@@ -219,6 +228,8 @@ Global
 		{995D710B-FAFD-44CE-902B-0A988BB521C8}.DDraw Debug GPL.Build.0 = Debug|Win32
 		{995D710B-FAFD-44CE-902B-0A988BB521C8}.DDraw Release.ActiveCfg = Release|Win32
 		{995D710B-FAFD-44CE-902B-0A988BB521C8}.DDraw Release.Build.0 = Release|Win32
+		{995D710B-FAFD-44CE-902B-0A988BB521C8}.DDraw Release GPL.ActiveCfg = DDraw Release GPL|Win32
+		{995D710B-FAFD-44CE-902B-0A988BB521C8}.DDraw Release GPL.Build.0 = DDraw Release GPL|Win32
 		{995D710B-FAFD-44CE-902B-0A988BB521C8}.Debug.ActiveCfg = Debug|Win32
 		{995D710B-FAFD-44CE-902B-0A988BB521C8}.Debug.Build.0 = Debug|Win32
 		{995D710B-FAFD-44CE-902B-0A988BB521C8}.Debug IPv6.ActiveCfg = Debug|Win32
@@ -233,6 +244,8 @@ Global
 		{DA6E3C9F-4270-49E5-8706-4E5762BE271B}.DDraw Debug GPL.Build.0 = DDraw Debug|Win32
 		{DA6E3C9F-4270-49E5-8706-4E5762BE271B}.DDraw Release.ActiveCfg = DDraw Release|Win32
 		{DA6E3C9F-4270-49E5-8706-4E5762BE271B}.DDraw Release.Build.0 = DDraw Release|Win32
+		{DA6E3C9F-4270-49E5-8706-4E5762BE271B}.DDraw Release GPL.ActiveCfg = DDraw Release GPL|Win32
+		{DA6E3C9F-4270-49E5-8706-4E5762BE271B}.DDraw Release GPL.Build.0 = DDraw Release GPL|Win32
 		{DA6E3C9F-4270-49E5-8706-4E5762BE271B}.Debug.ActiveCfg = Debug|Win32
 		{DA6E3C9F-4270-49E5-8706-4E5762BE271B}.Debug.Build.0 = Debug|Win32
 		{DA6E3C9F-4270-49E5-8706-4E5762BE271B}.Debug IPv6.ActiveCfg = Debug|Win32
@@ -251,6 +264,8 @@ Global
 		{326E3115-E442-4F8D-B0FB-5600C1D5B788}.DDraw Debug GPL.Build.0 = Debug|Win32
 		{326E3115-E442-4F8D-B0FB-5600C1D5B788}.DDraw Release.ActiveCfg = Release|Win32
 		{326E3115-E442-4F8D-B0FB-5600C1D5B788}.DDraw Release.Build.0 = Release|Win32
+		{326E3115-E442-4F8D-B0FB-5600C1D5B788}.DDraw Release GPL.ActiveCfg = DDraw Release GPL|Win32
+		{326E3115-E442-4F8D-B0FB-5600C1D5B788}.DDraw Release GPL.Build.0 = DDraw Release GPL|Win32
 		{326E3115-E442-4F8D-B0FB-5600C1D5B788}.Debug.ActiveCfg = Debug|Win32
 		{326E3115-E442-4F8D-B0FB-5600C1D5B788}.Debug.Build.0 = Debug|Win32
 		{326E3115-E442-4F8D-B0FB-5600C1D5B788}.Debug IPv6.ActiveCfg = Debug IPv6 Win2000|Win32
