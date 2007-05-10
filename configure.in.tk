@@ -6,18 +6,19 @@ AC_ARG_WITH(ucltcl,	--with-ucltcl=path	specify a pathname for UCL's tcl, ucltcl=
 AC_ARG_WITH(tcl,	--with-tcl=path	specify a pathname for tcl, d=$withval, d="")
 
 if test "$aquatcl" == yes; then
-	echo "On MACOSX - Using Aqua TCL/Tk"
+	echo "Using AquaTCL"
         V_LIB_TCL="-framework Tcl"
+        V_DEFINE="$V_DEFINE -DMAC_OSX_TCL"
         V_LIBRARY_TCL=/Library/Frameworks/Tcl.framework/Versions/8.4/Resources/Scripts
         V_INCLUDE_TCL="-I/Library/Frameworks/Tcl.framework/Headers -I/Library/Frameworks/Tcl.framework/PrivateHeaders"
 
 elif test "$ucltcl" == yes; then
-	if test -z "$ucltcl"; then 
+	if test -z "$tcl"; then 
 		# UCL defaults
 		ucltcl=../tcl-8.0
 	fi
 	if test ! -d "$ucltcl" ; then
-		echo "'$d' is not a directory"
+		echo "UCL tcl path: '$ucltcl' is not a directory"
 		exit 1
 	fi
 	V_INCLUDE_TCL="-I$ucltcl/generic"
@@ -173,17 +174,19 @@ AC_ARG_WITH(ucltk,	--with-ucltk=path	specify a pathname for UCL's tk, ucltk=$wit
 AC_ARG_WITH(tk,	--with-tk=path	specify a pathname for tk, d=$withval, d="")
 
 if test "$aquatk" == yes; then
+	echo "Using AquaTk"
         V_LIB_TK="-framework Tk"
+        V_DEFINE="$V_DEFINE -DMAC_OSX_TK"
         V_LIBRARY_TK=/Library/Frameworks/Tk.framework/Versions/8.4/Resources/Scripts
         V_INCLUDE_TK="-I/Library/Frameworks/Tk.framework/Headers -I/Library/Frameworks/Tk.framework/PrivateHeaders"
 
 elif test "$ucltk" == yes; then
-	if test -z "$ucltk"; then 
+	if test -z "$tk"; then 
 		# UCL defaults
 		ucltk=../tk-8.0
 	fi
 	if test ! -d "$ucltk" ; then
-		echo "'$d' is not a directory"
+		echo "UCL TK dir: '$ucltk' is not a directory"
 		exit 1
 	fi
 	V_INCLUDE_TK="-I$ucltk/generic"
