@@ -187,6 +187,8 @@ proc selectInitialDevice {} {
 }
 
 proc build.session { w dst port srcid ttl name note } {
+	global V
+
 	set f [smallfont]
 
 	label $w.title -text Session
@@ -200,7 +202,7 @@ proc build.session { w dst port srcid ttl name note } {
 		$w.nb.frame { top fillx }
 
 	label $w.nb.frame.info -font $f -anchor w \
-		-text "Dest: $dst   Port: $port  ID: $srcid  TTL: $ttl"
+		-text "Address: $dst   Port: $port  ID: $srcid  TTL: $ttl Tool: $V(app)-[version]"
 
 	frame $w.nb.frame.name
 	label $w.nb.frame.name.label -text "Name: " -font $f -anchor e -width 6
