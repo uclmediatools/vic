@@ -139,7 +139,8 @@ proc build.menu { } {
 	global V
 	set net $V(data-net)
 	build.session $w.session [$net addr] [$net port] \
-		[[srctab local] srcid] [$net ttl] [[srctab local] sdes name]
+		[[srctab local] srcid] [$net ttl] [[srctab local] sdes name] \
+		[[srctab local] sdes note]
 
 	button $w.dismiss -text Dismiss -borderwidth 2 -width 8 \
 		-relief raised -anchor c \
@@ -185,8 +186,8 @@ proc selectInitialDevice {} {
 	}
 }
 
-proc build.session { w dst port srcid ttl name } {
-	set f [smallfont]	
+proc build.session { w dst port srcid ttl name note } {
+	set f [smallfont]
 
 	label $w.title -text Session
 	pack $w.title -fill x
@@ -209,7 +210,7 @@ proc build.session { w dst port srcid ttl name } {
 
 	frame $w.nb.frame.msg
 	label $w.nb.frame.msg.label -text "Note: " -font $f -anchor e -width 6
-	mk.entry $w.nb.frame.msg update_note ""
+	mk.entry $w.nb.frame.msg update_note $note
 	pack $w.nb.frame.msg.label -side left
 	pack $w.nb.frame.msg.entry -side left -expand 1 -fill x -pady 2
 

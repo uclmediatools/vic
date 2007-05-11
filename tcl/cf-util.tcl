@@ -136,6 +136,7 @@ proc init_late {} {
 
 	$src sdes name [resource rtpName]
 	$src sdes email [resource rtpEmail]
+	$src sdes note [resource rtpNote]
 	$src sdes cname $cname
 	set tool $V(app)-[version]
 	global tcl_platform
