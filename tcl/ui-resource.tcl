@@ -253,5 +253,8 @@ proc init_resources {} {
 	# list of sdes items to display in info window
 	option add Vic.sdesList "cname tool email note"
 
+	# Set rtpNote for sender - This can be overidden by rtpNote in ~/.RTPdefaults
+	option add Vic.rtpNote "" startupFile
+
 	catch "option readfile ~/.RTPdefaults startupFile"
 }
