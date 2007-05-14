@@ -28,15 +28,9 @@ proc build.dc10 w {
     build.v4l $w
 }
 
-proc build.v4l2 w {
-    build.v4l $w
-    $w.title configure -text "Video4Linux2 grabber controls"
-    pack $w.title  -fill x -expand 1 
-}
-
 proc build.v4l w {
     set f [smallfont]
-    global contrast brightness hue saturation norm 
+    global contrast brightness hue saturation norm
     set contrast [resource contrast]
     set brightness [resource brightness]
     set hue [resource hue]
@@ -47,14 +41,14 @@ proc build.v4l w {
     pack $w.title  -fill x -expand 1
 
     frame $w.f -relief sunken -borderwidth 2
-    frame $w.f.left -relief flat  
+    frame $w.f.left -relief flat
 
 
     button $w.f.left.reset -font $f -width 10 -text "Reset" -command "set contrast 128; set brightness 128; set hue 128; set saturation 128; grabber controls reset"  -padx 1 -pady 1
-    pack $w.f.left.reset 
+    pack $w.f.left.reset
 
-    frame $w.f.right -relief flat  
-    frame $w.f.right.top -relief flat 
+    frame $w.f.right -relief flat
+    frame $w.f.right.top -relief flat
 
     frame $w.f.right.top.c -relief flat -borderwidth 2
     scale $w.f.right.top.c.cscale -orient horizontal -font $f -relief groove  -width 12  \
@@ -62,7 +56,7 @@ proc build.v4l w {
                 -variable contrast \
                 -label Contrast \
                 -command "grabber contrast"
-    pack  $w.f.right.top.c.cscale  -fill x -expand 1 
+    pack  $w.f.right.top.c.cscale  -fill x -expand 1
 
     frame $w.f.right.top.b -relief flat -borderwidth 2
     scale $w.f.right.top.b.bscale -orient horizontal -font $f -relief groove -width 12  \
@@ -70,8 +64,8 @@ proc build.v4l w {
                 -variable brightness \
                 -label Brightness \
                 -command "grabber brightness"
-    pack  $w.f.right.top.b.bscale -fill x -expand 1 
-    frame $w.f.right.bottom -relief flat 
+    pack  $w.f.right.top.b.bscale -fill x -expand 1
+    frame $w.f.right.bottom -relief flat
 
 
     frame $w.f.right.bottom.h -relief flat -borderwidth 2
@@ -80,7 +74,7 @@ proc build.v4l w {
                 -variable hue \
                 -label Hue \
                 -command "grabber hue"
-    pack  $w.f.right.bottom.h.hscale -fill x -expand 1 
+    pack  $w.f.right.bottom.h.hscale -fill x -expand 1
 
     frame $w.f.right.bottom.s -relief flat -borderwidth  2
     scale $w.f.right.bottom.s.sscale -orient horizontal -font $f -relief groove  -width 12 \
@@ -88,16 +82,96 @@ proc build.v4l w {
                 -variable saturation \
                 -label Saturation \
                 -command "grabber saturation"
-    pack  $w.f.right.bottom.s.sscale -fill x -expand 1 
+    pack  $w.f.right.bottom.s.sscale -fill x -expand 1
 
     pack $w.f.right.top.b $w.f.right.top.c -side right
     pack $w.f.right.bottom.s $w.f.right.bottom.h -side right
     pack $w.f.right.top $w.f.right.bottom -side top -fill x -expand 1
     pack $w.f.left $w.f.right -side left -expand 1 -fill x
-    pack $w.f -expand 1 -fill x 
+    pack $w.f -expand 1 -fill x
 
 }
 
+
+proc build.v4l2 w {
+    set f [smallfont]
+    global contrast brightness hue saturation norm
+    set contrast [resource contrast]
+    set brightness [resource brightness]
+    set gamma [resource gamma]
+    set hue [resource hue]
+    set saturation [resource saturation]
+    set gain [resource gain]
+    set norm 0
+
+    label $w.title -text "Video4Linux2 grabber controls"
+    pack $w.title  -fill x -expand 1
+
+    frame $w.f -relief sunken -borderwidth 2
+    frame $w.f.left -relief flat
+
+
+    button $w.f.left.reset -font $f -width 10 -text "Reset" -command "set contrast 128; set brightness 128;set gamma 128; set hue 128; set saturation 128; set gain 128; grabber controls reset"  -padx 1 -pady 1
+    pack $w.f.left.reset
+
+    frame $w.f.right -relief flat
+    frame $w.f.right.top -relief flat
+
+    frame $w.f.right.top.contrast -relief flat -borderwidth 2
+    scale $w.f.right.top.contrast.scale -orient horizontal -font $f -relief groove  -width 12  \
+                -showvalue 0 -from 0 -to 255 \
+                -variable contrast \
+                -label Contrast \
+                -command "grabber contrast"
+    pack  $w.f.right.top.contrast.scale  -fill x -expand 1
+
+    frame $w.f.right.top.brightness -relief flat -borderwidth 2
+    scale $w.f.right.top.brightness.scale -orient horizontal -font $f -relief groove -width 12  \
+                -showvalue 0 -from 0 -to 255 \
+                -variable brightness \
+                -label Brightness \
+                -command "grabber brightness"
+    pack  $w.f.right.top.brightness.scale -fill x -expand 1
+
+    frame $w.f.right.top.gamma -relief flat -borderwidth 2
+    scale $w.f.right.top.gamma.scale -orient horizontal -font $f -relief groove  -width 12 \
+                -showvalue 0 -from 0 -to 255 \
+                -variable gamma \
+                -label Gamma \
+                -command "grabber gamma"
+    pack  $w.f.right.top.gamma.scale -fill x -expand 1
+    frame $w.f.right.bottom -relief flat
+
+    frame $w.f.right.bottom.hue -relief flat -borderwidth 2
+    scale $w.f.right.bottom.hue.scale -orient horizontal -font $f -relief groove  -width 12 \
+                -showvalue 0 -from 0 -to 255 \
+                -variable hue \
+                -label Hue \
+                -command "grabber hue"
+    pack  $w.f.right.bottom.hue.scale -fill x -expand 1
+
+    frame $w.f.right.bottom.saturation -relief flat -borderwidth  2
+    scale $w.f.right.bottom.saturation.scale -orient horizontal -font $f -relief groove  -width 12 \
+                -showvalue 0 -from 0 -to 255 \
+                -variable saturation \
+                -label Saturation \
+                -command "grabber saturation"
+    pack  $w.f.right.bottom.saturation.scale -fill x -expand 1
+
+    frame $w.f.right.bottom.gain -relief flat -borderwidth  2
+    scale $w.f.right.bottom.gain.scale -orient horizontal -font $f -relief groove  -width 12 \
+                -showvalue 0 -from 0 -to 255 \
+                -variable gain \
+                -label Gain \
+                -command "grabber gain"
+    pack  $w.f.right.bottom.gain.scale -fill x -expand 1
+
+    pack $w.f.right.top.brightness $w.f.right.top.contrast $w.f.right.top.gamma -side right
+    pack $w.f.right.bottom.saturation $w.f.right.bottom.hue $w.f.right.bottom.gain -side right
+    pack $w.f.right.top $w.f.right.bottom -side top -fill x -expand 1
+    pack $w.f.left $w.f.right -side left -expand 1 -fill x
+    pack $w.f -expand 1 -fill x
+}
 
 proc build.meteor w {
 #

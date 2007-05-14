@@ -1777,9 +1777,10 @@ case "$arch" in
   ;;
   x86_64|amd64)
     arch="x86_32"
+    ${cc:=gcc}
     canon_arch="`$cc -dumpmachine | sed -e 's,\(^-*\)-.*,\1,'`"
-    if  x"$canon_arch" = x"x86_64" -o x"$canon_arch" = x"amd64" ; then
-      if  -z "`echo $CFLAGS | grep -- -m32`"  ; then
+    if [ x"$canon_arch" = x"x86_64" -o x"$canon_arch" = x"amd64" ]; then
+      if [ -z "`echo $CFLAGS | grep -- -m32`"  ]; then
 	V_ARCH="ARCH_X86_64"
       fi
     fi
@@ -6675,13 +6676,12 @@ if test "$v4l2old" = "yes" ; then
                 V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-v4l2-old.o"
 		echo "Using old Linux grabber-v4l2"
 elif test -r /usr/include/linux/videodev.h ; then
-        if grep V4L2 /usr/include/linux/videodev.h >/dev/null 2>&1  ; then
-                #V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-v4l2.o video/grabber-video4linux.o"
- 		V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-video4linux.o"
-		echo "Using Linux (new)video4linux2(2.6.x compatible) and V4L v1"
+        if test -r /usr/include/linux/videodev2.h  ; then
+                V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-v4l2.o video/grabber-video4linux.o"
+		echo "Using Linux Grabbers: Video4Linux2 and Video4Linux1"
         else
                 V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-video4linux.o"
-		echo "Using Linux video4linux vers 1"
+		echo "Using Linux Grabber: Video4Linux1"
         fi
 fi
 

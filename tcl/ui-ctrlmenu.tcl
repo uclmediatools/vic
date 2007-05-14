@@ -1195,7 +1195,8 @@ proc build.decoder w {
 	build.gamma $v.bot.gamma
 	label $v.bot.mode -text "\[[winfo depth .top]-bit\]" -font $f
 	pack $v.bot.gamma $v.bot.mode -side left -padx 4
-	pack $v.dither $v.bot -anchor c -pady 2
+	pack $v.dither -side left -anchor c -pady 2 
+	pack $v.bot -side left -anchor c -pady 2 
 
 	pack $w.f.h0 -side left -padx 6 -pady 6
 	pack $w.f.h2 -side left -padx 6 -pady 6 -fill x -expand 1

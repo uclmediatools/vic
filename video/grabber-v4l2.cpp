@@ -1,25 +1,31 @@
 /* =========================================================================
- 
+
      Copyright (c) 1997 Regents of Koji OKAMURA, oka@kobe-u.ac.jp
      All rights reserved.
- 
+
      largely rewritten for new bttv/video4linux interface
      by Gerd Knorr <kraxel@cs.tu-berlin.de>
- 
+
      Added brightness, contrast, hue and saturation controls.
      by Jean-Marc Orliaguet <jmo@medialab.chalmers.se>
- 
+
      Added support for various YUV byte orders.
      by Jean-Marc Orliaguet <jmo@medialab.chalmers.se>
- 
+
      Added support for NTSC/PAL/SECAM video norm selection. (14/10/99)
      by Jean-Marc Orliaguet <jmo@medialab.chalmers.se>
- 
+
      Early stage V4L2 implementation. (v0.92a)
      by Jean-Marc Orliaguet <jmo@medialab.chalmers.se>
      Capture code taken from xcaptest.c V4L2 demo app (Bill Dirks)
      Some code contributed by Malcolm Caldwell <malcolm@it.ntu.edu.au>
- 
+
+     Added support for MJPEG/JPEG.
+     Added gamma and gain controls.
+     by Douglas Kosovic <douglask@itee.uq.edu.au>
+     MJPEG/JPEG support uses Tiny Jpeg Decoder from :
+     http://www.saillard.org/programs_and_patches/tinyjpegdecoder/
+
    ========================================================================= */
 
 #include <stdio.h>
@@ -28,6 +34,7 @@
 #include <string.h>
 #include <signal.h>
 #include <errno.h>
+#include <endian.h>
 
 #include <sys/types.h>
 #include <sys/fcntl.h>
@@ -39,24 +46,27 @@
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 
+
 extern "C"
 {
 #include <asm/types.h>
-/*#include <linux/videodev2.h>*/
-#include "videodev2.h"
+#include <linux/videodev2.h>
 }
 
+//#include "videodev2.h"
 #include "grabber.h"
 #include "vic_tcl.h"
 #include "device-input.h"
 #include "module.h"
+#include "tinyjpeg.h"
 
 /* here you can tune the device names */
-static const char *devlist[] = { "/dev/video0", "/dev/video1", "/dev/video2", "/dev/video3",NULL };
-/*static const char *devlist[] = { "/dev/v4l2/capture0", "/dev/v4l2/capture1", "/dev/v4l2/capture2", "/dev/v4l2/capture3",NULL };*/
-
-//#define DEBUG(x)
-#define DEBUG(x) (x)
+static const char *devlist[] = {
+    "/dev/video0", "/dev/video1", "/dev/video2", "/dev/video3",
+    "/dev/video4", "/dev/video5", "/dev/video6", "/dev/video7",
+    "/dev/video8", "/dev/video9", "/dev/video10", "/dev/video11",
+    NULL
+};
 
 #define NTSC_WIDTH  640
 #define NTSC_HEIGHT 480
@@ -65,12 +75,15 @@ static const char *devlist[] = { "/dev/video0", "/dev/video1", "/dev/video2", "/
 #define CIF_WIDTH   352
 #define CIF_HEIGHT  288
 
-/* pass 0/1 by reference */
-static const int  one = 1, zero = 0;
-
 #define CF_422 0
 #define CF_411 1
 #define CF_CIF 2
+
+/* YUV Byte order */
+#define BYTE_ORDER_YUYV 0
+#define BYTE_ORDER_YVYU 1
+#define BYTE_ORDER_UYVY 2
+#define BYTE_ORDER_VYUY 3
 
 typedef struct tag_vimage
 {
@@ -79,7 +92,7 @@ typedef struct tag_vimage
 }       VIMAGE;
 
 
-#define STREAMBUFS 2
+#define STREAMBUFS 4
 
 class V4l2Grabber : public Grabber
 {
@@ -97,28 +110,33 @@ protected:
         void format();
         void setsize();
 
-        void packed422_to_planar422(char *, char*);
-        void packed422_to_planar411(char *, char*);
+        void packed422_to_planar422(char *, const char*);
+        void packed422_to_planar420(char *, const char*);
+        void jpeg_to_planar420(char *, const char*);
 
         void setctrl(int, int, char *, int);
 
         struct v4l2_capability   capability;
         struct v4l2_input        *inputs;
-        struct v4l2_pix_format   pict;
-        struct v4l2_input	 input;
-        struct v4l2_queryctrl	 qctrl;
-        struct v4l2_format 	fmt;
+        struct v4l2_input        input;
+        struct v4l2_queryctrl    qctrl;
+        struct v4l2_format       fmt;
         struct v4l2_requestbuffers req;
-
 
         /* mmap */
         int                      have_mmap;
-        VIMAGE		vimage[STREAMBUFS];
-        struct v4l2_buffer      tempbuf;
-        int 		buf_sync;
+        VIMAGE                   vimage[STREAMBUFS];
+        struct v4l2_buffer       tempbuf;
+        int                      buf_sync;
 
+        __u32   pixelformat;
         int fd_;
         int format_;
+        int have_YUV422;
+        int have_YUV422P;
+        int have_YUV420P;
+        int have_MJPEG;
+        int have_JPEG;
         int byteorder_;
         int cformat_;
         int port_;
@@ -130,6 +148,9 @@ protected:
         int max_width_;
         int max_height_;
         int decimate_;
+        int bytesused_;
+
+        struct jdec_private *jpegdec_;
 };
 
 /* ----------------------------------------------------------------- */
@@ -149,7 +170,7 @@ V4l2Device::V4l2Device(const char *dev, const char *name, char *attr) : InputDev
 {
         dev_ = dev;
         attributes_ = attr;
-        debug_msg("V4l2:  ==> %s\n",attr);
+        debug_msg("V4L2:  ==> %s\n",attr);
 }
 
 int V4l2Device::command(int argc, const char*const* argv)
@@ -183,100 +204,77 @@ static V4l2Scanner find_video4linux_devices(devlist);
 V4l2Scanner::V4l2Scanner(const char **dev)
 {
         struct v4l2_capability   capability;
-        struct v4l2_input	 input;
-        struct v4l2_fmtdesc 	 pixfmt;
+        struct v4l2_input        input;
 
-        int  k,j,i,err,fd;
+        int  k,i,err,fd;
         char *nick, *attr;
 
         for (i = 0; dev[i] != NULL; i++) {
-                debug_msg("V4l2: trying %s... ",dev[i]);
+                debug_msg("V4L2: trying %s... ",dev[i]);
                 if (-1 == (fd = open(dev[i],O_RDWR))) {
-			debug_msg("V4l2: open" );
+                        debug_msg("Error opening: %s : %s", dev[i], strerror(errno));
                         continue;
                 }
+                memset(&capability,0,sizeof(capability));
                 if (-1 == ioctl(fd,VIDIOC_QUERYCAP,&capability)) {
-                        perror("V4l2: ioctl VIDIOC_QUERYCAP");
+                        perror("V4L2: ioctl VIDIOC_QUERYCAP");
                         close(fd);
                         continue;
                 }
-                if (!(capability.capabilities & V4L2_CAP_VIDEO_CAPTURE)) {
-                        fprintf(stderr,"device %s can't capture:%d\n",capability.driver, capability.capabilities);
+
+                if (capability.capabilities & V4L2_CAP_VIDEO_CAPTURE == 0) {
+                        debug_msg("%s, %s can't capture\n",capability.card,capability.bus_info);
                         close(fd);
                         continue;
                 }
+
                 attr = new char[512];
                 strcpy(attr,"format { 411 422 cif } ");
-
-                /*if (capability.maxwidth  > PAL_WIDTH/2 &&
-                                        capability.maxheight > PAL_HEIGHT/2) {*/
                 strcat(attr,"size { small large cif } ");
-		/*
-                } else {
-                        strcat(attr,"size { small cif } ");
-                }*/
 
-                debug_msg("V4l2:   ports:");
+                debug_msg("V4L2:   ports:");
                 strcat(attr,"port { ");
-		char attr_tmp[100]="";
-		
-                for (j = 0; j < 16; j++) {
-                        if (-1 == ioctl(fd,VIDIOC_S_INPUT,&j)) {
-                                perror("ioctl VIDIOC_S_INPUT");
-				break;
+                //input.index = 0;
+                memset(&input, 0, sizeof(input));
+                while (-1 != ioctl (fd, VIDIOC_ENUMINPUT, &input)) {
+                        if (-1 == ioctl(fd,VIDIOC_S_INPUT,&input.index)) {
+                                debug_msg("ioctl VIDIOC_S_INPUT: %s", strerror(errno));
                         } else {
-                                input.index=j;
-                                if (-1 == ioctl(fd,VIDIOC_ENUMINPUT,&input)) {
-					debug_msg("VIDIOC_ENUMINPUT for input:%d\n",j);
-				break;
-                                } else {
-                                        debug_msg(" %s: ",input.name);
-                                        for (unsigned int s=0 ; s<strlen((const char*)input.name) ; s++)
-                                                if (input.name[s]==' ') input.name[s]='-';
 
-					if(strcasecmp((const char*)input.name, "S-Video")==0){
-					   strcat(attr, (const char*)input.name);
-					   strcat(attr," ");																
-					}else{
-                                           strcat(attr_tmp,(const char*)input.name);
-                                           strcat(attr_tmp," ");
-					}
-                                }
-
-                                pixfmt.index=j;
-				pixfmt.type=V4L2_BUF_TYPE_VIDEO_CAPTURE;
-                                if (-1 == ioctl(fd,VIDIOC_ENUM_FMT,&pixfmt)) {
-                                        perror("ioctl VIDIOC_ENUM_FMT");
-                                } else debug_msg("%s ",pixfmt.description);
+                                debug_msg(" %s: ", (char*)input.name);
+                                for (unsigned int s=0 ; s<strlen((char*)input.name) ; s++)
+                                        if (input.name[s]==' ') input.name[s]='-';
+                                strcat(attr,(const char*)input.name);
+                                strcat(attr," ");
                         }
+                        input.index++;
                 }
-		strcat(attr, attr_tmp);
                 debug_msg("\n");
                 strcat(attr,"} ");
 
-		debug_msg("V4l2:   norms: ");
+                debug_msg("V4L2:   norms: ");
                 strcat(attr,"type { ");
-		
-		for (k = 0, err = 0; err == 0; ++k)
-        	{
-                	struct v4l2_standard     estd;
-                	estd.index = k;
-                	err = ioctl(fd, VIDIOC_ENUMSTD, &estd);
-                	if (!err) {
-				strcat(attr, (const char*)estd.name);
-				strcat(attr," ");           
-				debug_msg("%s ", estd.name);
-			}     	
-        	}
+
+                for (k = 0, err = 0; err == 0; ++k)
+                {
+                        struct v4l2_standard     estd;
+                        memset(&estd,0,sizeof(estd));
+                        estd.index = k;
+                        err = ioctl(fd, VIDIOC_ENUMSTD, &estd);
+                        if (!err) {
+                                strcat(attr, (const char*)estd.name);
+                                strcat(attr," ");
+                                debug_msg("%s ", estd.name);
+                        }
+                }
                 debug_msg("\n");
 
-		strcat(attr,"} ");
+                strcat(attr,"} ");
 
-                nick = new char[strlen((const char*)capability.card)+7];
-                sprintf(nick,"V4L2:%s",capability.card);
+                nick = new char[strlen((char*)capability.card)+strlen(dev[i])+7];
+                sprintf(nick,"V4L2-%s %s",capability.card, dev[i]);
                 new V4l2Device(dev[i],nick,attr);
-		fprintf(stderr,"Attached to V4l2 device: %s\n",nick);
-
+                fprintf(stderr, "Attached to V4L2 device: %s\n", nick);
                 close(fd);
         }
 }
@@ -285,62 +283,123 @@ V4l2Scanner::V4l2Scanner(const char **dev)
 
 V4l2Grabber::V4l2Grabber(const char *cformat, const char *dev)
 {
-  fd_ = open(dev, O_RDWR);
-  if (fd_ < 0) {
-    perror("open");
-    status_=-1;
-    return;
-  }
 
-  have_mmap = 0;
-
-  struct v4l2_capability cap;
-  struct v4l2_requestbuffers reqbuf;
-  if (-1 == ioctl(fd_,VIDIOC_QUERYCAP,&cap)) {
-    perror("ioctl VIDIOC_QUERYCAP");
-    status_=-1;
-    return;
-  } else {
-    if ( !(cap.capabilities & V4L2_CAP_READWRITE) && !(cap.capabilities & V4L2_CAP_STREAMING )) {
-      fprintf(stderr,"v4l2: fatal: device does not support read() call or streaming capture.\n");
-      status_=-1;
-      return;
-    }
-
-    reqbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    reqbuf.memory = V4L2_MEMORY_MMAP;
-    reqbuf.count = 20;
-    have_mmap = 1;
-
-    if (-1 == ioctl (fd_, VIDIOC_REQBUFS, &reqbuf)) {
-      if (errno == EINVAL) {
-        printf ("Video capturing or mmap-streaming is not supported\n");
+        fd_ = open(dev, O_RDWR);
+        if (fd_ < 0) {
+                perror("open");
+                return;
+        }
         have_mmap = 0;
-        status_=-1;
-      } else {
-        perror ("VIDIOC_REQBUFS");
-        have_mmap = 0;
-      }}
-  }
-  /* fill in defaults */
-  if(!strcmp(cformat, "411"))
-    cformat_ = CF_411;
-  if(!strcmp(cformat, "422"))
-    cformat_ = CF_422;
-  if(!strcmp(cformat, "cif"))
-    cformat_ = CF_CIF;
+        have_YUV422 = 0;
+        have_YUV422P = 0;
+        have_YUV420P = 0;
+        have_MJPEG = 0;
+        have_JPEG = 0;
 
-  port_     = 0;
-  norm_     = 0; 
-  decimate_ = 2;
-  running_  = 0;
+        jpegdec_ = NULL;
+
+        struct v4l2_capability cap;
+        memset(&cap,0,sizeof(cap));
+        if (-1 == ioctl(fd_,VIDIOC_QUERYCAP,&cap)) {
+                perror("ioctl VIDIOC_QUERYCAP");
+        } else {
+                if ( !(cap.capabilities & V4L2_CAP_READWRITE) && !(cap.capabilities & V4L2_CAP_STREAMING)) {
+                        debug_msg("v4l2: fatal: device does not support read()/write() calls or streaming capture.\n");
+                        status_=-1;
+                        return;
+                }
+        }
+
+        memset(&fmt,0,sizeof(fmt));
+        fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        ioctl(fd_, VIDIOC_G_FMT, &fmt);
+
+        fmt.fmt.pix.width = CIF_WIDTH;
+        fmt.fmt.pix.height = CIF_HEIGHT;
+        fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUV420;
+        if (-1 != ioctl(fd_, VIDIOC_S_FMT, &fmt) ) {
+                have_YUV420P = 1;
+                debug_msg("\nDevice capture V4L2_PIX_FMT_YUV420\n");
+        }
+
+        fmt.fmt.pix.width = CIF_WIDTH;
+        fmt.fmt.pix.height = CIF_HEIGHT;
+        fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUV422P;
+        if (-1 != ioctl(fd_, VIDIOC_S_FMT, &fmt) ) {
+                have_YUV422P = 1;
+                debug_msg("\nDevice capture V4L2_PIX_FMT_YUV422\n");
+        }
+
+        fmt.fmt.pix.width = CIF_WIDTH;
+        fmt.fmt.pix.height = CIF_HEIGHT;
+        fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
+        if (-1 != ioctl(fd_, VIDIOC_S_FMT, &fmt) ) {
+                if (fmt.fmt.pix.width <= CIF_WIDTH && fmt.fmt.pix.height <= CIF_HEIGHT) {
+                        have_YUV422 = 1;
+                        debug_msg("\nDevice capture V4L2_PIX_FMT_YUYV (YUV 4:2:2)\n");
+                }
+        }
+
+        fmt.fmt.pix.width = CIF_WIDTH;
+        fmt.fmt.pix.height = CIF_HEIGHT;
+        fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_MJPEG;
+        if (-1 != ioctl(fd_, VIDIOC_S_FMT, &fmt) ) {
+                have_MJPEG = 1;
+                debug_msg("\nDevice capture V4L2_PIX_FMT_MJPEG\n");
+        }
+
+        fmt.fmt.pix.width = CIF_WIDTH;
+        fmt.fmt.pix.height = CIF_HEIGHT;
+        fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_JPEG;
+        if (-1 != ioctl(fd_, VIDIOC_S_FMT, &fmt) ) {
+                have_MJPEG = 1;
+                debug_msg("\nDevice capture V4L2_PIX_FMT_JPEG\n");
+        }
+
+        if( !( have_YUV422P || have_YUV422 || have_YUV420P || have_MJPEG || have_JPEG)){
+                debug_msg("No suitable palette found\n");
+                close(fd_);
+                status_=-1;
+                return;
+        }
+
+        struct v4l2_requestbuffers reqbuf;
+        memset(&reqbuf,0,sizeof(reqbuf));
+        reqbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        reqbuf.memory = V4L2_MEMORY_MMAP;
+        reqbuf.count = 20;
+        have_mmap = 1;
+        if (-1 == ioctl (fd_, VIDIOC_REQBUFS, &reqbuf)) {
+                if (errno == EINVAL) {
+                        printf("Video capturing or mmap-streaming is not supported\n");
+                        have_mmap = 0;
+                        status_=-1;
+                } else {
+                        perror ("VIDIOC_REQBUFS");
+                        have_mmap = 0;
+                }
+        }
+
+        /* fill in defaults */
+        if(!strcmp(cformat, "411"))
+                cformat_ = CF_411;
+        if(!strcmp(cformat, "422"))
+                cformat_ = CF_422;
+        if(!strcmp(cformat, "cif"))
+                cformat_ = CF_CIF;
+
+        port_      = 0;
+        norm_      = 0;
+        decimate_  = 2;
+        running_   = 0;
+
 }
 
 
 V4l2Grabber::~V4l2Grabber()
 {
         int i;
-        debug_msg("V4l2: destructor\n");
+        debug_msg("V4L2: destructor\n");
 
         if (have_mmap) {
                 for (i = 0; i < STREAMBUFS; ++i) {
@@ -355,6 +414,10 @@ V4l2Grabber::~V4l2Grabber()
                 vimage[0].data = NULL;
         }
         close(fd_);
+
+        if (jpegdec_) {
+                tinyjpeg_free(jpegdec_);
+        }
 
 }
 
@@ -384,6 +447,7 @@ int V4l2Grabber::command(int argc, const char*const* argv)
 
                         for (i = 0, err = 0; err == 0; ++i) {
                                 struct v4l2_input inp;
+                                memset(&inp,0,sizeof(inp));
                                 inp.index = i;
                                 err = ioctl(fd_, VIDIOC_ENUMINPUT, &inp);
                                 if (!err) {
@@ -427,39 +491,52 @@ int V4l2Grabber::command(int argc, const char*const* argv)
                         return (TCL_OK);
                 }
 
+                if (strcmp(argv[1], "gamma") == 0) {
+                        setctrl(atoi(argv[2]), V4L2_CID_GAMMA, "Gamma", 0);
+                        return (TCL_OK);
+                }
+
+                if (strcmp(argv[1], "gain") == 0) {
+                        setctrl(atoi(argv[2]), V4L2_CID_GAIN, "Gain", 0);
+                        return (TCL_OK);
+                }
+
 
                 if (strcmp(argv[1], "controls") == 0) {
                         if (strcmp(argv[2], "reset") == 0) {
-                                debug_msg( "V4l2: Resetting controls\n");
+                                debug_msg( "V4L2: Resetting controls\n");
 
                                 setctrl(atoi(argv[2]), V4L2_CID_BRIGHTNESS, "Brightness", 1);
                                 setctrl(atoi(argv[2]), V4L2_CID_HUE, "Hue", 1);
                                 setctrl(atoi(argv[2]), V4L2_CID_CONTRAST, "Contrast", 1);
                                 setctrl(atoi(argv[2]), V4L2_CID_SATURATION, "Saturation", 1);
+                                setctrl(atoi(argv[2]), V4L2_CID_GAMMA, "Gamma", 1);
+                                setctrl(atoi(argv[2]), V4L2_CID_GAIN, "Gain", 1);
                                 return (TCL_OK);
                         }
                 }
 
                 if (strcmp(argv[1], "yuv_byteorder") == 0) {
-                        debug_msg("V4l2: asked for yuv_byteorder\n");
+                        debug_msg("V4L2: asked for yuv_byteorder\n");
                         return (TCL_OK);
                 }
 
                 if (strcmp(argv[1], "fps") == 0) {
-                        debug_msg("V4l2: fps %s\n",argv[2]);
+                        debug_msg("V4L2: fps %s\n",argv[2]);
                 }
 
 
                 if (strcmp(argv[1], "type") == 0 || strcmp(argv[1], "format") == 0) {
-				
+
                         for (int k = 0, err = 0; err == 0; ++k)
-        		{
-                		struct v4l2_standard     estd;
-                		estd.index = k;
-                		if ( !(err = ioctl(fd_, VIDIOC_ENUMSTD, &estd)) )
-					if (strcasecmp(argv[2], (const char *)estd.name) == 0)
-						norm_ = k;          
-			}     	     
+                        {
+                                struct v4l2_standard     estd;
+                                memset(&estd,0,sizeof(estd));
+                                estd.index = k;
+                                if ( !(err = ioctl(fd_, VIDIOC_ENUMSTD, &estd)) )
+                                        if ( strcasecmp(argv[2], (const char *)estd.name) == 0)
+                                                norm_ = k;
+                        }
 
                         if (running_) {
                                 stop(); start();
@@ -468,12 +545,12 @@ int V4l2Grabber::command(int argc, const char*const* argv)
                         return (TCL_OK);
                 }
 
-	} else if (argc == 2) {
-        	if (strcmp(argv[1], "format") == 0 ||
-               		strcmp(argv[1], "type") == 0) {
-            		return (TCL_OK);
-        	}
-    	}
+        } else if (argc == 2) {
+                if (strcmp(argv[1], "format") == 0 ||
+                        strcmp(argv[1], "type") == 0) {
+                        return (TCL_OK);
+                }
+        }
 
         return (Grabber::command(argc, argv));
 }
@@ -491,6 +568,7 @@ void V4l2Grabber::start()
                 if (have_mmap) {
                         buf_sync = 1;
 
+                        memset(&req, 0, sizeof(req));
                         req.count = STREAMBUFS;
                         req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
                         req.memory = V4L2_MEMORY_MMAP;
@@ -503,13 +581,13 @@ void V4l2Grabber::start()
                         for (i = 0; i < (int)req.count; ++i) {
                                 vimage[i].vidbuf.index = i;
                                 vimage[i].vidbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-                        	vimage[i].vidbuf.memory = V4L2_MEMORY_MMAP;
+                                vimage[i].vidbuf.memory = V4L2_MEMORY_MMAP;
                                 err = ioctl(fd_, VIDIOC_QUERYBUF, &vimage[i].vidbuf);
                                 if (err < 0) {
                                         debug_msg("QUERYBUF returned error %d\n",errno);
                                         return;
                                 }
-                                vimage[i].data = (typeof(vimage[0].data)) mmap((void *)NULL, vimage[i].vidbuf.length, PROT_READ | PROT_WRITE, MAP_SHARED, fd_, vimage[i].vidbuf.m.offset);
+                                vimage[i].data = (typeof(vimage[0].data)) mmap(0,  vimage[i].vidbuf.length, PROT_READ|PROT_WRITE, MAP_SHARED, fd_, vimage[i].vidbuf.m.offset);
 
                                 if ((int)vimage[i].data == -1) {
                                         debug_msg("v4l2: mmap() returned error %d\n", errno);
@@ -543,7 +621,7 @@ void V4l2Grabber::start()
 
 void V4l2Grabber::stop()
 {
-        debug_msg("V4l2: stop\n");
+        debug_msg("V4L2: stop\n");
         int i, err;
 
         if (have_mmap) {
@@ -581,6 +659,7 @@ int V4l2Grabber::grab()
         struct timeval          timeout;
         int                     n;
 
+        bytesused_ = 0;
         if (have_mmap) {
                 FD_ZERO(&rdset);
                 FD_SET(fd_, &rdset);
@@ -591,65 +670,75 @@ int V4l2Grabber::grab()
                 if (n == 0)
                         return (0);
                 else if (FD_ISSET(fd_, &rdset)) {
+                        memset(&tempbuf, 0, sizeof(struct v4l2_buffer));
                         tempbuf.type = vimage[0].vidbuf.type;
-                        fr = vimage[buf_sync%2].data;
-                        ioctl(fd_, VIDIOC_DQBUF, &tempbuf);
+                        tempbuf.memory = vimage[0].vidbuf.memory;
+                        if (-1 == ioctl(fd_, VIDIOC_DQBUF, &tempbuf))
+                                perror("ioctl  VIDIOC_DQBUF");
 
                         if (  (req.count > 1) ) buf_sync++;
                         fr = vimage[buf_sync%2].data;
+                        bytesused_ = tempbuf.bytesused;
 
                 }
 
         } else {
                 fr = vimage[0].data;
                 read(fd_, vimage[0].data, fmt.fmt.pix.sizeimage);
+                bytesused_ = fmt.fmt.pix.sizeimage;
         }
 
         switch (cformat_) {
         case CF_411:
-
         case CF_CIF:
-                packed422_to_planar411((char*)frame_,fr);
+                if( have_YUV420P )
+                       memcpy((void *)frame_, (const void *)fr, (size_t)height_*width_*3/2)
+;
+                else if( have_YUV422 )
+                       packed422_to_planar420((char*)frame_,fr);
+                else if( have_MJPEG || have_JPEG) {
+                       jpeg_to_planar420((char*)frame_,fr);
+                }
                 break;
 
         case CF_422:
-                packed422_to_planar422((char*)frame_,fr);
+                if (have_YUV422P) 
+                       memcpy((void *)frame_, (const void *)fr, (size_t)height_*width_*2);
+                else if( have_YUV422 )
+                       packed422_to_planar422((char*)frame_,fr);
+                else if( have_MJPEG  || have_JPEG)
+                       // jpeg_to_planar422((char*)frame_,fr);
                 break;
         }
 
         if (have_mmap)
                 ioctl(fd_, VIDIOC_QBUF, &vimage[buf_sync%2].vidbuf);
 
-
         suppress(frame_);
         saveblks(frame_);
         YuvFrame f(media_ts(), frame_, crvec_, outw_, outh_);
-
-
         return (target_->consume(&f));
 }
 
 
-void V4l2Grabber::packed422_to_planar422(char *dest, char *src)
+void V4l2Grabber::packed422_to_planar422(char *dest, const char *src)
 {
-        int i;
-        int w, h;
-        char *s, *y,*u,*v;
-        unsigned int a, *srca;
+    int i;
+    char *y,*u,*v;
+    unsigned int a, *srca;
 
-        srca = (unsigned int *)src;
+    srca = (unsigned int *)src;
 
-        w = fmt.fmt.pix.width;
-        h = fmt.fmt.pix.height;
+    i = (width_ * height_)/2;
+    y = dest;
+    u = y + width_ * height_;
+    v = u + width_ * height_ / 2;
 
-        i = (w * h)/2;
-        s = src;
-        y = dest;
-        u = y + w * h;
-        v = u + w * h /2 ;
-
+    switch (byteorder_) {
+    case BYTE_ORDER_YUYV:
         while (--i) {
                 a = *(srca++);
+#if BYTE_ORDER == LITTLE_ENDIAN 
                 *(y++) = a & 0xff;
                 a >>= 8;
                 *(u++) = a & 0xff;
@@ -657,41 +746,256 @@ void V4l2Grabber::packed422_to_planar422(char *dest, char *src)
                 *(y++) = a & 0xff;
                 a >>= 8;
                 *(v++) = a & 0xff;
+#else
+                *(v++) = a & 0xff;
+                a >>= 8;
+                *(y++) = a & 0xff;
+                a >>= 8;
+                *(u++) = a & 0xff;
+                a >>= 8;
+                *(y++) = a & 0xff;
+#endif
         }
+        break;
+
+    case BYTE_ORDER_YVYU:
+        while (--i) {
+                a = *(srca++);
+#if BYTE_ORDER == LITTLE_ENDIAN 
+                *(y++) = a & 0xff;
+                a >>= 8;
+                *(v++) = a & 0xff;
+                a >>= 8;
+                *(y++) = a & 0xff;
+                a >>= 8;
+                *(u++) = a & 0xff;
+#else
+                *(u++) = a & 0xff;
+                a >>= 8;
+                *(y++) = a & 0xff;
+                a >>= 8;
+                *(v++) = a & 0xff;
+                a >>= 8;
+                *(y++) = a & 0xff;
+#endif
+        }
+        break;
+
+    case BYTE_ORDER_UYVY:
+        while (--i) {
+                a = *(srca++);
+#if BYTE_ORDER == LITTLE_ENDIAN 
+                *(u++) = a & 0xff;
+                a >>= 8;
+                *(y++) = a & 0xff;
+                a >>= 8;
+                *(v++) = a & 0xff;
+                a >>= 8;
+                *(y++) = a & 0xff;
+#else
+                *(y++) = a & 0xff;
+                a >>= 8;
+                *(v++) = a & 0xff;
+                a >>= 8;
+                *(y++) = a & 0xff;
+                a >>= 8;
+                *(u++) = a & 0xff;
+#endif
+        }
+        break;
+
+    case BYTE_ORDER_VYUY:
+        while (--i) {
+                a = *(srca++);
+#if BYTE_ORDER == LITTLE_ENDIAN 
+                *(v++) = a & 0xff;
+                a >>= 8;
+                *(y++) = a & 0xff;
+                a >>= 8;
+                *(u++) = a & 0xff;
+                a >>= 8;
+                *(y++) = a & 0xff;
+#else
+                *(y++) = a & 0xff;
+                a >>= 8;
+                *(u++) = a & 0xff;
+                a >>= 8;
+                *(y++) = a & 0xff;
+                a >>= 8;
+                *(v++) = a & 0xff;
+#endif
+        }
+        break;
+    }
 
 }
 
-void V4l2Grabber::packed422_to_planar411(char *dest, char *src)
+void V4l2Grabber::packed422_to_planar420(char *dest, const char *src)
 {
-        int  a1,b;
-        int w,h;
-        char *s, *y,*u,*v;
-        unsigned int a, *srca;
+    int  a1,b;
+    char *y,*u,*v;
+    unsigned int a, *srca;
 
-        srca = (unsigned int *)src;
+    srca = (unsigned int *)src;
 
-        w = fmt.fmt.pix.width;
-        h = fmt.fmt.pix.height;
-        s = src;
-        y = dest;
-        u = y + w * h;
-        v = u + w * h  / 4;
+    y = dest;
+    u = y + width_ * height_;
+    v = u + width_ * height_ / 4;
 
-        for (a1 = h; a1 > 0; a1 -= 2) {
-                for (b = w; b > 0; b -= 2) {
+    switch (byteorder_) {
+    case BYTE_ORDER_YUYV:
+        for (a1 = height_; a1 > 0; a1 -= 2) {
+                for (b = width_; b > 0; b -= 2) {
                         a = *(srca++);
+#if BYTE_ORDER == LITTLE_ENDIAN 
                         *(y++) = a & 0xff; a >>= 8;
                         *(u++) = a & 0xff; a >>= 8;
                         *(y++) = a & 0xff; a >>= 8;
                         *(v++) = a & 0xff;
+#else
+                        *(v++) = a & 0xff; a >>= 8;
+                        *(y+1) = a & 0xff; a >>= 8;
+                        *(u++) = a & 0xff; a >>= 8;
+                        *(y) = a;  y += 2;
+#endif
                 }
-                for (b = w; b > 0; b -= 2) {
-                        a = *(srca++);
+                for (b = width_; b > 0; b -= 2) {
+                        a = *(srca++); 
+#if BYTE_ORDER == LITTLE_ENDIAN 
                         *(y++) = a & 0xff; a >>= 16;
                         *(y++) = a & 0xff;
+#else
+                        a >>= 8;
+                        *(y+1) = a & 0xff; a >>= 16;
+                        *(y) = a; y += 2;
+#endif
                 }
         }
+        break;
 
+    case BYTE_ORDER_YVYU:
+        for (a1 = height_; a1 > 0; a1 -= 2) {
+                for (b = width_; b > 0; b -= 2) {
+                        a = *(srca++);
+#if BYTE_ORDER == LITTLE_ENDIAN 
+                        *(y++) = a & 0xff; a >>= 8;
+                        *(v++) = a & 0xff; a >>= 8;
+                        *(y++) = a & 0xff; a >>= 8;
+                        *(u++) = a & 0xff;
+#else
+                        *(u++) = a & 0xff; a >>= 8;
+                        *(y+1) = a & 0xff; a >>= 8;
+                        *(v++) = a & 0xff; a >>= 8;
+                        *(y) = a;  y += 2;
+#endif
+                }
+                for (b = width_; b > 0; b -= 2) {
+                        a = *(srca++); 
+#if BYTE_ORDER == LITTLE_ENDIAN 
+                        *(y++) = a & 0xff; a >>= 16;
+                        *(y++) = a & 0xff;
+#else
+                        a >>= 8;
+                        *(y+1) = a & 0xff; a >>= 16;
+                        *(y) = a; y += 2;
+#endif
+                }
+        }
+        break;
+
+    case BYTE_ORDER_UYVY:
+        for (a1 = height_; a1 > 0; a1 -= 2) {
+                for (b = width_; b > 0; b -= 2) {
+                        a = *(srca++);
+#if BYTE_ORDER == LITTLE_ENDIAN 
+                        *(u++) = a & 0xff; a >>= 8;
+                        *(y++) = a & 0xff; a >>= 8;
+                        *(v++) = a & 0xff; a >>= 8;
+                        *(y++) = a & 0xff;
+#else
+                        *(y+1) = a & 0xff; a >>= 8;
+                        *(v++) = a & 0xff; a >>= 8;
+                        *(y) = a & 0xff; a >>= 8;
+                        *(u++) = a & 0xff;
+                        y += 2;
+#endif
+                }
+                for (b = width_; b > 0; b -= 2) {
+                        a = *(srca++);
+#if BYTE_ORDER == LITTLE_ENDIAN 
+                        a >>= 8;
+                        *(y++) = a & 0xff; a >>= 16;
+                        *(y++) = a & 0xff;
+#else
+                        *(y+1) = a & 0xff; a >>= 16;
+                        *(y) = a; y += 2;
+#endif
+                }
+        }
+        break;
+
+    case BYTE_ORDER_VYUY:
+        for (a1 = height_; a1 > 0; a1 -= 2) {
+                for (b = width_; b > 0; b -= 2) {
+                        a = *(srca++);
+#if BYTE_ORDER == LITTLE_ENDIAN 
+                        *(v++) = a & 0xff; a >>= 8;
+                        *(y++) = a & 0xff; a >>= 8;
+                        *(u++) = a & 0xff; a >>= 8;
+                        *(y++) = a & 0xff;
+#else
+                        *(y+1) = a & 0xff; a >>= 8;
+                        *(u++) = a & 0xff; a >>= 8;
+                        *(y) = a & 0xff; a >>= 8;
+                        *(v++) = a & 0xff;
+                        y += 2;
+#endif
+                }
+                for (b = width_; b > 0; b -= 2) {
+                        a = *(srca++);
+#if BYTE_ORDER == LITTLE_ENDIAN 
+                        a >>= 8;
+                        *(y++) = a & 0xff; a >>= 16;
+                        *(y++) = a & 0xff;
+#else
+                        *(y+1) = a & 0xff; a >>= 16;
+                        *(y) = a; y += 2;
+#endif
+                }
+        }
+        break;
+    }
+}
+
+void V4l2Grabber::jpeg_to_planar420(char *dest, const char *src)
+{
+        char *y,*u,*v;
+        unsigned char *components[4];
+
+        y = dest;
+        u = y + width_ * height_;
+        v = u + width_ * height_ /4;
+
+        components[0] = (unsigned char *) y;
+        components[1] = (unsigned char *) u;
+        components[2] = (unsigned char *) v;
+
+        if (jpegdec_ == NULL) {
+                jpegdec_ = tinyjpeg_init();
+                if (jpegdec_ == NULL) {
+                        return;
+                }
+                tinyjpeg_set_flags(jpegdec_, TINYJPEG_FLAGS_MJPEG_TABLE);
+        }
+        tinyjpeg_set_components(jpegdec_, components, 4);
+        if (tinyjpeg_parse_header(jpegdec_, (unsigned char *)src, bytesused_) < 0) {
+               debug_msg("V4L2 Jpeg error: %s", tinyjpeg_get_errorstring(jpegdec_));
+               return;
+        }
+        if (tinyjpeg_decode(jpegdec_, TINYJPEG_FMT_YUV420P) < 0) {
+               debug_msg("V4L2 Jpeg error: %s", tinyjpeg_get_errorstring(jpegdec_));
+               return;
+        }
 }
 
 
@@ -699,11 +1003,36 @@ void V4l2Grabber::packed422_to_planar411(char *dest, char *src)
 void V4l2Grabber::format()
 {
 
-        v4l2_std_id 	standard;
+        struct v4l2_standard    standard;
 
         int i, err;
         int input;
         int format_ok = 0;
+
+        switch (cformat_) {
+        case CF_411:
+        case CF_CIF:
+                if( have_YUV420P )
+                       pixelformat = V4L2_PIX_FMT_YUV420;
+                else if( have_YUV422 )
+                       pixelformat = V4L2_PIX_FMT_YUYV;
+                else if( have_MJPEG )
+                       pixelformat = V4L2_PIX_FMT_MJPEG;
+                else if( have_JPEG )
+                       pixelformat = V4L2_PIX_FMT_JPEG;
+                break;
+
+        case CF_422:
+                if (have_YUV422P) 
+                       pixelformat = V4L2_PIX_FMT_YUV422P;
+                else if( have_YUV422 )
+                       pixelformat = V4L2_PIX_FMT_YUYV;
+                else if( have_MJPEG )
+                       pixelformat = V4L2_PIX_FMT_MJPEG;
+                else if( have_JPEG )
+                       pixelformat = V4L2_PIX_FMT_JPEG;
+                break;
+        }
 
         while ( !format_ok ) {
                 width_  = CIF_WIDTH  *2  / decimate_;
@@ -726,18 +1055,15 @@ void V4l2Grabber::format()
                 }
                 debug_msg("decimate: %d\n",decimate_);
 
-                ioctl(fd_, VIDIOC_G_STD, &standard);
-                
-                        struct v4l2_standard     estd;
-                        estd.index = norm_;
-                        err = ioctl(fd_, VIDIOC_ENUMSTD, &estd);
-                        if (!err) {         
-                                        standard = estd.id;
-                                        if (-1 == ioctl(fd_, VIDIOC_S_STD, &standard))
-                                                perror("ioctl VIDIOC_S_STD");
-                                        else debug_msg("v4l2: setting norm to %s\n",estd.name);
-                        }
-                
+                memset(&standard,0,sizeof(standard));
+                standard.index = norm_;
+                err = ioctl(fd_, VIDIOC_ENUMSTD, &standard);
+                if (!err) {
+                        if (-1 == ioctl(fd_, VIDIOC_S_STD, &standard.id))
+                                perror("ioctl VIDIOC_S_STD");
+                        else debug_msg("v4l2: setting norm to %s\n",standard.name);
+                }
+
                 input = port_;
                 if ((err = ioctl(fd_, VIDIOC_S_INPUT, &input)) )
                         debug_msg("S_INPUT returned error %d\n",errno);
@@ -745,19 +1071,19 @@ void V4l2Grabber::format()
 
                 for (i = 0, err = 0; err == 0; ++i) {
                         struct v4l2_fmtdesc     fmtd;
+                        memset(&fmtd,0,sizeof(fmtd));
                         fmtd.index = i;
                         fmtd.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
                         err = ioctl(fd_, VIDIOC_ENUM_FMT, &fmtd);
                         if (!err) {
 
-                                if (fmtd.pixelformat == V4L2_PIX_FMT_YUYV) {
-
+                                if (fmtd.pixelformat == pixelformat) {
+                                        memset(&fmt,0,sizeof(fmt));
                                         fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
                                         ioctl(fd_, VIDIOC_G_FMT, &fmt);
                                         fmt.fmt.pix.width = width_;
                                         fmt.fmt.pix.height = height_;
-                                        fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
-                                        fmt.fmt.pix.field = V4L2_FIELD_INTERLACED;
+                                        fmt.fmt.pix.pixelformat = pixelformat;
 
                                         if ( (err = ioctl(fd_, VIDIOC_S_FMT, &fmt) ) )
                                                 debug_msg("\nv4l2: Failed to set format\n");
@@ -788,10 +1114,8 @@ void V4l2Grabber::format()
                                         }
                                         break;
                                 }
-                        } else {
-				perror("ioctl VIDIOC_ENUM_FMT");
-				debug_msg("v4l2: VIDIOC_ENUM_FMT index: %d\n",i);
-			}
+
+                        }
                 }
         }
 
@@ -815,7 +1139,7 @@ void V4l2Grabber::setctrl(int val, int cid, char *controlname, int reset)
                                 ctrl.value = qctrl.minimum + (qctrl.maximum - qctrl.minimum) * val/256;
                         if (-1 == ioctl(fd_, VIDIOC_S_CTRL,&ctrl))
                                 perror("ioctl  VIDIOC_S_CTRL");
-                        else debug_msg( "V4l2: %s = %d\n", controlname, val);
+                        else debug_msg( "V4L2: %s = %d\n", controlname, val);
                 }
         }
         return;
