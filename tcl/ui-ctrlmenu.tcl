@@ -126,7 +126,7 @@ proc have_transmit_permission {} {
 proc build.menu { } {
 	set w .menu
 	create_toplevel $w "vic menu"
-	#wm withdraw $w
+	wm withdraw $w
 	catch "wm resizable $w false false"
 
 	frame $w.session
