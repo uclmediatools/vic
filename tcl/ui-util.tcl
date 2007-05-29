@@ -142,9 +142,7 @@ proc toggle_window w {
 proc create_toplevel { w title } {
 	global V
 	if [info exists V(visual)] {
-		puts "toplevel $w -class $V(class) -visual $V(visual) -colormap $V(colormap)"
-		toplevel $w -class $V(class) \
-			-visual "$V(visual)"
+		toplevel $w -class $V(class)  -visual "$V(visual)"
 	} else {
 		toplevel $w -class $V(class)
 	}
