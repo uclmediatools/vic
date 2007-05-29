@@ -14,7 +14,7 @@ proc ag_stdout_init_window {} {
 
 proc ag_stdout_init {} {
     global tcl_platform
-    if { 1 && $tcl_platform(platform) == "windows" } {
+    if { 0 && $tcl_platform(platform) == "windows" } {
 	ag_stdout_init_window
 	ag_puts  "Stdout window initialized ..."
   }
@@ -22,7 +22,7 @@ proc ag_stdout_init {} {
 
 proc ag_puts s {
     global tcl_platform
-    if { 1 && $tcl_platform(platform) == "windows" } {
+    if { 0 && $tcl_platform(platform) == "windows" } {
 		.stdout.text insert end "$s\n"
 		.stdout.text yview moveto 1
     } else {
