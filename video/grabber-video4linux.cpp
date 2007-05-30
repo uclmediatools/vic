@@ -205,7 +205,7 @@ V4lScanner::V4lScanner(const char **dev)
     int i, fd;
     char *nick, *attr;
 
-    // AGTk uses VIC_DEVICE env variable to select device
+    // AGTk 3.02 and earlier use VIC_DEVICE env variable to select device
     const char *myDev = getenv("VIC_DEVICE");
     if (myDev != 0)
     {

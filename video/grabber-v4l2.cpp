@@ -209,6 +209,15 @@ V4l2Scanner::V4l2Scanner(const char **dev)
         int  k,i,err,fd;
         char *nick, *attr;
 
+        // VIC_DEVICE env variable selects V4L device with AGTk 3.02 and earlier
+        // but doesn't work if V4L2 devices are listed before the V4L device
+        // so don't list V4L2 devices if VIC_DEVICE env variable is set.
+        const char *myDev = getenv("VIC_DEVICE");
+        if (myDev != 0)
+        {
+                 return;
+        }
+
         for (i = 0; dev[i] != NULL; i++) {
                 debug_msg("V4L2: trying %s... ",dev[i]);
                 if (-1 == (fd = open(dev[i],O_RDWR))) {

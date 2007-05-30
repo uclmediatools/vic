@@ -176,6 +176,34 @@ proc selectInitialDevice {} {
 			return
 		}
 	}
+	if { [string equal -nocase -length 5 $d "V4L2:"] } {
+        	set d [string range $d 5 end]
+        	set k [string length $d]
+        	incr k -1
+		foreach v $inputDeviceList {
+	   		if { [string equal -length 5 [$v nickname] "V4L2-"] && \
+				[string range [$v nickname] end-$k end] == "$d" && \
+				[$v attributes] != "disabled" } {
+				set videoDevice $v
+				select_device $v
+				return
+			}
+		}
+	}
+	if { [string equal -nocase -length 4 $d "V4L:"] } {
+        	set d [string range $d 4 end]
+        	set k [string length $d]
+        	incr k -1
+		foreach v $inputDeviceList {
+	   		if { [string equal -length 4 [$v nickname] "V4L-"] && \
+				[string range [$v nickname] end-$k end] == "$d" && \
+				[$v attributes] != "disabled" } {
+				set videoDevice $v
+				select_device $v
+				return
+			}
+		}
+	}
 	foreach v $inputDeviceList {
 		if { "[$v attributes]" != "disabled" &&
 			"[$v nickname]" != "still" } {
