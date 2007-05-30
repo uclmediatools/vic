@@ -518,11 +518,7 @@ namespace eval ag_autoplace {
 			# ag_puts "Redraw rectangles in rectangle width x height: $grid_width x $grid_height"
 			for {set i 0} {$i < $grid_width} {incr i 1} {
 				for {set ii 0} {$ii < $grid_height} {incr ii 1} {
-					lappend rect_list [$lcanvas create rectangle [expr $rect_x + $i * $win_width* $scale] \
-											[expr $rect_y + $ii * $win_height* $scale] \
-											[expr $rect_x + ($i+1) * $win_width* $scale] \
-											[expr $rect_y + ($ii+1) * $win_height* $scale] \
-											-outline black -fill blue -width 1]
+					lappend rect_list [$lcanvas create rectangle [expr $rect_x + $i * $win_width* $scale] [expr $rect_y + $ii * $win_height* $scale] [expr $rect_x + ($i+1) * $win_width* $scale] [expr $rect_y + ($ii+1) * $win_height* $scale] -outline black -fill blue -width 1]
 					#ag_puts "$lcanvas create rectangle [expr $startx + $i * $win_width* $scale] \
 					#						[expr $starty + $ii * $win_height* $scale] \
 					#						[expr $startx + ($i+1) * $win_width* $scale] \
