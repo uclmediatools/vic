@@ -6677,7 +6677,7 @@ if test "$v4l2old" = "yes" ; then
 		echo "Using old Linux grabber-v4l2"
 elif test -r /usr/include/linux/videodev.h ; then
         if test -r /usr/include/linux/videodev2.h  ; then
-                V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-v4l2.o video/grabber-video4linux.o"
+                V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-v4l2.o video/tinyjpeg.o video/jidctflt.o video/grabber-video4linux.o"
 		echo "Using Linux Grabbers: Video4Linux2 and Video4Linux1"
         else
                 V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-video4linux.o"
