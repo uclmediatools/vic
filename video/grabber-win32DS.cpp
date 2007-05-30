@@ -647,7 +647,8 @@ void DirectShowGrabber::setCaptureOutputFormat() {
                pVih->bmiHeader.biSizeImage = DIBSIZE(pVih->bmiHeader);
 	       // AvgTimePerFrame value that specifies the video frame'
 	       // average display time, in 100-nanosecond units. 
-	       pVih->AvgTimePerFrame	   = 10000000/fps_;
+	       if (fps_) 
+		 pVih->AvgTimePerFrame	   = 10000000/fps_;
 
                debug_msg("Windows GDI BITMAPINFOHEADER follows:\n");
                debug_msg("biWidth=        %d\n", pVih->bmiHeader.biWidth);
