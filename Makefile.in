@@ -87,7 +87,7 @@ INCLUDE_GRABBER = @V_INCLUDE_GRABBER@
 OBJ_GRABBER = @V_OBJ_GRABBER@
 SRC_GRABBER = $(OBJ_GRABBER:.o=.cpp) 
 OBJ_XIL = @V_OBJ_XIL@
-OBJ_CRYPT = net/crypt-rijndael.o net/rijndael-alg-fst.o net/rijndael-api-fst.o @V_OBJ_CRYPT@
+OBJ_CRYPT = net/crypt-rijndael.o @V_OBJ_CRYPT@
 CODEC_LIB = @V_CODEC_LIB@ codec/tmndec/libh263.a codec/tmn-x/libh263coder.a
 
 LIB = $(LIB_GRABBER) @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ $(CODEC_LIB) $(VIDEO_LIB) \
