@@ -2398,48 +2398,6 @@
 						AdditionalOptions="               "/>
 				</FileConfiguration>
 			</File>
-			<File
-				RelativePath=".\net\rijndael-alg-fst.c">
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalOptions="               "/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DDraw Debug GPL|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalOptions="               "/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DDraw Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalOptions="               "/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\net\rijndael-api-fst.c">
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalOptions="               "/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DDraw Debug GPL|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalOptions="               "/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DDraw Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalOptions="               "/>
-				</FileConfiguration>
-			</File>
 			<Filter
 				Name="Net Header files"
 				Filter=".h">
