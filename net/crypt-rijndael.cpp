@@ -103,11 +103,11 @@ int CryptRijndael::install_key(const u_int8_t* key)
     // The vic framework gives us an md5 hash which is 16 bytes long.
     //
     int keylen = 16;
-    rc = makeKey(&keyInstEncrypt_, DIR_ENCRYPT, keylen * 8, (char *) key);
+    rc = makeKey(&keyInstEncrypt_, DIR_ENCRYPT, keylen * 8, (BYTE *) key);
     if (rc < 0)
 	debug_msg("makeKey failed: %d\n", rc);
 
-    rc = makeKey(&keyInstDecrypt_, DIR_DECRYPT, keylen * 8, (char *) key);
+    rc = makeKey(&keyInstDecrypt_, DIR_DECRYPT, keylen * 8, (BYTE *) key);
     if (rc < 0)
 	debug_msg("makeKey failed: %d\n", rc);
 
