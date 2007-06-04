@@ -361,7 +361,7 @@ install: force
 clean:
 	rm -f *.o codec/jpeg/*.o codec/p64/*.o codec/h263/*.o \
 		histtolut render/histtolut/*.o huffcode.c win32/*.o \
-		core tcl2c++ mkbv bv.c \
+		core tcl2c++ mkbv bv.c cpu/*.o \
 		codec/*.o render/*.o video/*.o net/*.o rtp/*.o mkhuff \
 		tk.tcl vic_tcl.c h261_play_tcl.c tmp.c \
 		vic vic.dyn vic.xil h261_play h261_dump jpeg_play cb_wish \
