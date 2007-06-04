@@ -1776,14 +1776,7 @@ case "$arch" in
     V_ARCH="ARCH_X86"
   ;;
   x86_64|amd64)
-    arch="x86_32"
-    ${cc:=gcc}
-    canon_arch="`$cc -dumpmachine | sed -e 's,\(^-*\)-.*,\1,'`"
-    if [ x"$canon_arch" = x"x86_64" -o x"$canon_arch" = x"amd64" ]; then
-      if [ -z "`echo $CFLAGS | grep -- -m32`"  ]; then
-	V_ARCH="ARCH_X86_64"
-      fi
-    fi
+    V_ARCH="ARCH_X86_64"
   ;;
   "Power Macintosh"|ppc|ppc64|powerpc)
     V_ARCH="ARCH_PPC"
@@ -4315,6 +4308,8 @@ if test "$aquatk" != "yes" -a "$mingw" != "yes"; then
 
 xlibdirs="\
 	/usr/openwin/lib \
+	/usr/X11R6/lib64 \
+	/usr/lib64/X11R6 \
 	/usr/X11R6/lib \
 	/usr/lib/X11R6 \
 	/usr/X11R5/lib \

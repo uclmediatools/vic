@@ -598,10 +598,10 @@ void V4l2Grabber::start()
                                 }
                                 vimage[i].data = (typeof(vimage[0].data)) mmap(0,  vimage[i].vidbuf.length, PROT_READ|PROT_WRITE, MAP_SHARED, fd_, vimage[i].vidbuf.m.offset);
 
-                                if ((int)vimage[i].data == -1) {
-                                        debug_msg("v4l2: mmap() returned error %d\n", errno);
+                                if ((long)vimage[i].data == -1) {
+                                        debug_msg("v4l2: mmap() returned error %l\n", errno);
                                         return;
-                                } else debug_msg("v4l2: mmap()'ed buffer at 0x%x (%d bytes)\n", (int)vimage[i].data, vimage[i].vidbuf.length);
+                                } else debug_msg("v4l2: mmap()'ed buffer at 0x%x (%d bytes)\n", (long)vimage[i].data, vimage[i].vidbuf.length);
                         }
 
                         for (i = 0; i < (int)req.count; ++i)
