@@ -176,13 +176,12 @@ proc selectInitialDevice {} {
 			return
 		}
 	}
-	if { [string equal -nocase -length 5 $d "V4L2:"] } {
+	if { [string toupper [string range $d 0 4]] == "V4L2:" } {
         	set d [string range $d 5 end]
-        	set k [string length $d]
-        	incr k -1
 		foreach v $inputDeviceList {
-	   		if { [string equal -length 5 [$v nickname] "V4L2-"] && \
-				[string range [$v nickname] end-$k end] == "$d" && \
+	   		set k [expr [string length [$v nickname]] - [string length $d]]
+	   		if { [string range [$v nickname] 0 4] == "V4L2-" && \
+				[string range [$v nickname] $k end] == "$d" && \
 				[$v attributes] != "disabled" } {
 				set videoDevice $v
 				select_device $v
@@ -190,13 +189,12 @@ proc selectInitialDevice {} {
 			}
 		}
 	}
-	if { [string equal -nocase -length 4 $d "V4L:"] } {
+	if { [string toupper [string range $d 0 3]] == "V4L:" } {
         	set d [string range $d 4 end]
-        	set k [string length $d]
-        	incr k -1
 		foreach v $inputDeviceList {
-	   		if { [string equal -length 4 [$v nickname] "V4L-"] && \
-				[string range [$v nickname] end-$k end] == "$d" && \
+	   		set k [expr [string length [$v nickname]] - [string length $d]]
+	   		if { [string range [$v nickname] 0 3] == "V4L-" && \
+				[string range [$v nickname] $k end] == "$d" && \
 				[$v attributes] != "disabled" } {
 				set videoDevice $v
 				select_device $v

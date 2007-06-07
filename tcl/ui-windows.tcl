@@ -189,14 +189,15 @@ proc open_window src {
 	}
 	set w .vw$uid
 	toplevel $w -class Vic \
-		-visual "[winfo visual .top] [winfo depth .top]" -padx 0 -pady 0
+		-visual "[winfo visual .top] [winfo depth .top]"
 	catch "wm resizable $w false false"
+	catch "$w configure -padx 0 -pady 0"
 	#
 	# make windows become x-y resizeable
 	#
 	#catch "wm resizable $w true false"
-	frame $w.frame -padx 0 -pady 0 
-
+	frame $w.frame 
+	catch "$w.frame configure -padx 0 -pady 0"
 
 	global size$w userwin_x userwin_y userwin_size
 	if [info exists userwin_x($src)] {
