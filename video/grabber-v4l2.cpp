@@ -637,12 +637,16 @@ void V4l2Grabber::stop()
                 if ( fd_ > 0 ) {
                         i = V4L2_BUF_TYPE_VIDEO_CAPTURE;
                         if ( (err = ioctl(fd_, VIDIOC_STREAMOFF, &i) ) )
-                                debug_msg("v4l2: VIDIOC_STREAMOFF failed\n");
+                                debug_msg("V4L2: VIDIOC_STREAMOFF failed\n");
                 }
 
                 tempbuf.type = vimage[0].vidbuf.type;
-                while (  !(err = ioctl(fd_, VIDIOC_DQBUF, &tempbuf)) )
-                        debug_msg("v4l2: dequeued old buffer\n");
+                while ((err = ioctl(fd_, VIDIOC_DQBUF, &tempbuf)) < 0 &&
+                       (errno == EINTR));
+
+                if (err < 0) {
+                        debug_msg("V4L2: VIDIOC_DQBUF failed: %s\n", strerror(errno));
+                }
 
                 for (i = 0; i < STREAMBUFS; ++i) {
                         if (vimage[i].data)
