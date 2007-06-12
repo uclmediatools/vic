@@ -92,7 +92,7 @@ typedef struct tag_vimage
 }       VIMAGE;
 
 
-#define STREAMBUFS 4
+#define STREAMBUFS 2
 
 class V4l2Grabber : public Grabber
 {
@@ -1096,6 +1096,7 @@ void V4l2Grabber::format()
                                         ioctl(fd_, VIDIOC_G_FMT, &fmt);
                                         fmt.fmt.pix.width = width_;
                                         fmt.fmt.pix.height = height_;
+                                        fmt.fmt.pix.field = V4L2_FIELD_ANY;
                                         fmt.fmt.pix.pixelformat = pixelformat;
 
                                         if ( (err = ioctl(fd_, VIDIOC_S_FMT, &fmt) ) )
