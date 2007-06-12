@@ -143,20 +143,27 @@ int TrueColorModel::alloc_colors()
 //printf("rmask: %d(%d), gmask: %d(%d), bmask: %d(%d);\n",rmask,htonl(rmask),gmask,htonl(gmask),bmask,htonl(bmask));
 //|| visual_->bits_per_rgb==32
 #if BYTE_ORDER == LITTLE_ENDIAN
+// OSX TK doesn't set the dpy_ byteorder properly
+#ifndef MAC_OSX_TK
 	if (ImageByteOrder(dpy_) == MSBFirst ) {
 		rmask = htonl(rmask);
 		gmask = htonl(gmask);
 		bmask = htonl(bmask);
 	}
+#endif
 
 #else
+#ifdef MAC_OSX_TK
+		rmask = htonl(rmask);
+		gmask = htonl(gmask);
+		bmask = htonl(bmask);
+#else
 	if (ImageByteOrder(dpy_) != MSBFirst) {
-
 		rmask = swapbyte32(rmask);
 		gmask = swapbyte32(gmask);
 		bmask = swapbyte32(bmask);
 	}
-
+#endif
 #endif
 	u_int rshft = mtos(rmask);
 	u_int rlose = 8 - mtos(~(rmask >> rshft));
