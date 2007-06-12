@@ -487,6 +487,7 @@ void Grabber::set_size_cif(int w, int h)
 		ispal = 1;
 		outw_ = 176;
 		outh_ = 144;
+		break;
 
 	case 384:
 		/* 1/2 PAL */
@@ -504,8 +505,10 @@ void Grabber::set_size_cif(int w, int h)
 
 	default:
 		/* XXX this shouldn't happen */
-		fprintf(stderr, "vic: CIF grabber: bad geometry\n");
-		abort();
+		fprintf(stderr, "vic: CIF grabber: bad geometry - trying 411\n");
+		set_size_411(w,h);
+		return;
+		//abort();
 	}
 	int s = outw_ * outh_;
 	framesize_ = s;

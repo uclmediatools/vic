@@ -1598,10 +1598,11 @@ proc init_grabber { grabber } {
             if { [$portButton cget -state] == "normal" } {
                   $grabber port $inputPort
             }
+        }
             if { [$typeButton cget -state] == "normal" } {
                   $grabber type $inputType
             }
-        }
+        
 	$grabber fps [$fps_slider get]
 	$grabber bps [$bps_slider get]
 	$grabber decimate $inputSize

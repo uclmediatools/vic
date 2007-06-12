@@ -486,7 +486,7 @@ int VfwDevice::command(int argc, const char*const* argv)
 }
 
 VfwGrabber::VfwGrabber(const int dev) : dev_(dev), connected_(0),
-	last_frame_(0), devtype_(Generic), useconfig_(0)
+	last_frame_(0), devtype_(Generic), useconfig_(0), converter_(0), fmt_(0), frame_sem_(0), cb_mutex_(0)
 {
 	char deviceName[80] ;
 	char deviceVersion[100] ;
@@ -634,6 +634,8 @@ void VfwGrabber::start()
 	}
 	if (!capDriverConnect(capwin_, dev_)) {
 		debug_msg( "capDriverConnect: dev=%d failed - %lu\n", dev_, GetLastError());
+		stop();
+		return;
 		/*abort();*/
 	}
 
@@ -891,16 +893,18 @@ void Vfw422Grabber::start()
 void VfwCIFGrabber::start()
 {
 	VfwGrabber::start();
-	switch (fmt_->biCompression) {
-	case BI_RGB:
-		converter(new RGB_Converter_411(fmt_->biBitCount, (u_int8_t *)(fmt_ + 1), fmt_->biClrUsed));
-		break;
-	case mmioFOURCC('Y','U','Y','V'):
-		converter(new YUYV_Converter_411());
-		break;
-	default:
-		converter(new IC_Converter_411(fmt_->biCompression, fmt_->biBitCount, fmt_->biWidth, fmt_->biHeight));
-		break;
+	if (fmt_!=NULL) {
+	    switch (fmt_->biCompression) {
+		case BI_RGB:
+		    converter(new RGB_Converter_411(fmt_->biBitCount, (u_int8_t *)(fmt_ + 1), fmt_->biClrUsed));
+		    break;
+		case mmioFOURCC('Y','U','Y','V'):
+		    converter(new YUYV_Converter_411());
+		    break;
+		default:
+		    converter(new IC_Converter_411(fmt_->biCompression, fmt_->biBitCount, fmt_->biWidth, fmt_->biHeight));
+		    break;
+	    }
 	}
     /* allow video handler callback to progress */
     ReleaseMutex(cb_mutex_);
@@ -909,17 +913,24 @@ void VfwCIFGrabber::start()
 
 void VfwGrabber::stop()
 {
-	debug_msg("VfwWindow::stop() thread=%x\n", GetCurrentThreadId());
+    debug_msg("VfwWindow::stop() thread=%x\n", GetCurrentThreadId());
 
-	if (capturing_)
-		capCaptureStop(capwin_);
+    if (cb_mutex_!=NULL) {
+	CloseHandle(cb_mutex_);
+	cb_mutex_=0;
+    } else 
+	return;
+
+    if (capturing_)
+	capCaptureStop(capwin_);
     /* ensure this won't be called */
     capSetCallbackOnVideoStream(capwin_, NULL);
     capturing_ = 0;
-	capture_=0;
+    capture_=0;
+    if (frame_sem_!=0 ) {
 	ReleaseSemaphore(frame_sem_, 1, NULL);
 	CloseHandle(frame_sem_);
-    CloseHandle(cb_mutex_);
+    }
 #ifdef NDEF
 	if (caps_.fHasOverlay)
 		capOverlay(capwin_, FALSE);
@@ -927,10 +938,11 @@ void VfwGrabber::stop()
 		capPreview(capwin_, FALSE);
 #endif
 
-	capDriverDisconnect(capwin_);
+	if (capwin_!=NULL) 
+	    capDriverDisconnect(capwin_);
 	connected_ = 0;
 
-	if (fmt_->biCompression == BI_RGB)
+	if (converter_!=NULL) //if (fmt_->biCompression == BI_RGB)
 		delete converter_;
 	converter_ = 0;
 
@@ -1030,7 +1042,7 @@ void
 VfwGrabber::capture(VfwGrabber *gw, LPBYTE frame)
 {
 #ifdef DEBUG
-	if (last_frame_ != NULL)
+	if (gw->last_frame_ != NULL)
 		debug_msg("Last frame not grabbed!\n");
 #endif
 	if (capturing_) gw->last_frame_ = frame;
