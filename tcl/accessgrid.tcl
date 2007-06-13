@@ -637,6 +637,7 @@ proc init_ag {} {
     ag_init_resources
     ag_init_window_grid
     ag_init_site_map
+    catch {console hide}
 
     #ag_puts "enable=[option get . ag_enable_window_grid Vic]";
 #    if [yesno ag_enable_window_grid] {
