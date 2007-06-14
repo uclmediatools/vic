@@ -348,6 +348,9 @@ proc open_window src {
 	bind $w <e> "resize $v 1000 750"
 	bind $w <E> "resize $v 1024 768"
 	bind $w <x> "resize $v 640 240"
+	bind $w <z> "catch { wm overrideredirect $w 1; wm withdraw $w; wm deiconify $w}"
+	bind $w <Z> "catch { wm overrideredirect $w 0; wm withdraw $w; wm deiconify $w}"
+
 
 	bind $w <d> "destroy_userwin $v"
 	bind $w <q> "destroy_userwin $v"
