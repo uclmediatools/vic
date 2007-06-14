@@ -115,20 +115,20 @@ class DirectShowGrabber : public Grabber {
       Converter    *converter_;
 
    private:
-      CComPtr<IBaseFilter>           pCaptureFilter_;
-      CComPtr<ISampleGrabber>        pSampleGrabber_;
-      CComPtr<IBaseFilter>           pGrabberBaseFilter_;
-      CComPtr<IBaseFilter>           pNullRenderer_;
-      CComPtr<IBaseFilter>           pNullBaseFilter_;
-      CComPtr<IGraphBuilder>         pGraph_;
-      CComPtr<ICaptureGraphBuilder2> pBuild_;
-      CComPtr<IMediaControl>         pMediaControl_;
+      IBaseFilter*           pCaptureFilter_;
+      ISampleGrabber*        pSampleGrabber_;
+      IBaseFilter*           pGrabberBaseFilter_;
+      IBaseFilter*           pNullRenderer_;
+      IBaseFilter*           pNullBaseFilter_;
+      IGraphBuilder*         pGraph_;
+      ICaptureGraphBuilder2* pBuild_;
+      IMediaControl*         pMediaControl_;
       AM_MEDIA_TYPE                  mt_;
       Callback                       *callback;
       Crossbar                       *crossbar;
       Crossbar                       *crossbarCursor;
-	  char							 input_port_[10];
-      void                           findCrossbar(IBaseFilter *);
+      char			     input_port_[20];
+      bool                           findCrossbar(IBaseFilter *);
       void                           addCrossbar(IAMCrossbar *);
       void                           routeCrossbar();
 
@@ -186,7 +186,8 @@ class DirectShowDevice : public InputDevice {
       virtual int command(int argc, const char* const* argv);     
 
    protected:
-      IBaseFilter       *directShowFilter_;
+      CComPtr<IBaseFilter>           directShowFilter_;
+      //IBaseFilter       *directShowFilter_;
       DirectShowGrabber *directShowGrabber_;   
 	  char *attri;
 };
