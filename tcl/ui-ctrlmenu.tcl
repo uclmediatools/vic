@@ -350,8 +350,7 @@ proc transmit { } {
 			}
 			set grabtarget $encoder
 			set grabq ""
-		} elseif { $videoFormat == "h261" && [inList jpeg $DF] && \
-				$useJPEGforH261 } {
+		} elseif { $videoFormat == "h261" && [inList jpeg $DF] && $useJPEGforH261 } {
 			# just jpeg->h261 at this time
 			set transcoder [new transcoder jpeg/dct]
 			set encoder [new module h261/dct]
@@ -1610,7 +1609,7 @@ proc init_grabber { grabber } {
 		set cmd [lindex [$qscale configure -command] 4]
 		$cmd [$qscale get]
 	}
-        if !{[string match [ windowingsystem] "aqua"]} {
+    if !{[string match [ windowingsystem] "aqua"]} {
 	    if { [$portButton cget -state] == "normal" } {
 		$grabber port $inputPort
 	    }

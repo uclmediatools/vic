@@ -271,7 +271,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="       "
 				Optimization="0"
-				AdditionalIncludeDirectories=".\;codec;render;rtp;net;win32;video;..\common\src;\Tcl\include\tcl8.4;codec\tmndec;&quot;codec\tmn-x&quot;;codec\jpeg;codec\p64;codec\h263"
+				AdditionalIncludeDirectories=".\;codec;render;rtp;net;win32;video;..\common\src;&quot;..\tk-8.0\win&quot;;&quot;..\tk-8.0\generic&quot;;&quot;..\tk-8.0\xlib&quot;;&quot;..\tcl-8.0\win&quot;;&quot;..\tcl-8.0\generic&quot;;codec\tmndec;&quot;codec\tmn-x&quot;;codec\jpeg;codec\p64;codec\h263"
 				PreprocessorDefinitions="DEBUG,_DEBUG,_WIN95,NEED_INET_PTON,_WINDOWS,SASR,WIN32,ED_YBITS=4,SIGRET=void,SIGARGS=int,NLAYER=8,USE_DDRAW,WINVER=0x500"
 				RuntimeLibrary="5"
 				UsePrecompiledHeader="0"
@@ -285,11 +285,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="tk84.lib tcl84.lib uclmm.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib ddraw.lib dxguid.lib iphlpapi.lib  strmiids.lib quartz.lib"
+				AdditionalDependencies="tcllib.lib tklib.lib uclmm.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib ddraw.lib dxguid.lib iphlpapi.lib  strmiids.lib quartz.lib"
 				OutputFile=".\DDraw_Debug/vic.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="..\common\src\Debug,\Tcl\lib,codec\tmndec,codec\tmn-x,\mssdk\lib,C:\Program Files\Intel\plsuite\lib\msvc,C:\Program Files\Intel\plsuite\lib"
+				AdditionalLibraryDirectories="..\common\src\Debug;&quot;..\tcl-8.0\win\Debug&quot;;&quot;..\tk-8.0\win\Debug&quot;;codec\tmndec;&quot;codec\tmn-x&quot;;\mssdk\lib;&quot;C:\Program Files\Intel\plsuite\lib\msvc&quot;;&quot;C:\Program Files\Intel\plsuite\lib&quot;"
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"/>
 			<Tool
@@ -380,6 +380,248 @@
 			<Tool
 				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
+		<Configuration
+			Name="DDraw Debug tcltk84|Win32"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="1"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="       "
+				Optimization="0"
+				AdditionalIncludeDirectories=".\;codec;render;rtp;net;win32;video;..\common\src;\Tcl\include\tcl8.4;codec\tmndec;codec\tmn-x;codec\jpeg;codec\p64;codec\h263"
+				PreprocessorDefinitions="DEBUG,_DEBUG,_WIN95,NEED_INET_PTON,_WINDOWS,SASR,WIN32,ED_YBITS=4,SIGRET=void,SIGARGS=int,NLAYER=8,USE_DDRAW,WINVER=0x500"
+				RuntimeLibrary="1"
+				UsePrecompiledHeader="0"
+				BrowseInformation="1"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="4"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions="/MACHINE:I386"
+				AdditionalDependencies="tcl84.lib tk84.lib uclmm.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib ddraw.lib dxguid.lib iphlpapi.lib  strmiids.lib quartz.lib"
+				OutputFile=".\DDraw_Debug/vic.exe"
+				LinkIncremental="2"
+				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="..\common\src\Debug,\Tcl\lib,codec\tmndec,codec\tmn-x,\mssdk\lib,C:\Program Files\Intel\plsuite\lib\msvc,C:\Program Files\Intel\plsuite\lib"
+				IgnoreDefaultLibraryNames="LIBCMTD.lib"
+				GenerateDebugInformation="TRUE"
+				SubSystem="2"/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\vic___Win32_DDraw_Debug/vic.tlb"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="2057"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="DDraw Debug GPL tcltk84|Win32"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="1"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="       "
+				Optimization="0"
+				AdditionalIncludeDirectories=".\;codec;render;rtp;net;win32;video;..\common\src;\Tcl\include\tcl8.4;codec\tmndec;&quot;codec\tmn-x&quot;;codec\jpeg;codec\p64;codec\h263"
+				PreprocessorDefinitions="DEBUG,_DEBUG,_WIN95,NEED_INET_PTON,_WINDOWS,SASR,WIN32,ED_YBITS=4,SIGRET=void,SIGARGS=int,NLAYER=8,USE_DDRAW,WINVER=0x500"
+				RuntimeLibrary="1"
+				UsePrecompiledHeader="0"
+				BrowseInformation="1"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="4"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions="/MACHINE:I386"
+				AdditionalDependencies="tcl84.lib tk84.lib uclmm.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib ddraw.lib dxguid.lib iphlpapi.lib  strmiids.lib quartz.lib"
+				OutputFile=".\DDraw_Debug/vic.exe"
+				LinkIncremental="2"
+				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="..\common\src\Debug,\Tcl\lib,codec\tmndec,codec\tmn-x,\mssdk\lib,C:\Program Files\Intel\plsuite\lib\msvc,C:\Program Files\Intel\plsuite\lib"
+				IgnoreDefaultLibraryNames="LIBCMTD.lib"
+				GenerateDebugInformation="TRUE"
+				SubSystem="2"/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\vic___Win32_DDraw_Debug/vic.tlb"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="2057"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="DDraw Release tcltk84|Win32"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="1"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories=".\;codec;render;rtp;net;win32;video;..\common\src;\Tcl\include\tcl8.4;codec\tmndec;codec\tmn-x;codec\jpeg;codec\p64;codec\h263"
+				PreprocessorDefinitions="NDEBUG,HAVE_INET_PTON,_WINDOWS,SASR,WIN32,ED_YBITS=4,SIGRET=void,SIGARGS=int,NLAYER=8,USE_DDRAW,WINVER=0x500"
+				StringPooling="TRUE"
+				RuntimeLibrary="4"
+				EnableFunctionLevelLinking="TRUE"
+				UsePrecompiledHeader="0"
+				PrecompiledHeaderFile=""
+				BrowseInformation="1"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions="/MACHINE:I386"
+				AdditionalDependencies="tk84.lib tcl84.lib uclmm.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib ddraw.lib dxguid.lib iphlpapi.lib strmiids.lib quartz.lib"
+				OutputFile=".\DDraw_Release/vic.exe"
+				LinkIncremental="1"
+				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="..\common\src\Release,\Tcl\lib,codec\tmndec,codec\tmn-x,\mssdk\lib,C:\Program Files\Intel\plsuite\lib\msvc,C:\Program Files\Intel\plsuite\lib"
+				GenerateMapFile="TRUE"
+				SubSystem="2"/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\vic___Win32_DDraw_Release/vic.tlb"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="2057"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="DDraw Relase GPL tcltk84|Win32"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="1"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories=".\;codec;render;rtp;net;win32;video;..\common\src;\Tcl\include\tcl8.4;codec\tmndec;codec\tmn-x;codec\jpeg;codec\p64;codec\h263"
+				PreprocessorDefinitions="NDEBUG,HAVE_INET_PTON,_WINDOWS,SASR,WIN32,ED_YBITS=4,SIGRET=void,SIGARGS=int,NLAYER=8,USE_DDRAW,WINVER=0x500"
+				StringPooling="TRUE"
+				RuntimeLibrary="4"
+				EnableFunctionLevelLinking="TRUE"
+				UsePrecompiledHeader="0"
+				PrecompiledHeaderFile=""
+				BrowseInformation="1"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions="/MACHINE:I386"
+				AdditionalDependencies="tk84.lib tcl84.lib uclmm.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib ddraw.lib dxguid.lib iphlpapi.lib strmiids.lib quartz.lib"
+				OutputFile=".\DDraw_Release/vic.exe"
+				LinkIncremental="1"
+				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="..\common\src\Release,\Tcl\lib,codec\tmndec,codec\tmn-x,\mssdk\lib,C:\Program Files\Intel\plsuite\lib\msvc,C:\Program Files\Intel\plsuite\lib"
+				GenerateMapFile="TRUE"
+				SubSystem="2"/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\vic___Win32_DDraw_Release/vic.tlb"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="2057"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
 	</Configurations>
 	<References>
 	</References>
@@ -429,6 +671,38 @@
 "
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Relase GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\ag-pixrate.tcl">
@@ -472,6 +746,38 @@
 "
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Relase GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\autoplace_ui.tcl">
@@ -509,6 +815,38 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Release GPL|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Relase GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -566,6 +904,38 @@
 "
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Relase GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\cf-main.tcl">
@@ -611,6 +981,38 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Release GPL|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Relase GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -668,6 +1070,38 @@
 "
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Relase GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\cf-tm.tcl">
@@ -713,6 +1147,38 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Release GPL|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Relase GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -770,6 +1236,38 @@
 "
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Relase GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\entry.tcl">
@@ -815,6 +1313,38 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Release GPL|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Relase GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -872,6 +1402,38 @@
 "
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Relase GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\ui-ctrlmenu.tcl">
@@ -917,6 +1479,38 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Release GPL|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Relase GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -974,6 +1568,38 @@
 "
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Relase GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\ui-grabber.tcl">
@@ -1019,6 +1645,38 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Release GPL|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Relase GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -1076,6 +1734,38 @@
 "
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Relase GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\ui-main.tcl">
@@ -1121,6 +1811,38 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Release GPL|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Relase GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -1178,6 +1900,38 @@
 "
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Relase GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\ui-resource.tcl">
@@ -1223,6 +1977,38 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Release GPL|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Relase GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -1280,6 +2066,38 @@
 "
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Relase GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\ui-stats.tcl">
@@ -1325,6 +2143,38 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Release GPL|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Relase GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -1382,11 +2232,59 @@
 "
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Relase GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\ui-titlemaker.tcl">
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -1444,6 +2342,38 @@
 "
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Relase GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\ui-win32.tcl">
@@ -1489,6 +2419,38 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Release GPL|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Relase GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -1546,6 +2508,38 @@
 "
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Relase GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
 			</File>
 			<Filter
 				Name="Tcl/Tk C++ generated files"
@@ -1566,6 +2560,18 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="DDraw Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL tcltk84|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							AdditionalOptions="               "/>
@@ -1591,6 +2597,18 @@
 							Name="VCCLCompilerTool"
 							AdditionalOptions="               "/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\tcl\generated\autoplace_ui.cpp">
@@ -1608,6 +2626,18 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="DDraw Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL tcltk84|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							AdditionalOptions="               "/>
@@ -1633,6 +2663,18 @@
 							Name="VCCLCompilerTool"
 							AdditionalOptions="               "/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\tcl\generated\cf-main.cpp">
@@ -1650,6 +2692,18 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="DDraw Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL tcltk84|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							AdditionalOptions="               "/>
@@ -1675,6 +2729,18 @@
 							Name="VCCLCompilerTool"
 							AdditionalOptions="               "/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\tcl\generated\cf-tm.cpp">
@@ -1692,6 +2758,18 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="DDraw Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL tcltk84|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							AdditionalOptions="               "/>
@@ -1717,6 +2795,18 @@
 							Name="VCCLCompilerTool"
 							AdditionalOptions="               "/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\tcl\generated\entry.cpp">
@@ -1734,6 +2824,18 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="DDraw Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL tcltk84|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							AdditionalOptions="               "/>
@@ -1759,6 +2861,18 @@
 							Name="VCCLCompilerTool"
 							AdditionalOptions="               "/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\tcl\generated\ui-ctrlmenu.cpp">
@@ -1776,6 +2890,18 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="DDraw Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL tcltk84|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							AdditionalOptions="               "/>
@@ -1801,6 +2927,18 @@
 							Name="VCCLCompilerTool"
 							AdditionalOptions="               "/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\tcl\generated\ui-grabber.cpp">
@@ -1818,6 +2956,18 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="DDraw Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL tcltk84|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							AdditionalOptions="               "/>
@@ -1843,6 +2993,18 @@
 							Name="VCCLCompilerTool"
 							AdditionalOptions="               "/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\tcl\generated\ui-main.cpp">
@@ -1860,6 +3022,18 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="DDraw Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL tcltk84|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							AdditionalOptions="               "/>
@@ -1885,6 +3059,18 @@
 							Name="VCCLCompilerTool"
 							AdditionalOptions="               "/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\tcl\generated\ui-resource.cpp">
@@ -1902,6 +3088,18 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="DDraw Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL tcltk84|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							AdditionalOptions="               "/>
@@ -1927,6 +3125,18 @@
 							Name="VCCLCompilerTool"
 							AdditionalOptions="               "/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\tcl\generated\ui-stats.cpp">
@@ -1948,6 +3158,18 @@
 							Name="VCCLCompilerTool"
 							AdditionalOptions="               "/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\tcl\generated\ui-switcher.cpp">
@@ -1965,6 +3187,18 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="DDraw Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL tcltk84|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							AdditionalOptions="               "/>
@@ -1993,6 +3227,18 @@
 							Name="VCCLCompilerTool"
 							AdditionalOptions="               "/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\tcl\generated\ui-win32.cpp">
@@ -2014,6 +3260,18 @@
 							Name="VCCLCompilerTool"
 							AdditionalOptions="               "/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\tcl\generated\ui-windows.cpp">
@@ -2031,6 +3289,18 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="DDraw Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug tcltk84|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalOptions="               "/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL tcltk84|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							AdditionalOptions="               "/>
@@ -2061,6 +3331,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\net\confbus.cpp">
@@ -2078,6 +3360,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -2103,6 +3397,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\net\crypt-dull.cpp">
@@ -2120,6 +3426,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -2145,6 +3463,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\net\crypt.cpp">
@@ -2162,6 +3492,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -2187,6 +3529,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\net\inet.c">
@@ -2204,6 +3558,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -2229,6 +3595,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\net\mbus_engine.cpp">
@@ -2246,6 +3624,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -2271,6 +3661,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\net\net-addr.cpp">
@@ -2288,6 +3690,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -2313,6 +3727,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\net\net-ipv6.cpp">
@@ -2330,6 +3756,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -2355,6 +3793,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\net\pktbuf.cpp">
@@ -2376,6 +3826,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\net\pkttbl.cpp">
@@ -2393,6 +3855,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -2459,6 +3933,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\codec\cellb_tables.c">
@@ -2476,6 +3962,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -2501,6 +3999,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\codec\databuffer.cpp">
@@ -2512,6 +4022,24 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCLCompilerTool"/>
@@ -2532,6 +4060,24 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCustomBuildTool"/>
@@ -2557,6 +4103,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\codec\decoder-bvc.cpp">
@@ -2574,6 +4132,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -2599,6 +4169,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\codec\decoder-h261.cpp">
@@ -2616,6 +4198,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -2641,6 +4235,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\codec\decoder-h264.cpp">
@@ -2652,6 +4258,24 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCLCompilerTool"/>
@@ -2677,6 +4301,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\codec\decoder-mpeg4.cpp">
@@ -2688,6 +4324,24 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCLCompilerTool"/>
@@ -2713,6 +4367,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\codec\decoder-pvh.cpp">
@@ -2730,6 +4396,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -2755,6 +4433,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\codec\decoder.cpp">
@@ -2772,6 +4462,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -2797,6 +4499,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\codec\encoder-cellb.cpp">
@@ -2814,6 +4528,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -2839,6 +4565,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\codec\encoder-h264.cpp">
@@ -2850,6 +4588,24 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCLCompilerTool"/>
@@ -2875,6 +4631,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\codec\encoder-mpeg4.cpp">
@@ -2886,6 +4654,24 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCLCompilerTool"/>
@@ -2911,6 +4697,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\codec\encoder-pvh.cpp">
@@ -2928,6 +4726,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -2953,6 +4763,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\codec\ffmpeg_codec.cpp">
@@ -2964,6 +4786,24 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCLCompilerTool"/>
@@ -2984,6 +4824,24 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCustomBuildTool"/>
@@ -3015,6 +4873,24 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\codec\huffcode.c">
@@ -3032,6 +4908,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -3057,6 +4945,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\codec\p64\p64.cpp">
@@ -3078,6 +4978,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\codec\packetbuffer.cpp">
@@ -3089,6 +5001,24 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCLCompilerTool"/>
@@ -3109,6 +5039,24 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCustomBuildTool"/>
@@ -3134,6 +5082,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\codec\rtp_h264_depayloader.cpp">
@@ -3145,6 +5105,24 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCLCompilerTool"/>
@@ -3165,6 +5143,24 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCustomBuildTool"/>
@@ -3190,6 +5186,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\codec\x264encoder.cpp">
@@ -3201,6 +5209,24 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCLCompilerTool"/>
@@ -3221,6 +5247,24 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCustomBuildTool"/>
@@ -3272,6 +5316,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\render\cm1.c">
@@ -3289,6 +5345,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -3314,6 +5382,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\render\color-ed.cpp">
@@ -3335,6 +5415,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\render\color-gray.cpp">
@@ -3352,6 +5444,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -3378,6 +5482,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\render\color-hist.cpp">
@@ -3395,6 +5511,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -3420,6 +5548,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\render\color-pseudo.cpp">
@@ -3437,6 +5577,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -3462,6 +5614,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\render\color-swscale.cpp">
@@ -3473,6 +5637,24 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCLCompilerTool"/>
@@ -3499,6 +5681,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\render\color-yuv.cpp">
@@ -3516,6 +5710,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -3541,6 +5747,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\render\renderer-window.cpp">
@@ -3558,6 +5776,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -3583,6 +5813,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\render\rgb-converter.cpp">
@@ -3604,6 +5846,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\render\vw.cpp">
@@ -3621,6 +5875,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -3675,6 +5941,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\rtp\session.cpp">
@@ -3692,6 +5970,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -3717,6 +6007,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\rtp\transmitter.cpp">
@@ -3734,6 +6036,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -3785,6 +6099,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\win32\win32X.c">
@@ -3802,6 +6128,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -3831,6 +6169,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\idlecallback.cpp">
@@ -3848,6 +6198,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -3873,6 +6235,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\main.cpp">
@@ -3890,6 +6264,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -3915,6 +6301,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\media-timer.cpp">
@@ -3932,6 +6330,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -3957,6 +6367,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\random.c">
@@ -3974,6 +6396,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -3999,6 +6433,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\strtol.c">
@@ -4016,6 +6462,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -4041,6 +6499,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\Tcl.cpp">
@@ -4058,6 +6528,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -4083,6 +6565,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\timer.cpp">
@@ -4100,6 +6594,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -4125,6 +6631,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tkWinColor.c">
@@ -4146,6 +6664,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\version.c">
@@ -4163,6 +6693,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
@@ -4199,12 +6741,21 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\video\crossbar.cpp">
-			</File>
-			<File
-				RelativePath=".\video\crossbar.h">
 			</File>
 			<File
 				RelativePath=".\video\deinterlace.cpp">
@@ -4216,6 +6767,24 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCLCompilerTool"/>
@@ -4241,6 +6810,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\video\grabber-win32.cpp">
@@ -4262,12 +6843,21 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\video\grabber-win32DS.cpp">
-			</File>
-			<File
-				RelativePath=".\video\grabber-win32DS.h">
 			</File>
 			<File
 				RelativePath=".\video\grabber.cpp">
@@ -4289,6 +6879,18 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalOptions="               "/>
+				</FileConfiguration>
 			</File>
 			<Filter
 				Name="video Header Files"
@@ -4297,10 +6899,16 @@
 					RelativePath=".\video\assistor-list.h">
 				</File>
 				<File
+					RelativePath=".\video\crossbar.h">
+				</File>
+				<File
 					RelativePath=".\video\device-input.h">
 				</File>
 				<File
 					RelativePath=".\video\device-output.h">
+				</File>
+				<File
+					RelativePath=".\video\grabber-win32DS.h">
 				</File>
 				<File
 					RelativePath=".\video\grabber.h">
@@ -4327,6 +6935,24 @@
 					<Tool
 						Name="VCCLCompilerTool"/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\cpu\cpuid_win.asm">
@@ -4343,6 +6969,28 @@
 						Name="VCCustomBuildTool"
 						CommandLine="nasmw.exe -f win32 -DPREFIX -o &quot;$(IntDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
 "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="nasmw.exe -f win32 -DPREFIX -o &quot;$(IntDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Debug GPL tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="nasmw.exe -f win32 -DPREFIX -o &quot;$(IntDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCustomBuildTool"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -4398,6 +7046,42 @@
 			</FileConfiguration>
 			<FileConfiguration
 				Name="DDraw Release GPL|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					CommandLine="render\mkbv\mkbv &gt; codec\bv.c
+"
+					AdditionalDependencies="render\mkbv\mkbv.exe;"
+					Outputs="codec\bv.c"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DDraw Debug tcltk84|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					CommandLine="render\mkbv\mkbv &gt; codec\bv.c
+"
+					AdditionalDependencies="render\mkbv\mkbv.exe;"
+					Outputs="codec\bv.c"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DDraw Debug GPL tcltk84|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					CommandLine="render\mkbv\mkbv &gt; codec\bv.c
+"
+					AdditionalDependencies="render\mkbv\mkbv.exe;"
+					Outputs="codec\bv.c"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DDraw Release tcltk84|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					CommandLine="render\mkbv\mkbv &gt; codec\bv.c
+"
+					AdditionalDependencies="render\mkbv\mkbv.exe;"
+					Outputs="codec\bv.c"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DDraw Relase GPL tcltk84|Win32">
 				<Tool
 					Name="VCCustomBuildTool"
 					CommandLine="render\mkbv\mkbv &gt; codec\bv.c
@@ -4465,6 +7149,50 @@ render\ppmtolut\ppmtolut -n jv_cube jv-cube-128.ppm &gt;&gt; render\cm0.c
 			</FileConfiguration>
 			<FileConfiguration
 				Name="DDraw Release GPL|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					CommandLine="render\mkcube\mkcube rgb &gt; $(InputPath)
+render\ppmtolut\ppmtolut -n cube rgb-cube.ppm &gt; render\cm0.c
+render\ppmtolut\ppmtolut -n jv_cube jv-cube-128.ppm &gt;&gt; render\cm0.c
+"
+					AdditionalDependencies="render\ppmtolut\ppmtolut.exe;render\mkcube\mkcube.exe;"
+					Outputs="$(InputPath);render\cm0.c"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DDraw Debug tcltk84|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					CommandLine="render\mkcube\mkcube rgb &gt; $(InputPath)
+render\ppmtolut\ppmtolut -n cube rgb-cube.ppm &gt; render\cm0.c
+render\ppmtolut\ppmtolut -n jv_cube jv-cube-128.ppm &gt;&gt; render\cm0.c
+"
+					AdditionalDependencies="render\mkcube\mkcube.exe;render\ppmtolut\ppmtolut.exe;"
+					Outputs="$(InputPath);render\cm0.c"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DDraw Debug GPL tcltk84|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					CommandLine="render\mkcube\mkcube rgb &gt; $(InputPath)
+render\ppmtolut\ppmtolut -n cube rgb-cube.ppm &gt; render\cm0.c
+render\ppmtolut\ppmtolut -n jv_cube jv-cube-128.ppm &gt;&gt; render\cm0.c
+"
+					AdditionalDependencies="render\mkcube\mkcube.exe;render\ppmtolut\ppmtolut.exe;"
+					Outputs="$(InputPath);render\cm0.c"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DDraw Release tcltk84|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					CommandLine="render\mkcube\mkcube rgb &gt; $(InputPath)
+render\ppmtolut\ppmtolut -n cube rgb-cube.ppm &gt; render\cm0.c
+render\ppmtolut\ppmtolut -n jv_cube jv-cube-128.ppm &gt;&gt; render\cm0.c
+"
+					AdditionalDependencies="render\ppmtolut\ppmtolut.exe;render\mkcube\mkcube.exe;"
+					Outputs="$(InputPath);render\cm0.c"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DDraw Relase GPL tcltk84|Win32">
 				<Tool
 					Name="VCCustomBuildTool"
 					CommandLine="render\mkcube\mkcube rgb &gt; $(InputPath)
@@ -4576,6 +7304,70 @@ erase win32\vergen.bat
 					AdditionalDependencies="win32\echo.txt;win32\set.txt;win32\null.txt;"
 					Outputs="version.c"/>
 			</FileConfiguration>
+			<FileConfiguration
+				Name="DDraw Debug tcltk84|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					Description="Generating &quot;version.c&quot;."
+					CommandLine="copy win32\set.txt + VERSION win32\vergen.bat
+copy win32\vergen.bat + win32\null.txt win32\vergen.bat
+copy win32\vergen.bat + win32\echo.txt win32\vergen.bat
+win32\vergen.bat
+move win32\version.c version.c
+erase win32\version.c
+erase win32\vergen.bat
+"
+					AdditionalDependencies="win32\echo.txt;win32\set.txt;win32\null.txt;"
+					Outputs="version.c"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DDraw Debug GPL tcltk84|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					Description="Generating &quot;version.c&quot;."
+					CommandLine="copy win32\set.txt + VERSION win32\vergen.bat
+copy win32\vergen.bat + win32\null.txt win32\vergen.bat
+copy win32\vergen.bat + win32\echo.txt win32\vergen.bat
+win32\vergen.bat
+move win32\version.c version.c
+erase win32\version.c
+erase win32\vergen.bat
+"
+					AdditionalDependencies="win32\echo.txt;win32\set.txt;win32\null.txt;"
+					Outputs="version.c"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DDraw Release tcltk84|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					Description="Generating &quot;version.c&quot;."
+					CommandLine="copy win32\set.txt + VERSION win32\vergen.bat
+copy win32\vergen.bat + win32\null.txt win32\vergen.bat
+copy win32\vergen.bat + win32\echo.txt win32\vergen.bat
+win32\vergen.bat
+move win32\version.c version.c
+erase win32\version.c
+erase win32\vergen.bat
+"
+					AdditionalDependencies="win32\echo.txt;win32\set.txt;win32\null.txt;"
+					Outputs="version.c"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DDraw Relase GPL tcltk84|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					Description="Generating &quot;version.c&quot;."
+					CommandLine="copy win32\set.txt + VERSION win32\vergen.bat
+copy win32\vergen.bat + win32\null.txt win32\vergen.bat
+copy win32\vergen.bat + win32\echo.txt win32\vergen.bat
+win32\vergen.bat
+move win32\version.c version.c
+erase win32\version.c
+erase win32\vergen.bat
+"
+					AdditionalDependencies="win32\echo.txt;win32\set.txt;win32\null.txt;"
+					Outputs="version.c"/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath=".\yuv-map.ppm">
@@ -4641,6 +7433,54 @@ render\ppmtolut\ppmtolut -Y $ED_YBITS -n ed -e yuv-map.ppm &gt;&gt; render\cm1.c
 			</FileConfiguration>
 			<FileConfiguration
 				Name="DDraw Release GPL|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					CommandLine="set ED_YBITS=4
+render\mkcube\mkcube -Y $ED_YBITS -U 45 -V 45 yuv &gt;  $(InputPath)
+render\ppmtolut\ppmtolut -n quant cm170.ppm &gt; render\cm1.c
+render\ppmtolut\ppmtolut -Y $ED_YBITS -n ed -e yuv-map.ppm &gt;&gt; render\cm1.c
+"
+					AdditionalDependencies="render\mkcube\mkcube.exe;render\ppmtolut\ppmtolut.exe;"
+					Outputs="$(InputPath);render\cm1.c"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DDraw Debug tcltk84|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					CommandLine="set ED_YBITS=4
+render\mkcube\mkcube -Y $ED_YBITS -U 45 -V 45 yuv &gt;  $(InputPath)
+render\ppmtolut\ppmtolut -n quant cm170.ppm &gt; render\cm1.c
+render\ppmtolut\ppmtolut -Y $ED_YBITS -n ed -e yuv-map.ppm &gt;&gt; render\cm1.c
+"
+					AdditionalDependencies="render\ppmtolut\ppmtolut.exe;render\mkcube\mkcube.exe;"
+					Outputs="$(InputPath);render\cm1.c"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DDraw Debug GPL tcltk84|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					CommandLine="set ED_YBITS=4
+render\mkcube\mkcube -Y $ED_YBITS -U 45 -V 45 yuv &gt;  $(InputPath)
+render\ppmtolut\ppmtolut -n quant cm170.ppm &gt; render\cm1.c
+render\ppmtolut\ppmtolut -Y $ED_YBITS -n ed -e yuv-map.ppm &gt;&gt; render\cm1.c
+"
+					AdditionalDependencies="render\ppmtolut\ppmtolut.exe;render\mkcube\mkcube.exe;"
+					Outputs="$(InputPath);render\cm1.c"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DDraw Release tcltk84|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					CommandLine="set ED_YBITS=4
+render\mkcube\mkcube -Y $ED_YBITS -U 45 -V 45 yuv &gt;  $(InputPath)
+render\ppmtolut\ppmtolut -n quant cm170.ppm &gt; render\cm1.c
+render\ppmtolut\ppmtolut -Y $ED_YBITS -n ed -e yuv-map.ppm &gt;&gt; render\cm1.c
+"
+					AdditionalDependencies="render\mkcube\mkcube.exe;render\ppmtolut\ppmtolut.exe;"
+					Outputs="$(InputPath);render\cm1.c"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DDraw Relase GPL tcltk84|Win32">
 				<Tool
 					Name="VCCustomBuildTool"
 					CommandLine="set ED_YBITS=4
