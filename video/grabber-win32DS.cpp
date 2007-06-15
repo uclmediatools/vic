@@ -532,9 +532,9 @@ int DirectShowGrabber::grab() {
 
    
    //debug_msg("DirectShowGrabber::grab: thread=%x w=%d h=%d bw=%d bh=%d frame_=%p fsize_=%d in=%dx%d out=%dx%d\n",
-             GetCurrentThreadId(),
-             width_, height_, basewidth_, baseheight_, frame_, framesize_,
-             inw_, inh_, outw_, outh_);
+   //          GetCurrentThreadId(),
+   //          width_, height_, basewidth_, baseheight_, frame_, framesize_,
+   //          inw_, inh_, outw_, outh_);
   
    WaitForSingleObject(cb_mutex_, INFINITE);
 
