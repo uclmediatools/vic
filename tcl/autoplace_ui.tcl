@@ -48,7 +48,7 @@ namespace eval ag_autoplace {
 
 		if { ! [info exists top ]} {
 
-			ag_puts "in show_ui [namespace current]"
+			#ag_puts "in show_ui [namespace current]"
 			set top [build_ui]
 		}
 
@@ -77,8 +77,8 @@ namespace eval ag_autoplace {
 	    
 		set platform $tcl_platform(platform)
 
-		set win_width $ag_win($ag_window_grid_mode,$platform,width)
-		set win_height $ag_win($ag_window_grid_mode,$platform,height)
+		set win_width $ag_win($ag_window_grid_mode,[windowingsystem],width)
+		set win_height $ag_win($ag_window_grid_mode,[windowingsystem],height)
 
 		if { $ap_active } { 
 			set startx [expr int($ag_window_grid_base_x * $scale)]
@@ -105,10 +105,10 @@ namespace eval ag_autoplace {
 
 		set mon_list [get_monitors]
 		if { $mon_list == ""} {
-			ag_puts "Did not find monitor list"
+			#ag_puts "Did not find monitor list"
 			set mon_list [list [ list 0 0 [winfo screenwidth $top] [winfo screenheight $top]]]
 		}
-		ag_puts "Using monitor list $mon_list"
+		#ag_puts "Using monitor list $mon_list"
 		frame $top.ap -relief ridge -borderwidth 3
 		pack $top.ap -fill both -expand 1 
 		ag_build_autoplacer $top.ap $mon_list
@@ -247,7 +247,7 @@ namespace eval ag_autoplace {
     }
     
     proc write_prefs {} {
-		ag_puts "write_prefs !"
+		#ag_puts "write_prefs !"
 		
 		variable parcel_width
 		variable parcel_height
@@ -283,7 +283,7 @@ namespace eval ag_autoplace {
 		#
 		# store the placementdirection
 		#
-		ag_puts $fh "*ag_window_grid_placement: $ag_window_grid_placement"
+		puts $fh "*ag_window_grid_placement: $ag_window_grid_placement"
 		close $fh
     }
 
@@ -450,8 +450,8 @@ namespace eval ag_autoplace {
 
 		set platform $tcl_platform(platform)
 		
-		set win_width $ag_win($ag_window_grid_mode,$platform,width)
-		set win_height $ag_win($ag_window_grid_mode,$platform,height)
+		set win_width $ag_win($ag_window_grid_mode,[windowingsystem],width)
+		set win_height $ag_win($ag_window_grid_mode,[windowingsystem],height)
 
 		#
 		# Sort the start/end positions so that start is at top left

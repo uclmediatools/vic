@@ -16,7 +16,7 @@ proc ag_stdout_init {} {
     global tcl_platform
     if { 0 && $tcl_platform(platform) == "windows" } {
 	ag_stdout_init_window
-	ag_puts  "Stdout window initialized ..."
+	#ag_puts  "Stdout window initialized ..."
   }
 }
 
@@ -64,10 +64,10 @@ proc ag_init_resources {} {
 
 
     if [ file exists "vic.prefs" ] {
-		ag_puts "reading prefsfile  ..."
+		#ag_puts "reading prefsfile  ..."
 		option readfile "vic.prefs" startupFile
     } else {
-		ag_puts "no prefsfile available..."
+		#ag_puts "no prefsfile available..."
     }
 }
 
@@ -95,20 +95,36 @@ proc ag_init_window_grid {} {
     set ag_vwin(large,cif,width) 704
     set ag_vwin(large,cif,height) 576
 
-    set ag_win(small,unix,width) 250
-    set ag_win(small,unix,height) 200
+    # platform-specific window sizes
+    # - small
+    set ag_win(small,x11,width) 184
+    set ag_win(small,x11,height) 181
 
-    set ag_win(small,windows,width) 184
-    set ag_win(small,windows,height) 171
+    set ag_win(small,aqua,width) 177
+    set ag_win(small,aqua,height) 167
 
-    set ag_win(medium,unix,width) 365
-    set ag_win(medium,unix,height) 338
+    set ag_win(small,win32,width) 184
+    set ag_win(small,win32,height) 171
 
-    set ag_win(medium,windows,width) 360
-    set ag_win(medium,windows,height) 315
+    # - medium sizes
+    set ag_win(medium,x11,width) 360
+    set ag_win(medium,x11,height) 347
 
-    set ag_win(large,windows,width) 712
-    set ag_win(large,windows,height) 603
+    set ag_win(medium,aqua,width) 355
+    set ag_win(medium,aqua,height) 313
+
+    set ag_win(medium,win32,width) 360
+    set ag_win(medium,win32,height) 315
+
+    # - large sizes
+    set ag_win(large,x11,width) 710
+    set ag_win(large,x11,height) 606
+
+    set ag_win(large,aqua,width) 705
+    set ag_win(large,aqua,height) 601
+
+    set ag_win(large,win32,width) 712
+    set ag_win(large,win32,height) 603
 
     set ag_window_cur_x 0
     set ag_window_cur_y 0
@@ -233,8 +249,8 @@ proc ag_alloc_slot_adhoc {src xoffset yoffset} {
     global ag_window_cur_x ag_window_cur_y
     global ag_window_grid_placement
 
-    ag_puts "Allocating slot: cur=$ag_window_cur_x $ag_window_cur_y size=$ag_window_grid_width $ag_window_grid_height"
-    ag_puts "Alignment is $ag_window_grid_placement"
+    #ag_puts "Allocating slot: cur=$ag_window_cur_x $ag_window_cur_y size=$ag_window_grid_width $ag_window_grid_height"
+    #ag_puts "Alignment is $ag_window_grid_placement"
     if {$ag_window_cur_x >= $ag_window_grid_width || $ag_window_cur_y >= $ag_window_grid_height} {
 	#	ag_puts "No slots available"
 		return ""
@@ -271,11 +287,11 @@ proc ag_map_slot {x y} {
     global tcl_platform
     
     set platform $tcl_platform(platform)
-    set screen_x [expr $ag_window_grid_base_x + $x * $ag_win($ag_window_grid_mode,$platform,width)]
-    set screen_y [expr $ag_window_grid_base_y + $y * $ag_win($ag_window_grid_mode,$platform,height)]
+    set screen_x [expr $ag_window_grid_base_x + $x * $ag_win($ag_window_grid_mode,[ windowingsystem],width)]
+    set screen_y [expr $ag_window_grid_base_y + $y * $ag_win($ag_window_grid_mode,[ windowingsystem],height)]
     
-    ag_puts "ag_window_grid_base x,y = $ag_window_grid_base_x , $ag_window_grid_base_y"
-    ag_puts "ag_map_slot returns $screen_x , $screen_y"
+    #ag_puts "ag_window_grid_base x,y = $ag_window_grid_base_x , $ag_window_grid_base_y"
+    #ag_puts "ag_map_slot returns $screen_x , $screen_y"
     return [list $screen_x $screen_y]
 }
 
@@ -300,7 +316,7 @@ proc ag_set_initial_location {src x y } {
 proc ag_set_initial_location_and_size {src x y width height} {
     global userwin_size userwin_x userwin_y
     
-    ag_puts "new source $src has x=$x y=$y width=$width height=$height"
+    #ag_puts "new source $src has x=$x y=$y width=$width height=$height"
     
     set userwin_x($src) $x
     set userwin_y($src) $y
@@ -405,13 +421,13 @@ proc ag_autoplace_apply {active} {
 	#
 
 	if { [$src mute] != "0" } {
-	    ag_puts "$src is muted, skipping"
+	    #ag_puts "$src is muted, skipping"
 	    continue
 	} elseif { $glue_source($src) == 1	 } {
-	    ag_puts "$src is glued, skipping"
+	    #ag_puts "$src is glued, skipping"
 	    continue
 	} else {
-	    ag_puts "Placing $src [ag_src_ident $src]"
+	    #ag_puts "Placing $src [ag_src_ident $src]"
 	}
 	
 	
@@ -451,7 +467,7 @@ proc ag_open_source src {
     }
 
     if {![info exists win]} {
-	ag_puts "HMM, didn't find window for $src"
+	#ag_puts "HMM, didn't find window for $src"
 	return
     }
 
