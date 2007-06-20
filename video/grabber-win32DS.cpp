@@ -194,6 +194,7 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt) {
    cb_mutex_=0;
    crossbar = crossbarCursor = NULL;  
    pCaptureFilter_ = filt;   
+   max_fps_ = 30;
 
    cb_mutex_ = CreateMutex(NULL, FALSE, NULL);
 
