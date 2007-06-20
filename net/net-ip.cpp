@@ -254,8 +254,7 @@ int IPNetwork::open(const char * host, int port, int ttl)
 	(IPAddress&)local_ = local.sin_addr;
 	rsock_ = openrsock(g_addr_, s_addr_ssm_, port, local_);
 	if (rsock_ < 0) {
-		(void)::close(ssock_);
-		return (-1);
+		rsock_ = ssock_;
 	}
 
 	lport_ = local.sin_port;
@@ -360,6 +359,27 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
 				exit(1);
 			}
 		}
+/* See if the noMulticastBind flag is set */
+
+		Tcl tcl = Tcl::instance();
+		const char *noBindStr;
+		int noBind = 0;
+
+		if ((noBindStr = tcl.attr("noMulticastBind")) != NULL)
+		{
+			noBind = (strcasecmp(noBindStr, "true") == 0);
+		}
+		/* 
+		 * XXX This is bogus multicast setup that really
+		 * shouldn't have to be done (group membership should be
+		 * implicit in the IP class D address, route should contain
+		 * ttl & no loopback flag, etc.).  Steve Deering has promised
+		 * to fix this for the 4.4bsd release.  We're all waiting
+		 * with bated breath.
+		 */
+
+		if (!noBind)
+		{
 		/* SSM code */
 #ifdef IP_ADD_SOURCE_MEMBERSHIP  
         struct ip_mreq_source mrs;
@@ -395,6 +415,7 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
 					exit(1);
 				}
 		}
+		}
 	} else
 #endif /* IP_ADD_MEMBERSHIP */
 	{
@@ -406,7 +427,8 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
 		sin.sin_addr.s_addr = locali;
 		if (bind(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
 			perror("bind");
-			exit(1);
+            ::close(fd);
+            return (-1);
 		}
 		/*
 		 * Despite several attempts on our part to get this fixed,
@@ -455,17 +477,26 @@ int IPNetwork::openssock(Address & addr, u_short port, int ttl)
 	}
 	nonblock(fd);
 
+        if (IN_CLASSD(ntohl(addri))) {
+                int on = 1;
+                if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char *)&on,
+                                sizeof(on)) < 0) {
+                        perror("SO_REUSEADDR");
+                }
+        }
 
-#ifdef WIN32
 	memset((char *)&sin, 0, sizeof(sin));
 	sin.sin_family = AF_INET;
-	sin.sin_port = 0;
+	sin.sin_port = port;
 	sin.sin_addr.s_addr = INADDR_ANY;
 	if (bind(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
-		perror("bind");
-		exit(1);
+        sin.sin_port = 0;
+        if (bind(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
+            perror("bind");
+            exit(1);
+        }
 	}
-#endif
+
 	memset((char *)&sin, 0, sizeof(sin));
 	sin.sin_family = AF_INET;
 	sin.sin_port = port;
