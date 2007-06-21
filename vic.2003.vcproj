@@ -273,7 +273,8 @@
 				Optimization="0"
 				AdditionalIncludeDirectories=".\;codec;render;rtp;net;win32;video;..\common\src;&quot;..\tk-8.0\win&quot;;&quot;..\tk-8.0\generic&quot;;&quot;..\tk-8.0\xlib&quot;;&quot;..\tcl-8.0\win&quot;;&quot;..\tcl-8.0\generic&quot;;codec\tmndec;&quot;codec\tmn-x&quot;;codec\jpeg;codec\p64;codec\h263"
 				PreprocessorDefinitions="DEBUG,_DEBUG,_WIN95,NEED_INET_PTON,_WINDOWS,SASR,WIN32,ED_YBITS=4,SIGRET=void,SIGARGS=int,NLAYER=8,USE_DDRAW,WINVER=0x500"
-				RuntimeLibrary="5"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
 				BrowseInformation="1"
 				WarningLevel="3"
@@ -290,6 +291,7 @@
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\common\src\Debug;&quot;..\tcl-8.0\win\Debug&quot;;&quot;..\tk-8.0\win\Debug&quot;;codec\tmndec;&quot;codec\tmn-x&quot;;\mssdk\lib;&quot;C:\Program Files\Intel\plsuite\lib\msvc&quot;;&quot;C:\Program Files\Intel\plsuite\lib&quot;"
+				IgnoreDefaultLibraryNames="LIBCMTD.lib"
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"/>
 			<Tool

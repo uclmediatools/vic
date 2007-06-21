@@ -118,7 +118,7 @@ b) totally rework the code, and possibly vic's object model, so that grabbers ex
 input devices are created.  Probably not a good approach, but it is one possibility.
 
 */
-
+#define _WIN32_DCOM 
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
@@ -137,11 +137,6 @@ static DirectShowScanner findDirectShowDevices;
 #endif
 
 IBaseFilter  *pCaptureFilter[NUM_DEVS];
-
-
-IAMCrossbar *pXBar   = NULL;
-   IBaseFilter *pFilter = NULL;
-
 
 //#########################################################################
 // Class Callback, for video framebuffer callback.  See DS Sample Grabber interface docs.
@@ -178,7 +173,7 @@ STDMETHODIMP Callback::QueryInterface(REFIID riid, void **ppvObject) {
 //#########################################################################
 // DirectShowGrabber definition
 
-DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt) {
+DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char *nick)  {
    HRESULT         hr;
 
    /* Reference:  various, including 
@@ -189,34 +184,54 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt) {
    debug_msg("new DirectShowGrabber()\n");
    svideoPort = -1;
    compositePort = -1;
-   decimate_ =-1;
+   decimate_ = 2;  //default
    converter_=0;
    cb_mutex_=0;
-   crossbar = crossbarCursor = NULL;  
+   crossbar_ = crossbarCursor_ = NULL;
+   pNullBaseFilter_=0;
+   pSampleGrabber_=0;
+   pGrabberBaseFilter_=0;    
+   pMediaControl_=0;
+   pGraph_=0;
+   pBuild_=0;
    pCaptureFilter_ = filt;   
+   pXBar_   = NULL;
+   pFilter_ = NULL;
+   capturing_=0;
    max_fps_ = 30;
 
-   cb_mutex_ = CreateMutex(NULL, FALSE, NULL);
+   setport("external-in");
 
-   setport("external");
-
-   //basewidth_  = CIF_BASE_WIDTH;
-   //baseheight_ = CIF_BASE_HEIGHT;
-  
-   /*
-   ZeroMemory(&mt_, sizeof(AM_MEDIA_TYPE));
-   mt_.majortype = MEDIATYPE_Video;
-   mt_.subtype   = MEDIASUBTYPE_RGB24;
-   */
-
-   /*
+   basewidth_  = NTSC_BASE_WIDTH;
+   baseheight_ = NTSC_BASE_HEIGHT;
+   /*if( is_pal() ) {
+      basewidth_  = PAL_BASE_WIDTH;
+      baseheight_ = PAL_BASE_HEIGHT;
+   } else {
+      basewidth_  = NTSC_BASE_WIDTH;
+      baseheight_ = NTSC_BASE_HEIGHT;
+   }
    mt_.majortype = MEDIATYPE_AnalogVideo;
    mt_.subtype   = MEDIASUBTYPE_AnalogVideo_NTSC_M;
    */
 
-   callback           = new Callback();   
-   callback->grabber  = this;     
+   // callback mutex
+   cb_mutex_ = CreateMutex(NULL, FALSE, NULL);
+
+   callback_           = new Callback();   
+   callback_->grabber  = this;     
    debug_msg("DirectShowGrabber::DirectShowGrabber():  callback created, grabber set\n");
+
+   // Make a graph builder object we can use for capture graph building
+   // Create the capture graph builder helper object
+   hr = CoCreateInstance(CLSID_CaptureGraphBuilder2, NULL, CLSCTX_INPROC_SERVER,
+                         IID_ICaptureGraphBuilder2, (void **)&pBuild_);
+   //showErrorMessage(hr);
+   if (FAILED(hr)) {
+   		Grabber::status_=-1;
+		return;
+   }
+   debug_msg("DirectShowGrabber::DirectShowGrabber():  graph builder interface acquired\n");
 
    // Create the Filter Graph Manager
    hr = CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER,
@@ -227,24 +242,6 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt) {
    }
    debug_msg("DirectShowGrabber::DirectShowGrabber():  graph instance acquired\n");
    
-   // Obtain the interface used to run, stop, and pause the graph
-   hr = pGraph_->QueryInterface(IID_IMediaControl, (void **)&pMediaControl_);
-   //showErrorMessage(hr);
-   if (FAILED(hr)) {
-   		Grabber::status_=-1;
-		return;
-   }
-   debug_msg("DirectShowGrabber::DirectShowGrabber():  graph media control interface acquired\n");
-   
-   // Create the capture graph builder helper object
-   hr = CoCreateInstance(CLSID_CaptureGraphBuilder2, NULL, CLSCTX_INPROC_SERVER,
-                         IID_ICaptureGraphBuilder2, (void **)&pBuild_);
-   //showErrorMessage(hr);
-   if (FAILED(hr)) {
-   		Grabber::status_=-1;
-		return;
-   }
-   debug_msg("DirectShowGrabber::DirectShowGrabber():  graph builder interface acquired\n");
 
    // Tell the capture graph builder about the Filter Graph Manager (FGM).
    hr = pBuild_->SetFiltergraph(pGraph_);
@@ -256,9 +253,19 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt) {
    debug_msg("DirectShowGrabber::DirectShowGrabber():  graph associated with builder\n");
 
    // Add the capture filter (obtained by the DirectShowDevice Scanner) to the filter graph
-   hr = pGraph_->AddFilter(pCaptureFilter_, L"VicCaptureFilter");
+   //hr = pGraph_->AddFilter(pCaptureFilter_, L"VicCaptureFilter");
+   USES_CONVERSION;
+   hr = pGraph_->AddFilter(pCaptureFilter_, A2W(nick));
    //showErrorMessage(hr);
    debug_msg("DirectShowGrabber::DirectShowGrabber():  capture filter added to graph\n");
+   //IAMVideoCompression *pVC;
+   /*pCaptureFilter_->AddRef();
+   hr = pBuild_->RenderStream(&PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video,
+                              pCaptureFilter_, NULL, NULL);
+
+   hr = pBuild_->FindInterface(&PIN_CATEGORY_CAPTURE,
+                               &MEDIATYPE_Video, pCaptureFilter_,
+                               IID_IAMVideoCompression, (void **)&pVC);*/
 
    // Set up the Sample Grabber transform filter
    hr = CoCreateInstance(CLSID_SampleGrabber, NULL, CLSCTX_INPROC_SERVER,
@@ -272,7 +279,7 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt) {
 
    //hr = pSampleGrabber_->SetMediaType(&mt_);                          showErrorMessage(hr);
    hr = pSampleGrabber_->SetOneShot(FALSE);                           //showErrorMessage(hr);
-   hr = pSampleGrabber_->SetCallback(callback, 1);                    //showErrorMessage(hr);
+   hr = pSampleGrabber_->SetCallback(callback_, 1);                    //showErrorMessage(hr);
    hr = pGraph_->AddFilter(pGrabberBaseFilter_,L"VicSampleGrabber");  //showErrorMessage(hr);
 
    // Get the Null Renderer DS default filter
@@ -298,12 +305,11 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt) {
 		return;
    }
    //Not needed as width & height aren't known yet.
-   //setCaptureOutputFormat();
+   setCaptureOutputFormat();
 
     if (findCrossbar(pCaptureFilter_)) {
 	routeCrossbar();   
     }
-
 
    // We can presumably inspect crossbar==NULL here to determine if we want
    // to change the Sample Grabber media type.
@@ -315,17 +321,14 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt) {
    hr            = pSampleGrabber_->SetMediaType(&mt_);
    //showErrorMessage(hr);
 
-   // Connect the filters   
-   //hr = pBuild_->RenderStream(&PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video,
-   //                           pCaptureFilter_, pGrabberBaseFilter_, pNullBaseFilter_);
+   // Obtain the interface used to run, stop, and pause the graph
+   hr = pGraph_->QueryInterface(IID_IMediaControl, (void **)&pMediaControl_);
    //showErrorMessage(hr);
-   //debug_msg("DirectShowGrabber::DirectShowGrabber():  builder render stream\n");
-   
    if (FAILED(hr)) {
-          debug_msg("DirectShowGrabber::DirectShowGrabber():  FAILed to build render stream\n");
-   		status_=-1;
+   		Grabber::status_=-1;
 		return;
    }
+   debug_msg("DirectShowGrabber::DirectShowGrabber():  graph media control interface acquired\n");
 }
 
 //--------------------------------
@@ -343,35 +346,33 @@ DirectShowGrabber::~DirectShowGrabber() {
     CloseHandle(cb_mutex_);  
 
     // Release COM objects in reverse order of instantiation
-    callback->Release();
+    callback_->Release();
+    //delete callback; - done by above Release() call
     pNullBaseFilter_->Release();
     pSampleGrabber_->Release();
     pGrabberBaseFilter_->Release();    
-    pBuild_->Release();    
     pMediaControl_->Release();
     pGraph_->Release();        
-    delete callback;
+    pBuild_->Release();    
 }
 
 //--------------------------------
 
 bool DirectShowGrabber::findCrossbar(IBaseFilter *pCapF) {
    HRESULT     hr;
-   /*IAMCrossbar *pXBar   = NULL;
-   IBaseFilter *pFilter = NULL;*/
 
    debug_msg("DirectShowGrabber::FindCrossbar()...\n");
 
    hr = pBuild_->FindInterface(&LOOK_UPSTREAM_ONLY, NULL, pCapF, IID_IAMCrossbar, 
-                             (void**)&pXBar);
+                             (void**)&pXBar_);
 
    if ( SUCCEEDED(hr) ) {
-      addCrossbar(pXBar);
-      hr = pXBar->QueryInterface(IID_IBaseFilter, (void**)&pFilter);
+      addCrossbar(pXBar_);
+      hr = pXBar_->QueryInterface(IID_IBaseFilter, (void**)&pFilter_);
       if ( SUCCEEDED(hr) ) {
-	debug_msg("DirectShowGrabber::FindCrossbar()...Found and added\n");
-        findCrossbar(pFilter);
-         pFilter->Release();
+	 debug_msg("DirectShowGrabber::FindCrossbar()...Found and added\n");
+         //findCrossbar(pFilter_);
+         //pFilter_.Release();
 	 return TRUE;
       }
    }
@@ -387,13 +388,13 @@ void DirectShowGrabber::addCrossbar(IAMCrossbar *xbar) {
 
    pCross = new Crossbar(xbar);
 
-   if( crossbar == NULL ) {
-      crossbar = pCross;   
+   if( crossbar_ == NULL ) {
+      crossbar_ = pCross;   
    }
    else {
-      crossbarCursor->next = pCross;      
+      crossbarCursor_->next = pCross;      
    }
-   crossbarCursor = pCross;
+   crossbarCursor_ = pCross;
 }
 
 //-----------------------------
@@ -403,14 +404,14 @@ void DirectShowGrabber::routeCrossbar() {
     long        output           = -1;
     long        input            = -1;
     int         videoDecoderPort = -1;
-	int		    port;
+    int		    port;
     long        related;
     long        pinType;    
     IAMCrossbar *xb;
 
-    if( crossbar == NULL ) return;        
+    if( crossbar_ == NULL ) return;        
 
-    xb = crossbar->getXBar();
+    xb = crossbar_->getXBar();
 
     xb->get_IsRoutedTo(0, &input);
     debug_msg("DirectShowGrabber::routeCrossbar():  pin %d is routed to output pin 0\n", input);
@@ -418,35 +419,35 @@ void DirectShowGrabber::routeCrossbar() {
     hr = xb->get_PinCounts(&output, &input);
 
     for( int i = 0; i < input; ++i ) {
-        xb->get_CrossbarPinInfo(TRUE, i, &related, &pinType);
-        if( pinType == PhysConn_Video_SVideo ) {
-            svideoPort = i;            
-        }
-        if( pinType == PhysConn_Video_Composite ) {
-            compositePort = i;            
-        }
+	xb->get_CrossbarPinInfo(TRUE, i, &related, &pinType);
+	if( pinType == PhysConn_Video_SVideo ) {
+	    svideoPort = i;            
+	}
+	if( pinType == PhysConn_Video_Composite ) {
+	    compositePort = i;            
+	}
     }
     for( int i = 0; i < output; ++i ) {
-       xb->get_CrossbarPinInfo(FALSE, i, &related, &pinType);
-       if( pinType == PhysConn_Video_VideoDecoder ) {
-           videoDecoderPort = i;           
-           break;
-       }
-    }
-	if(strcmp(input_port_, "S-Video")==0){
-		port = svideoPort;
-	}else if(strcmp(input_port_, "Composite")==0){
-		port = compositePort;
-	}else{
-		port = 0;
+	xb->get_CrossbarPinInfo(FALSE, i, &related, &pinType);
+	if( pinType == PhysConn_Video_VideoDecoder ) {
+	    videoDecoderPort = i;           
+	    break;
 	}
+    }
+    if(strcmp(input_port_, "S-Video")==0){
+	port = svideoPort;
+    }else if(strcmp(input_port_, "Composite")==0){
+	port = compositePort;
+    }else{
+	port = 0;
+    }
 
     if( xb->CanRoute(videoDecoderPort, port) == S_FALSE ) 
-        debug_msg("DirectShowGrabber::routeCrossbar():  cannot route input pin %d to output pin %d\n", port, videoDecoderPort);
+	debug_msg("DirectShowGrabber::routeCrossbar():  cannot route input pin %d to output pin %d\n", port, videoDecoderPort);
     else {
-        debug_msg("DirectShowGrabber::routeCrossbar() routing pin %d to pin %d\n", port, videoDecoderPort);
-        hr = xb->Route(videoDecoderPort, port);
-        //showErrorMessage(hr);
+	debug_msg("DirectShowGrabber::routeCrossbar() routing pin %d to pin %d\n", port, videoDecoderPort);
+	hr = xb->Route(videoDecoderPort, port);
+	//showErrorMessage(hr);
     }
 
     xb->get_IsRoutedTo(0, &input);
@@ -462,11 +463,12 @@ void DirectShowGrabber::start() {
    setCaptureOutputFormat();
    hr = pBuild_->RenderStream(&PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video,
 	pCaptureFilter_, pGrabberBaseFilter_, pNullBaseFilter_);
-   // callback mutex
    if (SUCCEEDED(hr) )
        debug_msg("DirectShowGrabber::DirectShowGrabber():  builder render stream\n");
    else {
        debug_msg("DirectShowGrabber::DirectShowGrabber():  FAILED to builder render stream: %x\n", hr);
+       // This _usually_ fails because RendersStream has already been called - we should really 
+       // diassemble the filterGraph and rebuild it when we change stuff.
        //stop();
        //return;
    }
@@ -499,7 +501,8 @@ void DirectShowGrabber::stop() {
       hr = pMediaControl_->Stop();
    }
    //showErrorMessage(hr);
-   
+   ReleaseMutex(cb_mutex_);
+
    delete converter_;
    capturing_  = 0;   
    converter_  = 0;
@@ -631,7 +634,9 @@ int DirectShowGrabber::getCaptureCapabilities() {
        for (int iFormat = 0; iFormat < iCount; iFormat++) {
 	   hr = pConfig->GetStreamCaps(iFormat, &pmtConfig, (BYTE *)&scc);
 	   //showErrorMessage(hr);
-	   // Need to check for different formats and set up appropriate converter
+	   // if pmtConfig->subtype for the capture filter is different from MEDIASUBTYPE_RGB24
+	   // (which is set in the SampleGrabber filter) then the FGM should insert an 
+	   //  appropriate converter into the filter graph - provided RenderStream() has not been called.
 	   // e.g // 59565955-0000-0010-8000-00AA00389B71  'UYVY' ==  MEDIASUBTYPE_UYVY
 	   //     for simple firewire cam
 	   if( SUCCEEDED(hr) ) {
@@ -770,7 +775,6 @@ void DirectShowGrabber::setCaptureOutputFormat() {
 			}
 		    }
 	       }
-               // XXX:  leak.  need to deal with this - msp
             }
             DeleteMediaType(pmtConfig);
 	 }
@@ -834,7 +838,7 @@ int DirectShowGrabber::command(int argc, const char* const* argv) {
 		   setsize();
 		   setCaptureOutputFormat();
 		   start();
-	 } else if (decimate_!=-1) {
+	 } else {
 		   setsize();
 		   setCaptureOutputFormat();
 	 }
@@ -853,7 +857,7 @@ int DirectShowGrabber::command(int argc, const char* const* argv) {
 //#########################################################################
 // DirectShowCIFGrabber class
 
-DirectShowCIFGrabber::DirectShowCIFGrabber(IBaseFilter *f) : DirectShowGrabber(f) {
+DirectShowCIFGrabber::DirectShowCIFGrabber(IBaseFilter *f, const char * nick) : DirectShowGrabber(f, nick) {
    debug_msg("DirectShowCIFGrabber\n");
 }
 
@@ -900,8 +904,8 @@ void DirectShowCIFGrabber::setsize() {
 
 DirectShowDevice::DirectShowDevice(char *friendlyName, IBaseFilter *pCapFilt) : InputDevice(friendlyName) {  
 
-   attri = new char[100];
-   attri[0] = 0;
+   attri_ = new char[100];
+   attri_[0] = 0;
 
    debug_msg("new DirectShowDevice():  friendlyName=%s\n", friendlyName);
    directShowFilter_  = pCapFilt;           
@@ -909,26 +913,26 @@ DirectShowDevice::DirectShowDevice(char *friendlyName, IBaseFilter *pCapFilt) : 
    attributes_        = "format { 411 } size { large small cif } port { extern-in } type { pal ntsc } ";
    DirectShowCIFGrabber o(directShowFilter_); 
    
-   strcat(attri, "format { 411 } size { large small cif } type { pal ntsc } port { ");
+   strcat(attri_, "format { 411 } size { large small cif } type { pal ntsc } port { ");
    if(o.hasSVideo() || o.hasComposite()){
      if(o.hasSVideo()){
-       strcat(attri, "S-Video ");
+       strcat(attri_, "S-Video ");
      }
      if(o.hasComposite()){
-       strcat(attri, "Composite ");
+       strcat(attri_, "Composite ");
      }
    }else{
-	   strcat(attri, "extern-in ");
+	   strcat(attri_, "external-in ");
    }
 
-   strcat(attri, "} "); 
-   attributes_ = attri;
+   strcat(attri_, "} "); 
+   attributes_ = attri_;
 }
 
 DirectShowDevice::~DirectShowDevice(){
     // Release not necessary as smart pointers are used.
     //directShowFilter_.Release();
-    delete attri;
+    delete attri_;
 }
 //--------------------------------
 
@@ -951,7 +955,8 @@ int DirectShowDevice::command(int argc, const char* const* argv) {
 //#########################################################################
 // DirectShowScanner class
 
-DirectShowScanner::DirectShowScanner() {
+DirectShowScanner::DirectShowScanner():pMoniker_(0)
+ {
    ICreateDevEnum *pDevEnum      = 0;
    int             hr;
    int             devNum;
@@ -961,8 +966,8 @@ DirectShowScanner::DirectShowScanner() {
 
    debug_msg("new DirectShowScanner()\n");
 
-   // Initialize the COM subsystem
-   hr=CoInitialize(NULL);
+   // Initialize the COM subsystem - it seems that CoInitializeEx is reccommended with COINIT_MULTITHREADED as the driver will spawn threads.
+   hr=CoInitializeEx(NULL,COINIT_MULTITHREADED);
    if (FAILED(hr)) {
 	   debug_msg("Failed COM subsystem initialisation.\n");
 	   	return;
@@ -977,7 +982,6 @@ DirectShowScanner::DirectShowScanner() {
    }
 
    IEnumMoniker *pEnum    = 0;
-   IMoniker     *pMoniker = 0;
    IPropertyBag *pPropBag = 0;
    VARIANT      varName;
    CLSID		clsid;
@@ -993,9 +997,9 @@ DirectShowScanner::DirectShowScanner() {
 
    // Get the capture filter for each device installed, up to NUM_DEVS devices
    for( devNum=0; devNum < NUM_DEVS; ++devNum) {
-      if ( pEnum->Next(1, &pMoniker, NULL) == S_OK ) {
+      if ( pEnum->Next(1, &pMoniker_, NULL) == S_OK ) {
 
-         hr = pMoniker->BindToStorage(0, 0, IID_IPropertyBag, (void **)&pPropBag);
+         hr = pMoniker_->BindToStorage(0, 0, IID_IPropertyBag, (void **)&pPropBag);
 	     if (FAILED(hr)) {
 			debug_msg("Failed to Get propbag bound to storage on DS dev: %d\n", devNum);
 			continue;
@@ -1007,6 +1011,8 @@ DirectShowScanner::DirectShowScanner() {
          hr = pPropBag->Read(L"FriendlyName", &varName, 0);
 		 if (FAILED(hr)) {
 			debug_msg("Failed to Get friendly name read on DS dev: %d\n", devNum);
+			VariantClear(&varName);
+		        pPropBag->Release();
 			continue;
 		 }
          //showErrorMessage(hr);
@@ -1020,27 +1026,30 @@ DirectShowScanner::DirectShowScanner() {
 
          // needs work, but don't add drivers that look like VFW drivers - msp
          //if( (strstr(nameBuf, "VFW") == NULL) ) {
-         hr = pMoniker->BindToObject(0, 0, IID_IBaseFilter, (void **)(pCaptureFilter+devNum));
+         hr = pMoniker_->BindToObject(0, 0, IID_IBaseFilter, (void **)&pCaptureFilter[devNum]);
          if (FAILED(hr)) {
 		debug_msg("Failed to Get friendly name read on DS dev: %d\n", devNum);
+		VariantClear(&varName);
+	        pPropBag->Release();
 		continue;
 	 }
 	 debug_msg("capture filter bound ok= [%d} %s\n", hr, nameBuf);
          pCaptureFilter[devNum]->GetClassID(&clsid);
+         VariantClear(&varName);
 	 if (!IsEqualGUID(clsid,CLSID_VfwCapture))	 {
+		pMoniker_->AddRef();
 		debug_msg("Adding capture filter %d\n", hr);
 		devs_[devNum] = new DirectShowDevice(strdup(nameBuf), pCaptureFilter[devNum]);
          } else {
             debug_msg("discarding an apparent VFW device= %s\n", nameBuf);
 	    devs_[devNum] = NULL;
+	    pMoniker_->Release();
          }
-         VariantClear(&varName);
          pPropBag->Release();
       }
    }
 
    // Release these objects so COM can release their memory
-   pMoniker->Release();
    pEnum->Release();
    pDevEnum->Release();
 }

@@ -71,7 +71,7 @@ class Callback;
 
 class DirectShowGrabber : public Grabber {
    public:
-      DirectShowGrabber(IBaseFilter *);
+      DirectShowGrabber(IBaseFilter *, const char * nick);
       ~DirectShowGrabber();
       virtual int  command(int argc, const char*const* argv);
       inline void  converter(Converter* v) {
@@ -106,7 +106,7 @@ class DirectShowGrabber : public Grabber {
 	  int		   max_width_;
 	  int		   max_height_;
 	  int		   width_;
-	  int		   height_;
+      int		   height_;
       int          compositePort;
 	  int		   svideoPort;
 
@@ -115,6 +115,7 @@ class DirectShowGrabber : public Grabber {
       Converter    *converter_;
 
    private:
+      CComPtr<IBaseFilter>   pFilter_;
       IBaseFilter*           pCaptureFilter_;
       ISampleGrabber*        pSampleGrabber_;
       IBaseFilter*           pGrabberBaseFilter_;
@@ -123,10 +124,12 @@ class DirectShowGrabber : public Grabber {
       IGraphBuilder*         pGraph_;
       ICaptureGraphBuilder2* pBuild_;
       IMediaControl*         pMediaControl_;
-      AM_MEDIA_TYPE                  mt_;
-      Callback                       *callback;
-      Crossbar                       *crossbar;
-      Crossbar                       *crossbarCursor;
+      AM_MEDIA_TYPE          mt_;
+      Callback               *callback_;
+
+      CComPtr<IAMCrossbar> 	     pXBar_;
+      Crossbar                       *crossbar_;
+      Crossbar                       *crossbarCursor_;
       char			     input_port_[20];
       bool                           findCrossbar(IBaseFilter *);
       void                           addCrossbar(IAMCrossbar *);
@@ -138,7 +141,7 @@ class DirectShowGrabber : public Grabber {
 
 class DirectShowCIFGrabber : public DirectShowGrabber {
    public:
-      DirectShowCIFGrabber(IBaseFilter *);
+      DirectShowCIFGrabber(IBaseFilter *, const char *nick = 0 );
       ~DirectShowCIFGrabber();
    protected:
       virtual void start();
@@ -187,9 +190,10 @@ class DirectShowDevice : public InputDevice {
 
    protected:
       CComPtr<IBaseFilter>           directShowFilter_;
+
       //IBaseFilter       *directShowFilter_;
       DirectShowGrabber *directShowGrabber_;   
-	  char *attri;
+	  char *attri_;
 };
 
 //#########################################################################
@@ -200,4 +204,6 @@ class DirectShowScanner {
       ~DirectShowScanner();
    protected:
       DirectShowDevice *devs_[NUM_DEVS];
+      IMoniker*     pMoniker_;
+
 };
