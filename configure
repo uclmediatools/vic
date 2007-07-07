@@ -4701,6 +4701,7 @@ rm -f conftest.err conftest.$ac_ext
 			$PWD/../tcl \
 			/usr/local/include/tcl8.4 \
 			/usr/src/local/tcl8.4 \
+			/usr/include/tcl8.4 \
 			/import/tcl/include/tcl8.4 \
 			$prefix/include \
 			$x_includes/tk \
@@ -4980,6 +4981,7 @@ rm -f conftest.err conftest.$ac_ext
 			$x_includes \
 			$PWD/../tk8.4 \
 			/usr/src/local/tk8.4 \
+			/usr/include/tcl8.4 \
 			/import/tcl/include/tk8.4"
 		for dir in $places; do
 			if test -r $dir/tk.h ; then
