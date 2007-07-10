@@ -36,7 +36,7 @@
 
 #include "crossbar.h"
 
-#define NUM_DEVS 4   // max number of capture devices we'll support
+#define NUM_DEVS 20   // max number of capture devices we'll support
 //#define showErrorMessage(x)   ShowErrorMessage(x, __LINE__, __FILE__)
 
 //extern void ShowErrorMessage(HRESULT, int, char* );
