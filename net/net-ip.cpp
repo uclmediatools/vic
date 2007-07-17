@@ -112,12 +112,14 @@ class IPNetwork : public Network {
     		return (result);
   	}
     protected:
+	struct sockaddr_in sin;
 	virtual int dorecv(u_char* buf, int len, Address &from, int fd);
 	int open(const char * host, int port, int ttl);
 	int close();
 	int localname(sockaddr_in*);
 	int openssock(Address & addr, u_short port, int ttl);
 	int openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, Address & local);
+	void dosend(u_char* buf, int len, int fd);
 	time_t last_reset_;
 };
 
@@ -466,7 +468,7 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
 int IPNetwork::openssock(Address & addr, u_short port, int ttl)
 {
 	int fd;
-	struct sockaddr_in sin;
+//	struct sockaddr_in sin;
 
 	u_int32_t addri = (IPAddress&)addr;
 
@@ -484,6 +486,14 @@ int IPNetwork::openssock(Address & addr, u_short port, int ttl)
                         perror("SO_REUSEADDR");
                 }
         }
+#ifdef SO_REUSEPORT
+	int on = 1;
+	if (setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, (char *)&on,
+		       sizeof(on)) < 0) {
+		perror("SO_REUSEPORT");
+		exit(1);
+	}
+#endif
 
 	memset((char *)&sin, 0, sizeof(sin));
 	sin.sin_family = AF_INET;
@@ -501,10 +511,14 @@ int IPNetwork::openssock(Address & addr, u_short port, int ttl)
 	sin.sin_family = AF_INET;
 	sin.sin_port = port;
 	sin.sin_addr.s_addr = addri;
-	if (connect(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
+
+/*	Got rid of connect and vic then uses sin in the sendto() function in
+ *	the dosend() method
+ *
+ *	if (connect(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
 		perror("connect");
 		exit(1);
-	}
+	}*/
 	if (IN_CLASSD(ntohl(addri))) {
 #ifdef IP_ADD_MEMBERSHIP
 		char c;
@@ -589,4 +603,72 @@ int IPNetwork::dorecv(u_char* buf, int len, Address & from, int fd)
 		return (0);
 
 	return (cc);
+}
+
+void IPNetwork::dosend(u_char* buf, int len, int fd)
+{
+	int cc = ::sendto(fd, (char*)buf, len, 0, (struct sockaddr *)&sin, sizeof(sin));
+	if (cc < 0) {
+		switch (errno) {
+		case ECONNREFUSED:
+			/* no one listening at some site - ignore */
+#if defined(__osf__) || defined(_AIX)
+			/*
+			 * Due to a bug in kern/uipc_socket.c, on several
+			 * systems, datagram sockets incorrectly persist
+			 * in an error state on receipt of an ICMP
+			 * port-unreachable.  This causes unicast connection
+			 * rendezvous problems, and worse, multicast
+			 * transmission problems because several systems
+			 * incorrectly send port unreachables for 
+			 * multicast destinations.  Our work around
+			 * is to simply close and reopen the socket
+			 * (by calling reset() below).
+			 *
+			 * This bug originated at CSRG in Berkeley
+			 * and was present in the BSD Reno networking
+			 * code release.  It has since been fixed
+			 * in 4.4BSD and OSF-3.x.  It is know to remain
+			 * in AIX-4.1.3.
+			 *
+			 * A fix is to change the following lines from
+			 * kern/uipc_socket.c:
+			 *
+			 *	if (so_serror)
+			 *		snderr(so->so_error);
+			 *
+			 * to:
+			 *
+			 *	if (so->so_error) {
+			 * 		error = so->so_error;
+			 *		so->so_error = 0;
+			 *		splx(s);
+			 *		goto release;
+			 *	}
+			 *
+			 */
+			reset();
+#endif
+			break;
+
+		case ENETUNREACH:
+		case EHOSTUNREACH:
+			/*
+			 * These "errors" are totally meaningless.
+			 * There is some broken host sending
+			 * icmp unreachables for multicast destinations.
+			 * UDP probably aborted the send because of them --
+			 * try exactly once more.  E.g., the send we
+			 * just did cleared the errno for the previous
+			 * icmp unreachable, so we should be able to
+			 * send now.
+			 */
+			(void)::send(ssock_, (char*)buf, len, 0);
+			break;
+
+		default:
+			/*perror("send");*/
+			return;
+		}
+	}
 }
