@@ -196,13 +196,12 @@ namespace eval ag_autoplace {
 		button $top.bottomframe.controls.quit  -text "Close"            -command "[namespace code {wm withdraw}] $top"
 		pack   $top.bottomframe.controls.apply -side left
 		pack   $top.bottomframe.controls.write -side left
-		pack   $top.bottomframe.controls.quit  -side left	
+		pack   $top.bottomframe.controls.quit  -side left
 		pack   $top.bottomframe.controls       -side right
-		pack $top.bottomframe -side bottom -fill both 
-		
-				
-		
+		pack $top.bottomframe -side bottom -fill both
 
+		# added to catch window close action
+		wm protocol $top WM_DELETE_WINDOW "wm withdraw $top"
 
 		return $top
     }
