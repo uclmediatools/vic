@@ -95,13 +95,13 @@ proc build.v4l w {
 
 proc build.v4l2 w {
     set f [smallfont]
-    global contrast brightness hue saturation norm
+    global contrast brightness v4l2gamma hue saturation v4l2gain norm
     set contrast [resource contrast]
     set brightness [resource brightness]
-    set gamma [resource gamma]
+    set v4l2gamma [resource v4l2gamma]
     set hue [resource hue]
     set saturation [resource saturation]
-    set gain [resource gain]
+    set v4l2gain [resource v4l2gain]
     set norm 0
 
     label $w.title -text "Video4Linux2 grabber controls"
@@ -111,7 +111,7 @@ proc build.v4l2 w {
     frame $w.f.left -relief flat
 
 
-    button $w.f.left.reset -font $f -width 10 -text "Reset" -command "set contrast 128; set brightness 128;set gamma 128; set hue 128; set saturation 128; set gain 128; grabber controls reset"  -padx 1 -pady 1
+    button $w.f.left.reset -font $f -width 10 -text "Reset" -command "set contrast 128; set brightness 128;set v4l2gamma 128; set hue 128; set saturation 128; set v4l2gain 128; grabber controls reset"  -padx 1 -pady 1
     pack $w.f.left.reset
 
     frame $w.f.right -relief flat
@@ -136,7 +136,7 @@ proc build.v4l2 w {
     frame $w.f.right.top.gamma -relief flat -borderwidth 2
     scale $w.f.right.top.gamma.scale -orient horizontal -font $f -relief groove  -width 12 \
                 -showvalue 0 -from 0 -to 255 \
-                -variable gamma \
+                -variable v4l2gamma \
                 -label Gamma \
                 -command "grabber gamma"
     pack  $w.f.right.top.gamma.scale -fill x -expand 1
@@ -161,7 +161,7 @@ proc build.v4l2 w {
     frame $w.f.right.bottom.gain -relief flat -borderwidth  2
     scale $w.f.right.bottom.gain.scale -orient horizontal -font $f -relief groove  -width 12 \
                 -showvalue 0 -from 0 -to 255 \
-                -variable gain \
+                -variable v4l2gain \
                 -label Gain \
                 -command "grabber gain"
     pack  $w.f.right.bottom.gain.scale -fill x -expand 1
