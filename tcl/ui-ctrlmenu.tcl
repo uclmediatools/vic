@@ -32,7 +32,17 @@
 #
 proc windowingsystem { } {
     if { [ catch {set tkws [tk windowingsystem]}] } {
+        # if windowingsystem call fails, determine
+        # based on platform instead (note: windowingsystem
+        # call exists first in tk 8.4, one possible 
+        # reason for failure)
+        global tcl_platform
+        if {$tcl_platform(platform) == "windows"} {
+            set tkws win32
+        } else {
+            # default to x11 otherwise
             set tkws x11
+        }
     }
     return $tkws
 }
