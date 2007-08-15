@@ -124,12 +124,6 @@ proc build.v4l2 w {
 	-value "60Hz" -variable antiflicker -font $f
     pack $w.f.left.antiflicker
 
-    if [grabber get haveantiflicker] {
-	$w.f.left.antiflicker configure -state normal
-    } else {
-	$w.f.left.antiflicker configure -state disabled
-    }
-
     button $w.f.left.reset -font $f -width 14 -text "Reset" -command "set contrast 128; set brightness 128;set v4l2gamma 128; set hue 128; set saturation 128; set v4l2gain 128; grabber controls reset"  -padx 1 -pady 1
     pack $w.f.left.reset
 
