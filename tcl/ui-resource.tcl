@@ -187,6 +187,10 @@ proc init_resources {} {
 	option add Vic.luma_brightness "0" startupFile
 	option add Vic.luma_contrast "0" startupFile
 
+	option add Vic.antiflicker "disabled" startupFile
+	option add Vic.v4l2gain "128" startupFile
+	option add Vic.v4l2gamma "128" startupFile
+
 	#
 	# color resources
 	#

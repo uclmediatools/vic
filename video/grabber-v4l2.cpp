@@ -85,6 +85,9 @@ static const char *devlist[] = {
 #define BYTE_ORDER_UYVY 2
 #define BYTE_ORDER_VYUY 3
 
+/* V4L2 driver specific controls */
+#define V4L2_CID_POWER_LINE_FREQUENCY (V4L2_CID_PRIVATE_BASE + 1)
+
 typedef struct tag_vimage
 {
         struct v4l2_buffer      vidbuf;
@@ -313,7 +316,7 @@ V4l2Grabber::V4l2Grabber(const char *cformat, const char *dev)
                 perror("ioctl VIDIOC_QUERYCAP");
         } else {
                 if ( !(cap.capabilities & V4L2_CAP_READWRITE) && !(cap.capabilities & V4L2_CAP_STREAMING)) {
-                        debug_msg("v4l2: fatal: device does not support read()/write() calls or streaming capture.\n");
+                        debug_msg("V4L2: fatal: device does not support read()/write() calls or streaming capture.\n");
                         status_=-1;
                         return;
                 }
@@ -510,6 +513,22 @@ int V4l2Grabber::command(int argc, const char*const* argv)
                         return (TCL_OK);
                 }
 
+                if (strcmp(argv[1], "antiflicker") == 0) {
+                        struct v4l2_queryctrl qctrl;
+                        struct v4l2_control ctrl;
+
+                        if (-1 != ioctl(fd_, VIDIOC_QUERYCTRL, &qctrl)) {
+                                if (strcmp((char *)qctrl.name, "Power Line Frequency") == 0) {
+                                        ctrl.id = V4L2_CID_POWER_LINE_FREQUENCY;
+                                        ctrl.value = atoi(argv[2]);
+                                        if (-1 == ioctl(fd_, VIDIOC_S_CTRL, &ctrl))
+                                                perror("ioctl  VIDIOC_S_CTRL");
+                                        else
+                                                debug_msg( "V4L2: V4L2_CID_POWER_LINE_FREQUENCY = %d\n", ctrl.value);
+                                 }
+                        }
+                        return (TCL_OK);
+                }
 
                 if (strcmp(argv[1], "controls") == 0) {
                         if (strcmp(argv[2], "reset") == 0) {
@@ -570,7 +589,7 @@ void V4l2Grabber::start()
         int     i;
 
         if (fd_ > 0 ) {
-                debug_msg("\nv4l2: start\n");
+                debug_msg("\nV4L2: start\n");
 
                 format();
 
@@ -599,9 +618,9 @@ void V4l2Grabber::start()
                                 vimage[i].data = (typeof(vimage[0].data)) mmap(0,  vimage[i].vidbuf.length, PROT_READ|PROT_WRITE, MAP_SHARED, fd_, vimage[i].vidbuf.m.offset);
 
                                 if ((long)vimage[i].data == -1) {
-                                        debug_msg("v4l2: mmap() returned error %l\n", errno);
+                                        debug_msg("V4L2: mmap() returned error %l\n", errno);
                                         return;
-                                } else debug_msg("v4l2: mmap()'ed buffer at 0x%x (%d bytes)\n", (long)vimage[i].data, vimage[i].vidbuf.length);
+                                } else debug_msg("V4L2: mmap()'ed buffer at 0x%x (%d bytes)\n", (long)vimage[i].data, vimage[i].vidbuf.length);
                         }
 
                         for (i = 0; i < (int)req.count; ++i)
@@ -620,7 +639,7 @@ void V4l2Grabber::start()
                         if (vimage[0].data == NULL) {
                                 debug_msg("malloc(%d) failed\n", fmt.fmt.pix.sizeimage);
                                 return;
-                        } else debug_msg("v4l2: malloc()'ed buffer (%d bytes)\n",  fmt.fmt.pix.sizeimage);
+                        } else debug_msg("V4L2: malloc()'ed buffer (%d bytes)\n",  fmt.fmt.pix.sizeimage);
                 }
 
                 Grabber::start();
@@ -1051,7 +1070,7 @@ void V4l2Grabber::format()
                 width_  = CIF_WIDTH  *2  / decimate_;
                 height_ = CIF_HEIGHT *2  / decimate_;
 
-                debug_msg("v4l2: format");
+                debug_msg("V4L2: format");
                 switch (cformat_) {
                 case CF_CIF:
                         set_size_411(width_, height_);
@@ -1074,13 +1093,13 @@ void V4l2Grabber::format()
                 if (!err) {
                         if (-1 == ioctl(fd_, VIDIOC_S_STD, &standard.id))
                                 perror("ioctl VIDIOC_S_STD");
-                        else debug_msg("v4l2: setting norm to %s\n",standard.name);
+                        else debug_msg("V4L2: setting norm to %s\n",standard.name);
                 }
 
                 input = port_;
                 if ((err = ioctl(fd_, VIDIOC_S_INPUT, &input)) )
                         debug_msg("S_INPUT returned error %d\n",errno);
-                else debug_msg("v4l2: setting input port to %d\n", port_);
+                else debug_msg("V4L2: setting input port to %d\n", port_);
 
                 for (i = 0, err = 0; err == 0; ++i) {
                         struct v4l2_fmtdesc     fmtd;
@@ -1100,30 +1119,30 @@ void V4l2Grabber::format()
                                         fmt.fmt.pix.pixelformat = pixelformat;
 
                                         if ( (err = ioctl(fd_, VIDIOC_S_FMT, &fmt) ) )
-                                                debug_msg("\nv4l2: Failed to set format\n");
+                                                debug_msg("\nV4L2: Failed to set format\n");
 
                                         if ( ( fmt.fmt.pix.width != (unsigned int)width_ ) ||
                                                                 ( fmt.fmt.pix.height !=  (unsigned int)height_ ) ) {
 
-                                                debug_msg("v4l2: failed to set format! requested %dx%d, got %dx%d\n", width_, height_, fmt.fmt.pix.width, fmt.fmt.pix.height);
+                                                debug_msg("V4L2: failed to set format! requested %dx%d, got %dx%d\n", width_, height_, fmt.fmt.pix.width, fmt.fmt.pix.height);
 
 
                                                 switch(decimate_) {
                                                 case 2:
-                                                        debug_msg("v4l2: trying resolution under ...\n");
+                                                        debug_msg("V4L2: trying resolution under ...\n");
                                                         decimate_ = 4;
                                                         break;
                                                 case 1:
-                                                        debug_msg("v4l2: trying resolution under ...\n");
+                                                        debug_msg("V4L2: trying resolution under ...\n");
                                                         decimate_ = 2;
                                                         break;
                                                 default:
-                                                        debug_msg("v4l2: giving up ...\n");
+                                                        debug_msg("V4L2: giving up ...\n");
                                                         format_ok = 1;
                                                 }
 
                                         } else {
-                                                debug_msg("v4l2: setting format: width=%d height=%d\n", fmt.fmt.pix.width, fmt.fmt.pix.height);
+                                                debug_msg("V4L2: setting format: width=%d height=%d\n", fmt.fmt.pix.width, fmt.fmt.pix.height);
                                                 format_ok = 1;
                                         }
                                         break;

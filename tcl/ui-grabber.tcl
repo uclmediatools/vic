@@ -96,6 +96,7 @@ proc build.v4l w {
 proc build.v4l2 w {
     set f [smallfont]
     global contrast brightness v4l2gamma hue saturation v4l2gain norm
+    global antiflicker
     set contrast [resource contrast]
     set brightness [resource brightness]
     set v4l2gamma [resource v4l2gamma]
@@ -103,6 +104,7 @@ proc build.v4l2 w {
     set saturation [resource saturation]
     set v4l2gain [resource v4l2gain]
     set norm 0
+    set antiflicker [resource antiflicker]
 
     label $w.title -text "Video4Linux2 grabber controls"
     pack $w.title  -fill x -expand 1
@@ -110,8 +112,25 @@ proc build.v4l2 w {
     frame $w.f -relief sunken -borderwidth 2
     frame $w.f.left -relief flat
 
+    set m $w.f.left.antiflicker.menu
+    menubutton $w.f.left.antiflicker -menu $m -text "Anti-flicker..." \
+	-relief raised -width 14 -font $f -padx 1 -pady 1
+    menu $m
+    $m add radiobutton -label "disabled" -command "grabber antiflicker 0" \
+	-value "disabled" -variable antiflicker -font $f
+    $m add radiobutton -label "50 Hz" -command "grabber antiflicker 1" \
+	-value "50Hz" -variable antiflicker -font $f
+    $m add radiobutton -label "60 Hz" -command "grabber antiflicker 2" \
+	-value "60Hz" -variable antiflicker -font $f
+    pack $w.f.left.antiflicker
 
-    button $w.f.left.reset -font $f -width 10 -text "Reset" -command "set contrast 128; set brightness 128;set v4l2gamma 128; set hue 128; set saturation 128; set v4l2gain 128; grabber controls reset"  -padx 1 -pady 1
+    if [grabber get haveantiflicker] {
+	$w.f.left.antiflicker configure -state normal
+    } else {
+	$w.f.left.antiflicker configure -state disabled
+    }
+
+    button $w.f.left.reset -font $f -width 14 -text "Reset" -command "set contrast 128; set brightness 128;set v4l2gamma 128; set hue 128; set saturation 128; set v4l2gain 128; grabber controls reset"  -padx 1 -pady 1
     pack $w.f.left.reset
 
     frame $w.f.right -relief flat
