@@ -4,6 +4,7 @@
 	Version="7.10"
 	Name="vic"
 	ProjectGUID="{DA6E3C9F-4270-49E5-8706-4E5762BE271B}"
+	RootNamespace="vic"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -211,8 +212,8 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="       "
 				Optimization="0"
-				AdditionalIncludeDirectories=".\;codec;render;rtp;net;win32;video;..\common\src;&quot;..\tk-8.0\win&quot;;&quot;..\tk-8.0\generic&quot;;&quot;..\tk-8.0\xlib&quot;;&quot;..\tcl-8.0\win&quot;;&quot;..\tcl-8.0\generic&quot;;codec\tmndec;&quot;codec\tmn-x&quot;;codec\jpeg;codec\p64;codec\h263"
-				PreprocessorDefinitions="DEBUG,_DEBUG,_WIN95,NEED_INET_PTON,_WINDOWS,SASR,WIN32,ED_YBITS=4,SIGRET=void,SIGARGS=int,NLAYER=8,USE_DDRAW,WINVER=0x500"
+				AdditionalIncludeDirectories=".\;codec;render;rtp;net;win32;video;..\common\src;&quot;..\tk-8.0\win&quot;;&quot;..\tk-8.0\generic&quot;;&quot;..\tk-8.0\xlib&quot;;&quot;..\tcl-8.0\win&quot;;&quot;..\tcl-8.0\generic&quot;;codec\tmndec;&quot;codec\tmn-x&quot;;codec\jpeg;codec\p64;codec\h263;win32\ffmpeg"
+				PreprocessorDefinitions="DEBUG;_DEBUG;_WIN95;NEED_INET_PTON;_WINDOWS;SASR;WIN32;HAVE_SWSCALE;ED_YBITS=4;SIGRET=void;SIGARGS=int;NLAYER=8;USE_DDRAW;WINVER=0x500"
 				RuntimeLibrary="5"
 				UsePrecompiledHeader="0"
 				BrowseInformation="1"
@@ -225,11 +226,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="tklib.lib tcllib.lib uclmm.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib ddraw.lib dxguid.lib iphlpapi.lib  strmiids.lib quartz.lib"
+				AdditionalDependencies="tklib.lib tcllib.lib uclmm.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib ddraw.lib dxguid.lib iphlpapi.lib strmiids.lib quartz.lib avcodec-51.lib avutil-49.lib swscale-0.lib postproc-51.lib libx264.lib"
 				OutputFile=".\DDraw_Debug/vic.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="..\common\src\Debug,..\tcl-8.0\win\Debug,..\tk-8.0\win\Debug,codec\tmndec,codec\tmn-x,\mssdk\lib,C:\Program Files\Intel\plsuite\lib\msvc,C:\Program Files\Intel\plsuite\lib"
+				AdditionalLibraryDirectories="..\common\src\Debug;&quot;..\tcl-8.0\win\Debug&quot;;&quot;..\tk-8.0\win\Debug&quot;;codec\tmndec;&quot;codec\tmn-x&quot;;\mssdk\lib;&quot;C:\Program Files\Intel\plsuite\lib\msvc&quot;;&quot;C:\Program Files\Intel\plsuite\lib&quot;;win32\lib"
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"/>
 			<Tool
@@ -331,8 +332,8 @@
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories=".\;codec;render;rtp;net;win32;video;..\common\src;&quot;..\tk-8.0\win&quot;;&quot;..\tk-8.0\generic&quot;;&quot;..\tk-8.0\xlib&quot;;&quot;..\tcl-8.0\win&quot;;&quot;..\tcl-8.0\generic&quot;;codec\tmndec;&quot;codec\tmn-x&quot;;codec\jpeg;codec\p64;codec\h263"
-				PreprocessorDefinitions="NDEBUG,HAVE_INET_PTON,_WINDOWS,SASR,WIN32,ED_YBITS=4,SIGRET=void,SIGARGS=int,NLAYER=8,USE_DDRAW,WINVER=0x500"
+				AdditionalIncludeDirectories=".\;codec;render;rtp;net;win32;video;..\common\src;&quot;..\tk-8.0\win&quot;;&quot;..\tk-8.0\generic&quot;;&quot;..\tk-8.0\xlib&quot;;&quot;..\tcl-8.0\win&quot;;&quot;..\tcl-8.0\generic&quot;;codec\tmndec;&quot;codec\tmn-x&quot;;codec\jpeg;codec\p64;codec\h263;win32\ffmpeg"
+				PreprocessorDefinitions="NDEBUG;HAVE_INET_PTON;_WINDOWS;SASR;WIN32;ED_YBITS=4;SIGRET=void;SIGARGS=int;NLAYER=8;USE_DDRAW;WINVER=0x500;NEED_SWSCALE"
 				StringPooling="TRUE"
 				RuntimeLibrary="4"
 				EnableFunctionLevelLinking="TRUE"
@@ -347,11 +348,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="tklib.lib tcllib.lib uclmm.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib ddraw.lib dxguid.lib iphlpapi.lib strmiids.lib quartz.lib"
+				AdditionalDependencies="tklib.lib tcllib.lib uclmm.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib ddraw.lib dxguid.lib iphlpapi.lib strmiids.lib quartz.lib avcodec-51.lib avutil-49.lib swscale-0.lib postproc-51.lib libx264.lib"
 				OutputFile=".\DDraw_Release/vic.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="..\common\src\Release,..\tcl-8.0\win\Release,..\tk-8.0\win\Release,codec\tmndec,codec\tmn-x,\mssdk\lib,C:\Program Files\Intel\plsuite\lib\msvc,C:\Program Files\Intel\plsuite\lib"
+				AdditionalLibraryDirectories="..\common\src\Release;&quot;..\tcl-8.0\win\Release&quot;;&quot;..\tk-8.0\win\Release&quot;;codec\tmndec;&quot;codec\tmn-x&quot;;\mssdk\lib;&quot;C:\Program Files\Intel\plsuite\lib\msvc&quot;;&quot;C:\Program Files\Intel\plsuite\lib&quot;;win32\lib"
 				GenerateMapFile="TRUE"
 				SubSystem="2"/>
 			<Tool
@@ -455,7 +456,7 @@
 				AdditionalOptions="       "
 				Optimization="0"
 				AdditionalIncludeDirectories=".\;codec;render;rtp;net;win32;video;..\common\src;\Tcl\include\tcl8.4;codec\tmndec;&quot;codec\tmn-x&quot;;codec\jpeg;codec\p64;codec\h263"
-				PreprocessorDefinitions="DEBUG,_DEBUG,_WIN95,NEED_INET_PTON,_WINDOWS,SASR,WIN32,ED_YBITS=4,SIGRET=void,SIGARGS=int,NLAYER=8,USE_DDRAW,WINVER=0x500"
+				PreprocessorDefinitions="DEBUG;_DEBUG;_WIN95;NEED_INET_PTON;_WINDOWS;SASR;WIN32;ED_YBITS=4;SIGRET=void;SIGARGS=int;NLAYER=8;USE_DDRAW;WINVER=0x500;HAVE_SWSCALE"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
 				BrowseInformation="1"
@@ -565,7 +566,7 @@
 				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
-			Name="DDraw Relase GPL tcltk84|Win32"
+			Name="DDraw Release GPL tcltk84|Win32"
 			OutputDirectory="$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
@@ -573,8 +574,8 @@
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories=".\;codec;render;rtp;net;win32;video;..\common\src;\Tcl\include\tcl8.4;codec\tmndec;codec\tmn-x;codec\jpeg;codec\p64;codec\h263"
-				PreprocessorDefinitions="NDEBUG,HAVE_INET_PTON,_WINDOWS,SASR,WIN32,ED_YBITS=4,SIGRET=void,SIGARGS=int,NLAYER=8,USE_DDRAW,WINVER=0x500"
+				AdditionalIncludeDirectories=".\;codec;render;rtp;net;win32;video;..\common\src;\Tcl\include\tcl8.4;codec\tmndec;&quot;codec\tmn-x&quot;;codec\jpeg;codec\p64;codec\h263;win32\ffmpeg"
+				PreprocessorDefinitions="NDEBUG;HAVE_INET_PTON;_WINDOWS;SASR;WIN32;ED_YBITS=4;SIGRET=void;SIGARGS=int;NLAYER=8;USE_DDRAW;WINVER=0x500;NEED_SWSCALE"
 				StringPooling="TRUE"
 				RuntimeLibrary="4"
 				EnableFunctionLevelLinking="TRUE"
@@ -589,11 +590,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="tk84.lib tcl84.lib uclmm.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib ddraw.lib dxguid.lib iphlpapi.lib strmiids.lib quartz.lib"
+				AdditionalDependencies="tk84.lib tcl84.lib uclmm.lib wsock32.lib Ws2_32.lib winmm.lib vfw32.lib ddraw.lib dxguid.lib iphlpapi.lib strmiids.lib quartz.lib avcodec-51.lib avutil-49.lib swscale-0.lib postproc-51.lib libx264.lib"
 				OutputFile=".\DDraw_Release/vic.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="..\common\src\Release,\Tcl\lib,codec\tmndec,codec\tmn-x,\mssdk\lib,C:\Program Files\Intel\plsuite\lib\msvc,C:\Program Files\Intel\plsuite\lib"
+				AdditionalLibraryDirectories="..\common\src\Release;\Tcl\lib;codec\tmndec;&quot;codec\tmn-x&quot;;\mssdk\lib;&quot;C:\Program Files\Intel\plsuite\lib\msvc&quot;;&quot;C:\Program Files\Intel\plsuite\lib&quot;;win32\lib"
 				GenerateMapFile="TRUE"
 				SubSystem="2"/>
 			<Tool
@@ -698,7 +699,7 @@
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="DDraw Relase GPL tcltk84|Win32">
+					Name="DDraw Release GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -773,7 +774,7 @@
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="DDraw Relase GPL tcltk84|Win32">
+					Name="DDraw Release GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -848,7 +849,7 @@
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="DDraw Relase GPL tcltk84|Win32">
+					Name="DDraw Release GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -931,7 +932,7 @@
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="DDraw Relase GPL tcltk84|Win32">
+					Name="DDraw Release GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -1014,7 +1015,7 @@
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="DDraw Relase GPL tcltk84|Win32">
+					Name="DDraw Release GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -1097,7 +1098,7 @@
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="DDraw Relase GPL tcltk84|Win32">
+					Name="DDraw Release GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -1180,7 +1181,7 @@
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="DDraw Relase GPL tcltk84|Win32">
+					Name="DDraw Release GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -1263,7 +1264,7 @@
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="DDraw Relase GPL tcltk84|Win32">
+					Name="DDraw Release GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -1346,7 +1347,7 @@
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="DDraw Relase GPL tcltk84|Win32">
+					Name="DDraw Release GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -1429,7 +1430,7 @@
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="DDraw Relase GPL tcltk84|Win32">
+					Name="DDraw Release GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -1512,7 +1513,7 @@
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="DDraw Relase GPL tcltk84|Win32">
+					Name="DDraw Release GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -1595,7 +1596,7 @@
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="DDraw Relase GPL tcltk84|Win32">
+					Name="DDraw Release GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -1678,7 +1679,7 @@
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="DDraw Relase GPL tcltk84|Win32">
+					Name="DDraw Release GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -1761,7 +1762,7 @@
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="DDraw Relase GPL tcltk84|Win32">
+					Name="DDraw Release GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -1844,7 +1845,7 @@
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="DDraw Relase GPL tcltk84|Win32">
+					Name="DDraw Release GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -1927,7 +1928,7 @@
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="DDraw Relase GPL tcltk84|Win32">
+					Name="DDraw Release GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -2010,7 +2011,7 @@
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="DDraw Relase GPL tcltk84|Win32">
+					Name="DDraw Release GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -2093,7 +2094,7 @@
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="DDraw Relase GPL tcltk84|Win32">
+					Name="DDraw Release GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -2176,7 +2177,7 @@
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="DDraw Relase GPL tcltk84|Win32">
+					Name="DDraw Release GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -2259,7 +2260,7 @@
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="DDraw Relase GPL tcltk84|Win32">
+					Name="DDraw Release GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -2369,7 +2370,7 @@
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="DDraw Relase GPL tcltk84|Win32">
+					Name="DDraw Release GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -2452,7 +2453,7 @@
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="DDraw Relase GPL tcltk84|Win32">
+					Name="DDraw Release GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -2535,7 +2536,7 @@
 						Outputs="tcl\generated\$(InputName).cpp"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="DDraw Relase GPL tcltk84|Win32">
+					Name="DDraw Release GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
@@ -5027,44 +5028,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\codec\packetbuffer.h">
-				<FileConfiguration
-					Name="DDraw Release|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCustomBuildTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DDraw Debug GPL|Win32">
-					<Tool
-						Name="VCCustomBuildTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DDraw Debug|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCustomBuildTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DDraw Debug tcltk84|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCustomBuildTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DDraw Debug GPL tcltk84|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCustomBuildTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DDraw Release tcltk84|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCustomBuildTool"/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\codec\pvh-huff.c">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -5128,44 +5091,6 @@
 					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\codec\rtp_h264_depayloader.h">
-				<FileConfiguration
-					Name="DDraw Release|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCustomBuildTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DDraw Debug GPL|Win32">
-					<Tool
-						Name="VCCustomBuildTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DDraw Debug|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCustomBuildTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DDraw Debug tcltk84|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCustomBuildTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DDraw Debug GPL tcltk84|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCustomBuildTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DDraw Release tcltk84|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCustomBuildTool"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -5234,44 +5159,6 @@
 						Name="VCCLCompilerTool"/>
 				</FileConfiguration>
 			</File>
-			<File
-				RelativePath=".\codec\x264encoder.h">
-				<FileConfiguration
-					Name="DDraw Release|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCustomBuildTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DDraw Debug GPL|Win32">
-					<Tool
-						Name="VCCustomBuildTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DDraw Debug|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCustomBuildTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DDraw Debug tcltk84|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCustomBuildTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DDraw Debug GPL tcltk84|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCustomBuildTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DDraw Release tcltk84|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCustomBuildTool"/>
-				</FileConfiguration>
-			</File>
 			<Filter
 				Name="codec Header Files"
 				Filter="">
@@ -5288,10 +5175,124 @@
 					RelativePath=".\codec\framer-h261.h">
 				</File>
 				<File
+					RelativePath=".\codec\packetbuffer.h">
+					<FileConfiguration
+						Name="DDraw Release|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCustomBuildTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL|Win32">
+						<Tool
+							Name="VCCustomBuildTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCustomBuildTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug tcltk84|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCustomBuildTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL tcltk84|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCustomBuildTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Release tcltk84|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCustomBuildTool"/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath=".\codec\pvh-huff.h">
 				</File>
 				<File
 					RelativePath=".\codec\pvh.h">
+				</File>
+				<File
+					RelativePath=".\codec\rtp_h264_depayloader.h">
+					<FileConfiguration
+						Name="DDraw Release|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCustomBuildTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL|Win32">
+						<Tool
+							Name="VCCustomBuildTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCustomBuildTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug tcltk84|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCustomBuildTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL tcltk84|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCustomBuildTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Release tcltk84|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCustomBuildTool"/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\codec\x264encoder.h">
+					<FileConfiguration
+						Name="DDraw Release|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCustomBuildTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL|Win32">
+						<Tool
+							Name="VCCustomBuildTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCustomBuildTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug tcltk84|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCustomBuildTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Debug GPL tcltk84|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCustomBuildTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="DDraw Release tcltk84|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCustomBuildTool"/>
+					</FileConfiguration>
 				</File>
 			</Filter>
 		</Filter>
@@ -5485,16 +5486,29 @@
 						AdditionalOptions="               "/>
 				</FileConfiguration>
 				<FileConfiguration
+					Name="DDraw Release GPL|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="DDraw Debug tcltk84|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="DDraw Debug GPL tcltk84|Win32">
+					Name="DDraw Debug GPL tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release GPL tcltk84|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -5645,12 +5659,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug tcltk84|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DDraw Debug GPL tcltk84|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCLCompilerTool"/>
@@ -6965,12 +6973,26 @@
 						Name="VCCustomBuildTool"/>
 				</FileConfiguration>
 				<FileConfiguration
+					Name="DDraw Debug GPL|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="nasmw.exe -f win32 -DPREFIX -o &quot;$(IntDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;"
+						Outputs="$(IntDir)\$(InputName).obj"/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="DDraw Debug|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="nasmw.exe -f win32 -DPREFIX -o &quot;$(IntDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
 "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release GPL|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="nasmw.exe -f win32 -DPREFIX -o &quot;$(IntDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;"
+						Outputs="$(IntDir)\$(InputName).obj"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug tcltk84|Win32"
@@ -6986,13 +7008,21 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="nasmw.exe -f win32 -DPREFIX -o &quot;$(IntDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
-"/>
+"
+						Outputs="$(IntDir)\$(InputName).obj"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Release tcltk84|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release GPL tcltk84|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="nasmw.exe -f win32 -DPREFIX -o &quot;$(IntDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;"
+						Outputs="$(IntDir)\$(InputName).obj"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -7083,7 +7113,7 @@
 					Outputs="codec\bv.c"/>
 			</FileConfiguration>
 			<FileConfiguration
-				Name="DDraw Relase GPL tcltk84|Win32">
+				Name="DDraw Release GPL tcltk84|Win32">
 				<Tool
 					Name="VCCustomBuildTool"
 					CommandLine="render\mkbv\mkbv &gt; codec\bv.c
@@ -7194,7 +7224,7 @@ render\ppmtolut\ppmtolut -n jv_cube jv-cube-128.ppm &gt;&gt; render\cm0.c
 					Outputs="$(InputPath);render\cm0.c"/>
 			</FileConfiguration>
 			<FileConfiguration
-				Name="DDraw Relase GPL tcltk84|Win32">
+				Name="DDraw Release GPL tcltk84|Win32">
 				<Tool
 					Name="VCCustomBuildTool"
 					CommandLine="render\mkcube\mkcube rgb &gt; $(InputPath)
@@ -7248,6 +7278,7 @@ erase win32\vergen.bat
 					Name="VCCustomBuildTool"
 					Description="Generating &quot;version.c&quot;."
 					CommandLine="copy win32\set.txt + VERSION win32\vergen.bat
+echo _$(ConfigurationName) &gt;&gt;  win32\vergen.bat
 copy win32\vergen.bat + win32\null.txt win32\vergen.bat
 copy win32\vergen.bat + win32\echo.txt win32\vergen.bat
 win32\vergen.bat
@@ -7264,6 +7295,7 @@ erase win32\vergen.bat
 					Name="VCCustomBuildTool"
 					Description="Generating &quot;version.c&quot;."
 					CommandLine="copy win32\set.txt + VERSION win32\vergen.bat
+echo _$(ConfigurationName) &gt;&gt;  win32\vergen.bat
 copy win32\vergen.bat + win32\null.txt win32\vergen.bat
 copy win32\vergen.bat + win32\echo.txt win32\vergen.bat
 win32\vergen.bat
@@ -7280,6 +7312,7 @@ erase win32\vergen.bat
 					Name="VCCustomBuildTool"
 					Description="Generating &quot;version.c&quot;."
 					CommandLine="copy win32\set.txt + VERSION win32\vergen.bat
+echo _$(ConfigurationName) &gt;&gt;  win32\vergen.bat
 copy win32\vergen.bat + win32\null.txt win32\vergen.bat
 copy win32\vergen.bat + win32\echo.txt win32\vergen.bat
 win32\vergen.bat
@@ -7296,6 +7329,7 @@ erase win32\vergen.bat
 					Name="VCCustomBuildTool"
 					Description="Generating &quot;version.c&quot;."
 					CommandLine="copy win32\set.txt + VERSION win32\vergen.bat
+echo _$(ConfigurationName) &gt;&gt;  win32\vergen.bat
 copy win32\vergen.bat + win32\null.txt win32\vergen.bat
 copy win32\vergen.bat + win32\echo.txt win32\vergen.bat
 win32\vergen.bat
@@ -7303,7 +7337,7 @@ move win32\version.c version.c
 erase win32\version.c
 erase win32\vergen.bat
 "
-					AdditionalDependencies="win32\echo.txt;win32\set.txt;win32\null.txt;"
+					AdditionalDependencies="win32\echo.txt;win32\set.txt;win32\null.txt;$(TargetPath)"
 					Outputs="version.c"/>
 			</FileConfiguration>
 			<FileConfiguration
@@ -7312,6 +7346,7 @@ erase win32\vergen.bat
 					Name="VCCustomBuildTool"
 					Description="Generating &quot;version.c&quot;."
 					CommandLine="copy win32\set.txt + VERSION win32\vergen.bat
+echo _$(ConfigurationName) &gt;&gt;  win32\vergen.bat
 copy win32\vergen.bat + win32\null.txt win32\vergen.bat
 copy win32\vergen.bat + win32\echo.txt win32\vergen.bat
 win32\vergen.bat
@@ -7328,6 +7363,7 @@ erase win32\vergen.bat
 					Name="VCCustomBuildTool"
 					Description="Generating &quot;version.c&quot;."
 					CommandLine="copy win32\set.txt + VERSION win32\vergen.bat
+echo _$(ConfigurationName) &gt;&gt;  win32\vergen.bat
 copy win32\vergen.bat + win32\null.txt win32\vergen.bat
 copy win32\vergen.bat + win32\echo.txt win32\vergen.bat
 win32\vergen.bat
@@ -7344,6 +7380,7 @@ erase win32\vergen.bat
 					Name="VCCustomBuildTool"
 					Description="Generating &quot;version.c&quot;."
 					CommandLine="copy win32\set.txt + VERSION win32\vergen.bat
+echo _$(ConfigurationName) &gt;&gt;  win32\vergen.bat
 copy win32\vergen.bat + win32\null.txt win32\vergen.bat
 copy win32\vergen.bat + win32\echo.txt win32\vergen.bat
 win32\vergen.bat
@@ -7355,11 +7392,12 @@ erase win32\vergen.bat
 					Outputs="version.c"/>
 			</FileConfiguration>
 			<FileConfiguration
-				Name="DDraw Relase GPL tcltk84|Win32">
+				Name="DDraw Release GPL tcltk84|Win32">
 				<Tool
 					Name="VCCustomBuildTool"
 					Description="Generating &quot;version.c&quot;."
 					CommandLine="copy win32\set.txt + VERSION win32\vergen.bat
+echo _$(ConfigurationName) &gt;&gt;  win32\vergen.bat
 copy win32\vergen.bat + win32\null.txt win32\vergen.bat
 copy win32\vergen.bat + win32\echo.txt win32\vergen.bat
 win32\vergen.bat
@@ -7482,7 +7520,7 @@ render\ppmtolut\ppmtolut -Y $ED_YBITS -n ed -e yuv-map.ppm &gt;&gt; render\cm1.c
 					Outputs="$(InputPath);render\cm1.c"/>
 			</FileConfiguration>
 			<FileConfiguration
-				Name="DDraw Relase GPL tcltk84|Win32">
+				Name="DDraw Release GPL tcltk84|Win32">
 				<Tool
 					Name="VCCustomBuildTool"
 					CommandLine="set ED_YBITS=4

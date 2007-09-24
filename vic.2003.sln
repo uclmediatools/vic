@@ -326,8 +326,8 @@ Global
 		{DA6E3C9F-4270-49E5-8706-4E5762BE271B}.DDraw Release.Build.0 = DDraw Release|Win32
 		{DA6E3C9F-4270-49E5-8706-4E5762BE271B}.DDraw Release GPL.ActiveCfg = DDraw Release GPL|Win32
 		{DA6E3C9F-4270-49E5-8706-4E5762BE271B}.DDraw Release GPL.Build.0 = DDraw Release GPL|Win32
-		{DA6E3C9F-4270-49E5-8706-4E5762BE271B}.DDraw Release GPL tcltk84.ActiveCfg = DDraw Relase GPL tcltk84|Win32
-		{DA6E3C9F-4270-49E5-8706-4E5762BE271B}.DDraw Release GPL tcltk84.Build.0 = DDraw Relase GPL tcltk84|Win32
+		{DA6E3C9F-4270-49E5-8706-4E5762BE271B}.DDraw Release GPL tcltk84.ActiveCfg = DDraw Release GPL tcltk84|Win32
+		{DA6E3C9F-4270-49E5-8706-4E5762BE271B}.DDraw Release GPL tcltk84.Build.0 = DDraw Release GPL tcltk84|Win32
 		{DA6E3C9F-4270-49E5-8706-4E5762BE271B}.DDraw Release tcltk84.ActiveCfg = DDraw Release tcltk84|Win32
 		{DA6E3C9F-4270-49E5-8706-4E5762BE271B}.DDraw Release tcltk84.Build.0 = DDraw Release tcltk84|Win32
 		{DA6E3C9F-4270-49E5-8706-4E5762BE271B}.Debug.ActiveCfg = Debug|Win32
