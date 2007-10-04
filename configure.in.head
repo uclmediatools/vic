@@ -27,7 +27,6 @@ if test `echo "$target_os" | sed 's/\..*//'` != irix6 ; then
 fi
 
 V_TAR_EXTRA=""
-V_DEFINE=""
 
 V_CCOPT_H261="-O2"
 
