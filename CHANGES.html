@@ -14,7 +14,7 @@
 </ul>
 
 <H3>v2.8ucl-1.2.0</H3><UL>
-<li> New codec h261as - contributed by Rhys Hawkins (Rhys.Hawkins@anu.edu.au) at Adelaide National University (ANU). This codec enables interoperability with Rhys’ VP tool available to the AccessGrid community.  Use “configure –disable-h261as” to disable it. Built also for Windows. 
+<li> New codec h261as - contributed by Rhys Hawkins (Rhys.Hawkins@anu.edu.au) at Australian National University (ANU). This codec enables interoperability with Rhys’ VP tool available to the AccessGrid community.  Use “configure –disable-h261as” to disable it. Built also for Windows. 
 <li>Removed win32/vergen.bat from repository as it is auto-generated. 
 <li>Added NSIS installer script to auto-generate installer (requires NSIS installed on Windows, http://nsis.sourceforge.net). 
 <li>Added image overlay support. This allows a PPM image to be used as an institutional logo, (for example, added sample UCL logo file: ucl_logo.ppm), which can be placed and moved over the video window. Overlays work with all grabbers and codecs. The logo image can also be specified as a vic resource (in .vic.tcl) so that it is made available at startup. Also, tweaked error return values from oTcl to C++, so that all errors relating to overlays are handled gracefully. 
