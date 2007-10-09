@@ -4219,6 +4219,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\codec\decoder-h261as.cpp">
+			</File>
+			<File
 				RelativePath=".\codec\decoder-h261v1.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -4580,6 +4583,9 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\codec\encoder-h261as.cpp">
 			</File>
 			<File
 				RelativePath=".\codec\encoder-h264.cpp">
@@ -4993,6 +4999,9 @@
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\codec\p64\p64as.cpp">
 			</File>
 			<File
 				RelativePath=".\codec\packetbuffer.cpp">
