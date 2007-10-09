@@ -17,25 +17,25 @@ int available_cpu_flags = cpu_check();
 class X11WindowRenderer : public WindowDitherer {
 public:
 	X11WindowRenderer(VideoWindow* vw, int decimation, int depth_) :
-		WindowDitherer(vw, decimation) { 
-	  i_width = i_height = o_width = o_height = -1;
-	  sws_context = NULL;
+	WindowDitherer(vw, decimation) { 
+	i_width = i_height = o_width = o_height = -1;
+	sws_context = NULL;
 	  
 	  // 15, 16, 24, or 32 bits
 	  switch (depth_) {
 	    case 15:
 	    case 16:
-			// printf("16\n");
+		// printf("16\n");
 	        //out_format = PIX_FMT_RGB565;
-			out_format = PIX_FMT_BGR555;
+		out_format = PIX_FMT_BGR565;
 	        bytes_per_pixel	= 2;
 	    	break;
 	    	
 	    case 24:
 		//	printf("24\n");
-			out_format = PIX_FMT_RGB24;
-			bytes_per_pixel = 3;
-			break;
+		out_format = PIX_FMT_RGB24;
+		bytes_per_pixel = 3;
+		break;
 	    case 32:
 			// printf("32\n");
 	        out_format = PIX_FMT_RGB32;
