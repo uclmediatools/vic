@@ -885,7 +885,7 @@ void DirectShowCIFGrabber::setsize() {
 	  max_height_ = D1_BASE_HEIGHT;
    }
 
-   if(decimate_ == 1){
+   if(decimate_ == 1){  //i.e. Large 
        width_ = max_width_;
        height_ = max_height_;
    } else {

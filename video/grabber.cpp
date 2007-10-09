@@ -450,6 +450,7 @@ void Grabber::set_size_411(int w, int h)
 void Grabber::set_size_cif(int w, int h)
 {
 	delete[] framebase_; //SV-XXX: Debian
+        framebase_ = 0;
 	inw_ = w;
 	inh_ = h;
 
