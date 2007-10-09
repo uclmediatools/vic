@@ -151,7 +151,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories=".\;codec;render;rtp;net;win32;video;..\common\src;&quot;..\tk-8.0\win&quot;;&quot;..\tk-8.0\generic&quot;;&quot;..\tk-8.0\xlib&quot;;&quot;..\tcl-8.0\win&quot;;&quot;..\tcl-8.0\generic&quot;;codec\tmndec;&quot;codec\tmn-x&quot;;codec\jpeg;codec\p64;codec\h263"
-				PreprocessorDefinitions="NDEBUG,HAVE_INET_PTON,_WINDOWS,SASR,WIN32,ED_YBITS=4,SIGRET=void,SIGARGS=int,NLAYER=8,USE_DDRAW,WINVER=0x500"
+				PreprocessorDefinitions="STATIC_BUILD;NDEBUG,HAVE_INET_PTON,_WINDOWS,SASR,WIN32,ED_YBITS=4,SIGRET=void,SIGARGS=int,NLAYER=8,USE_DDRAW,WINVER=0x500"
 				StringPooling="TRUE"
 				RuntimeLibrary="4"
 				EnableFunctionLevelLinking="TRUE"
@@ -213,7 +213,7 @@
 				AdditionalOptions="       "
 				Optimization="0"
 				AdditionalIncludeDirectories=".\;codec;render;rtp;net;win32;video;..\common\src;&quot;..\tk-8.0\win&quot;;&quot;..\tk-8.0\generic&quot;;&quot;..\tk-8.0\xlib&quot;;&quot;..\tcl-8.0\win&quot;;&quot;..\tcl-8.0\generic&quot;;codec\tmndec;&quot;codec\tmn-x&quot;;codec\jpeg;codec\p64;codec\h263;win32\ffmpeg"
-				PreprocessorDefinitions="DEBUG;_DEBUG;_WIN95;NEED_INET_PTON;_WINDOWS;SASR;WIN32;HAVE_SWSCALE;ED_YBITS=4;SIGRET=void;SIGARGS=int;NLAYER=8;USE_DDRAW;WINVER=0x500"
+				PreprocessorDefinitions="STATIC_BUILD;DEBUG;_DEBUG;_WIN95;NEED_INET_PTON;_WINDOWS;SASR;WIN32;HAVE_SWSCALE;ED_YBITS=4;SIGRET=void;SIGARGS=int;NLAYER=8;USE_DDRAW;WINVER=0x500"
 				RuntimeLibrary="5"
 				UsePrecompiledHeader="0"
 				BrowseInformation="1"
@@ -273,7 +273,7 @@
 				AdditionalOptions="       "
 				Optimization="0"
 				AdditionalIncludeDirectories=".\;codec;render;rtp;net;win32;video;..\common\src;&quot;..\tk-8.0\win&quot;;&quot;..\tk-8.0\generic&quot;;&quot;..\tk-8.0\xlib&quot;;&quot;..\tcl-8.0\win&quot;;&quot;..\tcl-8.0\generic&quot;;codec\tmndec;&quot;codec\tmn-x&quot;;codec\jpeg;codec\p64;codec\h263"
-				PreprocessorDefinitions="DEBUG,_DEBUG,_WIN95,NEED_INET_PTON,_WINDOWS,SASR,WIN32,ED_YBITS=4,SIGRET=void,SIGARGS=int,NLAYER=8,USE_DDRAW,WINVER=0x500"
+				PreprocessorDefinitions="STATIC_BUILD;DEBUG,_DEBUG,_WIN95,NEED_INET_PTON,_WINDOWS,SASR,WIN32,ED_YBITS=4,SIGRET=void,SIGARGS=int,NLAYER=8,USE_DDRAW,WINVER=0x500"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
@@ -333,7 +333,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories=".\;codec;render;rtp;net;win32;video;..\common\src;&quot;..\tk-8.0\win&quot;;&quot;..\tk-8.0\generic&quot;;&quot;..\tk-8.0\xlib&quot;;&quot;..\tcl-8.0\win&quot;;&quot;..\tcl-8.0\generic&quot;;codec\tmndec;&quot;codec\tmn-x&quot;;codec\jpeg;codec\p64;codec\h263;win32\ffmpeg"
-				PreprocessorDefinitions="NDEBUG;HAVE_INET_PTON;_WINDOWS;SASR;WIN32;ED_YBITS=4;SIGRET=void;SIGARGS=int;NLAYER=8;USE_DDRAW;WINVER=0x500;NEED_SWSCALE"
+				PreprocessorDefinitions="STATIC_BUILD;NDEBUG;HAVE_INET_PTON;_WINDOWS;SASR;WIN32;ED_YBITS=4;SIGRET=void;SIGARGS=int;NLAYER=8;USE_DDRAW;WINVER=0x500;HAVE_SWSCALE"
 				StringPooling="TRUE"
 				RuntimeLibrary="4"
 				EnableFunctionLevelLinking="TRUE"
@@ -575,7 +575,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories=".\;codec;render;rtp;net;win32;video;..\common\src;\Tcl\include\tcl8.4;codec\tmndec;&quot;codec\tmn-x&quot;;codec\jpeg;codec\p64;codec\h263;win32\ffmpeg"
-				PreprocessorDefinitions="NDEBUG;HAVE_INET_PTON;_WINDOWS;SASR;WIN32;ED_YBITS=4;SIGRET=void;SIGARGS=int;NLAYER=8;USE_DDRAW;WINVER=0x500;NEED_SWSCALE"
+				PreprocessorDefinitions="STATIC_BUILD;NDEBUG;HAVE_INET_PTON;_WINDOWS;SASR;WIN32;ED_YBITS=4;SIGRET=void;SIGARGS=int;NLAYER=8;USE_DDRAW;WINVER=0x500;HAVE_SWSCALE"
 				StringPooling="TRUE"
 				RuntimeLibrary="4"
 				EnableFunctionLevelLinking="TRUE"
@@ -5771,6 +5771,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\render\ppm.cpp">
+			</File>
+			<File
 				RelativePath=".\render\renderer-window.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -6976,7 +6979,8 @@
 					Name="DDraw Debug GPL|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="nasmw.exe -f win32 -DPREFIX -o &quot;$(IntDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;"
+						CommandLine="nasmw.exe -f win32 -DPREFIX -o &quot;$(IntDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+"
 						Outputs="$(IntDir)\$(InputName).obj"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -6991,7 +6995,8 @@
 					Name="DDraw Release GPL|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="nasmw.exe -f win32 -DPREFIX -o &quot;$(IntDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;"
+						CommandLine="nasmw.exe -f win32 -DPREFIX -o &quot;$(IntDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+"
 						Outputs="$(IntDir)\$(InputName).obj"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -7021,7 +7026,8 @@
 					Name="DDraw Release GPL tcltk84|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="nasmw.exe -f win32 -DPREFIX -o &quot;$(IntDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;"
+						CommandLine="nasmw.exe -f win32 -DPREFIX -o &quot;$(IntDir)\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+"
 						Outputs="$(IntDir)\$(InputName).obj"/>
 				</FileConfiguration>
 			</File>
