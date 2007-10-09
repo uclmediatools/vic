@@ -47,6 +47,7 @@ static const char rcsid[] =
 #include <math.h>
 #ifdef WIN32
 #include <winsock.h>
+extern int getopt(int, char * const *, const char *);
 #else
 #include <getopt.h> //SV-XXX: for getopt()
 #endif
