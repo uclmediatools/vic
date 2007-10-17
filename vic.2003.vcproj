@@ -151,7 +151,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories=".\;codec;render;rtp;net;win32;video;..\common\src;&quot;..\tk-8.0\win&quot;;&quot;..\tk-8.0\generic&quot;;&quot;..\tk-8.0\xlib&quot;;&quot;..\tcl-8.0\win&quot;;&quot;..\tcl-8.0\generic&quot;;codec\tmndec;&quot;codec\tmn-x&quot;;codec\jpeg;codec\p64;codec\h263"
-				PreprocessorDefinitions="STATIC_BUILD;NDEBUG,HAVE_INET_PTON,_WINDOWS,SASR,WIN32,ED_YBITS=4,SIGRET=void,SIGARGS=int,NLAYER=8,USE_DDRAW,WINVER=0x500"
+				PreprocessorDefinitions="STATIC_BUILD;NDEBUG;HAVE_INET_PTON;_WINDOWS;SASR;WIN32;ED_YBITS=4;SIGRET=void;SIGARGS=int;NLAYER=8;USE_DDRAW;WINVER=0x500"
 				StringPooling="TRUE"
 				RuntimeLibrary="4"
 				EnableFunctionLevelLinking="TRUE"
@@ -213,7 +213,7 @@
 				AdditionalOptions="       "
 				Optimization="0"
 				AdditionalIncludeDirectories=".\;codec;render;rtp;net;win32;video;..\common\src;&quot;..\tk-8.0\win&quot;;&quot;..\tk-8.0\generic&quot;;&quot;..\tk-8.0\xlib&quot;;&quot;..\tcl-8.0\win&quot;;&quot;..\tcl-8.0\generic&quot;;codec\tmndec;&quot;codec\tmn-x&quot;;codec\jpeg;codec\p64;codec\h263;win32\ffmpeg"
-				PreprocessorDefinitions="STATIC_BUILD;DEBUG;_DEBUG;_WIN95;NEED_INET_PTON;_WINDOWS;SASR;WIN32;HAVE_SWSCALE;ED_YBITS=4;SIGRET=void;SIGARGS=int;NLAYER=8;USE_DDRAW;WINVER=0x500"
+				PreprocessorDefinitions="STATIC_BUILD;DEBUG;_DEBUG;NEED_INET_PTON;_WINDOWS;SASR;WIN32;HAVE_SWSCALE;ED_YBITS=4;SIGRET=void;SIGARGS=int;NLAYER=8;USE_DDRAW;WINVER=0x500"
 				RuntimeLibrary="5"
 				UsePrecompiledHeader="0"
 				BrowseInformation="1"
@@ -273,7 +273,7 @@
 				AdditionalOptions="       "
 				Optimization="0"
 				AdditionalIncludeDirectories=".\;codec;render;rtp;net;win32;video;..\common\src;&quot;..\tk-8.0\win&quot;;&quot;..\tk-8.0\generic&quot;;&quot;..\tk-8.0\xlib&quot;;&quot;..\tcl-8.0\win&quot;;&quot;..\tcl-8.0\generic&quot;;codec\tmndec;&quot;codec\tmn-x&quot;;codec\jpeg;codec\p64;codec\h263"
-				PreprocessorDefinitions="STATIC_BUILD;DEBUG,_DEBUG,_WIN95,NEED_INET_PTON,_WINDOWS,SASR,WIN32,ED_YBITS=4,SIGRET=void,SIGARGS=int,NLAYER=8,USE_DDRAW,WINVER=0x500"
+				PreprocessorDefinitions="STATIC_BUILD;DEBUG;_DEBUG;_WIN95;NEED_INET_PTON;_WINDOWS;SASR;WIN32;ED_YBITS=4;SIGRET=void;SIGARGS=int;NLAYER=8;USE_DDRAW;WINVER=0x500"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
@@ -2270,6 +2270,14 @@
 			</File>
 			<File
 				RelativePath=".\tcl\ui-titlemaker.tcl">
+				<FileConfiguration
+					Name="DDraw Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="tcl\tcl2cpp\tcl2cpp 2 $(InputPath)  &gt; tcl\generated\$(InputName).cpp
+"
+						Outputs="tcl\generated\$(InputName).cpp"/>
+				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug|Win32">
 					<Tool
@@ -5699,6 +5707,12 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalOptions="               "/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DDraw Release GPL|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DDraw Debug tcltk84|Win32">
