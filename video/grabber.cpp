@@ -506,7 +506,7 @@ void Grabber::set_size_cif(int w, int h)
 
 	default:
 		/* XXX this shouldn't happen */
-		fprintf(stderr, "vic: CIF grabber: bad geometry - trying 411\n");
+		debug_msg("vic: CIF grabber: bad geometry - trying 411\n");
 		set_size_411(w,h);
 		return;
 		//abort();
