@@ -466,6 +466,10 @@ extern "C" {
 
 int main(int argc, const char** argv)
 {
+#ifdef WIN32
+	MSG msg;
+#endif
+
 #ifdef __FreeBSD__
 	srandomdev(); //SV-XXX: FreeBSD
 #else
@@ -835,7 +839,19 @@ int main(int argc, const char** argv)
 				Tk_DoOneEvent(0);
 	}
 #else
+#ifdef WIN32
+	while(1) {
+		Tcl_DoOneEvent(0);
+		if(PeekMessage(&msg, NULL, WM_QUIT,WM_QUIT, PM_NOREMOVE)) {
+			if (msg.message == WM_QUIT)
+			{
+				break;
+			}
+		}
+	}
+#else
 	Tk_MainLoop();
+#endif
 #endif
 	adios();
 	return (0);
