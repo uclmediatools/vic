@@ -323,6 +323,14 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
 	u_int32_t g_addri_ssm = (IPAddress&)s_addr_ssm;
 	u_int32_t locali = (IPAddress&)local;
 
+	Tcl tcl = Tcl::instance();
+	const char *noBindStr;
+
+	noBindStr = tcl.attr("noMulticastBind");
+        if(noBindStr != NULL && strcasecmp(noBindStr,"true") == 0) {
+            return -1;
+        }
+
 	fd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (fd < 0) {
 		perror("socket");
@@ -361,16 +369,6 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
 				exit(1);
 			}
 		}
-/* See if the noMulticastBind flag is set */
-
-		Tcl tcl = Tcl::instance();
-		const char *noBindStr;
-		int noBind = 0;
-
-		if ((noBindStr = tcl.attr("noMulticastBind")) != NULL)
-		{
-			noBind = (strcasecmp(noBindStr, "true") == 0);
-		}
 		/* 
 		 * XXX This is bogus multicast setup that really
 		 * shouldn't have to be done (group membership should be
@@ -380,8 +378,6 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
 		 * with bated breath.
 		 */
 
-		if (!noBind)
-		{
 		/* SSM code */
 #ifdef IP_ADD_SOURCE_MEMBERSHIP  
         struct ip_mreq_source mrs;
@@ -416,7 +412,6 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
 					perror("IP_ADD_MEMBERSHIP");
 					exit(1);
 				}
-		}
 		}
 	} else
 #endif /* IP_ADD_MEMBERSHIP */
