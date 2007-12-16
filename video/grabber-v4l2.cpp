@@ -87,6 +87,9 @@ static const char *devlist[] = {
 
 /* V4L2 driver specific controls */
 #define V4L2_CID_POWER_LINE_FREQUENCY (V4L2_CID_PRIVATE_BASE + 1)
+#define V4L2_CID_FOCUS_AUTO           (V4L2_CID_PRIVATE_BASE + 4)
+#define V4L2_CID_FOCUS_ABSOLUTE       (V4L2_CID_PRIVATE_BASE + 5)
+#define V4L2_CID_FOCUS_RELATIVE       (V4L2_CID_PRIVATE_BASE + 6)
 
 typedef struct tag_vimage
 {
@@ -453,6 +456,7 @@ int V4l2Grabber::command(int argc, const char*const* argv)
                         if (running_) {
                                 stop(); start();
                         }
+                        return (TCL_OK);
                 }
 
                 if (strcmp(argv[1], "port") == 0) {
@@ -517,9 +521,11 @@ int V4l2Grabber::command(int argc, const char*const* argv)
                         struct v4l2_queryctrl qctrl;
                         struct v4l2_control ctrl;
 
+                        memset (&qctrl, 0, sizeof(qctrl));
+                        qctrl.id = V4L2_CID_POWER_LINE_FREQUENCY;
                         if (-1 != ioctl(fd_, VIDIOC_QUERYCTRL, &qctrl)) {
                                 if (strcmp((char *)qctrl.name, "Power Line Frequency") == 0) {
-                                        ctrl.id = V4L2_CID_POWER_LINE_FREQUENCY;
+                                        ctrl.id = qctrl.id;
                                         ctrl.value = atoi(argv[2]);
                                         if (-1 == ioctl(fd_, VIDIOC_S_CTRL, &ctrl))
                                                 perror("ioctl  VIDIOC_S_CTRL");
