@@ -367,7 +367,6 @@ proc ag_autoplace_apply {active} {
 
     set sorted [lsort -dictionary -index 0 $src_name_list]
 	
-#    foreach src [array names presenters_started] {
     foreach item $sorted {
 	set src [lindex $item 1]
 	set name [lindex $item 0]
