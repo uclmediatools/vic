@@ -378,6 +378,8 @@ proc open_window src {
 	global button_active vtk_client
 
 	bind $v <Button-3> {
+	    set w [lindex [split %W "."] 1]
+	    set m .$w.bar.size.menu
 	    tk_popup $m %x %y
 	}
 
