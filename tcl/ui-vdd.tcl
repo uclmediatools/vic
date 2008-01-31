@@ -224,7 +224,7 @@ proc init_local {} {
 	}
 }
 
-proc init_resources {} {
+proc vdd_init_resources {} {
 	option add Vdd.dither od startupFile
 }
 
