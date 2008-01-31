@@ -380,7 +380,7 @@ proc open_window src {
 	bind $v <Button-3> {
 	    set w [lindex [split %W "."] 1]
 	    set m .$w.bar.size.menu
-	    tk_popup $m %x %y
+	    tk_popup $m %X %Y
 	}
 
 #	puts "w is $v"
