@@ -6,8 +6,10 @@
 #include "renderer.h"
 
 #include "config_arch.h"
+extern "C" {
 #include "ffmpeg/swscale.h"
 #include "ffmpeg/avutil.h"
+}
 #include "cpu/cpudetect.h"
 
 int available_cpu_flags = cpu_check();
