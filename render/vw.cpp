@@ -1454,6 +1454,9 @@ int VideoWindow::command(int argc, const char*const* argv)
 			return (TCL_OK);
 		}
 	} else if (argc == 3) {
+#ifdef HAVE_SWSCALE
+		return (TCL_OK);
+#else
 		if (strcmp(argv[1], "voff") == 0) {
 			voff_ = atoi(argv[2]);
 			return (TCL_OK);
@@ -1462,6 +1465,7 @@ int VideoWindow::command(int argc, const char*const* argv)
 			hoff_ = atoi(argv[2]);
 			return (TCL_OK);
 		}
+#endif
 	}
 	return (BareWindow::command(argc, argv));
 }

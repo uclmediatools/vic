@@ -111,7 +111,11 @@ public:
 	    sws_src[1] = sws_src[0] + framesize_;
 	    sws_src[2] = sws_src[1] + framesize_/4;
 
+#if LIBSWSCALE_VERSION_INT  >= ((0<<16)+(5<<8)+0)
+     	sws_scale(sws_context, sws_src, sws_src_stride, 0, height_, sws_tar, sws_tar_stride);
+#else
      	sws_scale_ordered(sws_context, sws_src, sws_src_stride, 0, height_, sws_tar, sws_tar_stride);
+#endif
 	  }	
 	}
 protected:
