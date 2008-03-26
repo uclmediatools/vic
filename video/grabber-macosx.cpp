@@ -668,10 +668,10 @@ MacOSXScanner::MacOSXScanner()
 		char port_str[64];
 		for (int i = 0; i < (*sgdeviceList)->count; i++) {
 			// ignore devices that are currently unavailable
+			p2cstrcpy(dev_str, (*sgdeviceList)->entry[i].name);
 			if ((sgDeviceNameFlagDeviceUnavailable & (*sgdeviceList)->entry[i].flags) == 0) {
 				attr = new char[512];
 				strcpy(attr, "size {large small cif} format {411 422 cif} type {ntsc pal secam} port {");
-				p2cstrcpy(dev_str, (*sgdeviceList)->entry[i].name);
 				if ((*sgdeviceList)->entry[i].inputs != NULL) {
 					fprintf(stderr,"OSX Capture: \"%s\" has %i input(s)\n", dev_str, (*(((*sgdeviceList)->entry[i]).inputs))->count);
 					for (int j = 0; j < (*(((*sgdeviceList)->entry[i]).inputs))->count; j++) {
