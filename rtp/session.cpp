@@ -250,7 +250,7 @@ confid_(-1)
 SessionManager::~SessionManager()
 {
 	if (pktbuf_) 
-		delete pktbuf_;
+		delete[] pktbuf_;
 	
 	delete pool_;
 }

@@ -104,7 +104,7 @@ P64Decoder::P64Decoder()
 
 P64Decoder::~P64Decoder()
 {
-	delete fs_;
+	delete[] fs_;
 }
 
 void P64Decoder::init()
