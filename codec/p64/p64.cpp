@@ -285,7 +285,10 @@ int P64Decoder::parse_block(short* blk, u_int* mask)
 		int v;
 		GET_BITS(bs_, 2, nbb, bb, v);
 		/*XXX quantize?*/
-		blk[0] = qt[(v & 1) ? 0xff : 1];
+		if (qt)
+			blk[0] = qt[(v & 1) ? 0xff : 1];
+		else
+			blk[0] = 0;
 		k = 1;
 		m0 |= 1;
 	} else {
