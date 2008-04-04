@@ -140,6 +140,7 @@ void P64Decoder::init()
 	miny_ = height_;
 	maxx_ = 0;
 	maxy_ = 0;
+	marks_ = 0;
 
 	allocate();
 }
@@ -328,7 +329,10 @@ int P64Decoder::parse_block(short* blk, u_int* mask)
 			break;
 		}
 		r = COLZAG[k++];
-		blk[r] = qt[v & 0xff];
+		if (qt)
+			blk[r] = qt[v & 0xff];
+		else
+			blk[r] = 0;
 		++nc;
 #ifdef INT_64
 		m0 |= (INT_64)1 << r;
@@ -443,7 +447,7 @@ void P64Decoder::filter(u_char* in, u_char* out, u_int stride)
 	u_int r11 = in[4] << 24 | in[5] << 16 | in[6] << 8 | in[7];
 	in += stride;
 
-	u_int r20, r21;
+	u_int r20 = 0, r21 = 0;
 	u_int mask = 0xff00ff;
 	for (int k = 6; --k >= 0; ) {
 		/* load next row */

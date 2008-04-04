@@ -105,6 +105,10 @@ const u_char COLZAG[] = {
 #define FA4 (1.306562965f)
 #define FA5 (0.382683433f)
 
+#ifdef B0
+#undef B0
+#endif
+
 /*
  * these magic numbers are scaling factors for each coef of the 1-d
  * AA&N DCT.  The scale factor for coef 0 is 1 and coef 1<=n<=7 is
@@ -314,7 +318,7 @@ fdct_fold_q(const int* in, float* out)
 		double v = first_stage[i >> 3];
 		v *= first_stage[i & 7];
 		double q = double(in[i]);
-		out[i] = v / q;
+		out[i] = float(v / q);
 	}
 }
 
