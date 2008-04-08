@@ -14,7 +14,7 @@ PacketBuffer::PacketBuffer(int maxPacket, int maxLength)
     maxLen = maxLength;
     stream = new DataBuffer(maxPacket * maxLength);
 
-    for (int i = 0; i < maxPkts; i++) {
+    for (int i = 0; i < maxPkts && i < MAX_PACKETS; i++) {
 	isDataRecv[i] = false;
 	packets[i] = new DataBuffer(maxLen);
 	//std::cout << "allocate databuffer " << i << "\n";
@@ -24,7 +24,7 @@ PacketBuffer::PacketBuffer(int maxPacket, int maxLength)
 PacketBuffer::~PacketBuffer()
 {
     delete stream;
-    for (int i = 0; i < maxPkts; i++)
+    for (int i = 0; i < maxPkts && i < MAX_PACKETS; i++)
 	delete packets[i];
 }
 
@@ -53,7 +53,7 @@ bool PacketBuffer::isComplete()
 {
     if (totalPkts == 0)
 	return false;
-    for (int i = 0; i < totalPkts; i++){	
+    for (int i = 0; i < totalPkts && i < MAX_PACKETS; i++){	
 	if (!isDataRecv[i]){
 	    //debug_msg("lost packet %d\n", i);	
 	    return false;
@@ -80,7 +80,7 @@ DataBuffer *PacketBuffer::getStream()
 
     //int offset = 0;
     //char* dst = stream->getData();
-    for (int i = 0; i < totalPkts; i++) {
+    for (int i = 0; i < totalPkts && i < MAX_PACKETS; i++) {
 	if (isDataRecv[i]) {
 	    //memcpy(dst+offset, packets[i]->getData(), packets[i]->getDataSize() );
 	    //offset+=packets[i]->getDataSize();
@@ -95,10 +95,10 @@ DataBuffer *PacketBuffer::getStream()
 void PacketBuffer::clear()
 {
     //std::cout << "Total packets " << totalPkts << "\n";
-    for (int i = 0; i < totalPkts; i++) {
+    for (int i = 0; i < maxPkts && i < MAX_PACKETS; i++) {
 	packets[i]->setSize(0);
-	stream->setSize(0);
 	isDataRecv[i] = false;
     }
+    stream->setSize(0);
     totalPkts = 0;
 }
