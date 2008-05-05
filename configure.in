@@ -582,12 +582,12 @@ armv4l-*-linux)
         V_STATIC=""
         V_BROKEN_OBJ=
         V_DEFINE="$V_DEFINE -DHAVE_IPV6 -DHAVE_FAST_INT"
-	V_LIB="$V_LIB -framework Carbon -framework QuickTime -lssl -lcrypto"
+        V_LIB="$V_LIB -framework Carbon -framework QuickTime"
         if test "$target_cpu" = powerpc; then
             V_CCOPT="-O2 $ppc_tune"
         fi
         OPSYS=macosx
-	;;
+        ;;
 esac
 
 case "$target" in
