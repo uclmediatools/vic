@@ -91,7 +91,4 @@ esac
 AC_ARG_ENABLE(aquatcl,  --disable-aquatcl	build with aquatcl enabled, aquatcl=no, )
 AC_ARG_ENABLE(aquatk,   --disable-aquatk	build with aquatk enabled, aquatk=no, )
 
-if test "$aquatk" != "yes" -a "$mingw" != "yes"; then
-builtin(include, configure.in.x11)
-fi
 builtin(include, configure.in.tk)

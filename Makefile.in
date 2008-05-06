@@ -80,7 +80,8 @@ TK_LIBRARY_FILES = \
 		$(LIBRARY_TK)/scale.tcl \
 		$(LIBRARY_TK)/tearoff.tcl \
 		$(LIBRARY_TK)/text.tcl \
-		@V_TKDOSNAMES@
+		$(LIBRARY_TK)/optMenu.tcl \
+		$(LIBRARY_TK)/scrlbar.tcl
 
 LIB_GRABBER = @V_LIB_GRABBER@
 INCLUDE_GRABBER = @V_INCLUDE_GRABBER@

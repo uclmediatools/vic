@@ -1,366 +1,147 @@
-dnl autoconf rules to find tcl & tk 
-dnl $Header$ (LBL)
+SC_PATH_TCLCONFIG
+SC_LOAD_TCLCONFIG
 
-AC_ARG_WITH(ucltcl,	--with-ucltcl=path	specify a pathname for UCL's tcl, ucltcl=$withval, ucltcl="")
+AC_MSG_CHECKING([for a compatible version of Tcl])
+if test "${TCL_MAJOR_VERSION}" -gt 8  \
+  -o \( "${TCL_MAJOR_VERSION}" -eq 8 -a "${TCL_MINOR_VERSION}" -ge 4 \); then
+    AC_MSG_RESULT([Tcl ${TCL_VERSION}${TCL_PATCH_LEVEL}])
 
-AC_ARG_WITH(tcl,	--with-tcl=path	specify a pathname for tcl, d=$withval, d="")
-
-if test "$aquatcl" == yes; then
-	echo "Using AquaTCL"
-        V_LIB_TCL="-framework Tcl"
+    if test "$aquatcl" = yes; then
+        echo "Using AquaTCL"
         V_DEFINE="$V_DEFINE -DMAC_OSX_TCL"
-        V_LIBRARY_TCL=/Library/Frameworks/Tcl.framework/Versions/8.4/Resources/Scripts
-        V_INCLUDE_TCL="-I/Library/Frameworks/Tcl.framework/Headers -I/Library/Frameworks/Tcl.framework/PrivateHeaders"
+    fi
 
-elif test "$ucltcl" == yes; then
-	if test -z "$tcl"; then 
-		# UCL defaults
-		ucltcl=../tcl-8.0
-	fi
-	if test ! -d "$ucltcl" ; then
-		echo "UCL tcl path: '$ucltcl' is not a directory"
-		exit 1
-	fi
-	V_INCLUDE_TCL="-I$ucltcl/generic"
-	case "$target" in 
-	  *-*-freebsd*)
-		V_LIB_TCL="$ucltcl/unix/libtcl80.a"
-		;;
-	  *)
-		V_LIB_TCL="$ucltcl/unix/libtcl8.0.a"
-		;;
-	esac
+elif test "${TCL_VERSION}" == "8.0" ; then
+    if test -f "${TCL_SRC_DIR}/generic/tcl2c.c" ; then
+        AC_MSG_RESULT([UCL Tcl ${TCL_VERSION}${TCL_PATCH_LEVEL}])
+    else
+        AC_MSG_ERROR([Found Tcl 8.0 which is not UCL Tcl 8.0])
+    fi
 
-	V_LIBRARY_TCL=$ucltcl/library
-	echo "Using UCL's tcl-8.0: $ucltcl"
-		
-elif test "$d" != "" ; then 
-	echo "Not using UCL tcl - You're on your own!"
-	if test ! -d $d ; then 
-		echo "'$d' is not a directory"
-		exit 1
-	fi
-	V_INCLUDE_TCL=-I$d/include
-	if test ! -r $d/include/tcl.h ; then
-		echo "can't find tcl.h in $d/include"
-		exit 1
-	fi
-	places="$d/lib64/libtcl8.4.so \
-		$d/lib64/libtcl8.4.dylib \
-		$d/lib64/libtcl8.4.a \
-		$d/lib64/libtcl.so \
-		$d/lib64/libtcl.dylib \
-		$d/lib64/libtcl.a \
-		$d/lib/libtcl8.4.so \
-		$d/lib/libtcl8.4.dylib \
-		$d/lib/libtcl8.4.a \
-		$d/lib/libtcl.so \
-		$d/lib/libtcl.dylib \
-		$d/lib/libtcl.a"
-	V_LIB_TCL=FAIL
-	for dir in $places; do
-		if test -r $dir ; then
-			V_LIB_TCL=$dir
-			break
-		fi
-	done
-	if test $V_LIB_TCL = FAIL ; then
-		echo "can't find libtcl.a in $d/lib"
-		exit 1
-	fi
-	places="$d/lib64/tcl-8.4 \
-		$d/lib64/tcl8.4 \
-		$d/lib64/tcl \
-		$d/lib/tcl-8.4 \
-		$d/lib/tcl8.4 \
-		$d/lib/tcl"
-	V_LIBRARY_TCL=FAIL
-	for dir in $places; do
-		if test -r $dir/init.tcl ; then
-			V_LIBRARY_TCL=$dir
-			break
-		fi
-	done
-	if test $V_LIBRARY_TCL = FAIL ; then
-		echo "can't find init.tcl in $d/lib/tcl"
-		exit 1
-	fi
 else
-	echo "Not using UCL tcl - You're on your own!"
-	AC_TEST_CPP([#include <tcl.h>], V_INCLUDE_TCL="", V_INCLUDE_TCL=FAIL)
-	if test "$V_INCLUDE_TCL" = FAIL; then
-		echo "checking for tcl.h"
-		places="$PWD/../tcl-8.4 \
-			$PWD/../tcl8.4 \
-			$PWD/../tcl \
-			/usr/local/include/tcl8.4 \
-			/usr/src/local/tcl8.4 \
-			/usr/include/tcl8.4 \
-			/import/tcl/include/tcl8.4 \
-			$prefix/include \
-			$x_includes/tk \
-			$x_includes \
-			/usr/local/include \
-			/usr/contrib/include \
-			/usr/include"
-		for dir in $places; do
-			if test -r $dir/tcl.h ; then
-				V_INCLUDE_TCL=-I$dir
-			        break
-			fi
-		done
-		if test "$V_INCLUDE_TCL" = FAIL; then
-			echo "can't find tcl.h"
-			exit 1
-		fi
-	fi
-	AC_CHECK_LIB(tcl8.4, main, V_LIB_TCL="-ltcl8.4", V_LIB_TCL="FAIL")
-	if test "$V_LIB_TCL" = FAIL; then
-		echo "checking for libtcl.a"
-		places="$PWD/../tcl-8.4/unix \
-                        $PWD/../tcl8.4/unix \
-                        $PWD/../tcl/unix \
-			/usr/local/lib \
-			$prefix/lib \
-			$x_libraries \
-			/usr/contrib/lib \
-			/usr/local/lib \
-			/usr/lib \
-			$PWD/../tcl8.4 \
-			/usr/src/local/tcl8.4 \
-			/import/tcl/lib/tcl8.4"
-		for dir in $places; do
-			if test -r $dir/libtcl8.4.so -o -r $dir/libtcl8.4.dylib -o -r $dir/libtcl8.4.a; then
-				V_LIB_TCL="-L$dir -ltcl8.4"
-				break
-			fi
-			if test -r $dir/libtcl.so -o -r $dir/libtcl.dylib -o -r $dir/libtcl.a; then
-				V_LIB_TCL="-L$dir -ltcl"
-				break
-			fi
-		done
-		if test "$V_LIB_TCL" = FAIL; then
-			echo "can't find libtcl.a"
-			exit 1
-		else
-			if test $solaris ; then
-				V_LIB_TCL="-R$dir $V_LIB_TCL"
-			fi
-		fi
-	fi
-	echo "checking for tcl/init.tcl"
-	V_LIBRARY_TCL=FAIL
-	places="$PWD/../tcl-8.4/library \
-		$PWD/../tcl8.4/library \
-                $PWD/../tcl/library \
-		/System/Library/Frameworks/Tcl.framework/Versions/8.4/Resources/Scripts \
-		/usr/local/lib/tcl8.4 \
-		/usr/contrib/lib/tcl8.4 \
-		/usr/lib/tcl8.4 \
-		/usr/lib/tk/tcl8.4 \
-		/import/tcl/lib/tcl8.4 \
-		$prefix/lib/tcl8.4 \
-		$x_libraries/tcl8.4 \
-		/usr/local/lib/tcl \
-		/usr/lib/tcl \
-		$x_libraries/tcl"
-	for dir in $places; do
-		if test -r $dir/init.tcl; then
-			V_LIBRARY_TCL=$dir
-			break
-		fi
-	done
-	if test "$V_LIBRARY_TCL" = FAIL; then
-		echo "can't find tcl/init.tcl"
-		exit 1
-	fi
+    AC_MSG_ERROR([Tcl $TCL_VERSION, compatible Tcl for VIC not found
+Use --with-tcl= option to indicate location of tclConfig.sh file for Tcl.])
 fi
-AC_SUBST(V_INCLUDE_TCL)
-AC_SUBST(V_LIB_TCL)
-AC_SUBST(V_LIBRARY_TCL)
 
-AC_ARG_WITH(ucltk,	--with-ucltk=path	specify a pathname for UCL's tk, ucltk=$withval, ucltk="")
+SC_PATH_TKCONFIG
+SC_LOAD_TKCONFIG
 
-AC_ARG_WITH(tk,	--with-tk=path	specify a pathname for tk, d=$withval, d="")
+AC_MSG_CHECKING([for a compatible version of Tk])
+if test "${TCL_VERSION}" == "${TK_VERSION}"; then
+    AC_MSG_RESULT([Tk ${TK_VERSION}${TK_PATCH_LEVEL}])
 
-if test "$aquatk" == yes; then
-	echo "Using AquaTk"
-        V_LIB_TK="-framework Tk"
+    if test "$aquatk" = yes; then
+        echo "Using AquaTk"
         V_DEFINE="$V_DEFINE -DMAC_OSX_TK"
-        V_LIBRARY_TK=/Library/Frameworks/Tk.framework/Versions/8.4/Resources/Scripts
-        V_INCLUDE_TK="-I/Library/Frameworks/Tk.framework/Headers -I/Library/Frameworks/Tk.framework/PrivateHeaders"
+    fi
 
-elif test "$ucltk" == yes; then
-	if test -z "$tk"; then 
-		# UCL defaults
-		ucltk=../tk-8.0
-	fi
-	if test ! -d "$ucltk" ; then
-		echo "UCL TK dir: '$ucltk' is not a directory"
-		exit 1
-	fi
-	V_INCLUDE_TK="-I$ucltk/generic"
+else
+    AC_MSG_ERROR([${TCL_BIN_DIR}/tclConfig.sh is for Tcl ${TCL_VERSION}.
+${TK_BIN_DIR}/tkConfig.sh is for Tk ${TK_VERSION}.
+Tk ${TK_VERSION} needs Tcl ${TK_VERSION}
+Use --with-tcl= option to indicate location of tclConfig.sh file for Tcl.
+Use --with-tk= option to indicate location of tkConfig.sh file for Tk.])
+fi
 
-	case "$target" in 
-	  *-*-freebsd*)
-		V_LIB_TK="$ucltk/unix/libtk80.a"
-		;;
-	  *)
-		V_LIB_TK="$ucltk/unix/libtk8.0.a"
-		;;
-	esac
-	V_LIBRARY_TK=$ucltk/library
-	echo "Using UCL's tk-8.0: $ucltk"
-		
-elif test "$d" != "" ; then 
-	echo "Not using UCL tk - You're on your own!"
-	if test ! -d $d ; then 
-		echo "'$d' is not a directory"
-		exit 1
-	fi
-	V_INCLUDE_TK=-I$d/include
-	if test ! -r $d/include/tk.h ; then
-		echo "can't find tk.h in $d/include"
-		exit 1
-	fi
-	places="$d/lib64/libtk8.4.so \
-		$d/lib64/libtk8.4.a \
-		$d/lib64/libtk.so \
-		$d/lib64/libtk.a \
-		$d/lib/libtk8.4.so \
-		$d/lib/libtk8.4.a \
-		$d/lib/libtk.so \
-		$d/lib/libtk.a"
-	V_LIB_TK=FAIL
-	for dir in $places; do
-		if test -r $dir ; then
-			V_LIB_TK=$dir
-			break
-		fi
-	done
-	if test $V_LIB_TK = FAIL ; then
-		echo "can't find libtk.a in $d/lib"
-		exit 1
-	fi
-	places="$d/lib64/tk8.4 \
-		$d/lib64/tk \
-		$d/lib/tk8.4 \
-		$d/lib/tk"
-	V_LIBRARY_TK=FAIL
-	for dir in $places; do
-		if test -r $dir/tk.tcl ; then
-			V_LIBRARY_TK=$dir
-			break
-		fi
-	done
-	if test $V_LIBRARY_TK = FAIL ; then
-		echo "can't find tk.tcl in $d/lib/tk"
-		exit 1
-	fi
+if test -f "${TCL_BIN_DIR}/Makefile" ; then
+    # dealing with Tcl source tree
+    V_INCLUDE_TCL="-I${TCL_SRC_DIR}/generic"
+    V_LIBRARY_TCL="${TCL_SRC_DIR}/library"
+    V_LIB_TCL="-L${TCL_SRC_DIR}/unix ${TCL_LIB_FLAG}"
+
 else
-	echo "Not using UCL tk - You're on your own!"
-	AC_TEST_CPP([#include <tk.h>], V_INCLUDE_TK="", V_INCLUDE_TK=FAIL)
-	if test "$V_INCLUDE_TK" = FAIL; then
-		echo "checking for tk.h"
-		V_INCLUDE_TK=""
-		places="$PWD/../tk8.4/generic \
-	                $PWD/../tk-8.4/generic \
-       		        $PWD/../tk/generic \
-			/usr/local/include \
-			$prefix/include \
-			/usr/contrib/include \
-			/usr/include/tcl \
-			/usr/include\
-			$x_includes/tk \
-			$x_includes \
-			$PWD/../tk8.4 \
-			/usr/src/local/tk8.4 \
-			/usr/include/tcl8.4 \
-			/import/tcl/include/tk8.4"
-		for dir in $places; do
-			if test -r $dir/tk.h ; then
-				V_INCLUDE_TK=-I$dir
-				break
-			fi
-		done
-		if test "$V_INCLUDE_TK" = FAIL; then
-			echo "can't find tk.h"
-			exit 1
-		fi
-	fi
-	AC_CHECK_LIB(tk8.4, main, V_LIB_TK="-ltk8.4", V_LIB_TK="FAIL")
-	if test "$V_LIB_TK" = FAIL; then
-		echo "checking for libtk8.4.a"
-		places="$PWD/../tk-8.4/unix \
-			$PWD/../tk8.4/unix \
-                	$PWD/../tk/unix \
-			/usr/local/lib \
-			/usr/contrib/lib \
-			/usr/lib \
-			/usr/lib/tk \
-			/import/tcl/lib \
-			$PWD/../tk8.4 \
-			/usr/src/local/tk8.4 \
-			$prefix/lib \
-			$x_libraries"
-		for dir in $places; do
-			if test -r $dir/libtk8.4.so -o -r $dir/libtk.dylib -o -r $dir/libtk8.4.a; then
-				V_LIB_TK="-L$dir -ltk8.4"
-				break
-			fi
-			if test -r $dir/libtk.so -o -r $dir/libtk.a; then
-				V_LIB_TK="-L$dir -ltk"
-				break
-			fi
-		done
-		if test "$V_LIB_TK" = FAIL; then	
-			echo "can't find libtk.a"
-			exit 1
-		else
-			if test $solaris ; then
-				V_LIB_TK="-R$dir $V_LIB_TK"
-			fi
-		fi
-	fi
-	echo "checking for tk/tk.tcl"
-	V_LIBRARY_TK=FAIL
-	places="$PWD/../tk-8.4/library \
-		$PWD/../tk8.4/library \
-               	$PWD/../tk/library \
-		/usr/local/lib/tk8.4 \
-		/System/Library/Frameworks/Tk.framework/Versions/8.4/Resources/Scripts \
-		/usr/contrib/lib/tk8.4 \
-		/usr/lib/tk8.4 \
-		/usr/share/tk8.4 \
-		/usr/lib/tk/tk8.4 \
-		/import/tcl/lib/tk8.4 \
-		$prefix/lib/tk8.4 \
-		$x_libraries/tk8.4 \
-		$PWD/../tk8.4/library \
-		/usr/src/local/tk8.4/library \
-		/usr/local/lib/tk \
-		/usr/lib/tk \
-		$x_libraries/tk"
-	for dir in $places; do
-		if test -r $dir/tk.tcl; then
-			V_LIBRARY_TK=$dir
-			break
-		fi
-	done
-	if test "$V_LIBRARY_TK" = FAIL; then
-		echo "can't find tk/tk.tcl"
-		exit 1
-	fi
+    # dealing with Tcl system install
+
+    if test -d "${TCL_BIN_DIR}/Headers" ; then
+        # Darwin / MacOS X
+        V_INCLUDE_TCL=-I${TCL_BIN_DIR}/Headers
+        V_LIBRARY_TCL=${TCL_BIN_DIR}/Resources/Scripts
+
+    else
+        V_INCLUDE_TCL=$TCL_INCLUDE_SPEC
+
+        V_LIBRARY_TCL=FAIL
+        for dir in $TCL_PACKAGE_PATH; do
+            if test -r "${dir}/init.tcl" ; then
+                V_LIBRARY_TCL=$dir
+                break
+            elif test -r "${dir}/tcl${TCL_VERSION}/init.tcl" ; then
+                V_LIBRARY_TCL="${dir}/tcl${TCL_VERSION}"
+                break
+            fi
+        done
+        if test $V_LIBRARY_TCL = FAIL ; then
+            echo "can't find init.tcl in ${TCL_PACKAGE_PATH}"
+            exit 1
+        fi
+    fi
+    V_LIB_TCL=$TCL_LIB_SPEC
 fi
-if test -r $V_LIBRARY_TK/optionMenu.tcl ; then
-	V_TKDOSNAMES='$(LIBRARY_TK)/optionMenu.tcl $(LIBRARY_TK)/scrollbar.tcl'
-	V_NEED_DL=""
+
+AC_SUBST(V_INCLUDE_TCL)
+AC_SUBST(V_LIBRARY_TCL)
+AC_SUBST(V_LIB_TCL)
+
+
+if test -f "${TK_BIN_DIR}/Makefile" ; then
+    # dealing with Tk source tree
+    V_INCLUDE_TK="-I${TK_SRC_DIR}/generic"
+    V_LIBRARY_TK="${TK_SRC_DIR}/library"
+    V_LIB_TK="-L${TK_SRC_DIR}/unix ${TK_LIB_FLAG}"
+
 else
-	V_TKDOSNAMES='$(LIBRARY_TK)/optMenu.tcl $(LIBRARY_TK)/scrlbar.tcl'
-	V_NEED_DL=YES
+    # dealing with Tk system install
+
+    if test -d "${TK_BIN_DIR}/Headers" ; then
+        # Darwin / MacOS X
+
+        if test ! -f "${TK_BIN_DIR}/PrivateHeaders/tkInt.h" ; then
+            AC_MSG_ERROR([${TK_BIN_DIR}/PrivateHeaders/tkInt.h not found.
+Use --with-tk= option to indicate location of tkConfig.sh file for a Tk
+which comes with the PrivateHeaders folder.])
+        fi
+
+        V_INCLUDE_TK="-I${TK_BIN_DIR}/Headers -I${TK_BIN_DIR}/PrivateHeaders"
+        V_LIBRARY_TK=${TK_BIN_DIR}/Resources/Scripts
+
+    else
+        V_INCLUDE_TK=$TK_INCLUDE_SPEC
+
+        V_LIBRARY_TK=FAIL
+        TK_PACKAGE_PATH=`echo $TCL_PACKAGE_PATH | sed 's/tcl/tk/g'`
+        TK_PACKAGE_PATH="$TK_PACKAGE_PATH $TCL_PACKAGE_PATH"
+        for dir in $TK_PACKAGE_PATH; do
+            if test -r "${dir}/tk.tcl" ; then
+                V_LIBRARY_TK=$dir
+                break
+            elif test -r "${dir}/tk${TK_VERSION}/tk.tcl" ; then
+                V_LIBRARY_TK="${dir}/tk${TK_VERSION}"
+                break
+            fi
+        done
+    fi
+
+    if test $V_LIBRARY_TK = FAIL ; then
+        echo "can't find tk.tcl in ${TK_PACKAGE_PATH}"
+        exit 1
+    fi
+    V_LIB_TK=$TK_LIB_SPEC
 fi
-AC_SUBST(V_TKDOSNAMES)
+
+V_INCLUDE_X11=$TK_XINCLUDES
+V_LIB_X11=$TK_XLIBSW
+
+# if using X11 shared memory add -lXext if not already supplied
+if test $V_SHM = "-DUSE_SHM" -a "$aquatcl" != yes -a "$mingw" != "yes"; then
+    echo $TK_XLIBSW | grep "\-lXext" > /dev/null 2>&1
+    if test $? -ne 0 ; then
+        V_LIB_X11="$V_LIB_X11 -lXext"
+    fi
+fi
+
 AC_SUBST(V_INCLUDE_TK)
-AC_SUBST(V_LIB_TK)
 AC_SUBST(V_LIBRARY_TK)
+AC_SUBST(V_LIB_TK)
 
+AC_SUBST(V_INCLUDE_X11)
+AC_SUBST(V_LIB_X11)
