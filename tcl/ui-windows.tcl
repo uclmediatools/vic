@@ -259,24 +259,24 @@ proc open_window src {
 	menu $m
         if {[string match [ windowingsystem] "aqua"]} {
                 $w.mbar add cascade -label Size -menu $m
-        }     
+        }
 	$m add radiobutton -label QCIF -command "resize $v 176 144" \
-		-font $f -value 176x144 -variable size$w
+		-font $f -value 176x144 -variable size$w -accelerator "S"
 	$m add radiobutton -label CIF -command "resize $v 352 288" \
-		-font $f -value 352x288 -variable size$w
+		-font $f -value 352x288 -variable size$w -accelerator "M"
 	$m add radiobutton -label SCIF -command "resize $v 704 576" \
-		-font $f -value 704x576 -variable size$w
+		-font $f -value 704x576 -variable size$w -accelerator "L"
 
 	$m add separator
 	$m add radiobutton -label "1/16 NTSC" \
 		-command "resize $v 160 120" \
-		-font $f -value 160x120 -variable size$w
+		-font $f -value 160x120 -variable size$w -accelerator "Shift-S"
 	$m add radiobutton -label "1/4 NTSC" \
 		-command "resize $v 320 240" \
-		-font $f -value 320x240 -variable size$w
+		-font $f -value 320x240 -variable size$w -accelerator "Shift-M"
 	$m add radiobutton -label NTSC \
 		-command "resize $v 640 480" \
-		-font $f -value 640x480 -variable size$w
+		-font $f -value 640x480 -variable size$w -accelerator "Shift-L"
 
 	$m add separator
 	$m add radiobutton -label "1/16 PAL" \
@@ -289,6 +289,15 @@ proc open_window src {
 		-command "resize $v 768 576" \
 		-font $f -value 768x576 -variable size$w
 
+	$m add separator
+	$m add radiobutton -label "Half size" \
+		-command "resize $v [expr $iw / 2] [expr $ih / 2]" \
+		-font $f -value "half" -variable size$w
+	$m add radiobutton -label "Normal size" -command "resize $v $iw $ih" \
+		-font $f -value "normal" -variable size$w
+	$m add radiobutton -label "Double size" \
+		-command "resize $v [expr $iw * 2] [expr $ih * 2]" \
+		-font $f -value "double" -variable size$w
 
 # Marcus ... 
 	set m $w.bar.decoder.menu
@@ -336,18 +345,28 @@ proc open_window src {
 # comment next line to remove buttons
 #	pack $w.bar -fill x
 
+        if {![string match [ windowingsystem] "aqua"]} {
+		$w.bar.size.menu add separator
+		set m $w.bar.size.menu.decodercascade
+		$w.bar.decoder.menu clone $m
+		$w.bar.size.menu add cascade -menu $m -label Decoder
+		set m $w.bar.size.menu.modecascade
+		$w.bar.mode.menu clone $m
+		$w.bar.size.menu add cascade -menu $m -label Mode
+        }
+
 	bind $w <Enter> { focus %W }
 	#wm focusmodel $w active
 
-	bind $w <s> "resize $v 176 144"
-	bind $w <m> "resize $v 352 288"
-	bind $w <l> "resize $v 704 576"
-	bind $w <S> "resize $v 160 120"
-	bind $w <M> "resize $v 320 240"
-	bind $w <L> "resize $v 640 480"
-	bind $w <e> "resize $v 1000 750"
-	bind $w <E> "resize $v 1024 768"
-	bind $w <x> "resize $v 640 240"
+	bind $w <s> "resize $v 176 144; set size$w 176x144"
+	bind $w <m> "resize $v 352 288; set size$w 352x288"
+	bind $w <l> "resize $v 704 576; set size$w 704x576"
+	bind $w <S> "resize $v 160 120; set size$w 160x120"
+	bind $w <M> "resize $v 320 240; set size$w 320x240"
+	bind $w <L> "resize $v 640 480; set size$w 640x480"
+	bind $w <e> "resize $v 1000 750; set size$w 1000x750"
+	bind $w <E> "resize $v 1024 768; set size$w 1024x768"
+	bind $w <x> "resize $v 640 240; set size$w 640x240"
 	bind $w <z> "catch { wm overrideredirect $w 1; wm withdraw $w; wm deiconify $w}"
 	bind $w <Z> "catch { wm overrideredirect $w 0; wm withdraw $w; wm deiconify $w}"
 
