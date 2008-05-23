@@ -20,7 +20,7 @@
 .\" WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
 .\" MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  
 .\"
-.TH VIC 1 "18 Sep 1995"
+.TH VIC 1 "23 May 2008"
 .de HD
 .sp 1.5
 .B
@@ -66,12 +66,27 @@ vic \- video conference
 .B \-H
 ]
 [
+.B \-i
+.I ifAddr
+]
+[
 .B \-I
 .I channel
 ]
 [
+.B \-j
+.I numLayers
+]
+[
 .B \-K
 .I key
+]
+[
+.B \-l
+]
+[
+.B \-L
+.I flowLabel
 ]
 [
 .B \-M
@@ -256,11 +271,14 @@ argument for transmission.
 may be one of
 .nf
 	jpeg		Motion JPEG
-	mpeg		MPEG
 	h261		CCITT H.261
+	h263		CCITT H.263
+	h264		RFC3984 H.264 (GPL)
+	mpeg4		RFC3640 H.264 (GPL)
 	nv		Xerox PARC Network Video
 	cellb		Sun CellB
 	bvc		Berkeley Video Codec
+	pvh		Steve McCannei's layered PVH codec 
 .fi
 Not all encodings are compatible with all frame grabbers.
 For instance, you need JPEG compression hardware in order
@@ -274,6 +292,20 @@ frames per second.
 .B \-H
 Set the initial disposition of the Use-Hardware-Decode button to ``on''.
 Vic uses software decoding by default.
+.TP
+.B \-i
+Set the IP address of the interface that vic will bind to. Useful on 
+multi-homed boxes.
+.I ifAddr
+can be IPv4 or IPv6 (if enabled) address.
+.TP
+.B \-j
+Set the
+of layers used for layered coding (currently only works
+for PVH codec). Set 
+.I numLayers
+between 0 and 8, the layers will be transmitted on sequential
+ports and sequencial multicast address (if multicast).
 .TP
 .B \-I
 Use the ``LBL Conference Bus'' to interact with other multimedia
@@ -326,6 +358,13 @@ The reason is that an ordered dither relies on colors uniformly spaced
 throughout the (5x5x5) RGB color cube, so overriding this default
 colormap probably will not produce improved results.
 .TP
+.B \-l
+Creates a logfile named {UNIX seconds}\-{host IP}\-{username}.log containing
+logs of frame rate changes per source.
+.TP
+.B \-L
+Set the Flow label in the packet. IPv6 ONLY.
+.TP
 .B \-m
 Set the packet transmission size to
 .I mtu
@@ -348,9 +387,10 @@ as the communications protocol underlying the RTP transport,
 which may be
 .I ip,
 for IP or IP Multicast,
+.I ip6,
+for IPv6 or IPv6 Multicast,
 .I atm
-for the Fore SPANS ATM API,
-or 
+for the Fore SPANS ATM API, or 
 .I rtip
 for the U.C. Berkeley Tenet group's Real-time Internet Protocol
 (see http://tenet.berkeley.edu for more information.)
@@ -395,6 +435,11 @@ Source
 .I script,
 in addition to the compiled-in script, to build the user interface.
 This is only useful during development.
+.TP
+.B \-x
+Set the interface index to bind to when using multicast - the 
+.I ifIndex
+is a conecpt introduced by the IPv6 APIs in RFC3493 etc.
 .TP
 .B \-X
 Override the X resource 
