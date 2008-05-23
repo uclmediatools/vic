@@ -93,7 +93,7 @@ protected:
 	void loopback(pktbuf*);
 	void output(pktbuf* pb);
 	virtual void transmit(pktbuf* pb) = 0;
-	double gettimeofday() const;
+	double gettimeofday_secs() const;
 	double txtime(pktbuf* pb);
 
 	int mtu_;		/* mtu of wire (as seen by application) */
