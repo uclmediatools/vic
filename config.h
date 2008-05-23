@@ -36,7 +36,7 @@
 #ifndef vic_config_h
 #define vic_config_h
 
-#if defined(sgi) || defined(__bsdi__) || defined(__FreeBSD__) || defined(__APPLE__)
+#if defined(sgi) || defined(__bsdi__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__)
 #include <sys/types.h>
 #ifndef uint16_t
 typedef unsigned char  uint8_t;
@@ -134,7 +134,7 @@ extern "C" {
 #include <netinet/in.h>
 #include <arpa/inet.h>
 clock_t clock(void);
-#if !defined(sco) && !defined(sgi) && !defined(__bsdi__) && !defined(__FreeBSD__) && !defined(sun) && !defined(__linux__) && !defined(__APPLE__)
+#if !defined(sco) && !defined(sgi) && !defined(__bsdi__) && !defined(__FreeBSD__) && !defined(__NetBSD__) && !defined(sun) && !defined(__linux__) && !defined(__APPLE__)
 int		gethostid(void);
 #endif
 time_t	time(time_t *);
