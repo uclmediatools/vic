@@ -82,7 +82,7 @@ class Decoder : public PacketHandler {
 
 	static void allocshm(dmabuf&, int, int flag = 0);
 	static void freeshm(dmabuf&);
-	static double gettimeofday();
+	static double gettimeofday_usecs();
 
 	virtual int command(int argc, const char*const* argv);
 

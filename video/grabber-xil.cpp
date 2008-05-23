@@ -470,7 +470,7 @@ void XILGrabber::start()
 //	return ;
 
 	//link(fd_, TK_READABLE);
-	double now = gettimeofday();
+	double now = gettimeofday_usecs();
 	frameclock_ = now;
 	nextframetime_ = now + tick(grab());
 }
@@ -484,7 +484,7 @@ void XILGrabber::stop()
 void XILGrabber::dispatch(int mask)
 {
 	UNUSED(mask);
-	double now = gettimeofday();
+	double now = gettimeofday_usecs();
 	if (nextframetime_ > now) {
 #if 0
 		if (fd_) {

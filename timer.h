@@ -50,7 +50,7 @@ public:
 	inline void usched(double usec) { msched((int)(usec / 1000.)); }
 	inline void ssched(int seconds) { msched(1000 * seconds); }
 	void cancel();
-	double gettimeofday() const;
+	double gettimeofday_usecs() const;
 protected:
 	virtual void timeout() = 0;
 private:

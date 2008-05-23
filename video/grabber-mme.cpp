@@ -469,7 +469,7 @@ void MmeGrabber::startup()
 	if (mme_error(s, "couldn't start mme video stream\n"))
 		return;
 	running_ = 1;
-	frameclock_ = gettimeofday();
+	frameclock_ = gettimeofday_usecs();
 
 	outstanding_ = 0;
 	last_grab_ = 0;

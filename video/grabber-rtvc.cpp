@@ -679,7 +679,7 @@ void RTVCGrabber::start()
 {
 	setsize();
 	link(fd_, TK_READABLE);
-	double now = gettimeofday();
+	double now = gettimeofday_usecs();
 	frameclock_ = now;
 	nextframetime_ = now + tick(grab());
 }
@@ -698,7 +698,7 @@ int RTVCGrabber::capture()
 
 void RTVCGrabber::dispatch(int)
 {
-	double now = gettimeofday();
+	double now = gettimeofday_usecs();
 	if (nextframetime_ > now) {
 		/*
 		 * the frame is too early & we want to flush it.

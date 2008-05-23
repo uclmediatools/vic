@@ -68,7 +68,7 @@ void Timer::cancel()
 	}
 }
 
-double Timer::gettimeofday() const
+double Timer::gettimeofday_usecs() const
 {
 	timeval tv;
 	::gettimeofday(&tv, 0);

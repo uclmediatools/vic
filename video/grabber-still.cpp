@@ -186,7 +186,7 @@ int StillGrabber::command(int argc, const char * const * argv)
 
 void StillGrabber::start()
 {
-    frameclock_ = gettimeofday();
+    frameclock_ = gettimeofday_usecs();
 
     timeout();
 }

@@ -198,7 +198,7 @@ void Decoder::freeshm(dmabuf& d)
 /*
  * Return time of day in microseconds.
  */
-double Decoder::gettimeofday()
+double Decoder::gettimeofday_usecs()
 {
 	timeval tv;
 	::gettimeofday(&tv, 0);

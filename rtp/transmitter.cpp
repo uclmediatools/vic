@@ -94,7 +94,8 @@ Transmitter::Transmitter() :
 	mh_.msg_iovlen = 2;
 }
 
-inline double Transmitter::gettimeofday() const
+/* Return time of day in seconds */
+inline double Transmitter::gettimeofday_secs() const
 {
 	timeval tv;
 	::gettimeofday(&tv, 0);
@@ -210,7 +211,7 @@ void Transmitter::send(pktbuf* pb)
 {
 	if (!busy_) {
 		double delay = txtime(pb);
-		nextpkttime_ = gettimeofday() + delay;
+		nextpkttime_ = gettimeofday_secs() + delay;
 		output(pb);
 		/*
 		 * emulate a transmit interrupt --
@@ -230,7 +231,7 @@ void Transmitter::send(pktbuf* pb)
 
 void Transmitter::timeout()
 {
-	double now = gettimeofday();
+	double now = gettimeofday_secs();
 	for (;;) {
 		pktbuf* p = head_;
 		if (p != 0) {

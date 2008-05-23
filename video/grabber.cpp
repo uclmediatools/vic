@@ -202,9 +202,9 @@ void Grabber::bps(int kbps)
  * 200ms behind (e.g., the cpu is saturated or we've been
  * suspended), give up and reset the frame clock.
  */
-double Grabber::tick(int n)
+double Grabber::tick(int frameSize)
 {
-	double frametime = 8e6 * double(n) / double(bps_);
+	double frametime = 8e6 * double(frameSize) / double(bps_); // uSecs
 	if (frametime < frametime_) {
 		if (frametime * 2. < frametime_)
 			delta_ += (frametime - delta_) * .25;
@@ -215,7 +215,7 @@ double Grabber::tick(int n)
 		delta_ = frametime;
 
 	frameclock_ += frametime;
-	double now = gettimeofday();
+	double now = gettimeofday_usecs();
 	double delta = frameclock_ - now;
 	if (delta < -0.2e6) {
 		delta = frametime;
@@ -232,7 +232,7 @@ double Grabber::tick(int n)
 
 void Grabber::start()
 {
-	frameclock_ = gettimeofday();
+	frameclock_ = gettimeofday_usecs();
 #ifndef WIN32
 	timeout();
 #endif

@@ -269,7 +269,7 @@ void JvGrabber::freedma(JvGrabber::dmabuf* p)
 void JvGrabber::start()
 {
 	link(server_, TK_READABLE);
-	frameclock_ = gettimeofday();
+	frameclock_ = gettimeofday_usecs();
 	kick();
 }
 

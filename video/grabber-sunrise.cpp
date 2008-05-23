@@ -541,7 +541,7 @@ void SunriseJpegGrabber::start()
 	return;
     }
 
-    frameclock_ = gettimeofday();
+    frameclock_ = gettimeofday_usecs();
 
     /*
      * This sleep is VERY IMPORTANT. It lets the capture card
@@ -880,7 +880,7 @@ void SunriseYuvCore::start()
     }
 
     running_ = 1;
-    frameclock_ = gettimeofday();
+    frameclock_ = gettimeofday_usecs();
     timeout();
 }
 
