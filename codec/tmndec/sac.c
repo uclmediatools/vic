@@ -191,7 +191,7 @@ void bit_out_psc_layer ()
   {                             /* check for startcode in Arithmetic
                                  * Decoder FIFO */
 
-    bit = getbits (1);
+    bit = vic_getbits (1);
 
     if (zerorun > 13)
     {                           /* if number of consecutive zeros = 14 */
@@ -204,7 +204,7 @@ void bit_out_psc_layer ()
       {                         /* if there is a 'stuffing bit present */
         if (trace)
           fprintf (trace_file, "Removing Startcode Emulation Prevention bit \n");
-        bit = getbits (1);      /* overwrite the last bit */
+        bit = vic_getbits (1);      /* overwrite the last bit */
         zerorun = !bit;         /* zerorun=1 if bit is a '0' */
       }
     } else

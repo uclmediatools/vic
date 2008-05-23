@@ -152,10 +152,10 @@ void reconstruct (int bx, int by, int P, int bdx, int bdy, int MODB)
       {
 
         sum = MV[0][1][y][x] + MV[0][2][y][x] + MV[0][3][y][x] + MV[0][4][y][x];
-        dx = sign (sum) * (roundtab[abs (sum) % 16] + (abs (sum) / 16) * 2);
+        dx = sign (sum) * (vic_roundtab[abs (sum) % 16] + (abs (sum) / 16) * 2);
 
         sum = MV[1][1][y][x] + MV[1][2][y][x] + MV[1][3][y][x] + MV[1][4][y][x];
-        dy = sign (sum) * (roundtab[abs (sum) % 16] + (abs (sum) / 16) * 2);
+        dy = sign (sum) * (vic_roundtab[abs (sum) % 16] + (abs (sum) / 16) * 2);
 
       } else
       {
@@ -272,8 +272,8 @@ void reconstruct (int bx, int by, int P, int bdx, int bdy, int MODB)
         }
 
         /* chroma rounding (table 16/H.263) */
-        dx = sign (xvec) * (roundtab[abs (xvec) % 16] + (abs (xvec) / 16) * 2);
-        dy = sign (yvec) * (roundtab[abs (yvec) % 16] + (abs (yvec) / 16) * 2);
+        dx = sign (xvec) * (vic_roundtab[abs (xvec) % 16] + (abs (xvec) / 16) * 2);
+        dy = sign (yvec) * (vic_roundtab[abs (yvec) % 16] + (abs (yvec) / 16) * 2);
 
         lx >>= 1;
         bx >>= 1;
@@ -304,8 +304,8 @@ void reconstruct (int bx, int by, int P, int bdx, int bdy, int MODB)
         yvec = 4 * dy;
 
         /* chroma rounding (table 16/H.263) */
-        dx = sign (xvec) * (roundtab[abs (xvec) % 16] + (abs (xvec) / 16) * 2);
-        dy = sign (yvec) * (roundtab[abs (yvec) % 16] + (abs (yvec) / 16) * 2);
+        dx = sign (xvec) * (vic_roundtab[abs (xvec) % 16] + (abs (xvec) / 16) * 2);
+        dy = sign (yvec) * (vic_roundtab[abs (yvec) % 16] + (abs (yvec) / 16) * 2);
 
         /* Chroma */
         recon_comp (src[1], bframe[1], lx, lx2, w, h, bx, by, dx, dy, 1);

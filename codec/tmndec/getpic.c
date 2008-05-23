@@ -404,7 +404,7 @@ resync:
           }
           /* GFID is not allowed to change unless PTYPE in picture header
            * changes */
-          gfid = getbits (2);
+          gfid = vic_getbits (2);
           if (trace)
           {
             fprintf (trace_file, "gfid: ");
@@ -414,7 +414,7 @@ resync:
            * value to determine whether a picture header where the PTYPE
            * has changed, has been lost */
 
-          quant = getbits (5);
+          quant = vic_getbits (5);
           if (trace)
           {
             fprintf (trace_file, "quant: ");
@@ -553,9 +553,9 @@ read_cod:
           {          
             /* using VLC */            
             if (!showbits (1))            
-              INTRA_AC_DC = getbits (1);              
+              INTRA_AC_DC = vic_getbits (1);              
             else            
-              INTRA_AC_DC = getbits (2);            
+              INTRA_AC_DC = vic_getbits (2);            
           }          
           if (trace)          
             fprintf (trace_file, "INTRA_AC_DC: %d\n", INTRA_AC_DC);          
@@ -602,7 +602,7 @@ read_cod:
               }              
             } 
             else            
-              CBPB = getbits (6); 
+              CBPB = vic_getbits (6); 
             
             if (trace)              
               fprintf (trace_file, "CBPB = %d\n", CBPB);            
@@ -672,7 +672,7 @@ read_cod:
         {
           if (!modified_quantization_mode)
           {
-            DQUANT = getbits (2);
+            DQUANT = vic_getbits (2);
             quant += DQ_tab[DQUANT];
             if (trace)
             {
@@ -683,11 +683,11 @@ read_cod:
           } 
           else
           {
-            tmp = getbits (1);
+            tmp = vic_getbits (1);
             if (tmp)
             {
               /* only one more additional bit was sent */
-              tmp = getbits (1);
+              tmp = vic_getbits (1);
               if (tmp)
               {
                 /* second bit of quant is 1 */
@@ -710,7 +710,7 @@ read_cod:
             {
               /* five additional bits were sent as            
                * DQUANT */
-              DQUANT = getbits (5);
+              DQUANT = vic_getbits (5);
               quant = DQUANT;
               if (trace)
               {
@@ -1106,7 +1106,7 @@ reconstruct_mb:
           } 
           else
           {
-            bp[0] = getbits (8);
+            bp[0] = vic_getbits (8);
             if (trace)
             {
               fprintf (trace_file, "DC[%d]: (", comp);
@@ -1325,7 +1325,7 @@ resync:
           }
           /* GFID is not allowed to change unless PTYPE in picture header
            * changes */
-          gfid = getbits (2);
+          gfid = vic_getbits (2);
           if (trace)
           {
             fprintf (trace_file, "gfid: ");
@@ -1335,7 +1335,7 @@ resync:
            * value to determine whether a picture header where the PTYPE
            * has changed, has been lost */
 
-          quant = getbits (5);
+          quant = vic_getbits (5);
           if (trace)
           {
             fprintf (trace_file, "quant: ");
@@ -1397,9 +1397,9 @@ read_cod:
       {
         /* get INTRA_AC_DC mode for annex I */
         if (!showbits (1))
-          INTRA_AC_DC = getbits (1);
+          INTRA_AC_DC = vic_getbits (1);
         else
-          INTRA_AC_DC = getbits (2);
+          INTRA_AC_DC = vic_getbits (2);
 
         if (trace)
         {
@@ -1465,7 +1465,7 @@ read_cod:
         {
           if (!modified_quantization_mode)
           {
-            DQUANT = getbits (2);
+            DQUANT = vic_getbits (2);
             quant += DQ_tab[DQUANT];
             if (trace)
             {
@@ -1476,10 +1476,10 @@ read_cod:
           } 
           else
           {
-            tmp = getbits (1);
+            tmp = vic_getbits (1);
             if (tmp)
             {                   /* only one more additional bit was sent */
-              tmp = getbits (1);
+              tmp = vic_getbits (1);
               if (tmp)
               {                 /* second bit of quant is 1 */
                 DQUANT = change_of_quant_tab_11[quant];
@@ -1498,7 +1498,7 @@ read_cod:
             else
             {                   /* five additional bits were sent as
                                  * DQUANT */
-              DQUANT = getbits (5);
+              DQUANT = vic_getbits (5);
               quant = DQUANT;
               if (trace)
               {
@@ -1810,7 +1810,7 @@ reconstruct_mb:
         {
           /* Intra (except in advanced intra coding mode) */
           bp = ld->block[comp];
-          bp[0] = getbits (8);
+          bp[0] = vic_getbits (8);
           if (trace)
           {
             fprintf (trace_file, "DC[%d]: (", comp);
@@ -1991,7 +1991,7 @@ resync:
           }
           /* GFID is not allowed to change unless PTYPE in picture header
            * changes */
-          gfid = getbits (2);
+          gfid = vic_getbits (2);
           if (trace)
           {
             fprintf (trace_file, "gfid: ");
@@ -2001,7 +2001,7 @@ resync:
            * value to determine whether a picture header where the PTYPE
            * has changed, has been lost */
 
-          quant = getbits (5);
+          quant = vic_getbits (5);
           if (trace)
           {
             fprintf (trace_file, "quant: ");
@@ -2063,9 +2063,9 @@ read_cod:
       {
         /* get INTRA_AC_DC mode for annex I */
         if (!showbits (1))
-          INTRA_AC_DC = getbits (1);
+          INTRA_AC_DC = vic_getbits (1);
         else
-          INTRA_AC_DC = getbits (2);
+          INTRA_AC_DC = vic_getbits (2);
 
         if (trace)
         {
@@ -2136,7 +2136,7 @@ read_cod:
         {
           if (!modified_quantization_mode)
           {
-            DQUANT = getbits (2);
+            DQUANT = vic_getbits (2);
             quant += DQ_tab[DQUANT];
             if (trace)
             {
@@ -2147,10 +2147,10 @@ read_cod:
           } 
           else
           {
-            tmp = getbits (1);
+            tmp = vic_getbits (1);
             if (tmp)
             {                   /* only one more additional bit was sent */
-              tmp = getbits (1);
+              tmp = vic_getbits (1);
               if (tmp)
               {                 /* second bit of quant is 1 */
                 DQUANT = change_of_quant_tab_11[quant];
@@ -2169,7 +2169,7 @@ read_cod:
             else
             {                   /* five additional bits were sent as
                                  * DQUANT */
-              DQUANT = getbits (5);
+              DQUANT = vic_getbits (5);
               quant = DQUANT;
               if (trace)
               {
@@ -2405,7 +2405,7 @@ reconstruct_mb:
         {
           /* Intra (except in advanced intra coding mode) */
           bp = ld->block[comp];
-          bp[0] = getbits (8);
+          bp[0] = vic_getbits (8);
           if (trace)
           {
             fprintf (trace_file, "DC[%d]: (", comp);
@@ -2615,8 +2615,8 @@ static void reconblock_b (int comp, int bx, int by, int mode, int bdx, int bdy)
       }
 
       /* chroma rounding (table 16/H.263) */
-      BMVx = sign (xvec) * (roundtab[abs (xvec) % 16] + (abs (xvec) / 16) * 2);
-      BMVy = sign (yvec) * (roundtab[abs (yvec) % 16] + (abs (yvec) / 16) * 2);
+      BMVx = sign (xvec) * (vic_roundtab[abs (xvec) % 16] + (abs (xvec) / 16) * 2);
+      BMVy = sign (yvec) * (vic_roundtab[abs (yvec) % 16] + (abs (yvec) / 16) * 2);
     }
   } else
   {
@@ -2638,8 +2638,8 @@ static void reconblock_b (int comp, int bx, int by, int mode, int bdx, int bdy)
       yvec *= 4;
 
       /* chroma rounding (table 16/H.263) */
-      BMVx = sign (xvec) * (roundtab[abs (xvec) % 16] + (abs (xvec) / 16) * 2);
-      BMVy = sign (yvec) * (roundtab[abs (yvec) % 16] + (abs (yvec) / 16) * 2);
+      BMVx = sign (xvec) * (vic_roundtab[abs (xvec) % 16] + (abs (xvec) / 16) * 2);
+      BMVy = sign (yvec) * (vic_roundtab[abs (yvec) % 16] + (abs (yvec) / 16) * 2);
     }
   }
 

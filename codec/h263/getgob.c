@@ -1500,8 +1500,8 @@ static void _reconblock_b(H263Global *h263Data, int comp, int bx, int by,
       }
       
       /* chroma rounding (table 16/H.263) */
-      BMVx = SGN(xvec)*(roundtab[abs(xvec)%16]+(abs(xvec)/16)*2);
-      BMVy = SGN(yvec)*(roundtab[abs(yvec)%16]+(abs(yvec)/16)*2);
+      BMVx = SGN(xvec)*(vic_roundtab[abs(xvec)%16]+(abs(xvec)/16)*2);
+      BMVy = SGN(yvec)*(vic_roundtab[abs(yvec)%16]+(abs(yvec)/16)*2);
     }
   }
   else {
@@ -1522,8 +1522,8 @@ static void _reconblock_b(H263Global *h263Data, int comp, int bx, int by,
       yvec *= 4;
       
       /* chroma rounding (table 16/H.263) */
-      BMVx = SGN(xvec)*(roundtab[abs(xvec)%16] +(abs(xvec)/16)*2);
-      BMVy = SGN(yvec)*(roundtab[abs(yvec)%16] +(abs(yvec)/16)*2);
+      BMVx = SGN(xvec)*(vic_roundtab[abs(xvec)%16] +(abs(xvec)/16)*2);
+      BMVy = SGN(yvec)*(vic_roundtab[abs(yvec)%16] +(abs(yvec)/16)*2);
     }
   }
 

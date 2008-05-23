@@ -84,7 +84,7 @@ void fillbfr _ANSI_ARGS_ ((void));
 unsigned int showbits _ANSI_ARGS_ ((int n));
 unsigned int getbits1 _ANSI_ARGS_ ((void));
 void flushbits _ANSI_ARGS_ ((int n));
-unsigned int getbits _ANSI_ARGS_ ((int n));
+unsigned int vic_getbits _ANSI_ARGS_ ((int n));
 
 /* getblk.c */
 void getblock _ANSI_ARGS_ ((int comp, int mode, int INTRA_AC_DC, int Mode));
@@ -426,7 +426,7 @@ EXTERN int OM[5][8][8]
 #endif
 ;
 
-EXTERN int roundtab[16]
+EXTERN int vic_roundtab[16]
 #ifdef GLOBAL
 = {0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2}
 #endif

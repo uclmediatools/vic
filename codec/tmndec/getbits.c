@@ -158,7 +158,7 @@ unsigned int showbits (int n)
 
 unsigned int getbits1 ()
 {
-  return getbits (1);
+  return vic_getbits (1);
 }
 
 
@@ -176,7 +176,7 @@ void flushbits (int n)
 
 /* return next n bits (right adjusted) */
 
-unsigned int getbits (int n)
+unsigned int vic_getbits (int n)
 {
   unsigned int l;
 

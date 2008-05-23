@@ -157,21 +157,21 @@ void getblock (int comp, int mode, int INTRA_AC_DC, int Mode)
         last = getbits1 ();
         store_code[coeff_ind].last = last;
 
-        i += run = getbits (6);
+        i += run = vic_getbits (6);
         store_code[coeff_ind].run = run;
 
-        level = getbits (8);
+        level = vic_getbits (8);
         store_code[coeff_ind].level = level;
 
 
         if (level == 128 && modified_quantization_mode)
         {
-          level = getbits (11);
+          level = vic_getbits (11);
           store_code[coeff_ind].extended_level = level;
         }
       } else
       {
-        store_code[coeff_ind].sign = getbits (1);
+        store_code[coeff_ind].sign = vic_getbits (1);
         i += run;
       }
       coeff_ind += 1;
@@ -344,13 +344,13 @@ void getblock (int comp, int mode, int INTRA_AC_DC, int Mode)
           fprintf (trace_file, " ");
           printbits (showbits (6), 6, 6);
         }
-        i += run = getbits (6);
+        i += run = vic_getbits (6);
         if (trace)
         {
           fprintf (trace_file, " ");
           printbits (showbits (8), 8, 8);
         }
-        level = getbits (8);
+        level = vic_getbits (8);
 
         if ((sign = (level >= 128)))
           val = 256 - level;
@@ -360,7 +360,7 @@ void getblock (int comp, int mode, int INTRA_AC_DC, int Mode)
         if (level == 128 && modified_quantization_mode)
         {
           /* extended escape code was received */
-          level = getbits (11);
+          level = vic_getbits (11);
           level = (level >> 6 & 0x001F) | level << 5;
           /* correctly set the sign */
           level = (level << (sizeof (int) * 8 - 11)) >> (sizeof (int) * 8 - 11);
@@ -374,7 +374,7 @@ void getblock (int comp, int mode, int INTRA_AC_DC, int Mode)
       {
         i += run;
         val = level;
-        sign = getbits (1);
+        sign = vic_getbits (1);
         if (trace)
           fprintf (trace_file, "%d", sign);
       }

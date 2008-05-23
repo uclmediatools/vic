@@ -62,7 +62,7 @@ typedef struct H263GlobalStruct {
 } H263Global;
 
 #ifdef notextern
-int roundtab[16]
+int vic_roundtab[16]
 #ifdef DEFINE_GLOBALS
 = {0,0,0,1,1,1,1,1,1,1,1,1,1,1,2,2}
 #endif
@@ -74,7 +74,7 @@ int bquant_tab[4]
 #endif
 ;
 #else
-extern int roundtab[];
+extern int vic_roundtab[];
 extern int bquant_tab[];
 #endif
 

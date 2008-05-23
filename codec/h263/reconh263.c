@@ -99,11 +99,11 @@ void reconstructH263(H263Global *h263Data, int bx, int by, int P, int bdx, int b
 
         sum = h263Data->MV[0][1][y][x]+h263Data->MV[0][2][y][x]+
 	  h263Data->MV[0][3][y][x]+h263Data->MV[0][4][y][x];
-        dx = SGN(sum)*(roundtab[abs(sum)%16] + (abs(sum)/16)*2);
+        dx = SGN(sum)*(vic_roundtab[abs(sum)%16] + (abs(sum)/16)*2);
 
         sum = h263Data->MV[1][1][y][x]+h263Data->MV[1][2][y][x]+
 	  h263Data->MV[1][3][y][x]+h263Data->MV[1][4][y][x];
-        dy = SGN(sum)*(roundtab[abs(sum)%16] + (abs(sum)/16)*2);
+        dy = SGN(sum)*(vic_roundtab[abs(sum)%16] + (abs(sum)/16)*2);
 
       }
       else {
@@ -156,8 +156,8 @@ void reconstructH263(H263Global *h263Data, int bx, int by, int P, int bdx, int b
         }
 
         /* chroma rounding (table 16/H.263) */
-        dx = SGN(xvec)*(roundtab[abs(xvec)%16] + (abs(xvec)/16)*2);
-        dy = SGN(yvec)*(roundtab[abs(yvec)%16] + (abs(yvec)/16)*2);
+        dx = SGN(xvec)*(vic_roundtab[abs(xvec)%16] + (abs(xvec)/16)*2);
+        dy = SGN(yvec)*(vic_roundtab[abs(yvec)%16] + (abs(yvec)/16)*2);
 
         lx>>=1;bx>>=1; lx2>>=1;
         by>>=1;
@@ -180,8 +180,8 @@ void reconstructH263(H263Global *h263Data, int bx, int by, int P, int bdx, int b
         yvec = 4*dy;
 
         /* chroma rounding (table 16/H.263) */
-        dx = SGN(xvec)*(roundtab[abs(xvec)%16] + (abs(xvec)/16)*2);
-        dy = SGN(yvec)*(roundtab[abs(yvec)%16] + (abs(yvec)/16)*2);
+        dx = SGN(xvec)*(vic_roundtab[abs(xvec)%16] + (abs(xvec)/16)*2);
+        dy = SGN(yvec)*(vic_roundtab[abs(yvec)%16] + (abs(yvec)/16)*2);
 
         /* Chroma */
         recon_comp(src[1],h263Data->bframe[1], lx,lx2,w,h,bx,by,dx,dy,1);
@@ -203,8 +203,8 @@ void reconstructH263(H263Global *h263Data, int bx, int by, int P, int bdx, int b
       yvec = 4*dy;
 
       /* chroma rounding (table 16/H.263) */ 
-      dx = SGN(xvec)*(roundtab[abs(xvec)%16] + (abs(xvec)/16)*2);
-      dy = SGN(yvec)*(roundtab[abs(yvec)%16] + (abs(yvec)/16)*2);
+      dx = SGN(xvec)*(vic_roundtab[abs(xvec)%16] + (abs(xvec)/16)*2);
+      dy = SGN(yvec)*(vic_roundtab[abs(yvec)%16] + (abs(yvec)/16)*2);
 
       /* Chroma */
       recon_comp(src[1],h263Data->bframe[1], lx,lx2,w,h,bx,by,dx,dy,1);

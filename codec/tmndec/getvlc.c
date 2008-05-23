@@ -150,11 +150,11 @@ int getRVLC ()
       fprintf (trace_file, "1): 0\n");
     return 0;
   }
-  code = 2 + getbits(1);
-  while (getbits(1))
+  code = 2 + vic_getbits(1);
+  while (vic_getbits(1))
   {
     code <<= 1;
-    code += getbits(1);
+    code += vic_getbits(1);
   }
   sign = code & 1;
   code >>= 1;
@@ -398,7 +398,7 @@ int getMODB ()
 
   if (pict_type == PCT_IPB)
   {
-    code = getbits (1);
+    code = vic_getbits (1);
     if (code == 0)
     {
       MODB = PBMODE_BIDIR_PRED;
@@ -407,7 +407,7 @@ int getMODB ()
     }
     else
     {
-      code=getbits (1);
+      code=vic_getbits (1);
       if (code==0)
       {
         MODB = PBMODE_CBPB_BIDIR_PRED;
@@ -416,7 +416,7 @@ int getMODB ()
       }
       else
       {
-        code=getbits (1);
+        code=vic_getbits (1);
         if (code==0) 
         {
           MODB = PBMODE_FRW_PRED;
@@ -425,7 +425,7 @@ int getMODB ()
         }
         else
         {
-          code=getbits (1);
+          code=vic_getbits (1);
           if (code==0) 
           {
             MODB = PBMODE_CBPB_FRW_PRED;
@@ -434,7 +434,7 @@ int getMODB ()
           }
           else
           {
-            code=getbits (1);
+            code=vic_getbits (1);
             if (code==0) 
             {
               MODB = PBMODE_BCKW_PRED;

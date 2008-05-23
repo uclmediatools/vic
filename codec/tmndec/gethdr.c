@@ -78,8 +78,8 @@ int getheader ()
 
   /* look for startcode */
   startcode ();
-  code = getbits (PSC_LENGTH);
-  gob = getbits (5);
+  code = vic_getbits (PSC_LENGTH);
+  gob = vic_getbits (5);
   if (gob == SE_CODE)
     return 0;
   if (gob == 0)
@@ -131,7 +131,7 @@ static void getpicturehdr ()
   pos = ld->bitcnt;
 
   prev_plus_P_temp_ref = temp_ref;
-  temp_ref = getbits (8);
+  temp_ref = vic_getbits (8);
   if (trace)
   {
     fprintf (trace_file, "\nTR: ");
@@ -140,19 +140,19 @@ static void getpicturehdr ()
   if (trd < 0)
     trd += 256;
 
-  tmp = getbits (1);            /* always "1" */
+  tmp = vic_getbits (1);            /* always "1" */
   if (trace)
     fprintf (trace_file, "\nSpare: %d", tmp);
   if (!tmp)
     if (!quiet)
       printf ("warning: spare in picture header should be \"1\"\n");
-  tmp = getbits (1);            /* always "0" */
+  tmp = vic_getbits (1);            /* always "0" */
   if (trace)
     fprintf (trace_file, "\nH.261 distinction bit: %d", tmp);
   if (tmp)
     if (!quiet)
       printf ("warning: H.261 distinction bit should be \"0\"\n");
-  tmp = getbits (1);            /* split_screen_indicator */
+  tmp = vic_getbits (1);            /* split_screen_indicator */
   if (trace)
     fprintf (trace_file, "\nsplit_screen_indicator: %d", tmp);
   if (tmp)
@@ -161,20 +161,20 @@ static void getpicturehdr ()
       printf ("error: split-screen not supported in this version\n");
     exit (-1);
   }
-  tmp = getbits (1);            /* document_camera_indicator */
+  tmp = vic_getbits (1);            /* document_camera_indicator */
   if (trace)
     fprintf (trace_file, "\ndocument_camera_indicator: %d", tmp);
   if (tmp)
     if (!quiet)
       printf ("warning: document camera indicator not supported in this version\n");
 
-  tmp = getbits (1);            /* freeze_picture_release */
+  tmp = vic_getbits (1);            /* freeze_picture_release */
   if (trace)
     fprintf (trace_file, "\nfreeze_picture_release: %d", tmp);
   if (tmp)
     if (!quiet)
       printf ("warning: frozen picture not supported in this version\n");
-  tmp = getbits (3);
+  tmp = vic_getbits (3);
   if (trace)
   {
     fprintf (trace_file, "\nsource_format: ");
@@ -186,7 +186,7 @@ static void getpicturehdr ()
     if (trace)
       fprintf (trace_file, "\n----------EXTENDED_PTYPE----------");
     plus_type = 1;
-    UFEP = getbits (3);
+    UFEP = vic_getbits (3);
     if (trace)
     {
       fprintf (trace_file, "\nUFEP: ");
@@ -197,7 +197,7 @@ static void getpicturehdr ()
       if (trace)
         fprintf (trace_file, "\n----------OPTIONAL PLUS PTYPE----------");
       source_format_old = source_format;
-      source_format = getbits (3);
+      source_format = vic_getbits (3);
       if (trace)
       {
         fprintf (trace_file, "\nsource_format: ");
@@ -205,7 +205,7 @@ static void getpicturehdr ()
       }
     
       /* optional custom picture clock frequency */
-      optional_custom_PCF = getbits (1);
+      optional_custom_PCF = vic_getbits (1);
       if (trace)
       {
         fprintf (trace_file, "\noptional_custom_PCF: ");
@@ -217,20 +217,20 @@ static void getpicturehdr ()
           printf ("error: Optional custom picture clock frequency is not supported in this version\n");
         exit (-1);
       }
-      mv_outside_frame = getbits (1);
+      mv_outside_frame = vic_getbits (1);
       if (trace)
       {
         fprintf (trace_file, "\nmv_outside_frame: ");
         printbits (mv_outside_frame, 1, 1);
       }
       long_vectors = (mv_outside_frame ? 1 : 0);
-      syntax_arith_coding = getbits (1);
+      syntax_arith_coding = vic_getbits (1);
       if (trace)
       {
         fprintf (trace_file, "\nsyntax_arith_coding: ");
         printbits (syntax_arith_coding, 1, 1);
       }
-      adv_pred_mode = getbits (1);
+      adv_pred_mode = vic_getbits (1);
       if (trace)
       {
         fprintf (trace_file, "\nadv_pred_mode: ");
@@ -240,13 +240,13 @@ static void getpicturehdr ()
       overlapping_MC = (adv_pred_mode ? 1 : 0);
       use_4mv = (adv_pred_mode ? 1 : 0);
       pb_frame = 0;
-      advanced_intra_coding = getbits (1);
+      advanced_intra_coding = vic_getbits (1);
       if (trace)
       {
         fprintf (trace_file, "\nadvanced_intra_coding: ");
         printbits (advanced_intra_coding, 1, 1);
       }
-      deblocking_filter_mode = getbits (1);
+      deblocking_filter_mode = vic_getbits (1);
       if (trace)
       {
         fprintf (trace_file, "\ndeblocking_filter_mode: ");
@@ -255,7 +255,7 @@ static void getpicturehdr ()
       mv_outside_frame = (deblocking_filter_mode ? 1 : mv_outside_frame);
       use_4mv = (deblocking_filter_mode ? 1 : use_4mv);
 
-      slice_structured_mode = getbits (1);
+      slice_structured_mode = vic_getbits (1);
       if (trace)
       {
         fprintf (trace_file, "\nslice_structured_mode: ");
@@ -267,7 +267,7 @@ static void getpicturehdr ()
           printf ("error: Slice structured mode is not supported in this version\n");
         exit (-1);
       }
-      reference_picture_selection_mode = getbits (1);
+      reference_picture_selection_mode = vic_getbits (1);
       if (trace)
       {
         fprintf (trace_file, "\nreference_picture_selection_mode: ");
@@ -281,7 +281,7 @@ static void getpicturehdr ()
         exit (-1);
       }
 #endif
-      independently_segmented_decoding_mode = getbits (1);
+      independently_segmented_decoding_mode = vic_getbits (1);
       if (trace)
       {
         fprintf (trace_file, "\nindependently_segmented_decoding_mode: ");
@@ -293,19 +293,19 @@ static void getpicturehdr ()
           printf ("error: Independently segmented decoding mode is not supported in this version\n");
         exit (-1);
       }
-      alternative_inter_VLC_mode = getbits (1);
+      alternative_inter_VLC_mode = vic_getbits (1);
       if (trace)
       {
         fprintf (trace_file, "\nalternative_inter_VLC_mode: ");
         printbits (alternative_inter_VLC_mode, 1, 1);
       }
-      modified_quantization_mode = getbits (1);
+      modified_quantization_mode = vic_getbits (1);
       if (trace)
       {
         fprintf (trace_file, "\nmodified_quantization_mode: ");
         printbits (modified_quantization_mode, 1, 1);
       }
-      tmp = getbits (4);
+      tmp = vic_getbits (4);
       if (trace)
       {
         fprintf (trace_file, "\nspare, reserve, reserve, reserve: ");
@@ -346,7 +346,7 @@ static void getpicturehdr ()
       /* MMPTYPE */
       if (trace)
         fprintf (trace_file, "\n----------MANDATORY PLUS PTYPE----------");
-      pict_type = getbits (3);
+      pict_type = vic_getbits (3);
       if (trace)
       {
         fprintf (trace_file, "\npict_type: ");
@@ -372,7 +372,7 @@ static void getpicturehdr ()
         trd = temp_ref - prev_non_disposable_temp_ref;
       }
 
-      reference_picture_resampling_mode = getbits (1);
+      reference_picture_resampling_mode = vic_getbits (1);
       if (trace)
       {
         fprintf (trace_file, "\nreference_picture_resampling_mode: ");
@@ -384,7 +384,7 @@ static void getpicturehdr ()
           printf ("error: Reference picture resampling mode is not supported in this version\n");
         exit (-1);
       }
-      reduced_resolution_update_mode = getbits (1);
+      reduced_resolution_update_mode = vic_getbits (1);
       if (trace)
       {
         fprintf (trace_file, "\nreduced_resolution_update_mode: ");
@@ -396,7 +396,7 @@ static void getpicturehdr ()
           printf ("error: Reduced resolution update mode is not supported in this version\n");
         exit (-1);
       }
-      rtype = getbits (1);      /* rounding type */
+      rtype = vic_getbits (1);      /* rounding type */
       if (trace)
       {
         fprintf (trace_file, "\nrounding_type: ");
@@ -407,7 +407,7 @@ static void getpicturehdr ()
         fprintf (trace_file, "\nrtype: ");
         printbits (rtype, 1, 1);
       }
-      tmp = getbits (3);
+      tmp = vic_getbits (3);
       if (trace)
       {
         fprintf (trace_file, "\nreserve, reserve, spare: ");
@@ -426,7 +426,7 @@ static void getpicturehdr ()
       exit (-1);
     }
 
-    tmp = getbits (1);
+    tmp = vic_getbits (1);
     if (trace)
     {
       fprintf (trace_file, "\nCPM: ");
@@ -444,7 +444,7 @@ static void getpicturehdr ()
       /* Read custom picture format */
       if (trace)
         fprintf (trace_file, "\ncustom picture format \n");
-      CP_PAR_code = getbits (4);
+      CP_PAR_code = vic_getbits (4);
       if (trace)
       {
         fprintf (trace_file, "\nCP_PAR_code: ");
@@ -458,14 +458,14 @@ static void getpicturehdr ()
         }
         exit(-1);
       }
-      tmp=getbits (9);
+      tmp=vic_getbits (9);
       horizontal_size = (tmp + 1 ) * 4;
       if (trace)
       {
         fprintf (trace_file, "\nCP_picture_width_indication: ");
         printbits (tmp, 9, 9);
       }
-      tmp = getbits (1);
+      tmp = vic_getbits (1);
       if (trace)
       {
         fprintf (trace_file, "\nspare: ");
@@ -477,7 +477,7 @@ static void getpicturehdr ()
           printf ("error: The 14th bit of Custom Picture Format(CPFMT) should be 1\n");
         exit (-1);
       }
-      tmp = getbits (8);
+      tmp = vic_getbits (8);
       vertical_size = tmp * 4;
       if (trace)
       {
@@ -495,8 +495,8 @@ static void getpicturehdr ()
 
       if (CP_PAR_code == EXTENDED_PAR)
       {
-        PAR_width = getbits (8);
-        PAR_height = getbits (8);
+        PAR_width = vic_getbits (8);
+        PAR_height = vic_getbits (8);
       }
     }
 
@@ -532,13 +532,13 @@ static void getpicturehdr ()
         fprintf (trace_file, "\noptional_custom_PCF \n");
       if (UFEP)
       {
-        clock_conversion_code = getbits (1);
+        clock_conversion_code = vic_getbits (1);
         if (trace)
         {
           fprintf (trace_file, "\nclock_conversion_code: ");
           printbits (clock_conversion_code, 1, 1);
         }
-        clock_divisor = getbits (7);
+        clock_divisor = vic_getbits (7);
         if (trace)
         {
           fprintf (trace_file, "\nclock_divisor: ");
@@ -547,7 +547,7 @@ static void getpicturehdr ()
         CP_clock_frequency = (int) (1800 / ((float) clock_divisor * (8 + clock_conversion_code)) * 1000);
       }
       /* regardless of the value of UFEP */
-      extended_temporal_reference = getbits (2);
+      extended_temporal_reference = vic_getbits (2);
       if (trace)
       {
         fprintf (trace_file, "\nextended_temporal_reference: ");
@@ -568,13 +568,13 @@ static void getpicturehdr ()
     }
     if (UFEP && slice_structured_mode)
     {
-      SSS_rectangular_slices = getbits (1);
+      SSS_rectangular_slices = vic_getbits (1);
       if (trace)
       {
         fprintf (trace_file, "\nSSS_rectangular_slices: ");
         printbits (SSS_rectangular_slices, 1, 1);
       }
-      SSS_arbitary_slice_ordering = getbits (1);
+      SSS_arbitary_slice_ordering = vic_getbits (1);
       if (trace)
       {
         fprintf (trace_file, "\nSSS_arbitary_slice_ordering: ");
@@ -585,7 +585,7 @@ static void getpicturehdr ()
     if ((pict_type == PCT_B) || (pict_type == PCT_EI) || (pict_type == PCT_EP))
     {
       /* optional temporal, SNR and spatial scalability mode in use */
-      enhancement_layer_num = getbits (4);
+      enhancement_layer_num = vic_getbits (4);
       if (trace)
       {
         fprintf (trace_file, "\nenhancement_layer_num: ");
@@ -593,7 +593,7 @@ static void getpicturehdr ()
       }
       if (UFEP)
       {
-        reference_layer_number = getbits (4);
+        reference_layer_number = vic_getbits (4);
         if (trace)
         {
           fprintf (trace_file, "\nreference_layer_number: ");
@@ -632,14 +632,14 @@ static void getpicturehdr ()
     {
       if (UFEP)
       {
-        MF_of_reference_picture_selection = getbits (3);
+        MF_of_reference_picture_selection = vic_getbits (3);
         if (trace)
         {
           fprintf (trace_file, "\nMF_of_reference_picture_selection: ");
           printbits (MF_of_reference_picture_selection, 3, 3);
         }
       }
-      TRPI = getbits (1);
+      TRPI = vic_getbits (1);
       if (trace)
       {
         fprintf (trace_file, "\nTRPI: ");
@@ -648,7 +648,7 @@ static void getpicturehdr ()
       if (TRPI)
       {
         /* temporal reference for prediction exists */
-        temporal_reference_for_prediction = getbits (10);
+        temporal_reference_for_prediction = vic_getbits (10);
         if (trace)
         {
           fprintf (trace_file, "\ntemporal_reference_for_prediction: ");
@@ -656,8 +656,8 @@ static void getpicturehdr ()
         }
       }
       /* draft20: 1=yes, 01=no */
-      BCI = getbits (1);
-      if (!BCI) getbits(1);
+      BCI = vic_getbits (1);
+      if (!BCI) vic_getbits(1);
       if (trace)
       {
         fprintf (trace_file, "\nBCI: ");
@@ -679,7 +679,7 @@ static void getpicturehdr ()
       exit (-1);
     }
 
-    pic_quant = getbits (5);
+    pic_quant = vic_getbits (5);
     quant = pic_quant;
 
     if (trace)
@@ -711,26 +711,26 @@ static void getpicturehdr ()
 
     trd = temp_ref - prev_plus_P_temp_ref;
 
-    pict_type = getbits (1);
+    pict_type = vic_getbits (1);
     if (trace)
     {
       fprintf (trace_file, "\npict_type: ");
       printbits (pict_type, 1, 1);
     }
-    mv_outside_frame = getbits (1);
+    mv_outside_frame = vic_getbits (1);
     if (trace)
     {
       fprintf (trace_file, "\nmv_outside_frame: ");
       printbits (mv_outside_frame, 1, 1);
     }
     long_vectors = (mv_outside_frame ? 1 : 0);
-    syntax_arith_coding = getbits (1);
+    syntax_arith_coding = vic_getbits (1);
     if (trace)
     {
       fprintf (trace_file, "\nsyntax_arith_coding: ");
       printbits (syntax_arith_coding, 1, 1);
     }
-    adv_pred_mode = getbits (1);
+    adv_pred_mode = vic_getbits (1);
     if (trace)
     {
       fprintf (trace_file, "\nadv_pred_mode: ");
@@ -739,14 +739,14 @@ static void getpicturehdr ()
     mv_outside_frame = (adv_pred_mode ? 1 : mv_outside_frame);
     overlapping_MC = (adv_pred_mode ? 1 : 0);
     use_4mv = (adv_pred_mode ? 1 : 0);
-    pb_frame = getbits (1);
+    pb_frame = vic_getbits (1);
     if (trace)
     {
       fprintf (trace_file, "\npb_frame: ");
       printbits (pb_frame, 1, 1);
     }
    
-    pic_quant = getbits (5);
+    pic_quant = vic_getbits (5);
     quant = pic_quant;
 
     if (trace)
@@ -755,7 +755,7 @@ static void getpicturehdr ()
       printbits (quant, 5, 5);
     }
 
-    tmp = getbits (1);
+    tmp = vic_getbits (1);
     if (trace)
     {
       fprintf (trace_file, "\nCPM: ");
@@ -773,7 +773,7 @@ static void getpicturehdr ()
   {
     if (optional_custom_PCF)
     {
-      trb = getbits (5);
+      trb = vic_getbits (5);
       if (trace)
       {
         fprintf (trace_file, "\ntrb: ");
@@ -781,7 +781,7 @@ static void getpicturehdr ()
       }
     } else
     {
-      trb = getbits (3);
+      trb = vic_getbits (3);
       if (trace)
       {
         fprintf (trace_file, "\ntrb: ");
@@ -789,7 +789,7 @@ static void getpicturehdr ()
       }
     }
 
-    bquant = getbits (2);
+    bquant = vic_getbits (2);
     if (trace)
     {
       fprintf (trace_file, "\nbquant: ");
@@ -805,7 +805,7 @@ static void getpicturehdr ()
     doframerate (0);
 #endif
 
-  pei = getbits (1);
+  pei = vic_getbits (1);
   if (trace)
   {
     fprintf (trace_file, "\npei: ");
@@ -816,8 +816,8 @@ pspare:
   if (pei)
   {
     /* extra info for possible future backward compatible additions */
-    getbits (8);                /* not used */
-    pei = getbits (1);
+    vic_getbits (8);                /* not used */
+    pei = vic_getbits (1);
     if (pei)
       goto pspare;              /* keep on reading pspare until pei=0 */
   }
