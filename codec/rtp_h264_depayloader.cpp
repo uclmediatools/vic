@@ -54,6 +54,7 @@
 
 #include "rtp_h264_depayloader.h"
 #include "packetbuffer.h"
+#include "rtp.h"
 
 //using namespace std;
 
@@ -187,6 +188,7 @@ H264Depayloader::H264Depayloader()
 {
     h264_extradata = (h264_rtp_extra_data *) h264_new_extradata();
     //fprintf(stderr, "H264_RTP: H264Depayloader Constructor done.\n");
+    aggregate_pkt = 0;
 }
 
 H264Depayloader::~H264Depayloader()
@@ -291,7 +293,7 @@ int H264Depayloader::h264_handle_packet(h264_rtp_extra_data *data,
                               /*AVPacket * pkt,*/ int pktIdx, PacketBuffer *pb,
                               /*uint32_t * timestamp,*/ 
                               const uint8_t * buf,
-                              int len)
+                              int len, int mbit)
 {
     //h264_rtp_extra_data *data = s->dynamic_protocol_context;
     uint8_t nal = buf[0];
@@ -304,7 +306,12 @@ int H264Depayloader::h264_handle_packet(h264_rtp_extra_data *data,
     assert(data->cookie == MAGIC_COOKIE);
     assert(buf);
 
-    if (type >= 1 && type <= 23)
+    //fprintf(stderr, /*NULL, AV_LOG_ERROR,*/ "H264_RTP: Single NAL type (%d, equiv. to >=1 or <=23), len=%4d\n", type, len);
+
+    if (buf[0]==0x02 && buf[1]==0x5d && buf[2]==0x47){
+      type=99; // IOCOM's non-standard H.264 packet format
+      //fprintf(stderr,"found IOCOM pkt\n");
+    } else if (type >= 1 && type <= 23)
         type = 1;              // simplify the case. (these are all the nal types used internally by the h264 codec)
     switch (type) {
     case 0:                    // undefined;
@@ -313,7 +320,6 @@ int H264Depayloader::h264_handle_packet(h264_rtp_extra_data *data,
         break;
 
     case 1:
-	//fprintf(stderr, /*NULL, AV_LOG_ERROR,*/ "H264_RTP: Single NAL type (%d, equiv. to >=1 or <=23), len=%4d\n", type, len);
 
         //av_new_packet(pkt, len+sizeof(start_sequence));
         //memcpy(pkt->data, start_sequence, sizeof(start_sequence));
@@ -329,9 +335,8 @@ int H264Depayloader::h264_handle_packet(h264_rtp_extra_data *data,
 	pb->write(pktIdx, sslen+len, temp); //SV: XXX
 */	
 
-	pb->writeAppend(pktIdx, sslen, start_sequence); //PO: XXX
-	pb->writeAppend(pktIdx, len, (char *)buf); //PO: XXX
-	
+	  pb->writeAppend(pktIdx, sslen, start_sequence); //PO: XXX
+	  pb->writeAppend(pktIdx, len, (char *)buf); //PO: XXX
 
 #ifdef DEBUG
         data->packet_types_received[nal & 0x1f]++;
@@ -427,7 +432,7 @@ int H264Depayloader::h264_handle_packet(h264_rtp_extra_data *data,
             uint8_t fu_indicator = nal;
             uint8_t fu_header = *buf;   // read the fu_header.
             uint8_t start_bit = (fu_header & 0x80) >> 7;
-            uint8_t end_bit = (fu_header & 0x40) >> 6;
+            // non used uint8_t end_bit = (fu_header & 0x40) >> 6;
             uint8_t nal_type = (fu_header & 0x1f);
             uint8_t reconstructed_nal;
 
@@ -478,6 +483,25 @@ int H264Depayloader::h264_handle_packet(h264_rtp_extra_data *data,
 	    //fprintf(stderr, /*NULL, AV_LOG_ERROR,*/ "H264_RTP: FU-A NAL type (%d): start_bit=%d, end_bit=%d, NAL_Header=0x%02x, FU_Header=0x%02x\n", type, start_bit, end_bit, reconstructed_nal, fu_header);
 
         }
+        break;
+
+    case 99:                   // IOCOM's non-standard H.264
+
+	//fprintf(stderr,"IOCOM pkt\n");
+	if (mbit) {
+          if (aggregate_pkt)
+            pb->writeAppend(pktIdx, len-20, (char *)buf+20);
+          else
+            pb->writeAppend(pktIdx, len-21, (char *)buf+21);
+          aggregate_pkt = 0;
+	}  else {
+	  if (aggregate_pkt)
+	    //stream->writeAppend(pktIdx,cc-bit_pos+1, (char *)bp+bit_pos-1);
+	    pb->writeAppend(pktIdx, len-20, (char *)buf+20);
+	  else
+	    pb->writeAppend(pktIdx, len-21, (char *)buf+21);
+	  aggregate_pkt = 1;
+	}
         break;
 
     case 30:                   // undefined

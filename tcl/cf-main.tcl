@@ -49,7 +49,10 @@ set rtp_type(127) h261v1
 set rtp_type(77) h261as
 set rtp_type(123) dv
 set rtp_type(45) mpeg4
-set rtp_type(96) h264
+# RFC3984 compliant H.264
+set rtp_type(96) h264  
+# IOCOM's IG2 H.264 format
+set rtp_type(107) h264_IOCOM
 
 
 proc vic_main {} {

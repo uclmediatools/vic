@@ -71,7 +71,8 @@ static class H264DecoderMatcher:public Matcher
     }
     TclObject *match(const char *id)
     {
-	if (strcasecmp(id, "h264") == 0)
+	if ((strcasecmp(id, "h264") == 0 ) || 
+	    (strcasecmp(id, "h264_IOCOM") == 0))
 	    return (new H264Decoder());
 	return (0);
     }
@@ -227,7 +228,7 @@ void H264Decoder::recv(pktbuf * pb)
     //stream->write(pktIdx, cc, (char *) bp);
     //fprintf(stderr, "H264_RTP: -------------------------------- seq = %d, m=%d, ts=%d, cc=%d\n", seq, mbit, ts, cc);
     //fprintf(stderr, "H264_RTP: pktIdx = %d\n", pktIdx);
-    int yo = h264depayloader->h264_handle_packet(h264depayloader->h264_extradata, pktIdx, stream, /*ts,*/ bp, cc);
+    int yo = h264depayloader->h264_handle_packet(h264depayloader->h264_extradata, pktIdx, stream, /*ts,*/ bp, cc, mbit);
     //fprintf(stderr, "H264_RTP: h264_handle_packet = %d\n", yo);
 
 
