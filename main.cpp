@@ -139,21 +139,21 @@ extern "C" int gethostname(char* name, int len);
 usage(char *szOffending)
 {
 	char win_usage[] = "\
-			    VIC is a multicast (or unicast) video tool. It is best to start it\n\
-			    using a multicast directory tool, like sdr or multikit. If desired VIC\n\
-			    can be launched from the command line using:\n\n\
-			    vic <address>/<port>\n\n\
-			    where <address> is machine name, or a multicast IP address, and <port> is\n\
-			    the connection identifier (an even number between 1024-65536).\n\n\
-			    For more details see:\n\n\
-			    http://www-mice.cs.ucl.ac.uk/multimedia/software/vic/faq.html\n\
+    \nVIC is a multicast (or unicast) video tool. It is best to start it\n\
+    using a multicast directory tool, like sdr or multikit. If desired VIC\n\
+    can be launched from the command line using:\n\n\
+    vic <address>/<port>\n\n\
+    where <address> is machine name, or a multicast IP address, and <port> is\n\
+    the connection identifier (an even number between 1024-65536).\n\n\
+    For more details see:\n\
+    http://www-mice.cs.ucl.ac.uk/multimedia/software/vic/faq.html\n\n\
 Options: vic [-HPs] [-A nv|ivs|rtp] [-B maxbps] [-C conf]\n\
-	 \t[-c ed|gray|od|quantize] [-D device] [-d display]\n\
-	 \t[-f bvc|cellb|h261|jpeg|nv|mpeg4|h264] [-F maxfps] [-i ifAddr ] [-I channel]\n\
-	 \t[-K key ] [-L flowLabel (ip6 only)] [-l (creates log file)]\n\
-	 \t[-M colormap] [-m mtu] [-N session] [-n atm|ip|ip6|rtip]\n\
-	 \t[-o clipfile] [-t ttl] [-U interval] [-u script] [-v version] [-V visual]\n\
-	 \t[-x ifIndex (ip6 only)] [-X resource=value] [-j numlayers] dest/port[/fmt/ttl]\n";
+	\t[-c ed|gray|od|quantize] [-D device] [-d display]\n\
+	\t[-f bvc|cellb|h261|jpeg|nv|mpeg4|h264] [-F maxfps] [-i ifAddr ] [-I channel]\n\
+	\t[-K key ] [-L flowLabel (ip6 only)] [-l (creates log file)]\n\
+	\t[-M colormap] [-m mtu] [-N session] [-n atm|ip|ip6|rtip]\n\
+	\t[-o clipfile] [-t ttl] [-U interval] [-u script] [-v version] [-V visual]\n\
+	\t[-x ifIndex (ip6 only)] [-X resource=value] [-j numlayers] dest/port[/fmt/ttl]\n";
 
 	if (szOffending == NULL) {
 		szOffending = win_usage;
