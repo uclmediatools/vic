@@ -5,7 +5,7 @@
 #include "config.h"
 
 #include "x264encoder.h"
-#include "ffmpeg/avcodec.h"
+#include "libavcodec/avcodec.h"
 #include "databuffer.h"
 extern "C"{
 #include "x264.h"

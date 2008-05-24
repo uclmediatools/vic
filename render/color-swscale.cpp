@@ -7,8 +7,8 @@
 
 #include "config_arch.h"
 extern "C" {
-#include "ffmpeg/swscale.h"
-#include "ffmpeg/avutil.h"
+#include "libswscale/swscale.h"
+#include "libavutil/avutil.h"
 }
 #include "cpu/cpudetect.h"
 

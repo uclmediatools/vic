@@ -3,7 +3,7 @@
 
 extern "C"
 {
-#include "ffmpeg/avcodec.h"
+#include "libavcodec/avcodec.h"
 //#include "ffmpeg/libavcodec/dsputil.h"
 //#include "ffmpeg/libavcodec/mpegvideo.h"
 }

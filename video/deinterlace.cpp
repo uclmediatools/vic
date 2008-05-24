@@ -57,7 +57,7 @@ void Deinterlace::render(void *buf, int width, int height)
 	src[2] = src[1] + framesize/4;
 
 
-        pp_postprocess(src, srcStride,
+        pp_postprocess((const uint8_t**)src, srcStride,
                    src, srcStride,
                    width, height,
                    NULL,  0,
