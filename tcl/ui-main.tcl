@@ -569,7 +569,7 @@ proc build.src { w src color } {
 	global V	
 # Show sender window as raised
 	if { $src == [srctab local] } {
-	  frame $w.r.cw -relief raised -borderwidth 2
+	  frame $w.r.cw -relief groove -borderwidth 2 -bg gray20
 	} else {
 	  frame $w.r.cw -relief groove -borderwidth 2
 	}
