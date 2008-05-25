@@ -1,27 +1,48 @@
 <HTML>
 <HEAD>
-<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=windows-1252">
-<META NAME="Generator" CONTENT="Microsoft Word 97">
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html">
 <TITLE>vic Change Log</TITLE>
-<META NAME="Template" CONTENT="D:\Program Files\Microsoft Office\Office\html.dot">
 </HEAD>
 <BODY LINK="#0000ff" VLINK="#800080">
-
 <P><!-- @(#) $Header$ (LBL)--></P>
 <H1>vic: Change History</H1>
+<H3>v2.8ucl-1.4.0beta</H3><UL>
+  <li> H.264 decode functionality for IOCOM's IG2 default (non-standard) H.264 streams. Currently required patches ffmpeg h264 decoder.
+  <li> New Video window right-click menu {d.kosovic@UQ}
+  <li> Added tcl.m4 for support of Tcl/Tk 8.5 {d.kosovic@UQ)
+</ul>
+<H3>v2.8ucl-1.3.1</H3><UL>
+  <li> New Codecs: <ul>
+    <li>H.264 compliant with RFC3640 {NCHC, UCL}
+    <li>MPEG4 compliant with RFC3894 {NCHC}
+   </ul>
+   <li>Advanced rendering {NCHC}
+   <ul><li>Full-Screen mode, Video window scaling in software 
+     <li>X11 XVideo - hardware scaling/colourspace conversion
+     <li>Windows DirectDraw rendering {ANL}
+     <li>Windows Direct Show Grabber {Mark Petrovick}</ul>
+   <li>Source-Specific Multicast (SSM) support
+   <li>MacOSX<ul>
+     <li>Aqua Tcl/Tk support {NCHC}
+     <li>Mac video capture support {MASH}</ul>
+   <li>AccessGrid features {ANL}<ul>
+     <li>Autoplace controls
+     <li>Optional window menus/border - use z/Z key
+     <li>Site identifier signalling</ul>
+</ul>
 <H3>v2.8ucl-1.2.1</H3><UL>
 <li> Critical Windows fix for DirectX grabber - it was crashing on startup when no devices present.
 </ul>
 
 <H3>v2.8ucl-1.2.0</H3><UL>
-<li> New codec h261as - contributed by Rhys Hawkins (Rhys.Hawkins@anu.edu.au) at Australian National University (ANU). This codec enables interoperability with Rhys’ VP tool available to the AccessGrid community.  Use “configure –disable-h261as” to disable it. Built also for Windows. 
+<li> New codec h261as - contributed by Rhys Hawkins (Rhys.Hawkins@anu.edu.au) at Australian National University (ANU). This codec enables interoperability with Rhys' VP tool available to the AccessGrid community.  Use <b>configure --disable-h261as</b> to disable it. 
 <li>Removed win32/vergen.bat from repository as it is auto-generated. 
 <li>Added NSIS installer script to auto-generate installer (requires NSIS installed on Windows, http://nsis.sourceforge.net). 
 <li>Added image overlay support. This allows a PPM image to be used as an institutional logo, (for example, added sample UCL logo file: ucl_logo.ppm), which can be placed and moved over the video window. Overlays work with all grabbers and codecs. The logo image can also be specified as a vic resource (in .vic.tcl) so that it is made available at startup. Also, tweaked error return values from oTcl to C++, so that all errors relating to overlays are handled gracefully. 
 <li>Added STATIC_BUILD to preprocessor to get rid of nuisance MS Linker warnings (tcl/tk libraries are statically built and linked). 
-<li>Got rid of 422 format in the Windows DirectX/WDM grabber. 422 was crashing vic as it doesn’t return any grabber (not implemented). Maybe we should write one. 
+<li>Got rid of 422 format in the Windows DirectX/WDM grabber. 422 was crashing vic as it doesn't return any grabber (not implemented). Maybe we should write one. 
 <li>Added a LICENSE file. 
-<li>Added “focus” property in the generic tcl mk.entry() function that builds text entry widgets. 
+<li>Added focus property in the generic tcl mk.entry() function that builds text entry widgets. 
 <li>Fixed isset call to is_set() - isset is defined elsewhere in Linux 
 <li>Added more graceful error handling so Vic will bring up a warning dialogue instead of crashing. 
 <li>Added Source-Specific Multicast (SSM) support - tested IPv4 on WinXP. IPv6 on Linux not fully tested. 
