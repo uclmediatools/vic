@@ -80,6 +80,7 @@ int VideoSessionManager::check_format(int fmt) const
 		case RTP_PT_H263:
 		case RTP_PT_MPEG4:
 		case RTP_PT_H264:
+		case RTP_PT_H264_IOCOM:
 		case RTP_PT_H263P:
 		case RTP_PT_LDCT:
 		case RTP_PT_PVH:
