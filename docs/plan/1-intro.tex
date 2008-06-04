@@ -1,0 +1,36 @@
+% $Id$
+
+\subsection{\label{ssec:project_overview}Overview}
+
+VIC/RAT~\cite{MEDIATOOLS} is a media tool that can have interactive real-time
+audio/video conference. These tools have been used in many relevant research
+projects such as AccessGrid~\cite{ACCESSGRID}, AVATS~\cite{AVATS} and
+UltraGrid~\cite{UltraGrid}. Currently, VIC/RAT is supported by AVATS
+project~\cite{AVATS}. VIC supports many video codecs since its initial
+development and implements RTP/RTCP protocol~\cite{RTP} over UDP to increase
+interoperability. In this year's GSoC project, we would like to implement
+congestion control protocols (TFRC and TFWC) over VIC. 
+
+\subsection{\label{ssec:background}Background}
+
+Recently, a TCP-Friendly Rate-based congestion control protocol, ala
+TFRC~\cite{FHPW00}, has been proposed and it is now being standardized by IETF
+under DCCP CCID3~\cite{CCID3}. The main advantages of using this protocol are 1)
+it can generate smooth and predictable sending rate 2) it can help timely packet
+delivery. However, TFRC might be too much aggressive against TCP sources in some
+environment or it might be too much unresponsive to generate a useful sending
+rate in some other network environment. To solve this issue, a window-based
+version of TFRC has been proposed: TCP-Friendly Window-based Congestion Control
+(TFWC)~\cite{SH06} and~\cite{CH07}.
+
+\subsection{\label{ssec:motivation}Motivation}
+
+The motivation of implementing congestion control mechanisms over such a
+multimedia application (e.g.VIC or RAT) is that we can have a good
+controllability at the sending/receiving buffer to make the overall end-to-end
+packet delay be within a certain level of timing requirements. Considering the
+fact that the delay (and delay jitter) is one of the critical parameters that a
+user might greatly care, the controlled delay using congestion control mechanism
+could bring a significant advantage to those applications.
+
+\newpage
