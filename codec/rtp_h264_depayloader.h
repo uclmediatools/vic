@@ -24,9 +24,9 @@
 
 extern "C"
 {
-#include "avcodec.h"
-#include "avformat.h"
-#include "base64.h"
+#include "libavcodec/avcodec.h"
+#include "libavformat/avformat.h"
+#include "libavutil/base64.h"
 #include "packetbuffer.h"
 //#include "rtp_internal.h"
 //#include "mpegts.h"

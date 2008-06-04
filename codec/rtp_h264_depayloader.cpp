@@ -1,8 +1,11 @@
 /*
  * RTP H264 Protocol (RFC3984)
  * Copyright (c) 2006 Ryan Martell.
+ * Modified by Socrates VaraKliotis and Piers O'Hanlon (c) 2008
+ * - Created H264Depayloader class out of the original C calls
+ * - Added custom handling for IOCOM H.264 
  *
- * This file is part of FFmpeg.
+ * This file was part of FFmpeg.
  *
  * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -57,9 +60,6 @@
 #include "rtp.h"
 
 //using namespace std;
-
-
-
 
 /**
  * Return TRUE if val is a prefix of str. If it returns TRUE, ptr is
@@ -262,7 +262,7 @@ void H264Depayloader::sdp_parse_fmtp_config_h264(AVCodecContext *codec, /*AVStre
             if (*value == ',')
                 value++;
 
-            packet_size= base64decode((const unsigned char *)base64packet, dst-base64packet-1, decoded_packet, sizeof(decoded_packet));
+	    packet_size=av_base64_decode(decoded_packet, base64packet, sizeof(decoded_packet));
             if (packet_size) {
                 uint8_t *dest= (uint8_t *) av_malloc(packet_size+sizeof(start_sequence)+codec->extradata_size);
                 if(dest)
@@ -306,7 +306,7 @@ int H264Depayloader::h264_handle_packet(h264_rtp_extra_data *data,
     assert(data->cookie == MAGIC_COOKIE);
     assert(buf);
 
-    //fprintf(stderr, /*NULL, AV_LOG_ERROR,*/ "H264_RTP: Single NAL type (%d, equiv. to >=1 or <=23), len=%4d\n", type, len);
+    fprintf(stderr, /*NULL, AV_LOG_ERROR,*/ "H264_RTP: Single NAL type (%d, equiv. to >=1 or <=23), len=%4d\n", type, len);
 
     if (buf[0]==0x02 && buf[1]==0x5d && buf[2]==0x47){
       type=99; // IOCOM's non-standard H.264 packet format
