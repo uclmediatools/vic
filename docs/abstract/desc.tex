@@ -1,0 +1,46 @@
+% $Id$
+
+\subsection{Overview}
+
+First, we plan to implement TFRC on VIC using C language.  Given that there is a
+similar TFRC implementation [6] over UltraGrid using the UCL common library, we
+could leverage their implementation as VIC also uses the same library.  This
+includes the APIs with TFRC and RTP/RTCP and some front-end congestion control
+options. The reason for the choice of VIC is that the size of video packet is
+much larger than that of voice, so we could test larger packet first and then
+move on to the smaller size like RAT.
+
+Second, we plan to implement TFWC from the scratch using C. There is a
+simulation code implemented on ns-2~\cite{ns2} using C++, and we hope to use it
+again here in VIC. But, we will need to implement from the scratch for its APIs
+with RTP/RTCP and integrate with VIC's user interfaces.
+
+\subsection{Components to be developed}
+
+\begin{itemize}
+
+\item TFRC sender/receiver: implement algorithm as described in~\cite{FHPW00}.
+
+\item TFWC sender/receiver: implement algorithm as described in~\cite{SH06}.
+
+\item Send Buffer: it is critical to implement send buffer carefully as
+   this is the main part to make interact correctly with our congestion
+   control modules. The send buffer should be able to handle RTT calculation,
+   update e2e delay, maintain queue, maintain frame length, and finally compute
+   the inter-packet-interval.
+
+\item Receive Buffer: the play-out buffer is rather straight forward as it only
+   needs to play the packet streams.
+
+\item Congestion Control (CC) Manager: main CC interfaces with RTP/RTCP. update
+   CC's sender/receiver state along with necessary parameters.
+
+\item APIs: TFR(W)C's APIs in order for the communication with RTP/RTCP. It is
+   necessary to make sure that our congestion control modules give/get
+   information to/from RTP layer correctly with newly created APIs.
+
+\end{itemize}
+
+\vspace{-0.2in}
+Apart from the above components, we will need to change quite a bit of VIC main
+source code to fit our modules.

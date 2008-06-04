@@ -1,0 +1,47 @@
+% $Id$
+
+It is well known that real-time multimedia applications prefer smooth and
+predictable throughput to a TCP-like abrupt sending rate change. The current
+release of VIC/RAT operates just on top of the RTP/RTCP architecture over UDP
+protocol, not providing a fine-grained congestion control for its real-time
+interactive streaming flows. This may work well only if the application's codecs
+can maintain the play-out buffer such that the perceived user's delay is less
+than 150 msec or so, which is not guaranteed at all times. If those applications
+can generate smooth and predictable throughput, then we can precisely control
+the play-out buffer so that the packet's end-to-end delay traverses the link can
+be less than 150 msec: a tolerable maximum e2e delay for real-time interactive
+multimedia streaming applications. 
+
+To address this issue, Floyd et al. have proposed TCP-Friendly Rate-based
+Congestion Control (TFRC)~\cite{FHPW00} which is also adopted in Datagram
+Congestion Control Protocol (DCCP). Although TFRC has emerged as a de facto
+standard to provide smooth and predictable throughput for such applications, we
+have observed that a flow traverses a low statistically multiplexed network link
+such as a DSL line using drop-tail queueing, TFRC traffic can starve TCP
+traffic.  Rhee and Vojnovic also observed similar problems that the long-term
+throughput imbalance was caused by the convexity of the TCP equation that they
+have used and the different RTO measure. We set out to ease the throughput
+differences by re-introducing a TCP-like Ack mechanism while retaining the TCP
+throughput equation when computing the sending rate. The outcome, TCP-Friendly
+Window-based Congestion Control (TFWC)~\cite{SH06}, showed that it is much
+fairer than TFRC when competing with the same number of TCP flows, and showed
+much simpler to implement in real-world applications such as VIC and RAT.  
+
+For Google Summer of Code (GSoC) 2008, we would like to implement TFRC and TFWC
+over VIC to show how the user's perceived delay can be improved by such
+congestion control protocols providing smooth and predictable throughput without
+starving sources using TCP. TFR(W)C will be implemented using UCL common library
+by integrating the core parts of TFR(W)C algorithms in C/C++.
+
+\vspace{-0.2in} 
+\begin{itemize}
+
+\item[-] TFRC paper~\cite{FHPW00} and TFWC paper~\cite{SH06}.
+
+\item[-] GSoC Host Project:
+\textsf{AVATS}\footnote{\textsf{http://www.cs.ucl.ac.uk/research/avats/}}
+
+\item[-] GSoC Organization:
+\textsf{OMII-UK}\footnote{\textsf{http://www.omii.ac.uk/}}
+
+\end{itemize}

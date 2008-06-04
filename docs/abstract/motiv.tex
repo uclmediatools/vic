@@ -1,0 +1,53 @@
+% $Id$
+
+\subsection{does congestion control ever needed?}
+
+One might be able to think that a real-time interactive streaming application
+does not ever need the congestion control mechanisms, but in fact we can do much
+things using congestion control over those applications. The strong part of the
+contribution is that we get the precise control about the end-to-end packet
+delay in any kind of networks: congestion control mechanisms can provide the
+relevant information to upper layer (e.g., multimedia codecs). Considering the
+fact that the delay (and delay jitter) is one of the critical parameters that a
+user might greatly care specially for the ``interactive" multimedia streaming
+applications, the controlled delay using congestion control could bring a
+significant advantage to such applications.
+
+\subsection{then, why TFRC and why TFWC?}
+
+As we pointed out already, our target applications prefer smooth and predictable
+transmission rate to a TCP-like rate changing behavior. To achieve this goal,
+Sally proposed TFRC~\cite{FHPW00}, a de facto standard, in 2000 and it is
+gaining a great popularity: it is also adopted DCCP's CCID3, being standardized
+by IETF.  However, we have recently observed that TFRC has some limitations such
+that:
+
+\vspace{-0.2in}
+\begin{itemize}
+
+\item It can produce uncontrolled throughput oscillation in a certain network
+conditions~\cite{CH07}.
+
+\item The TCP throughput equation has the convexity property which
+resulting throughput imbalance~\cite{RX07}.
+
+\item The difficulty of measuring RTT correctly can result in a long-term 
+throughput imbalance~\cite{AS06}.
+
+\end{itemize}
+
+\vspace{-0.2in} 
+All of the problems above essentially stem from the same basic cause: it is
+difficult to build a rate-based protocol with a rate that is directly inverse
+proportional to RTT while achieving stability in all conditions. All these
+issues beg the question of why TFRC is rate-based at all?  We have proposed a
+window-based version of TFRC, which uses a TCP-like Ack-clocking feature but
+merges this with the use of the TCP throughput equation, ala TFRC, to directly
+adjust the sending window size. The goal is to remedy the issues discussed above
+which relate to the combination of rate-based control. Using a window makes the
+RTT implicit in the Ack clock, and removing the need to be rate-based makes life
+much simpler for application writers, as they no longer need to work around the
+limitations of the OS's short duration timers. The detailed protocol description
+and initial results can be found at~\cite{SH06}.
+
+In next section, we describe our implementation proposal for GSoC 2008.

@@ -1,0 +1,26 @@
+% $Id$
+
+In recent years we have seen a great increase in networked multimedia
+applications; many of them greatly prefer to use UDP for transmission because
+the variability of TCP's congestion control mechanism and its complete
+reliability do not match their timeliness requirements. These applications, such
+as streaming media, Internet telephony, and games have in common two key demands
+of a transport protocol:
+
+\vspace{-0.2in}
+\begin{itemize}
+
+\item timely packet delivery
+\item smooth predictable transmission rate
+
+\end{itemize}
+
+\vspace{-0.2in}
+Proposed congestion control mechanisms to achieve these characteristics include
+generalizations of TCP-like window-based schemes (e.g., GAIMD~\cite{YL00},
+TEAR~\cite{ROY00}, Binomial TCP~\cite{BB01}) and equation-based congestion
+control scheme (e.g., TFRC~\cite{FHPW00}).  In this work for GSoC 2008, we would
+like to implement the latter cases: TFRC proposed by Floyd~\cite{FHPW00} and
+TFWC proposed by Soo-Hyun~\cite{SH06} over VIC/RAT audio/video
+applications~\cite{AVATS} using \textsf{C/C++}.
+
