@@ -108,9 +108,9 @@ int XShmPutImage(Display*, Drawable, GC, XImage*, int, int, int, int,
 
 #include <dvp.h>
 
-char *ddrawErrorString(HRESULT rc);
+const char *ddrawErrorString(HRESULT rc);
 
-static totalPixelsDrawn = 0.0;
+static double totalPixelsDrawn = 0.0;
 
 DDrawVideoImage::MonitorList DDrawVideoImage::monitors_;
 HWND DDrawVideoImage::appMainWindow_;
@@ -996,12 +996,16 @@ static DWORD exceptionFilter(LPEXCEPTION_POINTERS p)
 
 void DDrawImageMonitor::releaseSurface()
 {
+#ifdef _MSC_VER
     __try {
+#endif
 	ULONG oldRefCount = imageSurface_->Release();
 //	debug_msg("oldRefCount=%d\n", oldRefCount);
+#ifdef _MSC_VER
     } 
     __except(exceptionFilter(GetExceptionInformation())) {
     }
+#endif
     imageSurface_ = 0;
 }
 
@@ -1313,12 +1317,15 @@ void DDrawVideoImage::putimage(Display* dpy, Window window, GC gc,
     {
 	DDrawImageMonitor *m = *it;
 
+#ifdef _MSC_VER
 	__try {
-	    
+#endif
 	    m->putimage(hWnd, sx, sy, x, y, w, h);
+#ifdef _MSC_VER
 	} 
 	__except(exceptionFilter(GetExceptionInformation())) {
 	}	    
+#endif
     }
 }
 
@@ -1679,16 +1686,16 @@ void CaptureWindow::capture(u_int8_t* frm)
 
 #ifdef USE_DDRAW
 
-char *ddrawErrorString(HRESULT rc)
+const char *ddrawErrorString(HRESULT rc)
 {
-	char *mesg;
+	const char *mesg;
 	switch (rc)
 	{
     case DD_OK:
         mesg = "DD_OK";
         break;
     case DDERR_ALREADYINITIALIZED:
-        mesg = "DDERR_ALREADYINITIALIZED";
+        return( "DDERR_ALREADYINITIALIZED");
         break;
     case DDERR_BLTFASTCANTCLIP:
         mesg = "DDERR_BLTFASTCANTCLIP";

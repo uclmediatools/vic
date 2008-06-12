@@ -38,11 +38,13 @@
 
 #if defined(sgi) || defined(__bsdi__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__)
 #include <sys/types.h>
+
 #ifndef uint16_t
 typedef unsigned char  uint8_t;
 typedef unsigned short uint16_t;
 typedef unsigned int   uint32_t;
 #endif
+
 #elif defined(sun)
 
 #include <sys/types.h>
@@ -56,18 +58,27 @@ typedef unsigned int   u_int32_t;
 #elif defined(linux)
 
 #include <sys/bitypes.h>
-#else
+
+#else /* ie non of the above - e.g. WIN32 */
+
 #ifdef ultrix
 #include <sys/types.h>
 #endif
-typedef char int8_t;
-typedef short int16_t;
-typedef int   int32_t;
+
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#else
+typedef char 		int8_t;
+typedef short 		int16_t;
+typedef unsigned short	uint16_t;
+typedef int   		int32_t;
+#endif 
+//<sys/types.h>
 typedef unsigned char	u_int8_t;
 typedef unsigned short	u_int16_t;
-typedef unsigned short	uint16_t;
 typedef unsigned int	u_int32_t;
-#endif /*linux*/
+
+#endif /* end of checks for stdint */
 
 #if defined(sun) || defined(_AIX)
 #if defined(__cplusplus)

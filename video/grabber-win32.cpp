@@ -33,6 +33,7 @@
 #include <windows.h>
 //#include <mmsystem.h>
 #include <vfw.h>
+#include <ctype.h>
 
 #include "grabber.h"
 #include "device-input.h"

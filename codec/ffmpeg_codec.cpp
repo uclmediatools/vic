@@ -4,9 +4,10 @@
 #include <string.h>
 #include <iostream>
 #include <math.h>
-#include "config.h"
+#include "debug.h"
 #include "ffmpeg_codec.h"
 
+extern int getpid();
 
 FFMpegCodec::FFMpegCodec()
 {

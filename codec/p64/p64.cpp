@@ -64,6 +64,7 @@ static const char rcsid[] =
 
 #ifdef WIN32
 //#include <winsock.h>
+typedef int intptr_t;
 #else
 #include <sys/param.h>
 #include <sys/file.h>

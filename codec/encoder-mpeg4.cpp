@@ -7,6 +7,7 @@
 #include "inet.h"
 #include "net.h"
 #include "rtp.h"
+#include "debug.h"
 #include "vic_tcl.h"
 #include "transmitter.h"
 #include "pktbuf-rtp.h"
