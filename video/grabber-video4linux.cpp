@@ -216,9 +216,9 @@ V4lScanner::V4lScanner(const char **dev)
     }
 
     for (i = 0; dev[i] != NULL; i++) {
-	debug_msg("V4L: trying %s... ", dev[i]);
+	debug_msg("V4L: trying %s... \n", dev[i]);
 	if (-1 == (fd = open(dev[i], O_RDONLY))) {
-	    debug_msg("Error opening: %s : %s", dev[i], strerror(errno));	//SV-XXX: sys_errlist deprecated, use strerror()
+	    debug_msg("Error opening: %s : %s\n", dev[i], strerror(errno));	//SV-XXX: sys_errlist deprecated, use strerror()
 	    continue;
 	}
 	if (-1 == ioctl(fd, VIDIOCGCAP, &capability)) {
