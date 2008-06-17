@@ -42,6 +42,7 @@ static const char rcsid[] =
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <assert.h>
 #ifndef WIN32
 #include <sys/file.h>
 #endif
@@ -67,6 +68,7 @@ class StillGrabber : public Grabber {
 		void start();
 		void stop();
 		int grab();
+		virtual void setsize() = 0;
 };
 
 class StillJpegGrabber : public StillGrabber {
@@ -74,6 +76,7 @@ class StillJpegGrabber : public StillGrabber {
 		StillJpegGrabber();
 		virtual ~StillJpegGrabber();
 		virtual int command(int argc, const char* const * argv);
+		virtual void setsize();
 };
 
 class StillYuvGrabber : public StillGrabber {
@@ -81,11 +84,15 @@ class StillYuvGrabber : public StillGrabber {
 		StillYuvGrabber();
 		virtual ~StillYuvGrabber();
 		virtual int command(int argc, const char* const * argv);
-		//virtual int grab();
+		virtual void setsize();
+		virtual int grab();
 	protected:
 		//virtual void start();
 		//virtual void stop();
 		u_char* frame_;
+		u_int	decimate_;		// division of base size for down-sampling
+		u_int	basewidth_;		// frame height to be captured
+		u_int	baseheight_;	// frame width to be camptured
 };
 
 class StillDevice : public InputDevice {
@@ -116,7 +123,6 @@ StillDevice::StillDevice(const char* s) : InputDevice(s),
 
 void StillDevice::load_file(const char * const f)
 {
-	//FILE *fp;
 	struct stat s;
 
 	fp_ = fopen(f, "r");
@@ -274,11 +280,38 @@ int StillJpegGrabber::command(int argc, const char * const * argv) {
 		debug_msg("\"%s\"", argv[i]);
 }
 
+void StillJpegGrabber::setsize() {
+}
+
 int StillYuvGrabber::command(int argc, const char * const * argv) {
 
 	debug_msg("\t\tStillYuvGrabber::command argc = %d\n");
 	for (int i = 0; i < argc; i++)
 		debug_msg("\t\t\t\t\"%s\"", argv[i]);
+
+	if (argc == 3) {
+		if (strcmp(argv[1], "decimate") == 0) {
+			int d = atoi(argv[2]);
+			//Tcl& tcl = Tcl::instance();
+
+			decimate_ = d;
+			setsize();
+
+			return (TCL_OK);
+		}
+	}
+}
+
+void StillYuvGrabber::setsize() {
+
+	assert(!running_);
+
+	u_int w, h;
+	w = basewidth_ / decimate_;
+	h = baseheight_ / decimate_;
+
+	set_size_cif(w, h);
+	allocref();
 }
 
 void StillGrabber::start()
@@ -306,3 +339,11 @@ int StillGrabber::grab()
 	return frc;
 }
 
+int StillYuvGrabber::grab() {
+
+	suppress(frame_);
+	saveblks(frame_);
+	YuvFrame f(media_ts(), frame_, crvec_, outw_, outh_);
+
+	return (target_->consume(&f));
+}
