@@ -210,7 +210,7 @@ skipbuild(huffcode* hc, u_char* skiptab)
 }
 
 struct huff {
-	char* name;
+	const char* name;
 	huffcode* codes;
 };
 struct huff hc[] = {

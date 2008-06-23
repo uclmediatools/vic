@@ -332,7 +332,7 @@ extern "C" int optind;
 extern "C" int opterr;
 #endif
 
-	char*
+const char*
 parse_assignment(char* cp)
 {
 	cp = strchr(cp, '=');
