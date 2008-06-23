@@ -99,7 +99,7 @@ extern struct huffent hte_tc[];
 #else
 struct huffcode {
 	int val;
-	char* str;
+	const char* str;
 };
 
 static struct huffcode hc_mtype[] = {

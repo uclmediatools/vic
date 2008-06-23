@@ -529,7 +529,8 @@ int SessionManager::build_sdes(rtcphdr* rh, Source& ls)
 	return (len);
 }
 
-int SessionManager::build_app(rtcphdr* rh, Source& ls, char *name, void *data, int datalen)
+int SessionManager::build_app(rtcphdr* rh, Source& ls, const char *name, 
+		void *data, int datalen)
 {
   int flags = RTP_VERSION << 14 | 1 << 8 | RTCP_PT_APP;
   rh->rh_flags = htons(flags);

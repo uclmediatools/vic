@@ -775,7 +775,7 @@ void V4l2Grabber::format()
         allocref();
 }
 
-void V4l2Grabber::setctrl(int val, int cid, char *controlname, int reset)
+void V4l2Grabber::setctrl(int val, int cid, const char *controlname, int reset)
 {
         struct v4l2_queryctrl qctrl;
         struct v4l2_control ctrl;

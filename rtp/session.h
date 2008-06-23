@@ -130,7 +130,8 @@ protected:
 	int build_bye(rtcphdr* rh, Source& local);
 	u_char* build_sdes_item(u_char* p, int code, Source&);
 	int build_sdes(rtcphdr* rh, Source& s);
-	int build_app(rtcphdr* rh, Source& ls, char *name, void *data, int datalen);
+	int build_app(rtcphdr* rh, Source& ls, const char *name, 
+			void *data, int datalen);
 
 	void parse_sr(rtcphdr* rh, int flags, u_char* ep,
 		      Source* ps, Address & addr, int layer);

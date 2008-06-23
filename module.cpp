@@ -37,7 +37,7 @@ static const char rcsid[] =
 #endif
 #include "module.h"
 
-char* Module::fttoa(int ft)
+const char* Module::fttoa(int ft)
 {
 	switch (ft) {
 	case FT_YUV_411:  return ("411");

@@ -135,8 +135,8 @@ extern "C" int gethostname(char* name, int len);
 }
 #endif
 
-	static void
-usage(char *szOffending)
+static void
+usage(const char *szOffending)
 {
 	char win_usage[] = "\
 			    VIC is a multicast (or unicast) video tool. It is best to start it\n\
@@ -332,7 +332,7 @@ extern "C" int optind;
 extern "C" int opterr;
 #endif
 
-	char*
+const char*
 parse_assignment(char* cp)
 {
 	cp = strchr(cp, '=');

@@ -52,7 +52,7 @@ private:
 	} cname_hash_table[SOURCE_HASH];
 	
 	struct mbus_cmnd_to_func {
-		char *mbus_cmnd;
+		const char *mbus_cmnd;
 		void (MBusEngine::*mbus_func)(char *srce, char *args, MBusHandler *mb);
 	} *mbus_cmnd_to_func_table_;
 

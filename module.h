@@ -125,7 +125,7 @@ class Module : public TclObject {
     protected:
 	Module(int ft);
 	static int atoft(const char* s);
-	static char* fttoa(int ft);
+	static const char* fttoa(int ft);
 	inline void size(int w, int h) {
 		width_ = w;
 		height_ = h;

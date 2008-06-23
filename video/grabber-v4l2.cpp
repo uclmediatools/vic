@@ -120,7 +120,7 @@ protected:
         void packed422_to_planar420(char *, const char*);
         void jpeg_to_planar420(char *, const char*);
 
-        void setctrl(int, int, char *, int);
+        void setctrl(int, int, const char *, int);
 
         struct v4l2_capability   capability;
         struct v4l2_input        *inputs;
@@ -1162,7 +1162,7 @@ void V4l2Grabber::format()
         allocref();
 }
 
-void V4l2Grabber::setctrl(int val, int cid, char *controlname, int reset)
+void V4l2Grabber::setctrl(int val, int cid, const char *controlname, int reset)
 {
         struct v4l2_queryctrl qctrl;
         struct v4l2_control ctrl;
