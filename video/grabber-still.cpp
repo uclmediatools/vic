@@ -71,8 +71,8 @@ protected:
 
 //	u_char *frame_;	// copied frames from StillDevice
 	int	decimate_;
-//	int	width_;		// width in pixel
-//	int height_;	// height in pixel
+	int	width_;		// width in pixel
+	int	height_;	// height in pixel
 	int num_frame_;	// the number of frame
 };
 
@@ -164,7 +164,7 @@ Grabber* StillDevice::jpeg_grabber()
 }
 
 StillGrabber::StillGrabber() :
- num_frame_(0)
+	width_(0), height_(0), num_frame_(0)
 //	frame_(NULL), width_(0), height_(0), num_frame_(0)
 {
 }
@@ -248,7 +248,11 @@ int StillGrabber::grab()
 */
 
 //	num_frame_ = fread(frame_, 1, framesize_, still_device.frame_);
-	memcpy(frame_, still_device.frame_, framesize_); 
+	memcpy(frame_, still_device.frame_+num_frame_, framesize_); 
+	if ((num_frame_+= framesize_)<still_device.len_)
+	  ;
+       	else num_frame_=0;
+ 	
 #ifdef DEBUG
 	debug_msg("	number of frames:	%d\n", num_frame_);
 #endif
@@ -274,6 +278,6 @@ void StillGrabber::setsize()
 	debug_msg("StillGrabber::setsize()\n");
 	/*framesize_ = 2 * width_ * height_;	// frame size in pixel
 	frame_ = new u_char[2 * framesize_];
-	crinit(width_, height_);
-	allocref();*/
+	crinit(width_, height_);*/
+	allocref();
 }
