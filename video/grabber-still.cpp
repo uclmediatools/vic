@@ -56,7 +56,7 @@ static const char rcsid[] =
 #include "transmitter.h"
 #include "module.h"
 
-/* #define DEBUG 1 */
+#define DEBUG 1
 
 class StillGrabber : public Grabber {
 public:
@@ -66,7 +66,14 @@ public:
 protected:
 	void start();
 	void stop();
-	int grab();
+	int	grab();
+	void setsize();
+
+	u_char *frame_;	// copied frames from StillDevice
+	int	decimate_;
+	int	width_;		// width in pixel
+	int height_;	// height in pixel
+	int num_frame_;	// the number of frame
 };
 
 class StillDevice : public InputDevice {
@@ -78,6 +85,7 @@ public:
     void load_file(const char * const file);
     char *frame_;
     int len_;
+private:
 };
 
 static StillDevice still_device("still");
@@ -85,7 +93,7 @@ static StillDevice still_device("still");
 StillDevice::StillDevice(const char* s) : InputDevice(s),
 		frame_(NULL), len_(0)
 {
-    attributes_ = "format { jpeg }";
+    attributes_ = "format { 411 422 jpeg cif } size { small large cif }";
     
 #ifdef DEBUG
     debug_msg("StillDevice::StillDevice name=%s\n", s);
@@ -100,7 +108,7 @@ void StillDevice::load_file(const char * const f)
     fp = fopen(f, "r");
     if (fp == (FILE *) NULL)
     {
-	perror("cannot stat frame");
+	perror("cannot load file");
 	return;
     }
     if (fstat(fileno(fp), &s) < 0)
@@ -122,6 +130,10 @@ void StillDevice::load_file(const char * const f)
 
 int StillDevice::command(int argc, const char*const* argv)
 {
+#ifdef DEBUG
+	for (int i = 0; i < argc; i++)
+		debug_msg("StillDevice\t%s\n", argv[i]);
+#endif
     if (argc == 3)
     {
 	if (strcmp(argv[1], "open") == 0)
@@ -149,7 +161,8 @@ Grabber* StillDevice::jpeg_grabber()
     return (new StillGrabber());
 }
 
-StillGrabber::StillGrabber()
+StillGrabber::StillGrabber() :
+	frame_(NULL), width_(0), height_(0), num_frame_(0)
 {
 }
 
@@ -166,29 +179,50 @@ int StillGrabber::command(int argc, const char * const * argv)
     //SV-XXX: unused: Tcl& tcl = Tcl::instance();
     
 #ifdef DEBUG
-    debug_msg("StillGrabber::command argc=%d ", argc);
+    debug_msg("StillGrabber::command argc=%d\n", argc);
     int i;
     for (i = 0; i < argc; i++)
-	debug_msg("\"%s\" ", argv[i]);
+	debug_msg("\"%s\"\n", argv[i]);
     debug_msg("\n");
 #endif /* DEBUG */
+	Tcl& tcl = Tcl::instance();
+
+	if (argc == 2)
+	{
+		if (strcmp(argv[1], "status") == 0)
+		{
+			sprintf(tcl.buffer(), "%d", status_);
+			tcl.result(tcl.buffer());
+			return (TCL_OK);
+		}
+		if (strcmp(argv[1], "need-capwin") == 0)
+		{
+			tcl.result("0");
+			return (TCL_OK);
+		}
+	}
 
     if (argc == 3)
     {
-	if (strcmp(argv[1], "q") == 0)
-	{
-	    return TCL_OK;
+		if (strcmp(argv[1], "q") == 0)
+		{
+		    return (TCL_OK);
+		}
+		if (strcmp(argv[1], "decimate") == 0) 
+		{
+			decimate_ = atoi(argv[2]);
+			setsize();
+			if (running_)
+				start();
+    	}
 	}
-    }
 
     return (Grabber::command(argc, argv));
 }
 
 void StillGrabber::start()
 {
-    frameclock_ = gettimeofday_usecs();
-
-    timeout();
+	Grabber::start();
 }
 
 void StillGrabber::stop()
@@ -198,16 +232,46 @@ void StillGrabber::stop()
 
 int StillGrabber::grab()
 {
+#ifdef DEBUG
+	debug_msg("StillGrabber::grab() called\n");
+#endif
     int frc=0; //SV-XXX: gcc4 warns for initialisation
-
+/*
     if (still_device.frame_) {
 	JpegFrame f(media_ts(), (u_int8_t *) still_device.frame_,
 		    still_device.len_,
 		    80, 0, 320, 240);
-	frc = target_->consume(&f);
-    }
+	}
+*/
 
+	num_frame_ = fread(frame_, 1, framesize_, still_device.frame_);
+#ifdef DEBUG
+	debug_msg("	number of frames:	%d\n", num_frame_);
+#endif
+
+	suppress(frame_);
+	saveblks(frame_);
+	YuvFrame f(media_ts(), (u_int8_t *) frame_, crvec_, outw_, outh_);
+
+	frc = target_->consume(&f);
     return frc;
 }
 
+void StillGrabber::setsize()
+{
+#ifdef DEBUG
+	debug_msg("StillGrabber::setsize()\n");
+#endif
 
+	if(running_)
+		stop();
+
+	// CIF frame size in pixel
+	width_ = 352;
+	height_ = 288;
+
+	framesize_ = width_ * height_;	// frame size in pixel
+	frame_ = new u_char[2 * framesize_];
+	crinit(width_, height_);
+	allocref();
+}
