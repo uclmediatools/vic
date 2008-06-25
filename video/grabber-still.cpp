@@ -69,10 +69,10 @@ protected:
 	int	grab();
 	void setsize();
 
-	u_char *frame_;	// copied frames from StillDevice
+//	u_char *frame_;	// copied frames from StillDevice
 	int	decimate_;
-	int	width_;		// width in pixel
-	int height_;	// height in pixel
+//	int	width_;		// width in pixel
+//	int height_;	// height in pixel
 	int num_frame_;	// the number of frame
 };
 
@@ -123,8 +123,8 @@ void StillDevice::load_file(const char * const f)
 	delete[] frame_; //SV-XXX: Debian
     
     frame_ = new char[len_ + 1];
-    fread(frame_, len_, 1, fp);
 
+    debug_msg("File size: %d, Read: %d\n",len_, fread(frame_, len_, 1, fp));
     fclose(fp);
 }
 
@@ -140,6 +140,8 @@ int StillDevice::command(int argc, const char*const* argv)
 	{
 	    const char* fmt = argv[2];
 	    TclObject* o = 0;
+	    if (strcmp(fmt, "cif") == 0)
+		o = jpeg_grabber();
 	    if (strcmp(fmt, "jpeg") == 0)
 		o = jpeg_grabber();
 	    if (o != 0)
@@ -162,7 +164,8 @@ Grabber* StillDevice::jpeg_grabber()
 }
 
 StillGrabber::StillGrabber() :
-	frame_(NULL), width_(0), height_(0), num_frame_(0)
+ num_frame_(0)
+//	frame_(NULL), width_(0), height_(0), num_frame_(0)
 {
 }
 
@@ -244,7 +247,8 @@ int StillGrabber::grab()
 	}
 */
 
-	num_frame_ = fread(frame_, 1, framesize_, still_device.frame_);
+//	num_frame_ = fread(frame_, 1, framesize_, still_device.frame_);
+	memcpy(frame_, still_device.frame_, framesize_); 
 #ifdef DEBUG
 	debug_msg("	number of frames:	%d\n", num_frame_);
 #endif
@@ -259,10 +263,6 @@ int StillGrabber::grab()
 
 void StillGrabber::setsize()
 {
-#ifdef DEBUG
-	debug_msg("StillGrabber::setsize()\n");
-#endif
-
 	if(running_)
 		stop();
 
@@ -270,8 +270,10 @@ void StillGrabber::setsize()
 	width_ = 352;
 	height_ = 288;
 
-	framesize_ = width_ * height_;	// frame size in pixel
+        set_size_411(width_, height_);
+	debug_msg("StillGrabber::setsize()\n");
+	/*framesize_ = 2 * width_ * height_;	// frame size in pixel
 	frame_ = new u_char[2 * framesize_];
 	crinit(width_, height_);
-	allocref();
+	allocref();*/
 }
