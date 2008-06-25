@@ -60,7 +60,8 @@ static const char rcsid[] =
 #include "transmitter.h"
 #include "module.h"
 
-#define DEBUG 1
+//#define DEBUG 1
+#undef DEBUG
 
 class StillGrabber : public Grabber {
 public:
@@ -336,7 +337,11 @@ int StillYuvGrabber::grab()
 #endif
     int frc=0; //SV-XXX: gcc4 warns for initialisation
 
-	memcpy(frame_, still_device.frame_ + num_frame_, framesize_);
+	// "framesize_" is just the number of pixels, 
+	// so the number of bytes becomes "3 * 2 * framesize_"
+	memcpy (frame_, 
+			still_device.frame_ + num_frame_, 
+			framesize_ + (framesize_ >> 1));
 
 	if ((num_frame_ += framesize_) < still_device.len_) {
 	} else {
