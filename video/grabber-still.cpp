@@ -339,11 +339,10 @@ int StillYuvGrabber::grab()
 
 	// "framesize_" is just the number of pixels, 
 	// so the number of bytes becomes "3 * 2 * framesize_"
-	memcpy (frame_, 
-			still_device.frame_ + num_frame_, 
+	memcpy (frame_, still_device.frame_ + num_frame_, 
 			framesize_ + (framesize_ >> 1));
 
-	if ((num_frame_ += framesize_) < still_device.len_) {
+	if ((num_frame_ += framesize_+(framesize_ >> 1)) < still_device.len_) {
 	} else {
 		num_frame_=0;
 	}
