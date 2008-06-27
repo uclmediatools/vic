@@ -7,7 +7,9 @@
 #include "debug.h"
 #include "ffmpeg_codec.h"
 
-extern int getpid();
+#ifndef _UNISTD_H
+extern "C" int getpid();
+#endif
 
 FFMpegCodec::FFMpegCodec()
 {
@@ -144,6 +146,7 @@ void FFMpegCodec::init_decoder()
 	release();
     }
     width = height = 0;
+	frame_size = 0;
 
     picture = avcodec_alloc_frame();
     c = avcodec_alloc_context();
@@ -232,16 +235,15 @@ int FFMpegCodec::decode(UCHAR * codedstream, int size, UCHAR * vf)
 
     len = avcodec_decode_video(c, picture, &got_picture, codedstream, size);
 
-    if (c->width != width || c->height != height) {
-		debug_msg("ffmpegcodec: resize to %dx%d\n", c->width, c->height);
-		resize(c->width, c->height);
-		// return len;
-    }
-
     if (!got_picture || len < 0) {
 		return -1;
     }
-
+    
+	if (c->width != width || c->height != height) {
+		debug_msg("ffmpegcodec: resize from %dx%d (framesize:%d) to %dx%d, (size: %d) got_picture: %d, len: %d\n", width, height, 
+			frame_size, c->width, c->height, size, got_picture, len);
+		resize(c->width, c->height);
+    }
 /*
     if(avpicture_deinterlace((AVPicture *)picture, (AVPicture *)picture,
                                     c->pix_fmt, c->width, c->height) < 0) {
