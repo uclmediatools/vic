@@ -91,8 +91,8 @@ H264Decoder::H264Decoder():Decoder(0 /* 0 byte extra header */)
      * Assume CIF.  Picture header will trigger a resize if
      * we encounter QCIF instead.
      */
-    inw_ = 0;
-    inh_ = 0;
+    inw_ = 352;
+    inh_ = 288;
 
      /*XXX*/ 
     resize(inw_, inh_);
@@ -246,15 +246,14 @@ void H264Decoder::recv(pktbuf * pb)
 	    }
 	    
 	    if (len < 0) {
-		//fprintf(stderr, "H264_RTP: frame error\n");
+		  debug_msg("H264_RTP: frame error\n");
 	    }
 	   
 	    if (inw_ != h264.width || inh_ != h264.height) {
 			inw_ = h264.width;
 			inh_ = h264.height;
 			resize(inw_, inh_);
-	    }
-	    else {
+	    } else {
 			Decoder::redraw(xxx_frame);
 	    }
 	    stream->clear();
