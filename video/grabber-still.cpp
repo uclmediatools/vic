@@ -315,7 +315,7 @@ void StillYuvGrabber::stop()
 void StillYuvGrabber::setsize()
 {
 #ifdef DEBUG
-	debug_msg("StillGrabber::setsize()\n");
+	debug_msg("StillYuvGrabber::setsize()\n");
 #endif
 
 	if(running_)
@@ -338,7 +338,7 @@ int StillYuvGrabber::grab()
     int frc=0; //SV-XXX: gcc4 warns for initialisation
 
 	// "framesize_" is just the number of pixels, 
-	// so the number of bytes becomes "3 * 2 * framesize_"
+	// so the number of bytes becomes "3 * framesize_ / 2"
 	memcpy (frame_, still_device.frame_ + num_frame_, 
 			framesize_ + (framesize_ >> 1));
 
