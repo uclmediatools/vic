@@ -52,7 +52,6 @@ ps: ${TARGET}.ps
 
 ${TARGET}.ps: ${TARGET}.dvi
 	@dvips -t a4 -o ${TARGET}.ps ${TARGET}
-	#@dvips -o ${TARGET}.dvi
 
 clean:
 	@echo "Start cleaning..."
@@ -69,4 +68,4 @@ wordcount:
 	@echo Approximate word count: \ 
 	`grep -v '^\\\\' $(TEXFILES) | grep -v '^%' | wc -w`
                                         
-PHONY : ps all clean reallyclean
+PHONY : ps all clean distclean
