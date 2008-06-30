@@ -1,6 +1,55 @@
 % $Id$
 
-We have summarized the expected outcomes and deliveralbes from the project.
+This section summarizes the project milestones and the expected outcomes.
+
+\subsection{\label{ssec:plan}Milestones}
+
+Based on Section~\ref{ssec:aims}, we break down time scale needed to develop
+each component as belows. The milestones would like more ``conceptual'' rather
+than practical or tangible. The project dates listed below are only indicative
+as the project will evolve based on the results being obtained while working on
+it.
+
+\paragraph{\textsf{May 26}} \underline{\textbf{GSoC Project Start}}
+
+\paragraph{\textsf{May 31}} Finish background research and readings: \emph{vic} source
+codes and UltraGrid's TFRC implementation along with RTP extension part.  The
+aim here is try looking at how TFRC was implemented over a \emph{vic}-like platform
+(different library and different language so it would not be possible to
+directly re-use them.).
+
+\paragraph{\textsf{Jun. 6}} Commit necessary TFRC files - e.g., TFRC
+(\texttt{tfrc\_sndr.cpp, tfrc\_rcvr.cpp}, etc), RTP integration
+(\texttt{rtp\_tfrc.cpp}, etc), CC handler (\texttt{cc.cpp}, etc). It would not
+be necessariliy a full implementation at this stage yet.
+
+\paragraph{\textsf{Jun. 20}} Primitive TFRC implementation. At this stage, we
+should be able to send a packet using TFRC (with dummy packets).
+
+\paragraph{\textsf{Jun. 27}} Commit necessary TFWC files. It would not be
+necessariliy a full implementation at this stage yet.
+
+\paragraph{\textsf{Juil. 4}} Primitive TFWC implementation
+
+\paragraph{\textsf{Jul. 7}} \underline{\textbf{Mid-term Evaluation}} -- Write
+interim report: what has been obtained successfully and what has not, what
+should be changed for the final project goal, etc.
+
+\paragraph{\textsf{Jul. 18}} Examine what feedback information can be used to
+codecs.  (e.g., modify codecs? or use Q-factor in a specific codec?, etc)
+
+\paragraph{\textsf{Jul. 25}} Finalizing TFR(W)C interactioin with codecs.
+
+\paragraph{\textsf{Aug. 1}} Test and Evaluation for the whole systems.
+
+\paragraph{\textsf{Aug. 8}} Final evaluation and discussion
+
+\paragraph{\textsf{Aug. 15}} Come up with final version of source codes and a
+report.
+
+\paragraph{\textsf{Aug. 18}} \underline{\textbf{Project Submission}}-- Submit
+the results to Google and wrap-up.
+
 
 \subsection{\label{ssec:codes}Program Source Code}
 

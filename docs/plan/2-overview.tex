@@ -56,7 +56,7 @@ by calling \texttt{setsize()} method, and calls
 grabbing video frames from the memory and passes to the encoder
 (\texttt{encoder-h261.cpp}): in this case, \texttt{H261PixelEncoder::consume()}
 will be called. After that, it starts encoding macro-blocks given a set of YUV
-inputs and send the encoded frames to the transmit module
+inputs and sends the encoded frames to the transmit module
 (\texttt{SessionManager::transmit()}). The encoder provides the encoded frames
 to the transmit module as long as they are available: see the dashed line in
 Figure~\ref{fig:still-grabber}.  \texttt{SessionManager::transmit()} then
@@ -69,6 +69,6 @@ module. Instead of passing the encoded frames directly to the transmit module,
 the encoded frames could be queued in some send buffer, and the congestion
 control module picks up the frames determined by its suggested rate, for
 example, if it is TFRC then it picks up the frames in a certain interval, or if
-it is TFWC then it pick up the frames as long as the sending window allows.
+it is TFWC then it pick up the frames as long as the sending window allows. 
 
 \newpage
