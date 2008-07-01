@@ -86,6 +86,7 @@ class BufferPool : public TclObject {
 
 class pktbuf : public Buffer {
 public:
+	pktbuf(): layer(0),len(0),ref(0) {};
 	pktbuf* next;
 	int layer;
 	int len;

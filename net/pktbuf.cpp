@@ -35,8 +35,8 @@ static const char rcsid[] =
 
 #include "pktbuf.h"
 
-pktbuf* BufferPool::freebufs_;
-int BufferPool::nbufs_;
+pktbuf* BufferPool::freebufs_=0;
+int BufferPool::nbufs_=0;
 
 /*static class BufferPoolClass : public TclClass {
 public:
