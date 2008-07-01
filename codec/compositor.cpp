@@ -203,6 +203,7 @@ Compositor::~Compositor()
 		delete p;
 		p = n;
 	}
+	overlays_=0;
 }
 
 int Compositor::command(int argc, const char*const* argv)
@@ -281,9 +282,9 @@ void Compositor::detach(Overlay* o)
 	UNUSED(o); //SV-XXX: unused
 
 	for (onode** op = &overlays_; *op != 0; op = &(*op)->next) {
-		onode* p = (*op)->next;
-		if (*op == p) {
-			damage(p);
+		onode* p = (*op);
+		if (p->overlay == o) {
+			//damage(p);
 			*op = p->next;
 			delete p;
 			return;
