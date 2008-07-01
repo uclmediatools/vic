@@ -306,7 +306,7 @@ int H264Depayloader::h264_handle_packet(h264_rtp_extra_data *data,
     assert(data->cookie == MAGIC_COOKIE);
     assert(buf);
 
-    fprintf(stderr, /*NULL, AV_LOG_ERROR,*/ "H264_RTP: Single NAL type (%d, equiv. to >=1 or <=23), len=%4d\n", type, len);
+    //fprintf(stderr, /*NULL, AV_LOG_ERROR,*/ "H264_RTP: Single NAL type (%d, equiv. to >=1 or <=23), len=%4d\n", type, len);
 
     if (buf[0]==0x02 && buf[1]==0x5d && buf[2]==0x47){
       type=99; // IOCOM's non-standard H.264 packet format
@@ -536,7 +536,7 @@ void H264Depayloader::h264_free_extradata(void *d)
 
     for (ii = 0; ii < 32; ii++) {
         if (data->packet_types_received[ii])
-            fprintf(stderr, /*NULL, AV_LOG_DEBUG,*/ "Received %d packets of type %d\n",
+            debug_msg(/*NULL, AV_LOG_DEBUG,*/ "Received %d packets of type %d\n",
                    data->packet_types_received[ii], ii);
     }
 #endif
