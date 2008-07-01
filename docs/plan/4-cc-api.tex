@@ -1,1 +1,8 @@
 % $Id$
+
+In this section, we propose necessary CC APIs to put together with \emph{vic}
+transmit modules. The first thing that came up is looking at the send thread in
+UltraGrid (See Figure~\ref{fig:ultra-send} in Section~\ref{sssec:ultra-send}).
+As we have briefly mentioned in Section~\ref{ssec:vic-overview}, we need to
+implement a send buffer that can parse the parameters passed by the CC modules,
+and also these parameters should be placed in RTP hearder.

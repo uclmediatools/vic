@@ -33,25 +33,38 @@ necessariliy a full implementation at this stage yet.
 
 \paragraph{\textsf{Jul. 7}} \underline{\textbf{Mid-term Evaluation}} -- Write
 interim report: what has been obtained successfully and what has not, what
-should be changed for the final project goal, etc.
+should be changed for the final project goal, etc. We need a detailed CC API
+design document by this date.
 
-\paragraph{\textsf{Jul. 18}} Examine what feedback information can be used to
-codecs.  (e.g., modify codecs? or use Q-factor in a specific codec?, etc)
+\paragraph{\textsf{Jul. 18}} Implement a sending buffer and modify the
+\emph{vic}'s transmit module by this date. Preferably, the draft version of
+TFR(W)C implementation (i.e., doesn't have to do much things, but the
+fundamental function calls should be done by this date).  Examine what feedback
+information can be used to codecs.  (e.g., modify codecs?  or use Q-factor in a
+specific codec?, etc)
 
-\paragraph{\textsf{Jul. 25}} Finalizing TFR(W)C interactioin with codecs.
+\paragraph{\textsf{Jul. 25}} Add detailed TFR(W)C functionality (i.e., basic CC
+mechanisms should be done by this date).
 
-\paragraph{\textsf{Aug. 1}} Test and Evaluation for the whole systems.
+\paragraph{\textsf{Aug. 1}} Start looking at the interactions between CC modules
+and codecs. Preferably, the CC modules have been valdiated (i.e., correct
+feedback information coming in and going out in case of TFRC, or \emph{cwnd}
+size working fine as the algorithm? etc.)
 
-\paragraph{\textsf{Aug. 8}} Final evaluation and discussion
+\paragraph{\textsf{Aug. 8}} Start putting all together. The suggest \emph{pencil
+down} date is the $11^{th}$ of August. Finalizing the rest of the codes.
 
-\paragraph{\textsf{Aug. 15}} Come up with final version of source codes and a
-report.
+\paragraph{\textsf{Aug. 15}} Wrap up and write-up.
 
 \paragraph{\textsf{Aug. 18}} \underline{\textbf{Project Submission}}-- Submit
-the results to Google and wrap-up.
+the results to Google and wrap-up. Final evaluation. 
+
+\paragraph{\textsf{Sept. 1}} Submit the report and codes to Google.
 
 
-\subsection{\label{ssec:codes}Program Source Code}
+\subsection{\label{ssec:outcomes}Expected Outcomes}
+
+\subsubsection{\label{sssec:codes}Program Source Code}
 
 \begin{itemize} 
 \item Congestion Control Modules (TFRC and TFWC) 
@@ -59,8 +72,7 @@ the results to Google and wrap-up.
 \item Video codec Enhancement 
 \end{itemize}
 
-\subsection{\label{ssec:docs}Reports}
-
+\subsubsection{\label{sssec:docs}Reports}
 
 \begin{itemize}
 \item Interim Report
