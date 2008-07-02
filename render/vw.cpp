@@ -1317,15 +1317,7 @@ void DDrawVideoImage::putimage(Display* dpy, Window window, GC gc,
     {
 	DDrawImageMonitor *m = *it;
 
-#ifdef _MSC_VER
-	__try {
-#endif
-	    m->putimage(hWnd, sx, sy, x, y, w, h);
-#ifdef _MSC_VER
-	} 
-	__except(exceptionFilter(GetExceptionInformation())) {
-	}	    
-#endif
+	m->putimage(hWnd, sx, sy, x, y, w, h);
     }
 }
 
