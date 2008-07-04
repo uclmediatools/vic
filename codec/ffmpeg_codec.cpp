@@ -4,9 +4,11 @@
 #include <string.h>
 #include <iostream>
 #include <math.h>
-#include "config.h"
+#include "debug.h"
 #include "ffmpeg_codec.h"
-
+#ifndef _UNISTD_H
+extern "C" int getpid();
+#endif
 
 FFMpegCodec::FFMpegCodec()
 {
@@ -143,6 +145,7 @@ void FFMpegCodec::init_decoder()
 	release();
     }
     width = height = 0;
+	frame_size = 0;
 
     picture = avcodec_alloc_frame();
     c = avcodec_alloc_context();
