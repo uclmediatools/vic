@@ -103,7 +103,7 @@ proc resize_window {vw width height} {
 	set w [winfo parent [winfo parent $vw]]	
 	set old_g [split [wm geometry $w] "x+"]
 	set geo [format "%sx%s+%s+%s" $width $height [lindex $old_g 2] [lindex $old_g 3]]	
-	wm geometry $w $geo
+	#wm geometry $w $geo
 	global size$w		
 	set size$w [format "%sx%s" $width $height]
 }
@@ -367,6 +367,7 @@ proc open_window src {
 	bind $w <e> "resize $v 1000 750; set size$w 1000x750"
 	bind $w <E> "resize $v 1024 768; set size$w 1024x768"
 	bind $w <x> "resize $v 640 240; set size$w 640x240"
+	bind $w <o> "fit_window $v"
 	bind $w <z> "catch { wm overrideredirect $w 1; wm withdraw $w; wm deiconify $w}"
 	bind $w <Z> "catch { wm overrideredirect $w 0; wm withdraw $w; wm deiconify $w}"
 
