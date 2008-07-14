@@ -293,8 +293,8 @@ proc open_window src {
 	$m add radiobutton -label "Half size" \
 		-command "resize $v [expr $iw / 2] [expr $ih / 2]" \
 		-font $f -value "half" -variable size$w
-	$m add radiobutton -label "Normal size" -command "resize $v $iw $ih" \
-		-font $f -value "normal" -variable size$w
+	$m add radiobutton -label "Original size" -command "resize $v $iw $ih" \
+		-font $f -value "original" -variable size$w -accelerator "O"
 	$m add radiobutton -label "Double size" \
 		-command "resize $v [expr $iw * 2] [expr $ih * 2]" \
 		-font $f -value "double" -variable size$w
@@ -367,7 +367,7 @@ proc open_window src {
 	bind $w <e> "resize $v 1000 750; set size$w 1000x750"
 	bind $w <E> "resize $v 1024 768; set size$w 1024x768"
 	bind $w <x> "resize $v 640 240; set size$w 640x240"
-	bind $w <o> "fit_window $v"
+	bind $w <o> "fit_window $v; set size$w original"
 	bind $w <z> "catch { wm overrideredirect $w 1; wm withdraw $w; wm deiconify $w}"
 	bind $w <Z> "catch { wm overrideredirect $w 0; wm withdraw $w; wm deiconify $w}"
 
@@ -397,10 +397,23 @@ proc open_window src {
 	set window_glue($v) 0
 	global button_active vtk_client
 
-	bind $v <Button-3> {
-	    set w [lindex [split %W "."] 1]
-	    set m .$w.bar.size.menu
-	    tk_popup $m %X %Y
+	if {[string match [ windowingsystem] "aqua"]} {
+	    bind $v <Button-2> {
+		set w [lindex [split %W "."] 1]
+		set m .$w.bar.size.menu
+		tk_popup $m %X %Y
+	    }
+	    bind $v <Control-1> {
+		set w [lindex [split %W "."] 1]
+		set m .$w.bar.size.menu
+		tk_popup $m %X %Y
+	    }
+	} else {
+	    bind $v <Button-3> {
+		set w [lindex [split %W "."] 1]
+		set m .$w.bar.size.menu
+		tk_popup $m %X %Y
+	    }
 	}
 
 #	puts "w is $v"
