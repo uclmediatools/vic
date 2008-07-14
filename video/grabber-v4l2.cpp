@@ -1073,8 +1073,10 @@ void V4l2Grabber::format()
         }
 
         while ( !format_ok ) {
-                width_  = CIF_WIDTH  *2  / decimate_;
-                height_ = CIF_HEIGHT *2  / decimate_;
+                if (decimate_ > 0) {
+                        width_  = CIF_WIDTH  *2  / decimate_;
+                        height_ = CIF_HEIGHT *2  / decimate_;
+                }
 
                 debug_msg("V4L2: format");
                 switch (cformat_) {
@@ -1139,8 +1141,10 @@ void V4l2Grabber::format()
                                                         decimate_ = 4;
                                                         break;
                                                 case 1:
-                                                        debug_msg("V4L2: trying resolution under ...\n");
-                                                        decimate_ = 2;
+                                                        debug_msg("V4L2: falling back to resolution %dx%d\n", fmt.fmt.pix.width, fmt.fmt.pix.height);
+                                                        decimate_ = 0;
+                                                        width_ = fmt.fmt.pix.width;
+                                                        height_ = fmt.fmt.pix.height;
                                                         break;
                                                 default:
                                                         debug_msg("V4L2: giving up ...\n");
