@@ -48,6 +48,7 @@
 #include "rtp.h"
 #include "inet.h"
 #include "pktbuf-rtp.h"
+#include "cc/cc.h"
 
 /*
  * The base object for performing the outbound path of

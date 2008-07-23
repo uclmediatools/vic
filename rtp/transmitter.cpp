@@ -209,6 +209,7 @@ double Transmitter::txtime(pktbuf* pb)
 
 void Transmitter::send(pktbuf* pb)
 {
+	ccman_->cc_parse_buf(pb);
 	if (!busy_) {
 		double delay = txtime(pb);
 		nextpkttime_ = gettimeofday_secs() + delay;
