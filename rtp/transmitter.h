@@ -54,7 +54,7 @@
  * The base object for performing the outbound path of
  * the application level protocol.
  */
-class Transmitter : public TclObject, public Timer {
+class Transmitter : public TclObject, public Timer, public CcManager {
     public:
 	Transmitter();
 	virtual void timeout();
