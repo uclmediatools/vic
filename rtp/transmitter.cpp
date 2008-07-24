@@ -88,7 +88,8 @@ Transmitter::Transmitter() :
 	head_(0),
 	tail_(0),
 	loop_layer_(1000),
-	loopback_(0)
+	loopback_(0),
+	is_cc_active_(1)
 {
 	memset((char*)&mh_, 0, sizeof(mh_));
 	mh_.msg_iovlen = 2;
@@ -209,25 +210,28 @@ double Transmitter::txtime(pktbuf* pb)
 
 void Transmitter::send(pktbuf* pb)
 {
-	ccman_->cc_parse_buf(pb);
-	if (!busy_) {
-		double delay = txtime(pb);
-		nextpkttime_ = gettimeofday_secs() + delay;
-		output(pb);
-		/*
-		 * emulate a transmit interrupt --
-		 * assume we will have more to send.
-		 */
-		msched(int(delay * 1e-3));
-		busy_ = 1;
+	if (is_cc_active_) {
+		cc_parse_buf(pb);
 	} else {
-		if (head_ != 0) {
-			tail_->next = pb;
-			tail_ = pb;
-		} else
-			tail_ = head_ = pb;
-		pb->next = 0;
-	}
+		if (!busy_) {
+			double delay = txtime(pb);
+			nextpkttime_ = gettimeofday_secs() + delay;
+			output(pb);
+			/*
+			 * emulate a transmit interrupt --
+			 * assume we will have more to send.
+			 */
+			msched(int(delay * 1e-3));
+			busy_ = 1;
+		} else {
+			if (head_ != 0) {
+				tail_->next = pb;
+				tail_ = pb;
+			} else
+				tail_ = head_ = pb;
+			pb->next = 0;
+		}
+	} // if (is_cc_active_)
 }
 
 void Transmitter::timeout()

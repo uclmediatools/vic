@@ -122,6 +122,9 @@ protected:
 	static buffer* freebufs_;
 	static int nbufs_;
 	static int nhdrs_;
+
+	/* Cc related variables */
+	bool is_cc_active_;		/* is Cc module activated?		*/
 };
 
 #endif
