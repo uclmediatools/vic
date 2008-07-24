@@ -36,15 +36,6 @@
 #ifndef vic_cc_h
 #define vic_cc_h
 
-#include "config.h"
-#include "timer.h"
-#include "rtp.h"
-#include "inet.h"
-#include "vic_tcl.h"
-#include "module.h"
-#include "transmitter.h"
-#include "pktbuf-rtp.h"
-
 class CcManager {
 public:
 	CcManager();
