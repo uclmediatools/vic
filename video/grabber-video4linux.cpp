@@ -218,7 +218,7 @@ V4lScanner::V4lScanner(const char **dev)
     for (i = 0; dev[i] != NULL; i++) {
 	debug_msg("V4L: trying %s... ", dev[i]);
 	if (-1 == (fd = open(dev[i], O_RDONLY))) {
-	    debug_msg("Error opening: %s : %s", dev[i], strerror(errno));	//SV-XXX: sys_errlist deprecated, use strerror()
+	    debug_msg("Error opening: %s : %s\n", dev[i], strerror(errno));	//SV-XXX: sys_errlist deprecated, use strerror()
 	    continue;
 	}
 	if (-1 == ioctl(fd, VIDIOCGCAP, &capability)) {
@@ -420,7 +420,7 @@ V4lGrabber::V4lGrabber(const char *cformat, const char *dev)
     }
 
     if( !( have_422P || have_422 || have_420P)){
-      debug_msg("No suituable palette found\n");
+      debug_msg("No suitable palette found\n");
       close(fd_);
       status_=-1;
       return;

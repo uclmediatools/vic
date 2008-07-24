@@ -227,7 +227,7 @@ V4l2Scanner::V4l2Scanner(const char **dev)
         for (i = 0; dev[i] != NULL; i++) {
                 debug_msg("V4L2: trying %s... ",dev[i]);
                 if (-1 == (fd = open(dev[i],O_RDWR))) {
-                        debug_msg("Error opening: %s : %s", dev[i], strerror(errno));
+                        debug_msg("Error opening: %s : %s\n", dev[i], strerror(errno));
                         continue;
                 }
                 memset(&capability,0,sizeof(capability));
@@ -333,25 +333,29 @@ V4l2Grabber::V4l2Grabber(const char *cformat, const char *dev)
         fmt.fmt.pix.height = CIF_HEIGHT;
         fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUV420;
         if (-1 != ioctl(fd_, VIDIOC_S_FMT, &fmt) ) {
-                have_YUV420P = 1;
-                debug_msg("\nDevice capture V4L2_PIX_FMT_YUV420\n");
+                if (fmt.fmt.pix.height == CIF_HEIGHT) {
+                        have_YUV420P = 1;
+                        debug_msg("\nDevice supports V4L2_PIX_FMT_YUV420\n");
+                }
         }
 
         fmt.fmt.pix.width = CIF_WIDTH;
         fmt.fmt.pix.height = CIF_HEIGHT;
         fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUV422P;
         if (-1 != ioctl(fd_, VIDIOC_S_FMT, &fmt) ) {
-                have_YUV422P = 1;
-                debug_msg("\nDevice capture V4L2_PIX_FMT_YUV422\n");
+                if (fmt.fmt.pix.height == CIF_HEIGHT) {
+                        have_YUV422P = 1;
+                        debug_msg("\nDevice supports V4L2_PIX_FMT_YUV422\n");
+                }
         }
 
         fmt.fmt.pix.width = CIF_WIDTH;
         fmt.fmt.pix.height = CIF_HEIGHT;
         fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
         if (-1 != ioctl(fd_, VIDIOC_S_FMT, &fmt) ) {
-                if (fmt.fmt.pix.width <= CIF_WIDTH && fmt.fmt.pix.height <= CIF_HEIGHT) {
+                if (fmt.fmt.pix.height == CIF_HEIGHT) {
                         have_YUV422 = 1;
-                        debug_msg("\nDevice capture V4L2_PIX_FMT_YUYV (YUV 4:2:2)\n");
+                        debug_msg("\nDevice supports V4L2_PIX_FMT_YUYV (YUV 4:2:2)\n");
                 }
         }
 
@@ -360,7 +364,7 @@ V4l2Grabber::V4l2Grabber(const char *cformat, const char *dev)
         fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_MJPEG;
         if (-1 != ioctl(fd_, VIDIOC_S_FMT, &fmt) ) {
                 have_MJPEG = 1;
-                debug_msg("\nDevice capture V4L2_PIX_FMT_MJPEG\n");
+                debug_msg("\nDevice supports V4L2_PIX_FMT_MJPEG\n");
         }
 
         fmt.fmt.pix.width = CIF_WIDTH;
@@ -368,11 +372,11 @@ V4l2Grabber::V4l2Grabber(const char *cformat, const char *dev)
         fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_JPEG;
         if (-1 != ioctl(fd_, VIDIOC_S_FMT, &fmt) ) {
                 have_MJPEG = 1;
-                debug_msg("\nDevice capture V4L2_PIX_FMT_JPEG\n");
+                debug_msg("\nDevice supports V4L2_PIX_FMT_JPEG\n");
         }
 
         if( !( have_YUV422P || have_YUV422 || have_YUV420P || have_MJPEG || have_JPEG)){
-                debug_msg("No suitable palette found\n");
+                debug_msg("No suitable pixelformat found\n");
                 close(fd_);
                 status_=-1;
                 return;
@@ -1141,10 +1145,14 @@ void V4l2Grabber::format()
                                                         decimate_ = 4;
                                                         break;
                                                 case 1:
-                                                        debug_msg("V4L2: falling back to resolution %dx%d\n", fmt.fmt.pix.width, fmt.fmt.pix.height);
+                                                        debug_msg("V4L2: trying NTSC resolution ...\n");
                                                         decimate_ = 0;
-                                                        width_ = fmt.fmt.pix.width;
-                                                        height_ = fmt.fmt.pix.height;
+                                                        width_ = NTSC_WIDTH;
+                                                        height_ = NTSC_HEIGHT;
+                                                        break;
+                                                case 0:
+                                                        debug_msg("V4L2: trying resolution under ...\n");
+                                                        decimate_ = 2;
                                                         break;
                                                 default:
                                                         debug_msg("V4L2: giving up ...\n");
