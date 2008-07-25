@@ -48,6 +48,7 @@ extern "C" int getpid();
 #include "timer.h"
 #include "ntp-time.h"
 #include "session.h"
+#include "cc/cc.h"
 
 /* added to support the mbus 
 #include "mbus_handler.h"*/
@@ -768,6 +769,10 @@ void SessionManager::recv(DataHandler* dh)
 	/* XXX the free mem routine didn't like it ... */
 	//u_char* bp = &pktbuf_[4];
 	//u_char* bp = pktbuf_;
+	
+	rtphdr* rh = (rtphdr*) pb->data;
+	seqno_ = ntohs(rh->rh_seqno);	// received packet seqno
+	debug_msg("received seqno:	%d\n", seqno_);
 	
 	int cc = dh->recv(pb->data, sizeof(pb->data), addrp);
 	//int cc = dh->recv(bp, 2 * RTP_MTU - 4, addrp);

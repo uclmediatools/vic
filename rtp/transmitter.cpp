@@ -89,7 +89,7 @@ Transmitter::Transmitter() :
 	tail_(0),
 	loop_layer_(1000),
 	loopback_(0),
-	is_cc_active_(1)
+	is_cc_active_(0)
 {
 	memset((char*)&mh_, 0, sizeof(mh_));
 	mh_.msg_iovlen = 2;
@@ -213,6 +213,7 @@ void Transmitter::send(pktbuf* pb)
 	if (is_cc_active_) {
 		cc_parse_buf(pb);
 	} else {
+		cc_parse_buf(pb);
 		if (!busy_) {
 			double delay = txtime(pb);
 			nextpkttime_ = gettimeofday_secs() + delay;

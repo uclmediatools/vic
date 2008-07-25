@@ -40,6 +40,7 @@ class CcManager {
 public:
 	CcManager();
 	void cc_parse_buf(pktbuf*);	// get pktbuf from transmitter module
+	u_int16_t cc_get_seqno();		// return packet sequence number
 	u_int16_t seqno_;			// packet sequence number
 
 protected:
