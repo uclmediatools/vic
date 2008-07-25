@@ -33,6 +33,7 @@
  * $Id$
  */
 
+#include "assert.h"
 #include "config.h"
 #include "timer.h"
 #include "rtp.h"
@@ -43,10 +44,17 @@
 #include "transmitter.h"
 #include "cc.h"
 
-CcManager::CcManager() {
-}
+CcManager::CcManager() :
+	seqno_(-1) 
+{}
 
 void CcManager::cc_parse_buf(pktbuf* pb) {
-	printf("cc_parse_buf called\n");
-	// currently do nothing
+
+	// get RTP hearder information
+	rtphdr* rh =(rtphdr*) pb->data;
+	seqno_ = ntohs(rh->rh_seqno);
+
+	// sequence number must be greater than zero
+	assert (seqno_ > 0);
+	debug_msg("seqno:	%d\n", seqno_);
 }

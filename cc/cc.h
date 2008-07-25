@@ -39,10 +39,12 @@
 class CcManager {
 public:
 	CcManager();
-	void cc_parse_buf(pktbuf*);
+	void cc_parse_buf(pktbuf*);	// get pktbuf from transmitter module
+	u_int16_t seqno_;			// packet sequence number
 
 protected:
 	CcManager* ccman_;
+private:
 };
 
 #endif
