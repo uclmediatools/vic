@@ -770,16 +770,16 @@ void SessionManager::recv(DataHandler* dh)
 	//u_char* bp = &pktbuf_[4];
 	//u_char* bp = pktbuf_;
 	
-	rtphdr* rh = (rtphdr*) pb->data;
-	seqno_ = ntohs(rh->rh_seqno);	// received packet seqno
-	debug_msg("received seqno:	%d\n", seqno_);
-	
 	int cc = dh->recv(pb->data, sizeof(pb->data), addrp);
 	//int cc = dh->recv(bp, 2 * RTP_MTU - 4, addrp);
 	if (cc <= 0) {
 		pb->release();
 		return;
 	}
+
+	rtphdr* rh = (rtphdr*) pb->data;
+	u_int16_t seqno = ntohs(rh->rh_seqno);	// received packet seqno
+	debug_msg("received seqno:	%d\n", seqno);
 
     // Ignore loopback packets
 	if (!loopback_) {

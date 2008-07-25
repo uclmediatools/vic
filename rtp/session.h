@@ -121,8 +121,6 @@ public:
 //	virtual void send_report();
 	virtual void send_report(CtrlHandler*, int bye, int app = 0);
 
-	u_int16_t seqno_;	// received packet sequence number
-
 protected:
 //	void demux(rtphdr* rh, u_char* bp, int cc, Address & addr, int layer);
 	void demux(pktbuf* pb, Address & addr);
