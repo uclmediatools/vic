@@ -356,14 +356,6 @@ V4lGrabber::V4lGrabber(const char *cformat, const char *dev)
     max_width_ = capability.maxwidth;
     max_height_ = capability.maxheight;
     
-    if(max_width_ >= D1_WIDTH || max_height_ >= D1_HEIGHT){
-	base_width_ = D1_WIDTH;
-	base_height_ = D1_HEIGHT;	
-    }else{
-	base_width_ = max_width_;
-	base_height_ = max_height_;
-    }
-    
     channels = (struct video_channel *)
 	calloc(capability.channels, sizeof(struct video_channel));
     for (i = 0; i < capability.channels; i++) {
@@ -1061,10 +1053,24 @@ void V4lGrabber::format()
     struct video_channel channel;
     debug_msg("V4L: format\n");
 
-    if(decimate_!=1){
-   	width_ = CIF_WIDTH * 2 / decimate_;
-    	height_ = CIF_HEIGHT * 2 / decimate_;
-    }else{
+    base_width_ = max_width_;
+    base_height_ = max_height_;
+    if (norm_ == VIDEO_MODE_PAL || norm_ == VIDEO_MODE_SECAM) {
+	if (max_width_ >= PAL_WIDTH && max_height_ == PAL_HEIGHT) {
+	    base_width_ = PAL_WIDTH;
+	    base_height_ = PAL_HEIGHT;
+	}
+    } else {
+	if (max_width_ >= NTSC_WIDTH && max_height_ >= NTSC_HEIGHT) {
+	    base_width_ = NTSC_WIDTH;
+	    base_height_ = NTSC_HEIGHT;
+	}
+    }
+
+    if (decimate_ != 1) {
+	width_ = CIF_WIDTH * 2 / decimate_;
+	height_ = CIF_HEIGHT * 2 / decimate_;
+    } else {
 	width_  = base_width_;
 	height_ = base_height_;
     }
