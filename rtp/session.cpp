@@ -30,6 +30,8 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
+ *
+ * $Id$
  */
 static const char rcsid[] =
     "@(#) $Header$ (LBL)";
@@ -218,7 +220,10 @@ last_np_(0),
 sdes_seq_(0),
 rtcp_inv_bw_(0.),
 rtcp_avg_size_(128.),
-confid_(-1)
+confid_(-1),
+seqno_(0),		// RTP packet sequence number (from RTP header)
+lastseq_(0),	// last received packet's seqno
+ackvec_(0)		// bit vector (AckVec)
 {
 	/*XXX For adios() to send bye*/
 	manager = this;
@@ -777,21 +782,36 @@ void SessionManager::recv(DataHandler* dh)
 		return;
 	}
 
-	rtphdr* rh = (rtphdr*) pb->data;
-	u_int16_t seqno = ntohs(rh->rh_seqno);	// received packet seqno
-	debug_msg("received seqno:	%d\n", seqno);
+	rtphdr* rh = (rtphdr*)pb->data;
+	seqno_ = ntohs(rh->rh_seqno);	// received packet seqno
+	debug_msg("received seqno:	%d\n", seqno_);
 
     // Ignore loopback packets
 	if (!loopback_) {
-		rtphdr* rh = (rtphdr*)pb->data;
+		//rtphdr* rh = (rtphdr*)pb->data;
 		SourceManager& sm = SourceManager::instance();
 		if (rh->rh_ssrc == (*sm.localsrc()).srcid()) {
-			pb->release();
+			debug_msg("(loopback) seqno:	%d\n", seqno_);
+			pb->release();	// releasing loopback packet
 			return;
 		}
+	} // now, loopback packets ignored (if disabled) 
+
+	// set bit vector
+	for (int i = lastseq_; i <= seqno_; i++) {
+			SET_BIT_VEC (ackvec_, 1);
 	}
 
-	//rtphdr* rh = (rtphdr*)pb->data;
+	// printing bit vector
+	bool isThere;
+	printf("XXX received packet number: ");
+	for (int i = lastseq_; i <= seqno_; i++) {
+		isThere = SEE_BIT_VEC (ackvec_, i, seqno_);
+		printf(" %d: %s ", i, isThere ? "OK" : "NOK");
+	}
+	printf("\n");
+	lastseq_ = seqno_;
+
 	int version = pb->data[0] >> 6;
 	//int version = *(u_char*)rh >> 6;
 	if (version != 2) {
@@ -1068,7 +1088,7 @@ int SessionManager::sdesbody(u_int32_t* p, u_char* ep, Source* ps,
 			memcpy(buf, (char*)&cp[2], len);
 			buf[len] = 0;
 			s->sdes(type, buf);
-		} else
+		} // else
 			/*XXX*/;
 
 		cp = eopt;

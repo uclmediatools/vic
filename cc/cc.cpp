@@ -56,7 +56,7 @@ void CcManager::cc_parse_buf(pktbuf* pb) {
 
 	// sequence number must be greater than zero
 	assert (seqno_ > 0);
-	debug_msg("sent seqno:	%d\n", seqno_);
+	debug_msg("sent seqno:		%d\n", seqno_);
 }
 
 u_int16_t CcManager::cc_get_seqno() {

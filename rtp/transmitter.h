@@ -31,6 +31,7 @@
  * SUCH DAMAGE.
  *
  * @(#) $Header$ (LBL)
+ * $Id$
  */
 
 #ifndef vic_transmitter_h

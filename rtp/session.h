@@ -31,6 +31,7 @@
  * SUCH DAMAGE.
  *
  * @(#) $Header$ (LBL)
+ * $Id$
  */
 
 #ifndef vic_session_h
@@ -108,6 +109,12 @@ class ReportTimer : public Timer {
 	SessionManager& sm_;
 };
 
+// set AckVec bitmap
+#define SET_BIT_VEC(ackvec_, bit) (ackvec_ = ((ackvec_ << 1) | bit))
+
+// see AckVec bitmap
+#define SEE_BIT_VEC(ackvec_, ix, seqno) ((1 << (seqno - ix)) & ackvec_)
+
 class SessionManager : public Transmitter, public MtuAlloc {
 public:
 	SessionManager();
@@ -183,6 +190,13 @@ protected:
 	u_char* pktbuf_;
 
 	SourceManager *sm_;
+
+	// RTP packet sequence number (for the use of AckVec)
+	u_int16_t seqno_;		// RTP packet sequence number
+	u_int16_t lastseq_;		// last packet's seqno
+
+	// AckVector
+	u_int32_t ackvec_;		// this is a bit vector
 };
 
 class AudioSessionManager : public SessionManager {
