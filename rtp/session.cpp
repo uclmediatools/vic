@@ -50,7 +50,7 @@ extern "C" int getpid();
 #include "timer.h"
 #include "ntp-time.h"
 #include "session.h"
-#include "cc/cc.h"
+#include "cc/tfwc_sndr.h"
 
 /* added to support the mbus 
 #include "mbus_handler.h"*/
@@ -614,6 +614,7 @@ void SessionManager::send_report(CtrlHandler* ch, int bye, int app)
 	sl.lts_ctrl(now);
 	int we_sent = 0;
 	rtcp_rr* rr;
+	rtcp_xr* xr;	// extended report
 	Tcl& tcl = Tcl::instance();
 
 	/*
@@ -635,9 +636,11 @@ void SessionManager::send_report(CtrlHandler* ch, int bye, int app)
 		sr->sr_np = htonl(sl.np());
 		sr->sr_nb = htonl(sl.nb());
 		rr = (rtcp_rr*)(sr + 1);
+		xr = (rtcp_xr*)(rr + 1);
 	} else {
 		flags |= RTCP_PT_RR;
 		rr = (rtcp_rr*)(rh + 1);
+		xr = (rtcp_xr*)(rr + 1);	// extended report
 	}
 	int nrr = 0;
 	int nsrc = 0;
@@ -657,7 +660,7 @@ void SessionManager::send_report(CtrlHandler* ch, int bye, int app)
 		//		int received = sp->np() - sp->snp();
 		int received = sl.np() - sl.snp();
 		if (received == 0) {
-			//			if (u_int(now.tv_sec - sp->lts_ctrl().tv_sec) > inactive)
+			//		if (u_int(now.tv_sec - sp->lts_ctrl().tv_sec) > inactive)
 			if (u_int(now.tv_sec - sl.lts_ctrl().tv_sec) > inactive)
 				--nsrc;
 			continue;
@@ -765,6 +768,9 @@ int SessionManager::build_bye(rtcphdr* rh, Source& ls)
 	return (8);
 }
 
+/*
+ * receive an RTP packet
+ */
 void SessionManager::recv(DataHandler* dh)
 {
 	int layer = dh - dh_;
@@ -798,16 +804,16 @@ void SessionManager::recv(DataHandler* dh)
 	} // now, loopback packets ignored (if disabled) 
 
 	// set bit vector
-	for (int i = lastseq_; i <= seqno_; i++) {
+	for (int i = lastseq_+1; i <= seqno_; i++) {
 			SET_BIT_VEC (ackvec_, 1);
 	}
 
 	// printing bit vector
 	bool isThere;
-	printf("XXX received packet number: ");
-	for (int i = lastseq_; i <= seqno_; i++) {
+	debug_msg("XXX received ackvec:");
+	for (int i = lastseq_+1; i <= seqno_; i++) {
 		isThere = SEE_BIT_VEC (ackvec_, i, seqno_);
-		printf(" %d: %s ", i, isThere ? "OK" : "NOK");
+		printf(" %d... %s ", seqno_, isThere ? "Ok" : "NOk");
 	}
 	printf("\n");
 	lastseq_ = seqno_;
@@ -1052,6 +1058,33 @@ void SessionManager::parse_rr(rtcphdr* rh, int flags, u_char* ep,
 	parse_rr_records(ssrc, (rtcp_rr*)(rh + 1), cnt, ep, addr);
 }
 
+void SessionManager::parse_xr(rtcphdr* rh, int flags, u_char* ep,
+							  Source* ps, Address & addr, int layer)
+{
+	UNUSED(flags);
+	UNUSED(ep);
+	UNUSED(ps);
+	UNUSED(addr);
+	UNUSED(layer);
+
+	Source* s;
+	u_int32_t ssrc = rh->rh_ssrc;
+	if (ps->srcid() != ssrc)
+		s = SourceManager::instance().lookup(ssrc, ssrc, addr);
+	else
+		s = ps;
+
+	s->layer(layer).lts_ctrl(unixtime());
+	int cnt = flags >> 8 & 0x1f;
+	parse_xr_records(ssrc, (rtcp_xr*)(rh + 1), cnt, ep, addr);
+}
+
+void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* r, int cnt,
+				      const u_char* ep, Address & addr)
+{
+	
+}
+
 int SessionManager::sdesbody(u_int32_t* p, u_char* ep, Source* ps,
 						Address & addr, u_int32_t ssrc, int layer)
 {
@@ -1162,6 +1195,7 @@ void SessionManager::recv(CtrlHandler* ch)
 	switch(ntohs(rh->rh_flags) & 0xc0ff) {
 	case RTP_VERSION << 14 | RTCP_PT_SR:
 	case RTP_VERSION << 14 | RTCP_PT_RR:
+	case RTP_VERSION << 14 | RTCP_PT_XR:
 	case RTP_VERSION << 14 | RTCP_PT_BYE:
 		break;
 	default:
@@ -1220,6 +1254,10 @@ void SessionManager::recv(CtrlHandler* ch)
 			parse_rr(rh, flags, ep, ps, addr, layer);
 			break;
 
+		case RTCP_PT_XR:
+			parse_xr(rh, flags, ep, ps, addr, layer);
+			break;
+
 		case RTCP_PT_SDES:
 			parse_sdes(rh, flags, ep, ps, addr, ssrc, layer);
 			break;
@@ -1234,5 +1272,6 @@ void SessionManager::recv(CtrlHandler* ch)
 		}
 		rh = (rtcphdr*)ep;
 	}
+	return;
 }
 

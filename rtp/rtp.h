@@ -128,6 +128,15 @@ struct rtcp_rr {
 	u_int32_t rr_dlsr;	/* time from recpt of last rr to xmit time */
 };
 
+/*
+ * RTCP Extended Report
+ * (RFC 3611)
+ */
+struct rtcp_xr {
+	u_int32_t xr_flags;		/*BT:8 TS:8 LEN:16*/
+	u_int32_t xr_ackvec;	/* Ack vector bit chunk */
+};
+
 #define RTCP_PT_SR	200	/* sender report */
 #define RTCP_PT_RR	201	/* receiver report */
 #define RTCP_PT_SDES	202	/* source description */
@@ -141,6 +150,7 @@ struct rtcp_rr {
 #define 	RTCP_SDES_PRIV	8	/* private SDES extensions */
 #define RTCP_PT_BYE	203	/* end of participation */
 #define RTCP_PT_APP	204	/* application specific functions */
+#define RTCP_PT_XR	207 /* extended report */
 
 #define		RTCP_SDES_MIN	1
 #define		RTCP_SDES_MAX	7

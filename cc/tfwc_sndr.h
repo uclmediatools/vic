@@ -33,32 +33,19 @@
  * $Id$
  */
 
-#include "assert.h"
-#include "config.h"
-#include "timer.h"
-#include "rtp.h"
-#include "inet.h"
-#include "pktbuf-rtp.h"
-#include "vic_tcl.h"
-#include "module.h"
-#include "transmitter.h"
-#include "cc.h"
+#ifndef vic_tfwc_sndr_h
+#define vic_tfwc_sndr_h
 
-CcManager::CcManager() :
-	seqno_(-1) 
-{}
+class TfwcSndr {
+public:
+	TfwcSndr();
+	void cc_parse_buf(pktbuf*);	// get pktbuf from transmitter module
+	u_int16_t cc_get_seqno();		// return packet sequence number
+	u_int16_t seqno_;			// packet sequence number
 
-void CcManager::cc_parse_buf(pktbuf* pb) {
+protected:
+	TfwcSndr* tfwcsndr_;
+private:
+};
 
-	// get RTP hearder information
-	rtphdr* rh =(rtphdr*) pb->data;
-	seqno_ = ntohs(rh->rh_seqno);
-
-	// sequence number must be greater than zero
-	assert (seqno_ > 0);
-	debug_msg("sent seqno:		%d\n", seqno_);
-}
-
-u_int16_t CcManager::cc_get_seqno() {
-	return seqno_;
-}
+#endif
