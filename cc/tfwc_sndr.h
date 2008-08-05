@@ -39,9 +39,10 @@
 class TfwcSndr {
 public:
 	TfwcSndr();
-	void cc_parse_buf(pktbuf*);	// get pktbuf from transmitter module
-	u_int16_t cc_get_seqno();		// return packet sequence number
-	u_int16_t seqno_;			// packet sequence number
+	// parse RTP data packet from Transmitter module
+	void tfwc_sndr_parse_buf(pktbuf*);
+	u_int16_t get_seqno();	// return packet sequence number
+	u_int16_t seqno_;	// packet sequence number
 
 protected:
 	TfwcSndr* tfwcsndr_;

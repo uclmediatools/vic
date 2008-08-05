@@ -213,9 +213,9 @@ double Transmitter::txtime(pktbuf* pb)
 void Transmitter::send(pktbuf* pb)
 {
 	if (is_cc_active_) {
-		cc_parse_buf(pb);
+		tfwc_sndr_parse_buf(pb);
 	} else {
-		cc_parse_buf(pb);
+		tfwc_sndr_parse_buf(pb);
 		if (!busy_) {
 			double delay = txtime(pb);
 			nextpkttime_ = gettimeofday_secs() + delay;

@@ -636,7 +636,7 @@ void SessionManager::send_report(CtrlHandler* ch, int bye, int app)
 		sr->sr_np = htonl(sl.np());
 		sr->sr_nb = htonl(sl.nb());
 		rr = (rtcp_rr*)(sr + 1);
-		xr = (rtcp_xr*)(rr + 1);
+		xr = (rtcp_xr*)(rr + 1);	// extended report
 	} else {
 		flags |= RTCP_PT_RR;
 		rr = (rtcp_rr*)(rh + 1);
@@ -1061,11 +1061,6 @@ void SessionManager::parse_rr(rtcphdr* rh, int flags, u_char* ep,
 void SessionManager::parse_xr(rtcphdr* rh, int flags, u_char* ep,
 							  Source* ps, Address & addr, int layer)
 {
-	UNUSED(flags);
-	UNUSED(ep);
-	UNUSED(ps);
-	UNUSED(addr);
-	UNUSED(layer);
 
 	Source* s;
 	u_int32_t ssrc = rh->rh_ssrc;
@@ -1082,6 +1077,11 @@ void SessionManager::parse_xr(rtcphdr* rh, int flags, u_char* ep,
 void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* r, int cnt,
 				      const u_char* ep, Address & addr)
 {
+    	debug_msg("XXX parse_xr_records\n");
+	UNUSED(cnt);
+	UNUSED(ep);
+	UNUSED(addr);
+
 	ackvec_ = r->xr_ackvec;
 	/*
 	 * if AoA is received, then first trim ackvec and send a new ackvec

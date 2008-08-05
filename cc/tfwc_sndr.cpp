@@ -48,7 +48,7 @@ TfwcSndr::TfwcSndr() :
 	seqno_(-1) 
 {}
 
-void TfwcSndr::cc_parse_buf(pktbuf* pb) {
+void TfwcSndr::tfwc_sndr_parse_buf(pktbuf* pb) {
 
 	// get RTP hearder information
 	rtphdr* rh =(rtphdr*) pb->data;
@@ -59,6 +59,6 @@ void TfwcSndr::cc_parse_buf(pktbuf* pb) {
 	debug_msg("sent seqno:		%d\n", seqno_);
 }
 
-u_int16_t TfwcSndr::cc_get_seqno() {
+u_int16_t TfwcSndr::get_seqno() {
 	return seqno_;
 }
