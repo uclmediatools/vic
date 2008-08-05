@@ -1082,7 +1082,11 @@ void SessionManager::parse_xr(rtcphdr* rh, int flags, u_char* ep,
 void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* r, int cnt,
 				      const u_char* ep, Address & addr)
 {
-	r->xr_ackvec = ackvec_;	
+	ackvec_ = r->xr_ackvec;
+	/*
+	 * if AoA is received, then first trim ackvec and send a new ackvec
+	 * if AckVec is received, then parse it to TfwcSndr
+	 */
 }
 
 int SessionManager::sdesbody(u_int32_t* p, u_char* ep, Source* ps,
