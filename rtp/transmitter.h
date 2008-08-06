@@ -83,6 +83,7 @@ class Transmitter : public TclObject, public Timer, public TfwcSndr {
 	inline int mtu() { return (mtu_); }
 	void flush();
 	void send(pktbuf*);
+	inline bool is_cc_on() { return is_cc_active_; }
 	/*
 	 * Buffer allocation hooks.
 	 */
@@ -118,14 +119,15 @@ protected:
 	int loopback_;		/* true to loopback data packets */
 	static int dumpfd_;	/* fd to dump packet stream to */
 	static u_int16_t seqno_;
+
+	/* Cc related variables */
+	bool is_cc_active_;		/* is Cc module activated?		*/
+
     private:
 	static pktbuf* freehdrs_;
 	static buffer* freebufs_;
 	static int nbufs_;
 	static int nhdrs_;
-
-	/* Cc related variables */
-	bool is_cc_active_;		/* is Cc module activated?		*/
 };
 
 #endif

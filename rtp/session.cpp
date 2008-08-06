@@ -663,12 +663,19 @@ void SessionManager::send_report(CtrlHandler* ch, int bye, int app)
 		sr->sr_np = htonl(sl.np());
 		sr->sr_nb = htonl(sl.nb());
 		rr = (rtcp_rr*)(sr + 1);
-		xr = (rtcp_xr*)(rr + 1);	// extended report
+		//xr = (rtcp_xr*)(rr + 1);	// extended report
 	} else {
 		flags |= RTCP_PT_RR;
 		rr = (rtcp_rr*)(rh + 1);
-		xr = (rtcp_xr*)(rr + 1);	// extended report
+		//xr = (rtcp_xr*)(rr + 1);	// extended report
 	}
+
+	// if CC is turned on, we need XR report
+	if (is_cc_on()) {
+		flags |= RTCP_PT_XR;
+		xr = (rtcp_xr*)(rh + 1);	// extended report
+	}
+
 	int nrr = 0;
 	int nsrc = 0;
 	/*
