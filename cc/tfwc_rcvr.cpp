@@ -48,9 +48,29 @@ TfwcRcvr::TfwcRcvr() :
 	seqno_(0) 
 {}
 
-void TfwcRcvr::set_received_seqno(u_int16_t seqno) 
+void TfwcRcvr::set_received_seqno(u_int16_t seqno, u_int16_t lastseq) 
 {
 	seqno_ = seqno;
+	lastseq_ = lastseq;
     debug_msg("received seqno:  %d\n", seqno_);
+
+	ackvec_manager(seqno_, lastseq_);
 }
 
+void TfwcRcvr::ackvec_manager(u_int16_t seqno, u_int16_t lastseq)
+{
+	// set next ackvec bit vector
+	for (int i = lastseq+1; i <= seqno; i++) {
+		SET_BIT_VEC (tfwcAV, 1);
+	}
+
+	// printing tfwcAV
+	bool isThere;
+	debug_msg("XXX received ackvec:");
+	for (int i = lastseq+1; i <= seqno; i++) {
+		isThere = SEE_BIT_VEC (tfwcAV, i, seqno);
+		printf(" %d... %s ", seqno, isThere ? "Ok" : "Nok");
+	}
+	printf("\n");
+	//lastseq_ = seqno;
+}

@@ -645,8 +645,8 @@ void SessionManager::send_report(CtrlHandler* ch, int bye, int app)
 		flags |= RTCP_PT_XR;		// setting flags to XR
 		xr = (rtcp_xr*)(rh + 1);	// extended report
 		xr->xr_begin_seq = lastseq_;// this will be used for ackofack
-		xr->xr_end_seq = seqno_ + 1;
-		xr->xr_ackvec = ackvec_;	// ackvec
+		xr->xr_end_seq = seqno_ + 1;// as defined in RFC3611 section 4.1
+		xr->xr_ackvec = get_ackvec();	// ackvec
 	}
 
 	int nrr = 0;
@@ -797,7 +797,6 @@ void SessionManager::recv(DataHandler* dh)
 
 	rtphdr* rh = (rtphdr*)pb->data;
 	seqno_ = ntohs(rh->rh_seqno);	// get received packet seqno
-	set_received_seqno(seqno_);	// set received seqno in TfwcRcvr
 
     // Ignore loopback packets
 	if (!loopback_) {
@@ -810,22 +809,10 @@ void SessionManager::recv(DataHandler* dh)
 		}
 	} // now, loopback packets ignored (if disabled)
 
-/*
-	// set bit vector
-	for (int i = lastseq_+1; i <= seqno_; i++) {
-			SET_BIT_VEC (ackvec_, 1);
-	}
+	// set received seqno - passing seqno to TfwcRcvr
+	set_received_seqno(seqno_, lastseq_);
+	lastseq_ = seqno_;	// set last seqno
 
-	// printing bit vector
-	bool isThere;
-	debug_msg("XXX received ackvec:");
-	for (int i = lastseq_+1; i <= seqno_; i++) {
-		isThere = SEE_BIT_VEC (ackvec_, i, seqno_);
-		printf(" %d... %s ", seqno_, isThere ? "Ok" : "NOk");
-	}
-	printf("\n");
-	lastseq_ = seqno_;
-*/
 	int version = pb->data[0] >> 6;
 	//int version = *(u_char*)rh >> 6;
 	if (version != 2) {

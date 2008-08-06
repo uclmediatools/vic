@@ -47,11 +47,15 @@
 class TfwcRcvr {
 public:
 	TfwcRcvr();
-	void set_received_seqno(u_int16_t seqno);
+	void set_received_seqno(u_int16_t seqno, u_int16_t lastseq);
 
 protected:
-	u_int16_t seqno_;
+	inline u_int32_t get_ackvec() { return tfwcAV; }
+	u_int32_t tfwcAV;	// AckVec (bit vector)
+	u_int16_t seqno_;	// received RTP packet seqno
+	u_int16_t lastseq_;	// last RTP packet seqno
 private:
+	void ackvec_manager(u_int16_t seqno, u_int16_t latseq);
 };
 
 #endif
