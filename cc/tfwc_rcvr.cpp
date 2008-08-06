@@ -48,3 +48,9 @@ TfwcRcvr::TfwcRcvr() :
 	seqno_(0) 
 {}
 
+void TfwcRcvr::set_received_seqno(u_int16_t seqno) 
+{
+	seqno_ = seqno;
+    debug_msg("received seqno:  %d\n", seqno_);
+}
+

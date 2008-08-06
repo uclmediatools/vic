@@ -51,6 +51,7 @@ extern "C" int getpid();
 #include "ntp-time.h"
 #include "session.h"
 #include "cc/tfwc_sndr.h"
+#include "cc/tfwc_rcvr.h"
 
 /* added to support the mbus 
 #include "mbus_handler.h"*/
@@ -795,8 +796,8 @@ void SessionManager::recv(DataHandler* dh)
 	}
 
 	rtphdr* rh = (rtphdr*)pb->data;
-	seqno_ = ntohs(rh->rh_seqno);	// received packet seqno
-	debug_msg("received seqno:	%d\n", seqno_);
+	seqno_ = ntohs(rh->rh_seqno);	// get received packet seqno
+	tfwc_rcvr_->set_received_seqno(seqno_);	// set received seqno in TfwcRcvr
 
     // Ignore loopback packets
 	if (!loopback_) {
@@ -807,7 +808,8 @@ void SessionManager::recv(DataHandler* dh)
 			pb->release();	// releasing loopback packet
 			return;
 		}
-	} // now, loopback packets ignored (if disabled) 
+	} // now, loopback packets ignored (if disabled)
+
 /*
 	// set bit vector
 	for (int i = lastseq_+1; i <= seqno_; i++) {
