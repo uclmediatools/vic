@@ -591,7 +591,34 @@ int SessionManager::build_app(rtcphdr* rh, Source& ls, const char *name,
 void SessionManager::announce(CtrlHandler* ch)
 {
 	send_report(ch, 0);
+	send_xreport(ch, 0);
 }
+
+/*
+ * send RTP extended report.
+ */
+void SessionManager::send_xreport(CtrlHandler* ch, int bye, int app)
+{
+	UNUSED(app);
+
+	SourceManager& sm = SourceManager::instance();
+	Source& s = *sm.localsrc();	// local source
+	rtcphdr* rh = (rtcphdr*)pktbuf_;
+	rh->rh_ssrc = s.srcid();
+
+	int flags = RTP_VERSION << 14;
+	int layer = ch- ch_;
+	Source:: Layer& sl = s.layer(layer);
+	timeval now = unixtime();
+	sl.lts_ctrl(now);
+
+	rtcp_xr* xr;	// extended report
+
+	flags |= RTCP_PT_XR;
+	xr = (rtcp_xr*)(rh + 1);
+}
+
+
 
 /*XXX check for buffer overflow*/
 /*
