@@ -50,12 +50,14 @@
 #include "inet.h"
 #include "pktbuf-rtp.h"
 #include "cc/tfwc_sndr.h"
+#include "cc/tfwc_rcvr.h"
 
 /*
  * The base object for performing the outbound path of
  * the application level protocol.
  */
-class Transmitter : public TclObject, public Timer, public TfwcSndr {
+class Transmitter : public TclObject, public Timer, 
+	public TfwcSndr, public TfwcRcvr {
     public:
 	Transmitter();
 	virtual void timeout();

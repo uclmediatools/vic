@@ -46,7 +46,6 @@
 
 class Source;
 class SessionManager;
-class TfwcRcvr;
 
 class DataHandler : public IOHandler {
     public:
@@ -195,7 +194,6 @@ protected:
 	u_char* pktbuf_;
 
 	SourceManager *sm_;
-	TfwcRcvr *tfwc_rcvr_;
 
 	// RTP packet sequence number (for the use of AckVec)
 	u_int16_t seqno_;		// RTP packet sequence number

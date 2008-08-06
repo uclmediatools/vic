@@ -797,7 +797,7 @@ void SessionManager::recv(DataHandler* dh)
 
 	rtphdr* rh = (rtphdr*)pb->data;
 	seqno_ = ntohs(rh->rh_seqno);	// get received packet seqno
-	tfwc_rcvr_->set_received_seqno(seqno_);	// set received seqno in TfwcRcvr
+	set_received_seqno(seqno_);	// set received seqno in TfwcRcvr
 
     // Ignore loopback packets
 	if (!loopback_) {
