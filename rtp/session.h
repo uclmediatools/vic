@@ -110,10 +110,10 @@ class ReportTimer : public Timer {
 };
 
 // set AckVec bitmap
-#define SET_BIT_VEC(ackvec_, bit) (ackvec_ = ((ackvec_ << 1) | bit))
+//#define SET_BIT_VEC(ackvec_, bit) (ackvec_ = ((ackvec_ << 1) | bit))
 
 // see AckVec bitmap
-#define SEE_BIT_VEC(ackvec_, ix, seqno) ((1 << (seqno - ix)) & ackvec_)
+//#define SEE_BIT_VEC(ackvec_, ix, seqno) ((1 << (seqno - ix)) & ackvec_)
 
 class SessionManager : public Transmitter, public MtuAlloc {
 public:

@@ -42,23 +42,9 @@
 #include "vic_tcl.h"
 #include "module.h"
 #include "transmitter.h"
-#include "tfwc_sndr.h"
+#include "tfwc_rcvr.h"
 
-TfwcSndr::TfwcSndr() :
+TfwcRcvr::TfwcRcvr() :
 	seqno_(0) 
 {}
 
-void TfwcSndr::tfwc_sndr_parse_buf(pktbuf* pb) {
-
-	// get RTP hearder information
-	rtphdr* rh =(rtphdr*) pb->data;
-	seqno_ = ntohs(rh->rh_seqno);
-
-	// sequence number must be greater than zero
-	assert (seqno_ > 0);
-	debug_msg("sent seqno:		%d\n", seqno_);
-}
-
-u_int16_t TfwcSndr::get_seqno() {
-	return seqno_;
-}

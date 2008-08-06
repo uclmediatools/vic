@@ -597,8 +597,6 @@ void SessionManager::announce(CtrlHandler* ch)
 /*
 * Send an RTPv2 report packet.
 */
-//void SessionManager::send_report(int bye)
-
 void SessionManager::send_report(CtrlHandler* ch, int bye, int app)
 {
 	UNUSED(app); //SV-XXX: unused
@@ -636,17 +634,18 @@ void SessionManager::send_report(CtrlHandler* ch, int bye, int app)
 		sr->sr_np = htonl(sl.np());
 		sr->sr_nb = htonl(sl.nb());
 		rr = (rtcp_rr*)(sr + 1);
-		//xr = (rtcp_xr*)(rr + 1);	// extended report
 	} else {
 		flags |= RTCP_PT_RR;
 		rr = (rtcp_rr*)(rh + 1);
-		//xr = (rtcp_xr*)(rr + 1);	// extended report
 	}
 
 	// if CC is turned on, we need XR report
 	if (is_cc_on()) {
-		flags |= RTCP_PT_XR;
+		flags |= RTCP_PT_XR;		// setting flags to XR
 		xr = (rtcp_xr*)(rh + 1);	// extended report
+		xr->xr_begin_seq = lastseq_;// this will be used for ackofack
+		xr->xr_end_seq = seqno_ + 1;
+		xr->xr_ackvec = ackvec_;	// ackvec
 	}
 
 	int nrr = 0;
@@ -776,7 +775,7 @@ int SessionManager::build_bye(rtcphdr* rh, Source& ls)
 }
 
 /*
- * receive an RTP packet
+ * receive an RTP data packet
  */
 void SessionManager::recv(DataHandler* dh)
 {
@@ -809,7 +808,7 @@ void SessionManager::recv(DataHandler* dh)
 			return;
 		}
 	} // now, loopback packets ignored (if disabled) 
-
+/*
 	// set bit vector
 	for (int i = lastseq_+1; i <= seqno_; i++) {
 			SET_BIT_VEC (ackvec_, 1);
@@ -824,7 +823,7 @@ void SessionManager::recv(DataHandler* dh)
 	}
 	printf("\n");
 	lastseq_ = seqno_;
-
+*/
 	int version = pb->data[0] >> 6;
 	//int version = *(u_char*)rh >> 6;
 	if (version != 2) {

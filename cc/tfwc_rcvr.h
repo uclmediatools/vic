@@ -33,32 +33,24 @@
  * $Id$
  */
 
-#include "assert.h"
-#include "config.h"
-#include "timer.h"
-#include "rtp.h"
-#include "inet.h"
-#include "pktbuf-rtp.h"
-#include "vic_tcl.h"
-#include "module.h"
-#include "transmitter.h"
+#ifndef vic_tfwc_rcvr_h
+#define vic_tfwc_rcvr_h
+
 #include "tfwc_sndr.h"
 
-TfwcSndr::TfwcSndr() :
-	seqno_(0) 
-{}
+// set AckVec bitmap
+#define SET_BIT_VEC(ackvec_, bit) (ackvec_ = ((ackvec_ << 1) | bit))
 
-void TfwcSndr::tfwc_sndr_parse_buf(pktbuf* pb) {
+// see AckVec bitmap
+#define SEE_BIT_VEC(ackvec_, ix, seqno) ((1 << (seqno - ix)) & ackvec_)
 
-	// get RTP hearder information
-	rtphdr* rh =(rtphdr*) pb->data;
-	seqno_ = ntohs(rh->rh_seqno);
+class TfwcRcvr {
+public:
+	TfwcRcvr();
 
-	// sequence number must be greater than zero
-	assert (seqno_ > 0);
-	debug_msg("sent seqno:		%d\n", seqno_);
-}
+protected:
+	u_int16_t seqno_;
+private:
+};
 
-u_int16_t TfwcSndr::get_seqno() {
-	return seqno_;
-}
+#endif

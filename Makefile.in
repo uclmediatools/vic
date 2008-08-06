@@ -152,7 +152,7 @@ OBJ2 =	main.o iohandler.o timer.o idlecallback.o media-timer.o \
 	render/color-gray.o render/color-mono.o render/color-hist.o \
 	render/rgb-converter.o render/vw.o render/ppm.o \
 	@V_OBJ@ \
-	cc/tfwc_sndr.o
+	cc/tfwc_sndr.o cc/tfwc_rcvr.o
 
 
 OBJ3 =	cm0.o cm1.o huffcode.o version.o bv.o codec/pvh-huff.o \
