@@ -127,7 +127,6 @@ public:
 	virtual inline void send_bye() { send_report(&ch_[0], 1); }
 //	virtual void send_report();
 	virtual void send_report(CtrlHandler*, int bye, int app = 0);
-	virtual void send_xreport(CtrlHandler*, int bye, int app = 0);
 
 protected:
 //	void demux(rtphdr* rh, u_char* bp, int cc, Address & addr, int layer);
