@@ -591,7 +591,7 @@ int SessionManager::build_app(rtcphdr* rh, Source& ls, const char *name,
 void SessionManager::announce(CtrlHandler* ch)
 {
 	send_report(ch, 0);
-	send_xreport(ch, 0);
+	//send_xreport(ch, 0);
 }
 
 /*
@@ -1111,7 +1111,7 @@ void SessionManager::parse_xr(rtcphdr* rh, int flags, u_char* ep,
 void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* r, int cnt,
 				      const u_char* ep, Address & addr)
 {
-    	debug_msg("XXX parse_xr_records\n");
+	debug_msg("XXX parse_xr_records\n");
 	UNUSED(cnt);
 	UNUSED(ep);
 	UNUSED(addr);
