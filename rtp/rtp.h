@@ -140,7 +140,7 @@ struct rtcp_xr_blk {
 	u_int32_t ssrc;	/* ssrc of the RTP data pkt being reported upon by this */
 	u_int16_t begin_seq; /* first seqno that this block report */
 	u_int16_t end_seq;	/* last seqno that this block report plus 1 */
-	u_int32_t chunk;	/* extended report chunks */
+	u_int32_t *chunk;	/* extended report chunks */
 };
 
 #define RTCP_PT_SR	200	/* sender report */

@@ -647,9 +647,10 @@ void SessionManager::send_report(CtrlHandler* ch, int bye, int app)
 		xrh = (rtcp_xr_hdr*)(rh + 1);	// XR header
 		int xrlen = (xrh->xr_flags << 16) >> 16; // XR length
 		xrb = (rtcp_xr_blk*)(xrh + xrlen + 1);	// XR block
-		xrb->begin_seq = lastseq_;// this will be used for ackofack
-		xrb->end_seq = seqno_ + 1;// as defined in RFC3611 section 4.1
-		xrb->chunk = get_ackvec();	// ackvec
+		xrb->begin_seq = htonl(lastseq_);// this will be used for ackofack
+		xrb->end_seq = htonl(seqno_ + 1);// as defined in RFC3611 section 4.1
+		xrb->chunk = (u_int32_t *) htonl(get_ackvec());
+		//xrb->chunk = htonl(mt->ref_ts());
 	}
 
 	int nrr = 0;
@@ -1087,12 +1088,12 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr_hdr* xrh, int cnt,
 	 * if AckVec is received, then parse it to TfwcSndr
 	 */
 	if (xrb->begin_seq == xrb->end_seq) {
-		// we just received ackofack, so do receiver stuffs here
-		
+		// we received ackofack, so do receiver stuffs here
 		//trim_vec(xrb->chunk);	// chunk in xrb is ackvec
 		ch_[0].send(build_ackvpkt(xrh), xrlen);
 	} else {
-		ackvec_ = xrb->chunk;
+		// we received ackvec, so do sender stuffs here
+		ackvec_ = (u_int32_t) &xrb->chunk;
 		ackofack_ = xrb->begin_seq;
 		// time stamp update comes to here
 		tfwc_sndr_recv(ackvec_);	// parse AckVec
