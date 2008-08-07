@@ -613,7 +613,8 @@ void SessionManager::send_report(CtrlHandler* ch, int bye, int app)
 	sl.lts_ctrl(now);
 	int we_sent = 0;
 	rtcp_rr* rr;
-	rtcp_xr* xr;	// extended report
+	rtcp_xr_hdr* xrh;	// extended report header
+	rtcp_xr_blk* xrb;	// extended report block
 	Tcl& tcl = Tcl::instance();
 
 	/*
@@ -643,10 +644,12 @@ void SessionManager::send_report(CtrlHandler* ch, int bye, int app)
 	// if CC is turned on, we need XR report
 	if (is_cc_on()) {
 		flags |= RTCP_PT_XR;		// setting flags to XR
-		xr = (rtcp_xr*)(rh + 1);	// extended report
-		xr->xr_begin_seq = lastseq_;// this will be used for ackofack
-		xr->xr_end_seq = seqno_ + 1;// as defined in RFC3611 section 4.1
-		xr->xr_ackvec = get_ackvec();	// ackvec
+		xrh = (rtcp_xr_hdr*)(rh + 1);	// XR header
+		int xrlen = xrh->xr_flags << 16 >> 16;	// XR length
+		xrb = (rtcp_xr_blk*)(xrh + xrlen + 1);	// XR block
+		xrb->begin_seq = lastseq_;// this will be used for ackofack
+		xrb->end_seq = seqno_ + 1;// as defined in RFC3611 section 4.1
+		xrb->chunk = get_ackvec();	// ackvec
 	}
 
 	int nrr = 0;
@@ -1066,10 +1069,10 @@ void SessionManager::parse_xr(rtcphdr* rh, int flags, u_char* ep,
 
 	s->layer(layer).lts_ctrl(unixtime());
 	int cnt = flags >> 8 & 0x1f;
-	parse_xr_records(ssrc, (rtcp_xr*)(rh + 1), cnt, ep, addr);
+	parse_xr_records(ssrc, (rtcp_xr_hdr*)(rh + 1), cnt, ep, addr);
 }
 
-void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* r, int cnt,
+void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr_hdr* xrh, int cnt,
 				      const u_char* ep, Address & addr)
 {
 	debug_msg("XXX parse_xr_records\n");
@@ -1077,12 +1080,15 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* r, int cnt,
 	UNUSED(ep);
 	UNUSED(addr);
 
+	rtcp_xr_blk* xrb;
+	int xrlen = xrh->xr_flags << 16 >> 16;
+	xrb = (rtcp_xr_blk*)(xrh + xrlen + 1);
 	/*
-	 * if AoA is received, then first trim ackvec and send a new ackvec
+	 * if AoA is received, trim ackvec and send a new ackvec
 	 * if AckVec is received, then parse it to TfwcSndr
 	 */
-	ackvec_ = r->xr_ackvec;
-	ackofack_ = r->xr_begin_seq;
+	ackvec_ = xrb->chunk;
+	ackofack_ = xrb->begin_seq;
 	tfwc_sndr_recv(ackvec_);	// parse AckVec
 }
 

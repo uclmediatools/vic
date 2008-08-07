@@ -132,13 +132,16 @@ struct rtcp_rr {
  * RTCP Extended Report.
  * (RFC 3611)
  */
-struct rtcp_xr {
+struct rtcp_xr_hdr {
 	u_int32_t xr_flags;	/* BT:8 TS:8 LEN:16 */
-	u_int32_t xr_srcid;	/* SSRC of the RTP data packet being 
-				   reported upon by this report block */
-	u_int16_t xr_begin_seq;	/* first seqno that this block report */
-	u_int16_t xr_end_seq;	/* last seqno that this block report plus 1 */
-	u_int32_t xr_ackvec;	/* Ack vector bit chunk */
+};
+
+struct rtcp_xr_blk {
+	u_int32_t blk_flags; /*BT:8 rsvd:4 T:4 LEN:16 */
+	u_int32_t ssrc;	/* ssrc of the RTP data pkt being reported upon by this */
+	u_int16_t begin_seq; /* first seqno that this block report */
+	u_int16_t end_seq;	/* last seqno that this block report plus 1 */
+	u_int32_t chunk;	/* extended report chunks */
 };
 
 #define RTCP_PT_SR	200	/* sender report */

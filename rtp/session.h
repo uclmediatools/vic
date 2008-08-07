@@ -148,7 +148,7 @@ protected:
 		      Source* ps, Address & addr, int layer);
 	void parse_rr_records(u_int32_t ssrc, rtcp_rr* r, int cnt,
 			      const u_char* ep, Address & addr);
-	void parse_xr_records(u_int32_t ssrc, rtcp_xr* r, int cnt,
+	void parse_xr_records(u_int32_t ssrc, rtcp_xr_hdr* xrh, int cnt,
 			      const u_char* ep, Address & addr);
 	int sdesbody(u_int32_t* p, u_char* ep, Source* ps,
 		     Address & addr, u_int32_t ssrc, int layer);
