@@ -155,6 +155,7 @@ protected:
 	void parse_sdes(rtcphdr* rh, int flags, u_char* ep, Source* ps,
 			Address & addr, u_int32_t ssrc, int layer);
 	void parse_bye(rtcphdr* rh, int flags, u_char* ep, Source* ps);
+	u_char* build_ackvpkt(rtcp_xr_hdr* xrh);
 
 	int parseopts(const u_char* bp, int cc, Address & addr) const;
 	int ckid(const char*, int len);
