@@ -46,7 +46,10 @@
 
 TfwcSndr::TfwcSndr() :
 	seqno_(0) 
-{}
+{
+	u_int32_t marginvec_ = 0xe0000000;
+	debug_msg("XXX %d\n", marginvec_);
+}
 
 void TfwcSndr::tfwc_sndr_parse_buf(pktbuf* pb) {
 
@@ -59,6 +62,9 @@ void TfwcSndr::tfwc_sndr_parse_buf(pktbuf* pb) {
 	debug_msg("sent seqno:		%d\n", seqno_);
 }
 
-u_int16_t TfwcSndr::get_seqno() {
-	return seqno_;
+void TfwcSndr::tfwc_sndr_recv(u_int32_t ackv)
+{
+	UNUSED(ackv);
 }
+
+

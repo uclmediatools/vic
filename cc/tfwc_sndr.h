@@ -41,10 +41,13 @@ public:
 	TfwcSndr();
 	// parse RTP data packet from Transmitter module
 	void tfwc_sndr_parse_buf(pktbuf*);
-	u_int16_t get_seqno();	// return packet sequence number
+	inline u_int16_t get_seqno() { return seqno_; }
 	u_int16_t seqno_;	// packet sequence number
 
 protected:
+	void tfwc_sndr_recv(u_int32_t ackv);
+
+	u_int32_t marginvec_;	// margin vec
 	TfwcSndr* tfwcsndr_;
 private:
 };

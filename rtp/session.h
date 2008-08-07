@@ -199,6 +199,7 @@ protected:
 	// RTP packet sequence number (for the use of AckVec)
 	u_int16_t seqno_;		// RTP packet sequence number
 	u_int16_t lastseq_;		// last packet's seqno
+	u_int16_t ackofack_;	// Ack of ack
 
 	// AckVector
 	u_int32_t ackvec_;		// this is a bit vector
