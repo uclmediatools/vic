@@ -137,7 +137,6 @@ struct rtcp_xr_hdr {
 };
 
 struct rtcp_xr_blk {
-	u_int32_t blk_flags; /*BT:8 rsvd:4 T:4 LEN:16 */
 	u_int32_t ssrc;	/* ssrc of the RTP data pkt being reported upon by this */
 	u_int16_t begin_seq; /* first seqno that this block report */
 	u_int16_t end_seq;	/* last seqno that this block report plus 1 */
