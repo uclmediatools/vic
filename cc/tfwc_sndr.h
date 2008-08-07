@@ -48,6 +48,7 @@ protected:
 	void tfwc_sndr_recv(u_int32_t ackv);
 
 	u_int32_t marginvec_;	// margin vec
+	u_int32_t ackv_;	// AckVec (in TfwcSndr)
 	TfwcSndr* tfwcsndr_;
 private:
 };
