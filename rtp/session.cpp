@@ -459,8 +459,12 @@ void SessionManager::transmit(pktbuf* pb)
 	if (pb->layer < loop_layer_) {
 	//	if ( pb->layer <0 ) exit(1);
 		Network* n = dh_[pb->layer].net();
-		if (n != 0)
+		if (n != 0) {
 			n->send(pb);
+			if(is_cc_on()) {
+				//ch_[0].send(build_aoapkt());
+			}
+		}
 	}
 }
 

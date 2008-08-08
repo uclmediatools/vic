@@ -52,7 +52,7 @@ TfwcSndr::TfwcSndr() :
 	u_int32_t marginvec_ = 0xe0000000;
 }
 
-void TfwcSndr::tfwc_sndr_parse_buf(pktbuf* pb) {
+void TfwcSndr::tfwc_sndr_send(pktbuf* pb) {
 
 	// get RTP hearder information
 	rtphdr* rh =(rtphdr*) pb->data;
@@ -69,4 +69,6 @@ void TfwcSndr::tfwc_sndr_recv(u_int32_t ackv)
 	ackv_ = ackv | marginvec_;
 }
 
-
+void TfwcSndr::ackofack() {
+	aoa_ = marginvec_ | 0x01000000;
+}
