@@ -95,6 +95,7 @@ class CtrlHandler : public DataHandler, public Timer {
 	void sample_size(int cc);
 	inline double rint() const { return (rint_); }
 	void send_aoa();
+	void send_ts();
 
  protected:
 	void schedule_timer();
@@ -130,7 +131,8 @@ public:
 //	virtual void send_report();
 	virtual void send_report(CtrlHandler*, int bye, int app = 0);
 	virtual void send_xreport(CtrlHandler*, int bye, int app = 0);
-	void build_aoapkt(CtrlHandler* ch);
+	void build_aoa_pkt(CtrlHandler* ch);
+	void build_ts_pkt(CtrlHandler* ch);
 
 protected:
 //	void demux(rtphdr* rh, u_char* bp, int cc, Address & addr, int layer);
@@ -159,8 +161,8 @@ protected:
 	void parse_sdes(rtcphdr* rh, int flags, u_char* ep, Source* ps,
 			Address & addr, u_int32_t ssrc, int layer);
 	void parse_bye(rtcphdr* rh, int flags, u_char* ep, Source* ps);
-	u_char* build_ackvpkt(rtcp_xr_hdr* xrh, u_int32_t ssrc);
-	u_char* build_tspkt(rtcp_xr_hdr* xrh, u_int32_t ssrc);
+	u_char* build_ackv_pkt(rtcp_xr_hdr* xrh, u_int32_t ssrc);
+	u_char* build_ts_echo_pkt(rtcp_xr_hdr* xrh, u_int32_t ssrc);
 
 	int parseopts(const u_char* bp, int cc, Address & addr) const;
 	int ckid(const char*, int len);
@@ -209,6 +211,7 @@ protected:
 
 	// AckVector
 	u_int32_t ackvec_;		// this is a bit vector
+	u_int32_t ts_echo_;		// time stamp echo
 };
 
 class AudioSessionManager : public SessionManager {

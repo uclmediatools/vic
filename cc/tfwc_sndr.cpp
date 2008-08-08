@@ -63,10 +63,11 @@ void TfwcSndr::tfwc_sndr_send(pktbuf* pb) {
 	debug_msg("sent seqno:		%d\n", seqno_);
 }
 
-void TfwcSndr::tfwc_sndr_recv(u_int32_t ackv)
+void TfwcSndr::tfwc_sndr_recv(u_int32_t ackv, u_int32_t ts_echo)
 {
 	// the most recent 3 packets will be marked as 1 using marginvec_
 	ackv_ = ackv | marginvec_;
+	ts_echo_ = ts_echo;
 }
 
 void TfwcSndr::ackofack() {

@@ -41,9 +41,9 @@ public:
 	TfwcSndr();
 	// parse RTP data packet from Transmitter module
 	void tfwc_sndr_send(pktbuf*);
-	void tfwc_sndr_recv(u_int32_t ackv);
-	inline u_int16_t get_seqno() { return seqno_; }
-	inline u_int32_t get_aoa() { return aoa_; }
+	void tfwc_sndr_recv(u_int32_t ackv, u_int32_t ts_echo);
+	inline u_int16_t tfwc_sndr_get_seqno() { return seqno_; }
+	inline u_int32_t tfwc_sndr_get_aoa() { return aoa_; }
 	void ackofack();	// set ack of ack
 	u_int16_t seqno_;	// packet sequence number
 
@@ -52,7 +52,8 @@ protected:
 	u_int32_t marginvec_;	// margin vec
 	u_int32_t ackv_;	// AckVec (in TfwcSndr)
 	u_int32_t aoa_;		// ack of ack
-	u_int32_t ts_;		// time stamp 
+	u_int32_t ts_;		// time stamp
+	u_int32_t ts_echo_;	// echo time stamp from the receiver
 	TfwcSndr* tfwcsndr_;
 private:
 };
