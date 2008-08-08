@@ -50,7 +50,6 @@ TfwcSndr::TfwcSndr() :
 	seqno_(0) 
 {
 	u_int32_t marginvec_ = 0xe0000000;
-	debug_msg("XXX %d\n", marginvec_);
 }
 
 void TfwcSndr::tfwc_sndr_parse_buf(pktbuf* pb) {
@@ -66,8 +65,6 @@ void TfwcSndr::tfwc_sndr_parse_buf(pktbuf* pb) {
 
 void TfwcSndr::tfwc_sndr_recv(u_int32_t ackv)
 {
-	UNUSED(ackv);
-
 	// the most recent 3 packets will be marked as 1 using marginvec_
 	ackv_ = ackv | marginvec_;
 }

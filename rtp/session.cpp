@@ -592,6 +592,133 @@ int SessionManager::build_app(rtcphdr* rh, Source& ls, const char *name,
 void SessionManager::announce(CtrlHandler* ch)
 {
 	send_report(ch, 0);
+	send_xreport(ch, 0);
+}
+
+/*
+ * Send an RTP extended report packet.
+ */
+void SessionManager::send_xreport(CtrlHandler* ch, int bye, int app)
+{
+	UNUSED(app);
+	UNUSED(bye);
+
+	SourceManager& sm = SourceManager::instance();
+	Source& s = *sm.localsrc();
+	rtcphdr* rh = (rtcphdr*)pktbuf_;
+	rh->rh_ssrc = s.srcid();
+	int flags = RTP_VERSION << 14;
+	int layer = ch - ch_;
+	Source::Layer& sl = s.layer(layer);
+	timeval now = unixtime();
+	sl.lts_ctrl(now);
+
+	int we_sent = 0;
+	rtcp_rr* rr;
+	rtcp_xr_hdr* xrh;   // extended report header
+	rtcp_xr_blk* xrb;   // extended report block
+	Tcl& tcl = Tcl::instance();
+
+	MediaTimer* mt = MediaTimer::instance();
+	if (sl.np() != last_np_ && mt) {
+		last_np_ = sl.np();
+		we_sent = 1;
+		flags |= RTCP_PT_SR;
+		rtcp_sr* sr = (rtcp_sr*)(rh + 1);
+		sr->sr_ntp = ntp64time(now);
+		HTONL(sr->sr_ntp.upper);
+		HTONL(sr->sr_ntp.lower);
+		sr->sr_ts = htonl(mt->ref_ts());
+		sr->sr_np = htonl(sl.np());
+		sr->sr_nb = htonl(sl.nb());
+		rr = (rtcp_rr*)(sr + 1);
+	} else {
+		flags |= RTCP_PT_RR;
+		rr = (rtcp_rr*)(rh + 1);
+	}
+
+	// set this to XR packet
+	flags |= RTCP_PT_XR;
+	// access XR header 
+	xrh = (rtcp_xr_hdr*)(rh + 1);
+	// XR block length
+	int xrlen = (xrh->xr_flags << 16) >> 16;
+	// access XR block contents
+	xrb = (rtcp_xr_blk*)(xrh + xrlen + 1);
+	// for ackofack
+	xrb->begin_seq = htonl(lastseq_);
+	xrb->end_seq = htonl(seqno_ + 1);
+	// this chunk is ackvec
+	xrb->chunk = (u_int32_t *) htonl(get_ackvec());
+	// this chunk is timestamp echo
+	//xrb->chunk = htonl(mt->ref_ts());
+
+	int nrr = 0;
+	int nsrc = 0;
+
+	u_int inactive = u_int(ch->rint() * (32./1000.));
+	if (inactive < 2)
+		inactive = 2;
+	for (Source* sp = sm.sources(); sp != 0; sp = sp->next_) {
+		++nsrc;
+		Source::Layer& sl = sp->layer(layer);
+		int received = sl.np() - sl.snp();
+		if (received == 0) {
+			if (u_int(now.tv_sec - sl.lts_ctrl().tv_sec) > inactive)
+				--nsrc;
+			continue;
+		}
+		sl.snp(sl.np());
+		rr->rr_srcid = sp->srcid();
+		int expected = sl.ns() - sl.sns();
+		sl.sns(sl.ns());
+		u_int32_t v;
+		int lost = expected - received;
+
+		if (lost <= 0)
+			v = 0;
+		else
+			/* expected != 0 if lost > 0 */
+			v = ((lost << 8) / expected) << 24;
+
+		/* XXX should saturate on over/underflow */
+		v |= (sl.ns() - sl.np()) & 0xffffff;
+		rr->rr_loss = htonl(v);
+		rr->rr_ehsr = htonl(sl.ehs());
+		rr->rr_dv = (sp->handler() != 0) ? sp->handler()->delvar() : 0;
+		rr->rr_lsr = htonl(sl.sts_ctrl());
+
+		if (sl.lts_ctrl().tv_sec == 0)
+			rr->rr_dlsr = 0;
+		else {
+			u_int32_t ntp_now = ntptime(now);
+			u_int32_t ntp_then = ntptime(sl.lts_ctrl());
+			rr->rr_dlsr = htonl(ntp_now - ntp_then);
+		}
+		++rr;
+		if (++nrr >= 31)
+			break;
+	}
+
+	flags |= nrr << 8;
+	rh->rh_flags = htons(flags);
+	int len = (u_char*)rr - pktbuf_;
+	rh->rh_len = htons((len >> 2) - 1);
+
+	if (bye)
+		len += build_bye((rtcphdr*)rr, s);
+	else
+		len += build_sdes((rtcphdr*)rr, s);
+	
+	// build "site" app data if specified
+	const char *data = tcl.attr("site");
+	if(data) 
+	{
+	    rr = (rtcp_rr*)(((u_char*)rh) + len);
+	    len += build_app((rtcphdr*)rr, s, "site", (void *)data, strlen(data));
+	}
+
+    ch->send(pktbuf_, len);
 }
 
 /*XXX check for buffer overflow*/
@@ -613,8 +740,8 @@ void SessionManager::send_report(CtrlHandler* ch, int bye, int app)
 	sl.lts_ctrl(now);
 	int we_sent = 0;
 	rtcp_rr* rr;
-	rtcp_xr_hdr* xrh;	// extended report header
-	rtcp_xr_blk* xrb;	// extended report block
+	//rtcp_xr_hdr* xrh;	// extended report header
+	//rtcp_xr_blk* xrb;	// extended report block
 	Tcl& tcl = Tcl::instance();
 
 	/*
@@ -640,7 +767,7 @@ void SessionManager::send_report(CtrlHandler* ch, int bye, int app)
 		flags |= RTCP_PT_RR;
 		rr = (rtcp_rr*)(rh + 1);
 	}
-
+/*
 	// if CC is turned on, we need XR report
 	if (is_cc_on()) {
 		flags |= RTCP_PT_XR;		// setting flags to XR
@@ -652,7 +779,7 @@ void SessionManager::send_report(CtrlHandler* ch, int bye, int app)
 		xrb->chunk = (u_int32_t *) htonl(get_ackvec());
 		//xrb->chunk = htonl(mt->ref_ts());
 	}
-
+*/
 	int nrr = 0;
 	int nsrc = 0;
 	/*
@@ -1008,6 +1135,7 @@ void SessionManager::parse_rr_records(u_int32_t, rtcp_rr*, int,
 void SessionManager::parse_sr(rtcphdr* rh, int flags, u_char*ep,
 							  Source* ps, Address & addr, int layer)
 {
+	debug_msg("XXX parse_sr() called!\n");
 	rtcp_sr* sr = (rtcp_sr*)(rh + 1);
 	Source* s;
 	u_int32_t ssrc = rh->rh_ssrc;
@@ -1076,7 +1204,7 @@ void SessionManager::parse_xr(rtcphdr* rh, int flags, u_char* ep,
 void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr_hdr* xrh, int cnt,
 				      const u_char* ep, Address & addr)
 {
-	debug_msg("XXX parse_xr_records\n");
+	debug_msg("XXX parse_xr_records() called!");
 	UNUSED(cnt);
 	UNUSED(ep);
 	UNUSED(addr);
@@ -1090,7 +1218,8 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr_hdr* xrh, int cnt,
 	if (xrb->begin_seq == xrb->end_seq) {
 		// we received ackofack, so do receiver stuffs here
 		//trim_vec(xrb->chunk);	// chunk in xrb is ackvec
-		ch_[0].send(build_ackvpkt(xrh), xrlen);
+		ch_[0].send(build_ackvpkt(xrh, ssrc), xrlen);
+		ch_[0].send(build_tspkt(xrh, ssrc), xrlen);
 	} else {
 		// we received ackvec, so do sender stuffs here
 		ackvec_ = (u_int32_t) &xrb->chunk;
@@ -1100,8 +1229,36 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr_hdr* xrh, int cnt,
 	}
 }
 
-u_char* SessionManager::build_ackvpkt(rtcp_xr_hdr* xrh) 
+// build ackvec packet (RTCP XR packet)
+u_char* SessionManager::build_ackvpkt(rtcp_xr_hdr* xrh, u_int32_t ssrc) 
 {
+	// set XR block type
+	xrh->xr_flags |= 0x01000000;
+
+	// take XR block contents
+	int xrlen = (xrh->xr_flags << 16) >> 16;
+	rtcp_xr_blk* xrb = (rtcp_xr_blk*)(xrh + xrlen + 1);
+
+	xrb->ssrc = ssrc;
+	xrb->chunk = (u_int32_t *) get_ackvec();
+	
+	u_char* p = (u_char*) xrh;
+	return (p);
+}
+
+// build timestamp packet (RTCP XR packet)
+u_char* SessionManager::build_tspkt(rtcp_xr_hdr* xrh, u_int32_t ssrc) 
+{
+	// set XR block type
+	xrh->xr_flags |= 0x03000000;
+
+	// take XR block contents
+	int xrlen = (xrh->xr_flags << 16) >> 16;
+	rtcp_xr_blk* xrb = (rtcp_xr_blk*)(xrh + xrlen + 1);
+
+	xrb->ssrc = ssrc;
+	//xrb->chunk = (u_int32_t *) echo_timestamp();
+
 	u_char* p = (u_char*) xrh;
 	return (p);
 }

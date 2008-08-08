@@ -51,6 +51,7 @@ public:
 
 protected:
 	inline u_int32_t get_ackvec() { return tfwcAV; }
+	inline u_int32_t get_timestamp() { return tfwcAV; }
 	u_int32_t tfwcAV;	// AckVec (bit vector)
 	u_int16_t seqno_;	// received RTP packet seqno
 	u_int16_t lastseq_;	// last RTP packet seqno
