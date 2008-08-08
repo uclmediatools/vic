@@ -94,6 +94,8 @@ class CtrlHandler : public DataHandler, public Timer {
 	void adapt(int nsrc, int nrr, int we_sent);
 	void sample_size(int cc);
 	inline double rint() const { return (rint_); }
+	void send_aoa();
+
  protected:
 	void schedule_timer();
 	double ctrl_inv_bw_;
@@ -128,6 +130,7 @@ public:
 //	virtual void send_report();
 	virtual void send_report(CtrlHandler*, int bye, int app = 0);
 	virtual void send_xreport(CtrlHandler*, int bye, int app = 0);
+	void build_aoapkt(CtrlHandler* ch);
 
 protected:
 //	void demux(rtphdr* rh, u_char* bp, int cc, Address & addr, int layer);

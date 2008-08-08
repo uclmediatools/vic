@@ -459,13 +459,24 @@ void SessionManager::transmit(pktbuf* pb)
 	if (pb->layer < loop_layer_) {
 	//	if ( pb->layer <0 ) exit(1);
 		Network* n = dh_[pb->layer].net();
-		if (n != 0) {
+		if (n != 0)
 			n->send(pb);
-			if(is_cc_on()) {
-				//ch_[0].send(build_aoapkt());
-			}
-		}
+
+		// if CC is on, send an RTCP XR (aoa) packet 
+		// upon every RTP data packet transmission.
+		if(is_cc_on())
+			ch_[0].send_aoa();
 	}
+}
+
+void CtrlHandler::send_aoa()
+{
+	sm_->build_aoapkt(this);
+}
+
+void SessionManager::build_aoapkt(CtrlHandler* ch)
+{
+	send_xreport(ch, 0);
 }
 
 u_char* SessionManager::build_sdes_item(u_char* p, int code, Source& s)
@@ -596,7 +607,7 @@ int SessionManager::build_app(rtcphdr* rh, Source& ls, const char *name,
 void SessionManager::announce(CtrlHandler* ch)
 {
 	send_report(ch, 0);
-	send_xreport(ch, 0);
+	//send_xreport(ch, 0);
 }
 
 /*
@@ -722,7 +733,18 @@ void SessionManager::send_xreport(CtrlHandler* ch, int bye, int app)
 	    len += build_app((rtcphdr*)rr, s, "site", (void *)data, strlen(data));
 	}
 
+	// sending XR report packet
     ch->send(pktbuf_, len);
+
+/*
+	// Call timer adaption for each layer
+	ch->adapt(nsrc, nrr, we_sent);
+	ch->sample_size(len);
+	
+	//	sm.CheckActiveSources(rint);
+	if (layer == 0)
+		sm.CheckActiveSources(ch->rint());
+*/
 }
 
 /*XXX check for buffer overflow*/
@@ -744,8 +766,6 @@ void SessionManager::send_report(CtrlHandler* ch, int bye, int app)
 	sl.lts_ctrl(now);
 	int we_sent = 0;
 	rtcp_rr* rr;
-	//rtcp_xr_hdr* xrh;	// extended report header
-	//rtcp_xr_blk* xrb;	// extended report block
 	Tcl& tcl = Tcl::instance();
 
 	/*
@@ -771,19 +791,7 @@ void SessionManager::send_report(CtrlHandler* ch, int bye, int app)
 		flags |= RTCP_PT_RR;
 		rr = (rtcp_rr*)(rh + 1);
 	}
-/*
-	// if CC is turned on, we need XR report
-	if (is_cc_on()) {
-		flags |= RTCP_PT_XR;		// setting flags to XR
-		xrh = (rtcp_xr_hdr*)(rh + 1);	// XR header
-		int xrlen = (xrh->xr_flags << 16) >> 16; // XR length
-		xrb = (rtcp_xr_blk*)(xrh + xrlen + 1);	// XR block
-		xrb->begin_seq = htonl(lastseq_);// this will be used for ackofack
-		xrb->end_seq = htonl(seqno_ + 1);// as defined in RFC3611 section 4.1
-		xrb->chunk = (u_int32_t *) htonl(get_ackvec());
-		//xrb->chunk = htonl(mt->ref_ts());
-	}
-*/
+
 	int nrr = 0;
 	int nsrc = 0;
 	/*
@@ -1193,6 +1201,7 @@ void SessionManager::parse_xr(rtcphdr* rh, int flags, u_char* ep,
 							  Source* ps, Address & addr, int layer)
 {
 
+	debug_msg("XXX parse_xr() called!\n");
 	Source* s;
 	u_int32_t ssrc = rh->rh_ssrc;
 	if (ps->srcid() != ssrc)
@@ -1208,7 +1217,6 @@ void SessionManager::parse_xr(rtcphdr* rh, int flags, u_char* ep,
 void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr_hdr* xrh, int cnt,
 				      const u_char* ep, Address & addr)
 {
-	debug_msg("XXX parse_xr_records() called!");
 	UNUSED(cnt);
 	UNUSED(ep);
 	UNUSED(addr);
