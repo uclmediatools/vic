@@ -648,8 +648,8 @@ void SessionManager::send_xreport(CtrlHandler* ch, int bye, int app)
 
 	int we_sent = 0;
 	rtcp_rr* rr;
-	rtcp_xr_hdr* xrh;   // extended report header
-	rtcp_xr_blk* xrb;   // extended report block
+	rtcp_xr_hdr* xrh = NULL;   // extended report header
+	rtcp_xr_blk* xrb = NULL;   // extended report block
 	Tcl& tcl = Tcl::instance();
 
 	MediaTimer* mt = MediaTimer::instance();
@@ -674,19 +674,33 @@ void SessionManager::send_xreport(CtrlHandler* ch, int bye, int app)
 	flags |= RTCP_PT_XR;
 	// access XR header 
 	xrh = (rtcp_xr_hdr*)(rh + 1);
-	// XR block length
-	int xrlen = (xrh->xr_flags << 16) >> 16;
-	xrb = (rtcp_xr_blk*)(xrh + xrlen + 1);
 
-	// this chunk is used for giving seqno and ackofack
-	if(xrh->xr_flags & (bt << 28) == XR_BT_1) {
+	int xrlen = 0x0003;	// XR packet length
+	int xr_ssrc = 0;	// SSRC of source (currently unused)
+
+	// this block is used for giving seqno and ackofack
+	if((bt << 24) == XR_BT_1) {
+		// set XR block flags (block type and length)
+		xrh->xr_flags |= XR_BT_1;	// block type
+		xrh->xr_flags |= xrlen; // block length
+
+		xrb = (rtcp_xr_blk*)(xrh + xrlen + 1);
+		xrb->ssrc = xr_ssrc;	// UNUSED
 		xrb->end_seq = htons(tfwc_sndr_get_seqno());
 		xrb->begin_seq = htons(tfwc_sndr_get_aoa());
 		xrb->chunk = NULL;
+
+		debug_msg("	SeqNo:		%d\n", tfwc_sndr_get_seqno());
 	} 
 	
-	// this chunk is used for giving timestamp
-	if(xrh->xr_flags & (bt << 28) == XR_BT_3) {
+	// this block is used for giving timestamp
+	if((bt << 24) == XR_BT_3) {
+		// set XR block flags (block type and length)
+		xrh->xr_flags |= XR_BT_3;	// block type
+		xrh->xr_flags |= xrlen; // block length
+
+		xrb = (rtcp_xr_blk*)(xrh + xrlen + 1);
+		xrb->ssrc = xr_ssrc;	// UNUSED
 		xrb->chunk = (u_int32_t *) htonl(tfwc_sndr_get_ts());
 	}
 

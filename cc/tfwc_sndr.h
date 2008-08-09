@@ -49,7 +49,7 @@ public:
 		::gettimeofday(&tv, 0);
 		return ((u_int32_t) tv.tv_sec + tv.tv_usec);
 	}
-	inline u_int32_t tfwc_sndr_get_ts() { return ts_; }
+	inline u_int32_t tfwc_sndr_get_ts() { return tfwc_sndr_now(); }
 	void ackofack();	// set ack of ack
 	u_int16_t seqno_;	// packet sequence number
 
