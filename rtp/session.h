@@ -210,8 +210,9 @@ protected:
 	u_int16_t ackofack_;	// Ack of ack
 
 	// AckVector
-	u_int32_t ackvec_;		// this is a bit vector
-	u_int32_t ts_echo_;		// time stamp echo
+	u_int32_t ackvec_;	// this is a bit vector
+	u_int32_t ts_;		// timestamp
+	u_int32_t ts_echo_;	// timestamp echo
 };
 
 class AudioSessionManager : public SessionManager {

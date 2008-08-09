@@ -47,6 +47,7 @@
 class TfwcRcvr {
 public:
 	TfwcRcvr();
+	void tfwc_rcvr_recv(u_int16_t seqno, u_int16_t ackofack, u_int32_t ts);
 	void set_received_seqno(u_int16_t seqno, u_int16_t lastseq);
 
 protected:

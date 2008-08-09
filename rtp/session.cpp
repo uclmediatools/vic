@@ -625,7 +625,7 @@ int SessionManager::build_app(rtcphdr* rh, Source& ls, const char *name,
 void SessionManager::announce(CtrlHandler* ch)
 {
 	send_report(ch, 0);
-	//send_xreport(ch, 0);
+	//send_xreport(ch, 0);	// this XR report will be driven by timer
 }
 
 /*
@@ -670,29 +670,24 @@ void SessionManager::send_xreport(CtrlHandler* ch, int bye, int app)
 		rr = (rtcp_rr*)(rh + 1);
 	}
 
-	// set this to XR packet
+	// set this RTCP flag to XR packet
 	flags |= RTCP_PT_XR;
 	// access XR header 
 	xrh = (rtcp_xr_hdr*)(rh + 1);
 	// XR block length
 	int xrlen = (xrh->xr_flags << 16) >> 16;
 	xrb = (rtcp_xr_blk*)(xrh + xrlen + 1);
-	// access XR block contents
-	// for ackofack
-	xrb->begin_seq = htonl(lastseq_);
-	xrb->end_seq = htonl(seqno_ + 1);
 
-	// this chunk is used for ackvec
+	// this chunk is used for giving seqno and ackofack
 	if(xrh->xr_flags & (bt << 28) == XR_BT_1) {
-		xrb->chunk = (u_int32_t *) htonl(tfwc_rcvr_getvec());
+		xrb->end_seq = htons(tfwc_sndr_get_seqno());
+		xrb->begin_seq = htons(tfwc_sndr_get_aoa());
+		xrb->chunk = NULL;
 	} 
 	
-	// this chunk is used for timestamp
+	// this chunk is used for giving timestamp
 	if(xrh->xr_flags & (bt << 28) == XR_BT_3) {
-		timeval tv;
-		::gettimeofday(&tv, 0);
-		u_int32_t time = (u_int32_t) (tv.tv_sec + tv.tv_usec);
-		xrb->chunk = (u_int32_t *) time;
+		xrb->chunk = (u_int32_t *) htonl(tfwc_sndr_get_ts());
 	}
 
 	int nrr = 0;
@@ -1250,31 +1245,39 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr_hdr* xrh, int cnt,
 
 	int xrlen = (xrh->xr_flags << 16) >> 16;
 	rtcp_xr_blk* xrb = (rtcp_xr_blk*)(xrh + xrlen + 1);
-	/*
-	 * if AoA is received, trim ackvec and send a new ackvec
-	 * if AckVec is received, then parse it to TfwcSndr
-	 */
-	if (xrb->begin_seq == xrb->end_seq) {
-		debug_msg(" --- RTP Receiver Side Operation\n");
-		// we received ackofack, so do receiver stuffs here
-		//trim_ackvec((u_int32_t) &xrb->chunk);	// chunk in xrb is ackvec
+
+	// we received seqno/ackofack, so do receiver stuffs here
+	if (xrb->chunk == NULL) {
+		// parse seqno, ackofack, and timestamp from XR report block
+		if(((xrh->xr_flags & XR_BT_1) >> 24) == (XR_BT_1 >> 24)) {
+			ackofack_ = xrb->begin_seq;
+			seqno_ = xrb->end_seq;
+		}
+		if(((xrh->xr_flags & XR_BT_3) >> 24) == (XR_BT_3 >> 24)) {
+			ts_ = (u_int32_t) &xrb->chunk;
+		}
+
+		// parse seqno, ackofack, and timestamp to TfwcRcvr
+		tfwc_rcvr_recv(seqno_, ackofack_, ts_);
+
+		// send receiver side XR report
 		ch_[0].send(build_ackv_pkt(xrh, ssrc), xrlen);
 		ch_[0].send(build_ts_echo_pkt(xrh, ssrc), xrlen);
-	} else {
-		debug_msg(" --- RTP Sender Side Operation\n");
-		// we received ackvec, so do sender stuffs here
-		if((xrh->xr_flags & XR_BT_1) >> 24 == 1) {
-			// this is an XR containing ackvec
-			debug_msg("	this is AckVec XR...\n");
+	}
+
+	// we received ackvec, so do sender stuffs here
+	else {
+
+		// parse seqno, ackvec and timestamp echo from XR report block
+		if(((xrh->xr_flags & XR_BT_1) >> 24) == (XR_BT_1 >> 24)) {
 			ackvec_ = (u_int32_t) &xrb->chunk;
-			ackofack_ = xrb->end_seq - 1;
 		}
-		if((xrh->xr_flags & XR_BT_3) >> 24 == 3) {
-			// this is an XR containing ts echo 
-			debug_msg("	this is ts_echo XR...\n");
+		if(((xrh->xr_flags & XR_BT_3) >> 24) == (XR_BT_3 >> 24)) {
 			ts_echo_ = (u_int32_t) &xrb->chunk;
 		}
-		tfwc_sndr_recv(ackvec_, ts_echo_);	// parse AckVec
+
+		// parse ackvec and timestamp echo to TfwcSndr
+		tfwc_sndr_recv(ackvec_, ts_echo_);
 	}
 }
 

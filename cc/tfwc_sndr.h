@@ -43,7 +43,13 @@ public:
 	void tfwc_sndr_send(pktbuf*);
 	void tfwc_sndr_recv(u_int32_t ackv, u_int32_t ts_echo);
 	inline u_int16_t tfwc_sndr_get_seqno() { return seqno_; }
-	inline u_int32_t tfwc_sndr_get_aoa() { return aoa_; }
+	inline u_int16_t tfwc_sndr_get_aoa() { return aoa_; }
+	inline u_int32_t tfwc_sndr_now() {
+		timeval tv;
+		::gettimeofday(&tv, 0);
+		return ((u_int32_t) tv.tv_sec + tv.tv_usec);
+	}
+	inline u_int32_t tfwc_sndr_get_ts() { return ts_; }
 	void ackofack();	// set ack of ack
 	u_int16_t seqno_;	// packet sequence number
 
@@ -51,7 +57,7 @@ protected:
 
 	u_int32_t marginvec_;	// margin vec
 	u_int32_t ackv_;	// AckVec (in TfwcSndr)
-	u_int32_t aoa_;		// ack of ack
+	u_int16_t aoa_;		// ack of ack
 	u_int32_t ts_;		// time stamp
 	u_int32_t ts_echo_;	// echo time stamp from the receiver
 	TfwcSndr* tfwcsndr_;

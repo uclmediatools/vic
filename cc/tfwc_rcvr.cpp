@@ -48,6 +48,14 @@ TfwcRcvr::TfwcRcvr() :
 	seqno_(0) 
 {}
 
+void TfwcRcvr::tfwc_rcvr_recv(u_int16_t seqno, 
+		u_int16_t ackofack, u_int32_t ts) 
+{
+	UNUSED(seqno);
+	UNUSED(ackofack);
+	UNUSED(ts);
+}
+
 void TfwcRcvr::set_received_seqno(u_int16_t seqno, u_int16_t lastseq) 
 {
 	seqno_ = seqno;
