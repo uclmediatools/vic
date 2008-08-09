@@ -682,12 +682,17 @@ void SessionManager::send_xreport(CtrlHandler* ch, int bye, int app)
 	xrb->begin_seq = htonl(lastseq_);
 	xrb->end_seq = htonl(seqno_ + 1);
 
+	// this chunk is used for ackvec
 	if(xrh->xr_flags & (bt << 28) == XR_BT_1) {
-		// this chunk is ackvec
 		xrb->chunk = (u_int32_t *) htonl(tfwc_rcvr_getvec());
-	} else if(xrh->xr_flags & (bt << 28) == XR_BT_3) {
-		// this chunk is timestamp echo
-		//xrb->chunk = (u_int32_t *) gettimeofday_usecs();
+	} 
+	
+	// this chunk is used for timestamp
+	if(xrh->xr_flags & (bt << 28) == XR_BT_3) {
+		timeval tv;
+		::gettimeofday(&tv, 0);
+		u_int32_t time = (u_int32_t) (tv.tv_sec + tv.tv_usec);
+		xrb->chunk = (u_int32_t *) time;
 	}
 
 	int nrr = 0;
