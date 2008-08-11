@@ -130,7 +130,7 @@ public:
 	virtual inline void send_bye() { send_report(&ch_[0], 1); }
 //	virtual void send_report();
 	virtual void send_report(CtrlHandler*, int bye, int app = 0);
-	virtual void send_xreport(CtrlHandler*, int bye, int app = 0);
+	virtual void send_xreport(CtrlHandler*, int bt, int bye);
 	void build_aoa_pkt(CtrlHandler* ch);
 	void build_ts_pkt(CtrlHandler* ch);
 
@@ -154,15 +154,15 @@ protected:
 		      Source* ps, Address & addr, int layer);
 	void parse_rr_records(u_int32_t ssrc, rtcp_rr* r, int cnt,
 			      const u_char* ep, Address & addr);
-	void parse_xr_records(u_int32_t ssrc, rtcp_xr_hdr* xrh, int cnt,
+	void parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 			      const u_char* ep, Address & addr);
 	int sdesbody(u_int32_t* p, u_char* ep, Source* ps,
 		     Address & addr, u_int32_t ssrc, int layer);
 	void parse_sdes(rtcphdr* rh, int flags, u_char* ep, Source* ps,
 			Address & addr, u_int32_t ssrc, int layer);
 	void parse_bye(rtcphdr* rh, int flags, u_char* ep, Source* ps);
-	u_char* build_ackv_pkt(rtcp_xr_hdr* xrh, u_int32_t ssrc);
-	u_char* build_ts_echo_pkt(rtcp_xr_hdr* xrh, u_int32_t ssrc);
+	u_char* build_ackv_pkt(rtcp_xr* xr, u_int32_t ssrc);
+	u_char* build_ts_echo_pkt(rtcp_xr* xr, u_int32_t ssrc);
 
 	int parseopts(const u_char* bp, int cc, Address & addr) const;
 	int ckid(const char*, int len);

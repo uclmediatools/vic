@@ -136,12 +136,12 @@ struct rtcp_rr {
 #define XR_BT_2	0x02	// Duplicate RLE Report Block
 #define XR_BT_3	0x03	// Packet Receipt Times Report Block
 #define XR_BT_4	0x04	// Receiver Reference Time Report Block
-struct rtcp_xr_hdr {
+struct rtcp_xr {
+	// extended report block header
 	u_int16_t xr_flags;	/* BT:8 TS:8 */
 	u_int16_t xr_len;	/* XR report block length (in bytes)*/
-};
 
-struct rtcp_xr_blk {
+	// extended report block contents
 	u_int32_t ssrc;	/* ssrc of the RTP data pkt being reported upon by this */
 	u_int16_t begin_seq; /* first seqno that this block report */
 	u_int16_t end_seq;	/* last seqno that this block report plus 1 */
