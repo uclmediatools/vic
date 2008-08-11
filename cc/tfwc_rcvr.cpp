@@ -49,19 +49,18 @@ TfwcRcvr::TfwcRcvr() :
 {}
 
 void TfwcRcvr::tfwc_rcvr_recv(u_int16_t seqno, 
-		u_int16_t ackofack, u_int32_t ts) 
+				u_int16_t ackofack, u_int32_t ts) 
 {
-	UNUSED(seqno);
-	UNUSED(ackofack);
-	UNUSED(ts);
+	seqno_ = seqno;
+	ackofack_ = ackofack;
+	ts_echo_ = ts;
+	debug_msg("received seqno:  %d\n", seqno_);
 }
 
 void TfwcRcvr::set_received_seqno(u_int16_t seqno, u_int16_t lastseq) 
 {
 	seqno_ = seqno;
 	lastseq_ = lastseq;
-    debug_msg("received seqno:  %d\n", seqno_);
-
 	ackvec_manager(seqno_, lastseq_);
 }
 
@@ -80,5 +79,4 @@ void TfwcRcvr::ackvec_manager(u_int16_t seqno, u_int16_t lastseq)
 		printf(" %d... %s ", seqno, isThere ? "Ok" : "Nok");
 	}
 	printf("\n");
-	//lastseq_ = seqno;
 }

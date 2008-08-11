@@ -55,6 +55,7 @@ protected:
 	inline u_int32_t tfwc_rcvr_ts_echo() { return ts_echo_; }
 	u_int32_t tfwcAV;	// AckVec (bit vector)
 	u_int16_t seqno_;	// received RTP packet seqno
+	u_int16_t ackofack_;	// ackofack
 	u_int16_t lastseq_;	// last RTP packet seqno
 private:
 	void ackvec_manager(u_int16_t seqno, u_int16_t latseq);

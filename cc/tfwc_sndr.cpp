@@ -68,6 +68,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int32_t ackv, u_int32_t ts_echo)
 	// the most recent 3 packets will be marked as 1 using marginvec_
 	ackv_ = ackv | marginvec_;
 	ts_echo_ = ts_echo;
+	debug_msg(" ts echo:	%d\n", ts_echo_);
 }
 
 void TfwcSndr::ackofack() {

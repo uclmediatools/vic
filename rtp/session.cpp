@@ -640,7 +640,7 @@ void SessionManager::send_xreport(CtrlHandler* ch, int bye, int app)
 	Source& s = *sm.localsrc();
 	rtcphdr* rh = (rtcphdr*)pktbuf_;
 	rh->rh_ssrc = s.srcid();
-	int flags = RTP_VERSION << 14;
+	int flags = RTP_VERSION << 14;	// RTCP flags
 	int layer = ch - ch_;
 	Source::Layer& sl = s.layer(layer);
 	timeval now = unixtime();
@@ -648,8 +648,8 @@ void SessionManager::send_xreport(CtrlHandler* ch, int bye, int app)
 
 	int we_sent = 0;
 	rtcp_rr* rr;
-	rtcp_xr_hdr* xrh = NULL;   // extended report header
-	rtcp_xr_blk* xrb = NULL;   // extended report block
+	rtcp_xr_hdr* xrh;   // extended report header
+	rtcp_xr_blk* xrb;   // extended report block
 	Tcl& tcl = Tcl::instance();
 
 	MediaTimer* mt = MediaTimer::instance();
@@ -670,38 +670,39 @@ void SessionManager::send_xreport(CtrlHandler* ch, int bye, int app)
 		rr = (rtcp_rr*)(rh + 1);
 	}
 
-	// set this RTCP flag to XR packet
-	flags |= RTCP_PT_XR;
+	// set RTCP flag to XR packet
+	flags |= RTCP_PT_XR;	
 	// access XR header 
 	xrh = (rtcp_xr_hdr*)(rh + 1);
+	xrb = (rtcp_xr_blk*)(xrh + 1);
 
-	int xrlen = 0x0003;	// XR packet length
-	int xr_ssrc = 0;	// SSRC of source (currently unused)
+	int xrlen = 0x03;	// XR packet length
+	int xrssrc = 0;	// SSRC of source (currently unused)
 
 	// this block is used for giving seqno and ackofack
-	if((bt << 24) == XR_BT_1) {
+	if(bt == XR_BT_1) {
 		// set XR block flags (block type and length)
-		xrh->xr_flags |= XR_BT_1;	// block type
-		xrh->xr_flags |= xrlen; // block length
+		xrh->xr_flags = htons(XR_BT_1 << 8);
+		xrh->xr_len = htons(xrlen);
 
-		xrb = (rtcp_xr_blk*)(xrh + xrlen + 1);
-		xrb->ssrc = xr_ssrc;	// UNUSED
+		xrb->ssrc = htonl(xrssrc);	// UNUSED
 		xrb->end_seq = htons(tfwc_sndr_get_seqno());
 		xrb->begin_seq = htons(tfwc_sndr_get_aoa());
 		xrb->chunk = NULL;
-
 		debug_msg("	SeqNo:		%d\n", tfwc_sndr_get_seqno());
 	} 
 	
 	// this block is used for giving timestamp
-	if((bt << 24) == XR_BT_3) {
+	else if(bt == XR_BT_3) {
 		// set XR block flags (block type and length)
-		xrh->xr_flags |= XR_BT_3;	// block type
-		xrh->xr_flags |= xrlen; // block length
+		xrh->xr_flags = htons(XR_BT_3 << 8);
+		xrh->xr_len = htons(xrlen);
 
-		xrb = (rtcp_xr_blk*)(xrh + xrlen + 1);
-		xrb->ssrc = xr_ssrc;	// UNUSED
+		xrb->ssrc = htonl(xrssrc);	// UNUSED
+		//xrb->end_seq = NULL;		// UNUSED
+		//xrb->begin_seq = NULL;	// UNUSED
 		xrb->chunk = (u_int32_t *) htonl(tfwc_sndr_get_ts());
+		debug_msg("	TS:		%d\n", tfwc_sndr_get_ts());
 	}
 
 	int nrr = 0;
@@ -770,17 +771,7 @@ void SessionManager::send_xreport(CtrlHandler* ch, int bye, int app)
 	}
 
 	// sending XR report packet
-    ch->send(pktbuf_, len);
-
-/*
-	// Call timer adaption for each layer
-	ch->adapt(nsrc, nrr, we_sent);
-	ch->sample_size(len);
-	
-	//	sm.CheckActiveSources(rint);
-	if (layer == 0)
-		sm.CheckActiveSources(ch->rint());
-*/
+	ch->send(pktbuf_, len);
 }
 
 /*XXX check for buffer overflow*/
@@ -974,23 +965,15 @@ void SessionManager::recv(DataHandler* dh)
 		return;
 	}
 
-	rtphdr* rh = (rtphdr*)pb->data;
-	seqno_ = ntohs(rh->rh_seqno);	// get received packet seqno
-
     // Ignore loopback packets
 	if (!loopback_) {
-		//rtphdr* rh = (rtphdr*)pb->data;
+		rtphdr* rh = (rtphdr*)pb->data;
 		SourceManager& sm = SourceManager::instance();
 		if (rh->rh_ssrc == (*sm.localsrc()).srcid()) {
-			debug_msg("(loopback) seqno:	%d\n", seqno_);
 			pb->release();	// releasing loopback packet
 			return;
 		}
 	} // now, loopback packets ignored (if disabled)
-
-	// set received seqno - passing seqno to TfwcRcvr
-	set_received_seqno(seqno_, lastseq_);
-	lastseq_ = seqno_;	// set last seqno
 
 	int version = pb->data[0] >> 6;
 	//int version = *(u_char*)rh >> 6;
@@ -1183,7 +1166,6 @@ void SessionManager::parse_rr_records(u_int32_t, rtcp_rr*, int,
 void SessionManager::parse_sr(rtcphdr* rh, int flags, u_char*ep,
 							  Source* ps, Address & addr, int layer)
 {
-	debug_msg("XXX parse_sr() called!\n");
 	rtcp_sr* sr = (rtcp_sr*)(rh + 1);
 	Source* s;
 	u_int32_t ssrc = rh->rh_ssrc;
@@ -1229,24 +1211,23 @@ void SessionManager::parse_rr(rtcphdr* rh, int flags, u_char* ep,
 		s = ps;
 	
 	s->layer(layer).lts_ctrl(unixtime());
-	int cnt = flags >> 8 & 0x1f;
+	int cnt = flags >> 8 & 0x1f;	// reception report count
 	parse_rr_records(ssrc, (rtcp_rr*)(rh + 1), cnt, ep, addr);
 }
 
 void SessionManager::parse_xr(rtcphdr* rh, int flags, u_char* ep,
 							  Source* ps, Address & addr, int layer)
 {
-
 	debug_msg("XXX parse_xr() called!\n");
 	Source* s;
-	u_int32_t ssrc = rh->rh_ssrc;
+	u_int32_t ssrc = rh->rh_ssrc;	// RTCP's ssrc
 	if (ps->srcid() != ssrc)
 		s = SourceManager::instance().lookup(ssrc, ssrc, addr);
 	else
 		s = ps;
 
 	s->layer(layer).lts_ctrl(unixtime());
-	int cnt = flags >> 8 & 0x1f;
+	int cnt = flags >> 8 & 0x1f;	// reception report count
 	parse_xr_records(ssrc, (rtcp_xr_hdr*)(rh + 1), cnt, ep, addr);
 }
 
@@ -1257,18 +1238,19 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr_hdr* xrh, int cnt,
 	UNUSED(ep);
 	UNUSED(addr);
 
-	int xrlen = (xrh->xr_flags << 16) >> 16;
-	rtcp_xr_blk* xrb = (rtcp_xr_blk*)(xrh + xrlen + 1);
+	int xrlen = ntohs(xrh->xr_len);
+	rtcp_xr_blk* xrb = (rtcp_xr_blk*)(xrh + 1);
 
 	// we received seqno/ackofack, so do receiver stuffs here
 	if (xrb->chunk == NULL) {
+		printf("RECEIVER RECEIVER!!\n");
 		// parse seqno, ackofack, and timestamp from XR report block
-		if(((xrh->xr_flags & XR_BT_1) >> 24) == (XR_BT_1 >> 24)) {
-			ackofack_ = xrb->begin_seq;
-			seqno_ = xrb->end_seq;
+		if(xrh->xr_flags >> 8 == XR_BT_1) {
+			ackofack_ = ntohs(xrb->begin_seq);
+			seqno_ = ntohs(xrb->end_seq);
 		}
-		if(((xrh->xr_flags & XR_BT_3) >> 24) == (XR_BT_3 >> 24)) {
-			ts_ = (u_int32_t) &xrb->chunk;
+		else if(xrh->xr_flags >> 8 == XR_BT_3) {
+			ts_ = ntohl((u_int32_t) &xrb->chunk);
 		}
 
 		// parse seqno, ackofack, and timestamp to TfwcRcvr
@@ -1278,16 +1260,15 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr_hdr* xrh, int cnt,
 		ch_[0].send(build_ackv_pkt(xrh, ssrc), xrlen);
 		ch_[0].send(build_ts_echo_pkt(xrh, ssrc), xrlen);
 	}
-
 	// we received ackvec, so do sender stuffs here
 	else {
-
+		printf("SENDER SENDER!!\n");
 		// parse seqno, ackvec and timestamp echo from XR report block
-		if(((xrh->xr_flags & XR_BT_1) >> 24) == (XR_BT_1 >> 24)) {
-			ackvec_ = (u_int32_t) &xrb->chunk;
+		if(xrh->xr_flags >> 8 == XR_BT_1) {
+			ackvec_ = ntohl((u_int32_t) &xrb->chunk);
 		}
-		if(((xrh->xr_flags & XR_BT_3) >> 24) == (XR_BT_3 >> 24)) {
-			ts_echo_ = (u_int32_t) &xrb->chunk;
+		else if(xrh->xr_flags >> 8 == XR_BT_3) {
+			ts_echo_ = ntohl((u_int32_t) &xrb->chunk);
 		}
 
 		// parse ackvec and timestamp echo to TfwcSndr
@@ -1296,36 +1277,32 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr_hdr* xrh, int cnt,
 }
 
 // build ackvec packet (RTCP XR packet)
-u_char* SessionManager::build_ackv_pkt(rtcp_xr_hdr* xrh, u_int32_t ssrc) 
+u_char* SessionManager::build_ackv_pkt(rtcp_xr_hdr* xrh, u_int32_t ssrc)
 {
-	debug_msg(" build_ackv_pkt\n");
 	// set XR block type
-	xrh->xr_flags |= XR_BT_1;
+	xrh->xr_flags = XR_BT_1 << 8;
 
 	// take XR block contents
-	int xrlen = (xrh->xr_flags << 16) >> 16;
-	rtcp_xr_blk* xrb = (rtcp_xr_blk*)(xrh + xrlen + 1);
+	rtcp_xr_blk* xrb = (rtcp_xr_blk*)(xrh + 1);
 
-	xrb->ssrc = ssrc;
-	xrb->chunk = (u_int32_t *) tfwc_rcvr_getvec();
+	xrb->ssrc = htons(ssrc);	// UNUSED
+	xrb->chunk = (u_int32_t *) htonl(tfwc_rcvr_getvec());
 	
 	u_char* p = (u_char*) xrh;
 	return (p);
 }
 
 // build timestamp packet (RTCP XR packet)
-u_char* SessionManager::build_ts_echo_pkt(rtcp_xr_hdr* xrh, u_int32_t ssrc) 
+u_char* SessionManager::build_ts_echo_pkt(rtcp_xr_hdr* xrh, u_int32_t ssrc)
 {
-	debug_msg(" build_ts_echo_pkt\n");
 	// set XR block type
-	xrh->xr_flags |= XR_BT_3;
+	xrh->xr_flags = XR_BT_3 << 8;
 
 	// take XR block contents
-	int xrlen = (xrh->xr_flags << 16) >> 16;
-	rtcp_xr_blk* xrb = (rtcp_xr_blk*)(xrh + xrlen + 1);
+	rtcp_xr_blk* xrb = (rtcp_xr_blk*)(xrh + 1);
 
-	xrb->ssrc = ssrc;
-	xrb->chunk = (u_int32_t *) tfwc_rcvr_ts_echo();
+	xrb->ssrc = htons(ssrc);	// UNUSED
+	xrb->chunk = (u_int32_t *) htonl(tfwc_rcvr_ts_echo());
 
 	u_char* p = (u_char*) xrh;
 	return (p);

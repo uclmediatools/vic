@@ -132,12 +132,13 @@ struct rtcp_rr {
  * RTCP Extended Report.
  * (RFC 3611)
  */
-#define XR_BT_1	0x01000000	// Loss RLE Report Block
-#define XR_BT_2	0x02000000	// Duplicate RLE Report Block
-#define XR_BT_3	0x03000000	// Packet Receipt Times Report Block
-#define XR_BT_4	0x04000000	// Receiver Reference Time Report Block
+#define XR_BT_1	0x01	// Loss RLE Report Block
+#define XR_BT_2	0x02	// Duplicate RLE Report Block
+#define XR_BT_3	0x03	// Packet Receipt Times Report Block
+#define XR_BT_4	0x04	// Receiver Reference Time Report Block
 struct rtcp_xr_hdr {
-	u_int32_t xr_flags;	/* BT:8 TS:8 LEN:16 */
+	u_int16_t xr_flags;	/* BT:8 TS:8 */
+	u_int16_t xr_len;	/* XR report block length (in bytes)*/
 };
 
 struct rtcp_xr_blk {

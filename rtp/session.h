@@ -94,8 +94,8 @@ class CtrlHandler : public DataHandler, public Timer {
 	void adapt(int nsrc, int nrr, int we_sent);
 	void sample_size(int cc);
 	inline double rint() const { return (rint_); }
-	void send_aoa();
-	void send_ts();
+	void send_aoa();	// send ackofack (TfwcSndr side)
+	void send_ts();		// send timestamp (TfwcSndr side)
 
  protected:
 	void schedule_timer();
