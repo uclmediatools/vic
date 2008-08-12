@@ -96,6 +96,8 @@ class CtrlHandler : public DataHandler, public Timer {
 	inline double rint() const { return (rint_); }
 	void send_aoa();	// send ackofack (TfwcSndr side)
 	void send_ts();		// send timestamp (TfwcSndr side)
+	void send_ackv();
+	void send_ts_echo();
 
  protected:
 	void schedule_timer();
@@ -112,12 +114,6 @@ class ReportTimer : public Timer {
 	SessionManager& sm_;
 };
 
-// set AckVec bitmap
-//#define SET_BIT_VEC(ackvec_, bit) (ackvec_ = ((ackvec_ << 1) | bit))
-
-// see AckVec bitmap
-//#define SEE_BIT_VEC(ackvec_, ix, seqno) ((1 << (seqno - ix)) & ackvec_)
-
 class SessionManager : public Transmitter, public MtuAlloc {
 public:
 	SessionManager();
@@ -131,8 +127,11 @@ public:
 //	virtual void send_report();
 	virtual void send_report(CtrlHandler*, int bye, int app = 0);
 	virtual void send_xreport(CtrlHandler*, int bt, int bye);
+	virtual void send_xreport_back(CtrlHandler*, int bt, int bye);
 	void build_aoa_pkt(CtrlHandler* ch);
 	void build_ts_pkt(CtrlHandler* ch);
+	void build_ackv_pkt(CtrlHandler* ch);
+	void build_ts_echo_pkt(CtrlHandler* ch);
 
 protected:
 //	void demux(rtphdr* rh, u_char* bp, int cc, Address & addr, int layer);
@@ -161,8 +160,8 @@ protected:
 	void parse_sdes(rtcphdr* rh, int flags, u_char* ep, Source* ps,
 			Address & addr, u_int32_t ssrc, int layer);
 	void parse_bye(rtcphdr* rh, int flags, u_char* ep, Source* ps);
-	u_char* build_ackv_pkt(rtcp_xr* xr, u_int32_t ssrc);
-	u_char* build_ts_echo_pkt(rtcp_xr* xr, u_int32_t ssrc);
+	//u_char* build_ackv_pkt(rtcp_xr* xr, u_int32_t ssrc);
+	//u_char* build_ts_echo_pkt(rtcp_xr* xr, u_int32_t ssrc);
 
 	int parseopts(const u_char* bp, int cc, Address & addr) const;
 	int ckid(const char*, int len);

@@ -1154,11 +1154,13 @@ void SessionManager::parse_xr(rtcphdr* rh, int flags, u_char* ep,
 void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 				      const u_char* ep, Address & addr)
 {
+	UNUSED(ssrc);
 	UNUSED(cnt);
 	UNUSED(ep);
 	UNUSED(addr);
 
-	int xrlen = ntohs(xr->xr_len) << 2;
+	//int xrlen = ntohs(xr->xr_len) << 2;
+	u_int16_t flags = ntohs(xr->xr_flags >> 8);
 	u_int16_t ackofack = ntohs(xr->begin_seq);
 	u_int16_t seqno = ntohs(xr->end_seq);
 	debug_msg("AoA:	%d, SEQNO:	%d\n", ackofack, seqno);
@@ -1167,11 +1169,11 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 	if (seqno != ackofack) {
 		printf("RECEIVER RECEIVER!!\n");
 		// parse seqno, ackofack, and timestamp from XR report block
-		if(xr->xr_flags >> 8 == XR_BT_1) {
+		if(flags == XR_BT_1) {
 			ackofack_ = ackofack;
 			seqno_ = seqno;
 		}
-		else if(xr->xr_flags >> 8 == XR_BT_3) {
+		else if(flags == XR_BT_3) {
 			ts_ = ntohl((u_int32_t) &xr->chunk);
 		}
 
@@ -1179,17 +1181,17 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 		tfwc_rcvr_recv(seqno_, ackofack_, ts_);
 
 		// send receiver side XR report
-		ch_[0].send(build_ackv_pkt(xr, ssrc), xrlen);
-		ch_[0].send(build_ts_echo_pkt(xr, ssrc), xrlen);
+		ch_[0].send_ackv();
+		ch_[0].send_ts_echo();
 	}
 	// we received ackvec, so do sender stuffs here
 	else {
 		printf("SENDER SENDER!!\n");
 		// parse seqno, ackvec and timestamp echo from XR report block
-		if(xr->xr_flags >> 8 == XR_BT_1) {
+		if(flags == XR_BT_1) {
 			ackvec_ = ntohl((u_int32_t) &xr->chunk);
 		}
-		else if(xr->xr_flags >> 8 == XR_BT_3) {
+		else if(flags == XR_BT_3) {
 			ts_echo_ = ntohl((u_int32_t) &xr->chunk);
 		}
 
@@ -1198,37 +1200,84 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 	}
 }
 
-// build ackvec packet (RTCP XR packet)
-u_char* SessionManager::build_ackv_pkt(rtcp_xr* xr, u_int32_t ssrc)
+void CtrlHandler::send_ackv()
 {
-	xr->ssrc = htons(ssrc);		// UNUSED
-
-	// set XR block type
-	xr->xr_flags = XR_BT_1 << 8;
-
-	// make 'begin_seq' equal to 'end_seq'
-	xr->begin_seq = xr->end_seq;
-
-	// get ackvec from TfwcRcvr
-	xr->chunk = (u_int32_t *) htonl(tfwc_rcvr_getvec());
-	
-	u_char* p = (u_char*) xr;
-	return (p);
+	sm_->build_ackv_pkt(this);
 }
 
-// build timestamp packet (RTCP XR packet)
-u_char* SessionManager::build_ts_echo_pkt(rtcp_xr* xr, u_int32_t ssrc)
+void CtrlHandler::send_ts_echo()
 {
-	xr->ssrc = htons(ssrc);		// UNUSED
+	sm_->build_ts_echo_pkt(this);
+}
 
-	// set XR block type
-	xr->xr_flags = XR_BT_3 << 8;
+void SessionManager::build_ackv_pkt(CtrlHandler* ch)
+{
+	// RTCP XR (block type 1)
+	// this block contains ackvec
+	send_xreport_back(ch, XR_BT_1, 0);
+}
 
-	// get timestamp echo from TfwcRcvr
-	xr->chunk = (u_int32_t *) htonl(tfwc_rcvr_ts_echo());
+void SessionManager::build_ts_echo_pkt(CtrlHandler* ch)
+{
+	// RTCP XR (block type 3)
+	// this block contains timestamp echo
+	send_xreport_back(ch, XR_BT_3, 0);
+}
 
-	u_char* p = (u_char*) xr;
-	return (p);
+void SessionManager::send_xreport_back(CtrlHandler* ch, int bt, int bye)
+{
+	UNUSED(bye);
+
+	SourceManager& sm = SourceManager::instance();
+	Source& s = *sm.localsrc();
+	rtcphdr* rh = (rtcphdr *)pktbuf_;
+	rh->rh_ssrc = s.srcid();
+	int flags = RTP_VERSION << 14;
+
+	// set RTCP flag to  XR packet
+	flags |= RTCP_PT_XR;
+
+	// declare XR packet
+	rtcp_xr* xr;
+	xr = (rtcp_xr*)(rh + 1);
+
+	// UNUSED
+	int xrssrc = 0;
+	xr->ssrc = htons(xrssrc);
+
+	// this block is used for giving ackvec
+	if (bt == XR_BT_1) {
+		// set XR block type
+		xr->xr_flags = htons(XR_BT_1 << 8);
+
+		// make 'begin_seq' equal to 'end_seq'
+		xr->begin_seq = htons(xr->end_seq);
+
+		// get ackvec from TfwcRcvr
+		xr->chunk = (u_int32_t *) htonl(tfwc_rcvr_getvec());
+	}
+	// this block is used for giving timiestamp echo
+	else if (bt == XR_BT_3) {
+		// set XR block type
+		xr->xr_flags = htons(XR_BT_3 << 8);
+	
+		// get timestamp echo from TfwcRcvr
+		xr->chunk = (u_int32_t *) htonl(tfwc_rcvr_ts_echo());
+	}
+
+	// XR report block length
+	int xrlen = (u_char *)xr - pktbuf_;
+	xr->xr_len = htons((xrlen >> 2) - 1);
+
+	// RTCP header flags
+	rh->rh_flags = htons(flags);
+
+	// RTCP packet length
+	int len = (u_char *)xr - pktbuf_;
+	rh->rh_len = htons((len >> 2) - 1);
+
+	// send XR report block (this is ackvec)
+	ch->send(pktbuf_, len);
 }
 
 int SessionManager::sdesbody(u_int32_t* p, u_char* ep, Source* ps,
