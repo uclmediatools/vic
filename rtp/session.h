@@ -96,8 +96,8 @@ class CtrlHandler : public DataHandler, public Timer {
 	inline double rint() const { return (rint_); }
 	void send_aoa();	// send ackofack (TfwcSndr side)
 	void send_ts();		// send timestamp (TfwcSndr side)
-	void send_ackv();
-	void send_ts_echo();
+	void send_ackv(rtcp_xr* xr);
+	void send_ts_echo(rtcp_xr* xr);
 
  protected:
 	void schedule_timer();
@@ -127,11 +127,11 @@ public:
 //	virtual void send_report();
 	virtual void send_report(CtrlHandler*, int bye, int app = 0);
 	virtual void send_xreport(CtrlHandler*, int bt, int bye);
-	virtual void send_xreport_back(CtrlHandler*, int bt, int bye);
+	virtual void send_xreport_back(CtrlHandler*, rtcp_xr* xr, int bt, int bye);
 	void build_aoa_pkt(CtrlHandler* ch);
 	void build_ts_pkt(CtrlHandler* ch);
-	void build_ackv_pkt(CtrlHandler* ch);
-	void build_ts_echo_pkt(CtrlHandler* ch);
+	void build_ackv_pkt(CtrlHandler* ch, rtcp_xr* xr);
+	void build_ts_echo_pkt(CtrlHandler* ch, rtcp_xr* xr);
 
 protected:
 //	void demux(rtphdr* rh, u_char* bp, int cc, Address & addr, int layer);

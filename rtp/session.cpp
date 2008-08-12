@@ -1181,8 +1181,8 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 		tfwc_rcvr_recv(seqno_, ackofack_, ts_);
 
 		// send receiver side XR report
-		ch_[0].send_ackv();
-		ch_[0].send_ts_echo();
+		ch_[0].send_ackv(xr);
+		ch_[0].send_ts_echo(xr);
 	}
 	// we received ackvec, so do sender stuffs here
 	else {
@@ -1200,31 +1200,32 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 	}
 }
 
-void CtrlHandler::send_ackv()
+void CtrlHandler::send_ackv(rtcp_xr* xr)
 {
-	sm_->build_ackv_pkt(this);
+	sm_->build_ackv_pkt(this, xr);
 }
 
-void CtrlHandler::send_ts_echo()
+void CtrlHandler::send_ts_echo(rtcp_xr* xr)
 {
-	sm_->build_ts_echo_pkt(this);
+	sm_->build_ts_echo_pkt(this, xr);
 }
 
-void SessionManager::build_ackv_pkt(CtrlHandler* ch)
+void SessionManager::build_ackv_pkt(CtrlHandler* ch, rtcp_xr* xr)
 {
 	// RTCP XR (block type 1)
 	// this block contains ackvec
-	send_xreport_back(ch, XR_BT_1, 0);
+	send_xreport_back(ch, xr, XR_BT_1, 0);
 }
 
-void SessionManager::build_ts_echo_pkt(CtrlHandler* ch)
+void SessionManager::build_ts_echo_pkt(CtrlHandler* ch, rtcp_xr* xr)
 {
 	// RTCP XR (block type 3)
 	// this block contains timestamp echo
-	send_xreport_back(ch, XR_BT_3, 0);
+	send_xreport_back(ch, xr, XR_BT_3, 0);
 }
 
-void SessionManager::send_xreport_back(CtrlHandler* ch, int bt, int bye)
+void SessionManager::send_xreport_back(CtrlHandler* ch, rtcp_xr* xr, 
+		int bt, int bye)
 {
 	UNUSED(bye);
 
@@ -1236,10 +1237,6 @@ void SessionManager::send_xreport_back(CtrlHandler* ch, int bt, int bye)
 
 	// set RTCP flag to  XR packet
 	flags |= RTCP_PT_XR;
-
-	// declare XR packet
-	rtcp_xr* xr;
-	xr = (rtcp_xr*)(rh + 1);
 
 	// UNUSED
 	int xrssrc = 0;
