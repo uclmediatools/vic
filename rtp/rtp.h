@@ -96,7 +96,10 @@ struct rtphdr {
 
 struct rtcphdr {
 	u_int16_t rh_flags;	/* T:2 P:1 CNT:5 PT:8 */
-	u_int16_t rh_len;	/* length of message (in bytes) */
+	u_int16_t rh_len;	/* length of the message is the number of 
+				   32-bit words in the extension, excluding the
+				   four-octet extension header, therefore zero
+				   is a valid length*/
 	u_int32_t rh_ssrc;	/* synchronization src id */
 };
 
@@ -145,7 +148,7 @@ struct rtcp_xr {
 	u_int32_t ssrc;	/* ssrc of the RTP data pkt being reported upon by this */
 	u_int16_t begin_seq; /* first seqno that this block report */
 	u_int16_t end_seq;	/* last seqno that this block report plus 1 */
-	u_int32_t *chunk;	/* extended report chunks */
+	u_int32_t chunk;	/* extended report chunks */
 };
 
 #define RTCP_PT_SR	200	/* sender report */
