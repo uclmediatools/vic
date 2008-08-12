@@ -45,38 +45,36 @@
 #include "tfwc_rcvr.h"
 
 TfwcRcvr::TfwcRcvr() :
-	seqno_(0) 
+	currseq_(0),
+	prevseq_(0)
 {}
 
 void TfwcRcvr::tfwc_rcvr_recv(u_int16_t seqno, 
 				u_int16_t ackofack, u_int32_t ts) 
 {
-	seqno_ = seqno;
+	debug_msg("received seqno:  %d\n", seqno);
+
+	// parse the current received seqno, ackofack, and timestamp
+	currseq_ = seqno;
 	ackofack_ = ackofack;
-	ts_echo_ = ts;
-	debug_msg("received seqno:  %d\n", seqno_);
-}
+	ts_echo_ = ts;		
 
-void TfwcRcvr::set_received_seqno(u_int16_t seqno, u_int16_t lastseq) 
-{
-	seqno_ = seqno;
-	lastseq_ = lastseq;
-	ackvec_manager(seqno_, lastseq_);
-}
+	// there is no packet loss
+	if (currseq_ == prevseq_ + 1) {
+		// set next bit to 1
+		SET_BIT_VEC(tfwcAV, 1);
+	} 
+	// we have one or more packet loss
+	else {
+		// number of packet loss
+		int cnt = currseq_ - prevseq_ - 1;
 
-void TfwcRcvr::ackvec_manager(u_int16_t seqno, u_int16_t lastseq)
-{
-	// set next ackvec bit vector
-	for (int i = lastseq+1; i <= seqno; i++) {
-		SET_BIT_VEC (tfwcAV, 1);
+		// set next bit to 0
+		for (int i = 0; i < cnt; i++) {
+			SET_BIT_VEC(tfwcAV, 0);
+		}
 	}
 
-	// printing tfwcAV
-	bool isThere;
-	debug_msg("XXX received ackvec:");
-	for (int i = lastseq+1; i <= seqno; i++) {
-		isThere = SEE_BIT_VEC (tfwcAV, i, seqno);
-		printf(" %d... %s ", seqno, isThere ? "Ok" : "Nok");
-	}
-	printf("\n");
+	// set this seqno to the prevseq before exit
+	prevseq_ = currseq_;
 }

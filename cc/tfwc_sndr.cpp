@@ -47,7 +47,8 @@
 #define DUPACKS	3	// simulating TCP's 3 dupacks
 
 TfwcSndr::TfwcSndr() :
-	seqno_(0) 
+	seqno_(0),
+	aoa_(0)
 {
 	u_int32_t marginvec_ = 0xe0000000;
 }

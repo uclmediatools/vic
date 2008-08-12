@@ -39,26 +39,24 @@
 #include "tfwc_sndr.h"
 
 // set AckVec bitmap
-#define SET_BIT_VEC(ackvec_, bit) (ackvec_ = ((ackvec_ << 1) | bit))
+//#define SET_BIT_VEC(ackvec_, bit) (ackvec_ = ((ackvec_ << 1) | bit))
 
 // see AckVec bitmap
-#define SEE_BIT_VEC(ackvec_, ix, seqno) ((1 << (seqno - ix)) & ackvec_)
+//#define SEE_BIT_VEC(ackvec_, ix, seqno) ((1 << (seqno - ix)) & ackvec_)
 
 class TfwcRcvr {
 public:
 	TfwcRcvr();
 	void tfwc_rcvr_recv(u_int16_t seqno, u_int16_t ackofack, u_int32_t ts);
-	void set_received_seqno(u_int16_t seqno, u_int16_t lastseq);
 
 protected:
 	inline u_int32_t tfwc_rcvr_getvec() { return tfwcAV; }
 	inline u_int32_t tfwc_rcvr_ts_echo() { return ts_echo_; }
 	u_int32_t tfwcAV;	// AckVec (bit vector)
-	u_int16_t seqno_;	// received RTP packet seqno
+	u_int16_t currseq_;	// current sequence number
+	u_int16_t prevseq_;	// previous sequence number
 	u_int16_t ackofack_;	// ackofack
-	u_int16_t lastseq_;	// last RTP packet seqno
 private:
-	void ackvec_manager(u_int16_t seqno, u_int16_t latseq);
 	u_int32_t ts_echo_;	// for time stamp echoing
 };
 
