@@ -48,9 +48,13 @@
 
 TfwcSndr::TfwcSndr() :
 	seqno_(0),
-	aoa_(0)
+	aoa_(0),
+	ts_(0),
+	ts_echo_(0),
+	npkt_(0)
 {
-	u_int32_t marginvec_ = 0xe0000000;
+	// for simulating TCP's 3 dupack rule
+	u_int32_t mvec_ = 0x07;
 }
 
 void TfwcSndr::tfwc_sndr_send(pktbuf* pb) {
@@ -62,16 +66,25 @@ void TfwcSndr::tfwc_sndr_send(pktbuf* pb) {
 	// sequence number must be greater than zero
 	assert (seqno_ > 0);
 	debug_msg("sent seqno:		%d\n", seqno_);
+
+	npkt_++;	// number of packet sent
 }
 
 void TfwcSndr::tfwc_sndr_recv(u_int32_t ackv, u_int32_t ts_echo)
 {
-	// the most recent 3 packets will be marked as 1 using marginvec_
-	ackv_ = ackv | marginvec_;
+	// retrieve ackvec and ts echo
+	ackv_ = ackv;
 	ts_echo_ = ts_echo;
+
+	// mask most 3 recent packets
+	if (npkt_ > DUPACKS)
+		ackv_ = ackv | mvec_;
+
+	tao_ = tfwc_sndr_now() - ts_echo_;
+
 	debug_msg(" ts echo:	%d\n", ts_echo_);
 }
 
 void TfwcSndr::ackofack() {
-	aoa_ = marginvec_ | 0x01000000;
+	aoa_ = mvec_ | 0x01000000;
 }
