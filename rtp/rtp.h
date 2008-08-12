@@ -97,7 +97,7 @@ struct rtphdr {
 
 struct rtcphdr {
 	u_int16_t rh_flags;	/* T:2 P:1 CNT:5 PT:8 */
-	u_int16_t rh_len;	/* length of message (in bytes) */
+	u_int16_t rh_len;	/* length of message is the number of 32-bit words in the extension, excluding the four-octet extension header (therefore zero is a valid length) */
 	u_int32_t rh_ssrc;	/* synchronization src id */
 };
 
