@@ -36,39 +36,93 @@
 #ifndef vic_tfwc_sndr_h
 #define vic_tfwc_sndr_h
 
-// set AckVec bitmap
+#define DUPACKS 3   // simulating TCP's 3 dupacks
+#define CHB	0x80000000	// ackvec check bit (head search)
+#define CTB	0x01		// ackvec check bit (tail search)
+#define TSZ	1000	// tsvec_ size
+
+// set AckVec bitmap from LSB
 #define SET_BIT_VEC(ackvec_, bit) (ackvec_ = ((ackvec_ << 1) | bit))
 
-// see AckVec bitmap
-#define SEE_BIT_VEC(ackvec_, ix, seqno) ((1 << (seqno - ix)) & ackvec_)
+// AckVec bitmap at i-th location
+#define GET_BIT_VEC(ackvec_, i, seqno) ((1 << (seqno - i)) & ackvec_)
+
+// AckVec head search
+#define GET_HEAD_VEC(ackvec_, i) ( ackvec_ & (CHB >> i) )
+
+// AckVec tail search
+#define GET_TAIL_VEC(ackvec_, i) ( ackvec_ & (CTB << i) )
 
 class TfwcSndr {
 public:
 	TfwcSndr();
 	// parse RTP data packet from Transmitter module
 	void tfwc_sndr_send(pktbuf*);
-	void tfwc_sndr_recv(u_int32_t ackv, u_int32_t ts_echo);
+	void tfwc_sndr_recv(u_int16_t type, u_int32_t ackv, u_int32_t ts_echo);
+
+	// return current data packet's seqno
 	inline u_int16_t tfwc_sndr_get_seqno() { return seqno_; }
+	// return ackofack
 	inline u_int16_t tfwc_sndr_get_aoa() { return aoa_; }
+	// set timestamp (TfwcSndr)
 	inline u_int32_t tfwc_sndr_now() {
 		timeval tv;
 		::gettimeofday(&tv, 0);
-		return ((u_int32_t) tv.tv_sec + tv.tv_usec);
+		return (u_int32_t) (tv.tv_sec + tv.tv_usec);
 	}
-	inline u_int32_t tfwc_sndr_get_ts() { return tfwc_sndr_now(); }
-	void ackofack();	// set ack of ack
+	// return timestamp
+	inline u_int32_t tfwc_sndr_get_ts() { return now_; }
+
+	// variables
 	u_int16_t seqno_;	// packet sequence number
+	u_int32_t cwnd_;	// congestion window
 
 protected:
+	// get the first position in ackvec where 1 is marked (mod 32)
+	inline u_int32_t get_head_pos(u_int32_t ackvec) {
+		int l;
+		for (l = 0; l < 32; l++) {
+			if(GET_HEAD_VEC(ackvec, l))
+				break;
+		}
+		return (32 - l);
+	}
+	// get the last position in ackvec where 1 is marked
+	inline u_int32_t get_tail_pos(u_int32_t ackvec) {
+		int l;
+		for (l = 0; l < 32; l++) {
+			if(GET_TAIL_VEC(ackvec, l))
+				break;
+		}
+		return (l + 1);
+	}
+	// generate margin vector
+	inline void marginvec(u_int32_t ackvec) {
+		int head = get_head_pos(ackvec);
+
+		for (int i = 0; i < DUPACKS; i++)
+			mvec_ |= 1 << ((head-1) - i);
+	}
+	// ackofack
+	inline u_int16_t ackofack (u_int32_t ackvec) {
+		return (get_tail_pos(ackvec) - 1);
+	}
+
 	u_int32_t mvec_;	// margin vec (simulatinmg TCP 3 dupacks)
 	u_int32_t ackv_;	// received AckVec (from TfwcRcvr)
 	u_int32_t pvec_;	// sent packet list
 	u_int16_t aoa_;		// ack of ack
+	u_int32_t now_;		// the time when the data packet sent
 	u_int32_t ts_;		// time stamp
 	u_int32_t ts_echo_;	// echo time stamp from the receiver
+	u_int32_t *tsvec_;	// timestamp vector
 	u_int32_t tao_;		// sampled RTT
 private:
-	int npkt_;		// number of packet sent
+	u_int16_t last_ack_;	// last packet seqno from ackvec
+	int ndtp_;		// number of data packet sent
+	int nakp_;		// number of ackvec packet received
+	int ntep_;		// number of ts echo packet received
+	int epoch_;		// communication epoch
 };
 
 #endif

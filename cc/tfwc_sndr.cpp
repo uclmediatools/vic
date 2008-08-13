@@ -44,47 +44,67 @@
 #include "transmitter.h"
 #include "tfwc_sndr.h"
 
-#define DUPACKS	3	// simulating TCP's 3 dupacks
-
 TfwcSndr::TfwcSndr() :
 	seqno_(0),
+	cwnd_(1),
 	aoa_(0),
+	now_(0),
 	ts_(0),
 	ts_echo_(0),
-	npkt_(0)
+	last_ack_(0),
+	ndtp_(0),
+	nakp_(0),
+	ntep_(0),
+	epoch_(1)
 {
 	// for simulating TCP's 3 dupack rule
 	u_int32_t mvec_ = 0x07;
+	UNUSED(mvec_);	// to shut up gcc-4.x
 }
 
 void TfwcSndr::tfwc_sndr_send(pktbuf* pb) {
 
 	// get RTP hearder information
 	rtphdr* rh =(rtphdr*) pb->data;
+
+	// get seqno and mark timestamp for this data packet
 	seqno_ = ntohs(rh->rh_seqno);
+	now_ = tfwc_sndr_now();
+
+	// timestamp vector for loss history update
+	tsvec_[seqno_%TSZ] = now_;
 
 	// sequence number must be greater than zero
 	assert (seqno_ > 0);
 	debug_msg("sent seqno:		%d\n", seqno_);
 
-	npkt_++;	// number of packet sent
+	ndtp_++;	// number of data packet sent
 }
 
-void TfwcSndr::tfwc_sndr_recv(u_int32_t ackv, u_int32_t ts_echo)
+void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int32_t ackv, u_int32_t ts_echo)
 {
-	// retrieve ackvec and ts echo
-	ackv_ = ackv;
-	ts_echo_ = ts_echo;
+	// retrieve ackvec
+	if (type == XR_BT_1) {
+		nakp_++;		// number of ackvec packet received
+		ackv_ = ackv;	// store ackvec
 
-	// mask most 3 recent packets
-	if (npkt_ > DUPACKS)
-		ackv_ = ackv | mvec_;
+		// store head of ackvec as last ack (real number)
+		last_ack_ = get_head_pos(ackv_) * epoch_;
 
-	tao_ = tfwc_sndr_now() - ts_echo_;
+		// generate margin vector
+		marginvec(ackv_);
+		ackv_ |= mvec_;		// masking ackvec
 
-	debug_msg(" ts echo:	%d\n", ts_echo_);
-}
+		// set ackofack (real number)
+		aoa_ = ackofack(mvec_) * epoch_;
 
-void TfwcSndr::ackofack() {
-	aoa_ = mvec_ | 0x01000000;
+	}
+	// retrieve ts echo
+	else if (type == XR_BT_3) {
+		ntep_++;		// number of ts echo packet received
+		ts_echo_ = ts_echo;
+
+		tao_ = now_ - ts_echo_;
+		debug_msg(" ts echo:	%d\n", ts_echo_);
+	}
 }
