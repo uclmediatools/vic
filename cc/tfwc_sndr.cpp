@@ -119,29 +119,27 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int32_t ackv, u_int32_t ts_echo)
 	else if (type == XR_BT_3) {
 		ntep_++;		// number of ts echo packet received
 		ts_echo_ = ts_echo;
-
-		tao_ = now_ - ts_echo_;
 		debug_msg(" ts echo:	%d\n", ts_echo_);
+
+		tao_ = (double)(tfwc_sndr_now() - ts_echo_)/1000000;
 		
 		// update RTT
 		update_rtt(tao_);
 	}
 }
 
-void TfwcSndr::update_rtt(u_int32_t tao) {
+void TfwcSndr::update_rtt(double rtt_sample) {
 
-	// double dtao = double(tao); // convert to a real number
-	double dtao;
-	
+	// calculate smoothed RTT
 	if (srtt_ < 0) {
 		// the first RTT observation
-		srtt_ = dtao;
-		rttvar_ = dtao/2.0;
-		sqrtrtt_ = sqrt(dtao);
+		srtt_ = rtt_sample;
+		rttvar_ = rtt_sample/2.0;
+		sqrtrtt_ = sqrt(rtt_sample);
 	} else {
-		srtt_ = df_ * srtt_ + (1 - df_) * dtao;
-		rttvar_ = rttvar_ + beta_ * (fabs(srtt_ - dtao) - rttvar_);
-		sqrtrtt_ = df_ * sqrtrtt_ + (1 - df_) * sqrt(dtao);
+		srtt_ = df_ * srtt_ + (1 - df_) * rtt_sample;
+		rttvar_ = rttvar_ + beta_ * (fabs(srtt_ - rtt_sample) - rttvar_);
+		sqrtrtt_ = df_ * sqrtrtt_ + (1 - df_) * sqrt(rtt_sample);
 	}
 
 	// update the current RTO

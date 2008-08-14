@@ -116,10 +116,11 @@ protected:
 	u_int32_t ts_;		// time stamp
 	u_int32_t ts_echo_;	// echo time stamp from the receiver
 	u_int32_t *tsvec_;	// timestamp vector
-	u_int32_t tao_;		// sampled RTT
+	double tao_;		// sampled RTT
 private:
 	// update RTT
-	void update_rtt(u_int32_t tao);	// update RTT
+	void update_rtt(double tao);	// update RTT
+
 	u_int16_t last_ack_;	// last packet seqno from ackvec
 	int ndtp_;		// number of data packet sent
 	int nakp_;		// number of ackvec packet received
