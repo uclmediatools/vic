@@ -38,16 +38,11 @@
 
 #include "tfwc_sndr.h"
 
-// set AckVec bitmap
-//#define SET_BIT_VEC(ackvec_, bit) (ackvec_ = ((ackvec_ << 1) | bit))
-
-// see AckVec bitmap
-//#define SEE_BIT_VEC(ackvec_, ix, seqno) ((1 << (seqno - ix)) & ackvec_)
-
 class TfwcRcvr {
 public:
 	TfwcRcvr();
-	void tfwc_rcvr_recv(u_int16_t seqno, u_int16_t ackofack, u_int32_t ts);
+	void tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno, 
+			u_int16_t ackofack, u_int32_t ts);
 
 protected:
 	inline u_int32_t tfwc_rcvr_getvec() { return tfwcAV; }
@@ -57,6 +52,15 @@ protected:
 	u_int16_t prevseq_;	// previous sequence number
 	u_int16_t ackofack_;	// ackofack
 private:
+	// trim ackvec
+	inline void trimvec(u_int32_t ackvec) {
+		int n = ackofack_ - 1;
+		if (currseq_ > ackofack_)
+			tfwcAV = ackvec >> n << n;
+		else
+			tfwcAV = ackvec << n >> n;
+	}
+
 	u_int32_t ts_echo_;	// for time stamp echoing
 };
 

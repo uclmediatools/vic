@@ -46,35 +46,44 @@
 
 TfwcRcvr::TfwcRcvr() :
 	currseq_(0),
-	prevseq_(0)
+	prevseq_(0),
+	ackofack_(0)
 {}
 
-void TfwcRcvr::tfwc_rcvr_recv(u_int16_t seqno, 
+void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno, 
 				u_int16_t ackofack, u_int32_t ts) 
 {
 	debug_msg("received seqno:  %d\n", seqno);
 
-	// parse the current received seqno, ackofack, and timestamp
-	currseq_ = seqno;
-	ackofack_ = ackofack;
-	ts_echo_ = ts;		
+	// parse the received seqno and ackofack
+	if (type == XR_BT_1) {
+		currseq_ = seqno;
+		ackofack_ = ackofack;
 
-	// there is no packet loss
-	if (currseq_ == prevseq_ + 1) {
-		// set next bit to 1
-		SET_BIT_VEC(tfwcAV, 1);
-	} 
-	// we have one or more packet loss
-	else {
-		// number of packet loss
-		int cnt = currseq_ - prevseq_ - 1;
+		// there is no packet loss
+		if (currseq_ == prevseq_ + 1) {
+			// set next bit to 1
+			SET_BIT_VEC(tfwcAV, 1);
+		} 
+		// we have one or more packet loss
+		else {
+			// number of packet loss
+			int cnt = currseq_ - prevseq_ - 1;
 
-		// set next bit to 0
-		for (int i = 0; i < cnt; i++) {
-			SET_BIT_VEC(tfwcAV, 0);
+			// set next bit to 0
+			for (int i = 0; i < cnt; i++) {
+				SET_BIT_VEC(tfwcAV, 0);
+			}
 		}
-	}
 
-	// set this seqno to the prevseq before exit
-	prevseq_ = currseq_;
+		// set this seqno to the prevseq before exit
+		prevseq_ = currseq_;
+
+		// trim ackvec
+		trimvec(tfwcAV);
+	}
+	// parse timestamp
+	else if (type == XR_BT_3) {
+		ts_echo_ = ts;
+	}
 }

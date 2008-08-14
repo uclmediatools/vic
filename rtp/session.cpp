@@ -1172,13 +1172,16 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 		if(flags == XR_BT_1) {
 			ackofack_ = ackofack;
 			seqno_ = seqno;
+
+			// this is XR conveys seqno and ackofack
+			tfwc_rcvr_recv(flags, seqno_, ackofack_, 0);
 		}
 		else if(flags == XR_BT_3) {
 			ts_ = ntohl(xr->chunk);
-		}
 
-		// parse seqno, ackofack, and timestamp to TfwcRcvr
-		tfwc_rcvr_recv(seqno_, ackofack_, ts_);
+			// this is XR conveys timestamp
+			tfwc_rcvr_recv(flags, 0, 0, ts_);
+		}
 
 		// send receiver side XR report
 		ch_[0].send_ackv(xr);
@@ -1191,7 +1194,7 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 		if(flags == XR_BT_1) {
 			ackvec_ = ntohl(xr->chunk);
 
-			//this XR conveys ackvec, hence parse it
+			// this XR conveys ackvec, hence parse it
 			tfwc_sndr_recv(flags, ackvec_, 0);
 		}
 		else if(flags == XR_BT_3) {

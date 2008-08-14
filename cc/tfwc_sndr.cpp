@@ -95,9 +95,12 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int32_t ackv, u_int32_t ts_echo)
 		marginvec(ackv_);
 		ackv_ |= mvec_;		// masking ackvec
 
+		// detect loss
+
+		// congestion window control 
+
 		// set ackofack (real number)
 		aoa_ = ackofack(mvec_) * epoch_;
-
 	}
 	// retrieve ts echo
 	else if (type == XR_BT_3) {
@@ -106,5 +109,8 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int32_t ackv, u_int32_t ts_echo)
 
 		tao_ = now_ - ts_echo_;
 		debug_msg(" ts echo:	%d\n", ts_echo_);
+		
+		// update RTT
+		// update_rtt(tao);
 	}
 }
