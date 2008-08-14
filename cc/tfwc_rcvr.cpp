@@ -53,10 +53,9 @@ TfwcRcvr::TfwcRcvr() :
 void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno, 
 				u_int16_t ackofack, u_int32_t ts) 
 {
-	debug_msg("received seqno:  %d\n", seqno);
-
 	// parse the received seqno and ackofack
 	if (type == XR_BT_1) {
+		debug_msg("received seqno:  %d\n", seqno);
 		currseq_ = seqno;
 		ackofack_ = ackofack;
 

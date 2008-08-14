@@ -118,11 +118,27 @@ protected:
 	u_int32_t *tsvec_;	// timestamp vector
 	u_int32_t tao_;		// sampled RTT
 private:
+	// update RTT
+	void update_rtt(u_int32_t tao);	// update RTT
 	u_int16_t last_ack_;	// last packet seqno from ackvec
 	int ndtp_;		// number of data packet sent
 	int nakp_;		// number of ackvec packet received
 	int ntep_;		// number of ts echo packet received
 	int epoch_;		// communication epoch
+
+	// RTT related variables
+	double srtt_;	// smoothed RTT
+	double rttvar_;	// RTT variation
+	double rto_;	// retransmission timeout
+	double minrto_;	// min RTO allowed
+	double maxrto_;	// max RTO
+	double alpha_;	// smoothing factor for RTT/RTO calculation
+	double beta_;	// smoothing factor for RTT/RTO calculation
+	double g_;	// timer granularity
+	int k_;		// k value
+	double t0_;	// t0 value at TCP throughput equation
+	double df_;	// decay factor
+	double sqrtrtt_;	// the mean of the sqrt of RTT
 };
 
 #endif

@@ -36,6 +36,7 @@
 #include "assert.h"
 #include "config.h"
 #include "timer.h"
+#include "math.h"
 #include "rtp.h"
 #include "inet.h"
 #include "pktbuf-rtp.h"
@@ -57,8 +58,20 @@ TfwcSndr::TfwcSndr() :
 	ntep_(0),
 	epoch_(1)
 {
+	minrto_ = 0.0;
+	maxrto_ = 100000.0;
+	srtt_ = -1.0;
+	rto_ = 3.0;		// RFC 1122
+	rttvar_ = 0.0;
+	df_ = 0.95;
+	sqrtrtt_ = 1.0;
+	alpha_ = 0.125;
+	beta_ = 0.25;
+	g_ = 0.01;
+	k_ = 4;
+
 	// for simulating TCP's 3 dupack rule
-	u_int32_t mvec_ = 0x07;
+	u_int32_t mvec_ = 0x00;
 	UNUSED(mvec_);	// to shut up gcc-4.x
 }
 
@@ -72,7 +85,7 @@ void TfwcSndr::tfwc_sndr_send(pktbuf* pb) {
 	now_ = tfwc_sndr_now();
 
 	// timestamp vector for loss history update
-	tsvec_[seqno_%TSZ] = now_;
+	//tsvec_[seqno_%TSZ - 1] = now_;
 
 	// sequence number must be greater than zero
 	assert (seqno_ > 0);
@@ -111,6 +124,33 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int32_t ackv, u_int32_t ts_echo)
 		debug_msg(" ts echo:	%d\n", ts_echo_);
 		
 		// update RTT
-		// update_rtt(tao);
+		update_rtt(tao_);
 	}
+}
+
+void TfwcSndr::update_rtt(u_int32_t tao) {
+
+	// double dtao = double(tao); // convert to a real number
+	double dtao;
+	
+	if (srtt_ < 0) {
+		// the first RTT observation
+		srtt_ = dtao;
+		rttvar_ = dtao/2.0;
+		sqrtrtt_ = sqrt(dtao);
+	} else {
+		srtt_ = df_ * srtt_ + (1 - df_) * dtao;
+		rttvar_ = rttvar_ + beta_ * (fabs(srtt_ - dtao) - rttvar_);
+		sqrtrtt_ = df_ * sqrtrtt_ + (1 - df_) * sqrt(dtao);
+	}
+
+	// update the current RTO
+	if (k_ * rttvar_ > g_) 
+		rto_ = srtt_ + k_ * rttvar_;
+	else
+		rto_ = srtt_ + g_;
+
+	// 'rto' could be rounded by 'maxrto'
+	if (rto_ > maxrto_)
+		rto_ = maxrto_;
 }
