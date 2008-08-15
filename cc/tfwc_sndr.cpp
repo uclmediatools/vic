@@ -49,15 +49,26 @@ TfwcSndr::TfwcSndr() :
 	seqno_(0),
 	cwnd_(1),
 	aoa_(0),
-	now_(0),
+	t_now_(0),
 	ts_(0),
 	ts_echo_(0),
-	last_ack_(0),
+	now_(0),
+	lastest_ack_(0),
 	ndtp_(0),
 	nakp_(0),
 	ntep_(0),
+	nsve_(0),
 	epoch_(1)
 {
+	// allocate tsvec_ in memory
+	tsvec_ = (double *)malloc(sizeof(double)* TSZ);
+	// allocate seqvec in memory
+	seqvec_ = (u_int32_t *)malloc(sizeof(u_int32_t)* SSZ );
+
+	// for simulating TCP's 3 dupack rule
+	u_int32_t mvec_ = 0x00;
+	UNUSED(mvec_);	// to shut up gcc-4.x
+
 	minrto_ = 0.0;
 	maxrto_ = 100000.0;
 	srtt_ = -1.0;
@@ -69,10 +80,6 @@ TfwcSndr::TfwcSndr() :
 	beta_ = 0.25;
 	g_ = 0.01;
 	k_ = 4;
-
-	// for simulating TCP's 3 dupack rule
-	u_int32_t mvec_ = 0x00;
-	UNUSED(mvec_);	// to shut up gcc-4.x
 }
 
 void TfwcSndr::tfwc_sndr_send(pktbuf* pb) {
@@ -82,10 +89,11 @@ void TfwcSndr::tfwc_sndr_send(pktbuf* pb) {
 
 	// get seqno and mark timestamp for this data packet
 	seqno_ = ntohs(rh->rh_seqno);
-	now_ = tfwc_sndr_now();
+	now_ = tfwc_sndr_now();		// double type (reference time)
+	t_now_ = tfwc_sndr_t_now();	// u_int32_t type (reference time)
 
 	// timestamp vector for loss history update
-	//tsvec_[seqno_%TSZ - 1] = now_;
+	tsvec_[seqno_%TSZ - 1] = now_;
 
 	// sequence number must be greater than zero
 	assert (seqno_ > 0);
@@ -98,34 +106,61 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int32_t ackv, u_int32_t ts_echo)
 {
 	// retrieve ackvec
 	if (type == XR_BT_1) {
+		UNUSED(ts_echo);
 		nakp_++;		// number of ackvec packet received
-		ackv_ = ackv;	// store ackvec
+		//ackv_ = ackv;	// store ackvec
 
-		// store head of ackvec as last ack (real number)
-		last_ack_ = get_head_pos(ackv_) * epoch_;
+		// lastest ack (head of ackvec)
+		lastest_ack_ = get_head_pos(ackv) + aoa_;
+
+		// generate seqno vec
+		gen_seqno_vec(ackv);
 
 		// generate margin vector
-		marginvec(ackv_);
-		ackv_ |= mvec_;		// masking ackvec
+		marginvec(ackv);
 
 		// detect loss
+		is_loss_ = detect_loss(seqvec_, mvec_[DUPACKS-1] - 1, aoa_);
 
 		// congestion window control 
+		control(seqvec_);
 
 		// set ackofack (real number)
-		aoa_ = ackofack(mvec_) * epoch_;
+		aoa_ = ackofack();
+
+		// update RTT with the sampled RTT
+		tao_ = tfwc_sndr_now() - tsvec_[seqno_%TSZ];
+		update_rtt(tao_);
 	}
 	// retrieve ts echo
 	else if (type == XR_BT_3) {
 		ntep_++;		// number of ts echo packet received
-		ts_echo_ = ts_echo;
-		debug_msg(" ts echo:	%d\n", ts_echo_);
+		/*
+		   ts_echo_ = ts_echo;
+		   debug_msg(" ts echo:	%d\n", ts_echo_);
 
-		tao_ = (double)(tfwc_sndr_now() - ts_echo_)/1000000;
-		
+		   tao_ = 1e-6 * (double)(tfwc_sndr_now() - ts_echo_);
+
 		// update RTT
 		update_rtt(tao_);
+		*/
 	}
+}
+
+bool TfwcSndr::detect_loss(u_int32_t* vec, u_int16_t end, u_int16_t begin) {
+	bool ret;	// 'true' when there is a loss
+	int lc = 0;	// counter
+
+	// number of tempvec element
+	int numvec = (end - begin < 0) ? 0 : end - begin;
+	int tempvec[numvec];
+	bool is_there;
+
+	for (int i = 0; i < numvec; i++) {
+		tempvec[i] = (begin + 1) + i;
+		// is there stuff
+	}
+	return ret = (lc > 0) ? true : false;
 }
 
 void TfwcSndr::update_rtt(double rtt_sample) {
@@ -151,4 +186,70 @@ void TfwcSndr::update_rtt(double rtt_sample) {
 	// 'rto' could be rounded by 'maxrto'
 	if (rto_ > maxrto_)
 		rto_ = maxrto_;
+}
+
+void TfwcSndr::control(u_int32_t* seqvec) {
+	loss_history(seqvec);
+
+}
+
+void TfwcSndr::gen_weight() {
+#ifdef SHORT_HISTORY
+	// this is just weighted moving average (WMA)
+	for(int i = 0; i <= HSZ; i++){
+		if(i < HSZ/2)
+			weight_[i] = 1.0;
+		else
+			weight_[i] = 1.0 - (i-(HSZ/2 - 1.0)) / (HSZ/2 + 1.0);
+	}
+#else
+	// this is exponentially weighted moving average (EWMA)
+	for (int i=0; i <= HSZ; i++) {
+		if (i < HSZ/4)
+			weight_[i] = 1.0;
+		else
+			weight_[i] = 2.0 / (i - 1.0);
+	}
+#endif
+}
+
+void TfwcSndr::loss_history(u_int32_t* seqvec) {
+	pseudo_interval_ = 1 / p_;
+
+	/* bzero for all history information */
+	for(int i = 0; i <= HSZ+1; i++)
+		history_[i] = 0;
+
+	/* (let) most recent history information be 0 */
+	history_[0] = 0;
+
+	/* (let) the pseudo interval be the first history information */
+	history_[1] = (int) pseudo_interval_;
+}
+
+void TfwcSndr::pseudo_p() {
+	for (pseudo_p_ = 0.00001; pseudo_p_ < 1.0; pseudo_p_ += 0.00001) {
+		f_p_ = sqrt((2.0/3.0) * pseudo_p_) + 12.0 * pseudo_p_ *
+			(1.0 + 32.0 * pow(pseudo_p_, 2.0)) * sqrt((3.0/8.0) * pseudo_p_);
+
+		t_win_ = 1 / f_p_;
+
+		if(t_win_ < tmp_cwnd_)
+			break;
+	}
+	p_ = pseudo_p_;
+}
+
+void TfwcSndr::pseudo_history() {
+	pseudo_interval_ = 1 / p_;
+
+	/* bzero for all history information */
+	for(int i = 0; i <= HSZ+1; i++)
+		history_[i] = 0;
+
+	/* (let) most recent history information be 0 */
+	history_[0] = 0;
+
+	/* (let) the pseudo interval be the first history information */
+	history_[1] = (int) pseudo_interval_;
 }

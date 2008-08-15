@@ -53,12 +53,8 @@ protected:
 	u_int16_t ackofack_;	// ackofack
 private:
 	// trim ackvec
-	inline void trimvec(u_int32_t ackvec) {
-		int n = ackofack_ - 1;
-		if (currseq_ > ackofack_)
-			tfwcAV = ackvec >> n << n;
-		else
-			tfwcAV = ackvec << n >> n;
+	inline void trimvec(u_int32_t vec, int offset) {
+		tfwcAV = vec >> offset;
 	}
 
 	u_int32_t ts_echo_;	// for time stamp echoing

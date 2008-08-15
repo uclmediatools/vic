@@ -75,11 +75,13 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 			}
 		}
 
+		// trim ackvec
+		int offset = currseq_ - ackofack_;
+		if (ackofack_)
+			trimvec(tfwcAV, offset);
+
 		// set this seqno to the prevseq before exit
 		prevseq_ = currseq_;
-
-		// trim ackvec
-		trimvec(tfwcAV);
 	}
 	// parse timestamp
 	else if (type == XR_BT_3) {

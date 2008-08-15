@@ -39,7 +39,14 @@
 #define DUPACKS 3   // simulating TCP's 3 dupacks
 #define CHB	0x80000000	// ackvec check bit (head search)
 #define CTB	0x01		// ackvec check bit (tail search)
-#define TSZ	1000	// tsvec_ size
+#define TSZ	1000		// tsvec_ size
+#define SSZ 1000		// seqvec_ size
+
+#ifdef  SHORT_HISTORY
+#define HSZ 8   // history size for avg loss history
+#else
+#define HSZ 16  // history size for avg loss history
+#endif
 
 // set AckVec bitmap from LSB
 #define SET_BIT_VEC(ackvec_, bit) (ackvec_ = ((ackvec_ << 1) | bit))
@@ -53,25 +60,40 @@
 // AckVec tail search
 #define GET_TAIL_VEC(ackvec_, i) ( ackvec_ & (CTB << i) )
 
+// check bit at i-th location
+#define CHECK_BIT_AT(vec, i) ( vec & (1 << (i-1)) )
+
 class TfwcSndr {
 public:
 	TfwcSndr();
 	// parse RTP data packet from Transmitter module
 	void tfwc_sndr_send(pktbuf*);
+
+	// main reception path (XR packet)
 	void tfwc_sndr_recv(u_int16_t type, u_int32_t ackv, u_int32_t ts_echo);
 
 	// return current data packet's seqno
 	inline u_int16_t tfwc_sndr_get_seqno() { return seqno_; }
+
 	// return ackofack
 	inline u_int16_t tfwc_sndr_get_aoa() { return aoa_; }
-	// set timestamp (TfwcSndr)
-	inline u_int32_t tfwc_sndr_now() {
+
+	// set timestamp in u_int32_t type (TfwcSndr)
+	inline u_int32_t tfwc_sndr_t_now() {
 		timeval tv;
 		::gettimeofday(&tv, 0);
-		return (u_int32_t) (tv.tv_sec + tv.tv_usec);
+		return (tv.tv_sec + tv.tv_usec);
 	}
-	// return timestamp
-	inline u_int32_t tfwc_sndr_get_ts() { return now_; }
+
+	// set timestamp in double type (TfwcSndr)
+	inline double tfwc_sndr_now() {
+		timeval tv;
+		::gettimeofday(&tv, 0);
+		return ((double) tv.tv_sec + 1e-6 * (double) tv.tv_usec);
+	}
+
+	// return timestamp in u_int32_t type
+	inline u_int32_t tfwc_sndr_get_ts() { return t_now_; }
 
 	// variables
 	u_int16_t seqno_;	// packet sequence number
@@ -97,35 +119,81 @@ protected:
 		return (l + 1);
 	}
 	// generate margin vector
-	inline void marginvec(u_int32_t ackvec) {
-		int head = get_head_pos(ackvec);
+	inline void marginvec(u_int32_t vec) {
+		int hseq = get_head_pos(vec) + aoa_;	// ackvec head seqno
 
-		for (int i = 0; i < DUPACKS; i++)
-			mvec_ |= 1 << ((head-1) - i);
+		for (int i = 0; i < DUPACKS; i++) {
+			mvec_[i] = hseq - i;
+
+			// round up if it is less than zero
+			mvec_[i] = (mvec_[i] <= 0) ? 0 : mvec_[i];
+		}
+	}
+	// generate seqno vector (interpret ackvec to real sequence numbers)
+	inline void gen_seqno_vec(u_int32_t vec) {
+		int hseq = get_head_pos(vec) + aoa_;	// ackvec head seqno
+		int cnt = hseq - aoa_;
+		
+		for (int i = 0; i < cnt; i++) {
+			seqvec_[i%SSZ]	 = hseq - i;
+		}
 	}
 	// ackofack
-	inline u_int16_t ackofack (u_int32_t ackvec) {
-		return (get_tail_pos(ackvec) - 1);
+	inline u_int16_t ackofack () {
+		return (mvec_[DUPACKS - 1] - 1);
 	}
 
-	u_int32_t mvec_;	// margin vec (simulatinmg TCP 3 dupacks)
+	u_int32_t mvec_[DUPACKS]; // margin vec (simulatinmg TCP 3 dupacks)
 	u_int32_t ackv_;	// received AckVec (from TfwcRcvr)
 	u_int32_t pvec_;	// sent packet list
 	u_int16_t aoa_;		// ack of ack
-	u_int32_t now_;		// the time when the data packet sent
+	u_int32_t t_now_;	// the time when the data packet sent
 	u_int32_t ts_;		// time stamp
 	u_int32_t ts_echo_;	// echo time stamp from the receiver
-	u_int32_t *tsvec_;	// timestamp vector
+	double now_;		// real-time now
 	double tao_;		// sampled RTT
 private:
 	// update RTT
-	void update_rtt(double tao);	// update RTT
+	void update_rtt(double tao);
 
-	u_int16_t last_ack_;	// last packet seqno from ackvec
+	// detect packet loss
+	bool detect_loss(u_int32_t*, u_int16_t, u_int16_t);
+
+	// control congestion window
+	void control(u_int32_t* seqvec);
+
+	// calculate loss history
+	void loss_history(u_int32_t* seqvec);
+
+	// estimate loss history and loss probability
+	void pseudo_p();
+	void pseudo_history();
+
+	void gen_weight();
+
+	u_int16_t lastest_ack_;	// lastest seqno from ackvec
+	u_int32_t *seqvec_;		// generated seqno vec
+	double *tsvec_;	// timestamp vector
 	int ndtp_;		// number of data packet sent
 	int nakp_;		// number of ackvec packet received
 	int ntep_;		// number of ts echo packet received
+	int nsve_;		// number of seqvec element
 	int epoch_;		// communication epoch
+	bool is_loss_;
+	double f_p_;	// f(p) = sqrt(2/3)*p + 12*p*(1+32*p^2)*sqrt(3/8)*p
+	double p_;		// packet loss probability
+	double t_win_;      // temporal cwin size to get p_ value
+	int tmp_cwnd_;      // temporary cwnd value
+	double pseudo_p_;	// faked packet loss probability
+	double pseudo_interval_;// faked loss interval
+	double avg_interval_;	// average loss interval
+	double history_[HSZ+1];	// loss interval history
+	double weight_[HSZ+1];	// weight for calculating avg loss interval
+	double I_tot_;		// total sum
+	double I_tot0_;		// from 0 to n-1
+	double I_tot1_;		// form 1 to n
+	double tot_weight_;	// total weight
+	int hsz_;		// current history size
 
 	// RTT related variables
 	double srtt_;	// smoothed RTT
@@ -135,10 +203,10 @@ private:
 	double maxrto_;	// max RTO
 	double alpha_;	// smoothing factor for RTT/RTO calculation
 	double beta_;	// smoothing factor for RTT/RTO calculation
-	double g_;	// timer granularity
-	int k_;		// k value
-	double t0_;	// t0 value at TCP throughput equation
-	double df_;	// decay factor
+	double g_;		// timer granularity
+	int k_;			// k value
+	double t0_;		// t0 value at TCP throughput equation
+	double df_;		// decay factor
 	double sqrtrtt_;	// the mean of the sqrt of RTT
 };
 
