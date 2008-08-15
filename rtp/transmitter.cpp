@@ -213,18 +213,18 @@ double Transmitter::txtime(pktbuf* pb)
 void Transmitter::send(pktbuf* pb)
 {
 	if (is_cc_active_) {
+		// pass pktbuf to TfwcSndr
 		tfwc_sndr_send(pb);
-		if (!busy_) {
-			double delay = txtime(pb);
-			nextpkttime_ = gettimeofday_secs() + delay;
+
+		// get CC'd cwnd value
+		int magic = (int) tfwc_magic();
+
+		// pktbuf size
+		int queue = 100; 
+
+		if (queue <= magic) 
 			output(pb);
-			/*
-			 * emulate a transmit interrupt --
-			 * assume we will have more to send.
-			 */
-			msched(int(delay * 1e-3));
-			busy_ = 1;
-		} else {
+		else {
 			if (head_ != 0) {
 				tail_->next = pb;
 				tail_ = pb;

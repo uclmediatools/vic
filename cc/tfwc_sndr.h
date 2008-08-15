@@ -78,6 +78,9 @@ public:
 	// return ackofack
 	inline u_int16_t tfwc_sndr_get_aoa() { return aoa_; }
 
+	// return tfwc controlled cwnd value
+	inline u_int32_t tfwc_magic() { return cwnd_; };
+
 	// set timestamp in u_int32_t type (TfwcSndr)
 	inline u_int32_t tfwc_sndr_t_now() {
 		timeval tv;
