@@ -76,10 +76,20 @@ TfwcSndr::TfwcSndr() :
 	rttvar_ = 0.0;
 	df_ = 0.95;
 	sqrtrtt_ = 1.0;
+	t0_ = 6.0;
 	alpha_ = 0.125;
 	beta_ = 0.25;
 	g_ = 0.01;
 	k_ = 4;
+
+	is_tfwc_on_ = false;
+	is_first_loss_seen_ = false;
+	first_lost_pkt_ = -1;
+
+	avg_interval_ = 0.0;
+	I_tot0_ = 0.0;
+	I_tot1_ = 0.0;
+	tot_weight_ = 0.0;
 }
 
 void TfwcSndr::tfwc_sndr_send(pktbuf* pb) {
@@ -102,6 +112,9 @@ void TfwcSndr::tfwc_sndr_send(pktbuf* pb) {
 	ndtp_++;	// number of data packet sent
 }
 
+/*
+ * main TFWC reception path
+ */
 void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int32_t ackv, u_int32_t ts_echo)
 {
 	// retrieve ackvec
@@ -122,8 +135,21 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int32_t ackv, u_int32_t ts_echo)
 		// detect loss
 		is_loss_ = detect_loss(seqvec_, mvec_[DUPACKS-1] - 1, aoa_);
 
-		// congestion window control 
-		control(seqvec_);
+		// TFWC is not turned on (i.e., no packet loss yet)
+		if(!is_tfwc_on_) {
+			if(is_loss_) {
+				is_tfwc_on_ = true;
+				dupack_action();
+				ts_ = tsvec_[first_lost_pkt_%TSZ];
+			} else {
+				// TCP-like AIMD control
+				cwnd_ += 1;
+			}
+		} 
+		// TFWC is turned on, so control that way
+		else {
+			control(seqvec_);
+		}
 
 		// set ackofack (real number)
 		aoa_ = ackofack();
@@ -147,9 +173,13 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int32_t ackv, u_int32_t ts_echo)
 	}
 }
 
+/*
+ * detect packet loss in the received vector
+ * @ret: true when there is a loss
+ */
 bool TfwcSndr::detect_loss(u_int32_t* vec, u_int16_t end, u_int16_t begin) {
 	bool ret;	// 'true' when there is a loss
-	int lc = 0;	// counter
+	int lc = 0;	// loss counter
 
 	// number of tempvec element
 	int numvec = (end - begin < 0) ? 0 : end - begin;
@@ -159,10 +189,19 @@ bool TfwcSndr::detect_loss(u_int32_t* vec, u_int16_t end, u_int16_t begin) {
 	for (int i = 0; i < numvec; i++) {
 		tempvec[i] = (begin + 1) + i;
 		// is there stuff
+
+		if(!is_there) {
+			if(!is_first_loss_seen_) 
+				first_lost_pkt_ = tempvec[i];
+			lc++;
+		}
 	}
 	return ret = (lc > 0) ? true : false;
 }
 
+/*
+ * update RTT using the sampled RTT value
+ */
 void TfwcSndr::update_rtt(double rtt_sample) {
 
 	// calculate smoothed RTT
@@ -188,11 +227,32 @@ void TfwcSndr::update_rtt(double rtt_sample) {
 		rto_ = maxrto_;
 }
 
+/*
+ * core part for congestion window control
+ */
 void TfwcSndr::control(u_int32_t* seqvec) {
 	loss_history(seqvec);
+	avg_loss_interval();
 
+	// loss event rate (p)
+	p_ = 1.0 / avg_interval_;
+
+	// simplified TCP throughput equation
+	double tmp1 = 12.0 * sqrt(p_ * 3.0/8.0);
+	double tmp2 = p_ * (1.0 + 32.0 * pow(p_, 2.0));
+	double term1 = sqrt(p_ * 2.0/3.0);
+	double term2 = tmp1 * tmp2;
+	f_p_ = term1 + term2;
+
+	// TFWC congestion window
+	t_win_ = 1 / f_p_;
+
+	cwnd_ = (int) (t_win_ + .5);
 }
 
+/*
+ * generate weighting factors
+ */
 void TfwcSndr::gen_weight() {
 #ifdef SHORT_HISTORY
 	// this is just weighted moving average (WMA)
@@ -213,6 +273,9 @@ void TfwcSndr::gen_weight() {
 #endif
 }
 
+/*
+ * compute packet loss history
+ */
 void TfwcSndr::loss_history(u_int32_t* seqvec) {
 	pseudo_interval_ = 1 / p_;
 
@@ -227,6 +290,40 @@ void TfwcSndr::loss_history(u_int32_t* seqvec) {
 	history_[1] = (int) pseudo_interval_;
 }
 
+/*
+ * dupack action
+ *   o  halve cwnd_
+ *   o  marking pseudo loss history and loss rate
+ */
+void TfwcSndr::dupack_action() {
+
+	// this is the very first packet loss
+	is_first_loss_seen_ = true;
+
+	// we now have just one meaningful history information
+	hsz_ = 1;
+
+	// halve the current cwnd_
+	cwnd_ = cwnd_ / 2;
+
+	// congestion window never goes below 1
+	if (cwnd_ < 1)
+		cwnd_ = 1;
+
+	// temp cwnd to compute the pseudo values
+	tmp_cwnd_ = cwnd_;
+
+	// creating simulated loss history and loss rate
+	pseudo_p();
+	pseudo_history();
+
+	// generate weight factors
+	gen_weight();
+}
+
+/*
+ * compute simulated loss rate
+ */
 void TfwcSndr::pseudo_p() {
 	for (pseudo_p_ = 0.00001; pseudo_p_ < 1.0; pseudo_p_ += 0.00001) {
 		f_p_ = sqrt((2.0/3.0) * pseudo_p_) + 12.0 * pseudo_p_ *
@@ -240,6 +337,9 @@ void TfwcSndr::pseudo_p() {
 	p_ = pseudo_p_;
 }
 
+/*
+ * compute simulated loss history
+ */
 void TfwcSndr::pseudo_history() {
 	pseudo_interval_ = 1 / p_;
 
@@ -252,4 +352,33 @@ void TfwcSndr::pseudo_history() {
 
 	/* (let) the pseudo interval be the first history information */
 	history_[1] = (int) pseudo_interval_;
+}
+
+/*
+ * average loss interval
+ */
+void TfwcSndr::avg_loss_interval() {
+
+	I_tot0_ = 0;
+	I_tot1_ = 0;
+	tot_weight_ = 0;
+
+	// make a decision whether to include the most recent loss interval
+	for (int i = 0; i < hsz_; i++) {
+		I_tot0_ += weight_[i] * history_[i];
+		tot_weight_ += weight_[i];
+	}
+	for (int i = 1; i < hsz_ + 1; i++) {
+		I_tot1_ += weight_[i-1] * history_[i];
+		tot_weight_ += weight_[i];
+	}
+
+	// compare I_tot0_ and I_tot1_ and use larger value
+	if (I_tot0_ < I_tot1_)
+		I_tot_ = I_tot1_;
+	else
+		I_tot_ = I_tot0_;
+
+	// this is average loss interval
+	avg_interval_ = I_tot_ / tot_weight_;
 }

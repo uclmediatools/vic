@@ -162,6 +162,9 @@ private:
 	// control congestion window
 	void control(u_int32_t* seqvec);
 
+	// calcuate average loss interval
+	void avg_loss_interval();
+
 	// calculate loss history
 	void loss_history(u_int32_t* seqvec);
 
@@ -169,7 +172,11 @@ private:
 	void pseudo_p();
 	void pseudo_history();
 
+	// generate weight factors
 	void gen_weight();
+
+	// dupack action
+	void dupack_action();
 
 	u_int16_t lastest_ack_;	// lastest seqno from ackvec
 	u_int32_t *seqvec_;		// generated seqno vec
@@ -180,6 +187,8 @@ private:
 	int nsve_;		// number of seqvec element
 	int epoch_;		// communication epoch
 	bool is_loss_;
+	bool is_first_loss_seen_;
+	bool is_tfwc_on_;
 	double f_p_;	// f(p) = sqrt(2/3)*p + 12*p*(1+32*p^2)*sqrt(3/8)*p
 	double p_;		// packet loss probability
 	double t_win_;      // temporal cwin size to get p_ value
@@ -208,6 +217,9 @@ private:
 	double t0_;		// t0 value at TCP throughput equation
 	double df_;		// decay factor
 	double sqrtrtt_;	// the mean of the sqrt of RTT
+
+	// first lost packet (used only at the very first packet loss)
+	int first_lost_pkt_;
 };
 
 #endif
