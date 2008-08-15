@@ -466,7 +466,7 @@ void SessionManager::transmit(pktbuf* pb)
 		// upon every RTP data packet transmission.
 		if(is_cc_on()) {
 			ch_[0].send_aoa();	// send ack of ack
-			ch_[0].send_ts();	// send time stamp
+			//ch_[0].send_ts();	// send time stamp
 		}
 	}
 }
@@ -676,7 +676,7 @@ void SessionManager::send_xreport(CtrlHandler* ch, int bt, int bye)
 		// get timestamp from TfwcSndr
 		xr->chunk = htonl(tfwc_sndr_get_ts());
 
-		debug_msg("	TS:		%d\n", tfwc_sndr_get_ts());
+		debug_msg("	TS:		%ld\n", tfwc_sndr_get_ts());
 	}
 
 	++xr;
@@ -1185,7 +1185,7 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 
 		// send receiver side XR report
 		ch_[0].send_ackv(xr);
-		ch_[0].send_ts_echo(xr);
+		//ch_[0].send_ts_echo(xr);
 	}
 	// we received ackvec, so do sender stuffs here
 	else {
