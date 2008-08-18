@@ -159,8 +159,9 @@ protected:
 	u_int32_t pvec_;	// sent packet list
 	u_int16_t aoa_;		// ack of ack
 	u_int32_t t_now_;	// the time when the data packet sent
-	u_int32_t ts_;		// time stamp
-	u_int32_t ts_echo_;	// echo time stamp from the receiver
+	u_int32_t t_ts_;		// time stamp (u_int32_t type)
+	u_int32_t t_ts_echo_;	// echo time stamp from the receiver
+	double ts_;			// time stamp (double type)
 	double now_;		// real-time now
 	double tao_;		// sampled RTT
 private:

@@ -50,8 +50,8 @@ TfwcSndr::TfwcSndr() :
 	cwnd_(1),
 	aoa_(0),
 	t_now_(0),
-	ts_(0),
-	ts_echo_(0),
+	t_ts_(0),
+	t_ts_echo_(0),
 	now_(0),
 	ndtp_(0),
 	nakp_(0),
@@ -81,6 +81,7 @@ TfwcSndr::TfwcSndr() :
 	beta_ = 0.25;
 	g_ = 0.01;
 	k_ = 4;
+	ts_ = 0.0;
 
 	is_tfwc_on_ = false;
 	is_first_loss_seen_ = false;
