@@ -1170,7 +1170,7 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 
 	// we received seqno/ackofack, so do receiver stuffs here
 	if (seqno_ != ackofack_) {
-		printf("RECEIVER RECEIVER!!\n");
+		//printf("RECEIVER RECEIVER!!\n");
 		// parse seqno, ackofack, and timestamp from XR report block
 		if(flags == XR_BT_1) {
 			// this is XR conveys seqno and ackofack
@@ -1189,7 +1189,7 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 	}
 	// we received ackvec, so do sender stuffs here
 	else {
-		printf("SENDER SENDER!!\n");
+		//printf("SENDER SENDER!!\n");
 		// parse ackvec and timestamp echo from XR report block
 		if(flags == XR_BT_1) {
 			ackvec_ = ntohl(xr->chunk);
