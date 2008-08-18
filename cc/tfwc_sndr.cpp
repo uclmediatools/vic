@@ -53,12 +53,12 @@ TfwcSndr::TfwcSndr() :
 	ts_(0),
 	ts_echo_(0),
 	now_(0),
-	lastest_ack_(0),
 	ndtp_(0),
 	nakp_(0),
 	ntep_(0),
 	nsve_(0),
-	epoch_(1)
+	epoch_(1),
+	just_acked_(0)
 {
 	// allocate tsvec_ in memory
 	tsvec_ = (double *)malloc(sizeof(double)* TSZ);
@@ -123,17 +123,17 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int32_t ackv, u_int32_t ts_echo)
 		nakp_++;		// number of ackvec packet received
 		//ackv_ = ackv;	// store ackvec
 
-		// lastest ack (head of ackvec)
-		lastest_ack_ = get_head_pos(ackv) + aoa_;
+		// just acked seqno (head of ackvec)
+		just_acked_ = get_head_pos(ackv) + aoa_;
 
 		// generate seqno vec
-		gen_seqno_vec(ackv);
+		gen_seqvec(ackv);
 
 		// generate margin vector
 		marginvec(ackv);
 
 		// detect loss
-		is_loss_ = detect_loss(seqvec_, mvec_[DUPACKS-1] - 1, aoa_);
+		is_loss_ = detect_loss(mvec_[DUPACKS-1] - 1, aoa_);
 
 		// TFWC is not turned on (i.e., no packet loss yet)
 		if(!is_tfwc_on_) {
@@ -148,7 +148,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int32_t ackv, u_int32_t ts_echo)
 		} 
 		// TFWC is turned on, so control that way
 		else {
-			control(seqvec_);
+			control();
 		}
 
 		// set ackofack (real number)
@@ -177,18 +177,28 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int32_t ackv, u_int32_t ts_echo)
  * detect packet loss in the received vector
  * @ret: true when there is a loss
  */
-bool TfwcSndr::detect_loss(u_int32_t* vec, u_int16_t end, u_int16_t begin) {
+bool TfwcSndr::detect_loss(u_int16_t end, u_int16_t begin) {
 	bool ret;	// 'true' when there is a loss
 	int lc = 0;	// loss counter
 
 	// number of tempvec element
 	int numvec = (end - begin < 0) ? 0 : end - begin;
-	int tempvec[numvec];
-	bool is_there;
+	u_int32_t tempvec[numvec];
+	bool is_there = false;
 
+	// generate tempvec elements
 	for (int i = 0; i < numvec; i++) {
 		tempvec[i] = (begin + 1) + i;
-		// is there stuff
+	}
+
+	// compare tempvec and seqvec
+	for (int i = 0; i < numvec; i++) {
+		for (int j = 0; j < numvec; j++) {
+			if (tempvec[i] == seqvec_[j]) {
+				is_there = true;
+				break;
+			}
+		}
 
 		if(!is_there) {
 			if(!is_first_loss_seen_) 
@@ -196,6 +206,11 @@ bool TfwcSndr::detect_loss(u_int32_t* vec, u_int16_t end, u_int16_t begin) {
 			lc++;
 		}
 	}
+	
+	// store elements
+	firstvec_ = tempvec[0];
+	lastvec_ = firstvec_ + (numvec - 1);
+
 	return ret = (lc > 0) ? true : false;
 }
 
@@ -230,8 +245,8 @@ void TfwcSndr::update_rtt(double rtt_sample) {
 /*
  * core part for congestion window control
  */
-void TfwcSndr::control(u_int32_t* seqvec) {
-	loss_history(seqvec);
+void TfwcSndr::control() {
+	loss_history();
 	avg_loss_interval();
 
 	// loss event rate (p)
@@ -276,7 +291,7 @@ void TfwcSndr::gen_weight() {
 /*
  * compute packet loss history
  */
-void TfwcSndr::loss_history(u_int32_t* seqvec) {
+void TfwcSndr::pseudo_history() {
 	pseudo_interval_ = 1 / p_;
 
 	/* bzero for all history information */
@@ -340,18 +355,65 @@ void TfwcSndr::pseudo_p() {
 /*
  * compute simulated loss history
  */
-void TfwcSndr::pseudo_history() {
-	pseudo_interval_ = 1 / p_;
+void TfwcSndr::loss_history() {
+	bool is_loss;		// is there a loss found in seqvec?
+	bool is_new_event;	// is this a new loss event?
+	int numvec = lastvec_ - firstvec_ + 1;
+	u_int32_t tempvec[numvec];
 
-	/* bzero for all history information */
-	for(int i = 0; i <= HSZ+1; i++)
-		history_[i] = 0;
+	for (int i = 0; i < numvec; i++)
+		tempvec[i] = firstvec_ + i;
 
-	/* (let) most recent history information be 0 */
-	history_[0] = 0;
+	// compare tempvec[] with seqvec
+	for (int i = 0; i < numvec; i++) {
+		// is there a loss found?
+		for (int j = 0; j < numvec; j++) {
+			if (tempvec[i] == seqvec_[j]) {
+				is_loss = false;
+				break;
+			} else 
+				is_loss = true;
+		}
 
-	/* (let) the pseudo interval be the first history information */
-	history_[1] = (int) pseudo_interval_;
+		// is this a new loss event?
+		if (tsvec_[tempvec[i]%TSZ] - ts_ > srtt_)
+			is_new_event = true;
+		else
+			is_new_event = false;
+
+		// compute loss history (compare tempvec and seqvec)
+		// o  everytime it sees a loss
+		//    it will compare the timestamp with smoothed RTT
+		//
+		// o  if the time difference is greater than RTT,
+		//    then this loss starts a new loss event
+		// o  if the time difference is less than RTT,
+		//    then we do nothing
+		//
+		// o  if there is no loss, 
+		//    simply increment the loss interval by one
+		if (is_loss && is_new_event) {
+			// this is a new loss event!
+
+			// increase current history size
+			hsz_ = (hsz_ < HSZ) ? ++hsz_ : HSZ;
+
+			// shift history information
+			for (int k = HSZ; k > 0; k--)
+				history_[k] = history_[k-1];
+
+			// record lost packet's timestamp
+			ts_ = tsvec_[tempvec[i]%TSZ];
+
+			// let the most recent history information be one
+			history_[0] = 1;
+		} 
+		else {
+			// this is not a new loss event
+			// increase the current history information
+			history_[0]++;
+		}
+	}
 }
 
 /*

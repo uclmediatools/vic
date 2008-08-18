@@ -42,11 +42,15 @@
 #define TSZ	1000		// tsvec_ size
 #define SSZ 1000		// seqvec_ size
 
+#define SHORT_HISTORY		// history size = 8
 #ifdef  SHORT_HISTORY
 #define HSZ 8   // history size for avg loss history
 #else
 #define HSZ 16  // history size for avg loss history
 #endif
+
+#define T_RTTVAR_BITS	2	// XXX not used
+#define T_SRTT_BITS		3	// XXX not used
 
 // set AckVec bitmap from LSB
 #define SET_BIT_VEC(ackvec_, bit) (ackvec_ = ((ackvec_ << 1) | bit))
@@ -103,7 +107,7 @@ public:
 	u_int32_t cwnd_;	// congestion window
 
 protected:
-	// get the first position in ackvec where 1 is marked (mod 32)
+	// get the first position in ackvec where 1 is marked
 	inline u_int32_t get_head_pos(u_int32_t ackvec) {
 		int l;
 		for (l = 0; l < 32; l++) {
@@ -133,12 +137,16 @@ protected:
 		}
 	}
 	// generate seqno vector (interpret ackvec to real sequence numbers)
-	inline void gen_seqno_vec(u_int32_t vec) {
+	inline void gen_seqvec(u_int32_t vec) {
 		int hseq = get_head_pos(vec) + aoa_;	// ackvec head seqno
-		int cnt = hseq - aoa_;
+		int cnt = hseq - aoa_;	// number of packets in ackvec
+		int offset = 0;		// if the bit is zero, then increment 
 		
 		for (int i = 0; i < cnt; i++) {
-			seqvec_[i%SSZ]	 = hseq - i;
+			if( CHECK_BIT_AT(vec, (cnt-i)) )
+				seqvec_[(i-offset)%SSZ] = hseq - i;
+			else
+				offset++;
 		}
 	}
 	// ackofack
@@ -160,16 +168,16 @@ private:
 	void update_rtt(double tao);
 
 	// detect packet loss
-	bool detect_loss(u_int32_t*, u_int16_t, u_int16_t);
+	bool detect_loss(u_int16_t, u_int16_t);
 
 	// control congestion window
-	void control(u_int32_t* seqvec);
+	void control();
 
 	// calcuate average loss interval
 	void avg_loss_interval();
 
 	// calculate loss history
-	void loss_history(u_int32_t* seqvec);
+	void loss_history();
 
 	// estimate loss history and loss probability
 	void pseudo_p();
@@ -181,14 +189,15 @@ private:
 	// dupack action
 	void dupack_action();
 
-	u_int16_t lastest_ack_;	// lastest seqno from ackvec
-	u_int32_t *seqvec_;		// generated seqno vec
-	double *tsvec_;	// timestamp vector
 	int ndtp_;		// number of data packet sent
 	int nakp_;		// number of ackvec packet received
 	int ntep_;		// number of ts echo packet received
 	int nsve_;		// number of seqvec element
 	int epoch_;		// communication epoch
+
+	u_int32_t *seqvec_;		// generated seqno vec
+	double *tsvec_;			// timestamp vector
+	u_int16_t just_acked_;	// just acked seqno (head of ackvec)
 	bool is_loss_;
 	bool is_first_loss_seen_;
 	bool is_tfwc_on_;
@@ -206,6 +215,8 @@ private:
 	double I_tot1_;		// form 1 to n
 	double tot_weight_;	// total weight
 	int hsz_;		// current history size
+	u_int32_t firstvec_;
+	u_int32_t lastvec_;
 
 	// RTT related variables
 	double srtt_;	// smoothed RTT

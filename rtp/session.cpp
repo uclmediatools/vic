@@ -1203,6 +1203,9 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 			// this XR conveys ts echo, hence parse it
 			tfwc_sndr_recv(flags, 0, ts_echo_);
 		}
+
+		// we need to call Transmitter::output(pb) here
+		//output(pb);
 	}
 }
 
