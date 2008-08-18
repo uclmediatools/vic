@@ -666,7 +666,7 @@ void SessionManager::send_xreport(CtrlHandler* ch, int bt, int bye)
 		// get ackofack from TfwcSndr
 		xr->begin_seq = htons(tfwc_sndr_get_aoa());
 
-		debug_msg("	SeqNo:		%d\n", tfwc_sndr_get_seqno());
+		//debug_msg("	SeqNo:		%d\n", tfwc_sndr_get_seqno());
 	} 
 	// this block is used for giving timestamp
 	else if(bt == XR_BT_3) {
@@ -676,7 +676,7 @@ void SessionManager::send_xreport(CtrlHandler* ch, int bt, int bye)
 		// get timestamp from TfwcSndr
 		xr->chunk = htonl(tfwc_sndr_get_ts());
 
-		debug_msg("	TS:		%ld\n", tfwc_sndr_get_ts());
+		//debug_msg("	TS:		%ld\n", tfwc_sndr_get_ts());
 	}
 
 	++xr;
@@ -1140,7 +1140,7 @@ void SessionManager::parse_rr(rtcphdr* rh, int flags, u_char* ep,
 void SessionManager::parse_xr(rtcphdr* rh, int flags, u_char* ep,
 							  Source* ps, Address & addr, int layer)
 {
-	debug_msg("XXX parse_xr() called!\n");
+	//debug_msg("XXX parse_xr() called!\n");
 	Source* s;
 	u_int32_t ssrc = rh->rh_ssrc;	// RTCP's ssrc
 	if (ps->srcid() != ssrc)

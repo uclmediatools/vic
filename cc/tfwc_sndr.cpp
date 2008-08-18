@@ -108,7 +108,7 @@ void TfwcSndr::tfwc_sndr_send(pktbuf* pb) {
 
 	// sequence number must be greater than zero
 	assert (seqno_ > 0);
-	debug_msg("sent seqno:		%d\n", seqno_);
+	//debug_msg("sent seqno:		%d\n", seqno_);
 
 	ndtp_++;	// number of data packet sent
 }
