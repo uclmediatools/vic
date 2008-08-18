@@ -132,6 +132,7 @@ public:
 	void build_ts_pkt(CtrlHandler* ch);
 	void build_ackv_pkt(CtrlHandler* ch, rtcp_xr* xr);
 	void build_ts_echo_pkt(CtrlHandler* ch, rtcp_xr* xr);
+	void cc_output();
 
 protected:
 //	void demux(rtphdr* rh, u_char* bp, int cc, Address & addr, int layer);

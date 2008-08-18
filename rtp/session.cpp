@@ -1161,18 +1161,18 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 	UNUSED(ep);
 	UNUSED(addr);
 
+	// XR block flags
 	u_int16_t flags = xr->xr_flags;
-	u_int16_t ackofack = ntohs(xr->begin_seq);
-	u_int16_t seqno = ntohs(xr->end_seq);
+
+	// ackofack and seqno
+	ackofack_ = ntohs(xr->begin_seq);
+	seqno_ = ntohs(xr->end_seq);
 
 	// we received seqno/ackofack, so do receiver stuffs here
-	if (seqno != ackofack) {
+	if (seqno_ != ackofack_) {
 		printf("RECEIVER RECEIVER!!\n");
 		// parse seqno, ackofack, and timestamp from XR report block
 		if(flags == XR_BT_1) {
-			ackofack_ = ackofack;
-			seqno_ = seqno;
-
 			// this is XR conveys seqno and ackofack
 			tfwc_rcvr_recv(flags, seqno_, ackofack_, 0);
 		}
@@ -1204,8 +1204,37 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 			tfwc_sndr_recv(flags, 0, ts_echo_);
 		}
 
-		// we need to call Transmitter::output(pb) here
-		//output(pb);
+		// we need to call Transmitter::output(pb) here (make Ack driven)
+		cc_output();
+	}
+}
+
+void SessionManager::cc_output() 
+{
+	pktbuf* pb = get_packet_queue();
+	tfwc_sndr_send(pb);
+
+	// cwnd value
+	int magic = (int) tfwc_magic();
+	// last acked seqno
+	int jack = (int) tfwc_sndr_just_acked();
+	// current packet's seqno
+	int seqno = (int) tfwc_sndr_get_seqno();
+
+	// if the current packet seqno is within (cwnd + jack)
+	// then send the packets
+	if (seqno <= magic + jack) {
+		while (seqno <= magic + jack)
+			output(pb);		// call Transmitter::output(pb)
+	}
+	// otherwise, just queue up the packets
+	else {
+		if (head_ != 0) {
+			tail_->next = pb;
+			tail_ = pb;
+		} else
+			tail_ = head_ = pb;
+		pb->next = 0;
 	}
 }
 
@@ -1240,9 +1269,13 @@ void SessionManager::send_xreport_back(CtrlHandler* ch, rtcp_xr* xr,
 
 	SourceManager& sm = SourceManager::instance();
 	Source& s = *sm.localsrc();
-	rtcphdr* rh = (rtcphdr *)pktbuf_;
+	rtcphdr* rh = (rtcphdr*)pktbuf_;
 	rh->rh_ssrc = s.srcid();
-	int flags = RTP_VERSION << 14;
+	int flags = RTP_VERSION << 14;	// RTCP flags
+	int layer = ch - ch_; //LLL
+	Source::Layer& sl = s.layer(layer);
+	timeval now = unixtime();
+	sl.lts_ctrl(now);
 
 	// set RTCP flag to  XR packet
 	flags |= RTCP_PT_XR;
@@ -1257,7 +1290,8 @@ void SessionManager::send_xreport_back(CtrlHandler* ch, rtcp_xr* xr,
 		xr->xr_flags = htons(XR_BT_1 << 8);
 
 		// make 'begin_seq' equal to 'end_seq'
-		xr->begin_seq = htons(xr->end_seq);
+		xr->begin_seq = htons(seqno_);
+		xr->end_seq = htons(seqno_);
 
 		// get ackvec from TfwcRcvr
 		xr->chunk = htonl(tfwc_rcvr_getvec());

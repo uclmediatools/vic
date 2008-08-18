@@ -82,6 +82,9 @@ public:
 	// return ackofack
 	inline u_int16_t tfwc_sndr_get_aoa() { return aoa_; }
 
+	// return just acked seqno
+	inline u_int16_t tfwc_sndr_just_acked() { return just_acked_; }
+
 	// return tfwc controlled cwnd value
 	inline u_int32_t tfwc_magic() { return cwnd_; };
 

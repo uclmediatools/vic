@@ -91,7 +91,8 @@ Transmitter::Transmitter() :
 	tail_(0),
 	loop_layer_(1000),
 	loopback_(0),
-	is_cc_active_(1)
+	is_cc_active_(1),
+	is_first_(1)
 {
 	memset((char*)&mh_, 0, sizeof(mh_));
 	mh_.msg_iovlen = 2;
@@ -212,18 +213,16 @@ double Transmitter::txtime(pktbuf* pb)
 
 void Transmitter::send(pktbuf* pb)
 {
+	// CC is active, so just follow CC routines 
+	// (i.e., not sending packets here)
 	if (is_cc_active_) {
-		// pass pktbuf to TfwcSndr
-		tfwc_sndr_send(pb);
-
-		// get CC'd cwnd value
-		int magic = (int) tfwc_magic();
-
-		// pktbuf size
-		int queue = 100; 
-
-		if (queue <= magic) 
+		// if it is the very first packet, just send it.
+		if(is_first_) {
+			tfwc_sndr_send(pb);
 			output(pb);
+			is_first_ = false;
+		} 
+		// if it is not, just queue up the packets.
 		else {
 			if (head_ != 0) {
 				tail_->next = pb;
@@ -232,7 +231,12 @@ void Transmitter::send(pktbuf* pb)
 				tail_ = head_ = pb;
 			pb->next = 0;
 		}
-	} else {
+
+		// record the local pb pointer to the global location
+		pb_ = pb;
+	} 
+	// CC is not active, so just go for the normal operation
+	else {
 		if (!busy_) {
 			double delay = txtime(pb);
 			nextpkttime_ = gettimeofday_secs() + delay;
