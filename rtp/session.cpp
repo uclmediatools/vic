@@ -1211,30 +1211,26 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 
 void SessionManager::cc_output() 
 {
-	pktbuf* pb = get_packet_queue();
+	//pktbuf* pb = get_packet_queue();
+	pktbuf* pb = head_;
+	rtphdr* rh = (rtphdr *) pb->data;
+
+	// pass pb to TfwcSndr
 	tfwc_sndr_send(pb);
 
 	// cwnd value
 	int magic = (int) tfwc_magic();
 	// last acked seqno
 	int jack = (int) tfwc_sndr_just_acked();
-	// current packet's seqno
-	int seqno = (int) tfwc_sndr_get_seqno();
 
-	// if the current packet seqno is within (cwnd + jack)
+	// while the packet seqno is within "cwnd + jack"
 	// then send the packets
-	if (seqno <= magic + jack) {
-		while (seqno <= magic + jack)
-			output(pb);		// call Transmitter::output(pb)
-	}
-	// otherwise, just queue up the packets
-	else {
-		if (head_ != 0) {
-			tail_->next = pb;
-			tail_ = pb;
-		} else
-			tail_ = head_ = pb;
-		pb->next = 0;
+	while (rh->rh_seqno <= magic + jack) {
+		if (pb != 0) {
+			head_ = pb->next;
+			output(pb);	// call Transmitter::output(pb)
+		}
+		rh = (rtphdr *) pb->data;
 	}
 }
 
