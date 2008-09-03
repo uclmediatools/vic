@@ -48,7 +48,9 @@ TfwcRcvr::TfwcRcvr() :
 	currseq_(0),
 	prevseq_(0),
 	ackofack_(0)
-{}
+{
+	tfwcAV = 0;
+}
 
 void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno, 
 				u_int16_t ackofack, u_int32_t ts) 
