@@ -215,7 +215,7 @@ void Transmitter::send(pktbuf* pb)
 {
 	// CC is active, so just follow CC routines 
 	// (i.e., not sending packets here)
-	if (is_cc_active_) {
+	if (is_cc_on()) {
 		// if it is the very first packet, just send it.
 		if(is_first_) {
 			tfwc_sndr_send(pb);
@@ -282,18 +282,20 @@ void Transmitter::timeout()
 
 void Transmitter::flush()
 {
-	if (busy_) {
-		busy_ = 0;
-		cancel();
-	}
+	if (!is_cc_on()) {
+		if (busy_) {
+			busy_ = 0;
+			cancel();
+		}
 
-	pktbuf* p = head_;
-	while (p != 0) {
-		pktbuf* n = p->next;
-		output(p);
-		p = n;
+		pktbuf* p = head_;
+		while (p != 0) {
+			pktbuf* n = p->next;
+			output(p);
+			p = n;
+		}
+		head_ = 0;
 	}
-	head_ = 0;
 }
 
 void Transmitter::output(pktbuf* pb)
