@@ -1225,7 +1225,7 @@ void SessionManager::cc_output()
 
 	// while the packet seqno is within "cwnd + jack"
 	// then send the packets
-	while (rh->rh_seqno <= magic + jack) {
+	while (ntohs(rh->rh_seqno) <= magic + jack) {
 		if (pb != 0) {
 			head_ = pb->next;
 			output(pb);	// call Transmitter::output(pb)
