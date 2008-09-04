@@ -154,10 +154,15 @@ protected:
 	}
 	// ackofack
 	inline u_int16_t ackofack () {
-		return (mvec_[DUPACKS - 1] - 1);
+		int retval = mvec_[DUPACKS - 1] - 1;
+
+		if (retval < 0) 
+			retval = 0;
+
+		return (u_int16_t) retval;
 	}
 
-	u_int32_t mvec_[DUPACKS]; // margin vec (simulatinmg TCP 3 dupacks)
+	int mvec_[DUPACKS]; // margin vec (simulatinmg TCP 3 dupacks)
 	u_int32_t ackv_;	// received AckVec (from TfwcRcvr)
 	u_int32_t pvec_;	// sent packet list
 	u_int16_t aoa_;		// ack of ack

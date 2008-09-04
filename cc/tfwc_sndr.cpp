@@ -66,8 +66,8 @@ TfwcSndr::TfwcSndr() :
 	seqvec_ = (u_int32_t *)malloc(sizeof(u_int32_t)* SSZ );
 
 	// for simulating TCP's 3 dupack rule
-	u_int32_t mvec_ = 0x00;
-	UNUSED(mvec_);	// to shut up gcc-4.x
+	for (int i = 0; i < DUPACKS; i++)
+		mvec_[i] = 0;
 
 	minrto_ = 0.0;
 	maxrto_ = 100000.0;
@@ -134,7 +134,15 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int32_t ackv, u_int32_t ts_echo)
 		marginvec(ackv);
 
 		// detect loss
-		is_loss_ = detect_loss(mvec_[DUPACKS-1] - 1, aoa_);
+		int pt = mvec_[DUPACKS - 1] - 1;
+		u_int16_t end;
+
+		if (pt < 0)
+			end = 0;
+		else
+			end = (u_int16_t) pt;
+
+		is_loss_ = detect_loss(end, aoa_);
 
 		// TFWC is not turned on (i.e., no packet loss yet)
 		if(!is_tfwc_on_) {
