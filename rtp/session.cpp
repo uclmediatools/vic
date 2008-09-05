@@ -1215,9 +1215,6 @@ void SessionManager::cc_output()
 	pktbuf* pb = head_;
 	rtphdr* rh = (rtphdr *) pb->data;
 
-	// pass pb to TfwcSndr
-	tfwc_sndr_send(pb);
-
 	// cwnd value
 	int magic = (int) tfwc_magic();
 	// last acked seqno
@@ -1228,7 +1225,10 @@ void SessionManager::cc_output()
 	while (ntohs(rh->rh_seqno) <= magic + jack) {
 		if (pb != 0) {
 			head_ = pb->next;
-			output(pb);	// call Transmitter::output(pb)
+			// call Transmitter::output(pb)
+			output(pb);
+			// record seqno and timestamp at TfwcSndr side
+			tfwc_sndr_send(pb);
 		}
 		rh = (rtphdr *) pb->data;
 	}
