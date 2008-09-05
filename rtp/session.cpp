@@ -1211,27 +1211,39 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 
 void SessionManager::cc_output() 
 {
-	//pktbuf* pb = get_packet_queue();
-	pktbuf* pb = head_;
-	rtphdr* rh = (rtphdr *) pb->data;
+	pktbuf* pb = head_;	// head of the packet queue
+	rtphdr* rh;		// declare rtp header
+
+	// if pb is not 0, then parse rtp header 
+	if (pb != 0) 
+		rh = (rtphdr *) pb->data;
 
 	// cwnd value
 	int magic = (int) tfwc_magic();
 	// last acked seqno
 	int jack = (int) tfwc_sndr_just_acked();
 
-	// while the packet seqno is within "cwnd + jack"
-	// then send the packets
+	// while packet seqno is within "cwnd + jack", send that packet
 	while (ntohs(rh->rh_seqno) <= magic + jack) {
+		//debug_msg("seqno: %d\n", ntohs(rh->rh_seqno));
 		if (pb != 0) {
-			head_ = pb->next;
-			// call Transmitter::output(pb)
-			output(pb);
 			// record seqno and timestamp at TfwcSndr side
 			tfwc_sndr_send(pb);
+
+			// call Transmitter::output(pb)
+			output(pb);
+
+			// trim packet buffer
+			pktbuf* nx = pb->next;
+			pb = nx;
+
+			// if pb is not 0, then parse rtp header
+			if (pb != 0)
+				rh = (rtphdr *) pb->data;
+			else
+				break;
 		}
-		rh = (rtphdr *) pb->data;
-	}
+	} // end while
 }
 
 void CtrlHandler::send_ackv(rtcp_xr* xr)
