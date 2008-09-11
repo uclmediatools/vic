@@ -135,14 +135,18 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int32_t ackv, u_int32_t ts_echo)
 
 		// detect loss
 		int pt = mvec_[DUPACKS - 1] - 1;
-		u_int16_t end;
+		u_int16_t begin, end;
 
+		// begin
+		begin = aoa_;
+
+		// end
 		if (pt < 0)
 			end = 0;
 		else
 			end = (u_int16_t) pt;
 
-		is_loss_ = detect_loss(end, aoa_);
+		is_loss_ = detect_loss(end, begin);
 
 		// TFWC is not turned on (i.e., no packet loss yet)
 		if(!is_tfwc_on_) {

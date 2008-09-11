@@ -682,7 +682,7 @@ void SessionManager::send_xreport(CtrlHandler* ch, int bt, int bye)
 	++xr;
 
 	// XR report block length
-	int xrlen = (u_char*)xr - pktbuf_;
+	int xrlen = sizeof(xr);
 	xr->xr_len = htons((xrlen >> 2) - 1);
 
 	// RTCP header flags (this is not the XR header flags)
@@ -1184,8 +1184,8 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 		}
 
 		// send receiver side XR report
-		ch_[0].send_ackv(xr);
-		//ch_[0].send_ts_echo(xr);
+		ch_[0].send_ackv();
+		//ch_[0].send_ts_echo();
 	}
 	// we received ackvec, so do sender stuffs here
 	else {
@@ -1246,32 +1246,31 @@ void SessionManager::cc_output()
 	} // end while
 }
 
-void CtrlHandler::send_ackv(rtcp_xr* xr)
+void CtrlHandler::send_ackv()
 {
-	sm_->build_ackv_pkt(this, xr);
+	sm_->build_ackv_pkt(this);
 }
 
-void CtrlHandler::send_ts_echo(rtcp_xr* xr)
+void CtrlHandler::send_ts_echo()
 {
-	sm_->build_ts_echo_pkt(this, xr);
+	sm_->build_ts_echo_pkt(this);
 }
 
-void SessionManager::build_ackv_pkt(CtrlHandler* ch, rtcp_xr* xr)
+void SessionManager::build_ackv_pkt(CtrlHandler* ch)
 {
 	// RTCP XR (block type 1)
 	// this block contains ackvec
-	send_xreport_back(ch, xr, XR_BT_1, 0);
+	send_xreport_back(ch, XR_BT_1, 0);
 }
 
-void SessionManager::build_ts_echo_pkt(CtrlHandler* ch, rtcp_xr* xr)
+void SessionManager::build_ts_echo_pkt(CtrlHandler* ch)
 {
 	// RTCP XR (block type 3)
 	// this block contains timestamp echo
-	send_xreport_back(ch, xr, XR_BT_3, 0);
+	send_xreport_back(ch, XR_BT_3, 0);
 }
 
-void SessionManager::send_xreport_back(CtrlHandler* ch, rtcp_xr* xr, 
-		int bt, int bye)
+void SessionManager::send_xreport_back(CtrlHandler* ch, int bt, int bye)
 {
 	UNUSED(bye);
 
@@ -1287,6 +1286,9 @@ void SessionManager::send_xreport_back(CtrlHandler* ch, rtcp_xr* xr,
 
 	// set RTCP flag to  XR packet
 	flags |= RTCP_PT_XR;
+
+	// decalre XR packet
+	rtcp_xr* xr = (rtcp_xr *) (rh + 1);
 
 	// UNUSED
 	int xrssrc = 0;
@@ -1316,7 +1318,7 @@ void SessionManager::send_xreport_back(CtrlHandler* ch, rtcp_xr* xr,
 	++xr;
 
 	// XR report block length
-	int xrlen = (u_char *)xr - pktbuf_;
+	int xrlen = sizeof(xr);
 	xr->xr_len = htons((xrlen >> 2) - 1);
 
 	// RTCP header flags
