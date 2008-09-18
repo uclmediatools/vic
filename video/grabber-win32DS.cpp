@@ -125,6 +125,7 @@ input devices are created.  Probably not a good approach, but it is one possibil
 #include "config.h"
 #include <windows.h>
 
+#include "debug.h"
 #include "grabber.h"
 #include "device-input.h"
 #include "module.h"
@@ -135,6 +136,8 @@ input devices are created.  Probably not a good approach, but it is one possibil
 #ifndef VIDE0_FOR_WINDOWS
 static DirectShowScanner findDirectShowDevices;
 #endif
+
+#define NAMEBUF_LEN 200
 
 IBaseFilter  *pCaptureFilter[NUM_DEVS];
 
@@ -175,6 +178,7 @@ STDMETHODIMP Callback::QueryInterface(REFIID riid, void **ppvObject) {
 
 DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char *nick)  {
    HRESULT         hr;
+   WCHAR           nameBufW[NAMEBUF_LEN];
 
    /* Reference:  various, including 
       - Pesce, Chapter 11
@@ -252,12 +256,14 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char *nick)  {
    }
    debug_msg("DirectShowGrabber::DirectShowGrabber():  graph associated with builder\n");
 
+   nameBufW[0] = '\0';
+   hr = MultiByteToWideChar(CP_ACP, 0, nick, -1, nameBufW, NAMEBUF_LEN);
+
    // Add the capture filter (obtained by the DirectShowDevice Scanner) to the filter graph
    //hr = pGraph_->AddFilter(pCaptureFilter_, L"VicCaptureFilter");
-   USES_CONVERSION;
-   hr = pGraph_->AddFilter(pCaptureFilter_, A2W(nick));
-   //showErrorMessage(hr);
-   debug_msg("DirectShowGrabber::DirectShowGrabber():  capture filter added to graph\n");
+   hr = pGraph_->AddFilter(pCaptureFilter_, nameBufW);
+    
+   debug_msg("DirectShowGrabber::DirectShowGrabber():  capture filter added to graph: %d\n", hr);
    //IAMVideoCompression *pVC;
    /*pCaptureFilter_->AddRef();
    hr = pBuild_->RenderStream(&PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video,
@@ -271,7 +277,7 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char *nick)  {
    hr = CoCreateInstance(CLSID_SampleGrabber, NULL, CLSCTX_INPROC_SERVER,
                          IID_IBaseFilter, (LPVOID *)&pGrabberBaseFilter_);
    //showErrorMessage(hr);
-   debug_msg("DirectShowGrabber::DirectShowGrabber():  grabber base filter instance acquired\n");
+   debug_msg("DirectShowGrabber::DirectShowGrabber():  grabber base filter instance acquired: %d\n", hr);
 
    hr = pGrabberBaseFilter_->QueryInterface(IID_ISampleGrabber, (void**)&pSampleGrabber_);
    //showErrorMessage(hr);
@@ -286,7 +292,7 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char *nick)  {
    hr = CoCreateInstance(CLSID_NullRenderer, NULL, CLSCTX_INPROC_SERVER,
                          IID_IBaseFilter, (LPVOID *)&pNullBaseFilter_);
    //showErrorMessage(hr);
-    if (FAILED(hr)) {
+   if (FAILED(hr)) {
    		Grabber::status_=-1;
 		return;
    }
@@ -307,9 +313,9 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char *nick)  {
    //Not needed as width & height aren't known yet.
    setCaptureOutputFormat();
 
-    if (findCrossbar(pCaptureFilter_)) {
-	routeCrossbar();   
-    }
+   if (findCrossbar(pCaptureFilter_)) {
+         routeCrossbar();   
+   }
 
    // We can presumably inspect crossbar==NULL here to determine if we want
    // to change the Sample Grabber media type.
@@ -339,8 +345,7 @@ DirectShowGrabber::~DirectShowGrabber() {
     debug_msg("~DirectShowGrabber()\n");
 
     //capturing_ = !capturing_;
-    if (capturing_) 
-	hr  = pMediaControl_->Stop();
+    if (capturing_) hr  = pMediaControl_->Stop();
     //showErrorMessage(hr);    
 
     CloseHandle(cb_mutex_);  
@@ -370,10 +375,10 @@ bool DirectShowGrabber::findCrossbar(IBaseFilter *pCapF) {
       addCrossbar(pXBar_);
       hr = pXBar_->QueryInterface(IID_IBaseFilter, (void**)&pFilter_);
       if ( SUCCEEDED(hr) ) {
-	 debug_msg("DirectShowGrabber::FindCrossbar()...Found and added\n");
+	     debug_msg("DirectShowGrabber::FindCrossbar()...Found and added\n");
          //findCrossbar(pFilter_);
          //pFilter_.Release();
-	 return TRUE;
+	     return TRUE;
       }
    }
    return FALSE;
@@ -908,10 +913,10 @@ DirectShowDevice::DirectShowDevice(char *friendlyName, IBaseFilter *pCapFilt) : 
    attri_[0] = 0;
 
    debug_msg("new DirectShowDevice():  friendlyName=%s\n", friendlyName);
-   directShowFilter_  = pCapFilt;           
+   pDirectShowFilter_  = pCapFilt;           
    //SV: XXX got rid of 422 format since there's no grabber returned for it and vic crashes
    attributes_        = "format { 411 } size { large small cif } port { extern-in } type { pal ntsc } ";
-   DirectShowCIFGrabber o(directShowFilter_); 
+   DirectShowCIFGrabber o(pDirectShowFilter_, friendlyName);
    
    strcat(attri_, "format { 411 } size { large small cif } type { pal ntsc } port { ");
    if(o.hasSVideo() || o.hasComposite()){
@@ -930,8 +935,8 @@ DirectShowDevice::DirectShowDevice(char *friendlyName, IBaseFilter *pCapFilt) : 
 }
 
 DirectShowDevice::~DirectShowDevice(){
-    // Release not necessary as smart pointers are used.
-    //directShowFilter_.Release();
+    // Release necessary as ATL smart pointers are NOT used.
+    pDirectShowFilter_->Release();
     delete attri_;
 }
 //--------------------------------
@@ -941,7 +946,7 @@ int DirectShowDevice::command(int argc, const char* const* argv) {
    if ((argc == 3) && (strcmp(argv[1], "open") == 0)) {
       TclObject* o = 0;
 	  if (strcmp(argv[2], "cif") == 0){
-         o = directShowGrabber_ = new DirectShowCIFGrabber(directShowFilter_);                  
+         o = directShowGrabber_ = new DirectShowCIFGrabber(pDirectShowFilter_);                  
 	  }else if (strcmp(argv[2], "422") == 0)         
          o = directShowGrabber_ = 0; // one day oughta be "new DirectShow422Grabber(directShowFilter_);"  // msp
 
@@ -956,102 +961,105 @@ int DirectShowDevice::command(int argc, const char* const* argv) {
 // DirectShowScanner class
 
 DirectShowScanner::DirectShowScanner():pMoniker_(0)
- {
-   ICreateDevEnum *pDevEnum      = 0;
-   int             hr;
-   int             devNum;
-   char            nameBuf[80];
-   
-   // Reference:  Pesce, pp 54-56.   
+{
+	ICreateDevEnum *pDevEnum      = 0;
+	int             hr;
+	int             devNum;
+	char            nameBuf[NAMEBUF_LEN];
 
-   debug_msg("new DirectShowScanner()\n");
+	// Reference:  Pesce, pp 54-56.   
 
-   // Initialize the COM subsystem - it seems that CoInitializeEx is reccommended with COINIT_MULTITHREADED as the driver will spawn threads.
-   hr=CoInitializeEx(NULL,COINIT_MULTITHREADED);
-   if (FAILED(hr)) {
-	   debug_msg("Failed COM subsystem initialisation.\n");
-	   	return;
-   }
+	debug_msg("new DirectShowScanner()\n");
 
-   // Create a helper object to find the capture devices.
-   hr = CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC_SERVER, IID_ICreateDevEnum, (LPVOID*)&pDevEnum);
-   if (FAILED(hr)) {
-   		debug_msg("Failed to Create a helper object to find the DS capture devices.\n");
+	// Initialize the COM subsystem - it seems that CoInitializeEx is reccommended with COINIT_MULTITHREADED as the driver will spawn threads.
+	hr=CoInitializeEx(NULL,COINIT_MULTITHREADED);
+	if (FAILED(hr)) {
+		debug_msg("Failed COM subsystem initialisation.\n");
+		return;
+	}
+
+	// Create a helper object to find the capture devices.
+	hr = CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC_SERVER, IID_ICreateDevEnum, (LPVOID*)&pDevEnum);
+	if (FAILED(hr)) {
+		debug_msg("Failed to Create a helper object to find the DS capture devices.\n");
 		CoUninitialize();
 		return;
-   }
+	}
 
-   IEnumMoniker *pEnum    = 0;
-   IPropertyBag *pPropBag = 0;
-   VARIANT      varName;
-   CLSID		clsid;
+	IEnumMoniker *pEnum    = 0;
+	IPropertyBag *pPropBag = 0;
+	VARIANT      varName;
+	CLSID		clsid;
 
-   // Get an enumerator over video capture filters
-   hr = pDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory, &pEnum, 0);
-   //showErrorMessage(hr);
-   if (FAILED(hr) || pEnum == 0) {
-   		debug_msg("Failed to Get an enumerator over DS video capture filters.\n");
+	// Get an enumerator over video capture filters
+	hr = pDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory, &pEnum, 0);
+	//showErrorMessage(hr);
+	if (FAILED(hr) || pEnum == 0) {
+		debug_msg("Failed to Get an enumerator over DS video capture filters.\n");
 		CoUninitialize();
 		return;
-   }
+	}
 
-   // Get the capture filter for each device installed, up to NUM_DEVS devices
-   for( devNum=0; devNum < NUM_DEVS; ++devNum) {
-      if ( pEnum->Next(1, &pMoniker_, NULL) == S_OK ) {
+	// Get the capture filter for each device installed, up to NUM_DEVS devices
+	for( devNum=0; devNum < NUM_DEVS; ++devNum) {
+		if ( pEnum->Next(1, &pMoniker_, NULL) == S_OK ) {
 
-         hr = pMoniker_->BindToStorage(0, 0, IID_IPropertyBag, (void **)&pPropBag);
-	     if (FAILED(hr)) {
-			debug_msg("Failed to Get propbag bound to storage on DS dev: %d\n", devNum);
-			continue;
-		 }
-         //showErrorMessage(hr);
-         debug_msg("propbag bound to storage ok= %d\n", hr);
+			hr = pMoniker_->BindToStorage(0, 0, IID_IPropertyBag, (void **)&pPropBag);
+			if (FAILED(hr)) {
+				debug_msg("Failed to Get propbag bound to storage on DS dev: %d\n", devNum);
+				continue;
+		    }
+			//showErrorMessage(hr);
+			debug_msg("propbag bound to storage ok= %d\n", hr);
 
-         VariantInit(&varName);
-         hr = pPropBag->Read(L"FriendlyName", &varName, 0);
-		 if (FAILED(hr)) {
-			debug_msg("Failed to Get friendly name read on DS dev: %d\n", devNum);
+			VariantInit(&varName);
+			hr = pPropBag->Read(L"FriendlyName", &varName, 0);
+			if (FAILED(hr)) {
+				debug_msg("Failed to Get friendly name read on DS dev: %d\n", devNum);
+				VariantClear(&varName);
+				pPropBag->Release();
+				continue;
+		    }
+			//showErrorMessage(hr);
+			debug_msg("friendly name read ok= %d\n", hr);
+
+			// Need this macro in atlconv.h to go from bStr to char* - msp
+			//USES_CONVERSION;
+
+			nameBuf[0] = '\0';
+			WideCharToMultiByte(CP_ACP, 0, varName.bstrVal, -1, nameBuf, NAMEBUF_LEN,  NULL, NULL);
+			//strcpy(nameBuf, W2A(varName.bstrVal));
+
+			debug_msg("DirectShowScanner::DirectShowScanner():  found nameBuf/FriendlyName=%s\n", nameBuf);
+
+			// needs work, but don't add drivers that look like VFW drivers - msp
+			//if( (strstr(nameBuf, "VFW") == NULL) ) {
+			hr = pMoniker_->BindToObject(0, 0, IID_IBaseFilter, (void **)&pCaptureFilter[devNum]);
+			if (FAILED(hr)) {
+				debug_msg("Failed to Get friendly name read on DS dev: %d\n", devNum);
+				VariantClear(&varName);
+				pPropBag->Release();
+				continue;
+			}
+			debug_msg("capture filter bound ok= [%d} %s\n", hr, nameBuf);
+			pCaptureFilter[devNum]->GetClassID(&clsid);
 			VariantClear(&varName);
-		        pPropBag->Release();
-			continue;
-		 }
-         //showErrorMessage(hr);
-         debug_msg("friendly name read ok= %d\n", hr);
+			if (!IsEqualGUID(clsid,CLSID_VfwCapture))	 {
+				pMoniker_->AddRef();
+				debug_msg("Adding capture filter %d\n", hr);
+				devs_[devNum] = new DirectShowDevice(strdup(nameBuf), pCaptureFilter[devNum]);
+			} else {
+				debug_msg("discarding an apparent VFW device= %s\n", nameBuf);
+				devs_[devNum] = NULL;
+				pMoniker_->Release();
+		    }
+			pPropBag->Release();
+		}
+	}
 
-         // Need this macro in atlconv.h to go from bStr to char* - msp
-         USES_CONVERSION;
-         strcpy(nameBuf, W2A(varName.bstrVal));
-
-         debug_msg("DirectShowScanner::DirectShowScanner():  found nameBuf/FriendlyName=%s\n", nameBuf);
-
-         // needs work, but don't add drivers that look like VFW drivers - msp
-         //if( (strstr(nameBuf, "VFW") == NULL) ) {
-         hr = pMoniker_->BindToObject(0, 0, IID_IBaseFilter, (void **)&pCaptureFilter[devNum]);
-         if (FAILED(hr)) {
-		debug_msg("Failed to Get friendly name read on DS dev: %d\n", devNum);
-		VariantClear(&varName);
-	        pPropBag->Release();
-		continue;
-	 }
-	 debug_msg("capture filter bound ok= [%d} %s\n", hr, nameBuf);
-         pCaptureFilter[devNum]->GetClassID(&clsid);
-         VariantClear(&varName);
-	 if (!IsEqualGUID(clsid,CLSID_VfwCapture))	 {
-		pMoniker_->AddRef();
-		debug_msg("Adding capture filter %d\n", hr);
-		devs_[devNum] = new DirectShowDevice(strdup(nameBuf), pCaptureFilter[devNum]);
-         } else {
-            debug_msg("discarding an apparent VFW device= %s\n", nameBuf);
-	    devs_[devNum] = NULL;
-	    pMoniker_->Release();
-         }
-         pPropBag->Release();
-      }
-   }
-
-   // Release these objects so COM can release their memory
-   pEnum->Release();
-   pDevEnum->Release();
+	// Release these objects so COM can release their memory
+	pEnum->Release();
+	pDevEnum->Release();
 }
 
 //--------------------------------

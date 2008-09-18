@@ -30,9 +30,20 @@
 
 // grabber-win32DS.h
 
+//warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. 
+// To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_DEPRECATE
+
 #include <dshow.h>   // DirectShow
+#include <amstream.h>   // DirectShow
+#define __IDxtCompositor_INTERFACE_DEFINED__
+#define __IDxtAlphaSetter_INTERFACE_DEFINED__
+#define __IDxtJpeg_INTERFACE_DEFINED__
+#define __IDxtKey_INTERFACE_DEFINED__
+// Had to comment out #include  <dxtrans.h> from qedit.h - broken M$ setup?!
+// the above #define's make sure it's contents is not needed
 #include <qedit.h>   // DirectShow
-#include <atlbase.h> // DirectShow
 
 #include "crossbar.h"
 
@@ -115,7 +126,7 @@ class DirectShowGrabber : public Grabber {
       Converter    *converter_;
 
    private:
-      CComPtr<IBaseFilter>   pFilter_;
+      IBaseFilter*			 pFilter_;
       IBaseFilter*           pCaptureFilter_;
       ISampleGrabber*        pSampleGrabber_;
       IBaseFilter*           pGrabberBaseFilter_;
@@ -127,7 +138,7 @@ class DirectShowGrabber : public Grabber {
       AM_MEDIA_TYPE          mt_;
       Callback               *callback_;
 
-      CComPtr<IAMCrossbar> 	     pXBar_;
+      IAMCrossbar 			 *pXBar_;
       Crossbar                       *crossbar_;
       Crossbar                       *crossbarCursor_;
       char			     input_port_[20];
@@ -189,7 +200,7 @@ class DirectShowDevice : public InputDevice {
       virtual int command(int argc, const char* const* argv);     
 
    protected:
-      CComPtr<IBaseFilter>           directShowFilter_;
+      IBaseFilter*           pDirectShowFilter_;
 
       //IBaseFilter       *directShowFilter_;
       DirectShowGrabber *directShowGrabber_;   
