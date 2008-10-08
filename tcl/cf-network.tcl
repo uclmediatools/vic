@@ -127,13 +127,13 @@ proc net_open_ip { sessionType session dst } {
 		    set separator .
 	    }
         		
-        while { $numLayers > $layer } {
+            while { $numLayers > $layer } {
 			incr port 
 			incr layer
-			incr offset
-			set dn [new network $IPaddrFamily]
-			$dn open $base$separator$offset $port $ttl
-			$session data-net $dn $layer
+			if { [$dn ismulticast] } { incr offset }
+			set ldn [new network $IPaddrFamily]
+			$ldn open $base$separator$offset $port $ttl
+			$session data-net $ldn $layer
 
 			if { $sessionType != "nv" } {
 				if { $sessionType == "ivs" } {
@@ -145,7 +145,7 @@ proc net_open_ip { sessionType session dst } {
 				$cn open $base$separator$offset $port $ttl
 				$session ctrl-net $cn $layer
 			}
-		}
+            }
 	}
 
 	#
