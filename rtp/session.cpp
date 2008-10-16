@@ -1211,6 +1211,7 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 
 void SessionManager::cc_output() 
 {
+	//printf("\tentering cc_output()\n");
 	pktbuf* pb = head_;	// head of the packet queue
 	rtphdr* rh;		// declare rtp header
 
@@ -1220,13 +1221,15 @@ void SessionManager::cc_output()
 
 	// cwnd value
 	int magic = (int) tfwc_magic();
+	//debug_msg("cwnd: %d\n", magic);
 	// last acked seqno
 	int jack = (int) tfwc_sndr_just_acked();
+	//debug_msg("jack: %d\n", jack);
 
 	// while packet seqno is within "cwnd + jack", send that packet
 	while (ntohs(rh->rh_seqno) <= magic + jack) {
-		//debug_msg("seqno: %d\n", ntohs(rh->rh_seqno));
 		if (pb != 0) {
+			//debug_msg("seqno: %d\n", ntohs(rh->rh_seqno));
 			// record seqno and timestamp at TfwcSndr side
 			tfwc_sndr_send(pb);
 
@@ -1240,8 +1243,11 @@ void SessionManager::cc_output()
 			// if pb is not 0, then parse rtp header
 			if (pb != 0)
 				rh = (rtphdr *) pb->data;
-			else
+			else 
 				break;
+
+			// move head pointer
+			head_ = pb;
 		}
 	} // end while
 }
