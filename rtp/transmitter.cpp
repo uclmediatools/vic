@@ -231,9 +231,6 @@ void Transmitter::send(pktbuf* pb)
 				tail_ = head_ = pb;
 			pb->next = 0;
 		}
-
-		// record the local pb pointer to the global location
-		pb_ = pb;
 	} 
 	// CC is not active, so just go for the normal operation
 	else {

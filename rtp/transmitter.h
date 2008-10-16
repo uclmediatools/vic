@@ -86,7 +86,7 @@ class Transmitter : public TclObject, public Timer,
 	void flush();
 	void send(pktbuf*);
 	inline bool is_cc_on() { return is_cc_active_; }
-	inline pktbuf* get_packet_queue() { return pb_;}
+
 	/*
 	 * Buffer allocation hooks.
 	 */
@@ -116,7 +116,6 @@ protected:
 	int busy_;
 	pktbuf* head_;
 	pktbuf* tail_;
-	pktbuf* pb_;
 
 	int loop_layer_;	/* # of layers to loop back (for testing) */
 
