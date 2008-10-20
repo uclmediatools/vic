@@ -24,7 +24,7 @@ case "$arch" in
   ;;
   "Power Macintosh"|ppc|ppc64|powerpc)
     V_ARCH="ARCH_PPC"
-    V_DEFINE="$V_DEFINE -DSYS_DARWIN"
+    case "$target" in (*darwin*) V_DEFINE="$V_DEFINE -DSYS_DARWIN";; esac
     ppc_conf="--disable-altivec"
     ppc_tune="-mcpu=G3"
     echo test1
