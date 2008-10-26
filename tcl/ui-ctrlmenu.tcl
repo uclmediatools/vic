@@ -436,14 +436,10 @@ proc transmit { } {
 
 proc close_device {} {
 	global V
-	# XXX: bypassing the pure virtual funtion call problem under macosx
-	# need to figure out where is the bug
-        if { ![string match [ windowingsystem] "aqua"]} { 
-	    delete $V(encoder)
-	    delete $V(grabber)
- 	    unset V(grabber) 
-	    unset V(encoder)
-        }
+	delete $V(encoder)
+	delete $V(grabber)
+ 	unset V(grabber) 
+	unset V(encoder)
 	if [info exists V(capwin)] {
 		# delete the C++ object, then destrory the tk window
 		delete $V(capwin)
