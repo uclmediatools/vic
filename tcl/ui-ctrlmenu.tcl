@@ -1538,7 +1538,7 @@ proc select_format fmt {
 # MM
 
 		set ff [$encoder frame-format]
-		if { "$ff" == "[$V(encoder) frame-format]" } {
+		if { "$ff" == "[$V(encoder) frame-format]" && ![string match [ windowingsystem] "aqua"]} {
 			#
 			# new framer has the same format as the
 			# old one.  just replace the old one without
