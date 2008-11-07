@@ -1,4 +1,9 @@
+/*
+ * config.h to be included in the test codes
+ */
+
 /* $Id$ */
+
 #ifdef vic_cc_test_config_h
 #define vic_cc_test_config_h
 
