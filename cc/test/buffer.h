@@ -5,15 +5,22 @@
 
 /* $Id$ */
 
+#ifndef vic_cc_test_buffer_h
+#define vic_cc_test_buffer_h
+
+#include <iostream>
 #include "config.h"
 
-// buffer is a linked list
-class data;
+// Buffer is a linked list
+class Data;
 
-class buffer {
+class Buffer {
 public:
 	// default constructor
-	buffer() : head_(0), tail_(0), size_(0) {};
+	Buffer() : head_(NULL), tail_(NULL), size_(0) {};
+
+	// destructor
+	~Buffer() {};
 
 	// return list size
 	inline int size() { return size_; }
@@ -25,7 +32,7 @@ public:
 	inline void size_down() { --size_; }
 
 	// insert
-	void insert (int val, data *ptr);
+	void insert (int val, Data *ptr);
 
 	// insert front
 	void insert_front (int val);
@@ -34,7 +41,7 @@ public:
 	void insert_end (int val);
 
 	// find
-	data* find (int val);
+	Data* find (int val);
 
 	// remove
 	int remove (int val);
@@ -45,28 +52,37 @@ public:
 	// purge list
 	void purge();
 
+	// display
+	void display (std::ostream &out = std::cout);
+
 private:
-	data* head_;
-	data* tail_;
+	Data* head_;
+	Data* tail_;
 	int size_;
 };
 
-// buffer contents 
-class data {
+// Buffer contents 
+class Data {
 public:
-	friend class buffer;
-
 	// default constructor
-	data() : val_(0), next_(0) {};
-	data (int val, data *loc = 0);
+	Data() : val_(0), next_(NULL) {};
+	Data (int val, Data *ptr = NULL);
+
+	// destructor
+	~Data() {};
 
 	// value
 	int get_val() { return val_; }
 
 	// next
-	data* next() { return next_; }
+	Data* next() { return next_; }
+
+	// set to next
+	void next (Data *ptr) { next_ = ptr; }
 
 private:
 	int val_;		// hold a number 
-	data *next_;	// hold the address of the next item on the list
+	Data *next_;	// hold the address of the next item on the list
 };
+
+#endif /* vic_cc_test_buffer_h */

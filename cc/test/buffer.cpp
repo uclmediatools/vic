@@ -1,6 +1,6 @@
 /*
  * buffer.cpp
- * (implementation for buffer - a simple c++ linked list)
+ * (implementation for Buffer - a simple c++ linked list)
  */
 
 /* $Id$ */
@@ -8,18 +8,18 @@
 #include "buffer.h"
 
 // insert
-void buffer::insert (int val, data *ptr) {
+void Buffer::insert (int val, Data *ptr) {
 	if (!ptr) {
 		insert_front (val);
 	} else {
-		new data (val, ptr);
+		new Data (val, ptr);
 		size_up();
 	}
 }
 
 // insert front
-void buffer::insert_front (int val) {
-	data *ptr = new data(val);
+void Buffer::insert_front (int val) {
+	Data *ptr = new Data(val);
 
 	if (!head_) {
 		head_ = tail_ = ptr;
@@ -32,19 +32,19 @@ void buffer::insert_front (int val) {
 }
 
 // insert end
-void buffer::insert_end (int val) {
+void Buffer::insert_end (int val) {
 	if (tail_) {
-		tail_ = head_ = new data (val);
+		tail_ = head_ = new Data (val);
 	} else {
-		tail_ = new data (val, tail_);
+		tail_ = new Data (val, tail_);
 	}
 
 	size_up();
 }
 
 // find
-void buffer::find (int val) {
-	data* ptr = head_;
+Data* Buffer::find (int val) {
+	Data* ptr = head_;
 
 	while (ptr) {
 		if (ptr->get_val() == val)
@@ -55,9 +55,9 @@ void buffer::find (int val) {
 }
 
 // remove front
-void buffer::remove_front() {
+void Buffer::remove_front() {
 	if (head_) {
-		data *ptr = head_;
+		Data *ptr = head_;
 		head_ = head_->next();
 
 		size_down();
@@ -66,10 +66,33 @@ void buffer::remove_front() {
 }
 
 // purge
-void buffer::purge() {
+void Buffer::purge() {
 	while (head_)
 		remove_front();
 
 	size_ = 0;
 	head_ = tail_ = 0;
+}
+
+// display
+void Buffer::display (std::ostream &out) {
+	out << "\n( " << size_ << " ) ( ";
+
+	Data *ptr = head_;
+	while (ptr) {
+		out << ptr->get_val() << " ";
+		ptr = ptr->next();
+	}
+
+	out << ")\n\n";
+}
+
+// Data constructor
+Data::Data (int val, Data *ptr) : val_(val) {
+	if (!ptr) {
+		next_ = NULL;
+	} else {
+		next_ = ptr->next_;
+		ptr->next_ = this;
+	}
 }
