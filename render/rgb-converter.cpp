@@ -50,7 +50,7 @@ u_int32_t RGB_Converter::g2yuv_[256];
 u_int32_t RGB_Converter::b2yuv_[256];
 
 RGB_Converter_422 RGB_Converter_422::instance_;
-RGB_Converter_411 RGB_Converter_411::instance_;
+RGB_Converter_420 RGB_Converter_420::instance_;
 
 RGB_Converter::RGB_Converter(int bpp, u_int8_t *map, int ncol) :
 	bpp_(bpp), ncol_(0), ymap_(0), umap_(0), vmap_(0), method_(0)
@@ -195,7 +195,7 @@ RGB_Converter::convert(u_int8_t* p, int w, int h, u_int8_t* frm, int outw, int o
 	if (invert) \
 		p -= stride << 1;
 
-#define INIT411 \
+#define INIT420 \
 	if (outw == 0) \
 		outw = inw; \
 	if (outh == 0) \
@@ -236,7 +236,7 @@ RGB_Converter::convert(u_int8_t* p, int w, int h, u_int8_t* frm, int outw, int o
 	up += outpad >> 2; \
 	vp += outpad >> 2;
 
-#define ADVANCE411 \
+#define ADVANCE420 \
 		p += inpad; \
 		yp += outw + outpad; \
 		up += outpad >> 1; \
@@ -299,9 +299,9 @@ RGB_Converter_422::convert32(u_int8_t* p, int inw, int inh, u_int8_t* frm, int o
 	}
 }
 
-void RGB_Converter_411::convert32(u_int8_t* p, int inw, int inh, u_int8_t* frm, int outw, int outh, int invert)
+void RGB_Converter_420::convert32(u_int8_t* p, int inw, int inh, u_int8_t* frm, int outw, int outh, int invert)
 {
-	INIT411
+	INIT420
 	for (h >>= 1; --h >= 0; ) {
 		for (int x = 0; x < w; x += 2) {
 			u_int32_t yuv = R[p[ROFF]];
@@ -331,7 +331,7 @@ void RGB_Converter_411::convert32(u_int8_t* p, int inw, int inh, u_int8_t* frm, 
 			p += 4;
 			++yp;
 		}
-		ADVANCE411
+		ADVANCE420
 	}
 }
 
@@ -368,9 +368,9 @@ void RGB_Converter_422::convert24(u_int8_t* p, int inw, int inh, u_int8_t* frm, 
 	}
 }
 
-void RGB_Converter_411::convert24(u_int8_t* p, int inw, int inh, u_int8_t* frm, int outw, int outh, int invert)
+void RGB_Converter_420::convert24(u_int8_t* p, int inw, int inh, u_int8_t* frm, int outw, int outh, int invert)
 {
-	INIT411
+	INIT420
 	for (h >>= 1; --h >= 0; ) {
 		for (int x = 0; x < w; x += 2) {
 			u_int32_t yuv = R[p[ROFF]];
@@ -400,7 +400,7 @@ void RGB_Converter_411::convert24(u_int8_t* p, int inw, int inh, u_int8_t* frm, 
 			p += 3;
 			++yp;
 		}
-		ADVANCE411
+		ADVANCE420
 	}
 }
 
@@ -436,9 +436,9 @@ void RGB_Converter_422::convert16(u_int8_t* p, int inw, int inh, u_int8_t* frm, 
 	}
 }
 
-void RGB_Converter_411::convert16(u_int8_t* p, int inw, int inh, u_int8_t* frm, int outw, int outh, int invert)
+void RGB_Converter_420::convert16(u_int8_t* p, int inw, int inh, u_int8_t* frm, int outw, int outh, int invert)
 {
-	INIT411
+	INIT420
 	next_line /= 2;
 	u_int16_t* sp;
 	for (h >>= 1; --h >= 0; ) {
@@ -472,7 +472,7 @@ void RGB_Converter_411::convert16(u_int8_t* p, int inw, int inh, u_int8_t* frm, 
 			++yp;
 		}
 		p = (u_int8_t *)sp;
-		ADVANCE411
+		ADVANCE420
 	}
 }
 
@@ -498,9 +498,9 @@ void RGB_Converter_422::convert8(u_int8_t* p, int inw, int inh, u_int8_t* frm, i
 	}
 }
 
-void RGB_Converter_411::convert8(u_int8_t* p, int inw, int inh, u_int8_t* frm, int outw, int outh, int invert)
+void RGB_Converter_420::convert8(u_int8_t* p, int inw, int inh, u_int8_t* frm, int outw, int outh, int invert)
 {
-	INIT411
+	INIT420
 
 	UNUSED(R); //SV-XXX
         UNUSED(G); //SV-XXX
@@ -519,7 +519,7 @@ void RGB_Converter_411::convert8(u_int8_t* p, int inw, int inh, u_int8_t* frm, i
 			p++;
 			++yp;
 		}
-		ADVANCE411
+		ADVANCE420
 	}
 }
 
@@ -545,9 +545,9 @@ void RGB_Converter_422::convert4(u_int8_t* p, int inw, int inh, u_int8_t* frm, i
 	}
 }
 
-void RGB_Converter_411::convert4(u_int8_t* p, int inw, int inh, u_int8_t* frm, int outw, int outh, int invert)
+void RGB_Converter_420::convert4(u_int8_t* p, int inw, int inh, u_int8_t* frm, int outw, int outh, int invert)
 {
-	INIT411
+	INIT420
 
         UNUSED(R); //SV-XXX
         UNUSED(G); //SV-XXX
@@ -568,7 +568,7 @@ void RGB_Converter_411::convert4(u_int8_t* p, int inw, int inh, u_int8_t* frm, i
 
 			p++;
 		}
-		ADVANCE411
+		ADVANCE420
 	}
 }
 
@@ -607,9 +607,9 @@ void RGB_Converter_422::convert1(u_int8_t* p, int inw, int inh, u_int8_t* frm, i
 	}
 }
 
-void RGB_Converter_411::convert1(u_int8_t* p, int inw, int inh, u_int8_t* frm, int outw, int outh, int invert)
+void RGB_Converter_420::convert1(u_int8_t* p, int inw, int inh, u_int8_t* frm, int outw, int outh, int invert)
 {
-	INIT411
+	INIT420
 
         UNUSED(R); //SV-XXX
         UNUSED(G); //SV-XXX
@@ -652,6 +652,6 @@ void RGB_Converter_411::convert1(u_int8_t* p, int inw, int inh, u_int8_t* frm, i
 			}
 			p++;
 		}
-		ADVANCE411
+		ADVANCE420
 	}
 }

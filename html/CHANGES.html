@@ -641,7 +641,7 @@ parallax client library defines an XShmPutImage that doens't seem to work.
 <li>[internal] Factored out code shared among grabbers for capturing input
   video to an onscreen window.  In the new model, tcl creates the capture
   window and installs it in the grabber.  Revamped parallax and xv grabbers
-  to use this approach.  Added supported to xv grabber for CIF and 411
+  to use this approach.  Added supported to xv grabber for CIF and 420
   capture.
 
 <li>Improved configure search scheme for locating X libraries and includes.
@@ -677,8 +677,8 @@ parallax client library defines an XShmPutImage that doens't seem to work.
 <li>[internal] Added tcl hook so that decoder can assert that stream parameters
   have changed in a way that might affect the rendering modules.  For example,
   the RTP/JPEG type might change causing the output format to change from
-  YUV-422 to YUV-411.  In this case, we might have disable hardware decoding
-  (because the hardware doesn't support 411) or reallocate the software
+  YUV-422 to YUV-420.  In this case, we might have disable hardware decoding
+  (because the hardware doesn't support 420) or reallocate the software
   renderers because they depend on the decimation factor.
 
 <li>[internal] Changed interface between vic and jpeg/h.261 decoders with

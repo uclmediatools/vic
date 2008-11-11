@@ -161,14 +161,14 @@ public:
 	XILWindowAssistorMatcher() : Matcher("assistor") {
 		extern class AssistorList assistorlist;
 
-		assistorlist.register_assistor("xil","jpeg/411 jpeg/422 h261 cellb");
+		assistorlist.register_assistor("xil","jpeg/420 jpeg/422 h261 cellb");
 	}
 	TclObject* match(const char* id) {
 		if (strncmp(id,"xil/",4)) // direct XIL assistor request
 			return (0);
 		id=id+4; // skip over "xil/"
 		//fprintf(stderr,"XILWindowAssistorMatcher::"__FUNCTION__"(%s)\n",id);
-		if (!strcmp(id, "jpeg/422") || !strcmp(id, "jpeg/411"))
+		if (!strcmp(id, "jpeg/422") || !strcmp(id, "jpeg/420"))
 			return (new XILWindowAssistor(FT_HW|FT_JPEG/*,filename_,&deviceattributes_*/));
 		if (!strcmp(id, "h.261") || !strcmp(id, "h261"))
 			return (new XILWindowAssistor(FT_H261/*,filename_,&deviceattributes_*/));
@@ -281,9 +281,9 @@ class XILCIFGrabber : public XILYuvGrabber {
 	void saveblks(const u_char* in, int istride);
 };
 
-class XIL411Grabber : public XILCIFGrabber {
+class XIL420Grabber : public XILCIFGrabber {
     public:
-	XIL411Grabber(char *filename,struct deviceattributes *devattr);
+	XIL420Grabber(char *filename,struct deviceattributes *devattr);
     protected:
 	virtual void setsize(int xsize, int ysize);
 };

@@ -421,7 +421,7 @@ void Grabber::set_size_422(int w, int h)
 	hstop_ = blkw_;
 }
 
-void Grabber::set_size_411(int w, int h)
+void Grabber::set_size_420(int w, int h)
 {
 	delete[] framebase_; //SV-XXX: Debian
 
@@ -506,8 +506,8 @@ void Grabber::set_size_cif(int w, int h)
 
 	default:
 		/* XXX this shouldn't happen */
-		debug_msg("vic: CIF grabber: bad geometry - trying 411\n");
-		set_size_411(w,h);
+		debug_msg("vic: CIF grabber: bad geometry - trying 420\n");
+		set_size_420(w,h);
 		return;
 		//abort();
 	}

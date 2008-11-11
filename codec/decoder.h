@@ -107,7 +107,7 @@ class Decoder : public PacketHandler {
 
 	/*XXX steal back from rcvr */
 	int color_;
-	int decimation_;	/* 422 or 411 */
+	int decimation_;	/* 422 or 420 */
 	int inw_;		/* native image width */
 	int inh_;		/* native image height */
 
@@ -129,7 +129,7 @@ class Decoder : public PacketHandler {
 	int nblk_;		/* number of 8x8 blocks */
 	int ndblk_;	/* number of blocks decoded in most recent frame */
 
-	void colorhist_411_556(u_int* hist, const u_char* y, const u_char* u,
+	void colorhist_420_556(u_int* hist, const u_char* y, const u_char* u,
 			       const u_char* v, int width, int height) const;
 	void colorhist_422_556(u_int* hist, const u_char* y, const u_char* u,
 			       const u_char* v, int width, int height) const;

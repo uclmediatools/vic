@@ -129,7 +129,7 @@ XILDevice::XILDevice(
 	/*XXX ports should be queried from xil */
 	attributes = (char*)malloc(2000);
 	attributes[0]='\0';
-	strcat(attributes,"format { 411 422 jpeg cellb ");
+	strcat(attributes,"format { 420 422 jpeg cellb ");
 	if (deviceattributes_.capabilities & XILCAP_HWGRAB_H261)
 		strcat(attributes,"h261 ");
 	strcat(attributes,"}\n");
@@ -656,7 +656,7 @@ void XILCIFGrabber::setsize()
 	image_ = xil_create(xil_, basewidth_/decimate_, baseheight_/decimate_, nbands_, datatype_);
 }
 
-/* 411 */
+/* 420 */
 inline void 
 XILCIFGrabber::saveblk(const u_char* in,
 	u_char* yp, u_char* up, u_char* vp, int stride, int istride)
@@ -998,7 +998,7 @@ int XILJpegGrabber::grab()
 
 	if (p >= ep)
 		return (0);
-	// the 1 is the type and means 411 encoding.
+	// the 1 is the type and means 420 encoding.
 	JpegFrame f(media_ts(), p, ep - p, q_, 1,
 		    basewidth_ / decimate_, baseheight_ / decimate_);
 	return (target_->consume(&f));

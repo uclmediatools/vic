@@ -849,7 +849,7 @@ proc change_format src {
 # affect the choice of renderer.  For example, when a jpeg stream
 # changes from type-0 to type-1 we might have to revert from
 # hardware to software decoding, or we might have to reallocate
-# a 422 renderer as a 411 renderer.  This never needs to happen
+# a 422 renderer as a 420 renderer.  This never needs to happen
 # for most stream types (i.e., because the decimation factor is fixed).
 #
 proc decoder_changed d {

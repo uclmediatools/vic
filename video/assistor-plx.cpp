@@ -131,7 +131,7 @@ public:
 int PlxWindowAssistor::consume(const VideoFrame* vf)
 {
 	JpegFrame* p = (JpegFrame*)vf;
-	// Can't handle 411, only 422 XXX
+	// Can't handle 420, only 422 XXX
 	if (p->type_ != 0)
 		return (0);
 

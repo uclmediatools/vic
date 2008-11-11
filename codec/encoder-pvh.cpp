@@ -387,7 +387,7 @@ int PvhEncoder::command(int argc, const char*const* argv)
 	Tcl& tcl = Tcl::instance();
 	if (argc == 2) {
 		if (strcmp(argv[1], "frame-format") == 0) {
-		    	tcl.result("411");
+		    	tcl.result("420");
 			return (TCL_OK);
 		}
 	} else if (argc == 4) {

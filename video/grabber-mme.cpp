@@ -162,7 +162,7 @@ protected:
 };
 
 
-class Mme411Grabber : public MmeCIFGrabber {
+class Mme420Grabber : public MmeCIFGrabber {
     protected:
 	virtual void setsize(int xsize, int ysize);
 };
@@ -209,8 +209,8 @@ int MmeDevice::command(int argc, const char*const* argv)
 	      o = new MmeJpegGrabber;
 	    else if (strcmp(fmt, "422") == 0)
 	      o = new Mme422Grabber;
-	    else if (strcmp(fmt, "411") == 0)
-	      o = new Mme411Grabber;
+	    else if (strcmp(fmt, "420") == 0)
+	      o = new Mme420Grabber;
 	    else if (strcmp(fmt, "cif") == 0)
 	      o = new MmeCIFGrabber;
 	    if (o != 0) {
@@ -946,9 +946,9 @@ void MmeCIFGrabber::saveblks(const u_char* in)
 /***********************************************************************/
 
 
-void Mme411Grabber::setsize(int w, int h)
+void Mme420Grabber::setsize(int w, int h)
 {
-	set_size_411(w, h);
+	set_size_420(w, h);
 }
 
 /***********************************************************************/

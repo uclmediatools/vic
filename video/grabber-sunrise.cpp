@@ -232,8 +232,8 @@ int SunriseDevice::command(int argc, const char*const* argv)
 	else if (strcmp(fmt, "cif") == 0)
 	    o = cif_grabber();
 /*
-	else if (strcmp(fmt, "411") == 0)
-	    o = new Jv411Grabber;
+	else if (strcmp(fmt, "420") == 0)
+	    o = new Jv420Grabber;
 	*/
 	if (o != 0)
 	    Tcl::instance().result(o->name());

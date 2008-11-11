@@ -85,7 +85,7 @@ public:
 		bb |= (bits) << (NBIT - (nbb)); \
 }
 
-BvcEncoder::BvcEncoder() : TransmitterModule(FT_YUV_411)
+BvcEncoder::BvcEncoder() : TransmitterModule(FT_YUV_420)
 {
 	bs_ = es_ = 0;
 	quant_ = 0;

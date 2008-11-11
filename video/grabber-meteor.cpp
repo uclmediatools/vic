@@ -164,7 +164,7 @@ MeteorDevice::MeteorDevice(const char* nickname, const char *devname, int free):
 {
 	if(free)
 		attributes_ = "\
-format {422 411} \
+format {422 420} \
 type {pal ntsc secam auto} \
 size {large normal small cif} \
 port {RCA Port-1 Port-2 Port-3 S-Video RGB}";

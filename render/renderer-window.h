@@ -74,7 +74,7 @@ class WindowRenderer : public BlockRenderer {
 	int outw_;              /* width of target image (maybe != width_) */
 	int outh_;              /* height of target image (maybe != height_) */
 	int color_;		/* false to render grayscale */
-	int decimation_;	/* 422 or 411 */
+	int decimation_;	/* 422 or 420 */
 };
 
 inline int WindowRenderer::index() const

@@ -876,7 +876,7 @@ DirectShowCIFGrabber::~DirectShowCIFGrabber() {
 
 void DirectShowCIFGrabber::start() {
    DirectShowGrabber::start();
-   converter(new RGB_Converter_411(24, (u_int8_t *)NULL, 0));
+   converter(new RGB_Converter_420(24, (u_int8_t *)NULL, 0));
    ReleaseMutex(cb_mutex_);
    Grabber::timeout();
 }
@@ -915,10 +915,10 @@ DirectShowDevice::DirectShowDevice(char *friendlyName, IBaseFilter *pCapFilt) : 
    debug_msg("new DirectShowDevice():  friendlyName=%s\n", friendlyName);
    pDirectShowFilter_  = pCapFilt;           
    //SV: XXX got rid of 422 format since there's no grabber returned for it and vic crashes
-   attributes_        = "format { 411 } size { large small cif } port { extern-in } type { pal ntsc } ";
+   attributes_        = "format { 420 } size { large small cif } port { extern-in } type { pal ntsc } ";
    DirectShowCIFGrabber o(pDirectShowFilter_, friendlyName);
    
-   strcat(attri_, "format { 411 } size { large small cif } type { pal ntsc } port { ");
+   strcat(attri_, "format { 420 } size { large small cif } type { pal ntsc } port { ");
    if(o.hasSVideo() || o.hasComposite()){
      if(o.hasSVideo()){
        strcat(attri_, "S-Video ");

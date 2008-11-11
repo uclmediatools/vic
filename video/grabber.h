@@ -85,7 +85,7 @@ class Grabber : public TclObject, public Timer, public MediaTimer {
 	double advance();
 
 	void set_size_422(int w, int h);
-	void set_size_411(int w, int h);
+	void set_size_420(int w, int h);
 	void set_size_cif(int w, int h);
 	void allocref();
 

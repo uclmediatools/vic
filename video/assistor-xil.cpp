@@ -222,7 +222,7 @@ XILWindowAssistor::XILWindowAssistor(int type)
 		cisname = "Jpeg";
 		memcpy(jfif_header1,jfif_header1_,sizeof(jfif_header1_));
 		memcpy(jfif_header2,jfif_header2_,sizeof(jfif_header2_));
-		decimation_ = 411;
+		decimation_ = 420;
 		lastjpegtype_ = 0xff; // invalid, so we reset first..
 		break;
 	case FT_CELLB:
@@ -364,8 +364,8 @@ void XILWindowAssistor::reset(int type,int q, int w, int h)
 	sentfirstheader=0;
 	lastjpegtype_ = type;
 	switch (type) {
-	case 1: /* 411 */
-		decimation_ = 411;
+	case 1: /* 420 */
+		decimation_ = 420;
 		break;
 	default:
 		decimation_ = 422;
@@ -403,7 +403,7 @@ void XILWindowAssistor::reset(int type,int q, int w, int h)
 			jfif_header1[i++] = w&0xff;
 			i++; 	/* components (3) */
 				i++;	/* comp id 0 */
-				if (decimation_ == 411)
+				if (decimation_ == 420)
 					jfif_header1[i++] = 0x22;/* 0x22 for 2 hor/2 vert */
 				else
 					jfif_header1[i++] = 0x21;/* 0x21 for 2 hor/1 vert */
@@ -436,7 +436,7 @@ void XILWindowAssistor::reset(int type,int q, int w, int h)
 			jfif_header2[i++] = w&0xff;
 			i++; 	/* components (3) */
 				i++;	/* comp id 0 */
-				if (decimation_ == 411)
+				if (decimation_ == 420)
 					jfif_header2[i++] = 0x22;/* 0x22 for 2 hor/2 vert */
 				else
 					jfif_header2[i++] = 0x21;/* 0x21 for 2 hor/1 vert */
@@ -854,7 +854,7 @@ int XILOutputDevice::command(int argc, const char*const* argv) {
 				return (TCL_OK);
 			}
 			/*
-			if (!strcmp(argv[2],"jpeg/411") || !strcmp(argv[2],"jpeg/422")) {
+			if (!strcmp(argv[2],"jpeg/420") || !strcmp(argv[2],"jpeg/422")) {
 				XILOutputAssistor* p = new XILOutputAssistor(FT_JPEG|FT_HW,filename_,&deviceattributes_);
 				tcl.result(p->name());
 				return (TCL_OK);

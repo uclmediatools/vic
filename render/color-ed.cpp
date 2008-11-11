@@ -192,15 +192,15 @@ protected:
 			     u_int width, u_int height) const;
 	void dither_up2_422(const u_char* frm, u_int off, u_int x,
 			    u_int width, u_int height) const;
-	void dither_411(const u_char* frm, u_int off, u_int x,
+	void dither_420(const u_char* frm, u_int off, u_int x,
 			u_int width, u_int height) const;
-	void dither_down2_411(const u_char* frm, u_int off, u_int x,
+	void dither_down2_420(const u_char* frm, u_int off, u_int x,
 			      u_int width, u_int height) const;
-	void dither_down4_411(const u_char* frm, u_int off, u_int x,
+	void dither_down4_420(const u_char* frm, u_int off, u_int x,
 			      u_int width, u_int height) const;
-	void dither_down_411(const u_char* frm, u_int off, u_int x,
+	void dither_down_420(const u_char* frm, u_int off, u_int x,
 			     u_int width, u_int height) const;
-	void dither_up2_411(const u_char* frm, u_int off, u_int x,
+	void dither_up2_420(const u_char* frm, u_int off, u_int x,
 			    u_int width, u_int height) const;
 };
 
@@ -220,23 +220,23 @@ int EDColorModel::command(int argc, const char*const* argv)
 void EDWindowRenderer::update()
 {
 	static EDMethod	methods[] = {
-		&EDWindowRenderer::dither_up2_411,
+		&EDWindowRenderer::dither_up2_420,
 		&EDWindowRenderer::dither_up2_422,
 		&EDWindowRenderer::dither_gray_up,
 		&EDWindowRenderer::dither_gray_up,
-		&EDWindowRenderer::dither_411,
+		&EDWindowRenderer::dither_420,
 		&EDWindowRenderer::dither_422,
 		&EDWindowRenderer::dither_gray,
 		&EDWindowRenderer::dither_gray,
-		&EDWindowRenderer::dither_down2_411,
+		&EDWindowRenderer::dither_down2_420,
 		&EDWindowRenderer::dither_down2_422,
 		&EDWindowRenderer::dither_gray_down,
 		&EDWindowRenderer::dither_gray_down,
-		&EDWindowRenderer::dither_down4_411,
+		&EDWindowRenderer::dither_down4_420,
 		&EDWindowRenderer::dither_down4_422,
 		&EDWindowRenderer::dither_gray_down,
 		&EDWindowRenderer::dither_gray_down,
-		&EDWindowRenderer::dither_down_411,
+		&EDWindowRenderer::dither_down_420,
 		&EDWindowRenderer::dither_down_422,
 		&EDWindowRenderer::dither_gray_down,
 		&EDWindowRenderer::dither_gray_down,
@@ -736,7 +736,7 @@ void EDWindowRenderer::dither_up2_422(const u_char* frm,
 #endif
 }
 
-void EDWindowRenderer::dither_411(const u_char* frm,
+void EDWindowRenderer::dither_420(const u_char* frm,
 				  u_int off, u_int x,
 				  u_int width, u_int height) const
 {
@@ -810,7 +810,7 @@ void EDWindowRenderer::dither_411(const u_char* frm,
 #endif
 }
 
-void EDWindowRenderer::dither_down2_411(const u_char* frm, u_int off, u_int x,
+void EDWindowRenderer::dither_down2_420(const u_char* frm, u_int off, u_int x,
 					u_int width, u_int height) const
 {
 #ifndef TESTING
@@ -903,7 +903,7 @@ void EDWindowRenderer::dither_down2_411(const u_char* frm, u_int off, u_int x,
 #endif
 }
 
-void EDWindowRenderer::dither_down4_411(const u_char* frm,
+void EDWindowRenderer::dither_down4_420(const u_char* frm,
 					u_int off, u_int x,
 					u_int width, u_int height) const
 {
@@ -970,7 +970,7 @@ void EDWindowRenderer::dither_down4_411(const u_char* frm,
 #endif
 }
 
-void EDWindowRenderer::dither_down_411(const u_char* frm,
+void EDWindowRenderer::dither_down_420(const u_char* frm,
 				       u_int off, u_int x,
 				       u_int width, u_int height) const
 {
@@ -1041,7 +1041,7 @@ void EDWindowRenderer::dither_down_411(const u_char* frm,
 #endif
 }
 
-void EDWindowRenderer::dither_up2_411(const u_char* frm,
+void EDWindowRenderer::dither_up2_420(const u_char* frm,
 				      u_int off, u_int x,
 				      u_int width, u_int height) const
 {

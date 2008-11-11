@@ -250,7 +250,7 @@ void Decoder::colorhist_422_556(u_int* hist, const u_char* yp,
 	}
 }
 
-void Decoder::colorhist_411_556(u_int* hist, const u_char* yp,
+void Decoder::colorhist_420_556(u_int* hist, const u_char* yp,
 					const u_char* up, const u_char* vp,
 					int width, int h) const
 {

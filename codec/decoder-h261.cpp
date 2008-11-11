@@ -87,7 +87,7 @@ H261Decoder::H261Decoder() : Decoder(4), codec_(0), h261_rtp_bug_(0)
 	stat_[STAT_BAD_HEADER].name = "H261-Bad-Header";
 	nstat_ = 6;
 
-	decimation_ = 411;
+	decimation_ = 420;
 	/*
 	 * Assume CIF.  Picture header will trigger a resize if
 	 * we encounter QCIF instead.
@@ -128,7 +128,7 @@ int H261Decoder::colorhist(u_int* hist) const
 	int w = inw_;
 	int h = inh_;
 	int s = w * h;
-	colorhist_411_556(hist, frm, frm + s, frm + s + (s >> 2), w, h);
+	colorhist_420_556(hist, frm, frm + s, frm + s + (s >> 2), w, h);
 	return (1);
 }
 

@@ -63,13 +63,13 @@
 #define	ODD(x)	((x & 1) == 1)
 
 //
-// derived decoders (411-pixel, 422-pixel, 411-DCT, and 422-DCT)
+// derived decoders (420-pixel, 422-pixel, 420-DCT, and 422-DCT)
 //
 
 
-class JpegDecoder_411 : public JpegPixelDecoder {
+class JpegDecoder_420 : public JpegPixelDecoder {
 public:
-	JpegDecoder_411(const config&, int, int);
+	JpegDecoder_420(const config&, int, int);
 	virtual int decode(const u_char* in, int len, u_char *marks, int mark);
 };
 
@@ -79,9 +79,9 @@ public:
 	virtual int decode(const u_char* in, int len, u_char *marks, int mark);
 };
 
-class JpegDCTDecoder_411 : public JpegDCTDecoder {
+class JpegDCTDecoder_420 : public JpegDCTDecoder {
 public:
-	JpegDCTDecoder_411(const config&, int, int);
+	JpegDCTDecoder_420(const config&, int, int);
 	virtual int decode(const u_char* in, int len, u_char *marks, int mark);
 };
 
@@ -121,8 +121,8 @@ JpegDCTDecoder::~JpegDCTDecoder()
 	delete[] frm_; //SV-XXX: Debian
 }
 
-JpegDecoder_411::JpegDecoder_411(const config& c, int ow, int oh) 
-	        :JpegPixelDecoder(c, 411, ow, oh)
+JpegDecoder_420::JpegDecoder_420(const config& c, int ow, int oh) 
+	        :JpegPixelDecoder(c, 420, ow, oh)
 {
 	int n = osize_ + osize_ / 2;
 	frm_ = new u_char[n];		// pixel store
@@ -130,8 +130,8 @@ JpegDecoder_411::JpegDecoder_411(const config& c, int ow, int oh)
 	dct_unbias_ = 0;
 }
 
-JpegDCTDecoder_411::JpegDCTDecoder_411(const config& c, int ow, int oh) 
-		   :JpegDCTDecoder(c, 411, ow, oh)
+JpegDCTDecoder_420::JpegDCTDecoder_420(const config& c, int ow, int oh) 
+		   :JpegDCTDecoder(c, 420, ow, oh)
 {
 	int n = osize_ + osize_ / 2;
 	frm_ = new short[n];		// DCT store
@@ -195,9 +195,9 @@ JpegPixelDecoder* JpegPixelDecoder::create(const config& c, int ow, int oh)
 	    c.comp[1].hsf == 1 && c.comp[1].vsf == 1 &&
 	    c.comp[2].hsf == 1 && c.comp[2].vsf == 1) {	
 
-		// 411 decoder, RTP type 1, vsf = 2
+		// 420 decoder, RTP type 1, vsf = 2
 		if (c.comp[0].vsf == 2)
-				return (new JpegDecoder_411(c, ow, oh));
+				return (new JpegDecoder_420(c, ow, oh));
 
 		// 422 decoder, RTP type 0, vsf = 1
 		if (c.comp[0].vsf == 1)
@@ -212,9 +212,9 @@ JpegDCTDecoder* JpegDCTDecoder::create(const config& c, int ow, int oh)
 	    c.comp[1].hsf == 1 && c.comp[1].vsf == 1 &&
 	    c.comp[2].hsf == 1 && c.comp[2].vsf == 1) {	
 
-		// 411 decoder, RTP type 1, vsf = 2
+		// 420 decoder, RTP type 1, vsf = 2
 		if (c.comp[0].vsf == 2) 
-			return (new JpegDCTDecoder_411(c, ow, oh));
+			return (new JpegDCTDecoder_420(c, ow, oh));
 
 		// 422 decoder, RTP type 0, vsf = 1
 		if (c.comp[0].vsf == 1)
@@ -1179,10 +1179,10 @@ int JpegDCTDecoder_422::decode(const u_char* in, int len, u_char *marks,
 }
 
 /*
- * 411 Decoders
+ * 420 Decoders
  */
 
-int JpegDecoder_411::decode(const u_char* in, int len, u_char *marks, int mark)
+int JpegDecoder_420::decode(const u_char* in, int len, u_char *marks, int mark)
 {
 	inb_ = in;
 	end_ = in + len;
@@ -1320,7 +1320,7 @@ int JpegDecoder_411::decode(const u_char* in, int len, u_char *marks, int mark)
 // decode only to DCT not pixels (i.e. don't to rdct step)
 // output is stored interleaved 4 Y's followed by 1 U and 1 V block
 //
-int JpegDCTDecoder_411::decode(const u_char* in, int len, u_char *marks, int mark)
+int JpegDCTDecoder_420::decode(const u_char* in, int len, u_char *marks, int mark)
 {
 	inb_ = in;
 	end_ = in + len;

@@ -163,7 +163,7 @@ protected:
 	virtual void setsize();
 };
 
-class Xv411Grabber : public XvGrabber {
+class Xv420Grabber : public XvGrabber {
 protected:
 	virtual void setsize();
 };
@@ -178,8 +178,8 @@ static XvDevice xv_device("xv");
 
 XvDevice::XvDevice(const char* s) : InputDevice(s)
 {
-	/*XXX port & 411*/
-	attributes_ = "format { 422 411 } size { small large cif }";
+	/*XXX port & 420*/
+	attributes_ = "format { 422 420 } size { small large cif }";
 }
 
 int XvDevice::command(int argc, const char*const* argv)
@@ -360,18 +360,18 @@ void XvCIFGrabber::setsize()
 	int w = 2 * 352 / decimate_;
 	int h = 2 * 288 / decimate_;
 	capwin_->setsize(w, h);
-	capwin_->converter(RGB_Converter_411::instance());
-	set_size_411(w, h);
+	capwin_->converter(RGB_Converter_420::instance());
+	set_size_420(w, h);
 	allocref();
 }
 
-void Xv411Grabber::setsize()
+void Xv420Grabber::setsize()
 {
 	int w = capwin_->basewidth() / decimate_;
 	int h = capwin_->baseheight() / decimate_;
 	capwin_->setsize(w, h);
-	capwin_->converter(RGB_Converter_411::instance());
-	set_size_411(w, h);
+	capwin_->converter(RGB_Converter_420::instance());
+	set_size_420(w, h);
 	allocref();
 }
 

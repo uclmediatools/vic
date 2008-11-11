@@ -82,9 +82,9 @@
 #define SPSIF_PAL_HEIGHT   288
 
 // Color subsampling options.
-#define CF_422 422
-#define CF_411 411
-#define CF_CIF 4112
+#define CF_422 0
+#define CF_420 1
+#define CF_CIF 2
 
 typedef struct  {
 	GWorldPtr gWorld;
@@ -122,8 +122,8 @@ protected:
     int setupDecom(void);
 	
     // YUV conversion functions.
-    void packedYUYV422_to_planarYUYV422(char *dest, char *src);
-    void packedYUYV422_to_planarYUYV411(char *dest, char *src);
+    void packed422_to_planar422(char *dest, const char *src);
+    void packed422_to_planar420(char *dest, const char *src);
 	
     // The frame information.
     int decimate_;
@@ -193,7 +193,7 @@ MacOSXGrabber::MacOSXGrabber(const char* format, const char* dev) {
     try {
 		// Remember the format.
 		if (strcmp(format, "422") == 0) format_ = CF_422;
-		else if (strcmp(format, "411") == 0) format_ = CF_411;
+		else if (strcmp(format, "420") == 0) format_ = CF_420;
 		else if (strcmp(format, "cif") == 0) format_ = CF_CIF;
 		else throw Exception("Unrecognized format");
     } catch (Exception e) {
@@ -292,11 +292,11 @@ int MacOSXGrabber::capture() {
 		 */
         switch (format_) {
             case CF_422:
-                packedYUYV422_to_planarYUYV422((char*)frame_, theData);
+                packed422_to_planar422((char*)frame_, theData);
                 break;
-            case CF_411:
+            case CF_420:
             case CF_CIF:
-                packedYUYV422_to_planarYUYV411((char*)frame_, theData);
+                packed422_to_planar420((char*)frame_, theData);
                 break;
         }
 
@@ -331,8 +331,8 @@ void MacOSXGrabber::format() {
 		case CF_422:
 			set_size_422(width_, height_);
 			break;
-		case CF_411:
-			set_size_411(width_, height_);
+		case CF_420:
+			set_size_420(width_, height_);
 			break;
 		case CF_CIF:
 			set_size_cif(width_, height_);
@@ -674,7 +674,7 @@ MacOSXScanner::MacOSXScanner()
 			p2cstrcpy(dev_str, (*sgdeviceList)->entry[i].name);
 			if ((sgDeviceNameFlagDeviceUnavailable & (*sgdeviceList)->entry[i].flags) == 0) {
 				attr = new char[512];
-				strcpy(attr, "size {large small cif} format {411 422 cif} type {ntsc pal secam} port {");
+				strcpy(attr, "size {large small cif} format {420 422 cif} type {ntsc pal secam} port {");
 				if ((*sgdeviceList)->entry[i].inputs != NULL) {
 					fprintf(stderr,"OSX Capture: \"%s\" has %i input(s)\n", dev_str, (*(((*sgdeviceList)->entry[i]).inputs))->count);
 					for (int j = 0; j < (*(((*sgdeviceList)->entry[i]).inputs))->count; j++) {
@@ -711,16 +711,15 @@ MacOSXScanner::MacOSXScanner()
 }
 
 
-void MacOSXGrabber::packedYUYV422_to_planarYUYV422(char *dest, char *src)
+void MacOSXGrabber::packed422_to_planar422(char *dest, const char *src)
 {
     int i;
-    char *s, *y,*u,*v;
+    char *y,*u,*v;
     unsigned int a, *srca;
 	
     srca = (unsigned int *)src;
 	
     i = (width_ * height_)/2;
-    s = src;
     y = dest;
     u = y + width_ * height_;
     v = u + width_ * height_ / 2;
@@ -747,7 +746,7 @@ void MacOSXGrabber::packedYUYV422_to_planarYUYV422(char *dest, char *src)
     }
 }
 
-void MacOSXGrabber::packedYUYV422_to_planarYUYV411(char *dest, char *src)
+void MacOSXGrabber::packed422_to_planar420(char *dest, const char *src)
 {
     int  a1,b;
     char *s, *y,*u,*v;
@@ -755,7 +754,6 @@ void MacOSXGrabber::packedYUYV422_to_planarYUYV411(char *dest, char *src)
 	
     srca = (unsigned int *)src;
 	
-    s = src;
     y = dest;
     u = y + width_ * height_;
     v = u + width_ * height_ / 4;

@@ -172,7 +172,7 @@ protected:
 	RGB_Converter* converter_;
 };
 
-class Plx411Grabber : public Plx422Grabber {
+class Plx420Grabber : public Plx422Grabber {
 public:
 	virtual void setsize();
 };
@@ -204,7 +204,7 @@ static class PlxDevice : public InputDevice {
 PlxDevice::PlxDevice(const char *s) : InputDevice(s) 
 {
 	attributes_ = "\
-format { 422 411 jpeg } \
+format { 422 420 jpeg } \
 size { small large cif } \
 port { Input-1 Input-2 }";
 }
@@ -219,8 +219,8 @@ int PlxDevice::command(int argc, const char*const* argv)
 			o = new PlxJpegGrabber;
 		else if (strcmp(fmt, "422") == 0)
 			o = new Plx422Grabber;
-		else if (strcmp(fmt, "411") == 0)
-			o = new Plx411Grabber;
+		else if (strcmp(fmt, "420") == 0)
+			o = new Plx420Grabber;
 		else if (strcmp(fmt, "cif") == 0)
 			o = new PlxCIFGrabber;
 		if (o != 0)
@@ -498,14 +498,14 @@ int Plx422Grabber::grab()
 	return (target_->consume(&f));
 }
 
-void Plx411Grabber::setsize()
+void Plx420Grabber::setsize()
 {
 	int w = capwin_->basewidth() / decimate_;
 	int h = capwin_->baseheight() / decimate_;
 	capwin_->setsize(w, h);
-	converter_ = RGB_Converter_411::instance();
+	converter_ = RGB_Converter_420::instance();
 	image_ = StandardVideoImage::allocate(capwin_->tkwin(), w, h);
-	set_size_411(w, h);
+	set_size_420(w, h);
 	allocref();
 }
 
@@ -514,9 +514,9 @@ void PlxCIFGrabber::setsize()
 	int w = 2 * 352 / decimate_;
 	int h = 2 * 288 / decimate_;
 	capwin_->setsize(w, h);
-	converter_ = RGB_Converter_411::instance();
+	converter_ = RGB_Converter_420::instance();
 	image_ = StandardVideoImage::allocate(capwin_->tkwin(), w, h);
-	set_size_411(w, h);
+	set_size_420(w, h);
 	allocref();
 }
 

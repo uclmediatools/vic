@@ -115,7 +115,7 @@ RTPv1H261Decoder::RTPv1H261Decoder() : Decoder(2)
 	/* cause a resize trigger later */
 	inw_ = 0;
 	inh_ = 0;
-	decimation_ = 411;
+	decimation_ = 420;
 	seqno_ = 0;
 	packetsize_ = 0;
 	for (int i = 0; i < H261_SLOTS; ++i) {
@@ -329,7 +329,7 @@ int RTPv1H261Decoder::colorhist(u_int* hist) const
 	int w = inw_;
 	int h = inh_;
 	int s = w * h;
-	colorhist_411_556(hist, frm, frm + s, frm + s + (s >> 2), w, h);
+	colorhist_420_556(hist, frm, frm + s, frm + s + (s >> 2), w, h);
 	return (1);
 }
 

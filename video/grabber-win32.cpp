@@ -215,15 +215,15 @@ IC_Converter::convert(u_int8_t *in, int inw, int inh, u_int8_t *frm, int outw, i
 	converter_->convert(rgb_, inw, inh, frm, outw, outh, invert);
 }
 
-class IC_Converter_411 : public IC_Converter {
+class IC_Converter_420 : public IC_Converter {
 public:
-	IC_Converter_411(DWORD comp, int bpp, int inw, int inh);
+	IC_Converter_420(DWORD comp, int bpp, int inw, int inh);
 };
 
-IC_Converter_411::IC_Converter_411(DWORD comp, int bpp, int inw, int inh)
+IC_Converter_420::IC_Converter_420(DWORD comp, int bpp, int inw, int inh)
 	: IC_Converter(comp, bpp, inw, inh)
 {
-	converter_ = new RGB_Converter_411(rgb_bpp_, NULL, 0);
+	converter_ = new RGB_Converter_420(rgb_bpp_, NULL, 0);
 }
 
 class IC_Converter_422 : public IC_Converter {
@@ -237,12 +237,12 @@ IC_Converter_422::IC_Converter_422(DWORD comp, int bpp, int inw, int inh)
 	converter_ = new RGB_Converter_422(rgb_bpp_, NULL, 0);
 }
 
-class YUYV_Converter_411 : public Converter {
+class YUYV_Converter_420 : public Converter {
 public:
 	virtual void convert(u_int8_t *in, int inw, int inh, u_int8_t *frm, int outw, int outh, int invert = 0);
 };
 
-void YUYV_Converter_411::convert(u_int8_t *in, int inw, int inh, u_int8_t *frm, int outw, int outh, int invert)
+void YUYV_Converter_420::convert(u_int8_t *in, int inw, int inh, u_int8_t *frm, int outw, int outh, int invert)
 {
 	u_int8_t *yp = (u_int8_t*)frm;
 	int off = outw * outh;
@@ -447,11 +447,11 @@ VfwDevice::VfwDevice(const char* name, int index) :
 		vfwdev_ = index;
 		switch (get_device_type(name)) {
 		case gray_QuickCam_95:
-			attributes_ = "format { 422 411 } size { small cif } port { QuickCam } ";
+			attributes_ = "format { 422 420 } size { small cif } port { QuickCam } ";
 			break;
 		case Generic:
 		default:
-			attributes_ = "format { 422 411 } size { large small cif } port { external-in } ";
+			attributes_ = "format { 422 420 } size { large small cif } port { external-in } ";
 			break;
 		}
 	} else
@@ -897,13 +897,13 @@ void VfwCIFGrabber::start()
 	if (fmt_!=NULL) {
 	    switch (fmt_->biCompression) {
 		case BI_RGB:
-		    converter(new RGB_Converter_411(fmt_->biBitCount, (u_int8_t *)(fmt_ + 1), fmt_->biClrUsed));
+		    converter(new RGB_Converter_420(fmt_->biBitCount, (u_int8_t *)(fmt_ + 1), fmt_->biClrUsed));
 		    break;
 		case mmioFOURCC('Y','U','Y','V'):
-		    converter(new YUYV_Converter_411());
+		    converter(new YUYV_Converter_420());
 		    break;
 		default:
-		    converter(new IC_Converter_411(fmt_->biCompression, fmt_->biBitCount, fmt_->biWidth, fmt_->biHeight));
+		    converter(new IC_Converter_420(fmt_->biCompression, fmt_->biBitCount, fmt_->biWidth, fmt_->biHeight));
 		    break;
 	    }
 	}

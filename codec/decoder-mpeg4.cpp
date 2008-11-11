@@ -64,7 +64,7 @@ dm_mpeg4;
 MPEG4Decoder::MPEG4Decoder():Decoder(2)
 {				/* , codec_(0), */
 
-    decimation_ = 411;
+    decimation_ = 420;
     /*
      * Assume CIF.  Picture header will trigger a resize if
      * we encounter QCIF instead.

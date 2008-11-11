@@ -299,7 +299,7 @@ void MotionJpegDecoder::configure()
 	config_.comp[0].hsf = 2;
 	int old_decimation = decimation_;
 	if (type_ == 1) {
-		decimation_ = 411;
+		decimation_ = 420;
 		config_.comp[0].vsf = 2;
 	} else {
 		decimation_ = 422;
@@ -330,8 +330,8 @@ int MotionJpegDecoder::colorhist(u_int* hist) const
 {
 	const u_char* frm = codec_->frame();
 	int off = inw_ * inh_;
-	if (decimation_ == 411)
-		colorhist_411_556(hist, frm, frm + off, frm + off + (off >> 2),
+	if (decimation_ == 420)
+		colorhist_420_556(hist, frm, frm + off, frm + off + (off >> 2),
 				  inw_, inh_);
 	else
 		colorhist_422_556(hist, frm, frm + off, frm + off + (off >> 1),

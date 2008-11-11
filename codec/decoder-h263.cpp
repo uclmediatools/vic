@@ -72,7 +72,7 @@ H263Decoder::H263Decoder() : Decoder(0 /* 0 byte extra header */)
 	h263decoder = NewH263Decoder();
 
 	nstat_ = 0;
-	decimation_	= 411;
+	decimation_	= 420;
 	srcformat_	= 0;
 	
 	h263streamsize_ = 0;
@@ -106,7 +106,7 @@ void H263Decoder::info(char* wrk) const
 int H263Decoder::colorhist(u_int* hist) const
 {
 	if (backframe_)
-		colorhist_411_556(hist,backframe_,backframe_+inw_*inh_,backframe_+inw_*inh_*3/2,inw_,inh_);
+		colorhist_420_556(hist,backframe_,backframe_+inw_*inh_,backframe_+inw_*inh_*3/2,inw_,inh_);
 	return (1);
 }
 

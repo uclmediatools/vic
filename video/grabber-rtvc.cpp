@@ -306,7 +306,7 @@ RTVCDevice::RTVCDevice(const char* s, int devno)
 	: InputDevice(s), devno_(devno)
 {
 	attributes_ = "\
-format { 411 422 jpeg } \
+format { 420 422 jpeg } \
 size { small large cif } \
 port { Composite-1 Composite-2 S-Video }";
 }

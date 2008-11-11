@@ -189,15 +189,15 @@ protected:
 			     u_int width, u_int height) const;
 	void dither_up2_422(const u_char* frm, u_int off, u_int x,
 			    u_int width, u_int height) const;
-	void dither_411(const u_char* frm, u_int off, u_int x,
+	void dither_420(const u_char* frm, u_int off, u_int x,
 			u_int width, u_int height) const;
-	void dither_down2_411(const u_char* frm, u_int off, u_int x,
+	void dither_down2_420(const u_char* frm, u_int off, u_int x,
 			      u_int width, u_int height) const;
-	void dither_down4_411(const u_char* frm, u_int off, u_int x,
+	void dither_down4_420(const u_char* frm, u_int off, u_int x,
 			      u_int width, u_int height) const;
-	void dither_down_411(const u_char* frm, u_int off, u_int x,
+	void dither_down_420(const u_char* frm, u_int off, u_int x,
 			     u_int width, u_int height) const;
-	void dither_up2_411(const u_char* frm, u_int off, u_int x,
+	void dither_up2_420(const u_char* frm, u_int off, u_int x,
 			    u_int width, u_int height) const;
 };
 
@@ -217,23 +217,23 @@ int DitherColorModel::command(int argc, const char*const* argv)
 void DitherWindowRenderer::update()
 {
 	static DitherMethod methods[] = {
-		&DitherWindowRenderer::dither_up2_411,
+		&DitherWindowRenderer::dither_up2_420,
 		&DitherWindowRenderer::dither_up2_422,
 		&DitherWindowRenderer::dither_gray_up,
 		&DitherWindowRenderer::dither_gray_up,
-		&DitherWindowRenderer::dither_411,
+		&DitherWindowRenderer::dither_420,
 		&DitherWindowRenderer::dither_422,
 		&DitherWindowRenderer::dither_gray,
 		&DitherWindowRenderer::dither_gray,
-		&DitherWindowRenderer::dither_down2_411,
+		&DitherWindowRenderer::dither_down2_420,
 		&DitherWindowRenderer::dither_down2_422,
 		&DitherWindowRenderer::dither_gray_down,
 		&DitherWindowRenderer::dither_gray_down,
-		&DitherWindowRenderer::dither_down4_411,
+		&DitherWindowRenderer::dither_down4_420,
 		&DitherWindowRenderer::dither_down4_422,
 		&DitherWindowRenderer::dither_gray_down,
 		&DitherWindowRenderer::dither_gray_down,
-		&DitherWindowRenderer::dither_down_411,
+		&DitherWindowRenderer::dither_down_420,
 		&DitherWindowRenderer::dither_down_422,
 		&DitherWindowRenderer::dither_gray_down,
 		&DitherWindowRenderer::dither_gray_down,
@@ -655,7 +655,7 @@ void DitherWindowRenderer::dither_up2_422(const u_char* frm,
 	}
 }
 
-void DitherWindowRenderer::dither_411(const u_char* frm,
+void DitherWindowRenderer::dither_420(const u_char* frm,
 				      u_int off, u_int x,
 				      u_int width, u_int height) const
 {
@@ -736,7 +736,7 @@ void DitherWindowRenderer::dither_411(const u_char* frm,
 	}
 }
 
-void DitherWindowRenderer::dither_down2_411(const u_char* frm,
+void DitherWindowRenderer::dither_down2_420(const u_char* frm,
 					    u_int off, u_int x,
 					    u_int width, u_int height) const
 {
@@ -793,7 +793,7 @@ void DitherWindowRenderer::dither_down2_411(const u_char* frm,
 	}
 }
 
-void DitherWindowRenderer::dither_down4_411(const u_char* frm,
+void DitherWindowRenderer::dither_down4_420(const u_char* frm,
 					    u_int off, u_int x,
 					    u_int width, u_int height) const
 {
@@ -894,7 +894,7 @@ void DitherWindowRenderer::dither_down4_411(const u_char* frm,
 	}
 }
 
-void DitherWindowRenderer::dither_down_411(const u_char* frm,
+void DitherWindowRenderer::dither_down_420(const u_char* frm,
 					   u_int off, u_int x,
 					   u_int width, u_int height) const
 {
@@ -938,7 +938,7 @@ void DitherWindowRenderer::dither_down_411(const u_char* frm,
 	}
 }
 
-void DitherWindowRenderer::dither_up2_411(const u_char* frm,
+void DitherWindowRenderer::dither_up2_420(const u_char* frm,
 					  u_int off, u_int x,
 					  u_int width, u_int height) const
 {

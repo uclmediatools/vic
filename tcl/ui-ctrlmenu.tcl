@@ -381,8 +381,8 @@ proc transmit { } {
 		set ff [$grabtarget frame-format]
 		set V(grabber) [$videoDevice open $ff]
 		# special cases
-		if { $V(grabber) == "" && $ff == "411" } {
-			# try cif instead of 411
+		if { $V(grabber) == "" && $ff == "420" } {
+			# try cif instead of 420
 			set V(grabber) [$videoDevice open cif]
 		}
 		if { $V(grabber) == "" } {
@@ -637,7 +637,7 @@ proc device_formats device {
 	if [inList 422 $formats] {
 		set fmtList "$fmtList nv nvdct cellb jpeg raw"
 	}
-	if [inList 411 $formats] {
+	if [inList 420 $formats] {
 		set fmtList "$fmtList bvc pvh"
 	}
 	if [inList cif $sizes] {

@@ -198,7 +198,7 @@ X11Device::X11Device(const char* nickname):
 	if (name_) //SV-XXX: Debian
 		attributes_ = "\
 size {large normal small cif} \
-format {411}" ;
+format {420}" ;
 	else
 		attributes_ = "disabled";
 }
@@ -1192,7 +1192,7 @@ X11Grabber::X11Grabber(const char* name, const char* format)
 	height_ = 240 ;
 	x_origin_ = y_origin_ = 0 ; /* XXX */
 
-	if (strcmp(format, "411") && strcmp(format, "cif")) {
+	if (strcmp(format, "420") && strcmp(format, "cif")) {
 		fprintf(stderr,
 			"vic: x11Grabber: unsupported format: %s\n",
 			format);
@@ -1259,7 +1259,7 @@ X11Grabber::setsize()
 
 	/* XXX set size of captured window ? */
 
-	set_size_411(columns, rows); /* was 422... */
+	set_size_420(columns, rows); /* was 422... */
 	X11Grab_Initialize(rootwin_, columns, rows); /* XXX */
 
 	allocref();	/* allocate reference frame */
@@ -1356,7 +1356,7 @@ X11Grabber::command(int argc, const char*const* argv)
 
 
 /*
- * captures in CIF or 411 -- color info is half the luma info.
+ * captures in CIF or 420 -- color info is half the luma info.
  */
 int
 X11Grabber::capture()

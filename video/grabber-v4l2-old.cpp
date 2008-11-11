@@ -69,7 +69,7 @@ static const char *devlist[] = { "/dev/v4l2/capture0", "/dev/v4l2/capture1", "/d
 static const int  one = 1, zero = 0;
 
 #define CF_422 0
-#define CF_411 1
+#define CF_420 1
 #define CF_CIF 2
 
 typedef struct tag_vimage
@@ -98,7 +98,7 @@ protected:
         void setsize();
 
         void packed422_to_planar422(char *, char*);
-        void packed422_to_planar411(char *, char*);
+        void packed422_to_planar420(char *, char*);
 
         void setctrl(int, int, char *, int);
 
@@ -214,7 +214,7 @@ V4l2Scanner::V4l2Scanner(const char **dev)
                         capability.maxwidth,capability.maxheight);
 
                 attr = new char[512];
-                strcpy(attr,"format { 411 422 cif } ");
+                strcpy(attr,"format { 420 422 cif } ");
 
                 if (capability.maxwidth  > PAL_WIDTH/2 &&
                                         capability.maxheight > PAL_HEIGHT/2) {
@@ -303,8 +303,8 @@ V4l2Grabber::V4l2Grabber(const char *cformat, const char *dev)
         }
 
         /* fill in defaults */
-        if(!strcmp(cformat, "411"))
-                cformat_ = CF_411;
+        if(!strcmp(cformat, "420"))
+                cformat_ = CF_420;
         if(!strcmp(cformat, "422"))
                 cformat_ = CF_422;
         if(!strcmp(cformat, "cif"))
@@ -585,10 +585,10 @@ int V4l2Grabber::grab()
         }
 
         switch (cformat_) {
-        case CF_411:
+        case CF_420:
 
         case CF_CIF:
-                packed422_to_planar411((char*)frame_,fr);
+                packed422_to_planar420((char*)frame_,fr);
                 break;
 
         case CF_422:
@@ -640,7 +640,7 @@ void V4l2Grabber::packed422_to_planar422(char *dest, char *src)
 
 }
 
-void V4l2Grabber::packed422_to_planar411(char *dest, char *src)
+void V4l2Grabber::packed422_to_planar420(char *dest, char *src)
 {
         int  a1,b;
         int w,h;
@@ -691,12 +691,12 @@ void V4l2Grabber::format()
                 DEBUG(fprintf(stderr,"v4l2: format"));
                 switch (cformat_) {
                 case CF_CIF:
-                        set_size_411(width_, height_);
+                        set_size_420(width_, height_);
                         DEBUG(fprintf(stderr," cif"));
                         break;
-                case CF_411:
-                        set_size_411(width_, height_);
-                        DEBUG(fprintf(stderr," 411"));
+                case CF_420:
+                        set_size_420(width_, height_);
+                        DEBUG(fprintf(stderr," 420"));
                         break;
                 case CF_422:
                         set_size_422(width_, height_);

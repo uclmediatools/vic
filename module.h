@@ -106,7 +106,7 @@ class CellBFrame : public VideoFrame {
 };
 
 #define FT_HW		0x80
-#define FT_YUV_411	1
+#define FT_YUV_420	1
 #define FT_YUV_422	2
 #define FT_YUV_CIF	3
 #define FT_JPEG		(1|FT_HW)
@@ -138,7 +138,7 @@ class Module : public TclObject {
 	int width_;
 	int height_;
 	int framesize_;
-	int ft_;		/* stream type: 422/411/cif/jpeg etc. */
+	int ft_;		/* stream type: 422/420/cif/jpeg etc. */
 };
 
 class TransmitterModule : public Module {

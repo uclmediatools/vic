@@ -92,9 +92,9 @@ protected:
 	static RGB_Converter_422 instance_;
 };
 
-class RGB_Converter_411 : public RGB_Converter {
+class RGB_Converter_420 : public RGB_Converter {
 public:
-	RGB_Converter_411(int bpp = 32, u_int8_t* map = NULL, int ncol = 0) :
+	RGB_Converter_420(int bpp = 32, u_int8_t* map = NULL, int ncol = 0) :
 		RGB_Converter(bpp, map, ncol) {}
 	static RGB_Converter* instance() { return (&instance_); }
 protected:
@@ -106,7 +106,7 @@ protected:
 	virtual void convert1(u_int8_t* rgb, int w, int h, u_int8_t* frm, int outw, int outh, int invert);
 
 	/* Backwards compatibility :-) */
-	static RGB_Converter_411 instance_;
+	static RGB_Converter_420 instance_;
 };
 
 #endif

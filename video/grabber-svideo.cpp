@@ -103,7 +103,7 @@ SvideoDevice::SvideoDevice(const char* name) : InputDevice(name)
 	else {
 		(void)svCloseVideo(handle);
 #ifdef notyet
-		attributes_ = "format { 422 411 cif } \
+		attributes_ = "format { 422 420 cif } \
 			size { small large cif } port { xxx }";
 #else
 		attributes_ = "format { 422 }";

@@ -104,15 +104,15 @@ protected:
 			  u_int width, u_int height) const;
 	void map_up2_422(const u_char* frm, u_int off, u_int x,
 			 u_int width, u_int height) const;
-	void map_411(const u_char* frm, u_int off, u_int x,
+	void map_420(const u_char* frm, u_int off, u_int x,
 		     u_int width, u_int height) const;
-	void map_down2_411(const u_char* frm, u_int off, u_int x,
+	void map_down2_420(const u_char* frm, u_int off, u_int x,
 			   u_int width, u_int height) const;
-	void map_down4_411(const u_char* frm, u_int off, u_int x,
+	void map_down4_420(const u_char* frm, u_int off, u_int x,
 			   u_int width, u_int height) const;
-	void map_down_411(const u_char* frm, u_int off, u_int x,
+	void map_down_420(const u_char* frm, u_int off, u_int x,
 			  u_int width, u_int height) const;
-	void map_up2_411(const u_char* frm, u_int off, u_int x,
+	void map_up2_420(const u_char* frm, u_int off, u_int x,
 			 u_int width, u_int height) const;
 };
 
@@ -132,23 +132,23 @@ int QuantColorModel::command(int argc, const char*const* argv)
 void QuantWindowRenderer::update()
 {
 	static QuantMethod methods[] = {
-	  &QuantWindowRenderer::map_up2_411,
+	  &QuantWindowRenderer::map_up2_420,
 	  &QuantWindowRenderer::map_up2_422,
 	  &QuantWindowRenderer::dither_gray_up,
 	  &QuantWindowRenderer::dither_gray_up,
-	  &QuantWindowRenderer::map_411,
+	  &QuantWindowRenderer::map_420,
 	  &QuantWindowRenderer::map_422,
 	  &QuantWindowRenderer::dither_gray,
 	  &QuantWindowRenderer::dither_gray,
-	  &QuantWindowRenderer::map_down2_411,
+	  &QuantWindowRenderer::map_down2_420,
 	  &QuantWindowRenderer::map_down2_422,
 	  &QuantWindowRenderer::dither_gray_down,
 	  &QuantWindowRenderer::dither_gray_down,
-	  &QuantWindowRenderer::map_down4_411,
+	  &QuantWindowRenderer::map_down4_420,
 	  &QuantWindowRenderer::map_down4_422,
 	  &QuantWindowRenderer::dither_gray_down,
 	  &QuantWindowRenderer::dither_gray_down,
-	  &QuantWindowRenderer::map_down_411,
+	  &QuantWindowRenderer::map_down_420,
 	  &QuantWindowRenderer::map_down_422,
 	  &QuantWindowRenderer::dither_gray_down,
 	  &QuantWindowRenderer::dither_gray_down,
@@ -497,7 +497,7 @@ void QuantWindowRenderer::map_up2_422(const u_char* frm,
 }
 
 
-void QuantWindowRenderer::map_411(const u_char* frm, u_int off,
+void QuantWindowRenderer::map_420(const u_char* frm, u_int off,
 				  u_int x, u_int width, u_int height) const
 {
 	register u_int iw = width_;
@@ -574,7 +574,7 @@ void QuantWindowRenderer::map_411(const u_char* frm, u_int off,
 	}
 }
 
-void QuantWindowRenderer::map_down2_411(const u_char* frm,
+void QuantWindowRenderer::map_down2_420(const u_char* frm,
 					u_int off, u_int x,
 					u_int width, u_int height) const
 {
@@ -628,7 +628,7 @@ void QuantWindowRenderer::map_down2_411(const u_char* frm,
 	}
 }
 
-void QuantWindowRenderer::map_down4_411(const u_char* frm,
+void QuantWindowRenderer::map_down4_420(const u_char* frm,
 					u_int off, u_int x,
 					u_int width, u_int height) const
 {
@@ -715,15 +715,15 @@ void QuantWindowRenderer::map_down4_411(const u_char* frm,
 	}
 }
 
-void QuantWindowRenderer::map_down_411(const u_char* frm,
+void QuantWindowRenderer::map_down_420(const u_char* frm,
 				       u_int off, u_int x,
 				       u_int width, u_int height) const
 {
 	/*XXX*/
-	map_down4_411(frm, off, x, width, height);
+	map_down4_420(frm, off, x, width, height);
 }
 
-void QuantWindowRenderer::map_up2_411(const u_char* frm,
+void QuantWindowRenderer::map_up2_420(const u_char* frm,
 				      u_int off, u_int x,
 				      u_int width, u_int height) const
 {

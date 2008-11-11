@@ -39,7 +39,7 @@ static const char rcsid[] =
 #include "color.h"
 
 WindowRenderer::WindowRenderer(VideoWindow* w, int decimation) :
-	BlockRenderer(decimation == 422 ? FT_YUV_422 : FT_YUV_411),
+	BlockRenderer(decimation == 422 ? FT_YUV_422 : FT_YUV_420),
 	window_(w),
 	image_(0),
 	ww_(w->width()),

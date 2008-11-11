@@ -452,7 +452,7 @@ unless it receives a lbl message from rat to say you are sending audio.
 </I><LI>Fixed bug that caused first value of a plotted statistic to be way too large so that the autoscaling left all the other data unreadable. </LI>
 <LI>[internal] Don't include <I>osfcn.h</I> anywhere. </LI>
 <LI>Added PAL selectors to window size menu. Suggested by Toerless Eckert (Toerless.Eckert@Informatik.Uni-Erlangen.de). </LI>
-<LI>[internal] Factored out code shared among grabbers for capturing input video to an onscreen window. In the new model, tcl creates the capture window and installs it in the grabber. Revamped parallax and xv grabbers to use this approach. Added supported to xv grabber for CIF and 411 capture. </LI>
+<LI>[internal] Factored out code shared among grabbers for capturing input video to an onscreen window. In the new model, tcl creates the capture window and installs it in the grabber. Revamped parallax and xv grabbers to use this approach. Added supported to xv grabber for CIF and 420 capture. </LI>
 <LI>Improved configure search scheme for locating X libraries and includes. Thanks to input from Toerless Eckert (Toerless.Eckert@Informatik.Uni-Erlangen.de). </LI>
 <LI>[internal] Added RGB_Converter class to be shared among grabbers that capture from the frame buffer in RGB format and convert to YUV. </LI>
 <LI>[internal] Removed grabber-tx.cc from distribution since it's been superseded by grabber-xv.cc. </LI>
@@ -465,7 +465,7 @@ unless it receives a lbl message from rat to say you are sending audio.
 <UL>
 </I><LI>Fixed bug where failure to connect to jvdriver on decode-side resulted in a core dump. </LI>
 <LI>Added Vic.sdesList so you can specify which RTP SDES items you want to see in the info window. Default is "cname tool email mesg". Also, display srcid in the info window. </LI>
-<LI>[internal] Added tcl hook so that decoder can assert that stream parameters have changed in a way that might affect the rendering modules. For example, the RTP/JPEG type might change causing the output format to change from YUV-422 to YUV-411. In this case, we might have disable hardware decoding (because the hardware doesn't support 411) or reallocate the software renderers because they depend on the decimation factor. </LI>
+<LI>[internal] Added tcl hook so that decoder can assert that stream parameters have changed in a way that might affect the rendering modules. For example, the RTP/JPEG type might change causing the output format to change from YUV-422 to YUV-420. In this case, we might have disable hardware decoding (because the hardware doesn't support 420) or reallocate the software renderers because they depend on the decimation factor. </LI>
 <LI>[internal] Changed interface between vic and jpeg/h.261 decoders with respect to bookkeeping blocks that changed. Now pass in a table that is filled in by the decoder, instead of using "render" call backs. </LI>
 <LI>Fixed bugs with -A. "-A rtp" didn't work; added back "-A vic" for backward compatibility. Reported by Toerless Eckert (Toerless.Eckert@Informatik.Uni-Erlangen). </LI>
 <LI>Added Use-Hardware button (in display panel) to control whether we use hardware decoding when possible. Created Vic.useHardwareDecode resource to set initial disposition of Use-Hardware button. </LI>

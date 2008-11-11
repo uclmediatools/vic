@@ -236,7 +236,7 @@ protected:
 	void map_422(u_char* xip,
 		     const u_char* frm, u_int off, u_int x,
 		     u_int width, u_int height) const;
-	void map_411(u_char* xip,
+	void map_420(u_char* xip,
 		     const u_char* frm, u_int off, u_int x,
 		     u_int width, u_int height) const;
 };
@@ -250,8 +250,8 @@ void YuvWindowRenderer::update()
 {
 	if (!color_)
 		method_ = &map_gray;
-	else if (decimation_ == 411)
-		method_ = &map_411;
+	else if (decimation_ == 420)
+		method_ = &map_420;
 	else
 		method_ = &map_422;
 }
@@ -384,18 +384,18 @@ void Int2YuvColorizer_422::colorize(SharedVideoImage* image,
 }
 
 #if 0
-YuvColorizer_411::YuvColorizer_411(const YuvColorModel& cm, int w, int h, int s)
+YuvColorizer_420::YuvColorizer_420(const YuvColorModel& cm, int w, int h, int s)
 {
-    printf("new YuvColorizer_411\n");
+    printf("new YuvColorizer_420\n");
 }
 #endif
 
-YuvColorizer_411::~YuvColorizer_411()
+YuvColorizer_420::~YuvColorizer_420()
 {
-    printf("delete YuvColorizer_411\n");
+    printf("delete YuvColorizer_420\n");
 }
 
-void YuvColorizer::colorize_411(SharedVideoImage* image,
+void YuvColorizer::colorize_420(SharedVideoImage* image,
 			       register const u_char *y_data,
 			       register const u_char* u_data,
 			       register const u_char *v_data,
@@ -410,7 +410,7 @@ void YuvColorizer::colorize_411(SharedVideoImage* image,
     int cbcrwidth = frame->nCbCrBytesPerRow;
 
 #ifdef DEBUG_XX
-    printf("YuvColorizer_411::colorize: scale=%d Y_bpr=%d UV_bpr=%d frame %dx%d x=%d y=%d %dx%d\n",
+    printf("YuvColorizer_420::colorize: scale=%d Y_bpr=%d UV_bpr=%d frame %dx%d x=%d y=%d %dx%d\n",
 	   scale_, frame->nYBytesPerRow, frame->nCbCrBytesPerRow, frame->width, frame->height, x, y, width, height);
 #endif
 
@@ -499,7 +499,7 @@ void YuvColorizer::colorize_411(SharedVideoImage* image,
     }
 }
 
-void YuvColorizer_411::colorize(SharedVideoImage* image,
+void YuvColorizer_420::colorize(SharedVideoImage* image,
 			       const u_char *y_data,
 			       const u_char* u_data,
 			       const u_char *v_data,
@@ -512,12 +512,12 @@ void YuvColorizer_411::colorize(SharedVideoImage* image,
 	image->yuvScale = 0;
     }
 
-    colorize_411(image,
+    colorize_420(image,
 		 y_data, u_data, v_data,
 		 x, y, width, height);
 }
 
-void Int2YuvColorizer_411::colorize(SharedVideoImage* image,
+void Int2YuvColorizer_420::colorize(SharedVideoImage* image,
 				   const u_char *y_data,
 				   const u_char* u_data,
 				   const u_char *v_data,
@@ -530,30 +530,30 @@ void Int2YuvColorizer_411::colorize(SharedVideoImage* image,
 	image->yuvScale = -1;
     }
 
-    colorize_411(image,
+    colorize_420(image,
 		 y_data, u_data, v_data,
 		 x, y, width, height);
 }
 
 #if 0
-YuvColorizer16_411::YuvColorizer16_411(const YuvColorModel& cm, int w, int h, int s)
+YuvColorizer16_420::YuvColorizer16_420(const YuvColorModel& cm, int w, int h, int s)
 {
-    printf("new YuvColorizer16_411\n");
+    printf("new YuvColorizer16_420\n");
 }
 #endif
 
-YuvColorizer16_411::~YuvColorizer16_411()
+YuvColorizer16_420::~YuvColorizer16_420()
 {
-    printf("delete YuvColorizer16_411\n");
+    printf("delete YuvColorizer16_420\n");
 }
 
-void YuvColorizer16_411::colorize(SharedVideoImage* image,
+void YuvColorizer16_420::colorize(SharedVideoImage* image,
 				 register const u_char *y_data,
 				 register const u_char* u_data,
 				 register const u_char *v_data,
 				 int x, int y, int width, int height) const
 {
-    printf("YuvColorizer16_411::colorize: \n");
+    printf("YuvColorizer16_420::colorize: \n");
 }
 
 
@@ -694,7 +694,7 @@ YuvVideoImage::YuvVideoImage(YuvVideoWindow* vw, int w, int h)
 	h = YUV_NEXT_MULT(h, 4);
 
 	yuvError status;
-	if ((status = yuvCreateFrame(YUV_FORMAT_411,
+	if ((status = yuvCreateFrame(YUV_FORMAT_420,
 				     w, h,
 				     w, h,
 				     ((w % 16) || (h % 16))?0:YUV_CREATE_FRAME_HINTS,

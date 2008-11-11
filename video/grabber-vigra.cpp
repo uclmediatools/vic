@@ -85,7 +85,7 @@ VigraPixDevice::VigraPixDevice(const char* name) : InputDevice(name)
 {
 	if (access("/dev/vigrapix0", R_OK) == 0)
 		attributes_ = "\
-format { 411 422 } \
+format { 420 422 } \
 size { small large cif } \
 port { Composite S-Video-1 S-Video-2}";
 	else

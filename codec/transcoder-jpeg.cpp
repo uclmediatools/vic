@@ -115,7 +115,7 @@ JpegTranscoder::changed(JpegFrame *jf)
 	if (!ss || (jf->q_ != q_))
 		return (1);	// new q or sizes
 
-	if ((jf->type_ == 1) && (decimation_ != 411))
+	if ((jf->type_ == 1) && (decimation_ != 420))
 		return (1);	// new decimation/scaling factor
 
 	return (0);		// apparently no change
@@ -158,7 +158,7 @@ void
 JpegTranscoder::configure(JpegFrame *jf)
 {
 
-	decimation_ = (jf->type_ == 1) ? 411 : 422;
+	decimation_ = (jf->type_ == 1) ? 420 : 422;
 
 	/*
 	 * set up JPEG configuration block
@@ -167,7 +167,7 @@ JpegTranscoder::configure(JpegFrame *jf)
 	JpegDecoder::defaults(config_);
 
 	config_.comp[0].hsf = 2;
-	config_.comp[0].vsf = (decimation_ == 411) ? 2 : 1;
+	config_.comp[0].vsf = (decimation_ == 420) ? 2 : 1;
 	config_.comp[1].hsf = 1;
 	config_.comp[1].vsf = 1;
 	config_.comp[2].hsf = 1;

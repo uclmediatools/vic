@@ -98,9 +98,9 @@ class VLCIFGrabber : public VLGrabber {
 	virtual void saveblks(const u_char* in);
 };
 
-class VL411Grabber : public VLCIFGrabber {
+class VL420Grabber : public VLCIFGrabber {
     public:
-	VL411Grabber(vlDevice&);
+	VL420Grabber(vlDevice&);
     protected:
 	virtual void setsize(int xsize, int ysize);
 };
@@ -134,7 +134,7 @@ vlDevice::vlDevice(const char* name, VLDev device,
 	}
 	char* cp = new char[80 + nport * (VL_NAME_SIZE + 1)];
 	attributes_ = cp;
-	strcpy(cp, "format { 411 422 } size { small cif } port { ");
+	strcpy(cp, "format { 420 422 } size { small cif } port { ");
 	cp += strlen(cp);
 	*cp++ = ' ';
 	for (int i = 0; i < nport; ++i) {
@@ -163,8 +163,8 @@ int vlDevice::command(int argc, const char*const* argv)
 			TclObject* o = 0;
 			if (strcmp(argv[2], "422") == 0)
 				o = new VLGrabber(*this);
-			else if (strcmp(argv[2], "411") == 0)
-				o = new VL411Grabber(*this);
+			else if (strcmp(argv[2], "420") == 0)
+				o = new VL420Grabber(*this);
 			else if (strcmp(argv[2], "cif") == 0)
 				o = new VLCIFGrabber(*this);
 			if (o != 0)
@@ -562,7 +562,7 @@ void VLCIFGrabber::setsize(int w, int h)
 	set_size_cif(w, h);
 }
 
-/* 411 */
+/* 420 */
 inline void 
 VLCIFGrabber::saveblk(const u_char* in, u_char* yp, u_char* up,
 		      u_char* vp, int stride, int is)
@@ -647,12 +647,12 @@ void VLCIFGrabber::saveblks(const u_char* in)
 	}
 }
 
-VL411Grabber::VL411Grabber(vlDevice& device)
+VL420Grabber::VL420Grabber(vlDevice& device)
 	: VLCIFGrabber(device)
 {
 }
 
-void VL411Grabber::setsize(int w, int h)
+void VL420Grabber::setsize(int w, int h)
 {
-	set_size_411(w, h);
+	set_size_420(w, h);
 }

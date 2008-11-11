@@ -76,7 +76,7 @@ class SpigotGrabber : public Grabber {
 
 	int video_format_;	/* video input format: NTSC or PAL */
 	int port_;		/* video input port */
-	int coder_format_;	/* 411, 422, or cif */
+	int coder_format_;	/* 420, 422, or cif */
 	int vtof_;		/* Vertical top of frame (lines to skip) */
 	int secam_;		/* secam mode ? */
 	u_int basewidth_;	/* Height of frame to be captured */
@@ -89,7 +89,7 @@ class SpigotGrabber : public Grabber {
 	int	hskip_;		/* amount of input to toss on each line */
 };
 
-static const int	f_411 = 0;	/* coder_format_s */
+static const int	f_420 = 0;	/* coder_format_s */
 static const int	f_422 = 1;
 static const int	f_cif = 2;
 
@@ -118,7 +118,7 @@ SpigotDevice::SpigotDevice(const char* nickname, const char *devname):
 {
 	if(access(devname, R_OK) == 0)
 		attributes_ = "\
-format {422 411} \
+format {422 420} \
 size {normal small cif} \
 port {RCA S-Video}";
 	else
@@ -141,7 +141,7 @@ int SpigotDevice::command(int argc, const char*const* argv)
 SpigotGrabber::SpigotGrabber(const char* name, const char* format)
 {
 	coder_format_ = -1;
-	if(!strcmp(format, "411")) coder_format_ = f_411;
+	if(!strcmp(format, "420")) coder_format_ = f_420;
 	if(!strcmp(format, "422")) coder_format_ = f_422;
 	if(!strcmp(format, "cif")) coder_format_ = f_cif;
 	if(coder_format_ == -1) {
@@ -212,8 +212,8 @@ void SpigotGrabber::setsize()
 		}
 		hskip_ = 0;
 		break;
-	case f_411:
-		set_size_411(w, h);
+	case f_420:
+		set_size_420(w, h);
 		hwrap_ = 0;
 		loff_ = 0;
 		coff_ = 0;

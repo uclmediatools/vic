@@ -220,15 +220,15 @@ class HiWindowRenderer : public WindowDitherer {
 			  u_int width, u_int height) const;
 	void map_up2_422(const u_char* frm, u_int off, u_int x,
 			 u_int width, u_int height) const;
-	void map_411(const u_char* frm, u_int off, u_int x,
+	void map_420(const u_char* frm, u_int off, u_int x,
 		     u_int width, u_int height) const;
-	void map_down2_411(const u_char* frm, u_int off, u_int x,
+	void map_down2_420(const u_char* frm, u_int off, u_int x,
 			   u_int width, u_int height) const;
-	void map_down4_411(const u_char* frm, u_int off, u_int x,
+	void map_down4_420(const u_char* frm, u_int off, u_int x,
 			   u_int width, u_int height) const;
-	void map_down_411(const u_char* frm, u_int off, u_int x,
+	void map_down_420(const u_char* frm, u_int off, u_int x,
 			  u_int width, u_int height) const;
-	void map_up2_411(const u_char* frm, u_int off, u_int x,
+	void map_up2_420(const u_char* frm, u_int off, u_int x,
 			 u_int width, u_int height) const;
 	void map_gray(const u_char* frm, u_int off, u_int x,
 		      u_int width, u_int height) const;
@@ -258,23 +258,23 @@ int HiColorModel::command(int argc, const char*const* argv)
 void HiWindowRenderer::update()
 {
 	static HiMethod methods[] = {
-	    &HiWindowRenderer::map_up2_411,
+	    &HiWindowRenderer::map_up2_420,
 	    &HiWindowRenderer::map_up2_422,
 	    &HiWindowRenderer::map_gray_up2,
 	    &HiWindowRenderer::map_gray_up2,
-	    &HiWindowRenderer::map_411,
+	    &HiWindowRenderer::map_420,
 	    &HiWindowRenderer::map_422,
 	    &HiWindowRenderer::map_gray,
 	    &HiWindowRenderer::map_gray,
-	    &HiWindowRenderer::map_down2_411,
+	    &HiWindowRenderer::map_down2_420,
 	    &HiWindowRenderer::map_down2_422,
 	    &HiWindowRenderer::map_gray_down2,
 	    &HiWindowRenderer::map_gray_down2,
-	    &HiWindowRenderer::map_down4_411,
+	    &HiWindowRenderer::map_down4_420,
 	    &HiWindowRenderer::map_down4_422,
 	    &HiWindowRenderer::map_gray_down4,
 	    &HiWindowRenderer::map_gray_down4,
-	    &HiWindowRenderer::map_down_411,
+	    &HiWindowRenderer::map_down_420,
 	    &HiWindowRenderer::map_down_422,
 	    &HiWindowRenderer::map_gray_down,
 	    &HiWindowRenderer::map_gray_down,
@@ -523,7 +523,7 @@ void HiWindowRenderer::map_up2_422(const u_char* frm,
 	}
 }
 
-void HiWindowRenderer::map_411(const u_char* frm, u_int off,
+void HiWindowRenderer::map_420(const u_char* frm, u_int off,
 				 u_int x, u_int width, u_int height) const
 {
 	register u_int iw = width_;
@@ -539,15 +539,15 @@ void HiWindowRenderer::map_411(const u_char* frm, u_int off,
 		register u_short* xip2 = xip + iw;
 		register const u_char* yp2 = yp + iw;
 
-#define FOUR411(n) \
+#define FOUR420(n) \
 		uv = yuv2rgb + UVINDX(up[(n)/2], vp[(n)/2]); \
 		ONEPIX(yp[(n)], xip[(n)]) \
 		ONEPIX(yp[(n)+1], xip[(n)+1]) \
 		ONEPIX(yp2[(n)], xip2[(n)]) \
 		ONEPIX(yp2[(n)+1], xip2[(n)+1])
 
-		FOUR411(0)
-		FOUR411(2)
+		FOUR420(0)
+		FOUR420(2)
 
 		xip += 4;
 		yp += 4;
@@ -567,7 +567,7 @@ void HiWindowRenderer::map_411(const u_char* frm, u_int off,
 	}
 }
 
-void HiWindowRenderer::map_down2_411(const u_char* frm,
+void HiWindowRenderer::map_down2_420(const u_char* frm,
 				       u_int off, u_int x,
 				       u_int width, u_int height) const
 {
@@ -583,14 +583,14 @@ void HiWindowRenderer::map_down2_411(const u_char* frm,
 	for (register int len = w * height >> 1; len > 0; len -= 8) {
 		PIXSETUP
 
-#define ONE411(n) \
+#define ONE420(n) \
 		uv = yuv2rgb + UVINDX(up[(n)/2], vp[(n)/2]); \
 		ONEPIX(yp[(n)], xip[(n)/2])
 
-		ONE411(0)
-		ONE411(2)
-		ONE411(4)
-		ONE411(6)
+		ONE420(0)
+		ONE420(2)
+		ONE420(4)
+		ONE420(6)
 
 		xip += 4;
 		yp += 8;
@@ -610,7 +610,7 @@ void HiWindowRenderer::map_down2_411(const u_char* frm,
 	}
 }
 
-void HiWindowRenderer::map_down4_411(const u_char* frm,
+void HiWindowRenderer::map_down4_420(const u_char* frm,
 				       u_int off, u_int x, 
 				       u_int width, u_int height) const
 {
@@ -651,7 +651,7 @@ void HiWindowRenderer::map_down4_411(const u_char* frm,
 /*
  * decimate by some power of 2 >= 2^3.
  */
-void HiWindowRenderer::map_down_411(const u_char* frm,
+void HiWindowRenderer::map_down_420(const u_char* frm,
 				      u_int off, u_int x,
 				      u_int width, u_int height) const
 {
@@ -689,7 +689,7 @@ void HiWindowRenderer::map_down_411(const u_char* frm,
 	}
 }
 
-void HiWindowRenderer::map_up2_411(const u_char* frm,
+void HiWindowRenderer::map_up2_420(const u_char* frm,
 				     u_int off, u_int x,
 				     u_int width, u_int height) const
 {

@@ -75,7 +75,7 @@ BvcDecoder::BvcDecoder() : Decoder(sizeof(bvchdr)),
 	stat_[STAT_BAD_SYNTAX].name = "Bvc-Bad-Syntax";
 	stat_[STAT_BAD_GEOM].name = "Bvc-Bad-Geom";
 	nstat_ = 2;
-	decimation_ = 411;
+	decimation_ = 420;
 
 	/*XXX*/
 	inw_ = 320;
@@ -865,13 +865,13 @@ void BvcDecoder::sync()
 }
 
 /*
- * XXX should use PlaneDecoder class for 411 also
+ * XXX should use PlaneDecoder class for 420 also
  */
 
 int BvcDecoder::colorhist(u_int* hist) const
 {
 	int s = inw_ * inh_;
-	colorhist_411_556(hist, frm_, frm_ + s, frm_ + s + (s >> 2),
+	colorhist_420_556(hist, frm_, frm_ + s, frm_ + s + (s >> 2),
 			  inw_, inh_);
 	return (1);
 }

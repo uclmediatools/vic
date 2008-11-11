@@ -68,7 +68,7 @@ H263plusDecoder::H263plusDecoder() : Decoder(2) /* , codec_(0), */
 	nstat_ = 6;
 #endif
 	
-	decimation_ = 411;
+	decimation_ = 420;
 	/*
 	* Assume CIF.  Picture header will trigger a resize if
 	* we encounter QCIF instead.
@@ -113,7 +113,7 @@ int H263plusDecoder::colorhist(u_int* hist) const
 	int w = inw_;
 	int h = inh_;
 	int s = w * h;
-	colorhist_411_556(hist, frm, frm + s, frm + s + (s >> 2), w, h);
+	colorhist_420_556(hist, frm, frm + s, frm + s + (s >> 2), w, h);
 #endif
 	return (1);
 }

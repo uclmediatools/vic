@@ -86,7 +86,7 @@ H264Decoder::H264Decoder():Decoder(0 /* 0 byte extra header */)
 
 
     //Barz: =============================================
-    decimation_ = 411;
+    decimation_ = 420;
     /*
      * Assume CIF.  Picture header will trigger a resize if
      * we encounter QCIF instead.

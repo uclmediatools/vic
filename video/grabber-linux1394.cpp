@@ -111,10 +111,10 @@ void Linux1394Grabber::start()
     }
 
     switch (mode) {
-      case MODE411:
+      case MODE420:
         width = capture.frame_width;
         height = capture.frame_height;
-        set_size_411(width, height);
+        set_size_420(width, height);
         break;
       case MODE422:
         width = capture.frame_width;
@@ -312,7 +312,7 @@ void Linux1394Grabber::firewire422_to_planar422(char *dest, char *src)
     }
 }
 
-void Linux1394Grabber::firewire411_to_planar411(char *dest, char *src)
+void Linux1394Grabber::firewire411_to_planar420(char *dest, char *src)
 {
     int i;
     char *s, *y,*u,*v;
@@ -341,7 +341,7 @@ void Linux1394Grabber::firewire411_to_planar411(char *dest, char *src)
     }
 }
 
-void Linux1394Grabber::firewire422_to_planar411(char *dest, char *src)
+void Linux1394Grabber::firewire422_to_planar420(char *dest, char *src)
 {
     int  a1,b;
     char *s, *y,*u,*v;
@@ -389,8 +389,8 @@ inline bool Camera::has_mode(unsigned int mode, unsigned int min)
 
 
 Camera::Camera(const raw1394handle_t h, const nodeid_t i)
-  : handle(h), id(i), best411(0), best422(0),
-    mode411(false), mode422(false),
+  : handle(h), id(i), best420(0), best422(0),
+    mode420(false), mode422(false),
     small(false), medium(false), large(false)
 {
     int err;
@@ -415,8 +415,8 @@ Camera::Camera(const raw1394handle_t h, const nodeid_t i)
             //best422 = MODE_640x480_YUV422;  // FIXME: Framerate problems
         }
         if (has_mode(MODE_640x480_YUV411, MODE_FORMAT0_MIN)) {
-            small = medium = mode411 = true;
-            best411 = MODE_640x480_YUV411;
+            small = medium = mode420 = true;
+            best420 = MODE_640x480_YUV411;
         }
     }
 
@@ -467,7 +467,7 @@ public:
 
         char *attr = new char[512];
         strcpy(attr, "format {");
-        if (camera->mode411) strcat(attr, " 411 ");
+        if (camera->mode420) strcat(attr, " 420 ");
         if (camera->mode422) strcat(attr, " 422 ");
 
         strcat(attr, "} size {");
@@ -489,8 +489,8 @@ public:
             fprintf(stderr, "Linux1394: creating grabber with %s\n", argv[2]);
 
             mode_t mode;
-            if (strcmp(argv[2], "411") == 0) {
-                mode = MODE411;
+            if (strcmp(argv[2], "420") == 0) {
+                mode = MODE420;
             } else if (strcmp(argv[2], "422") == 0) {
                 mode = MODE422;
             } else if (strcmp(argv[2], "cif") == 0) {

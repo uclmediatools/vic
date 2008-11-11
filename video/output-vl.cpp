@@ -106,9 +106,9 @@ protected:
 	void blankrow(u_char* bp) const;
 };
 
-class VLOutboard_411 : public VLOutboard {
+class VLOutboard_420 : public VLOutboard {
 public:
-	VLOutboard_411(VLOutputDevice& d) : VLOutboard(d, FT_YUV_411) {}
+	VLOutboard_420(VLOutputDevice& d) : VLOutboard(d, FT_YUV_420) {}
 protected:
 	virtual void scaleframe(u_char* bp, const u_char* frm) const;
 	virtual void upscaleframe(u_char* bp, const u_char* frm) const;
@@ -167,8 +167,8 @@ int VLOutputDevice::command(int argc, const char*const* argv)
 				tcl.result(p->name());
 				return (TCL_OK);
 			}
-			if (strcmp(argv[2], "411") == 0) {
-				VLOutboard* p = new VLOutboard_411(*this);
+			if (strcmp(argv[2], "420") == 0) {
+				VLOutboard* p = new VLOutboard_420(*this);
 				tcl.result(p->name());
 				return (TCL_OK);
 			}
@@ -491,7 +491,7 @@ void VLOutboard_422::upscaleframe(u_char* bp, const u_char* frm) const
 	}
 }
 
-void VLOutboard_411::fill_two_rows(u_char* bp, const u_char* yp,
+void VLOutboard_420::fill_two_rows(u_char* bp, const u_char* yp,
 				   const u_char* up, const u_char* vp,
 				   int skip0, int skip1, int os) const
 {
@@ -520,7 +520,7 @@ void VLOutboard_411::fill_two_rows(u_char* bp, const u_char* yp,
 	}
 }
 
-void VLOutboard_411::scaleframe(u_char* bp, const u_char* frm) const
+void VLOutboard_420::scaleframe(u_char* bp, const u_char* frm) const
 {
 	int voff = iv0_ * width_;
 	register const u_char* yp = frm + ih0_ + voff;
@@ -547,7 +547,7 @@ void VLOutboard_411::scaleframe(u_char* bp, const u_char* frm) const
 	}
 }
 
-void VLOutboard_411::fill_four_rows(u_char* bp, const u_char* yp,
+void VLOutboard_420::fill_four_rows(u_char* bp, const u_char* yp,
 				    const u_char* up, const u_char* vp,
 				    int skip0, int skip1, int os) const
 {
@@ -596,7 +596,7 @@ void VLOutboard_411::fill_four_rows(u_char* bp, const u_char* yp,
 	}
 }
 
-void VLOutboard_411::upscaleframe(u_char* bp, const u_char* frm) const
+void VLOutboard_420::upscaleframe(u_char* bp, const u_char* frm) const
 {
 	int voff = iv0_ * width_;
 	register const u_char* yp = frm + ih0_ + voff;

@@ -40,7 +40,7 @@ static const char rcsid[] =
 const char* Module::fttoa(int ft)
 {
 	switch (ft) {
-	case FT_YUV_411:  return ("411");
+	case FT_YUV_420:  return ("420");
 	case FT_YUV_422:  return ("422");
 	case FT_YUV_CIF:  return ("cif");
 	case FT_JPEG:	  return ("jpeg");
@@ -56,8 +56,8 @@ const char* Module::fttoa(int ft)
 
 int Module::atoft(const char* s)
 {
-	if (strcasecmp(s, "411") == 0)
-		return FT_YUV_411;
+	if (strcasecmp(s, "420") == 0)
+		return FT_YUV_420;
 	if (strcasecmp(s, "422") == 0)
 		return FT_YUV_422;
 	if (strcasecmp(s, "cif") == 0)

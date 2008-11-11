@@ -91,9 +91,9 @@ class VideoPixGrabber : public Grabber {
 	u_int decimate_;
 };
 
-class VideoPix411Grabber : public VideoPixGrabber {
+class VideoPix420Grabber : public VideoPixGrabber {
     public:
-	VideoPix411Grabber();
+	VideoPix420Grabber();
     protected:
 	virtual void NTSCgrabSmall();
 	virtual void NTSCgrabMedium();
@@ -106,7 +106,7 @@ class VideoPix411Grabber : public VideoPixGrabber {
 	int hskip_;		/* amount of input to throw out on each line */
 };
 
-class CIFVideoPixGrabber : public VideoPix411Grabber {
+class CIFVideoPixGrabber : public VideoPix420Grabber {
     protected:
 	virtual void PALgrabSmall();
 	virtual void PALgrabMedium();
@@ -125,7 +125,7 @@ VideoPixDevice::VideoPixDevice(const char* name) : InputDevice(name)
 {
 	if (access("/dev/vfc0", R_OK) == 0)
 		attributes_ = "\
-format { 411 422 } \
+format { 420 422 } \
 size { small cif } \
 port { Composite-1 Composite-2 S-Video}";
 	else
@@ -140,8 +140,8 @@ int VideoPixDevice::command(int argc, const char*const* argv)
 			TclObject* o = 0;
 			if (strcmp(argv[2], "422") == 0)
 				o = new VideoPixGrabber;
-			else if (strcmp(argv[2], "411") == 0)
-				o = new VideoPix411Grabber;
+			else if (strcmp(argv[2], "420") == 0)
+				o = new VideoPix420Grabber;
 			else if (strcmp(argv[2], "cif") == 0)
 				o = new CIFVideoPixGrabber;
 			if (o != 0)
@@ -670,16 +670,16 @@ int VideoPixGrabber::grab()
 	return (target_->consume(&f));
 }
 
-VideoPix411Grabber::VideoPix411Grabber()
+VideoPix420Grabber::VideoPix420Grabber()
 	: loff_(0), coff_(0), hwrap_(0), hskip_(0)
 {
 }
 
-void VideoPix411Grabber::setsize()
+void VideoPix420Grabber::setsize()
 {
 	if (format_ < 0)
 		return;
-	set_size_411(basewidth_ / decimate_, baseheight_ / decimate_);
+	set_size_420(basewidth_ / decimate_, baseheight_ / decimate_);
 	allocref();
 	loff_ = 0;
 	coff_ = 0;
@@ -707,7 +707,7 @@ void CIFVideoPixGrabber::setsize()
 	coff_ = (outw_ >> 1) * (voff >> 1) + (hoff >> 1);
 }
 
-void VideoPix411Grabber::NTSCgrabMedium()
+void VideoPix420Grabber::NTSCgrabMedium()
 {
 	VOLATILE u_int* iochan = (u_int*)vfcdev_->vfc_port1;
 	PRESKIP(VFC_OSKIP_NTSC)
@@ -798,7 +798,7 @@ void VideoPix411Grabber::NTSCgrabMedium()
 	}
 }
 
-void VideoPix411Grabber::NTSCgrabSmall()
+void VideoPix420Grabber::NTSCgrabSmall()
 {
 	VOLATILE u_int* iochan = (u_int*)vfcdev_->vfc_port1;
 	PRESKIP(VFC_OSKIP_NTSC)
@@ -887,7 +887,7 @@ void VideoPix411Grabber::NTSCgrabSmall()
 	}
 }
 
-void VideoPix411Grabber::PALgrabMedium()
+void VideoPix420Grabber::PALgrabMedium()
 {
 	VOLATILE u_int* iochan = (u_int*)vfcdev_->vfc_port1;
 	PRESKIP(VFC_ESKIP_PAL)
@@ -974,7 +974,7 @@ void VideoPix411Grabber::PALgrabMedium()
 	}
 }
 
-void VideoPix411Grabber::PALgrabSmall()
+void VideoPix420Grabber::PALgrabSmall()
 {
 	VOLATILE u_int* iochan = (u_int*)vfcdev_->vfc_port1;
 	PRESKIP(VFC_ESKIP_PAL)

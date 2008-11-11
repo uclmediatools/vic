@@ -37,9 +37,9 @@
 #
 
 proc tm_bootstrap {} {
-	global tm411 tm422
-	if ![info exists tm411] {
-		set tm411 [new module compositor/411]
+	global tm420 tm422
+	if ![info exists tm420] {
+		set tm420 [new module compositor/420]
 		set tm422 [new module compositor/422]
 	}
 }
@@ -51,10 +51,10 @@ proc tm_init { grabber encoder } {
 	}
 	set ff [$encoder frame-format]
 	if { $ff == "cif" } {
-		set ff 411
+		set ff 420
 	}
-	if { $ff == "411" || $ff == "422" } {
-		global tm411 tm422
+	if { $ff == "420" || $ff == "422" } {
+		global tm420 tm422
 		tm_bootstrap
 		set tm [set tm$ff]
 		$tm target $encoder
@@ -117,43 +117,43 @@ puts transparent:$id/$lum
 }
 
 proc tm_destroy id {
-	global tm411 tm422 tm_obj
+	global tm420 tm422 tm_obj
 	if [tm_check $id] {
 		set o $tm_obj($id)
 		unset tm_obj($id)
-		$tm411 detach $o
+		$tm420 detach $o
 		$tm422 detach $o
 		delete $o
 	}
 }
 
 proc tm_place { id x y depth } {
-	global tm411 tm422 tm_obj tm_depth
+	global tm420 tm422 tm_obj tm_depth
 	if [tm_check $id] {
 		set o $tm_obj($id)
 		if { ![info exists tm_depth($o)] } {
 			set tm_depth($o) $depth
-			$tm411 attach $o $x $y $depth
+			$tm420 attach $o $x $y $depth
 			$tm422 attach $o $x $y $depth
 		} elseif { $tm_depth($o) != $depth } {
 			set tm_depth($o) $depth
-			$tm411 detach $o
+			$tm420 detach $o
 			$tm422 detach $o
-			$tm411 attach $o $x $y $depth
+			$tm420 attach $o $x $y $depth
 			$tm422 attach $o $x $y $depth
 		} else {
-			$tm411 move $o $x $y
+			$tm420 move $o $x $y
 			$tm422 move $o $x $y
 		}
 	}
 }
 
 proc tm_remove id {
-	global tm411 tm422 tm_obj
+	global tm420 tm422 tm_obj
 	if [tm_check $id] {
 		set o $tm_obj($id)
 		unset tm_obj($id)
-		$tm411 detach $o
+		$tm420 detach $o
 		$tm422 detach $o
 		delete $o
 	}

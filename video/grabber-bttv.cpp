@@ -69,7 +69,7 @@ extern "C" {
 #define CIF_HEIGHT  288
 
 #define CF_422 0
-#define CF_411 1
+#define CF_420 1
 #define CF_CIF 2
 
 class BTTVGrabber : public Grabber {
@@ -109,7 +109,7 @@ BTTVDevice::BTTVDevice(const char* name) : InputDevice(name)
   if(access("/dev/bttv",R_OK) == 0)
    	{
     	attributes_ = " \
-		format { 411 422 } \
+		format { 420 422 } \
 		size { small cif large } \
 		port { TV Port-1 Port-2 S-Video}";
   	} else
@@ -363,7 +363,7 @@ void BTTVGrabber::setsize()
     set_size_422(basewidth_ / decimate_, baseheight_ / decimate_);
     break;
   case CF_CIF:
-    set_size_411(basewidth_ / decimate_, baseheight_ / decimate_);
+    set_size_420(basewidth_ / decimate_, baseheight_ / decimate_);
     break;
   }
 

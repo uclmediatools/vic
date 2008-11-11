@@ -46,7 +46,7 @@
 // Besides the grabber library used in this module the SlicVideo framegrabber
 // also supports XIL under SunOS 5.x. Currently tested only with SunOS 5.x.
 //
-// This module supports yuv411 and yuv422 framgrabbing in any size,
+// This module supports yuv420 and yuv422 framgrabbing in any size,
 // including cif. When using cif the images will be centered and probably
 // cropped, depending on the video signal. Both PAL and NTSC video signal
 // have been tested. The module will search for installed SlicVideo boards
@@ -116,16 +116,16 @@ extern int slv_bytespp[]; /* forgotten in <slvlib_int.h> */
 }
 #include <slvlib.h>
 
-static int slv_read_frame_yuv(SLV *slvptr, int is411, u_char *yp, int y_stride,
+static int slv_read_frame_yuv(SLV *slvptr, int is420, u_char *yp, int y_stride,
 		   u_char *up, int u_stride, u_char *vp, int v_stride);
 
-static int slv_read_field_yuv(SLV *slvptr, int is411, u_char *yp, int y_stride,
+static int slv_read_field_yuv(SLV *slvptr, int is420, u_char *yp, int y_stride,
 		   u_char *up, int u_stride, u_char *vp, int v_stride);
 
-static int slv_copyin_yuv(SLV *slvptr, u_int fbuf, int is411, u_char *yp,
+static int slv_copyin_yuv(SLV *slvptr, u_int fbuf, int is420, u_char *yp,
 	int y_stride, u_char *up, int u_stride, u_char *vp, int v_stride);
 
-static const int  f_411	= 0;
+static const int  f_420	= 0;
 static const int  f_422	= 1;
 static const int  f_cif	= 2;
 
@@ -221,7 +221,7 @@ SlicVideoDevice::SlicVideoDevice(const char* nickname, const char* devname, int 
 {
 	if(free)
 		attributes_ = "\
-format { 411 422 } \
+format { 420 422 } \
 size { small large cif } \
 port { Composite-1 Composite-2 S-Video}";
 	else
@@ -255,7 +255,7 @@ SlicVideoGrabber::SlicVideoGrabber(const char* name, const char* format)
 		fprintf(stderr, "slv: new grabber %s, %s\n", name, format);
 
 	coder_format_ = -1;
-	if(!strcmp(format,"411")) coder_format_ = f_411;
+	if(!strcmp(format,"420")) coder_format_ = f_420;
 	if(!strcmp(format,"422")) coder_format_ = f_422;
 	if(!strcmp(format,"cif")) coder_format_ = f_cif;
 	if(coder_format_ == -1) {
@@ -335,7 +335,7 @@ void SlicVideoGrabber::reformat()
 	size_y = vformat_ysize / decimate_;
 
 	switch(coder_format_) {
-		case f_411: set_size_411(size_x , size_y); break;
+		case f_420: set_size_420(size_x , size_y); break;
 		case f_422: set_size_422(size_x , size_y); break;
 		case f_cif: set_size_cif(size_x , size_y); break;
 		default:
@@ -399,7 +399,7 @@ void SlicVideoGrabber::reformat()
 				 y_output_size_ : y_output_size_ / 2);
 	
 	if(slv_debug) {
-		char *fmt[] = {"411", "422", "cif"};
+		char *fmt[] = {"420", "422", "cif"};
 
 		fprintf(stderr, "slv: reformat:\n");
 		fprintf(stderr, "  input window:  %d X %d (offset: %d + %d, %d + %d)\n",
@@ -550,7 +550,7 @@ int SlicVideoGrabber::capture()
 {
   if(use_internal_api) {
 
-	int y_stride, y_offset, uv_stride, uv_offset, is411;
+	int y_stride, y_offset, uv_stride, uv_offset, is420;
 	u_char *y_ptr, *u_ptr, *v_ptr;
 
 	// grab a frame or field of dimensions
@@ -569,7 +569,7 @@ int SlicVideoGrabber::capture()
 		y_ptr = frame_ + y_offset;
 		u_ptr = frame_ + framesize_ + uv_offset;
 		v_ptr = frame_ + framesize_ * 3 / 2 + uv_offset;
-		is411 = 0;
+		is420 = 0;
 	} else {
 		y_stride  = outw_;
 		y_offset  = x_output_border_ + y_output_border_ * y_stride;
@@ -579,16 +579,16 @@ int SlicVideoGrabber::capture()
 		y_ptr = frame_ + y_offset;
 		u_ptr = frame_ + framesize_ + uv_offset;
 		v_ptr = frame_ + framesize_ * 5 / 4 + uv_offset;
-		is411 = 1;
+		is420 = 1;
 	}
 
 	if(decimate_ == 1) {
-		slv_read_frame_yuv(handle_, is411,
+		slv_read_frame_yuv(handle_, is420,
 			       y_ptr, y_stride,
 			       u_ptr, uv_stride,
 			       v_ptr, uv_stride);
 	} else {
-		slv_read_field_yuv(handle_, is411,
+		slv_read_field_yuv(handle_, is420,
 			       y_ptr, y_stride,
 			       u_ptr, uv_stride,
 			       v_ptr, uv_stride);
@@ -738,7 +738,7 @@ inline void copy4_inc(volatile u_long * &source, u_char * &yp, u_char * &up, u_c
 			   ((s3>> 8)&0xff)<< 8 | ((s4>> 8)&0xff)     ;
 }
 
-static int slv_read_frame_yuv(SLV *slvptr, int is411, u_char *yp, int y_stride,
+static int slv_read_frame_yuv(SLV *slvptr, int is420, u_char *yp, int y_stride,
 		   u_char *up, int u_stride, u_char *vp, int v_stride)
 {
 	u_int fbuf_e, fbuf_o;
@@ -788,12 +788,12 @@ static int slv_read_frame_yuv(SLV *slvptr, int is411, u_char *yp, int y_stride,
 		}
 	}
 
-	status = slv_copyin_yuv(slvptr, fbuf_o, is411,
+	status = slv_copyin_yuv(slvptr, fbuf_o, is420,
 		                yp, y_stride * 2,
 		                up, u_stride * 2,
 		                vp, v_stride * 2);
 	slv_release_fbufs(slvptr, fbuf_o);
-	status = slv_copyin_yuv(slvptr, fbuf_e, is411,
+	status = slv_copyin_yuv(slvptr, fbuf_e, is420,
 		                yp + y_stride, y_stride * 2,
 		                up + u_stride, u_stride * 2,
 		                vp + v_stride, v_stride * 2);
@@ -802,7 +802,7 @@ static int slv_read_frame_yuv(SLV *slvptr, int is411, u_char *yp, int y_stride,
 	return(SLV_SUCCESS);
 }
 
-static int slv_read_field_yuv(SLV *slvptr, int is411, u_char *yp, int y_stride,
+static int slv_read_field_yuv(SLV *slvptr, int is420, u_char *yp, int y_stride,
 		   u_char *up, int u_stride, u_char *vp, int v_stride)
 {
 	u_int fbuf;
@@ -810,14 +810,14 @@ static int slv_read_field_yuv(SLV *slvptr, int is411, u_char *yp, int y_stride,
 
 	fbuf = slv_acquire_next_fbuf(slvptr);
 	if(fbuf != 0) {
-		status = slv_copyin_yuv(slvptr, fbuf, is411,
+		status = slv_copyin_yuv(slvptr, fbuf, is420,
 			    yp, y_stride, up, u_stride, vp, v_stride);
 		slv_release_fbufs(slvptr, fbuf);
 	}
 	return(status);
 }
 
-static int slv_copyin_yuv(SLV *slvptr, u_int fbuf, int is411, u_char *yp,
+static int slv_copyin_yuv(SLV *slvptr, u_int fbuf, int is420, u_char *yp,
 	int y_stride, u_char *up, int u_stride, u_char *vp, int v_stride)
 {
 	u_int	 i, j;
@@ -905,7 +905,7 @@ static int slv_copyin_yuv(SLV *slvptr, u_int fbuf, int is411, u_char *yp,
 		up += u_stride - linebytes / 4;
 		vp += v_stride - linebytes / 4;
 
-		if(is411 && !(i & 0x1)) {
+		if(is420 && !(i & 0x1)) {
 			up -= u_stride;
 			vp -= v_stride;
 		}

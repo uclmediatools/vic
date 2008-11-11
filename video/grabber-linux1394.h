@@ -29,7 +29,7 @@ typedef enum {
 #define BYTE_ORDER_LAST BYTE_ORDER_VYUY
 
 typedef enum {
-    MODE411,
+    MODE420,
     MODE422,
     MODECIF
 } modes_t;
@@ -45,11 +45,11 @@ class Camera {
     dc1394_feature_set features;
     dc1394_miscinfo misc;
 
-    unsigned int best411;
+    unsigned int best420;
     unsigned int best422;
     unsigned int bestcif;
 
-    bool mode411, mode422,
+    bool mode420, mode422,
          small, medium, large;
 
   private:
@@ -74,8 +74,8 @@ public:
 
  protected:
 
-    void firewire411_to_planar411(char *dest, char *src);
-    void firewire422_to_planar411(char *dest, char *src);
+    void firewire411_to_planar420(char *dest, char *src);
+    void firewire422_to_planar420(char *dest, char *src);
     void firewire422_to_planar422(char *dest, char *src);
 
     const Camera *camera;

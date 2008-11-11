@@ -236,15 +236,15 @@ protected:
 				  u_int width, u_int height) const;
 	void map_up2_422(const u_char* frm, u_int off, u_int x,
 				 u_int width, u_int height) const;
-	void map_411(const u_char* frm, u_int off, u_int x,
+	void map_420(const u_char* frm, u_int off, u_int x,
 			     u_int width, u_int height) const;
-	void map_down2_411(const u_char* frm, u_int off, u_int x,
+	void map_down2_420(const u_char* frm, u_int off, u_int x,
 				   u_int width, u_int height) const;
-	void map_down4_411(const u_char* frm, u_int off, u_int x,
+	void map_down4_420(const u_char* frm, u_int off, u_int x,
 				   u_int width, u_int height) const;
-	void map_down_411(const u_char* frm, u_int off, u_int x,
+	void map_down_420(const u_char* frm, u_int off, u_int x,
 				  u_int width, u_int height) const;
-	void map_up2_411(const u_char* frm, u_int off, u_int x,
+	void map_up2_420(const u_char* frm, u_int off, u_int x,
 				 u_int width, u_int height) const;
 	void map_gray(const u_char* frm, u_int off, u_int x,
 			      u_int width, u_int height) const;
@@ -284,15 +284,15 @@ protected:
 				  u_int width, u_int height) const;
 	void map_up2_422(const u_char* frm, u_int off, u_int x,
 				 u_int width, u_int height) const;
-	void map_411(const u_char* frm, u_int off, u_int x,
+	void map_420(const u_char* frm, u_int off, u_int x,
 			     u_int width, u_int height) const;
-	void map_down2_411(const u_char* frm, u_int off, u_int x,
+	void map_down2_420(const u_char* frm, u_int off, u_int x,
 				   u_int width, u_int height) const;
-	void map_down4_411(const u_char* frm, u_int off, u_int x,
+	void map_down4_420(const u_char* frm, u_int off, u_int x,
 				   u_int width, u_int height) const;
-	void map_down_411(const u_char* frm, u_int off, u_int x,
+	void map_down_420(const u_char* frm, u_int off, u_int x,
 				  u_int width, u_int height) const;
-	void map_up2_411(const u_char* frm, u_int off, u_int x,
+	void map_up2_420(const u_char* frm, u_int off, u_int x,
 				 u_int width, u_int height) const;
 	void map_gray(const u_char* frm, u_int off, u_int x,
 			      u_int width, u_int height) const;
@@ -328,23 +328,23 @@ int TrueColorModel::command(int argc, const char*const* argv)
 void TrueWindowRenderer24::update()
 {
 	static True24Method methods[] = {
-	    &TrueWindowRenderer24::map_up2_411,
+	    &TrueWindowRenderer24::map_up2_420,
 	    &TrueWindowRenderer24::map_up2_422,
 	    &TrueWindowRenderer24::map_gray_up2,
 	    &TrueWindowRenderer24::map_gray_up2,
-	    &TrueWindowRenderer24::map_411,
+	    &TrueWindowRenderer24::map_420,
 	    &TrueWindowRenderer24::map_422,
 	    &TrueWindowRenderer24::map_gray,
 	    &TrueWindowRenderer24::map_gray,
-	    &TrueWindowRenderer24::map_down2_411,
+	    &TrueWindowRenderer24::map_down2_420,
 	    &TrueWindowRenderer24::map_down2_422,
 	    &TrueWindowRenderer24::map_gray_down2,
 	    &TrueWindowRenderer24::map_gray_down2,
-	    &TrueWindowRenderer24::map_down4_411,
+	    &TrueWindowRenderer24::map_down4_420,
 	    &TrueWindowRenderer24::map_down4_422,
 	    &TrueWindowRenderer24::map_gray_down4,
 	    &TrueWindowRenderer24::map_gray_down4,
-	    &TrueWindowRenderer24::map_down_411,
+	    &TrueWindowRenderer24::map_down_420,
 	    &TrueWindowRenderer24::map_down_422,
 	    &TrueWindowRenderer24::map_gray_down,
 	    &TrueWindowRenderer24::map_gray_down,
@@ -355,23 +355,23 @@ void TrueWindowRenderer24::update()
 void TrueWindowRenderer32::update()
 {
 	static True32Method methods[] = {
-	    &TrueWindowRenderer32::map_up2_411,
+	    &TrueWindowRenderer32::map_up2_420,
 	    &TrueWindowRenderer32::map_up2_422,
 	    &TrueWindowRenderer32::map_gray_up2,
 	    &TrueWindowRenderer32::map_gray_up2,
-	    &TrueWindowRenderer32::map_411,
+	    &TrueWindowRenderer32::map_420,
 	    &TrueWindowRenderer32::map_422,
 	    &TrueWindowRenderer32::map_gray,
 	    &TrueWindowRenderer32::map_gray,
-	    &TrueWindowRenderer32::map_down2_411,
+	    &TrueWindowRenderer32::map_down2_420,
 	    &TrueWindowRenderer32::map_down2_422,
 	    &TrueWindowRenderer32::map_gray_down2,
 	    &TrueWindowRenderer32::map_gray_down2,
-	    &TrueWindowRenderer32::map_down4_411,
+	    &TrueWindowRenderer32::map_down4_420,
 	    &TrueWindowRenderer32::map_down4_422,
 	    &TrueWindowRenderer32::map_gray_down4,
 	    &TrueWindowRenderer32::map_gray_down4,
-	    &TrueWindowRenderer32::map_down_411,
+	    &TrueWindowRenderer32::map_down_420,
 	    &TrueWindowRenderer32::map_down_422,
 	    &TrueWindowRenderer32::map_gray_down,
 	    &TrueWindowRenderer32::map_gray_down,
@@ -690,7 +690,7 @@ void TrueWindowRenderer32::map_up2_422(const u_char* frm,
 	}
 }
 
-void TrueWindowRenderer32::map_411(const u_char* frm, u_int off,
+void TrueWindowRenderer32::map_420(const u_char* frm, u_int off,
 				 u_int x, u_int width, u_int height) const
 {
 	register u_int iw = width_;
@@ -709,15 +709,15 @@ void TrueWindowRenderer32::map_411(const u_char* frm, u_int off,
 		register RGBPointer xip2 = xip + iw;
 		register const u_char* yp2 = yp + iw;
 
-#define FOUR411(n) \
+#define FOUR420(n) \
 		uv = yuv2rgb[(up[(n)/2] << 8) | vp[(n)/2]]; \
 		ONEPIX(yp[(n)], xip[(n)]) \
 		ONEPIX(yp[(n)+1], xip[(n)+1]) \
 		ONEPIX(yp2[(n)], xip2[(n)]) \
 		ONEPIX(yp2[(n)+1], xip2[(n)+1])
 
-		FOUR411(0)
-		FOUR411(2)
+		FOUR420(0)
+		FOUR420(2)
 
 		xip += 4;
 		yp += 4;
@@ -738,7 +738,7 @@ void TrueWindowRenderer32::map_411(const u_char* frm, u_int off,
 }
 
 #ifdef notdef
-void TrueWindowRenderer32::map_411_16(const u_char* frm, u_int off,
+void TrueWindowRenderer32::map_420_16(const u_char* frm, u_int off,
 				    u_int x, u_int width, u_int height) const
 {
 #ifdef FIX_THIS
@@ -809,7 +809,7 @@ void TrueWindowRenderer32::map_411_16(const u_char* frm, u_int off,
 }
 #endif
 
-void TrueWindowRenderer32::map_down2_411(const u_char* frm,
+void TrueWindowRenderer32::map_down2_420(const u_char* frm,
 				       u_int off, u_int x,
 				       u_int width, u_int height) const
 {
@@ -828,14 +828,14 @@ void TrueWindowRenderer32::map_down2_411(const u_char* frm,
 		register u_int l, uv;
 		register u_int uflo, sum;
 
-#define ONE411(n) \
+#define ONE420(n) \
 		uv = yuv2rgb[(up[(n)/2] << 8) | vp[(n)/2]]; \
 		ONEPIX(yp[(n)], xip[(n)/2])
 
-		ONE411(0)
-		ONE411(2)
-		ONE411(4)
-		ONE411(6)
+		ONE420(0)
+		ONE420(2)
+		ONE420(4)
+		ONE420(6)
 
 		xip += 4;
 		yp += 8;
@@ -855,7 +855,7 @@ void TrueWindowRenderer32::map_down2_411(const u_char* frm,
 	}
 }
 
-void TrueWindowRenderer32::map_down4_411(const u_char* frm,
+void TrueWindowRenderer32::map_down4_420(const u_char* frm,
 				       u_int off, u_int x,
 				       u_int width, u_int height) const
 {
@@ -899,7 +899,7 @@ void TrueWindowRenderer32::map_down4_411(const u_char* frm,
 /*
  * decimate by some power of 2 >= 2^3.
  */
-void TrueWindowRenderer32::map_down_411(const u_char* frm,
+void TrueWindowRenderer32::map_down_420(const u_char* frm,
 				      u_int off, u_int x,
 				      u_int width, u_int height) const
 {
@@ -940,7 +940,7 @@ void TrueWindowRenderer32::map_down_411(const u_char* frm,
 	}
 }
 
-void TrueWindowRenderer32::map_up2_411(const u_char* frm,
+void TrueWindowRenderer32::map_up2_420(const u_char* frm,
 				     u_int off, u_int x,
 				     u_int width, u_int height) const
 {
@@ -1508,7 +1508,7 @@ void TrueWindowRenderer24::map_up2_422(const u_char* frm,
 	}
 }
 
-void TrueWindowRenderer24::map_411(const u_char* frm, u_int off,
+void TrueWindowRenderer24::map_420(const u_char* frm, u_int off,
 				 u_int x, u_int width, u_int height) const
 {
 	register u_int iw = width_;
@@ -1527,15 +1527,15 @@ void TrueWindowRenderer24::map_411(const u_char* frm, u_int off,
 		register char* xip2 = xip + 3*iw;
 		register const u_char* yp2 = yp + iw;
 
-#define PFOUR411(n) \
+#define PFOUR420(n) \
 		uv = yuv2rgb[(up[(n)/2] << 8) | vp[(n)/2]]; \
 		PONEPIX(yp[(n)], xip[3*(n)]) \
 		PONEPIX(yp[(n)+1], xip[3*(n)+3]) \
 		PONEPIX(yp2[(n)], xip2[3*(n)]) \
 		PONEPIX(yp2[(n)+1], xip2[3*(n)+3])
 
-		PFOUR411(0)
-		PFOUR411(2)
+		PFOUR420(0)
+		PFOUR420(2)
 
 		xip += 12;
 		yp += 4;
@@ -1556,7 +1556,7 @@ void TrueWindowRenderer24::map_411(const u_char* frm, u_int off,
 }
 
 #ifdef notdef
-void TrueWindowRenderer24::map_411_16(const u_char* frm, u_int off,
+void TrueWindowRenderer24::map_420_16(const u_char* frm, u_int off,
 				    u_int x, u_int width, u_int height) const
 {
 #ifdef FIX_THIS
@@ -1627,7 +1627,7 @@ void TrueWindowRenderer24::map_411_16(const u_char* frm, u_int off,
 }
 #endif
 
-void TrueWindowRenderer24::map_down2_411(const u_char* frm,
+void TrueWindowRenderer24::map_down2_420(const u_char* frm,
 				       u_int off, u_int x,
 				       u_int width, u_int height) const
 {
@@ -1646,14 +1646,14 @@ void TrueWindowRenderer24::map_down2_411(const u_char* frm,
 		register u_int l, uv;
 		register u_int uflo, sum;
 
-#define PONE411(n) \
+#define PONE420(n) \
 		uv = yuv2rgb[(up[(n)/2] << 8) | vp[(n)/2]]; \
 		PONEPIX(yp[(n)], xip[3*(n)/2])
 
-		PONE411(0)
-		PONE411(2)
-		PONE411(4)
-		PONE411(6)
+		PONE420(0)
+		PONE420(2)
+		PONE420(4)
+		PONE420(6)
 
 		xip += 12;
 		yp += 8;
@@ -1673,7 +1673,7 @@ void TrueWindowRenderer24::map_down2_411(const u_char* frm,
 	}
 }
 
-void TrueWindowRenderer24::map_down4_411(const u_char* frm,
+void TrueWindowRenderer24::map_down4_420(const u_char* frm,
 				       u_int off, u_int x,
 				       u_int width, u_int height) const
 {
@@ -1717,7 +1717,7 @@ void TrueWindowRenderer24::map_down4_411(const u_char* frm,
 /*
  * decimate by some power of 2 >= 2^3.
  */
-void TrueWindowRenderer24::map_down_411(const u_char* frm,
+void TrueWindowRenderer24::map_down_420(const u_char* frm,
 				      u_int off, u_int x,
 				      u_int width, u_int height) const
 {
@@ -1758,7 +1758,7 @@ void TrueWindowRenderer24::map_down_411(const u_char* frm,
 	}
 }
 
-void TrueWindowRenderer24::map_up2_411(const u_char* frm,
+void TrueWindowRenderer24::map_up2_420(const u_char* frm,
 				     u_int off, u_int x,
 				     u_int width, u_int height) const
 {

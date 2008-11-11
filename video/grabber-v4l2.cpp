@@ -85,7 +85,7 @@ static const char *devlist[] = {
 #define CIF_HEIGHT  288
 
 #define CF_422 0
-#define CF_411 1
+#define CF_420 1
 #define CF_CIF 2
 
 /* YUV Byte order */
@@ -274,7 +274,7 @@ V4l2Scanner::V4l2Scanner(const char **dev)
                 }
 
                 attr = new char[512];
-                strcpy(attr,"format { 411 422 cif } ");
+                strcpy(attr,"format { 420 422 cif } ");
                 strcat(attr,"size { small large cif } ");
 
                 debug_msg("V4L2:   ports:");
@@ -434,8 +434,8 @@ V4l2Grabber::V4l2Grabber(const char *cformat, const char *dev)
         }
 
         /* fill in defaults */
-        if(!strcmp(cformat, "411"))
-                cformat_ = CF_411;
+        if(!strcmp(cformat, "420"))
+                cformat_ = CF_420;
         if(!strcmp(cformat, "422"))
                 cformat_ = CF_422;
         if(!strcmp(cformat, "cif"))
@@ -767,7 +767,7 @@ int V4l2Grabber::grab()
         }
 
         switch (cformat_) {
-        case CF_411:
+        case CF_420:
         case CF_CIF:
                 if( have_YUV420P )
                        memcpy((void *)frame_, (const void *)fr, (size_t)height_*width_*3/2)
@@ -1093,7 +1093,7 @@ void V4l2Grabber::format()
         int format_ok = 0;
 
         switch (cformat_) {
-        case CF_411:
+        case CF_420:
         case CF_CIF:
                 if( have_YUV420P )
                        pixelformat = V4L2_PIX_FMT_YUV420;
@@ -1130,12 +1130,12 @@ void V4l2Grabber::format()
                 debug_msg("V4L2: format");
                 switch (cformat_) {
                 case CF_CIF:
-                        set_size_411(width_, height_);
+                        set_size_420(width_, height_);
                         debug_msg(" cif");
                         break;
-                case CF_411:
-                        set_size_411(width_, height_);
-                        debug_msg(" 411");
+                case CF_420:
+                        set_size_420(width_, height_);
+                        debug_msg(" 420");
                         break;
                 case CF_422:
                         set_size_422(width_, height_);

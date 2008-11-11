@@ -165,7 +165,7 @@ proc build { width height } {
 
 	update 
 	global V showChanges
-	set r [$V(colorModel) renderer $w 411]
+	set r [$V(colorModel) renderer $w 420]
 	$r color 1
 	if {$showChanges} {
 		$r irthresh 2000
