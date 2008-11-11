@@ -33,7 +33,7 @@ void Buffer::insert_front (int val) {
 
 // insert end
 void Buffer::insert_end (int val) {
-	if (tail_) {
+	if (!tail_) {
 		tail_ = head_ = new Data (val);
 	} else {
 		tail_ = new Data (val, tail_);
