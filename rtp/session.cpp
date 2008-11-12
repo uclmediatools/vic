@@ -1156,6 +1156,7 @@ void SessionManager::parse_xr(rtcphdr* rh, int flags, u_char* ep,
 void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 				      const u_char* ep, Address & addr)
 {
+	printf("\tentering parse_xr_records()\n");
 	UNUSED(ssrc);
 	UNUSED(cnt);
 	UNUSED(ep);
@@ -1211,7 +1212,7 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 
 void SessionManager::cc_output() 
 {
-	//printf("\tentering cc_output()\n");
+	printf("\tentering cc_output()\n");
 	pktbuf* pb = head_;	// head of the packet queue
 	rtphdr* rh;		// declare rtp header
 
@@ -1221,34 +1222,34 @@ void SessionManager::cc_output()
 
 	// cwnd value
 	int magic = (int) tfwc_magic();
-	//debug_msg("cwnd: %d\n", magic);
+	debug_msg("cwnd: %d\n", magic);
 	// last acked seqno
 	int jack = (int) tfwc_sndr_just_acked();
-	//debug_msg("jack: %d\n", jack);
+	debug_msg("jack: %d\n", jack);
 
 	// while packet seqno is within "cwnd + jack", send that packet
 	while (ntohs(rh->rh_seqno) <= magic + jack) {
-		if (pb != 0) {
-			//debug_msg("seqno: %d\n", ntohs(rh->rh_seqno));
-			// record seqno and timestamp at TfwcSndr side
-			tfwc_sndr_send(pb);
+		debug_msg("seqno: %d\n", ntohs(rh->rh_seqno));
+		// record seqno and timestamp at TfwcSndr side
+		tfwc_sndr_send(pb);
 
-			// call Transmitter::output(pb)
-			output(pb);
+		// declare the next packet
+		pktbuf* nx = pb->next;
 
-			// trim packet buffer
-			pktbuf* nx = pb->next;
-			pb = nx;
+		// call Transmitter::output(pb)
+		output(pb);
 
-			// if pb is not 0, then parse rtp header
-			if (pb != 0)
-				rh = (rtphdr *) pb->data;
-			else 
-				break;
+		// move packet pointer
+		pb = nx;
 
-			// move head pointer
-			head_ = pb;
-		}
+		// move head pointer
+		head_ = pb;
+
+		// if pb is not 0, then parse rtp header
+		if (pb != 0)
+			rh = (rtphdr *) pb->data;
+		else 
+			break;
 	} // end while
 }
 
@@ -1278,6 +1279,7 @@ void SessionManager::build_ts_echo_pkt(CtrlHandler* ch)
 
 void SessionManager::send_xreport_back(CtrlHandler* ch, int bt, int bye)
 {
+	printf("\tentering send_xreport_back()\n");
 	UNUSED(bye);
 
 	SourceManager& sm = SourceManager::instance();
