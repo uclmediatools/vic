@@ -6555,7 +6555,7 @@ if test $ac_cv_header_libv4lconvert_h = yes; then
   V_DEFINE="$V_DEFINE -DHAVE_LIBV4L"
          V_LIB_GRABBER="$V_LIB_GRABBER -lv4l1 -lv4l2"
 else
-  $V_OBJ_GRABBER="$V_OBJ_GRABBER  video/tinyjpeg.o video/jidctflt.o"
+  V_OBJ_GRABBER="$V_OBJ_GRABBER  video/tinyjpeg.o video/jidctflt.o"
 fi
 
 
