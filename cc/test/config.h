@@ -15,4 +15,6 @@
 #include <time.h>       // support sleep function
 #include <sys/types.h>
 
+#define UNUSED(x) (x) = (x)
+
 #endif /* vic_cc_test_config_h */

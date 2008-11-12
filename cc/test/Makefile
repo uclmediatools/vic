@@ -11,7 +11,7 @@ CPPFLAGS	:=-Wall -g
 
 SRCS 		:= $(wildcard *.cpp)
 OBJS		:= $(SRCS:.cpp=.o)
-APP			:= cc
+APP			:= test
 
 .PHONY: 	clean distclean
 
