@@ -369,7 +369,8 @@ clean:
 		tk.tcl vic_tcl.c h261_play_tcl.c tmp.c \
 		vic vic.dyn vic.xil h261_play h261_dump jpeg_play cb_wish \
 		mkcube rgb-cube.ppm yuv-map.ppm cm0.c cm1.c ppmtolut \
-		config.cache config.log domake.* dotar.*
+		config.cache config.log domake.* dotar.* \
+		cc/*.o
 	cd codec/tmn && $(MAKE) clean
 	cd codec/tmndec && $(MAKE) realclean
 	rm -f codec/tmn-x/*.o codec/tmn-x/*.a
