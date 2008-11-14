@@ -276,6 +276,10 @@ void TfwcSndr::control() {
 	t_win_ = 1 / f_p_;
 
 	cwnd_ = (int) (t_win_ + .5);
+
+	// cwnd should always be greater than 1
+	if (cwnd_ < 1)
+		cwnd_ = 1;
 }
 
 /*
