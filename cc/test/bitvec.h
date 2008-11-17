@@ -35,5 +35,7 @@ int		get_head_pos (int vec);
 int		get_tail_pos (int vec);
 void	marginvec (int vec);
 void	send_buf (Buffer, int);
+void	trimvec (int vec, int);
+int		ackofack ();
 
 #endif /* vic_cc_test_bitvec_h */
