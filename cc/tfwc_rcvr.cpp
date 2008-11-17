@@ -55,8 +55,8 @@ TfwcRcvr::TfwcRcvr() :
 void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno, 
 				u_int16_t ackofack, u_int32_t ts) 
 {
-	// count and offset
-	int cnt, offset;
+	// variables
+	int cnt, offset, num;
 
 	// parse the received seqno and ackofack
 	if (type == XR_BT_1) {
@@ -82,6 +82,9 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 			// then, set this packet as received (this is important)
 			SET_BIT_VEC(tfwcAV, 1);
 		}
+		
+		// number of elements in tfwcAV
+		num = currseq_ - ackofack_ -cnt;
 
 		// trim ackvec
 		offset = currseq_ - ackofack_;
