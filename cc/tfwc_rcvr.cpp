@@ -55,6 +55,9 @@ TfwcRcvr::TfwcRcvr() :
 void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno, 
 				u_int16_t ackofack, u_int32_t ts) 
 {
+	// count and offset
+	int cnt, offset;
+
 	// parse the received seqno and ackofack
 	if (type == XR_BT_1) {
 		//debug_msg("received seqno:  %d\n", seqno);
@@ -69,7 +72,7 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 		// we have one or more packet loss
 		else {
 			// number of packet loss
-			int cnt = currseq_ - prevseq_ - 1;
+			cnt = currseq_ - prevseq_ - 1;
 
 			// set next bit to 0 equal to the number of lost packets
 			for (int i = 0; i < cnt; i++) {
@@ -81,7 +84,7 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 		}
 
 		// trim ackvec
-		int offset = currseq_ - ackofack_;
+		offset = currseq_ - ackofack_;
 		if (ackofack_)
 			trimvec(tfwcAV, offset);
 
