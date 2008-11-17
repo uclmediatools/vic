@@ -71,10 +71,13 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 			// number of packet loss
 			int cnt = currseq_ - prevseq_ - 1;
 
-			// set next bit to 0
+			// set next bit to 0 equal to the number of lost packets
 			for (int i = 0; i < cnt; i++) {
 				SET_BIT_VEC(tfwcAV, 0);
 			}
+
+			// then, set this packet as received (this is important)
+			SET_BIT_VEC(tfwcAV, 1);
 		}
 
 		// trim ackvec
