@@ -55,6 +55,10 @@ public:
 	// display
 	void display (std::ostream &out = std::cout);
 
+	// get head/tail pointer
+	inline Data* get_head_ptr() { return head_; }
+	inline Data* get_tail_ptr() { return tail_; }
+
 private:
 	Data* head_;
 	Data* tail_;
@@ -72,12 +76,12 @@ public:
 	~Data() {};
 
 	// value
-	int get_val() { return val_; }
+	inline int get_val() { return val_; }
 
-	// next
-	Data* next() { return next_; }
+	// return next ptr
+	inline Data* next() { return next_; }
 
-	// set to next
+	// set this to next ptr
 	void next (Data *ptr) { next_ = ptr; }
 
 private:
