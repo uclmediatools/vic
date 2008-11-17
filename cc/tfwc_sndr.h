@@ -132,12 +132,9 @@ protected:
 	inline void marginvec(u_int32_t vec) {
 		int hseq = get_head_pos(vec) + aoa_;	// ackvec head seqno
 
-		for (int i = 0; i < DUPACKS; i++) {
-			mvec_[i] = hseq - i;
-
+		for (int i = 0; i < DUPACKS; i++) 
 			// round up if it is less than zero
-			mvec_[i] = (mvec_[i] <= 0) ? 0 : mvec_[i];
-		}
+			mvec_[i] = ((hseq - i) < 0) ? 0 : (hseq - i);
 	}
 	// generate seqno vector (interpret ackvec to real sequence numbers)
 	inline void gen_seqvec(u_int32_t vec) {
