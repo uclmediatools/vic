@@ -1156,7 +1156,7 @@ void SessionManager::parse_xr(rtcphdr* rh, int flags, u_char* ep,
 void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 				      const u_char* ep, Address & addr)
 {
-	printf("\tentering parse_xr_records()\n");
+	//printf("\tentering parse_xr_records()\n");
 	UNUSED(ssrc);
 	UNUSED(cnt);
 	UNUSED(ep);
@@ -1279,7 +1279,7 @@ void SessionManager::build_ts_echo_pkt(CtrlHandler* ch)
 
 void SessionManager::send_xreport_back(CtrlHandler* ch, int bt, int bye)
 {
-	printf("\tentering send_xreport_back()\n");
+	//printf("\tentering send_xreport_back()\n");
 	UNUSED(bye);
 
 	SourceManager& sm = SourceManager::instance();

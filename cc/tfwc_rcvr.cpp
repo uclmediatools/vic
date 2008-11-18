@@ -56,7 +56,9 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 				u_int16_t ackofack, u_int32_t ts) 
 {
 	// variables
-	int cnt, offset, num;
+	int cnt		= 0;
+	int offset	= 0;
+	int num		= 0;
 
 	// parse the received seqno and ackofack
 	if (type == XR_BT_1) {
@@ -84,10 +86,11 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 		}
 		
 		// number of elements in tfwcAV
-		num = currseq_ - ackofack_ -cnt;
+		num = currseq_ - ackofack_ - cnt;
 
 		// trim ackvec
-		offset = currseq_ - ackofack_;
+		offset = ((num - DUPACKS) < 0) ? 0 : (num - DUPACKS);
+
 		if (ackofack_)
 			trimvec(tfwcAV, offset);
 
