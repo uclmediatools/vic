@@ -103,8 +103,8 @@ class PacketData : public MtuAlloc {
         ~PacketData();
         inline const struct rtphdr *rtp_hdr() const { return (rh_); }
         inline const u_char *video_data() const { return (vh_); }
-        inline const int data_length() const { return (len_); }
-        inline const u_int playout() const { return (playout_); }
+        inline int data_length() const { return (len_); }
+        inline u_int playout() const { return (playout_); }
  private:
         u_char          *pkt_;
         struct rtphdr   *rh_;
