@@ -361,53 +361,61 @@ V4l2Grabber::V4l2Grabber(const char *cformat, const char *dev)
         fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
         v4l2_ioctl(fd_, VIDIOC_G_FMT, &fmt);
 
-        fmt.fmt.pix.width = CIF_WIDTH;
-        fmt.fmt.pix.height = CIF_HEIGHT;
-        fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUV420;
-        if (-1 != v4l2_ioctl(fd_, VIDIOC_S_FMT, &fmt) ) {
-                if (fmt.fmt.pix.height == CIF_HEIGHT) {
-                        have_YUV420P = 1;
-                        debug_msg("\nDevice supports V4L2_PIX_FMT_YUV420\n");
+        unsigned int test_width[] = {CIF_WIDTH, 320};
+        unsigned int test_height[] = {CIF_HEIGHT, 240};
+        for (unsigned int i = 0; i < sizeof(test_width); i++) {
+                fmt.fmt.pix.width = test_width[i];
+                fmt.fmt.pix.height = test_height[i];
+                fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUV420;
+                if (-1 != v4l2_ioctl(fd_, VIDIOC_S_FMT, &fmt) ) {
+                        if (fmt.fmt.pix.height == test_height[i] && fmt.fmt.pix.width == test_width[i]) {
+                                have_YUV420P = 1;
+                                debug_msg("Device supports V4L2_PIX_FMT_YUV420 capture at %dx%d\n",test_width[i],test_height[i]);
+                        }
                 }
-        }
 
-        fmt.fmt.pix.width = CIF_WIDTH;
-        fmt.fmt.pix.height = CIF_HEIGHT;
-        fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUV422P;
-        if (-1 != v4l2_ioctl(fd_, VIDIOC_S_FMT, &fmt) ) {
-                if (fmt.fmt.pix.height == CIF_HEIGHT) {
-                        have_YUV422P = 1;
-                        debug_msg("\nDevice supports V4L2_PIX_FMT_YUV422\n");
+                fmt.fmt.pix.width = test_width[i];
+                fmt.fmt.pix.height = test_height[i];
+                fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUV422P;
+                if (-1 != v4l2_ioctl(fd_, VIDIOC_S_FMT, &fmt) ) {
+                        if (fmt.fmt.pix.height == test_height[i] && fmt.fmt.pix.width == test_width[i]) {
+                                have_YUV422P = 1;
+                                debug_msg("Device supports V4L2_PIX_FMT_YUV422 capture at %dx%d\n",test_width[i],test_height[i]);
+                        }
                 }
-        }
 
-        fmt.fmt.pix.width = CIF_WIDTH;
-        fmt.fmt.pix.height = CIF_HEIGHT;
-        fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
-        if (-1 != v4l2_ioctl(fd_, VIDIOC_S_FMT, &fmt) ) {
-                if (fmt.fmt.pix.height == CIF_HEIGHT) {
-                        have_YUV422 = 1;
-                        debug_msg("\nDevice supports V4L2_PIX_FMT_YUYV (YUV 4:2:2)\n");
+                fmt.fmt.pix.width = test_width[i];
+                fmt.fmt.pix.height = test_height[i];
+                fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
+                if (-1 != v4l2_ioctl(fd_, VIDIOC_S_FMT, &fmt) ) {
+                        if (fmt.fmt.pix.height == test_height[i] && fmt.fmt.pix.width == test_width[i]) {
+                                have_YUV422 = 1;
+                                debug_msg("Device supports V4L2_PIX_FMT_YUYV (YUV 4:2:2) capture at %dx%d\n",test_width[i],test_height[i]);
+                        }
                 }
-        }
 
 #ifdef HAVE_LIBV4L
-        fmt.fmt.pix.width = CIF_WIDTH;
-        fmt.fmt.pix.height = CIF_HEIGHT;
-        fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_MJPEG;
-        if (-1 != v4l2_ioctl(fd_, VIDIOC_S_FMT, &fmt) ) {
-                have_MJPEG = 1;
-                debug_msg("\nDevice supports V4L2_PIX_FMT_MJPEG\n");
-        }
+                fmt.fmt.pix.width = test_width[i];
+                fmt.fmt.pix.height = test_height[i];
+                fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_MJPEG;
+                if (-1 != v4l2_ioctl(fd_, VIDIOC_S_FMT, &fmt) ) {
+                        if (fmt.fmt.pix.height == test_height[i] && fmt.fmt.pix.width == test_width[i]) {
+                                have_MJPEG = 1;
+                                debug_msg("Device supports V4L2_PIX_FMT_MJPEG capture at %dx%d\n",test_width[i],test_height[i]);
+                        }
+                }
 
-        fmt.fmt.pix.width = CIF_WIDTH;
-        fmt.fmt.pix.height = CIF_HEIGHT;
-        fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_JPEG;
-        if (-1 != v4l2_ioctl(fd_, VIDIOC_S_FMT, &fmt) ) {
-                have_MJPEG = 1;
-                debug_msg("\nDevice supports V4L2_PIX_FMT_JPEG\n");
-        }
+                fmt.fmt.pix.width = test_width[i];
+                fmt.fmt.pix.height = test_height[i];
+                fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_JPEG;
+                if (-1 != v4l2_ioctl(fd_, VIDIOC_S_FMT, &fmt) ) {
+                        if (fmt.fmt.pix.height == test_height[i] && fmt.fmt.pix.width == test_width[i]) {
+                                have_MJPEG = 1;
+                                debug_msg("Device supports V4L2_PIX_FMT_JPEG capture at %dx%d\n",test_width[i],test_height[i]);
+                        }
+                }
 #endif
+        }
 
         if( !( have_YUV422P || have_YUV422 || have_YUV420P || have_MJPEG || have_JPEG)){
                 debug_msg("No suitable pixelformat found\n");
@@ -658,15 +666,15 @@ void V4l2Grabber::start()
                                 vimage[i].vidbuf.memory = V4L2_MEMORY_MMAP;
                                 err = v4l2_ioctl(fd_, VIDIOC_QUERYBUF, &vimage[i].vidbuf);
                                 if (err < 0) {
-                                        debug_msg("QUERYBUF returned error %d\n",errno);
+                                        debug_msg("QUERYBUF returned error %d\n", errno);
                                         return;
                                 }
                                 vimage[i].data = (typeof(vimage[0].data)) v4l2_mmap(0,  vimage[i].vidbuf.length, PROT_READ|PROT_WRITE, MAP_SHARED, fd_, vimage[i].vidbuf.m.offset);
 
                                 if ((long)vimage[i].data == -1) {
-                                        debug_msg("V4L2: mmap() returned error %l\n", errno);
+                                        debug_msg("V4L2: mmap() returned error %d\n", errno);
                                         return;
-                                } else debug_msg("V4L2: mmap()'ed buffer at 0x%x (%d bytes)\n", (long)vimage[i].data, vimage[i].vidbuf.length);
+                                } else debug_msg("V4L2: mmap()'ed buffer at 0x%lx (%u bytes)\n", (unsigned long)vimage[i].data, vimage[i].vidbuf.length);
                         }
 
                         for (i = 0; i < (int)req.count; ++i)
@@ -685,7 +693,7 @@ void V4l2Grabber::start()
                         if (vimage[0].data == NULL) {
                                 debug_msg("malloc(%d) failed\n", fmt.fmt.pix.sizeimage);
                                 return;
-                        } else debug_msg("V4L2: malloc()'ed buffer (%d bytes)\n",  fmt.fmt.pix.sizeimage);
+                        } else debug_msg("V4L2: malloc()'ed buffer (%d bytes)\n", fmt.fmt.pix.sizeimage);
                 }
 
                 Grabber::start();
@@ -1091,6 +1099,7 @@ void V4l2Grabber::format()
         int i, err;
         int input;
         int format_ok = 0;
+        int try_ntsc = 0;
 
         switch (cformat_) {
         case CF_420:
@@ -1122,24 +1131,22 @@ void V4l2Grabber::format()
         }
 
         while ( !format_ok ) {
-                if (decimate_ > 0) {
-                        width_  = CIF_WIDTH  *2  / decimate_;
-                        height_ = CIF_HEIGHT *2  / decimate_;
-                }
+                width_  = CIF_WIDTH  *2  / decimate_;
+                height_ = CIF_HEIGHT *2  / decimate_;
 
                 debug_msg("V4L2: format");
                 switch (cformat_) {
                 case CF_CIF:
                         set_size_420(width_, height_);
-                        debug_msg(" cif");
+                        debug_msg(" cif\n");
                         break;
                 case CF_420:
                         set_size_420(width_, height_);
-                        debug_msg(" 420");
+                        debug_msg(" 420\n");
                         break;
                 case CF_422:
                         set_size_422(width_, height_);
-                        debug_msg(" 422");
+                        debug_msg(" 422\n");
                         break;
                 }
                 debug_msg("decimate: %d\n",decimate_);
@@ -1164,8 +1171,9 @@ void V4l2Grabber::format()
                         fmtd.index = i;
                         fmtd.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
                         err = v4l2_ioctl(fd_, VIDIOC_ENUM_FMT, &fmtd);
-                        if (!err) {
-
+                        if (err) {
+                                debug_msg("VIDIOC_ENUM_FMT returned error %d\n",errno);
+                        } else {
                                 if (fmtd.pixelformat == pixelformat) {
                                         memset(&fmt,0,sizeof(fmt));
                                         fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -1183,25 +1191,43 @@ void V4l2Grabber::format()
 
                                                 debug_msg("V4L2: failed to set format! requested %dx%d, got %dx%d\n", width_, height_, fmt.fmt.pix.width, fmt.fmt.pix.height);
 
-
                                                 switch(decimate_) {
-                                                case 2:
-                                                        debug_msg("V4L2: trying resolution under ...\n");
-                                                        decimate_ = 4;
-                                                        break;
                                                 case 1:
-                                                        debug_msg("V4L2: trying NTSC resolution ...\n");
-                                                        decimate_ = 0;
-                                                        width_ = NTSC_WIDTH;
-                                                        height_ = NTSC_HEIGHT;
+                                                        if (!try_ntsc) {
+                                                                debug_msg("V4L2: trying NTSC resolution ...\n");
+                                                                width_ = NTSC_WIDTH;
+                                                                height_ = NTSC_HEIGHT;
+                                                                try_ntsc = 1;
+                                                        } else {
+                                                                debug_msg("V4L2: trying resolution under ...\n");
+                                                                decimate_ = 2;
+                                                                try_ntsc = 0;
+                                                        }
                                                         break;
-                                                case 0:
-                                                        debug_msg("V4L2: trying resolution under ...\n");
-                                                        decimate_ = 2;
+                                                case 2:
+                                                        if (!try_ntsc) {
+                                                                debug_msg("V4L2: trying 1/4 NTSC resolution ...\n");
+                                                                width_ = NTSC_WIDTH / 2;
+                                                                height_ = NTSC_HEIGHT / 2;
+                                                                try_ntsc = 1;
+                                                        } else {
+                                                                debug_msg("V4L2: trying resolution under ...\n");
+                                                                decimate_ = 4;
+                                                                try_ntsc = 0;
+                                                        }
                                                         break;
                                                 default:
-                                                        debug_msg("V4L2: giving up ...\n");
-                                                        format_ok = 1;
+                                                        if (!try_ntsc) {
+                                                                debug_msg("V4L2: trying 1/16 NTSC resolution ...\n");
+                                                                width_ = NTSC_WIDTH / 4;
+                                                                height_ = NTSC_HEIGHT / 4;
+                                                                try_ntsc = 0;
+                                                        } else {
+                                                                debug_msg("V4L2: giving up ...\n");
+                                                                format_ok = 1;
+                                                        }
+                                                        break;
+
                                                 }
 
                                         } else {
