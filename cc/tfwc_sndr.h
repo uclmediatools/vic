@@ -36,11 +36,11 @@
 #ifndef vic_tfwc_sndr_h
 #define vic_tfwc_sndr_h
 
+#include "bitmap.h"	// bitmap operations
+
 #define DUPACKS 3   // simulating TCP's 3 dupacks
-#define CHB	0x80000000	// ackvec check bit (head search)
-#define CTB	0x01		// ackvec check bit (tail search)
-#define TSZ	1000		// tsvec_ size
-#define SSZ 1000		// seqvec_ size
+#define TSZ	1000	// tsvec_ size
+#define SSZ 1000	// seqvec_ size
 
 #define SHORT_HISTORY		// history size = 8
 #ifdef  SHORT_HISTORY
@@ -51,21 +51,6 @@
 
 #define T_RTTVAR_BITS	2	// XXX not used
 #define T_SRTT_BITS		3	// XXX not used
-
-// set AckVec bitmap from LSB
-#define SET_BIT_VEC(ackvec_, bit) (ackvec_ = ((ackvec_ << 1) | bit))
-
-// AckVec bitmap at i-th location
-#define GET_BIT_VEC(ackvec_, i, seqno) ((1 << (seqno - i)) & ackvec_)
-
-// AckVec head search
-#define GET_HEAD_VEC(ackvec_, i) ( ackvec_ & (CHB >> i) )
-
-// AckVec tail search
-#define GET_TAIL_VEC(ackvec_, i) ( ackvec_ & (CTB << i) )
-
-// check bit at i-th location
-#define CHECK_BIT_AT(vec, i) ( vec & (1 << (i-1)) )
 
 class TfwcSndr {
 public:
@@ -151,12 +136,23 @@ protected:
 	}
 	// ackofack
 	inline u_int16_t ackofack () {
-		int retval = mvec_[DUPACKS - 1] - 1;
+		return ((mvec_[DUPACKS - 1] - 1) < 0) ?
+			0 : (u_int16_t) (mvec_[DUPACKS - 1] - 1);
+	}
+	// print mvec
+	inline void print_mvec() {
+		printf("\tmargin numbers: ( %d %d %d )\n", 
+				mvec_[0], mvec_[1], mvec_[2]);
+	}
+	// printf seqvec
+	inline void print_seqvec(u_int32_t vec) {
+        int hseq = get_head_pos(vec) + aoa_;    // ackvec head seqno
+        int cnt = hseq - aoa_;  // number of packets in ackvec
 
-		if (retval < 0) 
-			retval = 0;
-
-		return (u_int16_t) retval;
+		printf("\tsequence numbers: (");
+		for (int i = 0; i < cnt; i++)
+			printf(" %d", seqvec_[i]);
+		printf(" )\n");
 	}
 
 	int mvec_[DUPACKS]; // margin vec (simulatinmg TCP 3 dupacks)
