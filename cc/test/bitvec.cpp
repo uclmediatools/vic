@@ -147,10 +147,6 @@ void trimvec (int vec, int offset) {
 
 // ackofack
 int ackofack () {
-	int retval = mvec[DUPACKS - 1] - 1;
-
-	if (retval < 0)
-		retval = 0;
-
-	return retval;
+	return (mvec[DUPACKS - 1] - 1) < 0 
+		? 0 : (mvec[DUPACKS - 1] - 1);
 }
