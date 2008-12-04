@@ -113,8 +113,6 @@ void FFMpegCodec::init_encoder(int width_, int height_,
     }
 
     c->me_method = ME_EPZS;
-//    c->me_method = ME_UMH;
-    c->rtp_mode = 1;
     c->rtp_payload_size = 1024;
 
     /* open it */
