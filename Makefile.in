@@ -302,7 +302,7 @@ ui-titlemaker.o: tcl/ui-titlemaker.tcl
 
 version.c: VERSION
 	rm -f version.c
-	cat VERSION | sed 's/.*/char version[] = "&";/' > version.c
+	echo `cat VERSION`-r`svnversion` | sed 's/.*/char version[] = "&";/' > version.c
 
 cm0.o: cm0.c
 cm0.c: rgb-cube.ppm jv-cube-128.ppm ppmtolut
