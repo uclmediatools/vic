@@ -371,6 +371,8 @@ V4l2Grabber::V4l2Grabber(const char *cformat, const char *dev)
                         if (fmt.fmt.pix.height == test_height[i] && fmt.fmt.pix.width == test_width[i]) {
                                 have_YUV420P = 1;
                                 debug_msg("Device supports V4L2_PIX_FMT_YUV420 capture at %dx%d\n",test_width[i],test_height[i]);
+                        } else {
+                                debug_msg("V4L2_PIX_FMT_YUV420 capture at %dx%d not supported, returned %dx%d\n",test_width[i],test_height[i],fmt.fmt.pix.width,fmt.fmt.pix.height);
                         }
                 }
 
