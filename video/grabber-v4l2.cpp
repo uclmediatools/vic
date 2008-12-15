@@ -77,16 +77,20 @@ static const char *devlist[] = {
     NULL
 };
 
-#define NTSC_WIDTH  640
-#define NTSC_HEIGHT 480
-#define PAL_WIDTH   768
-#define PAL_HEIGHT  576
+#define PAL_BT601_WIDTH   720
+#define PAL_BT601_HEIGHT  576
+#define VGA_WIDTH  640
+#define VGA_HEIGHT 480
 #define CIF_WIDTH   352
 #define CIF_HEIGHT  288
 
 #define CF_422 0
 #define CF_420 1
 #define CF_CIF 2
+
+#define CS_VC        0 /* 4CIF (704x576), CIF (352x288), QCIF (176x144) */
+#define CS_VGA       1 /* VGA (640x480), 1/4 VGA (320x240), 1/16 VGA (160x120) */
+#define CS_BT601_PAL 2 /* ITU-R Recommendation BT.601 720x576 (plus 360x288 & 180x144) */
 
 /* YUV Byte order */
 #define BYTE_ORDER_YUYV 0
@@ -361,8 +365,8 @@ V4l2Grabber::V4l2Grabber(const char *cformat, const char *dev)
         fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
         v4l2_ioctl(fd_, VIDIOC_G_FMT, &fmt);
 
-        unsigned int test_width[] = {CIF_WIDTH, 320, 0};
-        unsigned int test_height[] = {CIF_HEIGHT, 240, 0};
+        unsigned int test_width[] =  {CIF_WIDTH,  PAL_BT601_WIDTH/2,  VGA_WIDTH/2,  0};
+        unsigned int test_height[] = {CIF_HEIGHT, PAL_BT601_HEIGHT/2, VGA_HEIGHT/2, 0};
         for (unsigned int i = 0; test_width[i] != 0; i++) {
                 fmt.fmt.pix.width = test_width[i];
                 fmt.fmt.pix.height = test_height[i];
@@ -1109,7 +1113,7 @@ void V4l2Grabber::format()
         int i, err;
         int input;
         int format_ok = 0;
-        int try_ntsc = 0;
+        int capture_standard = CS_VC; // initially try video conferencing resolutions
 
         switch (cformat_) {
         case CF_420:
@@ -1203,38 +1207,63 @@ void V4l2Grabber::format()
 
                                                 switch(decimate_) {
                                                 case 1:
-                                                        if (!try_ntsc) {
-                                                                debug_msg("V4L2: trying NTSC resolution ...\n");
-                                                                width_ = NTSC_WIDTH;
-                                                                height_ = NTSC_HEIGHT;
-                                                                try_ntsc = 1;
-                                                        } else {
+                                                        switch (capture_standard) {
+                                                        case CS_VC :
+                                                                debug_msg("V4L2: trying VGA resolution ...\n");
+                                                                width_ = VGA_WIDTH;
+                                                                height_ = VGA_HEIGHT;
+                                                                capture_standard = CS_VGA;
+                                                                break;
+                                                        case CS_VGA :
+                                                                debug_msg("V4L2: trying ITU-R BT.601 PAL resolution ...\n");
+                                                                width_ = PAL_BT601_WIDTH;
+                                                                height_ = PAL_BT601_HEIGHT;
+                                                                capture_standard = CS_BT601_PAL;
+                                                                break;
+                                                        default :
                                                                 debug_msg("V4L2: trying resolution under ...\n");
                                                                 decimate_ = 2;
-                                                                try_ntsc = 0;
+                                                                capture_standard = CS_VC;
                                                         }
                                                         break;
                                                 case 2:
-                                                        if (!try_ntsc) {
-                                                                debug_msg("V4L2: trying 1/4 NTSC resolution ...\n");
-                                                                width_ = NTSC_WIDTH / 2;
-                                                                height_ = NTSC_HEIGHT / 2;
-                                                                try_ntsc = 1;
-                                                        } else {
+                                                        switch (capture_standard) {
+                                                        case CS_VC :
+                                                                debug_msg("V4L2: trying 1/4 VGA resolution ...\n");
+                                                                width_ = VGA_WIDTH / 2;
+                                                                height_ = VGA_HEIGHT / 2;
+                                                                capture_standard = CS_VGA;
+                                                                break;
+                                                        case CS_VGA :
+                                                                debug_msg("V4L2: trying 1/4 ITU-R BT.601 PAL resolution ...\n");
+                                                                width_ = PAL_BT601_WIDTH / 2;
+                                                                height_ = PAL_BT601_HEIGHT / 2;
+                                                                capture_standard = CS_BT601_PAL;
+                                                                break;
+                                                        default :
                                                                 debug_msg("V4L2: trying resolution under ...\n");
                                                                 decimate_ = 4;
-                                                                try_ntsc = 0;
+                                                                capture_standard = CS_VC;
                                                         }
                                                         break;
                                                 default:
-                                                        if (!try_ntsc) {
-                                                                debug_msg("V4L2: trying 1/16 NTSC resolution ...\n");
-                                                                width_ = NTSC_WIDTH / 4;
-                                                                height_ = NTSC_HEIGHT / 4;
-                                                                try_ntsc = 0;
-                                                        } else {
+                                                        switch (capture_standard) {
+                                                        case CS_VC :
+                                                                debug_msg("V4L2: trying 1/16 VGA resolution ...\n");
+                                                                width_ = VGA_WIDTH / 4;
+                                                                height_ = VGA_HEIGHT / 4;
+                                                                capture_standard = CS_VGA;
+                                                                break;
+                                                        case CS_VGA :
+                                                                debug_msg("V4L2: trying 1/16 ITU-R BT.601 PAL resolution ...\n");
+                                                                width_ = PAL_BT601_WIDTH / 4;
+                                                                height_ = PAL_BT601_HEIGHT / 4;
+                                                                capture_standard = CS_BT601_PAL;
+                                                                break;
+                                                        default :
                                                                 debug_msg("V4L2: giving up ...\n");
                                                                 format_ok = 1;
+                                                                capture_standard = CS_VC;
                                                         }
                                                         break;
 
