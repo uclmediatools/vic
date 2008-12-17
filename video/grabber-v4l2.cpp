@@ -1147,8 +1147,10 @@ void V4l2Grabber::format()
         }
 
         while ( !format_ok ) {
-                width_  = CIF_WIDTH  *2  / decimate_;
-                height_ = CIF_HEIGHT *2  / decimate_;
+                if (capture_standard == CS_VC) {
+                        width_  = CIF_WIDTH  *2  / decimate_;
+                        height_ = CIF_HEIGHT *2  / decimate_;
+                }
 
                 debug_msg("V4L2: format");
                 switch (cformat_) {
@@ -1188,7 +1190,10 @@ void V4l2Grabber::format()
                         fmtd.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
                         err = v4l2_ioctl(fd_, VIDIOC_ENUM_FMT, &fmtd);
                         if (err) {
-                                debug_msg("VIDIOC_ENUM_FMT returned error %d\n",errno);
+                                debug_msg("V4L2: VIDIOC_ENUM_FMT returned unexpected EINVAL error code\n");
+                                debug_msg("V4L2: giving up ...\n");
+                                format_ok = 1;
+
                         } else {
                                 if (fmtd.pixelformat == pixelformat) {
                                         memset(&fmt,0,sizeof(fmt));
@@ -1283,7 +1288,6 @@ void V4l2Grabber::format()
                                                         default :
                                                                 debug_msg("V4L2: giving up ...\n");
                                                                 format_ok = 1;
-                                                                capture_standard = CS_VC;
                                                         }
                                                         break;
 
@@ -1299,7 +1303,6 @@ void V4l2Grabber::format()
                         }
                 }
         }
-
 
         allocref();
 }
