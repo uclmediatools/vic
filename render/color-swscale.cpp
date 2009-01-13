@@ -27,19 +27,19 @@ public:
 	  switch (depth_) {
 	    case 15:
 	    case 16:
-		// printf("16\n");
+	        // printf("16\n");
 	        //out_format = PIX_FMT_RGB565;
 	        out_format = PIX_FMT_BGR565;
 	        bytes_per_pixel = 2;
 	        break;
 
 	    case 24:
-		//	printf("24\n");
-		out_format = PIX_FMT_RGB24;
-		bytes_per_pixel = 3;
-		break;
+	        // printf("24\n");
+	        out_format = PIX_FMT_RGB24;
+	        bytes_per_pixel = 3;
+	        break;
 	    case 32:
-			// printf("32\n");
+	        // printf("32\n");
 	        out_format = PIX_FMT_RGB32;
 	        bytes_per_pixel = 4;
 	  }
@@ -78,20 +78,22 @@ public:
 	      flags |= (available_cpu_flags & FF_CPU_3DNOW ? SWS_CPU_CAPS_3DNOW : 0);
 	      flags |= (available_cpu_flags & FF_CPU_ALTIVEC ? SWS_CPU_CAPS_ALTIVEC : 0);
 #elif defined(HAVE_MMX)
-		  flags |= SWS_CPU_CAPS_MMX;
+	      flags |= SWS_CPU_CAPS_MMX;
 	#if defined(HAVE_MMX2)
-		  flags |= SWS_CPU_CAPS_MMX2;
+	      flags |= SWS_CPU_CAPS_MMX2;
 	#endif
 #elif defined(HAVE_3DNOW)
-		  flags |= SWS_CPU_CAPS_3DNOW;
+	      flags |= SWS_CPU_CAPS_3DNOW;
 #elif defined(HAVE_ALTIVEC)
-		  flags |= SWS_CPU_CAPS_ALTIVEC;
+	      flags |= SWS_CPU_CAPS_ALTIVEC;
 #endif
 
-	      if(!outw_ || !outh_ || !width_ || !height_) return;
+	      if(!outw_ || !outh_ || !width_ || !height_)
+		return;
+
 	      int in_format = PIX_FMT_YUV420P;
 	      if (decimation_ == 422) {
-	        in_format = PIX_FMT_YUV422P;
+		in_format = PIX_FMT_YUV422P;
 	      }
 
 	      // Accelerated Colour conversion routines
@@ -101,10 +103,9 @@ public:
 	      // printf("X11WindowRenderer: %dx%d ==> %dx%d\n", width_, height_, outw_, outh_);
 
 	      if(sws_context == NULL){
-		  debug_msg("X11WindowRenderer: error! cannot allocate memory for swscontext!\n");
-		  return;
+		debug_msg("X11WindowRenderer: error! cannot allocate memory for swscontext!\n");
+		return;
 	      }
-
 
 	      sws_src_stride[0] = width_;
 	      sws_src_stride[1] = sws_src_stride[2] = width_/2;
@@ -113,12 +114,16 @@ public:
 	      sws_tar[1] = sws_tar[2] = NULL;
 	      sws_tar_stride[0] = outw_*bytes_per_pixel;
 	      sws_tar_stride[1] = sws_tar_stride[2] = 0;
-        }
+	    }
 
 	    i_width = width_; i_height = height_; o_width = outw_; o_height = outh_;
 	    sws_src[0] = (uint8_t*)frm;
 	    sws_src[1] = sws_src[0] + framesize_;
-	    sws_src[2] = sws_src[1] + framesize_/4;
+	    if (decimation_ == 422) {
+	      sws_src[2] = sws_src[1] + framesize_/2;
+	    } else {
+	      sws_src[2] = sws_src[1] + framesize_/4;
+	    }
 
 #if LIBSWSCALE_VERSION_INT  >= ((0<<16)+(5<<8)+0)
      	sws_scale(sws_context, sws_src, sws_src_stride, 0, height_, sws_tar, sws_tar_stride);
