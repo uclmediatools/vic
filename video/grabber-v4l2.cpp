@@ -9,9 +9,6 @@
      Added brightness, contrast, hue and saturation controls.
      by Jean-Marc Orliaguet <jmo@medialab.chalmers.se>
 
-     Added support for various YUV byte orders.
-     by Jean-Marc Orliaguet <jmo@medialab.chalmers.se>
-
      Added support for NTSC/PAL/SECAM video norm selection. (14/10/99)
      by Jean-Marc Orliaguet <jmo@medialab.chalmers.se>
 
@@ -68,6 +65,7 @@ extern "C"
 #include "vic_tcl.h"
 #include "device-input.h"
 #include "module.h"
+#include "yuv_convert.h"
 
 /* here you can tune the device names */
 static const char *devlist[] = {
@@ -140,9 +138,6 @@ protected:
         void format();
         void setsize();
 
-        void packed422_to_planar422(char *, const char*);
-        void packed422_to_planar420(char *, const char*);
-
 #ifndef HAVE_LIBV4L
         void jpeg_to_planar420(char *, const char*);
 #endif
@@ -171,7 +166,6 @@ protected:
         int have_MJPEG;
         int have_JPEG;
 
-        int byteorder_;
         int cformat_;
         int port_;
         int norm_;
@@ -504,15 +498,6 @@ int V4l2Grabber::command(int argc, const char*const* argv)
 {
         int i, err;
 
-        Tcl &tcl = Tcl::instance();
-
-        byteorder_ = 0;
-
-        if ( tcl.attr("yuv_byteOrder") != NULL )
-                byteorder_ = atoi( tcl.attr("yuv_byteOrder") );
-
-        if ( ! ((byteorder_ >= 0) && (byteorder_ <= 3)) ) byteorder_=0;
-
         if (argc == 3) {
                 if (strcmp(argv[1], "decimate") == 0) {
                         decimate_ = atoi(argv[2]);
@@ -612,11 +597,6 @@ int V4l2Grabber::command(int argc, const char*const* argv)
                                 setctrl(atoi(argv[2]), V4L2_CID_GAIN, "Gain", 1);
                                 return (TCL_OK);
                         }
-                }
-
-                if (strcmp(argv[1], "yuv_byteorder") == 0) {
-                        debug_msg("V4L2: asked for yuv_byteorder\n");
-                        return (TCL_OK);
                 }
 
                 if (strcmp(argv[1], "fps") == 0) {
@@ -793,25 +773,29 @@ int V4l2Grabber::grab()
         switch (cformat_) {
         case CF_420:
         case CF_CIF:
-                if( have_YUV420P )
-                       memcpy((void *)frame_, (const void *)fr, (size_t)height_*width_*3/2)
-;
-                else if( have_YUV422 )
-                       packed422_to_planar420((char*)frame_,fr);
+                if (have_YUV420P)
+                       planarYUYV420_to_planarYUYV420((char *)frame_, outw_, outh_, fr, inw_, inh_);
+                else if (have_YUV422)
+                       packedUYVY422_to_planarYUYV420((char *)frame_, outw_, outh_, fr, inw_, inh_);
+                else if (have_YUV422P)
+                       planarYUYV422_to_planarYUYV420((char *)frame_, outw_, outh_, fr, inw_, inh_);
 #ifndef HAVE_LIBV4L
-                else if( have_MJPEG || have_JPEG) {
+                else if (have_MJPEG || have_JPEG) {
                        jpeg_to_planar420((char*)frame_,fr);
                 }
 #endif
                 break;
 
         case CF_422:
-                if (have_YUV422P) 
-                       memcpy((void *)frame_, (const void *)fr, (size_t)height_*width_*2);
-                else if( have_YUV422 )
-                       packed422_to_planar422((char*)frame_,fr);
+                if (have_YUV422P)
+                       planarYUYV422_to_planarYUYV422((char *)frame_, outw_, outh_, fr, inw_, inh_);
+                else if (have_YUV422)
+                       packedUYVY422_to_planarYUYV422((char *)frame_, outw_, outh_, fr, inw_, inh_);
+                else if (have_YUV420P)
+                       planarYUYV420_to_planarYUYV422((char *)frame_, outw_, outh_, fr, inw_, inh_);
+
 #ifndef HAVE_LIBV4L
-                else if( have_MJPEG  || have_JPEG)
+                else if (have_MJPEG  || have_JPEG)
                        // jpeg_to_planar422((char*)frame_,fr);
 #endif
                 break;
@@ -824,253 +808,6 @@ int V4l2Grabber::grab()
         saveblks(frame_);
         YuvFrame f(media_ts(), frame_, crvec_, outw_, outh_);
         return (target_->consume(&f));
-}
-
-
-void V4l2Grabber::packed422_to_planar422(char *dest, const char *src)
-{
-    int i;
-    char *y,*u,*v;
-    unsigned int a, *srca;
-
-    srca = (unsigned int *)src;
-
-    i = (width_ * height_)/2;
-    y = dest;
-    u = y + width_ * height_;
-    v = u + width_ * height_ / 2;
-
-    switch (byteorder_) {
-    case BYTE_ORDER_YUYV:
-        while (--i) {
-                a = *(srca++);
-#if BYTE_ORDER == LITTLE_ENDIAN 
-                *(y++) = a & 0xff;
-                a >>= 8;
-                *(u++) = a & 0xff;
-                a >>= 8;
-                *(y++) = a & 0xff;
-                a >>= 8;
-                *(v++) = a & 0xff;
-#else
-                *(v++) = a & 0xff;
-                a >>= 8;
-                *(y++) = a & 0xff;
-                a >>= 8;
-                *(u++) = a & 0xff;
-                a >>= 8;
-                *(y++) = a & 0xff;
-#endif
-        }
-        break;
-
-    case BYTE_ORDER_YVYU:
-        while (--i) {
-                a = *(srca++);
-#if BYTE_ORDER == LITTLE_ENDIAN 
-                *(y++) = a & 0xff;
-                a >>= 8;
-                *(v++) = a & 0xff;
-                a >>= 8;
-                *(y++) = a & 0xff;
-                a >>= 8;
-                *(u++) = a & 0xff;
-#else
-                *(u++) = a & 0xff;
-                a >>= 8;
-                *(y++) = a & 0xff;
-                a >>= 8;
-                *(v++) = a & 0xff;
-                a >>= 8;
-                *(y++) = a & 0xff;
-#endif
-        }
-        break;
-
-    case BYTE_ORDER_UYVY:
-        while (--i) {
-                a = *(srca++);
-#if BYTE_ORDER == LITTLE_ENDIAN 
-                *(u++) = a & 0xff;
-                a >>= 8;
-                *(y++) = a & 0xff;
-                a >>= 8;
-                *(v++) = a & 0xff;
-                a >>= 8;
-                *(y++) = a & 0xff;
-#else
-                *(y++) = a & 0xff;
-                a >>= 8;
-                *(v++) = a & 0xff;
-                a >>= 8;
-                *(y++) = a & 0xff;
-                a >>= 8;
-                *(u++) = a & 0xff;
-#endif
-        }
-        break;
-
-    case BYTE_ORDER_VYUY:
-        while (--i) {
-                a = *(srca++);
-#if BYTE_ORDER == LITTLE_ENDIAN 
-                *(v++) = a & 0xff;
-                a >>= 8;
-                *(y++) = a & 0xff;
-                a >>= 8;
-                *(u++) = a & 0xff;
-                a >>= 8;
-                *(y++) = a & 0xff;
-#else
-                *(y++) = a & 0xff;
-                a >>= 8;
-                *(u++) = a & 0xff;
-                a >>= 8;
-                *(y++) = a & 0xff;
-                a >>= 8;
-                *(v++) = a & 0xff;
-#endif
-        }
-        break;
-    }
-
-}
-
-void V4l2Grabber::packed422_to_planar420(char *dest, const char *src)
-{
-    int  a1,b;
-    char *y,*u,*v;
-    unsigned int a, *srca;
-
-    srca = (unsigned int *)src;
-
-    y = dest;
-    u = y + width_ * height_;
-    v = u + width_ * height_ / 4;
-
-    switch (byteorder_) {
-    case BYTE_ORDER_YUYV:
-        for (a1 = height_; a1 > 0; a1 -= 2) {
-                for (b = width_; b > 0; b -= 2) {
-                        a = *(srca++);
-#if BYTE_ORDER == LITTLE_ENDIAN 
-                        *(y++) = a & 0xff; a >>= 8;
-                        *(u++) = a & 0xff; a >>= 8;
-                        *(y++) = a & 0xff; a >>= 8;
-                        *(v++) = a & 0xff;
-#else
-                        *(v++) = a & 0xff; a >>= 8;
-                        *(y+1) = a & 0xff; a >>= 8;
-                        *(u++) = a & 0xff; a >>= 8;
-                        *(y) = a;  y += 2;
-#endif
-                }
-                for (b = width_; b > 0; b -= 2) {
-                        a = *(srca++); 
-#if BYTE_ORDER == LITTLE_ENDIAN 
-                        *(y++) = a & 0xff; a >>= 16;
-                        *(y++) = a & 0xff;
-#else
-                        a >>= 8;
-                        *(y+1) = a & 0xff; a >>= 16;
-                        *(y) = a; y += 2;
-#endif
-                }
-        }
-        break;
-
-    case BYTE_ORDER_YVYU:
-        for (a1 = height_; a1 > 0; a1 -= 2) {
-                for (b = width_; b > 0; b -= 2) {
-                        a = *(srca++);
-#if BYTE_ORDER == LITTLE_ENDIAN 
-                        *(y++) = a & 0xff; a >>= 8;
-                        *(v++) = a & 0xff; a >>= 8;
-                        *(y++) = a & 0xff; a >>= 8;
-                        *(u++) = a & 0xff;
-#else
-                        *(u++) = a & 0xff; a >>= 8;
-                        *(y+1) = a & 0xff; a >>= 8;
-                        *(v++) = a & 0xff; a >>= 8;
-                        *(y) = a;  y += 2;
-#endif
-                }
-                for (b = width_; b > 0; b -= 2) {
-                        a = *(srca++); 
-#if BYTE_ORDER == LITTLE_ENDIAN 
-                        *(y++) = a & 0xff; a >>= 16;
-                        *(y++) = a & 0xff;
-#else
-                        a >>= 8;
-                        *(y+1) = a & 0xff; a >>= 16;
-                        *(y) = a; y += 2;
-#endif
-                }
-        }
-        break;
-
-    case BYTE_ORDER_UYVY:
-        for (a1 = height_; a1 > 0; a1 -= 2) {
-                for (b = width_; b > 0; b -= 2) {
-                        a = *(srca++);
-#if BYTE_ORDER == LITTLE_ENDIAN 
-                        *(u++) = a & 0xff; a >>= 8;
-                        *(y++) = a & 0xff; a >>= 8;
-                        *(v++) = a & 0xff; a >>= 8;
-                        *(y++) = a & 0xff;
-#else
-                        *(y+1) = a & 0xff; a >>= 8;
-                        *(v++) = a & 0xff; a >>= 8;
-                        *(y) = a & 0xff; a >>= 8;
-                        *(u++) = a & 0xff;
-                        y += 2;
-#endif
-                }
-                for (b = width_; b > 0; b -= 2) {
-                        a = *(srca++);
-#if BYTE_ORDER == LITTLE_ENDIAN 
-                        a >>= 8;
-                        *(y++) = a & 0xff; a >>= 16;
-                        *(y++) = a & 0xff;
-#else
-                        *(y+1) = a & 0xff; a >>= 16;
-                        *(y) = a; y += 2;
-#endif
-                }
-        }
-        break;
-
-    case BYTE_ORDER_VYUY:
-        for (a1 = height_; a1 > 0; a1 -= 2) {
-                for (b = width_; b > 0; b -= 2) {
-                        a = *(srca++);
-#if BYTE_ORDER == LITTLE_ENDIAN 
-                        *(v++) = a & 0xff; a >>= 8;
-                        *(y++) = a & 0xff; a >>= 8;
-                        *(u++) = a & 0xff; a >>= 8;
-                        *(y++) = a & 0xff;
-#else
-                        *(y+1) = a & 0xff; a >>= 8;
-                        *(u++) = a & 0xff; a >>= 8;
-                        *(y) = a & 0xff; a >>= 8;
-                        *(v++) = a & 0xff;
-                        y += 2;
-#endif
-                }
-                for (b = width_; b > 0; b -= 2) {
-                        a = *(srca++);
-#if BYTE_ORDER == LITTLE_ENDIAN 
-                        a >>= 8;
-                        *(y++) = a & 0xff; a >>= 16;
-                        *(y++) = a & 0xff;
-#else
-                        *(y+1) = a & 0xff; a >>= 16;
-                        *(y) = a; y += 2;
-#endif
-                }
-        }
-        break;
-    }
 }
 
 #ifndef HAVE_LIBV4L

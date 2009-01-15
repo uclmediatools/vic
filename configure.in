@@ -306,10 +306,10 @@ elif test -r /usr/include/linux/videodev.h ; then
          V_LIB_GRABBER="$V_LIB_GRABBER -lv4l1 -lv4l2"],
         [V_OBJ_GRABBER="$V_OBJ_GRABBER  video/tinyjpeg.o video/jidctflt.o"])
         if test -r /usr/include/linux/videodev2.h  ; then
-                V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-v4l2.o video/grabber-video4linux.o"
+                V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-v4l2.o video/grabber-video4linux.o video/yuv_convert.o"
 		echo "Using Linux Grabbers: Video4Linux2 and Video4Linux1"
         else
-                V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-video4linux.o"
+                V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-video4linux.o video/yuv_convert.o"
 		echo "Using Linux Grabber: Video4Linux1"
         fi
 fi
