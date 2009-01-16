@@ -52,6 +52,8 @@
 #define T_RTTVAR_BITS	2	// XXX not used
 #define T_SRTT_BITS		3	// XXX not used
 
+#define LEN	16
+
 class TfwcSndr {
 public:
 	TfwcSndr();
@@ -59,7 +61,7 @@ public:
 	void tfwc_sndr_send(pktbuf*);
 
 	// main reception path (XR packet)
-	void tfwc_sndr_recv(u_int16_t type, u_int32_t ackv, u_int32_t ts_echo);
+	void tfwc_sndr_recv(u_int16_t type, u_int16_t ackv, u_int32_t ts_echo);
 
 	// return current data packet's seqno
 	inline u_int16_t tfwc_sndr_get_seqno() { return seqno_; }
@@ -96,25 +98,25 @@ public:
 
 protected:
 	// get the first position in ackvec where 1 is marked
-	inline u_int32_t get_head_pos(u_int32_t ackvec) {
+	inline u_int16_t get_head_pos(u_int16_t ackvec) {
 		int l;
-		for (l = 0; l < 32; l++) {
+		for (l = 0; l < LEN; l++) {
 			if(GET_HEAD_VEC(ackvec, l))
 				break;
 		}
-		return (32 - l);
+		return (LEN - l);
 	}
 	// get the last position in ackvec where 1 is marked
-	inline u_int32_t get_tail_pos(u_int32_t ackvec) {
+	inline u_int16_t get_tail_pos(u_int16_t ackvec) {
 		int l;
-		for (l = 0; l < 32; l++) {
+		for (l = 0; l < LEN; l++) {
 			if(GET_TAIL_VEC(ackvec, l))
 				break;
 		}
 		return (l + 1);
 	}
 	// generate margin vector
-	inline void marginvec(u_int32_t vec) {
+	inline void marginvec(u_int16_t vec) {
 		int hseq = get_head_pos(vec) + aoa_;	// ackvec head seqno
 
 		for (int i = 0; i < DUPACKS; i++) 
@@ -122,7 +124,7 @@ protected:
 			mvec_[i] = ((hseq - i) < 0) ? 0 : (hseq - i);
 	}
 	// generate seqno vector (interpret ackvec to real sequence numbers)
-	inline void gen_seqvec(u_int32_t vec) {
+	inline void gen_seqvec(u_int16_t vec) {
 		int hseq = get_head_pos(vec) + aoa_;	// ackvec head seqno
 		int cnt = hseq - aoa_;	// number of packets in ackvec
 		int offset = 0;		// if the bit is zero, then increment 
@@ -156,7 +158,7 @@ protected:
 	}
 
 	int mvec_[DUPACKS]; // margin vec (simulatinmg TCP 3 dupacks)
-	u_int32_t ackv_;	// received AckVec (from TfwcRcvr)
+	u_int16_t ackv_;	// received AckVec (from TfwcRcvr)
 	u_int32_t pvec_;	// sent packet list
 	u_int16_t aoa_;		// ack of ack
 	u_int32_t t_now_;	// the time when the data packet sent

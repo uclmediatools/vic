@@ -661,10 +661,11 @@ void SessionManager::send_xreport(CtrlHandler* ch, int bt, int bye)
 		xr->xr_flags = htons(XR_BT_1 << 8);
 
 		// get current RTP data packet seqno from TfwcSndr
-		xr->end_seq = htons(tfwc_sndr_get_seqno());
+		xr->begin_seq = htons(tfwc_sndr_get_seqno());
+		xr->end_seq = htons(tfwc_sndr_get_seqno() + 1);
 
-		// get ackofack from TfwcSndr
-		xr->begin_seq = htons(tfwc_sndr_get_aoa());
+		// set ack of ack
+		xr->chunk = htons(tfwc_sndr_get_aoa());
 
 		//debug_msg("	SeqNo:		%d\n", tfwc_sndr_get_seqno());
 	} 
@@ -1166,12 +1167,16 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 	u_int16_t flags = xr->xr_flags;
 
 	// ackofack and seqno
-	ackofack_ = ntohs(xr->begin_seq);
-	seqno_ = ntohs(xr->end_seq);
+	//ackofack_ = ntohs(xr->begin_seq);
+	//seqno_ = ntohs(xr->end_seq);
+	
+	// parse XR information (begin, end, chunk)
+	u_int16_t begin	= ntohs(xr->begin_seq);
+	u_int16_t end	= ntohs(xr->end_seq);
+	u_int16_t chunk	= ntohs(xr->chunk);
 
 	// we received seqno/ackofack, so do receiver stuffs here
 	if (seqno_ != ackofack_) {
-		//printf("RECEIVER RECEIVER!!\n");
 		// parse seqno, ackofack, and timestamp from XR report block
 		if(flags == XR_BT_1) {
 			// this is XR conveys seqno and ackofack
@@ -1190,7 +1195,6 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 	}
 	// we received ackvec, so do sender stuffs here
 	else {
-		//printf("SENDER SENDER!!\n");
 		// parse ackvec and timestamp echo from XR report block
 		if(flags == XR_BT_1) {
 			ackvec_ = ntohl(xr->chunk);
@@ -1312,7 +1316,7 @@ void SessionManager::send_xreport_back(CtrlHandler* ch, int bt, int bye)
 		xr->end_seq = htons(seqno_);
 
 		// get ackvec from TfwcRcvr
-		xr->chunk = htonl(tfwc_rcvr_getvec());
+		xr->chunk = htons(tfwc_rcvr_getvec());
 	}
 	// this block is used for giving timiestamp echo
 	else if (bt == XR_BT_3) {
