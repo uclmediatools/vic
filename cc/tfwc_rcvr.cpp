@@ -96,6 +96,10 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 
 		// set this seqno to the prevseq before exit
 		prevseq_ = currseq_;
+
+		// set XR parameters
+		begins_ = ackofack_;
+		ends_ = currseq_ + 1;
 	}
 	// parse timestamp
 	else if (type == XR_BT_3) {
