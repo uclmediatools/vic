@@ -47,10 +47,20 @@ public:
 protected:
 	inline u_int16_t tfwc_rcvr_getvec() { return tfwcAV; }
 	inline u_int32_t tfwc_rcvr_ts_echo() { return ts_echo_; }
-	u_int16_t tfwcAV;	// AckVec (bit vector)
-	u_int16_t currseq_;	// current sequence number
-	u_int16_t prevseq_;	// previous sequence number
+
+	inline u_int16_t tfwc_rcvr_begins() { return begins_; }
+	inline u_int16_t tfwc_rcvr_ends() { return ends_; }
+
+	/*
+	 * Variables
+	 */
+	u_int16_t tfwcAV;		// AckVec (bit vector)
+	u_int16_t currseq_;		// current sequence number
+	u_int16_t prevseq_;		// previous sequence number
 	u_int16_t ackofack_;	// ackofack
+	u_int16_t begins_;		// begin seqno that XR chunk is reporting
+	u_int16_t ends_;		// end seqno that XR chunk is reporting
+
 private:
 	// trim ackvec
 	inline void trimvec(u_int16_t vec, int offset) {
