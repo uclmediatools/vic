@@ -5,7 +5,7 @@
 
 typedef unsigned char uint8_t;
 
-#include "cpu/cpudetect.h"
+//#include "cpu/cpudetect.h"
 extern "C" {
 #include <libpostproc/postprocess.h>
 }
