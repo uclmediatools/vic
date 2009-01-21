@@ -107,8 +107,9 @@ class CtrlHandler : public DataHandler, public Timer {
 	void send_ackv();
 	void send_ts_echo();
 
-	// i am an RTP data sender
+	// i am an RTP data sender/receiver
 	inline void i_am_sender() { is_sender_ = true; }
+	inline void i_am_receiver() { is_sender_ = false; }
 
  protected:
 	void schedule_timer();

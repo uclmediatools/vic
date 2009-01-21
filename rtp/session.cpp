@@ -176,14 +176,14 @@ void CtrlHandler::sample_size(int cc)
 
 void CtrlHandler::adapt(int nsrc, int nrr, int we_sent)
 {
-/*
-* compute the time to the next report.  we do this here
-* because we need to know if there were any active sources
-* during the last report period (nrr above) & if we were
-* a source.  The bandwidth limit for ctrl traffic was set
-* on startup from the session bandwidth.  It is the inverse
-* of bandwidth (ie., ms/byte) to avoid a divide below.
-	*/
+	/*
+	 * compute the time to the next report.  we do this here
+	 * because we need to know if there were any active sources
+	 * during the last report period (nrr above) & if we were
+	 * a source.  The bandwidth limit for ctrl traffic was set
+	 * on startup from the session bandwidth.  It is the inverse
+	 * of bandwidth (ie., ms/byte) to avoid a divide below.
+ 	 */
 	double ibw = ctrl_inv_bw_;
 	if (nrr) {
 		/* there were active sources */
@@ -222,7 +222,7 @@ sdes_seq_(0),
 rtcp_inv_bw_(0.),
 rtcp_avg_size_(128.),
 confid_(-1),
-seqno_(0),		// RTP packet sequence number (from RTP header)
+seqno_(0),		// RTP data packet seqno (from RTP header)
 lastseq_(0),	// last received packet's seqno
 ackvec_(0)		// bit vector (AckVec)
 {
@@ -239,14 +239,14 @@ ackvec_(0)		// bit vector (AckVec)
 	pool_ = new BufferPool;
 	
 	/*
-	* schedule a timer for our first report using half the
-	* min rtcp interval.  This gives us some time before
-	* our first report to learn about other sources so our
-	* next report interval will account for them.  The avg
-	* rtcp size was initialized to 128 bytes which is
-	* conservative (it assumes everyone else is generating
-	* SRs instead of RRs).
-	*/
+	 * schedule a timer for our first report using half the
+	 * min rtcp interval.  This gives us some time before
+	 * our first report to learn about other sources so our
+	 * next report interval will account for them.  The avg
+	 * rtcp size was initialized to 128 bytes which is
+	 * conservative (it assumes everyone else is generating
+	 * SRs instead of RRs).
+	 */
 	double rint = rtcp_avg_size_ * rtcp_inv_bw_;
 	if (rint < RTCP_MIN_RPT_TIME / 2. * 1000.)
 		rint = RTCP_MIN_RPT_TIME / 2. * 1000.;
@@ -1173,11 +1173,11 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 	u_int16_t end	= ntohs(xr->end_seq);
 	u_int16_t chunk	= ntohs(xr->chunk);
 
-	// i am an RTP data sender, so do the sender stuffs
-	if (am_i_sender()) {
+	// i am an RTP data receiver, so do the receiver stuffs
+	if (!am_i_sender()) {
 		// parse seqno, ackofack, and timestamp from XR report block
 		if(flags == XR_BT_1) {
-			// this is XR conveys seqno and ackofack
+			// this is XR conveys seqno and ackofack from data sender
 			tfwc_rcvr_recv(flags, begin, chunk, 0);
 		}
 		else if(flags == XR_BT_3) {
@@ -1191,13 +1191,13 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 		ch_[0].send_ackv();
 		//ch_[0].send_ts_echo();
 	}
-	// i am an RTP data receiver, so do the receiver stuffs
+	// i am an RTP data sender, so do the sender stuffs
 	else {
 		// parse ackvec and timestamp echo from XR report block
 		if(flags == XR_BT_1) {
 			ackvec_ = ntohl(xr->chunk);
 
-			// this XR conveys ackvec, hence parse it
+			// this XR conveys ackvec from data receiver, hence parse it
 			tfwc_sndr_recv(flags, ackvec_, 0);
 		}
 		else if(flags == XR_BT_3) {
@@ -1257,11 +1257,13 @@ void SessionManager::cc_output()
 
 void CtrlHandler::send_ackv()
 {
+	i_am_receiver();
 	sm_->build_ackv_pkt(this);
 }
 
 void CtrlHandler::send_ts_echo()
 {
+	i_am_receiver();
 	sm_->build_ts_echo_pkt(this);
 }
 
@@ -1485,10 +1487,10 @@ void SessionManager::recv(CtrlHandler* ch)
 	
 	int layer = ch - ch_;
 	/*
-	*  Outer loop parses multiple RTCP records of a "compound packet".
-	*  There is no framing between records.  Boundaries are implicit
-	*  and the overall length comes from UDP.
-	*/
+	 * Outer loop parses multiple RTCP records of a "compound packet".
+	 * There is no framing between records.  Boundaries are implicit
+	 * and the overall length comes from UDP.
+	 */
 	u_char* epack = (u_char*)rh + cc;
 	while ((u_char*)rh < epack) {
 		u_int len = (ntohs(rh->rh_len) << 2) + 4;
