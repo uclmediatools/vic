@@ -474,12 +474,14 @@ void SessionManager::transmit(pktbuf* pb)
 // sending ack of ack packet (RTCP XR report packet)
 void CtrlHandler::send_aoa()
 {
+	i_am_sender();
 	sm_->build_aoa_pkt(this);
 }
 
 // sending time stamp packet (RTCP XR report packet)
 void CtrlHandler::send_ts()
 {
+	i_am_sender();
 	sm_->build_ts_pkt(this);
 }
 
@@ -1165,22 +1167,18 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 
 	// XR block flags
 	u_int16_t flags = xr->xr_flags;
-
-	// ackofack and seqno
-	//ackofack_ = ntohs(xr->begin_seq);
-	//seqno_ = ntohs(xr->end_seq);
 	
 	// parse XR information (begin, end, chunk)
 	u_int16_t begin	= ntohs(xr->begin_seq);
 	u_int16_t end	= ntohs(xr->end_seq);
 	u_int16_t chunk	= ntohs(xr->chunk);
 
-	// we received seqno/ackofack, so do receiver stuffs here
-	if (seqno_ != ackofack_) {
+	// i am an RTP data sender, so do the sender stuffs
+	if (am_i_sender()) {
 		// parse seqno, ackofack, and timestamp from XR report block
 		if(flags == XR_BT_1) {
 			// this is XR conveys seqno and ackofack
-			tfwc_rcvr_recv(flags, seqno_, ackofack_, 0);
+			tfwc_rcvr_recv(flags, begin, chunk, 0);
 		}
 		else if(flags == XR_BT_3) {
 			ts_ = ntohl(xr->chunk);
@@ -1193,7 +1191,7 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 		ch_[0].send_ackv();
 		//ch_[0].send_ts_echo();
 	}
-	// we received ackvec, so do sender stuffs here
+	// i am an RTP data receiver, so do the receiver stuffs
 	else {
 		// parse ackvec and timestamp echo from XR report block
 		if(flags == XR_BT_1) {
@@ -1447,9 +1445,10 @@ void SessionManager::recv(CtrlHandler* ch)
 		++nrunt_;
 		return;
 	}
+
 	/*
 	 * try to filter out junk: first thing in packet must be
-	 * sr, rr or bye & version number must be correct.
+	 * sr, rr, xr or bye & version number must be correct.
 	 */
 	switch(ntohs(rh->rh_flags) & 0xc0ff) {
 	case RTP_VERSION << 14 | RTCP_PT_SR:
@@ -1461,7 +1460,7 @@ void SessionManager::recv(CtrlHandler* ch)
 		/*
 		 * XXX should further categorize this error -- it is
 		 * likely that people mis-implement applications that
-		 * don't put something other than SR,RR,BYE first.
+		 * don't put something other than SR,RR,XR,BYE first.
 		 */
 		++badversion_;
 		return;
@@ -1485,10 +1484,10 @@ void SessionManager::recv(CtrlHandler* ch)
 		return;
 	
 	int layer = ch - ch_;
-		/*
-		* Outer loop parses multiple RTCP records of a "compound packet".
-		* There is no framing between records.  Boundaries are implicit
-		* and the overall length comes from UDP.
+	/*
+	*  Outer loop parses multiple RTCP records of a "compound packet".
+	*  There is no framing between records.  Boundaries are implicit
+	*  and the overall length comes from UDP.
 	*/
 	u_char* epack = (u_char*)rh + cc;
 	while ((u_char*)rh < epack) {

@@ -46,6 +46,14 @@
 
 class Source;
 class SessionManager;
+/* 
+ * global variable representing data sender or receiver
+ * (by default, it is set to a data receiver.)
+ *
+ * e.g., for data sender, it must change this variable 
+ * 		using i_am_sender() method.
+*/
+bool is_sender_ = false;
 
 class DataHandler : public IOHandler {
     public:
@@ -99,6 +107,9 @@ class CtrlHandler : public DataHandler, public Timer {
 	void send_ackv();
 	void send_ts_echo();
 
+	// i am an RTP data sender
+	inline void i_am_sender() { is_sender_ = true; }
+
  protected:
 	void schedule_timer();
 	double ctrl_inv_bw_;
@@ -133,6 +144,9 @@ public:
 	void build_ackv_pkt(CtrlHandler* ch);
 	void build_ts_echo_pkt(CtrlHandler* ch);
 	void cc_output();
+
+	// am i a data sender?
+	inline bool am_i_sender() { return is_sender_; }
 
 protected:
 //	void demux(rtphdr* rh, u_char* bp, int cc, Address & addr, int layer);
