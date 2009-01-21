@@ -5,11 +5,15 @@
 #include "vw.h"
 #include "renderer.h"
 
-#include "config_arch.h"
+#ifdef WIN32
+#undef ARCH_X86
+#endif
+
 extern "C" {
 #include "libswscale/swscale.h"
 #include "libavutil/avutil.h"
 }
+#include "config_arch.h"
 #include "cpu/cpudetect.h"
 
 int available_cpu_flags = cpu_check();
