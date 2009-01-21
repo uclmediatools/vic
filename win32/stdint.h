@@ -1,0 +1,1 @@
+/* Blank stdint.h file to keep ffmpeg compilation happy on Windows */
