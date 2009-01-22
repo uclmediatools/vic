@@ -61,7 +61,8 @@ public:
 	void tfwc_sndr_send(pktbuf*);
 
 	// main reception path (XR packet)
-	void tfwc_sndr_recv(u_int16_t type, u_int16_t ackv, u_int32_t ts_echo);
+	void tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
+			u_int16_t ackv, u_int32_t ts_echo);
 
 	// return current data packet's seqno
 	inline u_int16_t tfwc_sndr_get_seqno() { return seqno_; }

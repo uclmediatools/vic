@@ -116,7 +116,8 @@ void TfwcSndr::tfwc_sndr_send(pktbuf* pb) {
 /*
  * main TFWC reception path
  */
-void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t ackv, u_int32_t ts_echo)
+void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
+		u_int16_t ackv, u_int32_t ts_echo)
 {
 	// retrieve ackvec
 	if (type == XR_BT_1) {

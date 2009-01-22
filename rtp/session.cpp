@@ -1177,16 +1177,12 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 	if (am_i_sender()) {
 		// parse AckVec and ts echo from XR report block
 		if (flags == XR_BT_1) {
-			ackvec_ = ntohl(xr->chunk);
-
 			// this XR conveys AckVec from data receiver
-			tfwc_sndr_recv(flags, ackvec_, 0);
+			tfwc_sndr_recv(flags, begin, end, chunk, 0);
 		} 
 		else if (flags == XR_BT_3) {
-			ts_echo_ = ntohl(xr->chunk);
-
 			// this XR conveys ts echo
-			tfwc_sndr_recv(flags, 0, ts_echo_);
+			tfwc_sndr_recv(flags, begin, end, 0, chunk);
 		}
 
 		// we need to call Transmitter::output(pb) to make Ack driven
@@ -1200,10 +1196,8 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 			tfwc_rcvr_recv(flags, begin, chunk, 0);
 		}
 		else if(flags == XR_BT_3) {
-			ts_ = ntohl(xr->chunk);
-
 			// this is XR conveys timestamp
-			tfwc_rcvr_recv(flags, 0, 0, ts_);
+			tfwc_rcvr_recv(flags, 0, 0, chunk);
 		}
 
 		// send receiver side XR report
