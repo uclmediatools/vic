@@ -1173,8 +1173,27 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 	u_int16_t end	= ntohs(xr->end_seq);
 	u_int16_t chunk	= ntohs(xr->chunk);
 
+	// i am an RTP data sender, so do the sender stuffs
+	if (am_i_sender()) {
+		// parse AckVec and ts echo from XR report block
+		if (flags == XR_BT_1) {
+			ackvec_ = ntohl(xr->chunk);
+
+			// this XR conveys AckVec from data receiver
+			tfwc_sndr_recv(flags, ackvec_, 0);
+		} 
+		else if (flags == XR_BT_3) {
+			ts_echo_ = ntohl(xr->chunk);
+
+			// this XR conveys ts echo
+			tfwc_sndr_recv(flags, 0, ts_echo_);
+		}
+
+		// we need to call Transmitter::output(pb) to make Ack driven
+		cc_output();
+	}
 	// i am an RTP data receiver, so do the receiver stuffs
-	if (!am_i_sender()) {
+	else {
 		// parse seqno, ackofack, and timestamp from XR report block
 		if(flags == XR_BT_1) {
 			// this is XR conveys seqno and ackofack from data sender
@@ -1190,25 +1209,6 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 		// send receiver side XR report
 		ch_[0].send_ackv();
 		//ch_[0].send_ts_echo();
-	}
-	// i am an RTP data sender, so do the sender stuffs
-	else {
-		// parse ackvec and timestamp echo from XR report block
-		if(flags == XR_BT_1) {
-			ackvec_ = ntohl(xr->chunk);
-
-			// this XR conveys ackvec from data receiver, hence parse it
-			tfwc_sndr_recv(flags, ackvec_, 0);
-		}
-		else if(flags == XR_BT_3) {
-			ts_echo_ = ntohl(xr->chunk);
-
-			// this XR conveys ts echo, hence parse it
-			tfwc_sndr_recv(flags, 0, ts_echo_);
-		}
-
-		// we need to call Transmitter::output(pb) here (make Ack driven)
-		cc_output();
 	}
 }
 
