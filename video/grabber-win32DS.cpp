@@ -129,13 +129,16 @@ input devices are created.  Probably not a good approach, but it is one possibil
 #include "grabber.h"
 #include "device-input.h"
 #include "module.h"
-#include "rgb-converter.h"
+#include "yuv_convert.h"
 
 #include "grabber-win32DS.h"
 
 #ifndef VIDE0_FOR_WINDOWS
 static DirectShowScanner findDirectShowDevices;
 #endif
+
+static const GUID MEDIASUBTYPE_I420 =
+{0x30323449, 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}};
 
 #define NAMEBUF_LEN 200
 
@@ -176,7 +179,7 @@ STDMETHODIMP Callback::QueryInterface(REFIID riid, void **ppvObject) {
 //#########################################################################
 // DirectShowGrabber definition
 
-DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char *nick)  {
+DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, const char *nick)  {
    HRESULT         hr;
    WCHAR           nameBufW[NAMEBUF_LEN];
 
@@ -189,7 +192,6 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char *nick)  {
    svideoPort = -1;
    compositePort = -1;
    decimate_ = 2;  //default
-   converter_=0;
    cb_mutex_=0;
    crossbar_ = crossbarCursor_ = NULL;
    pNullBaseFilter_=0;
@@ -198,11 +200,23 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char *nick)  {
    pMediaControl_=0;
    pGraph_=0;
    pBuild_=0;
+   dwRegister_=0;
    pCaptureFilter_ = filt;   
    pXBar_   = NULL;
    pFilter_ = NULL;
    capturing_=0;
    max_fps_ = 30;
+
+   if(!strcmp(cformat, "420"))
+       cformat_ = CF_420;
+   if(!strcmp(cformat, "422"))
+       cformat_ = CF_422;
+   if(!strcmp(cformat, "cif"))
+       cformat_ = CF_CIF;
+
+   have_I420_ = false;
+   have_UYVY_ = false;
+   have_YUY2_ = false;
 
    setport("external-in");
 
@@ -245,9 +259,8 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char *nick)  {
 		return;
    }
    debug_msg("DirectShowGrabber::DirectShowGrabber():  graph instance acquired\n");
-   
 
-   // Tell the capture graph builder about the Filter Graph Manager (FGM).
+    // Tell the capture graph builder about the Filter Graph Manager (FGM).
    hr = pBuild_->SetFiltergraph(pGraph_);
    //showErrorMessage(hr);
    if (FAILED(hr)) {
@@ -317,14 +330,18 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char *nick)  {
          routeCrossbar();   
    }
 
-   // We can presumably inspect crossbar==NULL here to determine if we want
-   // to change the Sample Grabber media type.
    ZeroMemory(&mt_, sizeof(AM_MEDIA_TYPE));
    mt_.majortype = MEDIATYPE_Video;
-   mt_.subtype   = MEDIASUBTYPE_RGB24;
-   //mt_.subtype   = MEDIASUBTYPE_UYVY;
-   //mt_.formattype == FORMAT_VideoInfo;
-   hr            = pSampleGrabber_->SetMediaType(&mt_);
+
+   if (have_I420_) {
+	   mt_.subtype = MEDIASUBTYPE_I420; // Planar YUV 420
+   } else if (have_UYVY_) {
+       mt_.subtype = MEDIASUBTYPE_UYVY; // Packed YUV 420
+   } else if (have_YUY2_) {
+       mt_.subtype = MEDIASUBTYPE_YUY2; // Packed YUV 420
+   }
+
+   hr = pSampleGrabber_->SetMediaType(&mt_);
    //showErrorMessage(hr);
 
    // Obtain the interface used to run, stop, and pause the graph
@@ -335,6 +352,26 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char *nick)  {
 		return;
    }
    debug_msg("DirectShowGrabber::DirectShowGrabber():  graph media control interface acquired\n");
+
+   IMoniker * pMoniker = NULL;
+   IRunningObjectTable *pROT = NULL;
+
+   // register the filter graph instance in the Running Object Table (ROT)
+   // so can use GraphEdit to view graph, e.g.
+   //    in GraphEdit's File menu, click "Connect to Remote Graph..." 
+   if (SUCCEEDED(GetRunningObjectTable(0, &pROT))) {
+	   const size_t STRING_LENGTH = 256;
+	   
+	   WCHAR wsz[STRING_LENGTH];
+	   swprintf(wsz, STRING_LENGTH, L"FilterGraph %08x pid %08x", (DWORD_PTR)pGraph_, GetCurrentProcessId());
+
+	   HRESULT hr = CreateItemMoniker(L"!", wsz, &pMoniker);
+	   if (SUCCEEDED(hr)) {
+		   hr = pROT->Register(ROTFLAGS_REGISTRATIONKEEPSALIVE, pGraph_, pMoniker, &dwRegister_);
+		   pMoniker->Release();
+	   }
+	   pROT->Release();
+   }
 }
 
 //--------------------------------
@@ -346,19 +383,26 @@ DirectShowGrabber::~DirectShowGrabber() {
 
     //capturing_ = !capturing_;
     if (capturing_) hr  = pMediaControl_->Stop();
-    //showErrorMessage(hr);    
+    //showErrorMessage(hr);
 
-    CloseHandle(cb_mutex_);  
+    CloseHandle(cb_mutex_);
+
+	// unregister the filter graph instance in the Running Object Table (ROT). 
+    IRunningObjectTable *pROT;
+    if (SUCCEEDED(GetRunningObjectTable(0, &pROT))) {
+        pROT->Revoke(dwRegister_);
+        pROT->Release();
+    }
 
     // Release COM objects in reverse order of instantiation
     callback_->Release();
     //delete callback; - done by above Release() call
     pNullBaseFilter_->Release();
     pSampleGrabber_->Release();
-    pGrabberBaseFilter_->Release();    
+    pGrabberBaseFilter_->Release();
     pMediaControl_->Release();
-    pGraph_->Release();        
-    pBuild_->Release();    
+    pGraph_->Release();
+    pBuild_->Release();
 }
 
 //--------------------------------
@@ -467,7 +511,7 @@ void DirectShowGrabber::start() {
    setsize();
    setCaptureOutputFormat();
    hr = pBuild_->RenderStream(&PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video,
-	pCaptureFilter_, pGrabberBaseFilter_, pNullBaseFilter_);
+   pCaptureFilter_, pGrabberBaseFilter_, pNullBaseFilter_);
    if (SUCCEEDED(hr) )
        debug_msg("DirectShowGrabber::DirectShowGrabber():  builder render stream\n");
    else {
@@ -480,7 +524,7 @@ void DirectShowGrabber::start() {
 
    WaitForSingleObject(cb_mutex_, INFINITE);
    
-   capturing_  = 1;   
+   capturing_  = 1;
    last_frame_ = NULL;
 
    debug_msg("DirectShowGrabber::start():  starting capture graph...\n");
@@ -493,6 +537,8 @@ void DirectShowGrabber::start() {
    //showErrorMessage(hr);
 
    Grabber::start();
+   ReleaseMutex(cb_mutex_);
+   Grabber::timeout();
 }
 
 //--------------------------------
@@ -508,9 +554,7 @@ void DirectShowGrabber::stop() {
    //showErrorMessage(hr);
    ReleaseMutex(cb_mutex_);
 
-   delete converter_;
-   capturing_  = 0;   
-   converter_  = 0;
+   capturing_  = 0; 
    last_frame_ = 0;
 
    Grabber::stop();
@@ -525,6 +569,27 @@ void DirectShowGrabber::fps(int f) {
       f = max_fps_;
 
    Grabber::fps(f);
+}
+
+void DirectShowGrabber::setsize() {
+
+   if (max_width_ >= D1_BASE_WIDTH){
+	  max_width_ = D1_BASE_WIDTH;
+	  max_height_ = D1_BASE_HEIGHT;
+   }
+
+   if (decimate_ == 1){  //i.e. Large 
+       width_ = max_width_;
+       height_ = max_height_;
+   } else {
+       width_ = basewidth_  / decimate_;
+       height_ = baseheight_ / decimate_;
+   }
+
+   debug_msg("DirectShowGrabber::setsize: %dx%d\n", width_, height_);
+
+   set_size_cif(width_, height_);
+   allocref();
 }
 
 //--------------------------------
@@ -551,9 +616,26 @@ int DirectShowGrabber::grab() {
       ReleaseMutex(cb_mutex_);
       return FALSE;
    }
+   switch (cformat_) {
+   case CF_420:
+   case CF_CIF:
+     if (have_I420_)
+       planarYUYV420_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+     else if (have_UYVY_)
+       packedUYVY422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+     else if (have_YUY2_)
+       planarYUYV422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+     break;
 
-   converter_->convert((u_int8_t*)last_frame_, width_,
-                       height_, frame_, outw_, outh_, TRUE);
+   case CF_422:
+     if (have_I420_)
+       planarYUYV420_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+     else if (have_UYVY_)
+       packedUYVY422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+     else if (have_YUY2_)
+       planarYUYV420_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+     break;
+   }
 
    last_frame_ = NULL;
 
@@ -625,11 +707,13 @@ int DirectShowGrabber::getCaptureCapabilities() {
    hr        = pBuild_->FindInterface(&PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video,
                                      pCaptureFilter_, IID_IAMStreamConfig, (void**)&pConfig);
    if (FAILED(hr)) {
-		return FALSE;
+       return FALSE;
    }
 
    max_width_ = 0;
    max_height_ = 0;
+   min_width_ = 0xFFFF;
+   min_height_ = 0xFFFF;
    iCount = iSize = 0;
    hr     = pConfig->GetNumberOfCapabilities(&iCount, &iSize);
    // Check the size to make sure we pass in the correct structure.
@@ -637,41 +721,47 @@ int DirectShowGrabber::getCaptureCapabilities() {
    if ( iSize == sizeof(VIDEO_STREAM_CONFIG_CAPS) ) {
 
        for (int iFormat = 0; iFormat < iCount; iFormat++) {
-	   hr = pConfig->GetStreamCaps(iFormat, &pmtConfig, (BYTE *)&scc);
-	   //showErrorMessage(hr);
-	   // if pmtConfig->subtype for the capture filter is different from MEDIASUBTYPE_RGB24
-	   // (which is set in the SampleGrabber filter) then the FGM should insert an 
-	   //  appropriate converter into the filter graph - provided RenderStream() has not been called.
-	   // e.g // 59565955-0000-0010-8000-00AA00389B71  'UYVY' ==  MEDIASUBTYPE_UYVY
-	   //     for simple firewire cam
-	   if( SUCCEEDED(hr) ) {
-	       if ((pmtConfig->majortype  == MEDIATYPE_Video)            &&
-		   //(pmtConfig->subtype    == MEDIASUBTYPE_RGB24)       &&
-		   (pmtConfig->formattype == FORMAT_VideoInfo)         &&
-		   (pmtConfig->cbFormat   >= sizeof (VIDEOINFOHEADER)) &&
-		   (pmtConfig->pbFormat   != NULL)) {
-		       if(scc.MaxOutputSize.cx > max_width_){
-			   max_width_  = scc.MaxOutputSize.cx;
-			   max_height_ =  scc.MaxOutputSize.cy;
-		       }
-		       debug_msg("Windows GDI BITMAPINFOHEADER follows:\n");
-		       pVih                        = (VIDEOINFOHEADER *)pmtConfig->pbFormat;			  
-		       debug_msg("biWidth=        %d\n", pVih->bmiHeader.biWidth);
-		       debug_msg("biHeight=       %d\n", pVih->bmiHeader.biHeight);
-		       debug_msg("biSize=         %d\n", pVih->bmiHeader.biSize);
-		       debug_msg("biPlanes=       %d\n", pVih->bmiHeader.biPlanes);
-		       debug_msg("biBitCount=     %d\n", pVih->bmiHeader.biBitCount);
-		       debug_msg("biCompression=  %d\n", pVih->bmiHeader.biCompression);
-		       debug_msg("biSizeImage=    %d\n", pVih->bmiHeader.biSizeImage);
-		       debug_msg("biXPelsPerMeter=%d\n", pVih->bmiHeader.biXPelsPerMeter);
-		       debug_msg("biYPelsPerMeter=%d\n", pVih->bmiHeader.biYPelsPerMeter);
-		   }
-		   DeleteMediaType(pmtConfig);
-	   }
+           hr = pConfig->GetStreamCaps(iFormat, &pmtConfig, (BYTE *)&scc);
+           //showErrorMessage(hr);
+           if( SUCCEEDED(hr) ) {
+               if ((pmtConfig->majortype  == MEDIATYPE_Video)          &&
+                   (pmtConfig->formattype == FORMAT_VideoInfo)         &&
+                   (pmtConfig->cbFormat   >= sizeof (VIDEOINFOHEADER)) &&
+                   (pmtConfig->pbFormat   != NULL)) {
+                       if(scc.MaxOutputSize.cx > max_width_){
+                           max_width_  = scc.MaxOutputSize.cx;
+                           max_height_ =  scc.MaxOutputSize.cy;
+                       }
+                       if(scc.MinOutputSize.cx < min_width_){
+                           min_width_  = scc.MinOutputSize.cx;
+                           min_height_ =  scc.MinOutputSize.cy;
+                       }
+                       if (pmtConfig->subtype == MEDIASUBTYPE_I420) {
+                         have_I420_ = true; // Planar YUV 420
+                       } else if (pmtConfig->subtype == MEDIASUBTYPE_UYVY) {
+                           have_UYVY_ = true; // Packed YUV 420
+                       } else if (pmtConfig->subtype == MEDIASUBTYPE_YUY2) {
+                           have_YUY2_ = true; // Packed YUV 420
+                       }
+
+                       debug_msg("Windows GDI BITMAPINFOHEADER follows:\n");
+                       pVih                        = (VIDEOINFOHEADER *)pmtConfig->pbFormat;
+                       debug_msg("biWidth=        %d\n", pVih->bmiHeader.biWidth);
+                       debug_msg("biHeight=       %d\n", pVih->bmiHeader.biHeight);
+                       debug_msg("biSize=         %d\n", pVih->bmiHeader.biSize);
+                       debug_msg("biPlanes=       %d\n", pVih->bmiHeader.biPlanes);
+                       debug_msg("biBitCount=     %d\n", pVih->bmiHeader.biBitCount);
+                       debug_msg("biCompression=  %d\n", pVih->bmiHeader.biCompression);
+                       debug_msg("biSizeImage=    %d\n", pVih->bmiHeader.biSizeImage);
+                       debug_msg("biXPelsPerMeter=%d\n", pVih->bmiHeader.biXPelsPerMeter);
+                       debug_msg("biYPelsPerMeter=%d\n", pVih->bmiHeader.biYPelsPerMeter);
+                   }
+                   DeleteMediaType(pmtConfig);
+           }
        }
    }
    pConfig->Release();
-   if (max_width_>0)		       		
+   if (max_width_>0)
        return TRUE;
 
    return FALSE;
@@ -681,9 +771,9 @@ void DirectShowGrabber::setCaptureOutputFormat() {
    IAMStreamConfig          *pConfig;
    int                      iCount;
    int                      iSize;
-   int			    curr_w=0;
-   int			    curr_h=0;
-   int			    temp_w, temp_h;
+   int                      curr_w=0;
+   int                      curr_h=0;
+   int                      temp_w, temp_h;
    VIDEOINFOHEADER          *pVih;
    VIDEO_STREAM_CONFIG_CAPS scc;
    AM_MEDIA_TYPE            *pmtConfig;
@@ -699,9 +789,9 @@ void DirectShowGrabber::setCaptureOutputFormat() {
    hr        = pBuild_->FindInterface(&PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video,
                                      pCaptureFilter_, IID_IAMStreamConfig, (void**)&pConfig);
    if (FAILED(hr)) {
-	debug_msg("Failed to FindInterface\n");
-   	Grabber::status_=-1;
-	return;
+        debug_msg("Failed to FindInterface\n");
+        Grabber::status_=-1;
+        return;
    }
 
    debug_msg("DirectShowGrabber::setCaptureOutputFormat(): IAMStreamConfig interface acquired\n");
@@ -719,81 +809,81 @@ void DirectShowGrabber::setCaptureOutputFormat() {
          if( SUCCEEDED(hr) ) {
             if ((pmtConfig->majortype  == MEDIATYPE_Video)            &&
                   //(pmtConfig->subtype    == MEDIASUBTYPE_RGB24)       &&
+                  (pmtConfig->subtype    == MEDIASUBTYPE_I420)       &&
                   (pmtConfig->formattype == FORMAT_VideoInfo)         &&
                   (pmtConfig->cbFormat   >= sizeof (VIDEOINFOHEADER)) &&
-		  (pmtConfig->pbFormat   != NULL) /*		      &&
-		  (scc.MaxOutputSize.cx <= width_)		      &&
-		  (scc.MaxOutputSize.cy <= height_)*/){
+                  (pmtConfig->pbFormat   != NULL) /*                  &&
+                  (scc.MaxOutputSize.cx <= width_)                    &&
+                  (scc.MaxOutputSize.cy <= height_)*/){
 
-	       if ((abs(width_ - scc.MaxOutputSize.cx) + abs(height_ - scc.MaxOutputSize.cy))<
-		   (abs(width_ - curr_w) +abs(height_ - curr_h))) {
+               if ((abs(width_ - scc.MaxOutputSize.cx) + abs(height_ - scc.MaxOutputSize.cy))<
+                   (abs(width_ - curr_w) +abs(height_ - curr_h))) {
 
-		    pVih                        = (VIDEOINFOHEADER *)pmtConfig->pbFormat;			  
-		    //pVih->bmiHeader.biWidth     = width_;
-		    //pVih->bmiHeader.biHeight    = height_;
-		    //pVih->bmiHeader.biSizeImage = DIBSIZE(pVih->bmiHeader);
-		    // AvgTimePerFrame value that specifies the video frame'
-		    // average display time, in 100-nanosecond units. 
-		    //if (fps_) 
-			//pVih->AvgTimePerFrame	   = 10000000/fps_;
+                    pVih = (VIDEOINFOHEADER *)pmtConfig->pbFormat;
+                    //pVih->bmiHeader.biWidth     = width_;
+                    //pVih->bmiHeader.biHeight    = height_;
+                    //pVih->bmiHeader.biSizeImage = DIBSIZE(pVih->bmiHeader);
+                    // AvgTimePerFrame value that specifies the video frame'
+                    // average display time, in 100-nanosecond units. 
+                    //if (fps_) 
+                    //pVih->AvgTimePerFrame = 10000000/fps_;
 
-		    debug_msg("fps_= %d, AvgTimePerFrame: %d\n", fps_, pVih->AvgTimePerFrame);
+                    debug_msg("fps_= %d, AvgTimePerFrame: %d\n", fps_, pVih->AvgTimePerFrame);
 
-		    debug_msg("Windows GDI BITMAPINFOHEADER follows:\n");
-		    debug_msg("biWidth=        %d\n", pVih->bmiHeader.biWidth);
-		    debug_msg("biHeight=       %d\n", pVih->bmiHeader.biHeight);
-		    debug_msg("biSize=         %d\n", pVih->bmiHeader.biSize);
-		    debug_msg("biPlanes=       %d\n", pVih->bmiHeader.biPlanes);
-		    debug_msg("biBitCount=     %d\n", pVih->bmiHeader.biBitCount);
-		    debug_msg("biCompression=  %d\n", pVih->bmiHeader.biCompression);
-		    debug_msg("biSizeImage=    %d\n", pVih->bmiHeader.biSizeImage);
-		    debug_msg("biXPelsPerMeter=%d\n", pVih->bmiHeader.biXPelsPerMeter);
-		    debug_msg("biYPelsPerMeter=%d\n", pVih->bmiHeader.biYPelsPerMeter);
-		    debug_msg("biClrUsed=      %d\n", pVih->bmiHeader.biClrUsed);
-		    debug_msg("biClrImportant= %d\n", pVih->bmiHeader.biClrImportant);
+                    debug_msg("Windows GDI BITMAPINFOHEADER follows:\n");
+                    debug_msg("biWidth=        %d\n", pVih->bmiHeader.biWidth);
+                    debug_msg("biHeight=       %d\n", pVih->bmiHeader.biHeight);
+                    debug_msg("biSize=         %d\n", pVih->bmiHeader.biSize);
+                    debug_msg("biPlanes=       %d\n", pVih->bmiHeader.biPlanes);
+                    debug_msg("biBitCount=     %d\n", pVih->bmiHeader.biBitCount);
+                    debug_msg("biCompression=  %d\n", pVih->bmiHeader.biCompression);
+                    debug_msg("biSizeImage=    %d\n", pVih->bmiHeader.biSizeImage);
+                    debug_msg("biXPelsPerMeter=%d\n", pVih->bmiHeader.biXPelsPerMeter);
+                    debug_msg("biYPelsPerMeter=%d\n", pVih->bmiHeader.biYPelsPerMeter);
+                    debug_msg("biClrUsed=      %d\n", pVih->bmiHeader.biClrUsed);
+                    debug_msg("biClrImportant= %d\n", pVih->bmiHeader.biClrImportant);
 
-		    //pmtConfig->subtype    = MEDIASUBTYPE_RGB24;
-            	    temp_w = pVih->bmiHeader.biWidth;
-		    temp_h = pVih->bmiHeader.biHeight;
-            	    pVih->bmiHeader.biWidth     = width_;
-		    pVih->bmiHeader.biHeight    = height_;
-		    hr = pConfig->SetFormat(pmtConfig);
-		    if (SUCCEEDED(hr)) {
-			curr_w = width_;
-			curr_h = height_;
-			formatSet = 1;
-			debug_msg("Set(wxh): %dx%d, and Got: %dx%d\n",width_,height_, pVih->bmiHeader.biWidth, pVih->bmiHeader.biHeight);
-			break;
-		    } else {
-			if ((temp_w < width_) && (temp_h < height_)) {
-			    pVih->bmiHeader.biWidth = temp_w;
-			    pVih->bmiHeader.biHeight = temp_h;
-			    hr = pConfig->SetFormat(pmtConfig);
-			    if (SUCCEEDED(hr)) {
-				curr_w = temp_w;
-				curr_h = temp_h;
-				formatSet = 1;
-				debug_msg("Set(wxh): %dx%d, and Got: %dx%d\n",width_,height_, pVih->bmiHeader.biWidth, pVih->bmiHeader.biHeight);
-			    }
-			} else {
-    			    debug_msg("Failed to Set format this time - trying again\n");
-			}
-		    }
-	       }
+                    temp_w = pVih->bmiHeader.biWidth;
+                    temp_h = pVih->bmiHeader.biHeight;
+                    pVih->bmiHeader.biWidth     = width_;
+                    pVih->bmiHeader.biHeight    = height_;
+                    hr = pConfig->SetFormat(pmtConfig);
+                    if (SUCCEEDED(hr)) {
+                        curr_w = width_;
+                        curr_h = height_;
+                        formatSet = 1;
+                        debug_msg("Set(wxh): %dx%d, and Got: %dx%d\n",width_,height_, pVih->bmiHeader.biWidth, pVih->bmiHeader.biHeight);
+                        break;
+                    } else {
+                        if ((temp_w < width_) && (temp_h < height_)) {
+                            pVih->bmiHeader.biWidth = temp_w;
+                            pVih->bmiHeader.biHeight = temp_h;
+                            hr = pConfig->SetFormat(pmtConfig);
+                            if (SUCCEEDED(hr)) {
+                                curr_w = temp_w;
+                                curr_h = temp_h;
+                                formatSet = 1;
+                                debug_msg("Set(wxh): %dx%d, and Got: %dx%d\n",width_,height_, pVih->bmiHeader.biWidth, pVih->bmiHeader.biHeight);
+                            }
+                        } else {
+                            debug_msg("Failed to Set format this time - trying again\n");
+                        }
+                    }
+               }
             }
             DeleteMediaType(pmtConfig);
-	 }
+         }
       }
    }
    pConfig->Release();
 
    if ( formatSet ) {
       if ( (curr_w != width_) || (curr_h != height_ )) {
-	   width_  = curr_w;
-	   height_ = curr_h;
-	   debug_msg("DirectShowGrabber::setCaptureOutputFormat:  format set to near res: %dx%d\n",width_,height_);
+           width_  = curr_w;
+           height_ = curr_h;
+           debug_msg("DirectShowGrabber::setCaptureOutputFormat:  format set to near res: %dx%d\n",width_,height_);
       } else 
-	   debug_msg("DirectShowGrabber::setCaptureOutputFormat:  format set\n");
+           debug_msg("DirectShowGrabber::setCaptureOutputFormat:  format set\n");
    }
    else
       debug_msg("DirectShowGrabber::setCaptureOutputFormat:  format not set\n");
@@ -859,66 +949,30 @@ int DirectShowGrabber::command(int argc, const char* const* argv) {
 
 }
 
-//#########################################################################
-// DirectShowCIFGrabber class
-
-DirectShowCIFGrabber::DirectShowCIFGrabber(IBaseFilter *f, const char * nick) : DirectShowGrabber(f, nick) {
-   debug_msg("DirectShowCIFGrabber\n");
-}
-
-//--------------------------------
-
-DirectShowCIFGrabber::~DirectShowCIFGrabber() {
-   debug_msg("~DirectShowCIFGrabber\n");
-}
-
-//--------------------------------
-
-void DirectShowCIFGrabber::start() {
-   DirectShowGrabber::start();
-   converter(new RGB_Converter_420(24, (u_int8_t *)NULL, 0));
-   ReleaseMutex(cb_mutex_);
-   Grabber::timeout();
-}
-
-//--------------------------------
-
-void DirectShowCIFGrabber::setsize() {
-
-   if(max_width_ >= D1_BASE_WIDTH){
-	  max_width_ = D1_BASE_WIDTH;
-	  max_height_ = D1_BASE_HEIGHT;
-   }
-
-   if(decimate_ == 1){  //i.e. Large 
-       width_ = max_width_;
-       height_ = max_height_;
-   } else {
-       width_ = basewidth_  / decimate_;
-       height_ = baseheight_ / decimate_;
-   }
-
-   debug_msg("DirectShowCIFGrabber::setsize: %dx%d\n", width_, height_);
-
-   set_size_cif(width_, height_);
-   allocref();
-}
 
 //#########################################################################
 // DirectShowDevice class
 
 DirectShowDevice::DirectShowDevice(char *friendlyName, IBaseFilter *pCapFilt) : InputDevice(friendlyName) {  
 
-   attri_ = new char[100];
+   attri_ = new char[128];
    attri_[0] = 0;
 
    debug_msg("new DirectShowDevice():  friendlyName=%s\n", friendlyName);
-   pDirectShowFilter_  = pCapFilt;           
-   //SV: XXX got rid of 422 format since there's no grabber returned for it and vic crashes
-   attributes_        = "format { 420 } size { large small cif } port { extern-in } type { pal ntsc } ";
-   DirectShowCIFGrabber o(pDirectShowFilter_, friendlyName);
+   pDirectShowFilter_  = pCapFilt;
+   DirectShowGrabber o(pDirectShowFilter_, "420", friendlyName);
    
-   strcat(attri_, "format { 420 } size { large small cif } type { pal ntsc } port { ");
+   strcat(attri_, "format { 420 422 cif } size { ");
+	   
+   if (o.minWidth() > (CIF_BASE_WIDTH / 2)) {
+     strcat(attri_, "large");
+   } else if (o.maxWidth() < NTSC_BASE_WIDTH) {
+     strcat(attri_, "small cif");
+   } else {
+     strcat(attri_, "small cif large");
+   }
+
+   strcat(attri_, " } type { pal ntsc } port { ");
    if(o.hasSVideo() || o.hasComposite()){
      if(o.hasSVideo()){
        strcat(attri_, "S-Video ");
@@ -945,11 +999,8 @@ int DirectShowDevice::command(int argc, const char* const* argv) {
    Tcl& tcl = Tcl::instance();
    if ((argc == 3) && (strcmp(argv[1], "open") == 0)) {
       TclObject* o = 0;
-	  if (strcmp(argv[2], "cif") == 0){
-         o = directShowGrabber_ = new DirectShowCIFGrabber(pDirectShowFilter_);                  
-	  }else if (strcmp(argv[2], "422") == 0)         
-         o = directShowGrabber_ = 0; // one day oughta be "new DirectShow422Grabber(directShowFilter_);"  // msp
 
+      o = directShowGrabber_ = new DirectShowGrabber(pDirectShowFilter_, argv[2]);
       if (o != 0)
          Tcl::instance().result(o->name());
       return (TCL_OK);
