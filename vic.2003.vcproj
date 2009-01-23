@@ -6928,6 +6928,9 @@
 						AdditionalOptions="               "/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath=".\video\yuv_convert.cpp">
+			</File>
 			<Filter
 				Name="video Header Files"
 				Filter=".h">
@@ -6948,6 +6951,9 @@
 				</File>
 				<File
 					RelativePath=".\video\grabber.h">
+				</File>
+				<File
+					RelativePath=".\video\yuv_convert.h">
 				</File>
 			</Filter>
 		</Filter>
