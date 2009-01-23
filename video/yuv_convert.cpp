@@ -40,7 +40,13 @@
 #include "yuv_convert.h"
 #include <string.h>
 #include <stdio.h>
+
+#if defined(_WIN32) || defined(_WIN64) 
+#define BYTE_ORDER 1
+#define LITTLE_ENDIAN 1
+#else
 #include <endian.h>
+#endif
 
 //
 //  planarYUYV422_to_planarYUYV422
@@ -85,14 +91,14 @@ bool planarYUYV422_to_planarYUYV422(char *dest, int destWidth, int destHeight,
     if (leftPad != 0 || rightPad != 0) { // if padding necessary on destination
       for (i = 0; i < rows; ++i) {
 	dest += leftPad;
-	memcpy(dest, src, srcWidth);
+	memcpy(dest, srca, srcWidth);
 	dest += srcWidth + rightPad;
 	srca += srcWidth;
       }
     } else { // if clipping necessary on source
       for (i = 0; i < rows; ++i) {
 	srca += leftClip;
-	memcpy(dest, src, destWidth);
+	memcpy(dest, srca, destWidth);
 	dest += destWidth;
 	srca += destWidth + rightClip;
       }
@@ -113,14 +119,14 @@ bool planarYUYV422_to_planarYUYV422(char *dest, int destWidth, int destHeight,
     if (leftPad != 0 || rightPad != 0) { // if padding necessary on destination
       for (i = 0; i < rows; ++i) {
 	dest += (leftPad >> 1);
-	memcpy(dest, src, (srcWidth >> 1));
+	memcpy(dest, srca, (srcWidth >> 1));
 	dest += ((srcWidth + rightPad) >> 1);
 	srca += (srcWidth >> 1);
       }
     } else { // if clipping necessary on source
       for (i = 0; i < rows; ++i) {
 	srca += (leftClip >> 1);
-	memcpy(dest, src, (destWidth >> 1));
+	memcpy(dest, srca, (destWidth >> 1));
 	dest += (destWidth >> 1);
 	srca += ((destWidth + rightClip) >> 1);
       }
@@ -140,21 +146,21 @@ bool planarYUYV422_to_planarYUYV422(char *dest, int destWidth, int destHeight,
     if (leftPad != 0 || rightPad != 0) { // if padding necessary on destination
       for (i = 0; i < rows; ++i) {
 	dest += (leftPad >> 1);
-	memcpy(dest, src, (srcWidth >> 1));
+	memcpy(dest, srca, (srcWidth >> 1));
 	dest += ((srcWidth + rightPad) >> 1);
 	srca += (srcWidth >> 1);
       }
     } else { // if clipping necessary on source
       for (i = 0; i < rows; ++i) {
 	srca += (leftClip >> 1);
-	memcpy(dest, src, (destWidth >> 1));
+	memcpy(dest, srca, (destWidth >> 1));
 	dest += (destWidth >> 1);
 	srca += ((destWidth + rightClip) >> 1);
       }
     }
     // no actions needed for final down padding
   } else { // sizes all the same, so can just copy data
-    memcpy(dest, src, (size_t) ((destHeight * destWidth) << 1));
+    memcpy(dest, srca, (size_t) ((destHeight * destWidth) << 1));
   }
   return true;
 }
@@ -209,14 +215,14 @@ bool planarYUYV422_to_planarYUYV420(char *dest, int destWidth, int destHeight,
     if (leftPad != 0 || rightPad != 0) { // if padding necessary on destination
       for (i = 0; i < rows; ++i) {
 	dest += leftPad;
-	memcpy(dest, src, srcWidth);
+	memcpy(dest, srca, srcWidth);
 	dest += srcWidth + rightPad;
 	srca += srcWidth;
       }
     } else { // if clipping necessary on source
       for (i = 0; i < rows; ++i) {
 	srca += leftClip;
-	memcpy(dest, src, destWidth);
+	memcpy(dest, srca, destWidth);
 	dest += destWidth;
 	srca += destWidth + rightClip;
       }
@@ -302,7 +308,7 @@ bool planarYUYV422_to_planarYUYV420(char *dest, int destWidth, int destHeight,
     dstv = dstu + ((destHeight * destWidth) >> 2);
 
     // copy the y
-    memcpy(dest, src, (size_t) destHeight * destWidth);
+    memcpy(dest, srca, (size_t) destHeight * destWidth);
     // copy the u and v, downsampling by 2
     for (i = (destHeight >> 1); i > 0; --i) {
       // even lines get all the chroma information
@@ -367,14 +373,14 @@ bool planarYUYV420_to_planarYUYV422(char *dest, int destWidth, int destHeight,
     if (leftPad != 0 || rightPad != 0) { // if padding necessary on destination
       for (i = 0; i < rows; ++i) {
 	dest += leftPad;
-	memcpy(dest, src, srcWidth);
+	memcpy(dest, srca, srcWidth);
 	dest += srcWidth + rightPad;
 	srca += srcWidth;
       }
     } else { // if clipping necessary on source
       for (i = 0; i < rows; ++i) {
 	srca += leftClip;
-	memcpy(dest, src, destWidth);
+	memcpy(dest, srca, destWidth);
 	dest += destWidth;
 	srca += destWidth + rightClip;
       }
@@ -396,11 +402,11 @@ bool planarYUYV420_to_planarYUYV422(char *dest, int destWidth, int destHeight,
       for (i = 0; i < rows; i += 2) {
 	// source information is every-other row, so double each line
 	dest += (leftPad >> 1);
-	memcpy(dest, src, (srcWidth >> 1));
+	memcpy(dest, srca, (srcWidth >> 1));
 	dest += ((srcWidth + rightPad) >> 1);
 
 	dest += (leftPad >> 1);
-	memcpy(dest, src, (srcWidth >> 1));
+	memcpy(dest, srca, (srcWidth >> 1));
 	dest += ((srcWidth + rightPad) >> 1);
 
 	srca += (srcWidth >> 1);
@@ -410,10 +416,10 @@ bool planarYUYV420_to_planarYUYV422(char *dest, int destWidth, int destHeight,
 	srca += (leftClip >> 1);
 
 	// source information is every-other row, so double each line
-	memcpy(dest, src, (destWidth >> 1));
+	memcpy(dest, srca, (destWidth >> 1));
 	dest += (destWidth >> 1);
 
-	memcpy(dest, src, (destWidth >> 1));
+	memcpy(dest, srca, (destWidth >> 1));
 	dest += (destWidth >> 1);
 
 	srca += ((destWidth + rightClip) >> 1);
@@ -435,11 +441,11 @@ bool planarYUYV420_to_planarYUYV422(char *dest, int destWidth, int destHeight,
       for (i = 0; i < rows; i += 2) {
 	// source information is every-other row, so double each line
 	dest += (leftPad >> 1);
-	memcpy(dest, src, (srcWidth >> 1));
+	memcpy(dest, srca, (srcWidth >> 1));
 	dest += ((srcWidth + rightPad) >> 1);
 
 	dest += (leftPad >> 1);
-	memcpy(dest, src, (srcWidth >> 1));
+	memcpy(dest, srca, (srcWidth >> 1));
 	dest += ((srcWidth + rightPad) >> 1);
 
 	srca += (srcWidth >> 1);
@@ -449,10 +455,10 @@ bool planarYUYV420_to_planarYUYV422(char *dest, int destWidth, int destHeight,
 	srca += (leftClip >> 1);
 
 	// source information is every-other row, so double each line
-	memcpy(dest, src, (destWidth >> 1));
+	memcpy(dest, srca, (destWidth >> 1));
 	dest += (destWidth >> 1);
 
-	memcpy(dest, src, (destWidth >> 1));
+	memcpy(dest, srca, (destWidth >> 1));
 	dest += (destWidth >> 1);
 
 	srca += ((destWidth + rightClip) >> 1);
@@ -460,15 +466,15 @@ bool planarYUYV420_to_planarYUYV422(char *dest, int destWidth, int destHeight,
     }
     // no actions needed for final down padding
   } else { // sizes all the same, so can just copy data
-    memcpy(dest, src, (size_t) (destHeight * destWidth)); // copy y
+    memcpy(dest, srca, (size_t) (destHeight * destWidth)); // copy y
     dest += destHeight * destWidth;
     srca += destHeight * destWidth;
 
     // copy u and v information, doubling each row
     for (int i = 0; i < destHeight; i += 2) {
-      memcpy(dest, src, (size_t) (destWidth >> 1)); // 1st copy to dest
+      memcpy(dest, srca, (size_t) (destWidth >> 1)); // 1st copy to dest
       dest += destWidth >> 1;
-      memcpy(dest, src, (size_t) (destWidth >> 1)); // 2nd copy to dest
+      memcpy(dest, srca, (size_t) (destWidth >> 1)); // 2nd copy to dest
       dest += destWidth >> 1;
       srca += destWidth >> 1;
     }
@@ -526,14 +532,14 @@ bool planarYUYV420_to_planarYUYV420(char *dest, int destWidth, int destHeight,
     if (leftPad != 0 || rightPad != 0) { // if padding necessary on destination
       for (i = 0; i < rows; ++i) {
 	dest += leftPad;
-	memcpy(dest, src, srcWidth);
+	memcpy(dest, srca, srcWidth);
 	dest += srcWidth + rightPad;
 	srca += srcWidth;
       }
     } else { // if clipping necessary on source
       for (i = 0; i < rows; ++i) {
 	srca += leftClip;
-	memcpy(dest, src, destWidth);
+	memcpy(dest, srca, destWidth);
 	dest += destWidth;
 	srca += destWidth + rightClip;
       }
@@ -554,7 +560,7 @@ bool planarYUYV420_to_planarYUYV420(char *dest, int destWidth, int destHeight,
       for (i = 0; i < (rows >> 1); i++) {
 	dest += (leftPad >> 1);
 
-	memcpy(dest, src, (srcWidth >> 1));
+	memcpy(dest, srca, (srcWidth >> 1));
 	dest += (srcWidth >> 1);
 	srca += (srcWidth >> 1);
 
@@ -564,7 +570,7 @@ bool planarYUYV420_to_planarYUYV420(char *dest, int destWidth, int destHeight,
       for (i = 0; i < (rows >> 1); i++) {
 	srca += (leftClip >> 1);
 
-	memcpy(dest, src, (destWidth >> 1));
+	memcpy(dest, srca, (destWidth >> 1));
 	dest += (destWidth >> 1);
 	srca += (destWidth >> 1);
 
@@ -587,7 +593,7 @@ bool planarYUYV420_to_planarYUYV420(char *dest, int destWidth, int destHeight,
       for (i = 0; i < (rows >> 1); i++) {
 	dest += (leftPad >> 1);
 
-	memcpy(dest, src, (srcWidth >> 1));
+	memcpy(dest, srca, (srcWidth >> 1));
 	dest += (srcWidth >> 1);
 	srca += (srcWidth >> 1);
 
@@ -597,7 +603,7 @@ bool planarYUYV420_to_planarYUYV420(char *dest, int destWidth, int destHeight,
       for (i = 0; i < (rows >> 1); i++) {
 	srca += (leftClip >> 1);
 
-	memcpy(dest, src, (destWidth >> 1));
+	memcpy(dest, srca, (destWidth >> 1));
 	dest += (destWidth >> 1);
 	srca += (destWidth >> 1);
 
@@ -607,7 +613,7 @@ bool planarYUYV420_to_planarYUYV420(char *dest, int destWidth, int destHeight,
     // no actions needed for final down padding
   } else {
     // copy the y (w*h), u (w*h*0.25), and v (w*h*0.25), for a total of (w*h*1.5)
-    memcpy(dest, src,
+    memcpy(dest, srca,
 	   (size_t) destHeight * destWidth + ((destHeight * destWidth) >> 1));
   }
   return true;
