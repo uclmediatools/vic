@@ -174,17 +174,6 @@ class DirectShowGrabber : public Grabber {
 
 //#########################################################################
 
-class DirectShowCIGrabber : public DirectShowGrabber {
-   public:
-      DirectShowCIGrabber(IBaseFilter *, const char *nick = 0 );
-      ~DirectShowCIGrabber();
-   protected:
-      virtual void start();
-      virtual void setsize();
-};
-
-//#########################################################################
-
 class Callback : public ISampleGrabberCB {
    private:
       volatile long m_cRef;
