@@ -588,7 +588,18 @@ void DirectShowGrabber::setsize() {
 
    debug_msg("DirectShowGrabber::setsize: %dx%d\n", width_, height_);
 
-   set_size_cif(width_, height_);
+   switch (cformat_) {
+       case CF_CIF:
+           set_size_cif(width_, height_);
+           break;
+       case CF_420:
+           set_size_420(width_, height_);
+           break;
+       case CF_422:
+           set_size_cif(width_, height_);
+           break;
+   }
+
    allocref();
 }
 
@@ -624,7 +635,7 @@ int DirectShowGrabber::grab() {
      else if (have_UYVY_)
        packedUYVY422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
      else if (have_YUY2_)
-       planarYUYV422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+       packedYUYV422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
      break;
 
    case CF_422:
@@ -633,7 +644,7 @@ int DirectShowGrabber::grab() {
      else if (have_UYVY_)
        packedUYVY422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
      else if (have_YUY2_)
-       planarYUYV420_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+       packedYUYV422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
      break;
    }
 
@@ -801,15 +812,35 @@ void DirectShowGrabber::setCaptureOutputFormat() {
    // Check the size to make sure we pass in the correct structure.
    // The alternative output of iSize is AUDIO_STREAM_CONFIG_CAPS, btw.
    if ( iSize == sizeof(VIDEO_STREAM_CONFIG_CAPS) ) {
+      GUID mediasubtype = MEDIASUBTYPE_NULL;
 
+      switch (cformat_) {
+      case CF_420:
+      case CF_CIF:
+          if (have_I420_)
+              mediasubtype = MEDIASUBTYPE_I420; // Planar YUV 420
+          else if (have_UYVY_)
+              mediasubtype = MEDIASUBTYPE_UYVY; // Packed YUV 420
+          else if (have_YUY2_)
+              mediasubtype = MEDIASUBTYPE_YUY2; // Packed YUV 420
+        break;
+
+      case CF_422:
+          if (have_I420_)
+              mediasubtype = MEDIASUBTYPE_I420; // Planar YUV 420
+          else if (have_UYVY_)
+              mediasubtype = MEDIASUBTYPE_UYVY; // Packed YUV 420
+          else if (have_YUY2_)
+              mediasubtype = MEDIASUBTYPE_YUY2; // Packed YUV 420
+          break;
+      }
       for (int iFormat = 0; iFormat < iCount; iFormat++) {
          hr = pConfig->GetStreamCaps(iFormat, &pmtConfig, (BYTE *)&scc);
          //showErrorMessage(hr);
 
          if( SUCCEEDED(hr) ) {
             if ((pmtConfig->majortype  == MEDIATYPE_Video)            &&
-                  //(pmtConfig->subtype    == MEDIASUBTYPE_RGB24)       &&
-                  (pmtConfig->subtype    == MEDIASUBTYPE_I420)       &&
+                  (pmtConfig->subtype == mediasubtype || mediasubtype == MEDIASUBTYPE_NULL) &&
                   (pmtConfig->formattype == FORMAT_VideoInfo)         &&
                   (pmtConfig->cbFormat   >= sizeof (VIDEOINFOHEADER)) &&
                   (pmtConfig->pbFormat   != NULL) /*                  &&
