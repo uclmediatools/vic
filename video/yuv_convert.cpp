@@ -43,7 +43,7 @@
 
 #if defined(_WIN32) || defined(_WIN64) 
 #define BYTE_ORDER 1
-#define LITTLE_ENDIAN 1
+#define BIG_ENDIAN 0
 #else
 #include <endian.h>
 #endif
@@ -336,11 +336,11 @@ bool planarYUYV420_to_planarYUYV422(char *dest, int destWidth, int destHeight,
   char *srca = (char *)src;
 
   if ((destWidth & 0x1) || (srcWidth & 0x1)) {
-    printf("wrong width in planarYUYV420_to_planarYUYV422\n");
+    printf("even width required in planarYUYV420_to_planarYUYV422\n");
     return false;
   }
   if ((destHeight & 0x1) || (srcHeight & 0x1)) {
-    printf("wrong height in planarYUYV420_to_planarYUYV422\n");
+    printf("even height required in planarYUYV420_to_planarYUYV422\n");
     return false;
   }
   if (destHeight != srcHeight || destWidth != srcWidth) {
@@ -492,7 +492,7 @@ bool planarYUYV420_to_planarYUYV420(char *dest, int destWidth, int destHeight,
   char *srca = (char *)src;
 
   if ((destWidth & 0x1) || (srcWidth & 0x1)) {
-    printf("wrong width in planarYUYV420_to_planarYUYV420\n");
+    printf("even width required in planarYUYV420_to_planarYUYV420\n");
     return false;
   }
   if ((destHeight & 0x1) || (srcHeight & 0x1)) {
@@ -645,7 +645,7 @@ bool packedYUYV422_to_planarYUYV422(char *dest, int destWidth, int destHeight,
 
     // packed representation is YUYV YUYV YUYV
     while (i--) {
-#if BYTE_ORDER == LITTLE_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
       *(v++) = *(s++);
       *(y++) = *(s++);
       *(u++) = *(s++);
@@ -698,7 +698,7 @@ bool packedYUYV422_to_planarYUYV422(char *dest, int destWidth, int destHeight,
 	int j = (srcWidth >> 1);
 	// packed representation is YUYV YUYV YUYV
 	while (j--) {
-#if BYTE_ORDER == LITTLE_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
 	  *(v++) = *(s++);
 	  *(y++) = *(s++);
 	  *(u++) = *(s++);
@@ -721,7 +721,7 @@ bool packedYUYV422_to_planarYUYV422(char *dest, int destWidth, int destHeight,
 	int j = (destWidth >> 1);
 	// packed representation is YUYV YUYV YUYV
 	while (j--) {
-#if BYTE_ORDER == LITTLE_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
 	  *(v++) = *(s++);
 	  *(y++) = *(s++);
 	  *(u++) = *(s++);
@@ -766,7 +766,7 @@ bool packedUYVY422_to_planarYUYV422(char *dest, int destWidth, int destHeight,
 
     // packed representation is UYVY UYVY UYVY
     while (i--) {
-#if BYTE_ORDER == LITTLE_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
       *(y++) = *(s++);
       *(v++) = *(s++);
       *(y++) = *(s++);
@@ -819,7 +819,7 @@ bool packedUYVY422_to_planarYUYV422(char *dest, int destWidth, int destHeight,
 	int j = (srcWidth >> 1);
 	// packed representation is YUYV YUYV YUYV
 	while (j--) {
-#if BYTE_ORDER == LITTLE_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
 	  *(y++) = *(s++);
 	  *(v++) = *(s++);
 	  *(y++) = *(s++);
@@ -842,7 +842,7 @@ bool packedUYVY422_to_planarYUYV422(char *dest, int destWidth, int destHeight,
 	int j = (destWidth >> 1);
 	// packed representation is YUYV YUYV YUYV
 	while (j--) {
-#if BYTE_ORDER == LITTLE_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
 	  *(y++) = *(s++);
 	  *(v++) = *(s++);
 	  *(y++) = *(s++);
@@ -898,7 +898,7 @@ bool packedYUYV422_to_planarYUYV420(char *dest, int destWidth, int destHeight,
       // keeping the chroma info from one line and throwing it out from
       // the next one. This is indeed 4:2:0 subsampling
       for (b = (destWidth >> 1); b > 0; b--) {
-#if BYTE_ORDER == LITTLE_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
 	*(v++) = *(s++);
 	*(y++) = *(s++);
 	*(u++) = *(s++);
@@ -911,7 +911,7 @@ bool packedYUYV422_to_planarYUYV420(char *dest, int destWidth, int destHeight,
 #endif
       }
       for (b = (destWidth >> 1); b > 0; b--) {
-#if BYTE_ORDER == LITTLE_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
 	s++;
 	*(y++) = *(s++);
 	s++;
@@ -972,7 +972,7 @@ bool packedYUYV422_to_planarYUYV420(char *dest, int destWidth, int destHeight,
 	// keeping the chroma info from one line and throwing it out from
 	// the next one. This is indeed 4:2:0 subsampling
 	for (b = (srcWidth >> 1); b > 0; b--) {
-#if BYTE_ORDER == LITTLE_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
 	  *(v++) = *(s++);
 	  *(y++) = *(s++);
 	  *(u++) = *(s++);
@@ -989,7 +989,7 @@ bool packedYUYV422_to_planarYUYV420(char *dest, int destWidth, int destHeight,
 	v += (rightPad >> 1);
 	y += leftPad;
 	for (b = (srcWidth >> 1); b > 0; b--) {
-#if BYTE_ORDER == LITTLE_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
 	  s++;
 	  *(y++) = *(s++);
 	  s++;
@@ -1011,7 +1011,7 @@ bool packedYUYV422_to_planarYUYV420(char *dest, int destWidth, int destHeight,
 	// keeping the chroma info from one line and throwing it out from
 	// the next one. This is indeed 4:2:0 subsampling
 	for (b = (destWidth >> 1); b > 0; b--) {
-#if BYTE_ORDER == LITTLE_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
 	  *(v++) = *(s++);
 	  *(y++) = *(s++);
 	  *(u++) = *(s++);
@@ -1026,7 +1026,7 @@ bool packedYUYV422_to_planarYUYV420(char *dest, int destWidth, int destHeight,
 	s += (rightClip << 1);
 	s += (leftClip << 1);
 	for (b = (destWidth >> 1); b > 0; b--) {
-#if BYTE_ORDER == LITTLE_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
 	  s++;
 	  *(y++) = *(s++);
 	  s++;
@@ -1059,7 +1059,7 @@ bool packedUYVY422_to_planarYUYV420(char *dest, int destWidth, int destHeight,
     return false;
   }
   if ((destWidth & 0x1) || (srcWidth & 0x1)) {
-    printf("wrong width in packedUYVY422_to_planarYUYV420\n");
+    printf("even width required in packedUYVY422_to_planarYUYV420\n");
     return false;
   }
 
@@ -1079,7 +1079,7 @@ bool packedUYVY422_to_planarYUYV420(char *dest, int destWidth, int destHeight,
       // keeping the chroma info from one line and throwing it out from
       // the next one. This is indeed 4:2:0 subsampling
       for (b = (destWidth >> 1); b > 0; b--) {
-#if BYTE_ORDER == LITTLE_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
 	*(y++) = *(s++);
 	*(v++) = *(s++);
 	*(y++) = *(s++);
@@ -1092,7 +1092,7 @@ bool packedUYVY422_to_planarYUYV420(char *dest, int destWidth, int destHeight,
 #endif
       }
       for (b = (destWidth >> 1); b > 0; b--) {
-#if BYTE_ORDER == LITTLE_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
 	*(y++) = *(s++);
 	s++;
 	*(y++) = *(s++);
@@ -1150,7 +1150,7 @@ bool packedUYVY422_to_planarYUYV420(char *dest, int destWidth, int destHeight,
 	// keeping the chroma info from one line and throwing it out from
 	// the next one. This is indeed 4:2:0 subsampling
 	for (b = (srcWidth >> 1); b > 0; b--) {
-#if BYTE_ORDER == LITTLE_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
 	  *(y++) = *(s++);
 	  *(v++) = *(s++);
 	  *(y++) = *(s++);
@@ -1167,7 +1167,7 @@ bool packedUYVY422_to_planarYUYV420(char *dest, int destWidth, int destHeight,
 	v += (rightPad >> 1);
 	y += leftPad;
 	for (b = (srcWidth >> 1); b > 0; b--) {
-#if BYTE_ORDER == LITTLE_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
 	  *(y++) = *(s++);
 	  s++;
 	  *(y++) = *(s++);
@@ -1189,7 +1189,7 @@ bool packedUYVY422_to_planarYUYV420(char *dest, int destWidth, int destHeight,
 	// keeping the chroma info from one line and throwing it out from
 	// the next one. This is indeed 4:2:0 subsampling
 	for (b = (destWidth >> 1); b > 0; b--) {
-#if BYTE_ORDER == LITTLE_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
 	  *(y++) = *(s++);
 	  *(v++) = *(s++);
 	  *(y++) = *(s++);
@@ -1204,7 +1204,7 @@ bool packedUYVY422_to_planarYUYV420(char *dest, int destWidth, int destHeight,
 	s += (rightClip << 1);
 	s += (leftClip << 1);
 	for (b = (destWidth >> 1); b > 0; b--) {
-#if BYTE_ORDER == LITTLE_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
 	  *(y++) = *(s++);
 	  s++;
 	  *(y++) = *(s++);

@@ -67,7 +67,7 @@ bool planarYUYV420_to_planarYUYV420(char* dest, int destWidth, int destHeight,
 	// src  height: multiple of 2
 
 bool packedYUYV422_to_planarYUYV422(char* dest, int destWidth, int destHeight,
-				    char* src, int srcWidth, int srcHeight);
+				    const char* src, int srcWidth, int srcHeight);
 	// dest  width: multiple of 2
 	// dest height: multiple of 1
 	// src   width: multiple of 2
