@@ -142,6 +142,7 @@ BTTVGrabber::BTTVGrabber(const char *cformat)
   }
 
   if(!strcmp(cformat, "422")) cformat_ = CF_422;
+  if(!strcmp(cformat, "420")) cformat_ = CF_420;
   if(!strcmp(cformat, "cif")) cformat_ = CF_CIF;
 
   decimate_ =2;
@@ -362,8 +363,11 @@ void BTTVGrabber::setsize()
   case CF_422:
     set_size_422(basewidth_ / decimate_, baseheight_ / decimate_);
     break;
-  case CF_CIF:
+  case CF_420:
     set_size_420(basewidth_ / decimate_, baseheight_ / decimate_);
+    break;
+  case CF_CIF:
+    set_size_cif(basewidth_ / decimate_, baseheight_ / decimate_);
     break;
   }
 

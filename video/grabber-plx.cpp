@@ -516,7 +516,7 @@ void PlxCIFGrabber::setsize()
 	capwin_->setsize(w, h);
 	converter_ = RGB_Converter_420::instance();
 	image_ = StandardVideoImage::allocate(capwin_->tkwin(), w, h);
-	set_size_420(w, h);
+	set_size_cif(w, h);
 	allocref();
 }
 

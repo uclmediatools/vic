@@ -92,7 +92,7 @@ proc uniqueID { } {
 
 proc isCIF fmt {
 	# only supported CIF format is h.261/3/3+
-	if { $fmt =="h264" || $fmt == "mpeg4" || $fmt == "h261" || $fmt == "h263+" || $fmt == "h263" } {
+	if { $fmt == "h261" || $fmt == "h263" || $fmt == "h263+" } {
 		return 1
 	}
 	return 0

@@ -983,7 +983,7 @@ void V4lGrabber::format()
 
     switch (cformat_) {
     case CF_CIF:
-	set_size_420(width_, height_);
+	set_size_cif(width_, height_);
 	debug_msg(" cif");
 	break;
     case CF_420:

@@ -361,7 +361,7 @@ void XvCIFGrabber::setsize()
 	int h = 2 * 288 / decimate_;
 	capwin_->setsize(w, h);
 	capwin_->converter(RGB_Converter_420::instance());
-	set_size_420(w, h);
+	set_size_cif(w, h);
 	allocref();
 }
 

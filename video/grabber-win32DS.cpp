@@ -596,7 +596,7 @@ void DirectShowGrabber::setsize() {
            set_size_420(width_, height_);
            break;
        case CF_422:
-           set_size_cif(width_, height_);
+           set_size_422(width_, height_);
            break;
    }
 
@@ -995,7 +995,7 @@ DirectShowDevice::DirectShowDevice(char *friendlyName, IBaseFilter *pCapFilt) : 
    
    strcat(attri_, "format { 420 422 cif } size { ");
 	   
-   if (o.minWidth() > (CIF_BASE_WIDTH / 2)) {
+   if (o.minHeight() > (CIF_BASE_HEIGHT / 2)) {
      strcat(attri_, "large");
    } else if (o.maxWidth() < NTSC_BASE_WIDTH) {
      strcat(attri_, "small cif");

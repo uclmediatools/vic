@@ -638,10 +638,10 @@ proc device_formats device {
 		set fmtList "$fmtList nv nvdct cellb jpeg raw"
 	}
 	if [inList 420 $formats] {
-		set fmtList "$fmtList bvc pvh"
+		set fmtList "$fmtList bvc pvh h261as h264 mpeg4"
 	}
 	if [inList cif $sizes] {
-		set fmtList "$fmtList h261 h261as h263+ h263 mpeg4 h264"
+		set fmtList "$fmtList h261 h263 h263+"
 	}
 	if [inList jpeg $formats] {
 		set fmtList "$fmtList jpeg"

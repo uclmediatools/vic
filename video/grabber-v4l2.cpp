@@ -268,7 +268,7 @@ V4l2Scanner::V4l2Scanner(const char **dev)
                         continue;
                 }
 
-                if (capability.capabilities & V4L2_CAP_VIDEO_CAPTURE == 0) {
+                if ((capability.capabilities & V4L2_CAP_VIDEO_CAPTURE) == 0) {
                         debug_msg("%s, %s can't capture\n",capability.card,capability.bus_info);
                         v4l2_close(fd);
                         continue;
@@ -368,7 +368,7 @@ V4l2Grabber::V4l2Grabber(const char *cformat, const char *dev)
                 fmt.fmt.pix.height = test_height[i];
                 fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUV420;
                 if (-1 != v4l2_ioctl(fd_, VIDIOC_S_FMT, &fmt) ) {
-                        if (fmt.fmt.pix.height == test_height[i] && fmt.fmt.pix.width == test_width[i] && fmt.fmt.pix.pixelformat == V4L2_PIX_FMT_YUV420) {
+                        if (fmt.fmt.pix.height == test_height[i] && fmt.fmt.pix.width >= test_width[i] && fmt.fmt.pix.pixelformat == V4L2_PIX_FMT_YUV420) {
                                 have_YUV420P = 1;
                                 debug_msg("Device supports V4L2_PIX_FMT_YUV420 capture at %dx%d\n",test_width[i],test_height[i]);
                         } else if (fmt.fmt.pix.pixelformat == V4L2_PIX_FMT_YUV420) {
@@ -380,7 +380,7 @@ V4l2Grabber::V4l2Grabber(const char *cformat, const char *dev)
                 fmt.fmt.pix.height = test_height[i];
                 fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUV422P;
                 if (-1 != v4l2_ioctl(fd_, VIDIOC_S_FMT, &fmt) ) {
-                        if (fmt.fmt.pix.height == test_height[i] && fmt.fmt.pix.width == test_width[i] && fmt.fmt.pix.pixelformat == V4L2_PIX_FMT_YUV422P) {
+                        if (fmt.fmt.pix.height == test_height[i] && fmt.fmt.pix.width >= test_width[i] && fmt.fmt.pix.pixelformat == V4L2_PIX_FMT_YUV422P) {
                                 have_YUV422P = 1;
                                 debug_msg("Device supports V4L2_PIX_FMT_YUV422 capture at %dx%d\n",test_width[i],test_height[i]);
                         } else {
@@ -392,7 +392,7 @@ V4l2Grabber::V4l2Grabber(const char *cformat, const char *dev)
                 fmt.fmt.pix.height = test_height[i];
                 fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
                 if (-1 != v4l2_ioctl(fd_, VIDIOC_S_FMT, &fmt) ) {
-                        if (fmt.fmt.pix.height == test_height[i] && fmt.fmt.pix.width == test_width[i]) {
+                        if (fmt.fmt.pix.height == test_height[i] && fmt.fmt.pix.width >= test_width[i]) {
                                 have_YUV422 = 1;
                                 debug_msg("Device supports V4L2_PIX_FMT_YUYV (YUV 4:2:2) capture at %dx%d\n",test_width[i],test_height[i]);
                         } else if (fmt.fmt.pix.pixelformat == V4L2_PIX_FMT_YUYV) {
@@ -405,7 +405,7 @@ V4l2Grabber::V4l2Grabber(const char *cformat, const char *dev)
                 fmt.fmt.pix.height = test_height[i];
                 fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_MJPEG;
                 if (-1 != v4l2_ioctl(fd_, VIDIOC_S_FMT, &fmt) ) {
-                        if (fmt.fmt.pix.height == test_height[i] && fmt.fmt.pix.width == test_width[i] && fmt.fmt.pix.pixelformat == V4L2_PIX_FMT_MJPEG) {
+                        if (fmt.fmt.pix.height == test_height[i] && fmt.fmt.pix.width >= test_width[i] && fmt.fmt.pix.pixelformat == V4L2_PIX_FMT_MJPEG) {
                                 have_MJPEG = 1;
                                 debug_msg("Device supports V4L2_PIX_FMT_MJPEG capture at %dx%d\n",test_width[i],test_height[i]);
                         } else if (fmt.fmt.pix.pixelformat == V4L2_PIX_FMT_MJPEG) {
@@ -417,7 +417,7 @@ V4l2Grabber::V4l2Grabber(const char *cformat, const char *dev)
                 fmt.fmt.pix.height = test_height[i];
                 fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_JPEG;
                 if (-1 != v4l2_ioctl(fd_, VIDIOC_S_FMT, &fmt) ) {
-                        if (fmt.fmt.pix.height == test_height[i] && fmt.fmt.pix.width == test_width[i] && fmt.fmt.pix.pixelformat == V4L2_PIX_FMT_JPEG) {
+                        if (fmt.fmt.pix.height == test_height[i] && fmt.fmt.pix.width >= test_width[i] && fmt.fmt.pix.pixelformat == V4L2_PIX_FMT_JPEG) {
                                 have_MJPEG = 1;
                                 debug_msg("Device supports V4L2_PIX_FMT_JPEG capture at %dx%d\n",test_width[i],test_height[i]);
                         } else if (fmt.fmt.pix.pixelformat == V4L2_PIX_FMT_JPEG) {
@@ -711,7 +711,7 @@ void V4l2Grabber::stop()
 
                 tempbuf.type = vimage[0].vidbuf.type;
                 while ((err = v4l2_ioctl(fd_, VIDIOC_DQBUF, &tempbuf)) < 0 &&
-                       (errno == EINTR));
+                       (errno == EINTR)) ;
 
                 if (err < 0) {
                         debug_msg("V4L2: VIDIOC_DQBUF failed: %s\n", strerror(errno));
@@ -892,7 +892,7 @@ void V4l2Grabber::format()
                 debug_msg("V4L2: format");
                 switch (cformat_) {
                 case CF_CIF:
-                        set_size_420(width_, height_);
+                        set_size_cif(width_, height_);
                         debug_msg(" cif\n");
                         break;
                 case CF_420:
@@ -944,8 +944,16 @@ void V4l2Grabber::format()
                                         if ( (err = v4l2_ioctl(fd_, VIDIOC_S_FMT, &fmt) ) )
                                                 debug_msg("\nV4L2: Failed to set format\n");
 
-                                        if ( ( fmt.fmt.pix.width != (unsigned int)width_ ) ||
-                                                                ( fmt.fmt.pix.height !=  (unsigned int)height_ ) ) {
+                                        if ( fmt.fmt.pix.width > (unsigned int)width_ )
+                                                inw_ = width_ = fmt.fmt.pix.width;
+
+
+                                        if ( ( fmt.fmt.pix.width == (unsigned int)width_ ) ||
+                                                                ( fmt.fmt.pix.height == (unsigned int)height_ ) )  {
+                                                debug_msg("V4L2: setting format: width=%d height=%d\n", fmt.fmt.pix.width, fmt.fmt.pix.height);
+                                                format_ok = 1;
+                                                break;
+                                        } else {
 
                                                 debug_msg("V4L2: failed to set format! requested %dx%d, got %dx%d\n", width_, height_, fmt.fmt.pix.width, fmt.fmt.pix.height);
 
@@ -1027,16 +1035,9 @@ void V4l2Grabber::format()
                                                                 format_ok = 1;
                                                         }
                                                         break;
-
                                                 }
-
-                                        } else {
-                                                debug_msg("V4L2: setting format: width=%d height=%d\n", fmt.fmt.pix.width, fmt.fmt.pix.height);
-                                                format_ok = 1;
                                         }
-                                        break;
                                 }
-
                         }
                 }
         }
