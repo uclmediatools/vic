@@ -874,6 +874,8 @@ void V4l2Grabber::format()
                        pixelformat = V4L2_PIX_FMT_YUV422P;
                 else if( have_YUV422 )
                        pixelformat = V4L2_PIX_FMT_YUYV;
+                else if( have_YUV420P )
+                       pixelformat = V4L2_PIX_FMT_YUV420;
 #ifndef HAVE_LIBV4L
                 else if( have_MJPEG )
                        pixelformat = V4L2_PIX_FMT_MJPEG;
