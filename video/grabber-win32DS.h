@@ -95,6 +95,10 @@ class DirectShowGrabber : public Grabber {
 	      return (compositePort >= 0);
 	  }
 
+	  bool		   hasDV_SD(){
+	      return (have_DVSD_);
+	  }
+
 	  bool		   hasSVideo(){
 		  return (svideoPort >= 0);
 	  }
@@ -142,8 +146,9 @@ class DirectShowGrabber : public Grabber {
 	  int		   svideoPort;
 
 	  bool		   have_I420_;  // YUV 4:2:0 planar
-	  bool		   have_UYVY_;  // YUV 4:2:0 packed
-	  bool		   have_YUY2_;  // as for UYVY but with different component ordering 
+	  bool		   have_UYVY_;  // YUV 4:2:2 packed
+	  bool		   have_YUY2_;  // as for UYVY but with different component ordering
+	  bool		   have_DVSD_;  // DV standard definition
 
       u_int        decimate_;    // set in this::command via small/normal/large in vic UI; msp
       BYTE         *last_frame_;
@@ -153,6 +158,8 @@ class DirectShowGrabber : public Grabber {
       IBaseFilter*           pCaptureFilter_;
       ISampleGrabber*        pSampleGrabber_;
       IBaseFilter*           pGrabberBaseFilter_;
+      IIPDVDec*              pDVVideoDecoder_;
+      IBaseFilter*           pDVDecoderBaseFilter_;
       IBaseFilter*           pNullRenderer_;
       IBaseFilter*           pNullBaseFilter_;
       IGraphBuilder*         pGraph_;

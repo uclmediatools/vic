@@ -3,7 +3,7 @@
  *  Copyright (c) 1996 Isidor Kouvelas (University College London)
  *  Portions Copyright (c) 2004 EarthLink, Inc.
  *  All rights reserved.
- * 
+ *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
  *  are met:
@@ -14,7 +14,7 @@
  *     documentation and/or other materials provided with the distribution.
  *  3. The name of the author may not be used to endorse or promote products
  *     derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR `AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -37,11 +37,11 @@ On the implementation of DirectShow frame grabbing
 	Pasadena, CA  USA
         petrovic@corp.earthlink.net
 
-I. 
+I.
 
 Timeline:  started 9/27/2004; finished 11/05/2004
 
-II.  
+II.
 
 DirectShow video capture interface
 Developed under DirectX 9, but simple enough that it
@@ -59,7 +59,7 @@ This book was very helpful in understanding DirectShow and the requisite basic C
 
 http://msdn.microsoft.com/library/default.asp?url=/library/en-us/directshow/htm/directshowreference.asp
 
-III.  
+III.
 
 Morning-after comments, 11/05/2004
 
@@ -68,28 +68,28 @@ Firewire-like) devices.  Such devices have no crossbar filters inserted behind t
 by the graph builder, and which must be manipulated before grabbing begins.
 
 2.  This code has a serious hack in dealing with devices that have "crossbar
-filters".  Crossbar filters come into play with video capture cards, but, from what 
-I can tell, not with simple devices like USB cameras.  None of the USB cameras ship with WDM 
-drivers that have crossbar filters.  The Hauppauge WinTV Go Model 190 does have a crossbar 
+filters".  Crossbar filters come into play with video capture cards, but, from what
+I can tell, not with simple devices like USB cameras.  None of the USB cameras ship with WDM
+drivers that have crossbar filters.  The Hauppauge WinTV Go Model 190 does have a crossbar
 filter in its WDM driver.
 
 The hack is this:  if a graph has a crossbar, I configure it to capture from the Composite In
 port without qualification.  The user has no say in this.  Therefore, capturing from physical
-s-video or antenna ports is not possible in this code as written.  
+s-video or antenna ports is not possible in this code as written.
 
 Crossbar filters are added automatically by the graph builder during pBuild_->RenderStream().
-Their purpose is to give 
-the programmer a way to programmatically choose which physical input port is "wired" to 
-the crossbar video decoder output port.  The crossbar video decoder output port pin is in turn 
-connected by the graph builder to the "true" device video capture filter that one would normally consider 
+Their purpose is to give
+the programmer a way to programmatically choose which physical input port is "wired" to
+the crossbar video decoder output port.  The crossbar video decoder output port pin is in turn
+connected by the graph builder to the "true" device video capture filter that one would normally consider
 to reside at the start of the capture graph.  In other words, the programmer does not, and cannot,
 insert crossbars manually.
 
-The crossbar reference:  
+The crossbar reference:
 
 http://msdn.microsoft.com/library/default.asp?url=/library/en-us/directshow/htm/workingwithcrossbars.asp
 
-3.  The issue is this:  
+3.  The issue is this:
 
 vic, by a reading of the tcl source code in ui-ctrlmenu.tcl, considers
 the objects "inputDevices" to be separate and distinct from the objects "grabbers".  A case
@@ -100,11 +100,11 @@ When tcl "inputDevices" are created in the current programming model in DirectSh
 the filter graph and the associated filter graph builder
 do not yet exist.  The filter graph is required, however, to locate the crossbar, and the crossbar
 in turn is inspected for physical input port names, such as Composite-in and s-video.  Because
-the graph builder does not exist when inputDevices is created, the UI cannot be populated 
+the graph builder does not exist when inputDevices is created, the UI cannot be populated
 with physical port names from which the user can choose to capture.
 
-The graph builder comes into being when a DirectShowGrabber object is created when the user clicks 
-Transmit, and only when the grabber exists does sufficient information exist for the 
+The graph builder comes into being when a DirectShowGrabber object is created when the user clicks
+Transmit, and only when the grabber exists does sufficient information exist for the
 crossbar to be located, its physical port names inspected, and logical wiring configured.
 
 Two suggestions on how this model might be modified to give the user back the optoin
@@ -118,7 +118,7 @@ b) totally rework the code, and possibly vic's object model, so that grabbers ex
 input devices are created.  Probably not a good approach, but it is one possibility.
 
 */
-#define _WIN32_DCOM 
+#define _WIN32_DCOM
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
@@ -183,7 +183,7 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
    HRESULT         hr;
    WCHAR           nameBufW[NAMEBUF_LEN];
 
-   /* Reference:  various, including 
+   /* Reference:  various, including
       - Pesce, Chapter 11
       - http://msdn.microsoft.com/library/default.asp?url=/library/en-us/directshow/htm/samplegrabberfilter.asp
    */
@@ -194,14 +194,16 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
    decimate_ = 2;  //default
    cb_mutex_=0;
    crossbar_ = crossbarCursor_ = NULL;
+   pDVVideoDecoder_=0;
+   pDVDecoderBaseFilter_=0;
    pNullBaseFilter_=0;
    pSampleGrabber_=0;
-   pGrabberBaseFilter_=0;    
+   pGrabberBaseFilter_=0;
    pMediaControl_=0;
    pGraph_=0;
    pBuild_=0;
    dwRegister_=0;
-   pCaptureFilter_ = filt;   
+   pCaptureFilter_ = filt;
    pXBar_   = NULL;
    pFilter_ = NULL;
    capturing_=0;
@@ -217,6 +219,7 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
    have_I420_ = false;
    have_UYVY_ = false;
    have_YUY2_ = false;
+   have_DVSD_ = false;
 
    setport("external-in");
 
@@ -236,8 +239,8 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
    // callback mutex
    cb_mutex_ = CreateMutex(NULL, FALSE, NULL);
 
-   callback_           = new Callback();   
-   callback_->grabber  = this;     
+   callback_           = new Callback();
+   callback_->grabber  = this;
    debug_msg("DirectShowGrabber::DirectShowGrabber():  callback created, grabber set\n");
 
    // Make a graph builder object we can use for capture graph building
@@ -275,7 +278,7 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
    // Add the capture filter (obtained by the DirectShowDevice Scanner) to the filter graph
    //hr = pGraph_->AddFilter(pCaptureFilter_, L"VicCaptureFilter");
    hr = pGraph_->AddFilter(pCaptureFilter_, nameBufW);
-    
+
    debug_msg("DirectShowGrabber::DirectShowGrabber():  capture filter added to graph: %d\n", hr);
    //IAMVideoCompression *pVC;
    /*pCaptureFilter_->AddRef();
@@ -327,18 +330,32 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
    setCaptureOutputFormat();
 
    if (findCrossbar(pCaptureFilter_)) {
-         routeCrossbar();   
+         routeCrossbar();
    }
 
    ZeroMemory(&mt_, sizeof(AM_MEDIA_TYPE));
    mt_.majortype = MEDIATYPE_Video;
 
-   if (have_I420_) {
-	   mt_.subtype = MEDIASUBTYPE_I420; // Planar YUV 420
-   } else if (have_UYVY_) {
-       mt_.subtype = MEDIASUBTYPE_UYVY; // Packed YUV 420
-   } else if (have_YUY2_) {
-       mt_.subtype = MEDIASUBTYPE_YUY2; // Packed YUV 420
+   if (cformat_ = CF_422) {
+	   if (have_YUY2_) {
+		   mt_.subtype = MEDIASUBTYPE_YUY2; // Packed YUV 422
+	   } else if (have_UYVY_) {
+		   mt_.subtype = MEDIASUBTYPE_UYVY; // Packed YUV 422
+	   } else if (have_I420_) {
+		   mt_.subtype = MEDIASUBTYPE_I420; // Planar YUV 420
+	   } else {
+		   mt_.subtype = MEDIASUBTYPE_YUY2;
+	   }
+   } else {
+	   if (have_I420_) {
+		   mt_.subtype = MEDIASUBTYPE_I420; // Planar YUV 420
+	   } else if (have_YUY2_) {
+		   mt_.subtype = MEDIASUBTYPE_YUY2; // Packed YUV 422
+	   } else if (have_UYVY_) {
+		   mt_.subtype = MEDIASUBTYPE_UYVY; // Packed YUV 422
+	   } else {
+		   mt_.subtype = MEDIASUBTYPE_YUY2;
+	   }
    }
 
    hr = pSampleGrabber_->SetMediaType(&mt_);
@@ -353,15 +370,37 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
    }
    debug_msg("DirectShowGrabber::DirectShowGrabber():  graph media control interface acquired\n");
 
+   if (have_DVSD_) {
+	   // Get the DV Video Codec DS default filter
+	   hr = CoCreateInstance(CLSID_DVVideoCodec, NULL, CLSCTX_INPROC_SERVER,
+		   IID_IBaseFilter, (LPVOID *)&pDVDecoderBaseFilter_);
+	   if (FAILED(hr)) {
+		   Grabber::status_=-1;
+		   return;
+	   }
+	   debug_msg("DirectShowGrabber::DirectShowGrabber():  DV Video Codec interface acquired\n");
+
+	   hr = pDVDecoderBaseFilter_->QueryInterface(IID_IIPDVDec, (void**)&pDVVideoDecoder_);
+	   debug_msg("DirectShowGrabber::DirectShowGrabber():  Sample Grabber interface acquired\n");
+
+	   // Add the DV Video Codec to the graph
+	   hr = pGraph_->AddFilter(pDVDecoderBaseFilter_, L"Vic DV Video Decoder");
+	   if (FAILED(hr)) {
+		   Grabber::status_=-1;
+		   return;
+	   }
+	   debug_msg("DirectShowGrabber::DirectShowGrabber():  Null Renderer added to graph\n");
+   }
+
    IMoniker * pMoniker = NULL;
    IRunningObjectTable *pROT = NULL;
 
    // register the filter graph instance in the Running Object Table (ROT)
    // so can use GraphEdit to view graph, e.g.
-   //    in GraphEdit's File menu, click "Connect to Remote Graph..." 
+   //    in GraphEdit's File menu, click "Connect to Remote Graph..."
    if (SUCCEEDED(GetRunningObjectTable(0, &pROT))) {
 	   const size_t STRING_LENGTH = 256;
-	   
+
 	   WCHAR wsz[STRING_LENGTH];
 	   swprintf(wsz, STRING_LENGTH, L"FilterGraph %08x pid %08x", (DWORD_PTR)pGraph_, GetCurrentProcessId());
 
@@ -387,7 +426,7 @@ DirectShowGrabber::~DirectShowGrabber() {
 
     CloseHandle(cb_mutex_);
 
-	// unregister the filter graph instance in the Running Object Table (ROT). 
+    // unregister the filter graph instance in the Running Object Table (ROT).
     IRunningObjectTable *pROT;
     if (SUCCEEDED(GetRunningObjectTable(0, &pROT))) {
         pROT->Revoke(dwRegister_);
@@ -397,6 +436,10 @@ DirectShowGrabber::~DirectShowGrabber() {
     // Release COM objects in reverse order of instantiation
     callback_->Release();
     //delete callback; - done by above Release() call
+    if (have_DVSD_) {
+        pDVVideoDecoder_->Release();
+        pDVDecoderBaseFilter_->Release();
+    }
     pNullBaseFilter_->Release();
     pSampleGrabber_->Release();
     pGrabberBaseFilter_->Release();
@@ -412,17 +455,17 @@ bool DirectShowGrabber::findCrossbar(IBaseFilter *pCapF) {
 
    debug_msg("DirectShowGrabber::FindCrossbar()...\n");
 
-   hr = pBuild_->FindInterface(&LOOK_UPSTREAM_ONLY, NULL, pCapF, IID_IAMCrossbar, 
+   hr = pBuild_->FindInterface(&LOOK_UPSTREAM_ONLY, NULL, pCapF, IID_IAMCrossbar,
                              (void**)&pXBar_);
 
    if ( SUCCEEDED(hr) ) {
       addCrossbar(pXBar_);
       hr = pXBar_->QueryInterface(IID_IBaseFilter, (void**)&pFilter_);
       if ( SUCCEEDED(hr) ) {
-	     debug_msg("DirectShowGrabber::FindCrossbar()...Found and added\n");
+         debug_msg("DirectShowGrabber::FindCrossbar()...Found and added\n");
          //findCrossbar(pFilter_);
          //pFilter_.Release();
-	     return TRUE;
+         return TRUE;
       }
    }
    return FALSE;
@@ -438,10 +481,10 @@ void DirectShowGrabber::addCrossbar(IAMCrossbar *xbar) {
    pCross = new Crossbar(xbar);
 
    if( crossbar_ == NULL ) {
-      crossbar_ = pCross;   
+      crossbar_ = pCross;
    }
    else {
-      crossbarCursor_->next = pCross;      
+      crossbarCursor_->next = pCross;
    }
    crossbarCursor_ = pCross;
 }
@@ -453,12 +496,12 @@ void DirectShowGrabber::routeCrossbar() {
     long        output           = -1;
     long        input            = -1;
     int         videoDecoderPort = -1;
-    int		    port;
+    int         port;
     long        related;
-    long        pinType;    
+    long        pinType;
     IAMCrossbar *xb;
 
-    if( crossbar_ == NULL ) return;        
+    if( crossbar_ == NULL ) return;
 
     xb = crossbar_->getXBar();
 
@@ -470,16 +513,16 @@ void DirectShowGrabber::routeCrossbar() {
     for( int i = 0; i < input; ++i ) {
 	xb->get_CrossbarPinInfo(TRUE, i, &related, &pinType);
 	if( pinType == PhysConn_Video_SVideo ) {
-	    svideoPort = i;            
+	    svideoPort = i;
 	}
 	if( pinType == PhysConn_Video_Composite ) {
-	    compositePort = i;            
+	    compositePort = i;
 	}
     }
     for( int i = 0; i < output; ++i ) {
 	xb->get_CrossbarPinInfo(FALSE, i, &related, &pinType);
 	if( pinType == PhysConn_Video_VideoDecoder ) {
-	    videoDecoderPort = i;           
+	    videoDecoderPort = i;
 	    break;
 	}
     }
@@ -491,7 +534,7 @@ void DirectShowGrabber::routeCrossbar() {
 	port = 0;
     }
 
-    if( xb->CanRoute(videoDecoderPort, port) == S_FALSE ) 
+    if( xb->CanRoute(videoDecoderPort, port) == S_FALSE )
 	debug_msg("DirectShowGrabber::routeCrossbar():  cannot route input pin %d to output pin %d\n", port, videoDecoderPort);
     else {
 	debug_msg("DirectShowGrabber::routeCrossbar() routing pin %d to pin %d\n", port, videoDecoderPort);
@@ -516,14 +559,14 @@ void DirectShowGrabber::start() {
        debug_msg("DirectShowGrabber::DirectShowGrabber():  builder render stream\n");
    else {
        debug_msg("DirectShowGrabber::DirectShowGrabber():  FAILED to builder render stream: %x\n", hr);
-       // This _usually_ fails because RendersStream has already been called - we should really 
+       // This _usually_ fails because RendersStream has already been called - we should really
        // diassemble the filterGraph and rebuild it when we change stuff.
        //stop();
        //return;
    }
 
    WaitForSingleObject(cb_mutex_, INFINITE);
-   
+
    capturing_  = 1;
    last_frame_ = NULL;
 
@@ -554,7 +597,7 @@ void DirectShowGrabber::stop() {
    //showErrorMessage(hr);
    ReleaseMutex(cb_mutex_);
 
-   capturing_  = 0; 
+   capturing_  = 0;
    last_frame_ = 0;
 
    Grabber::stop();
@@ -573,17 +616,31 @@ void DirectShowGrabber::fps(int f) {
 
 void DirectShowGrabber::setsize() {
 
-   if (max_width_ >= D1_BASE_WIDTH){
-	  max_width_ = D1_BASE_WIDTH;
-	  max_height_ = D1_BASE_HEIGHT;
+   if (max_width_ > D1_BASE_WIDTH){
+       max_width_ = D1_BASE_WIDTH;
+       max_height_ = D1_BASE_HEIGHT;
    }
 
-   if (decimate_ == 1){  //i.e. Large 
+   if (decimate_ == 1 && !have_DVSD_){  //i.e. Large
        width_ = max_width_;
        height_ = max_height_;
    } else {
        width_ = basewidth_  / decimate_;
        height_ = baseheight_ / decimate_;
+   }
+
+   if (have_DVSD_) {
+       switch(decimate_) {
+           case 1:
+             pDVVideoDecoder_->put_IPDisplay(DVRESOLUTION_FULL);
+             break;
+           case 2:
+             pDVVideoDecoder_->put_IPDisplay(DVRESOLUTION_HALF);
+             break;
+           case 4:
+             pDVVideoDecoder_->put_IPDisplay(DVRESOLUTION_QUARTER);
+             break;
+       }
    }
 
    debug_msg("DirectShowGrabber::setsize: %dx%d\n", width_, height_);
@@ -615,12 +672,12 @@ void DirectShowGrabber::capture(BYTE *frameBuf, long bufLen) {
 int DirectShowGrabber::grab() {
    int rval;
 
-   
+
    //debug_msg("DirectShowGrabber::grab: thread=%x w=%d h=%d bw=%d bh=%d frame_=%p fsize_=%d in=%dx%d out=%dx%d\n",
    //          GetCurrentThreadId(),
    //          width_, height_, basewidth_, baseheight_, frame_, framesize_,
    //          inw_, inh_, outw_, outh_);
-  
+
    WaitForSingleObject(cb_mutex_, INFINITE);
 
    if( last_frame_ == NULL || capturing_ == 0 ) {
@@ -632,18 +689,22 @@ int DirectShowGrabber::grab() {
    case CF_CIF:
      if (have_I420_)
        planarYUYV420_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+     else if (have_YUY2_)
+       packedYUYV422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
      else if (have_UYVY_)
        packedUYVY422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
-     else if (have_YUY2_)
+	 else
        packedYUYV422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
      break;
 
    case CF_422:
-     if (have_I420_)
-       planarYUYV420_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+     if (have_YUY2_)
+       packedYUYV422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
      else if (have_UYVY_)
        packedUYVY422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
-     else if (have_YUY2_)
+     else if (have_I420_)
+       planarYUYV420_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+	 else
        packedYUYV422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
      break;
    }
@@ -750,9 +811,11 @@ int DirectShowGrabber::getCaptureCapabilities() {
                        if (pmtConfig->subtype == MEDIASUBTYPE_I420) {
                          have_I420_ = true; // Planar YUV 420
                        } else if (pmtConfig->subtype == MEDIASUBTYPE_UYVY) {
-                           have_UYVY_ = true; // Packed YUV 420
+                           have_UYVY_ = true; // Packed YUV 422
                        } else if (pmtConfig->subtype == MEDIASUBTYPE_YUY2) {
-                           have_YUY2_ = true; // Packed YUV 420
+                           have_YUY2_ = true; // Packed YUV 422
+                       } else if (pmtConfig->subtype == MEDIASUBTYPE_dvsd) {
+                           have_DVSD_ = true; // DV Standard definition
                        }
 
                        debug_msg("Windows GDI BITMAPINFOHEADER follows:\n");
@@ -820,20 +883,21 @@ void DirectShowGrabber::setCaptureOutputFormat() {
           if (have_I420_)
               mediasubtype = MEDIASUBTYPE_I420; // Planar YUV 420
           else if (have_UYVY_)
-              mediasubtype = MEDIASUBTYPE_UYVY; // Packed YUV 420
+              mediasubtype = MEDIASUBTYPE_UYVY; // Packed YUV 422
           else if (have_YUY2_)
-              mediasubtype = MEDIASUBTYPE_YUY2; // Packed YUV 420
+              mediasubtype = MEDIASUBTYPE_YUY2; // Packed YUV 422
         break;
 
       case CF_422:
           if (have_I420_)
               mediasubtype = MEDIASUBTYPE_I420; // Planar YUV 420
           else if (have_UYVY_)
-              mediasubtype = MEDIASUBTYPE_UYVY; // Packed YUV 420
+              mediasubtype = MEDIASUBTYPE_UYVY; // Packed YUV 422
           else if (have_YUY2_)
-              mediasubtype = MEDIASUBTYPE_YUY2; // Packed YUV 420
+              mediasubtype = MEDIASUBTYPE_YUY2; // Packed YUV 422
           break;
       }
+
       for (int iFormat = 0; iFormat < iCount; iFormat++) {
          hr = pConfig->GetStreamCaps(iFormat, &pmtConfig, (BYTE *)&scc);
          //showErrorMessage(hr);
@@ -855,8 +919,8 @@ void DirectShowGrabber::setCaptureOutputFormat() {
                     //pVih->bmiHeader.biHeight    = height_;
                     //pVih->bmiHeader.biSizeImage = DIBSIZE(pVih->bmiHeader);
                     // AvgTimePerFrame value that specifies the video frame'
-                    // average display time, in 100-nanosecond units. 
-                    //if (fps_) 
+                    // average display time, in 100-nanosecond units.
+                    //if (fps_)
                     //pVih->AvgTimePerFrame = 10000000/fps_;
 
                     debug_msg("fps_= %d, AvgTimePerFrame: %d\n", fps_, pVih->AvgTimePerFrame);
@@ -913,7 +977,7 @@ void DirectShowGrabber::setCaptureOutputFormat() {
            width_  = curr_w;
            height_ = curr_h;
            debug_msg("DirectShowGrabber::setCaptureOutputFormat:  format set to near res: %dx%d\n",width_,height_);
-      } else 
+      } else
            debug_msg("DirectShowGrabber::setCaptureOutputFormat:  format set\n");
    }
    else
@@ -953,11 +1017,21 @@ int DirectShowGrabber::command(int argc, const char* const* argv) {
 	 if (strcmp(argv[2], "auto") == 0)
 		   ;
 	 else if (strcmp(argv[2], "pal") == 0) {
-		basewidth_  = CIF_BASE_WIDTH;
-		baseheight_ = CIF_BASE_HEIGHT;
+		 if (have_DVSD_) { // DV Standard definition
+			 basewidth_  = 720;
+			 baseheight_ = 576;
+		 } else {
+			 basewidth_  = CIF_BASE_WIDTH;
+			 baseheight_ = CIF_BASE_HEIGHT;
+		 }
 	 } else if (strcmp(argv[2], "ntsc") == 0) {
-		basewidth_  = NTSC_BASE_WIDTH;
-		baseheight_ = NTSC_BASE_HEIGHT;
+		 if (have_DVSD_) { // DV Standard definition
+			 basewidth_  = 720;
+			 baseheight_ = 480;
+		 } else {
+			 basewidth_  = NTSC_BASE_WIDTH;
+			 baseheight_ = NTSC_BASE_HEIGHT;
+		 }
 	 }
          if (running_) {
 		   stop();
@@ -984,7 +1058,7 @@ int DirectShowGrabber::command(int argc, const char* const* argv) {
 //#########################################################################
 // DirectShowDevice class
 
-DirectShowDevice::DirectShowDevice(char *friendlyName, IBaseFilter *pCapFilt) : InputDevice(friendlyName) {  
+DirectShowDevice::DirectShowDevice(char *friendlyName, IBaseFilter *pCapFilt) : InputDevice(friendlyName) {
 
    attri_ = new char[128];
    attri_[0] = 0;
@@ -992,10 +1066,10 @@ DirectShowDevice::DirectShowDevice(char *friendlyName, IBaseFilter *pCapFilt) : 
    debug_msg("new DirectShowDevice():  friendlyName=%s\n", friendlyName);
    pDirectShowFilter_  = pCapFilt;
    DirectShowGrabber o(pDirectShowFilter_, "420", friendlyName);
-   
+
    strcat(attri_, "format { 420 422 cif } size { ");
-	   
-   if (o.minHeight() > (CIF_BASE_HEIGHT / 2)) {
+
+   if ((o.minHeight() > (CIF_BASE_HEIGHT / 2)) && !o.hasDV_SD()) {
      strcat(attri_, "large");
    } else if (o.maxWidth() < NTSC_BASE_WIDTH) {
      strcat(attri_, "small cif");
@@ -1012,10 +1086,10 @@ DirectShowDevice::DirectShowDevice(char *friendlyName, IBaseFilter *pCapFilt) : 
        strcat(attri_, "Composite ");
      }
    }else{
-	   strcat(attri_, "external-in ");
+       strcat(attri_, "external-in ");
    }
 
-   strcat(attri_, "} "); 
+   strcat(attri_, "} ");
    attributes_ = attri_;
 }
 
@@ -1049,7 +1123,7 @@ DirectShowScanner::DirectShowScanner():pMoniker_(0)
 	int             devNum;
 	char            nameBuf[NAMEBUF_LEN];
 
-	// Reference:  Pesce, pp 54-56.   
+	// Reference:  Pesce, pp 54-56.
 
 	debug_msg("new DirectShowScanner()\n");
 
