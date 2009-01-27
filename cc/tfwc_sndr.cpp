@@ -58,7 +58,9 @@ TfwcSndr::TfwcSndr() :
 	ntep_(0),
 	nsve_(0),
 	epoch_(1),
-	jacked_(0)
+	jacked_(0),
+	begins_(0),
+	ends_(0)
 {
 	// allocate tsvec_ in memory
 	tsvec_ = (double *)malloc(sizeof(double)* TSZ);
@@ -125,27 +127,21 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		nakp_++;		// number of ackvec packet received
 		//ackv_ = ackv;	// store ackvec
 
-		// just acked seqno (head of ackvec)
-		jacked_ = end - 1;
+		// get start/end seqno that this XR chunk reports
+		begins_ = begin;
+		ends_ = end;
+
+		// just acked seqno (head seqno of this ackvec)
+		jacked_ = ends_ - 1;
 
 		// generate seqno vec
-		gen_seqvec(ackv);
+		gen_seqvec(begins_, ends_, jacked_, ackv);
 
 		// generate margin vector
-		marginvec(ackv);
+		marginvec(jacked_);
 
 		// detect loss
-		int pt = mvec_[DUPACKS - 1] - 1;
-
-		// begin
-		begin = aoa_;
-
-		// end
-		if (pt < 0)
-			end = 0;
-		else
-			end = (u_int16_t) pt;
-
+		//int pt = mvec_[DUPACKS - 1] - 1;
 		is_loss_ = detect_loss(end, begin);
 
 		// TFWC is not turned on (i.e., no packet loss yet)

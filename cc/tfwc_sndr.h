@@ -52,7 +52,7 @@
 #define T_RTTVAR_BITS	2	// XXX not used
 #define T_SRTT_BITS		3	// XXX not used
 
-#define LEN	16
+#define BITLEN	16
 
 class TfwcSndr {
 public:
@@ -101,34 +101,32 @@ protected:
 	// get the first position in ackvec where 1 is marked
 	inline u_int16_t get_head_pos(u_int16_t ackvec) {
 		int l;
-		for (l = 0; l < LEN; l++) {
+		for (l = 0; l < BITLEN; l++) {
 			if(GET_HEAD_VEC(ackvec, l))
 				break;
 		}
-		return (LEN - l);
+		return (BITLEN - l);
 	}
 	// get the last position in ackvec where 1 is marked
 	inline u_int16_t get_tail_pos(u_int16_t ackvec) {
 		int l;
-		for (l = 0; l < LEN; l++) {
+		for (l = 0; l < BITLEN; l++) {
 			if(GET_TAIL_VEC(ackvec, l))
 				break;
 		}
 		return (l + 1);
 	}
 	// generate margin vector
-	inline void marginvec(u_int16_t vec) {
-		int hseq = get_head_pos(vec) + aoa_;	// ackvec head seqno
-
+	inline void marginvec(u_int16_t hseq) {
 		for (int i = 0; i < DUPACKS; i++) 
 			// round up if it is less than zero
 			mvec_[i] = ((hseq - i) < 0) ? 0 : (hseq - i);
 	}
 	// generate seqno vector (interpret ackvec to real sequence numbers)
-	inline void gen_seqvec(u_int16_t vec) {
-		int hseq = jacked_;		// ackvec head seqno
-		int cnt = hseq - aoa_;	// number of packets in ackvec
-		int offset = 0;			// if the bit is zero, then increment 
+	inline void gen_seqvec(u_int16_t begins, u_int16_t ends, 
+			u_int16_t hseq, u_int16_t vec) {
+		int cnt = ends - begins;	// number of packets in ackvec
+		int offset = 0;				// if the bit is zero, then increment 
 		
 		for (int i = 0; i < cnt; i++) {
 			if( CHECK_BIT_AT(vec, (cnt-i)) )
@@ -148,9 +146,8 @@ protected:
 				mvec_[0], mvec_[1], mvec_[2]);
 	}
 	// printf seqvec
-	inline void print_seqvec(u_int32_t vec) {
-        int hseq = get_head_pos(vec) + aoa_;    // ackvec head seqno
-        int cnt = hseq - aoa_;  // number of packets in ackvec
+	inline void print_seqvec(u_int16_t begins, u_int16_t ends) {
+        int cnt = ends - begins;  // number of packets in ackvec
 
 		printf("\tsequence numbers: (");
 		for (int i = 0; i < cnt; i++)
@@ -239,6 +236,10 @@ private:
 
 	// first lost packet (used only at the very first packet loss)
 	int first_lost_pkt_;
+
+	// XR chunk begin/end
+	u_int16_t begins_;	// start seqno that this XR chunk reports
+	u_int16_t ends_;	// end seqno + 1 that this XR chunk reports
 };
 
 #endif
