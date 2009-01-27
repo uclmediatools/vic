@@ -57,7 +57,6 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 {
 	// variables
 	int cnt		= 0;
-	int offset	= 0;
 	int num		= 0;
 
 	// parse the received seqno and ackofack
@@ -84,22 +83,24 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 			// then, set this packet as received (this is important)
 			SET_BIT_VEC(tfwcAV, 1);
 		}
+
+		// start seqno that this AckVec is reporting
+		if (ackofack_ != 0)
+			begins_ = ackofack_ + 1;
+		else
+			begins_ = 1;
+
+		// end seqno is current seqno plus one (according to RFC 3611)
+		ends_ = currseq_ + 1;
 		
 		// number of elements in tfwcAV
-		num = currseq_ - ackofack_ - cnt;
+		num = ends_ - begins_;
 
-		// trim ackvec
-		offset = ((num - DUPACKS) < 0) ? 0 : (num - DUPACKS);
-
-		if (ackofack_)
-			trimvec(tfwcAV, offset);
+		//if (ackofack_)
+		//	trimvec(tfwcAV, offset);
 
 		// set this seqno to the prevseq before exit
 		prevseq_ = currseq_;
-
-		// set XR parameters
-		begins_ = ackofack_;
-		ends_ = currseq_ + 1;
 	}
 	// parse timestamp
 	else if (type == XR_BT_3) {

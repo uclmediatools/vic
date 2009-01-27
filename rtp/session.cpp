@@ -691,8 +691,8 @@ void SessionManager::send_xreport(CtrlHandler* ch, int bt, int bye)
 			xr->xr_flags = htons(XR_BT_1 << 8);
 
 			// make 'begin_seq' equal to 'end_seq'
-			xr->begin_seq = htons(seqno_);
-			xr->end_seq = htons(seqno_);
+			xr->begin_seq = htons(tfwc_rcvr_begins());
+			xr->end_seq = htons(tfwc_rcvr_ends());
 
 			// get ackvec from TfwcRcvr
 			xr->chunk = htons(tfwc_rcvr_getvec());

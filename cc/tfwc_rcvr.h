@@ -59,7 +59,7 @@ protected:
 	u_int16_t prevseq_;		// previous sequence number
 	u_int16_t ackofack_;	// ackofack
 	u_int16_t begins_;		// begin seqno that XR chunk is reporting
-	u_int16_t ends_;		// end seqno that XR chunk is reporting
+	u_int16_t ends_;		// end seqno + 1 that XR chunk is reporting
 
 private:
 	// trim ackvec
