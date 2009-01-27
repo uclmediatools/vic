@@ -409,9 +409,12 @@ void Grabber::set_size_422(int w, int h)
 	outh_ = h;
 
 	framesize_ = w * h;
-	int n = 2 * framesize_ + 2 * GRABBER_VPAD * w;
-	framebase_ = new u_char[n];
-	memset(framebase_, 0x80, n);
+	int ny = framesize_ + GRABBER_VPAD * w; // Y size
+	int nuv = ny;  // U + V size
+	framebase_ = new u_char[ny + nuv];
+	/* initialize to black */
+	memset(framebase_, 0, ny);
+	memset(framebase_ + ny, 0x80, nuv);
 	frame_ = framebase_ + GRABBER_VPAD * w;
 	crinit(w, h);
 
@@ -434,10 +437,12 @@ void Grabber::set_size_420(int w, int h)
 
 	int s = w * h;
 	framesize_ = s;
-	int n = s + (s >> 1) + 2 * GRABBER_VPAD * outw_;
-	framebase_ = new u_char[n];
-	/* initialize to gray */
-	memset(framebase_, 0x80, n);
+	int ny = s + GRABBER_VPAD * outw_;  // Y size
+	int nuv = (s >> 1) + GRABBER_VPAD * outw_; // U + V size
+	framebase_ = new u_char[ny + nuv];
+	/* initialize to black */
+	memset(framebase_, 0, ny);
+	memset(framebase_ + ny, 0x80, nuv);;
 	frame_ = framebase_ + GRABBER_VPAD * outw_;
 	crinit(w, h);
 
@@ -507,10 +512,12 @@ void Grabber::set_size_cif(int w, int h)
 	}
 	int s = outw_ * outh_;
 	framesize_ = s;
-	int n = s + (s >> 1) + 2 * GRABBER_VPAD * outw_;
-	framebase_ = new u_char[n];
-	/* initialize to gray */
-	memset(framebase_, 0x80, n);
+	int ny = s + GRABBER_VPAD * outw_;  // Y size
+	int nuv = (s >> 1) + GRABBER_VPAD * outw_; //U + V size
+	framebase_ = new u_char[ny + nuv];
+	/* initialize to black */
+	memset(framebase_, 0, ny);
+	memset(framebase_ + ny, 0x80, nuv);
 	frame_ = framebase_ + GRABBER_VPAD * outw_;
 	crinit(outw_, outh_);
 

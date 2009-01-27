@@ -336,7 +336,7 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
    ZeroMemory(&mt_, sizeof(AM_MEDIA_TYPE));
    mt_.majortype = MEDIATYPE_Video;
 
-   if (cformat_ = CF_422) {
+   if (cformat_ == CF_422) {
 	   if (have_YUY2_) {
 		   mt_.subtype = MEDIASUBTYPE_YUY2; // Packed YUV 422
 	   } else if (have_UYVY_) {
@@ -344,7 +344,7 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
 	   } else if (have_I420_) {
 		   mt_.subtype = MEDIASUBTYPE_I420; // Planar YUV 420
 	   } else {
-		   mt_.subtype = MEDIASUBTYPE_YUY2;
+		   mt_.subtype = MEDIASUBTYPE_UYVY;
 	   }
    } else {
 	   if (have_I420_) {
@@ -354,7 +354,7 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
 	   } else if (have_UYVY_) {
 		   mt_.subtype = MEDIASUBTYPE_UYVY; // Packed YUV 422
 	   } else {
-		   mt_.subtype = MEDIASUBTYPE_YUY2;
+		   mt_.subtype = MEDIASUBTYPE_UYVY;
 	   }
    }
 
@@ -694,7 +694,7 @@ int DirectShowGrabber::grab() {
      else if (have_UYVY_)
        packedUYVY422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
 	 else
-       packedYUYV422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+       packedUYVY422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
      break;
 
    case CF_422:
@@ -705,7 +705,7 @@ int DirectShowGrabber::grab() {
      else if (have_I420_)
        planarYUYV420_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
 	 else
-       packedYUYV422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+       packedUYVY422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
      break;
    }
 

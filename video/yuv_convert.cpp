@@ -399,7 +399,7 @@ bool planarYUYV420_to_planarYUYV422(char *dest, int destWidth, int destHeight,
     srca += ((srcWidth * upClip) >> 2);
 
     if (leftPad != 0 || rightPad != 0) { // if padding necessary on destination
-      for (i = 0; i < rows; i += 2) {
+      for (i = 0; i < (rows << 1); i += 2) {
 	// source information is every-other row, so double each line
 	dest += (leftPad >> 1);
 	memcpy(dest, srca, (srcWidth >> 1));
@@ -412,7 +412,7 @@ bool planarYUYV420_to_planarYUYV422(char *dest, int destWidth, int destHeight,
 	srca += (srcWidth >> 1);
       }
     } else { // if clipping necessary on source
-      for (i = 0; i < rows; i += 2) {
+      for (i = 0; i < (rows << 1); i += 2) {
 	srca += (leftClip >> 1);
 
 	// source information is every-other row, so double each line
@@ -438,7 +438,7 @@ bool planarYUYV420_to_planarYUYV422(char *dest, int destWidth, int destHeight,
     srca += ((srcWidth * upClip) >> 2);
 
     if (leftPad != 0 || rightPad != 0) { // if padding necessary on destination
-      for (i = 0; i < rows; i += 2) {
+      for (i = 0; i < (rows << 1); i += 2) {
 	// source information is every-other row, so double each line
 	dest += (leftPad >> 1);
 	memcpy(dest, srca, (srcWidth >> 1));
@@ -451,7 +451,7 @@ bool planarYUYV420_to_planarYUYV422(char *dest, int destWidth, int destHeight,
 	srca += (srcWidth >> 1);
       }
     } else { // if clipping necessary on source
-      for (i = 0; i < rows; i += 2) {
+      for (i = 0; i < (rows << 1); i += 2) {
 	srca += (leftClip >> 1);
 
 	// source information is every-other row, so double each line
@@ -471,7 +471,7 @@ bool planarYUYV420_to_planarYUYV422(char *dest, int destWidth, int destHeight,
     srca += destHeight * destWidth;
 
     // copy u and v information, doubling each row
-    for (int i = 0; i < destHeight; i += 2) {
+    for (int i = 0; i < (destHeight << 1); i += 2) {
       memcpy(dest, srca, (size_t) (destWidth >> 1)); // 1st copy to dest
       dest += destWidth >> 1;
       memcpy(dest, srca, (size_t) (destWidth >> 1)); // 2nd copy to dest
