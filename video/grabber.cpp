@@ -461,20 +461,6 @@ void Grabber::set_size_cif(int w, int h)
 
 	int ispal;
 	switch (h) {
-	case 576:
-		/* 4CIF */
-		ispal = 1;
-		outw_ = 704;
-		outh_ = 576;
-		break;
-
-	case 480:
-		/* NTSC */
-		ispal = 0;
-		outw_ = 704;
-		outh_ = 576;
-		break;
-
 	case 240:
 		/* 1/4 NTSC */
 		ispal = 0;
