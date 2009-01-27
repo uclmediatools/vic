@@ -58,7 +58,7 @@ TfwcSndr::TfwcSndr() :
 	ntep_(0),
 	nsve_(0),
 	epoch_(1),
-	just_acked_(0)
+	jacked_(0)
 {
 	// allocate tsvec_ in memory
 	tsvec_ = (double *)malloc(sizeof(double)* TSZ);
@@ -126,7 +126,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		//ackv_ = ackv;	// store ackvec
 
 		// just acked seqno (head of ackvec)
-		just_acked_ = get_head_pos(ackv) + aoa_;
+		jacked_ = end - 1;
 
 		// generate seqno vec
 		gen_seqvec(ackv);
@@ -136,7 +136,6 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 
 		// detect loss
 		int pt = mvec_[DUPACKS - 1] - 1;
-		u_int16_t begin, end;
 
 		// begin
 		begin = aoa_;

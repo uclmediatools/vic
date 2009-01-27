@@ -1244,7 +1244,7 @@ void SessionManager::cc_output()
 	int magic = (int) tfwc_magic();
 	debug_msg("cwnd: %d\n", magic);
 	// last acked seqno
-	int jack = (int) tfwc_sndr_just_acked();
+	int jack = (int) tfwc_sndr_jacked();
 	debug_msg("jack: %d\n", jack);
 
 	// while packet seqno is within "cwnd + jack", send that packet

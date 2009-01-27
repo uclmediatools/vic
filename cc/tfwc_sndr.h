@@ -71,7 +71,7 @@ public:
 	inline u_int16_t tfwc_sndr_get_aoa() { return aoa_; }
 
 	// return just acked seqno
-	inline u_int16_t tfwc_sndr_just_acked() { return just_acked_; }
+	inline u_int16_t tfwc_sndr_jacked() { return jacked_; }
 
 	// return tfwc controlled cwnd value
 	inline u_int32_t tfwc_magic() { return cwnd_; };
@@ -126,9 +126,9 @@ protected:
 	}
 	// generate seqno vector (interpret ackvec to real sequence numbers)
 	inline void gen_seqvec(u_int16_t vec) {
-		int hseq = get_head_pos(vec) + aoa_;	// ackvec head seqno
+		int hseq = jacked_;		// ackvec head seqno
 		int cnt = hseq - aoa_;	// number of packets in ackvec
-		int offset = 0;		// if the bit is zero, then increment 
+		int offset = 0;			// if the bit is zero, then increment 
 		
 		for (int i = 0; i < cnt; i++) {
 			if( CHECK_BIT_AT(vec, (cnt-i)) )
@@ -202,7 +202,7 @@ private:
 
 	u_int32_t *seqvec_;		// generated seqno vec
 	double *tsvec_;			// timestamp vector
-	u_int16_t just_acked_;	// just acked seqno (head of ackvec)
+	u_int16_t jacked_;		// just acked seqno (head of ackvec)
 	bool is_loss_;
 	bool is_first_loss_seen_;
 	bool is_tfwc_on_;
