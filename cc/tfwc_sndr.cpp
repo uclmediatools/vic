@@ -136,13 +136,15 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 
 		// generate seqno vec
 		gen_seqvec(begins_, ends_, jacked_, ackv);
+		//print_seqvec(begins_, ends_);
 
 		// generate margin vector
 		marginvec(jacked_);
 
 		// detect loss
-		//int pt = mvec_[DUPACKS - 1] - 1;
-		is_loss_ = detect_loss(end, begin);
+		// 	@begin: aoa_
+		// 	@end: mvec_[DUPACKS] - 1
+		is_loss_ = detect_loss(mvec_[DUPACKS-1]-1, aoa_);
 
 		// TFWC is not turned on (i.e., no packet loss yet)
 		if(!is_tfwc_on_) {
@@ -186,7 +188,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
  * detect packet loss in the received vector
  * @ret: true when there is a loss
  */
-bool TfwcSndr::detect_loss(u_int16_t end, u_int16_t begin) {
+bool TfwcSndr::detect_loss(int end, int begin) {
 	bool ret;	// 'true' when there is a loss
 	int lc = 0;	// loss counter
 
@@ -196,13 +198,19 @@ bool TfwcSndr::detect_loss(u_int16_t end, u_int16_t begin) {
 	bool is_there = false;
 
 	// generate tempvec elements
+	//printf("\tcomparison numbers: (");
 	for (int i = 0; i < numvec; i++) {
 		tempvec[i] = (begin + 1) + i;
+	//	printf(" %d", tempvec[i]);
 	}
+	//printf(" )\n");
+
+	// number of seqvec element
+	int numseq = ends_ - begins_;
 
 	// compare tempvec and seqvec
 	for (int i = 0; i < numvec; i++) {
-		for (int j = 0; j < numvec; j++) {
+		for (int j = 0; j < numseq; j++) {
 			if (tempvec[i] == seqvec_[j]) {
 				is_there = true;
 				break;

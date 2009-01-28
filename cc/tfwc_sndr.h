@@ -170,7 +170,7 @@ private:
 	void update_rtt(double tao);
 
 	// detect packet loss
-	bool detect_loss(u_int16_t, u_int16_t);
+	bool detect_loss(int, int);
 
 	// control congestion window
 	void control();
