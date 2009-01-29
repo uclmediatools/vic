@@ -84,6 +84,9 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 			SET_BIT_VEC(tfwcAV, 1);
 		}
 
+		// print ackvec
+		print_ackvec(ackofack_, currseq_, tfwcAV);
+
 		// start seqno that this AckVec is reporting
 		if (ackofack_ != 0)
 			begins_ = ackofack_ + 1;
@@ -106,4 +109,19 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 	else if (type == XR_BT_3) {
 		ts_echo_ = ts;
 	}
+}
+
+void TfwcRcvr::print_ackvec(u_int16_t begin, u_int16_t end, 
+		u_int16_t bitvec) {
+
+	int elm[256];
+	int cnt = end - begin;
+
+	printf("\tAckVec Built: ");
+	for (int i = 0; i < cnt; i++) {
+		if (CHECK_BIT_AT(bitvec, i+1))
+			elm[i] = (begin + 1) + i;
+		printf(" %d", elm[i]);
+	}
+	printf(" \n");
 }
