@@ -1243,7 +1243,8 @@ void SessionManager::cc_output()
 	// cwnd value
 	int magic = (int) tfwc_magic();
 	debug_msg("cwnd: %d\n", magic);
-	// last acked seqno
+
+	// just acked seqno
 	int jack = (int) tfwc_sndr_jacked();
 	debug_msg("jack: %d\n", jack);
 
@@ -1262,13 +1263,12 @@ void SessionManager::cc_output()
 		// move packet pointer
 		pb = nx;
 
-		// move head pointer
-		head_ = pb;
-
-		// if pb is not 0, then parse rtp header
-		if (pb != 0)
+		// if pb is not 0, 
+		// then move head pointer and parse rtp header
+		if (pb != 0) {
+			head_ = pb;
 			rh = (rtphdr *) pb->data;
-		else 
+		} else 
 			break;
 	} // end while
 }

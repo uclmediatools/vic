@@ -67,8 +67,13 @@ private:
 		tfwcAV = vec >> offset;
 	}
 
+	// print built AckVec
 	void print_ackvec(u_int16_t begin, u_int16_t end, 
 			u_int16_t bitvec);
+
+	/*
+	 * Variables (private)
+	 */
 	u_int32_t ts_echo_;	// for time stamp echoing
 };
 

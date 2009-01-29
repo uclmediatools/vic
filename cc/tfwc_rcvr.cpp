@@ -114,7 +114,7 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 void TfwcRcvr::print_ackvec(u_int16_t begin, u_int16_t end, 
 		u_int16_t bitvec) {
 
-	int elm[256];
+	int elm[64];
 	int cnt = end - begin;
 
 	printf("\tAckVec Built: ");
