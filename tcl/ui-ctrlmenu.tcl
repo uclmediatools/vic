@@ -789,6 +789,10 @@ proc build.device w {
 			set defaultFormat($d) $videoFormat
 			continue
 		}
+		if { [$d nickname] == "yuv" && ![yesno stillGrabber] } {
+			set defaultFormat($d) $videoFormat
+			continue
+		}
 		# this is fragile
 		$m add radiobutton -label [$d nickname] \
 			-command "select_device $d" \

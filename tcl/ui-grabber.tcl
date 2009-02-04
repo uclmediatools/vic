@@ -645,6 +645,21 @@ proc build.still w {
     pack $w.f.entry -side left -fill x -expand 1
 }
 
+proc build.yuv w {
+	set f [smallfont]
+	label $w.title -text "StillYuvGrabber"
+
+    frame $w.f -relief sunken -borderwidth 2
+    label $w.f.label  -font $f -anchor e -text "File"
+    
+    mk.entry $w.f set.still.frame "frame"
+
+    pack $w.title $w.f -fill x -expand 1
+    
+    pack $w.f.label -side left 
+    pack $w.f.entry -side left -fill x -expand 1
+}
+
 proc set.still.frame {w s } {
     global lastDevice
     $lastDevice file $s
