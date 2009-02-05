@@ -789,7 +789,7 @@ proc build.device w {
 			set defaultFormat($d) $videoFormat
 			continue
 		}
-		if { [$d nickname] == "yuv" && ![yesno stillGrabber] } {
+		if { [$d nickname] == "filedev" && ![yesno fileGrabber] } {
 			set defaultFormat($d) $videoFormat
 			continue
 		}

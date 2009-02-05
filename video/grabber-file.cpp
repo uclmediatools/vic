@@ -1,6 +1,7 @@
 /*
- * FILE:	grabber-yuv.cpp
+ * FILE:	grabber-file.cpp
  * AUTHOR:	Soo-Hyun Choi <s.choi@cs.ucl.ac.uk>
+ * 			Piers O'Hanlon <p.ohanlon@cs.ucl.ac.uk>
  *
  * Copyright (c) 2009 University College London
  * All rights reserved.
@@ -62,10 +63,10 @@ static const char rcsid[] =
 //#define DEBUG 1
 #undef DEBUG
 
-class StillYuvGrabber : public Grabber {
+class FileGrabber : public Grabber {
 public:
-	StillYuvGrabber();
-	virtual ~StillYuvGrabber();
+	FileGrabber();
+	virtual ~FileGrabber();
 	virtual int command(int argc, const char* const* argv);
 protected:
 	void start();
@@ -79,11 +80,11 @@ protected:
 	int num_frame_;		// current frame number
 };
 
-class StillYuvDevice : public InputDevice {
+class FileDevice : public InputDevice {
 public:
-    StillYuvDevice(const char* s);
+    FileDevice(const char* s);
     virtual int command(int argc, const char * const * argv);
-    virtual Grabber* still_yuv_grabber();
+    virtual Grabber* file_grabber();
 
     void load_file(const char * const file);
     char *frame_;
@@ -92,25 +93,25 @@ public:
 private:
 };
 
-static StillYuvDevice yuv_device("yuv");
+static FileDevice file_device("filedev");
 
-StillYuvDevice::StillYuvDevice(const char* s) : InputDevice(s),
+FileDevice::FileDevice(const char* s) : InputDevice(s),
 		frame_(NULL), len_(0), devstat_(-1)
 {
-    attributes_ = "format { 420 422 jpeg cif } size { small large cif }";
+	attributes_ = "format { 420 } size { small large cif }";
 
 #ifdef DEBUG
-    debug_msg("StillYuvDevice::StillYuvDevice name=%s\n", s);
+    debug_msg("FileDevice::FileDevice name=%s\n", s);
 #endif /* DEBUG */
 }
 
 /*
- * StillYuvDevice
+ * FileDevice
  */
-int StillYuvDevice::command(int argc, const char*const* argv) {
+int FileDevice::command(int argc, const char*const* argv) {
 #ifdef DEBUG
 	for (int i = 0; i < argc; i++)
-		debug_msg("StillYuvDevice\t%s\n", argv[i]);
+		debug_msg("FileDevice\t%s\n", argv[i]);
 #endif
     if (argc == 3)
     {
@@ -119,7 +120,7 @@ int StillYuvDevice::command(int argc, const char*const* argv) {
 		    const char* fmt = argv[2];
 			TclObject* o = 0;
 			if (strcmp(fmt, "cif") == 0) 
-				o = still_yuv_grabber();
+				o = file_grabber();
 		    if (o != 0)
 				Tcl::instance().result(o->name());
 		    return (TCL_OK);
@@ -133,14 +134,14 @@ int StillYuvDevice::command(int argc, const char*const* argv) {
     return (InputDevice::command(argc, argv));
 }
 
-Grabber* StillYuvDevice::still_yuv_grabber() {
-	return (new StillYuvGrabber());
+Grabber* FileDevice::file_grabber() {
+	return (new FileGrabber());
 }
 
 /*
  * File loading
  */
-void StillYuvDevice::load_file(const char * const f) {
+void FileDevice::load_file(const char * const f) {
     FILE *fp;
     struct stat s;
     
@@ -173,70 +174,50 @@ void StillYuvDevice::load_file(const char * const f) {
 /*
  * StillYuvGraber
  */
-int StillYuvGrabber::command(int argc, const char* const* argv) {
+int FileGrabber::command(int argc, const char* const* argv) {
 #ifdef DEBUG
-	debug_msg("StillYuvGrabber::command argc=%d\n", argc);
+	debug_msg("FileGrabber::command argc=%d\n", argc);
 	for (int i = 0; i < argc; i++)
 		debug_msg("\"%s\"\n", argv[i]);
 #endif
-	Tcl& tcl = Tcl::instance();
+	//Tcl& tcl = Tcl::instance();
 
-    if (argc == 2)
-    {
-        if (strcmp(argv[1], "status") == 0)
-        {
-            sprintf(tcl.buffer(), "%d", status_);
-            tcl.result(tcl.buffer());
-            return (TCL_OK);
-        }
-        if (strcmp(argv[1], "need-capwin") == 0)
-        {
-            tcl.result("0");
-            return (TCL_OK);
-        }
-    }
-
-    if (argc == 3)
-    {
-        if (strcmp(argv[1], "q") == 0)
-        {
-            return (TCL_OK);
-        }
-        if (strcmp(argv[1], "decimate") == 0)
-        {
+    if (argc == 3) {
+        if (strcmp(argv[1], "decimate") == 0) {
             decimate_ = atoi(argv[2]);
             setsize();
             if (running_)
                 start();
         }
-    }
-    return (Grabber::command(argc, argv));
+	}
+	
+	return (Grabber::command(argc, argv));
 }
 
-StillYuvGrabber::StillYuvGrabber() :
+FileGrabber::FileGrabber() :
 	width_(0), height_(0), num_frame_(0)
 {
 	// set device status 
-	status_ = yuv_device.devstat_;
+	status_ = file_device.devstat_;
 }
 
-StillYuvGrabber::~StillYuvGrabber() {
+FileGrabber::~FileGrabber() {
 #ifdef DEBUG
-    debug_msg("Destroy StillYuvGrabber\n");
+    debug_msg("Destroy FileGrabber\n");
 #endif
 }
 
-void StillYuvGrabber::start() {
+void FileGrabber::start() {
 	Grabber::start();
 }
 
-void StillYuvGrabber::stop() {
+void FileGrabber::stop() {
     cancel();
 }
 
-void StillYuvGrabber::setsize() {
+void FileGrabber::setsize() {
 #ifdef DEBUG
-	debug_msg("StillYuvGrabber::setsize()\n");
+	debug_msg("FileGrabber::setsize()\n");
 #endif
 
 	if(running_)
@@ -251,20 +232,20 @@ void StillYuvGrabber::setsize() {
 	allocref();
 }
 
-int StillYuvGrabber::grab() {
+int FileGrabber::grab() {
 #ifdef DEBUG
-	debug_msg("StillYuvGrabber::grab() called\n");
+	debug_msg("FileGrabber::grab() called\n");
 #endif
 
     int frc = 0; 
 
 	// "framesize_" is just the number of pixels, 
 	// so the number of bytes becomes "3 * framesize_ / 2"
-	memcpy (frame_, yuv_device.frame_ + num_frame_, 
+	memcpy (frame_, file_device.frame_ + num_frame_, 
 			framesize_ + (framesize_ >> 1));
 
 	if ((num_frame_ += framesize_ + (framesize_ >> 1)) 
-			< yuv_device.len_) {
+			< file_device.len_) {
 		// we are good here
 	} else {
 		num_frame_=0;

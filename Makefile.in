@@ -137,7 +137,7 @@ OBJ2 =	main.o iohandler.o timer.o idlecallback.o media-timer.o \
 	net/net.o net/net-ip.o net/net-addr.o net/net-ipv6.o \
 	net/mbus_handler.o net/mbus_engine.o net/group-ipc.o net/confbus.o \
 	rtp/session.o rtp/source.o rtp/transmitter.o rtp/pktbuf-rtp.o \
-	video/device.o video/grabber.o video/grabber-still.o video/grabber-yuv.o \
+	video/device.o video/grabber.o video/grabber-still.o video/grabber-file.o \
 	codec/encoder-h261.o codec/encoder-jpeg.o codec/encoder-raw.o \
 	codec/encoder-h263.o codec/encoder-h263v2.o codec/encoder-nv.o \
 	codec/encoder-cellb.o codec/encoder-pvh.o codec/compositor.o \

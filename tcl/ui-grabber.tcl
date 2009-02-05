@@ -645,9 +645,9 @@ proc build.still w {
     pack $w.f.entry -side left -fill x -expand 1
 }
 
-proc build.yuv w {
+proc build.filedev w {
 	set f [smallfont]
-	label $w.title -text "StillYuvGrabber"
+	label $w.title -text "FileGrabber"
 
     frame $w.f -relief sunken -borderwidth 2
     label $w.f.label  -font $f -anchor e -text "File"

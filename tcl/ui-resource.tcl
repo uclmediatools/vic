@@ -171,6 +171,7 @@ proc init_resources {} {
 	option add Vic.useJPEGforH261 false startupFile
 	option add Vic.useHardwareComp false startupFile
 	option add Vic.stillGrabber false startupFile 
+	option add Vic.fileGrabber false startupFile 
 	option add Vic.siteDropTime "300" startupFile
 	option add Vic.quality "0" startupFile
 	option add Vic.inputType "ntsc" startupFile
