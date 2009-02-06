@@ -134,6 +134,14 @@ struct rtcp_rr {
 /*
  * RTCP Extended Report.
  * (RFC 3611)
+ *
+ *  0                   1                   2                   3
+ *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * |      BT       | type-specific |         block length          |
+ * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * :             type-specific block contents                      :
+ * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  */
 #define XR_BT_1	0x01	// Loss RLE Report Block
 #define XR_BT_2	0x02	// Duplicate RLE Report Block
@@ -143,12 +151,11 @@ struct rtcp_xr {
 	// extended report block header
 	u_int16_t xr_flags;	/* BT:8 TS:8 */
 	u_int16_t xr_len;	/* XR report block length (in bytes)*/
-
-	// extended report block contents
-	u_int32_t ssrc;	/* ssrc of the RTP data pkt being reported upon by this */
-	u_int16_t begin_seq; /* first seqno that this block report */
-	u_int16_t end_seq;	/* last seqno that this block report plus 1 */
-	u_int16_t chunk;	/* extended report chunks */
+	// type-specific block contents
+	//u_int32_t ssrc;/* ssrc of the RTP data pkt being reported upon by this */
+	//u_int16_t begin_seq; /* first seqno that this block report */
+	//u_int16_t end_seq;	/* last seqno that this block report plus 1 */
+	//u_int16_t chunk;	/* extended report chunks */
 };
 
 #define RTCP_PT_SR	200	/* sender report */
@@ -190,8 +197,8 @@ struct rtcp_xr {
 /*
  * Motion JPEG encapsulation.
  *
- * 0                   1                   2                   3
- * 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *  0                   1                   2                   3
+ *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * |      MBZ      |                frag offset                    |
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

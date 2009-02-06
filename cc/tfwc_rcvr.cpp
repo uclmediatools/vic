@@ -47,17 +47,26 @@
 TfwcRcvr::TfwcRcvr() :
 	currseq_(0),
 	prevseq_(0),
-	ackofack_(0)
+	ackofack_(0),
+	begins_(0),
+	ends_(0),
+	currNumElm_(0),
+	prevNumElm_(0),
+	currNumVec_(0),
+	prevNumVec_(0)
 {
-	tfwcAV = 0;
+	tfwcAV = (u_int16_t *) malloc(sizeof(u_int16_t *));;
 }
 
 void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno, 
 				u_int16_t ackofack, u_int32_t ts) 
 {
 	// variables
-	int cnt		= 0;
-	int num		= 0;
+	int cnt		= 0;	// number of packet loss count
+	int off		= 0;	// number of zero to be carried on
+	int diffNumElm	= 0;	// difference of AckVec elements (curr vs. prev)
+	int diffNumVec	= 0;	// difference of AckVec array (curr vs. prev)
+	int addiNumVec	= 0;	// additional AckVec array required
 
 	// parse the received seqno and ackofack
 	if (type == XR_BT_1) {
@@ -65,27 +74,55 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 		currseq_ = seqno;
 		ackofack_ = ackofack;
 
+		// number of required AckVec element
+		currNumElm_	= currseq_ - ackofack_;
+		diffNumElm	= currNumElm_ - prevNumElm_;
+
+		// number of array required for building tfwcAV
+		currNumVec_	= getNumVec(currNumElm_);
+		diffNumVec	= currNumVec_ - prevNumVec_;
+
 		// there is no packet loss
 		if (currseq_ == prevseq_ + 1) {
 			// set next bit to 1
-			SET_BIT_VEC(tfwcAV, 1);
+			SET_BIT_VEC(tfwcAV[currNumVec_-1], 1);
 		} 
-		// we have one or more packet loss
+		// we have one or more packet losses
 		else {
 			// number of packet loss
 			cnt = currseq_ - prevseq_ - 1;
 
-			// set next bit to 0 equal to the number of lost packets
-			for (int i = 0; i < cnt; i++) {
-				SET_BIT_VEC(tfwcAV, 0);
+			// we need more AckVec array (maybe one or more)
+			if (currNumVec_ != prevNumVec_) {
+				// currently available spaces in the previous tfwcAV array
+				int num_avail = 16 - prevNumElm_%16;
+
+				// first, fill up zeros into those available spaces
+				for (int i = 0; i < num_avail; i++) {
+					SET_BIT_VEC(tfwcAV[prevNumVec_-1], 0);
+					cnt--;
+				}
+
+				// then, calculate "additional" AckVec array required
+				addiNumVec = getNumVec(cnt);
+
+				for (int i = 0; i < addiNumVec; i++) {
+					SET_BIT_VEC(tfwcAV[prevNumVec_ + i], 0);
+				}
+			}
+			// current num of AckVeck array can cope with the elements
+			else {
+				// set next bit 0 into AckVec (# of packet loss)
+				for (int i = 0; i < cnt; i++) 
+					SET_BIT_VEC(tfwcAV[currNumVec_-1], 0);
 			}
 
 			// then, set this packet as received (this is important)
-			SET_BIT_VEC(tfwcAV, 1);
+			SET_BIT_VEC(tfwcAV[currNumVec_-1], 1);
 		}
 
 		// print ackvec
-		print_ackvec(ackofack_, currseq_, tfwcAV);
+		//print_ackvec(ackofack_, currseq_, tfwcAV);
 
 		// start seqno that this AckVec is reporting
 		if (ackofack_ != 0)
@@ -95,19 +132,14 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 
 		// end seqno is current seqno plus one (according to RFC 3611)
 		ends_ = currseq_ + 1;
-		
-		// number of elements in tfwcAV
-		num = ends_ - begins_;
-
-		//if (ackofack_)
-		//	trimvec(tfwcAV, offset);
-
-		// set this seqno to the prevseq before exit
+	
+		// store seqno, num of AckVec elem, and num of AckVec array
 		prevseq_ = currseq_;
+		prevNumElm_ = currNumElm_;
+		prevNumVec_ = currNumVec_;
 	}
-	// parse timestamp
-	else if (type == XR_BT_3) {
-		ts_echo_ = ts;
+	else if (type == XR_BT_2) {
+		UNUSED(ts);	
 	}
 }
 

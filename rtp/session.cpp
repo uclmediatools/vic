@@ -652,58 +652,89 @@ void SessionManager::send_xreport(CtrlHandler* ch, int bt, int bye)
 	// declare XR packet
 	rtcp_xr* xr = (rtcp_xr*)(rh + 1);
 
-	// ssrc of XR source (currently unused)
-	int xrssrc = 0;	
-	xr->ssrc = htonl(xrssrc);	// UNUSED
+	// number of XR block contents (initialization)
+	int num_ssrc;	// number of ssrc entry
+	int num_begins;	// number of begin_seq entry
+	int num_ends;	// number of end_seq entry
+	int num_chunks;	// number of block chunks
+
+	// declare XR report block 
+	// (type specific report block)
+	u_char *rb = (u_char *) malloc(sizeof(u_char *));
+
+	int xrssrc;	// it is currently unused
 
 	// i am an RTP data sender, so i convey a packet seqno and ackofack
 	if (am_i_sender()) {
 		// this block is used for giving seqno and ackofack
 		if(bt == XR_BT_1) {
+			// number of block entries
+			num_ssrc = 1;
+			num_begins = 1;
+			num_ends = 1;
+			num_chunks = 1;
+
 			// set XR block flags (block type and length)
 			xr->xr_flags = htons(XR_BT_1 << 8);
 
+			// allocate report block in memory
+			rb = (u_char *) malloc(sizeof(xr) + num_ssrc 
+					+ num_begins + num_ends + num_chunks);
+
+			// set report block entry pointer
+			u_int32_t *ent = (u_int32_t *) (sizeof(xr) + rb);
+
+			// ssrc of XR source (currently unused)
+			xrssrc = 0; ent[0] = xrssrc;
+
 			// get current RTP data packet seqno from TfwcSndr
-			xr->begin_seq = htons(tfwc_sndr_get_seqno());
-			xr->end_seq = htons(tfwc_sndr_get_seqno() + 1);
+			ent[1] = 0;
+			ent[1] |= htons(tfwc_sndr_get_seqno());
+			ent[1] <<= 16;
+			ent[1] |= htons(tfwc_sndr_get_seqno() + 1);
 
 			// set ack of ack
-			xr->chunk = htons(tfwc_sndr_get_aoa());
+			ent[2] = 0;
+			ent[2] |= htons(tfwc_sndr_get_aoa());
+			ent[2] <<= 16;
 
 			//debug_msg("	SeqNo:		%d\n", tfwc_sndr_get_seqno());
 		} 
-		// this block is used for giving timestamp
-		else if(bt == XR_BT_3) {
-			// set XR block flags (block type and length)
-			xr->xr_flags = htons(XR_BT_3 << 8);
-
-			// get timestamp from TfwcSndr
-			xr->chunk = htonl(tfwc_sndr_get_ts());
-
-			//debug_msg("	TS:		%ld\n", tfwc_sndr_get_ts());
-		}
 	} 
 	// i am an RTP data receiver, so i convey ackvec information
 	else {
 		// this block is used for giving ackvec
 		if (bt == XR_BT_1) {
+			// number of block entries
+			num_ssrc = 1;
+			num_begins = 1;
+			num_ends = 1;
+
 			// set XR block type
 			xr->xr_flags = htons(XR_BT_1 << 8);
 
-			// make 'begin_seq' equal to 'end_seq'
-			xr->begin_seq = htons(tfwc_rcvr_begins());
-			xr->end_seq = htons(tfwc_rcvr_ends());
+			// number of AckVec array
+			num_chunks = tfwc_rcvr_numvec();
 
-			// get ackvec from TfwcRcvr
-			xr->chunk = htons(tfwc_rcvr_getvec());
-		}
-		// this block is used for giving timiestamp echo
-		else if (bt == XR_BT_3) {
-			// set XR block type
-			xr->xr_flags = htons(XR_BT_3 << 8);
-	
-			// get timestamp echo from TfwcRcvr
-			xr->chunk = htonl(tfwc_rcvr_ts_echo());
+			// allocate report block in memory
+			rb = (u_char *) malloc(sizeof(xr) + num_ssrc 
+					+ num_begins + num_ends + num_chunks);
+
+			// set report block entry pointer
+			u_int32_t *ent = (u_int32_t *) (sizeof(xr) + rb);
+
+			// ssrc of XR source (currently unused)
+			xrssrc = 0;
+			ent[0] = xrssrc;
+
+			// begin/end for AckVec
+			ent[1] = 0;
+			ent[1] |= htons(tfwc_rcvr_begins());
+			ent[1] <<= 16;
+			ent[1] |= htons(tfwc_rcvr_ends());
+
+			// get AckVec pointer from TfwcRcvr
+			//xr->chunk = htons(tfwc_rcvr_getvec_p());
 		}
 	} // end of if (am_i_sender())
 
@@ -1193,9 +1224,12 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 	u_int16_t flags = xr->xr_flags;
 	
 	// parse XR information (begin, end, chunk)
-	u_int16_t begin	= ntohs(xr->begin_seq);
-	u_int16_t end	= ntohs(xr->end_seq);
-	u_int16_t chunk	= ntohs(xr->chunk);
+	//u_int16_t begin	= ntohs(xr->begin_seq);
+	//u_int16_t end	= ntohs(xr->end_seq);
+	//u_int16_t chunk	= ntohs(xr->chunk);
+	u_int16_t begin;
+	u_int16_t end;
+	u_int16_t chunk;
 
 	// i am an RTP data sender, so do the sender stuffs
 	if (am_i_sender()) {

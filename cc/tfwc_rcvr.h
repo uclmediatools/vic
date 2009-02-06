@@ -45,26 +45,39 @@ public:
 			u_int16_t ackofack, u_int32_t ts);
 
 protected:
-	inline u_int16_t tfwc_rcvr_getvec() { return tfwcAV; }
+	// AckVec pointer
+	inline u_int16_t * tfwc_rcvr_getvec_p() { return tfwcAV; }
+	// ts echo
 	inline u_int32_t tfwc_rcvr_ts_echo() { return ts_echo_; }
 
+	// AckVec begin seqno
 	inline u_int16_t tfwc_rcvr_begins() { return begins_; }
+	// AckVec end seqno plus one
 	inline u_int16_t tfwc_rcvr_ends() { return ends_; }
+	// number of AckVec array
+	inline u_int16_t tfwc_rcvr_numvec() { return currNumVec_; }
 
 	/*
 	 * Variables
 	 */
-	u_int16_t tfwcAV;		// AckVec (bit vector)
+	u_int16_t *tfwcAV;		// AckVec array (bit vector array)
 	u_int16_t currseq_;		// current sequence number
 	u_int16_t prevseq_;		// previous sequence number
 	u_int16_t ackofack_;	// ackofack
 	u_int16_t begins_;		// begin seqno that XR chunk is reporting
 	u_int16_t ends_;		// end seqno + 1 that XR chunk is reporting
+	u_int16_t currNumElm_;	// number of current AckVec elements
+	u_int16_t prevNumElm_;	// number of previous AckVec elements
+	int	currNumVec_;		// numver of current AckVec array
+	int prevNumVec_;		// numver of previous AckVec array
 
 private:
-	// trim ackvec
-	inline void trimvec(u_int16_t vec, int offset) {
-		tfwcAV = vec >> offset;
+	// calculate the numver of AckVec array 
+	// (based on the number of given element, i.e, numelm)
+	inline int getNumVec (int numelm) {
+		int num = numelm/16 + 1;
+		if (numelm%16 == 0) num -= 1;
+		return num;
 	}
 
 	// print built AckVec

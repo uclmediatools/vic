@@ -136,7 +136,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 
 		// generate seqno vec
 		gen_seqvec(begins_, ends_, jacked_, ackv);
-		//print_seqvec(begins_, ends_);
+		print_seqvec(begins_, ends_);
 
 		// generate margin vector
 		marginvec(jacked_);
@@ -198,12 +198,12 @@ bool TfwcSndr::detect_loss(int end, int begin) {
 	bool is_there = false;
 
 	// generate tempvec elements
-	//printf("\tcomparison numbers: (");
+	printf("\tcomparison numbers: (");
 	for (int i = 0; i < numvec; i++) {
 		tempvec[i] = (begin + 1) + i;
-	//	printf(" %d", tempvec[i]);
+		printf(" %d", tempvec[i]);
 	}
-	//printf(" )\n");
+	printf(" )\n");
 
 	// number of seqvec element
 	int numseq = ends_ - begins_;
