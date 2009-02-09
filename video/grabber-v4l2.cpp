@@ -950,7 +950,7 @@ void V4l2Grabber::format()
                                                 inw_ = width_ = fmt.fmt.pix.width;
 
 
-                                        if ( ( fmt.fmt.pix.width == (unsigned int)width_ ) ||
+                                        if ( ( fmt.fmt.pix.width == (unsigned int)width_ ) &&
                                                                 ( fmt.fmt.pix.height == (unsigned int)height_ ) )  {
                                                 debug_msg("V4L2: setting format: width=%d height=%d\n", fmt.fmt.pix.width, fmt.fmt.pix.height);
                                                 format_ok = 1;
