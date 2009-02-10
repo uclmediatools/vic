@@ -45,8 +45,8 @@ public:
 			u_int16_t ackofack, u_int32_t ts);
 
 protected:
-	// AckVec pointer
-	inline u_int16_t * tfwc_rcvr_getvec_p() { return tfwcAV; }
+	// AckVec clone
+	inline u_int16_t tfwc_rcvr_getvec(int i) { return tfwcAV[i]; }
 	// ts echo
 	inline u_int32_t tfwc_rcvr_ts_echo() { return ts_echo_; }
 

@@ -733,8 +733,27 @@ void SessionManager::send_xreport(CtrlHandler* ch, int bt, int bye)
 			ent[1] <<= 16;
 			ent[1] |= htons(tfwc_rcvr_ends());
 
-			// get AckVec pointer from TfwcRcvr
-			//xr->chunk = htons(tfwc_rcvr_getvec_p());
+			// clone AckVec from TfwcRcvr
+			for (int i = 1; i <= num_chunks; i++) {
+				bool odd = true;
+				int j = i/2 + 1;
+
+				if (i%2 == 0) {
+					odd = false;
+					j -= 1;
+				}
+
+				// clone AckVec array to chunk entry
+				if(odd) {
+					// odd number chunk
+					ent[j+1] = 0;	// initialize
+					ent[j+1] |= htons(tfwc_rcvr_getvec(i-1));
+				} else {
+					// even number chunk
+					ent[j+1] <<= 16; // left-shift first
+					ent[j+1] |= htons(tfwc_rcvr_getvec(i-1));
+				}
+			}
 		}
 	} // end of if (am_i_sender())
 
