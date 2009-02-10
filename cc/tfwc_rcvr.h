@@ -42,7 +42,7 @@ class TfwcRcvr {
 public:
 	TfwcRcvr();
 	void tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno, 
-			u_int16_t ackofack, u_int32_t ts);
+			u_int32_t *chunk, int num_chunks);
 
 protected:
 	// AckVec clone

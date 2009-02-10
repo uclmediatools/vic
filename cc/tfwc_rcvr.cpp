@@ -59,8 +59,11 @@ TfwcRcvr::TfwcRcvr() :
 }
 
 void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno, 
-				u_int16_t ackofack, u_int32_t ts) 
+				u_int32_t *chunk, int num_chunks) 
 {
+	// retrived ackofack
+	u_int16_t ackofack = chunk[num_chunks-1] >> 16;
+
 	// variables
 	int numLoss		= 0;	// number of packet loss count
 	int diffNumElm	= 0;	// difference of AckVec elements (curr vs. prev)
@@ -147,7 +150,7 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 		prevNumVec_ = currNumVec_;
 	}
 	else if (type == XR_BT_2) {
-		UNUSED(ts);	
+		ts_echo_ = chunk[num_chunks-1];
 	}
 }
 

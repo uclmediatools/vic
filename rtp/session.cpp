@@ -699,6 +699,9 @@ void SessionManager::send_xreport(CtrlHandler* ch, int bt, int bye)
 			ent[2] <<= 16;
 
 			//debug_msg("	SeqNo:		%d\n", tfwc_sndr_get_seqno());
+		}
+		else if (bt == XR_BT_3) {
+			/*XXX*/
 		} 
 	} 
 	// i am an RTP data receiver, so i convey ackvec information
@@ -755,6 +758,9 @@ void SessionManager::send_xreport(CtrlHandler* ch, int bt, int bye)
 				}
 			}
 		}
+		else if (bt == XR_BT_3) {
+			/*XXX*/
+		} 
 	} // end of if (am_i_sender())
 
 	++xr;
@@ -1239,44 +1245,40 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 	UNUSED(ep);
 	UNUSED(addr);
 
-	// XR block flags
+	// XR block flags and length
 	u_int16_t flags = xr->xr_flags;
+	u_int16_t xrlen	= xr->xr_len;
+
+	// XR repport block
+	u_int32_t *rb = (u_int32_t *) malloc(xrlen);
 	
-	// parse XR information (begin, end, chunk)
-	//u_int16_t begin	= ntohs(xr->begin_seq);
-	//u_int16_t end	= ntohs(xr->end_seq);
-	//u_int16_t chunk	= ntohs(xr->chunk);
-	u_int16_t begin;
-	u_int16_t end;
-	u_int16_t chunk;
+	// parse XR information (xrssrc, begin, end)
+	u_int32_t xrssrc = rb[0]; UNUSED(xrssrc);
+	u_int16_t begin = rb[1] >> 16;
+	u_int16_t end = rb[1] & 0x0000FFFF;
+
+	// declare chunks
+	int num_chunks = 0; 
+	u_int32_t *chunk;
+
+	num_chunks = xrlen - 3;	
+	chunk = (u_int32_t *) malloc(sizeof(u_int32_t) * num_chunks);
+
+	// parse chunks information (AckVec)
+	for (int i = 0; i < num_chunks; i++)
+		chunk[i] = rb[i+2];
 
 	// i am an RTP data sender, so do the sender stuffs
 	if (am_i_sender()) {
-		// parse AckVec and ts echo from XR report block
-		if (flags == XR_BT_1) {
-			// this XR conveys AckVec from data receiver
-			tfwc_sndr_recv(flags, begin, end, chunk, 0);
-		} 
-		else if (flags == XR_BT_3) {
-			// this XR conveys ts echo
-			tfwc_sndr_recv(flags, begin, end, 0, chunk);
-		}
-
+		// parse XR chunks
+		tfwc_sndr_recv(flags, begin, end, chunk, num_chunks);
 		// we need to call Transmitter::output(pb) to make Ack driven
 		cc_output();
 	}
 	// i am an RTP data receiver, so do the receiver stuffs
 	else {
-		// parse seqno, ackofack, and timestamp from XR report block
-		if(flags == XR_BT_1) {
-			// this is XR conveys seqno and ackofack from data sender
-			tfwc_rcvr_recv(flags, begin, chunk, 0);
-		}
-		else if(flags == XR_BT_3) {
-			// this is XR conveys timestamp
-			tfwc_rcvr_recv(flags, 0, 0, chunk);
-		}
-
+		// parse XR chunks
+		tfwc_rcvr_recv(flags, begin, chunk, num_chunks);
 		// send receiver side XR report
 		ch_[0].send_ackv();
 		//ch_[0].send_ts_echo();

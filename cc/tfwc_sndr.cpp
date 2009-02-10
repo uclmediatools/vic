@@ -84,6 +84,7 @@ TfwcSndr::TfwcSndr() :
 	g_ = 0.01;
 	k_ = 4;
 	ts_ = 0.0;
+	ts_echo_ = 0.0;
 
 	is_tfwc_on_ = false;
 	is_first_loss_seen_ = false;
@@ -119,13 +120,11 @@ void TfwcSndr::tfwc_sndr_send(pktbuf* pb) {
  * main TFWC reception path
  */
 void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
-		u_int16_t ackv, u_int32_t ts_echo)
+		u_int32_t *chunk, int num_chunks)
 {
 	// retrieve ackvec
 	if (type == XR_BT_1) {
-		UNUSED(ts_echo);
-		nakp_++;		// number of ackvec packet received
-		//ackv_ = ackv;	// store ackvec
+		nakp_++;		// number of ack packet received
 
 		// get start/end seqno that this XR chunk reports
 		begins_ = begin;
@@ -134,8 +133,29 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		// just acked seqno (head seqno of this ackvec)
 		jacked_ = ends_ - 1;
 
+		// declared AckVec
+		ackv_ = (u_int16_t *) malloc (sizeof(u_int16_t) * num_chunks);
+
+		// clone AckVec from Vic application
+		for (int i = 1; i <= num_chunks; i++) {
+			bool odd = true;
+			int j = i/2 + 1;
+
+			if (i%2 == 0) {
+				odd = false;
+				j -= 1;
+			}
+
+			// clone AckVec array from the received chunk
+			if (odd) {
+				ackv_[i] = chunk[j] >> 16;	
+			} else {
+				ackv_[i] = chunk[j] & 0x0000FFFF;
+			}
+		}
+
 		// generate seqno vec
-		gen_seqvec(begins_, ends_, jacked_, ackv);
+		//gen_seqvec(begins_, ends_, jacked_, ackv);
 		print_seqvec(begins_, ends_);
 
 		// generate margin vector
@@ -172,15 +192,14 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	// retrieve ts echo
 	else if (type == XR_BT_3) {
 		ntep_++;		// number of ts echo packet received
-		/*
-		   ts_echo_ = ts_echo;
-		   debug_msg(" ts echo:	%d\n", ts_echo_);
 
-		   tao_ = 1e-6 * (double)(tfwc_sndr_now() - ts_echo_);
+		ts_echo_ = chunk[num_chunks - 1];
+		debug_msg(" ts echo:	%d\n", ts_echo_);
+
+		tao_ = 1e-6 * (double)(tfwc_sndr_now() - ts_echo_);
 
 		// update RTT
-		update_rtt(tao_);
-		*/
+		//update_rtt(tao_);
 	}
 }
 

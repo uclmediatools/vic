@@ -62,7 +62,7 @@ public:
 
 	// main reception path (XR packet)
 	void tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
-			u_int16_t ackv, u_int32_t ts_echo);
+			u_int32_t *chunk, int num_chunks);
 
 	// return current data packet's seqno
 	inline u_int16_t tfwc_sndr_get_seqno() { return seqno_; }
@@ -156,13 +156,14 @@ protected:
 	}
 
 	int mvec_[DUPACKS]; // margin vec (simulatinmg TCP 3 dupacks)
-	u_int16_t ackv_;	// received AckVec (from TfwcRcvr)
+	u_int16_t *ackv_;	// received AckVec (from TfwcRcvr)
 	u_int32_t pvec_;	// sent packet list
 	u_int16_t aoa_;		// ack of ack
 	u_int32_t t_now_;	// the time when the data packet sent
 	u_int32_t t_ts_;		// time stamp (u_int32_t type)
 	u_int32_t t_ts_echo_;	// echo time stamp from the receiver
 	double ts_;			// time stamp (double type)
+	double ts_echo_;	// time stamp echo (double type)
 	double now_;		// real-time now
 	double tao_;		// sampled RTT
 private:
