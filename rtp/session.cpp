@@ -660,7 +660,7 @@ void SessionManager::send_xreport(CtrlHandler* ch, int bt, int bye)
 
 	// declare XR report block 
 	// (type specific report block)
-	u_char *rb = (u_char *) malloc(sizeof(u_char *));
+	u_char *rb;
 
 	int xrssrc;	// it is currently unused
 
