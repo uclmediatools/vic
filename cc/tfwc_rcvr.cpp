@@ -62,8 +62,7 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 				u_int16_t ackofack, u_int32_t ts) 
 {
 	// variables
-	int cnt		= 0;	// number of packet loss count
-	int off		= 0;	// number of zero to be carried on
+	int numLoss		= 0;	// number of packet loss count
 	int diffNumElm	= 0;	// difference of AckVec elements (curr vs. prev)
 	int diffNumVec	= 0;	// difference of AckVec array (curr vs. prev)
 	int addiNumVec	= 0;	// additional AckVec array required
@@ -90,30 +89,39 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 		// we have one or more packet losses
 		else {
 			// number of packet loss
-			cnt = currseq_ - prevseq_ - 1;
+			numLoss = currseq_ - prevseq_ - 1;
 
 			// we need more AckVec array (maybe one or more)
 			if (currNumVec_ != prevNumVec_) {
 				// currently available spaces in the previous tfwcAV array
-				int num_avail = 16 - prevNumElm_%16;
+				int numAvail = 16 - prevNumElm_%16;
 
 				// first, fill up zeros into those available spaces
-				for (int i = 0; i < num_avail; i++) {
+				for (int i = 0; i < numAvail; i++) {
 					SET_BIT_VEC(tfwcAV[prevNumVec_-1], 0);
-					cnt--;
+					numLoss--;
 				}
 
 				// then, calculate "additional" AckVec array required
-				addiNumVec = getNumVec(cnt);
+				addiNumVec = getNumVec(numLoss);
 
-				for (int i = 0; i < addiNumVec; i++) {
-					SET_BIT_VEC(tfwcAV[prevNumVec_ + i], 0);
+				// fill up zeros accordingly if addiNumVec is greater than 1
+				for (int i = 0; i < (addiNumVec - 1); i++) {
+					for (int j = 0; j < 16; j++) {
+						SET_BIT_VEC(tfwcAV[prevNumVec_ + i], 0);
+						numLoss--;
+					}
+				}
+
+				// finally, fill up zeros at the latest AckVec array
+				for (int i = 0; i < (numLoss%16); i++) {
+					SET_BIT_VEC(tfwcAV[prevNumVec_ + addiNumVec - 1], 0);
 				}
 			}
 			// current num of AckVeck array can cope with the elements
 			else {
 				// set next bit 0 into AckVec (# of packet loss)
-				for (int i = 0; i < cnt; i++) 
+				for (int i = 0; i < numLoss; i++) 
 					SET_BIT_VEC(tfwcAV[currNumVec_-1], 0);
 			}
 
