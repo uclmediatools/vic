@@ -129,6 +129,7 @@ int FileDevice::command(int argc, const char*const* argv) {
 		{
 		    debug_msg("Loading %s\n", argv[2]);
 		    load_file(argv[2]);
+		    return (TCL_OK);
 		}
     }
     return (InputDevice::command(argc, argv));

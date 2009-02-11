@@ -122,6 +122,7 @@ void StillDevice::load_file(const char * const f)
 
 int StillDevice::command(int argc, const char*const* argv)
 {
+    debug_msg("iStillDevice %s\n", argv[2]);
     if (argc == 3)
     {
 	if (strcmp(argv[1], "open") == 0)
@@ -138,6 +139,7 @@ int StillDevice::command(int argc, const char*const* argv)
 	{
 	    debug_msg("Loading %s\n", argv[2]);
 	    load_file(argv[2]);
+	    return (TCL_OK);
 	}
     }
     return (InputDevice::command(argc, argv));
