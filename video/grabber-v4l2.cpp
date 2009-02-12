@@ -946,9 +946,16 @@ void V4l2Grabber::format()
                                         if ( (err = v4l2_ioctl(fd_, VIDIOC_S_FMT, &fmt) ) )
                                                 debug_msg("\nV4L2: Failed to set format\n");
 
-                                        if ( fmt.fmt.pix.width > (unsigned int)width_ )
+                                        /* Clip horizontally (if necessary) capture resolutions that satisfy the
+                                         * vertical resolution, but ignore resolutions that are very wide and most
+                                         * likely not square pixels
+                                         */
+                                        if ( (fmt.fmt.pix.width > (unsigned int)width_ ) &&
+                                                               (fmt.fmt.pix.height == (unsigned int)height_) &&
+                                                               (fmt.fmt.pix.width < (2 * fmt.fmt.pix.height)) ) {
                                                 inw_ = width_ = fmt.fmt.pix.width;
-
+                                                debug_msg("V4L2: will clip input width=%d to %d\n", inw_, outw_);
+                                        }
 
                                         if ( ( fmt.fmt.pix.width == (unsigned int)width_ ) &&
                                                                 ( fmt.fmt.pix.height == (unsigned int)height_ ) )  {
