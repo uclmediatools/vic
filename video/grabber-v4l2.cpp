@@ -776,7 +776,7 @@ int V4l2Grabber::grab()
                 if (have_YUV420P)
                        planarYUYV420_to_planarYUYV420((char *)frame_, outw_, outh_, fr, inw_, inh_);
                 else if (have_YUV422)
-                       packedUYVY422_to_planarYUYV420((char *)frame_, outw_, outh_, fr, inw_, inh_);
+                       packedYUYV422_to_planarYUYV420((char *)frame_, outw_, outh_, fr, inw_, inh_);
                 else if (have_YUV422P)
                        planarYUYV422_to_planarYUYV420((char *)frame_, outw_, outh_, fr, inw_, inh_);
 #ifndef HAVE_LIBV4L
@@ -790,7 +790,7 @@ int V4l2Grabber::grab()
                 if (have_YUV422P)
                        planarYUYV422_to_planarYUYV422((char *)frame_, outw_, outh_, fr, inw_, inh_);
                 else if (have_YUV422)
-                       packedUYVY422_to_planarYUYV422((char *)frame_, outw_, outh_, fr, inw_, inh_);
+                       packedYUYV422_to_planarYUYV422((char *)frame_, outw_, outh_, fr, inw_, inh_);
                 else if (have_YUV420P)
                        planarYUYV420_to_planarYUYV422((char *)frame_, outw_, outh_, fr, inw_, inh_);
 
