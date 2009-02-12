@@ -1036,8 +1036,8 @@ void V4l2Grabber::format()
                                                                 debug_msg("V4L2: giving up ...\n");
                                                                 format_ok = 1;
                                                         }
-                                                        break;
                                                 }
+                                                break; // inner for loop
                                         }
                                 }
                         }
