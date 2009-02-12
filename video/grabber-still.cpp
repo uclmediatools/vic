@@ -122,7 +122,9 @@ void StillDevice::load_file(const char * const f)
 
 int StillDevice::command(int argc, const char*const* argv)
 {
-    debug_msg("iStillDevice %s\n", argv[2]);
+#ifdef DEBUG
+    debug_msg("StillDevice %s\n", argv[2]);
+#endif
     if (argc == 3)
     {
 	if (strcmp(argv[1], "open") == 0)
