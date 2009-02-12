@@ -189,6 +189,8 @@ int FileGrabber::command(int argc, const char* const* argv) {
             setsize();
             if (running_)
                 start();
+
+			return (TCL_OK);
         }
 	}
 	
