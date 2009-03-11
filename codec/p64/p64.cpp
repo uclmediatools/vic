@@ -953,7 +953,7 @@ void P64Decoder::decode_block(u_int tc, u_int x, u_int y, u_int stride,
 	}
 	int sx = x + (mvdh_ / sf);
 	int sy = y + (mvdv_ / sf);
-	u_char* in = (u_char*)((intptr_t)back + sy * stride + sx);
+	u_char* in = (u_char*)((intptr_t)back + sy * (int)stride + sx);
 	if (mt_ & MT_FILTER) {
 		filter(in, out, stride);
 		if (tc != 0) {
