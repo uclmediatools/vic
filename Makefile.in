@@ -429,6 +429,11 @@ fulltar: force
 	    "chmod 444 $$name.tar.gz" ; \
 	     chmod 444 $$name.tar.gz
 
+ffmpeg/libavutil/libavutil.a: ffmpeg/lib/libavcodec.a
+ffmpeg/libavutil/libavutil.a: ffmpeg/lib/libavutil.a
+ffmpeg/libswscale/libswscale.a: ffmpeg/lib/libswscale.a
+ffmpeg/libpostproc/libpostproc.a: ffmpeg/lib/libpostproc.a
+
 ffmpeg/lib/libavcodec.a:
 	(cd ffmpeg/libavcodec; make; make install )
 

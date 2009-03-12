@@ -4954,11 +4954,11 @@ if test "$ffmpegco" = "yes" ; then
    #if test ! -r "ffmpeg" ; then
      echo "checking out HEAD of ffmpeg from  svn://svn.mplayerhq.hu/ffmpeg/trunk..."
      #echo "checking out r7110 (and 21687 of libswscale) of ffmpeg from  svn://svn.mplayerhq.hu/ffmpeg/trunk..."
-     #svn checkout svn://svn.mplayerhq.hu/ffmpeg/trunk ffmpeg
+     svn checkout svn://svn.mplayerhq.hu/ffmpeg/trunk ffmpeg
      #svn checkout -r 7110 svn://svn.mplayerhq.hu/ffmpeg/trunk ffmpeg
      #svn checkout -r 21687 svn://svn.mplayerhq.hu/mplayer/trunk/libswscale  ffmpeg/libswscale
      echo "Configuring ffmpeg..."
-     cd ffmpeg; ./configure --prefix=$V_PATH/ffmpeg $ppc_conf --enable-gpl --enable-swscale --enable-postproc; cd ..
+     cd ffmpeg; ./configure --prefix=$V_PATH/ffmpeg $ppc_conf --enable-gpl --enable-postproc; cd ..
    #fi
    V_INCLUDE="$V_INCLUDE -Iffmpeg/include -Iffmpeg"
    V_CODEC_LIB="$V_CODEC_LIB ffmpeg/libavcodec/libavcodec.a ffmpeg/libavutil/libavutil.a ffmpeg/libswscale/libswscale.a ffmpeg/libpostproc/libpostproc.a"

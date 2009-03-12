@@ -95,7 +95,7 @@ public:
 	      if(!outw_ || !outh_ || !width_ || !height_)
 		return;
 
-	      int in_format = PIX_FMT_YUV420P;
+	      PixelFormat in_format = PIX_FMT_YUV420P;
 	      if (decimation_ == 422) {
 		in_format = PIX_FMT_YUV422P;
 	      }
@@ -147,7 +147,7 @@ protected:
 	uint8_t *sws_tar[3];
 	int sws_src_stride[3];
 	int sws_tar_stride[3];
-	int out_format;
+	PixelFormat out_format;
 	int bytes_per_pixel;
 };
 

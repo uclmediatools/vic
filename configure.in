@@ -89,7 +89,7 @@ if test "$ffmpegco" = "yes" ; then
      #svn checkout -r 7110 svn://svn.mplayerhq.hu/ffmpeg/trunk ffmpeg
      #svn checkout -r 21687 svn://svn.mplayerhq.hu/mplayer/trunk/libswscale  ffmpeg/libswscale
      echo "Configuring ffmpeg..."
-     cd ffmpeg; ./configure --prefix=$V_PATH/ffmpeg $ppc_conf --enable-gpl --enable-swscale --enable-postproc; cd ..
+     cd ffmpeg; ./configure --prefix=$V_PATH/ffmpeg $ppc_conf --enable-gpl --enable-postproc; cd ..
    #fi
    V_INCLUDE="$V_INCLUDE -Iffmpeg/include -Iffmpeg"
    V_CODEC_LIB="$V_CODEC_LIB ffmpeg/libavcodec/libavcodec.a ffmpeg/libavutil/libavutil.a ffmpeg/libswscale/libswscale.a ffmpeg/libpostproc/libpostproc.a"
