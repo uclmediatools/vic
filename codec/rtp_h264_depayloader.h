@@ -80,7 +80,7 @@ class H264Depayloader
     h264_rtp_extra_data *h264_extradata;
 
     int parse_h264_sdp_line(AVCodecContext *codec, /*AVStream * stream,*/ void *data, const char *line);
-    int h264_handle_packet(h264_rtp_extra_data *data, /*AVPacket * pkt*/ int pktIdx, PacketBuffer *pb, /*uint32_t * timestamp,*/ const uint8_t * buf, int len, int mbit);
+    int h264_handle_packet(h264_rtp_extra_data *data, /*AVPacket * pkt*/ int pktIdx, PacketBuffer *pb, /*uint32_t * timestamp,*/ const uint8_t * buf, int len);
 
 /**
     RTP/H264 specific private data.

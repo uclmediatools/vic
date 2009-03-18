@@ -290,10 +290,8 @@ void H264Depayloader::sdp_parse_fmtp_config_h264(AVCodecContext *codec, /*AVStre
 
 // return 0 on packet, no more left, 1 on packet, 1 on partial packet...
 int H264Depayloader::h264_handle_packet(h264_rtp_extra_data *data,
-                              /*AVPacket * pkt,*/ int pktIdx, PacketBuffer *pb,
-                              /*uint32_t * timestamp,*/ 
-                              const uint8_t * buf,
-                              int len, int mbit)
+                              int pktIdx, PacketBuffer *pb,
+                              const uint8_t * buf, int len)
 {
     //h264_rtp_extra_data *data = s->dynamic_protocol_context;
     uint8_t nal = buf[0];
@@ -308,11 +306,11 @@ int H264Depayloader::h264_handle_packet(h264_rtp_extra_data *data,
 
     //fprintf(stderr, /*NULL, AV_LOG_ERROR,*/ "H264_RTP: Single NAL type (%d, equiv. to >=1 or <=23), len=%4d\n", type, len);
 
-    if (buf[0]==0x02 && buf[1]==0x5d && buf[2]==0x47){
-      type=99; // IOCOM's non-standard H.264 packet format
-      //fprintf(stderr,"found IOCOM pkt\n");
-    } else if (type >= 1 && type <= 23)
-        type = 1;              // simplify the case. (these are all the nal types used internally by the h264 codec)
+    if (type >= 1 && type <= 23)
+        type = 1;              
+    // simplify the case. (these are all the nal types used 
+    // internally by the h264 codec)
+    
     switch (type) {
     case 0:                    // undefined;
         fprintf(stderr, /*NULL, AV_LOG_ERROR,*/ "H.264/RTP: Undefined NAL type (%d)\n", type);
@@ -485,24 +483,6 @@ int H264Depayloader::h264_handle_packet(h264_rtp_extra_data *data,
         }
         break;
 
-    case 99:                   // IOCOM's non-standard H.264
-
-	//fprintf(stderr,"IOCOM pkt\n");
-	if (mbit) {
-          if (aggregate_pkt)
-            pb->writeAppend(pktIdx, len-20, (char *)buf+20);
-          else
-            pb->writeAppend(pktIdx, len-21, (char *)buf+21);
-          aggregate_pkt = 0;
-	}  else {
-	  if (aggregate_pkt)
-	    //stream->writeAppend(pktIdx,cc-bit_pos+1, (char *)bp+bit_pos-1);
-	    pb->writeAppend(pktIdx, len-20, (char *)buf+20);
-	  else
-	    pb->writeAppend(pktIdx, len-21, (char *)buf+21);
-	  aggregate_pkt = 1;
-	}
-        break;
 
     case 30:                   // undefined
     case 31:                   // undefined
