@@ -702,6 +702,7 @@ V_LIBRARY_TK
 V_LIB_TK
 V_INCLUDE_X11
 V_LIB_X11
+DOWNLOAD
 V_LIB_FFMPEG
 V_LIB_X264
 V_INCLUDE_GRABBER
@@ -1319,8 +1320,8 @@ Optional Features:
 --disable-aquatcl	build with aquatcl enabled
 --disable-aquatk	build with aquatk enabled
 --enable-gpl	Enable or disable  use of gpl functionality - H264 MPEG4 Swscale
---disable-ffmpeg-co	Enable or disable ffmpeg svn checkout
---disable-x264-co      Enable or disable x264 svn checkout
+--disable-ffmpeg-co	Enable or disable ffmpeg download
+--disable-x264-co      Enable or disable x264 download
 --disable-cpudetect     Enable or disable runtime cpu detection
 --disable-h261as         Enable or disable the h261as codec (default: enabled)
 --enable-dvdecode       Enable or disable dv decoding (default: disabled)
@@ -1338,6 +1339,8 @@ Optional Packages:
   --with-tk               directory containing tk configuration (tkConfig.sh)
 --with-aix-shm=path	specify a pathname for the AIX shm X extension library file
 --with-qcam=dir     specify directory with qcam.h for Connectix QuickCam device driver
+--with-ffmpegver=ffmpeg-version     specify the version of ffmpeg to download and build
+--with-x264ver=x264ver-version     specify the version of x264 to download and build
 --with-ffmpeginc=dir     specify the prefix directory of ffmpeg header
 --with-ffmpeglib=dir     specify the directory of ffmpeg library
 --with-x264inc=dir     specify the directory of x264 header
@@ -4942,6 +4945,89 @@ else
   V_OBJ="$V_OBJ render/color-true.o  render/color-hi.o"
 fi
 
+# Extract the first word of "wget", so it can be a program name with args.
+set dummy wget; ac_word=$2
+{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+if test "${ac_cv_prog_DOWNLOAD+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$DOWNLOAD"; then
+  ac_cv_prog_DOWNLOAD="$DOWNLOAD" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_prog_DOWNLOAD="wget -O -"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+IFS=$as_save_IFS
+
+fi
+fi
+DOWNLOAD=$ac_cv_prog_DOWNLOAD
+if test -n "$DOWNLOAD"; then
+  { echo "$as_me:$LINENO: result: $DOWNLOAD" >&5
+echo "${ECHO_T}$DOWNLOAD" >&6; }
+else
+  { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+fi
+
+
+# Extract the first word of "curl", so it can be a program name with args.
+set dummy curl; ac_word=$2
+{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+if test "${ac_cv_prog_DOWNLOAD+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$DOWNLOAD"; then
+  ac_cv_prog_DOWNLOAD="$DOWNLOAD" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_prog_DOWNLOAD="curl -s"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+IFS=$as_save_IFS
+
+fi
+fi
+DOWNLOAD=$ac_cv_prog_DOWNLOAD
+if test -n "$DOWNLOAD"; then
+  { echo "$as_me:$LINENO: result: $DOWNLOAD" >&5
+echo "${ECHO_T}$DOWNLOAD" >&6; }
+else
+  { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+fi
+
+
+
+
+# Check whether --with-ffmpegver was given.
+if test "${with_ffmpegver+set}" = set; then
+  withval=$with_ffmpegver; ffmpegver=$withval
+else
+  ffmpegver=ffmpeg-0.5
+fi
+
 # Check whether --enable-ffmpeg-co was given.
 if test "${enable_ffmpeg_co+set}" = set; then
   enableval=$enable_ffmpeg_co; ffmpegco="no"
@@ -4951,20 +5037,25 @@ fi
 
 if test "$ffmpegco" = "yes" ; then
   if test "$gpl" = "yes" ; then
-   #if test ! -r "ffmpeg" ; then
-     echo "checking out HEAD of ffmpeg from  svn://svn.mplayerhq.hu/ffmpeg/trunk..."
-     #echo "checking out r7110 (and 21687 of libswscale) of ffmpeg from  svn://svn.mplayerhq.hu/ffmpeg/trunk..."
-     svn checkout svn://svn.mplayerhq.hu/ffmpeg/trunk ffmpeg
-     #svn checkout -r 7110 svn://svn.mplayerhq.hu/ffmpeg/trunk ffmpeg
-     #svn checkout -r 21687 svn://svn.mplayerhq.hu/mplayer/trunk/libswscale  ffmpeg/libswscale
-     echo "Configuring ffmpeg..."
-     cd ffmpeg; ./configure --prefix=$V_PATH/ffmpeg $ppc_conf --enable-gpl --enable-postproc; cd ..
-   #fi
+   if test ! -r ${ffmpegver} ; then
+     echo "Downloading ${ffmpegver} from www.ffmpeg.org ..."
+     ${DOWNLOAD} http://www.ffmpeg.org/releases/${ffmpegver}.tar.bz2 | tar xjf - && rm -r ffmpeg ; ln -s ${ffmpegver} ffmpeg
+   fi
+   echo "Configuring ffmpeg..."
+   cd ffmpeg; ./configure --prefix=$V_PATH/ffmpeg $ppc_conf --enable-gpl --enable-swscale --enable-postproc; cd ..
    V_INCLUDE="$V_INCLUDE -Iffmpeg/include -Iffmpeg"
-   V_CODEC_LIB="$V_CODEC_LIB ffmpeg/libavcodec/libavcodec.a ffmpeg/libavutil/libavutil.a ffmpeg/libswscale/libswscale.a ffmpeg/libpostproc/libpostproc.a"
+   V_CODEC_LIB="$V_CODEC_LIB ffmpeg/lib/libavcodec.a ffmpeg/lib/libavutil.a ffmpeg/lib/libswscale.a ffmpeg/lib/libpostproc.a"
   else
     echo "ffmpeg not available without --enable-gpl"
   fi
+fi
+
+
+# Check whether --with-x264ver was given.
+if test "${with_x264ver+set}" = set; then
+  withval=$with_x264ver; x264ver=$withval
+else
+  x264ver=x264-snapshot-20070413-2245
 fi
 
 # Check whether --enable-x264-co was given.
@@ -4976,14 +5067,13 @@ fi
 
 if test "$x264co" = "yes" ; then
   if test "$gpl" = "yes" ; then
-   if test ! -r "x264" ; then
-     X264_SNAP="x264-snapshot-20070413-2245"
-     echo "Downloading ${X264_SNAP} (r650) of x264 from videolan.org ..."
+   if test ! -r ${x264ver} ; then
+     echo "Downloading ${x264ver} (r650) of x264 from videolan.org ..."
      #svn checkout -r 650 svn://svn.videolan.org/x264/trunk x264
-     curl -s http://downloads.videolan.org/pub/videolan/x264/snapshots/${X264_SNAP}.tar.bz2 | tar xfj - && ln -s ${X264_SNAP} x264
-     echo "Configuring x264..."
-     cd x264; ./configure --prefix=$V_PATH/x264; cd ..
+     ${DOWNLOAD} http://downloads.videolan.org/pub/videolan/x264/snapshots/${x264ver}.tar.bz2 | tar xjf - && ln -sf ${x264ver} x264
    fi
+   echo "Configuring x264..."
+   cd x264; ./configure --prefix=$V_PATH/x264; cd ..
    V_INCLUDE="$V_INCLUDE -Ix264/include"
    V_CODEC_LIB="$V_CODEC_LIB x264/lib/libx264.a"
   else
@@ -7829,6 +7919,7 @@ V_LIBRARY_TK!$V_LIBRARY_TK$ac_delim
 V_LIB_TK!$V_LIB_TK$ac_delim
 V_INCLUDE_X11!$V_INCLUDE_X11$ac_delim
 V_LIB_X11!$V_LIB_X11$ac_delim
+DOWNLOAD!$DOWNLOAD$ac_delim
 V_LIB_FFMPEG!$V_LIB_FFMPEG$ac_delim
 V_LIB_X264!$V_LIB_X264$ac_delim
 V_INCLUDE_GRABBER!$V_INCLUDE_GRABBER$ac_delim
@@ -7836,7 +7927,6 @@ V_LIB_GRABBER!$V_LIB_GRABBER$ac_delim
 V_OBJ_GRABBER!$V_OBJ_GRABBER$ac_delim
 V_LIB_XIL!$V_LIB_XIL$ac_delim
 V_OBJ_XIL!$V_OBJ_XIL$ac_delim
-V_OBJ!$V_OBJ$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
@@ -7878,6 +7968,7 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+V_OBJ!$V_OBJ$ac_delim
 V_LIB!$V_LIB$ac_delim
 V_CODEC_LIB!$V_CODEC_LIB$ac_delim
 V_CPUDETECT_OBJ!$V_CPUDETECT_OBJ$ac_delim
@@ -7898,7 +7989,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 18; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 19; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

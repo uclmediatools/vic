@@ -79,36 +79,37 @@ else
   V_OBJ="$V_OBJ render/color-true.o  render/color-hi.o"
 fi
 
-AC_ARG_ENABLE(ffmpeg-co,	--disable-ffmpeg-co	Enable or disable ffmpeg svn checkout, ffmpegco="no", ffmpegco="yes")
+AC_CHECK_PROG(DOWNLOAD, wget, [wget -O -])
+AC_CHECK_PROG(DOWNLOAD, curl, [curl -s])
+
+AC_ARG_WITH(ffmpegver,       --with-ffmpegver=ffmpeg-version     specify the version of ffmpeg to download and build, ffmpegver=$withval, ffmpegver=ffmpeg-0.5)
+AC_ARG_ENABLE(ffmpeg-co,	--disable-ffmpeg-co	Enable or disable ffmpeg download, ffmpegco="no", ffmpegco="yes")
 if test "$ffmpegco" = "yes" ; then
   if test "$gpl" = "yes" ; then
-   #if test ! -r "ffmpeg" ; then
-     echo "checking out HEAD of ffmpeg from  svn://svn.mplayerhq.hu/ffmpeg/trunk..."
-     #echo "checking out r7110 (and 21687 of libswscale) of ffmpeg from  svn://svn.mplayerhq.hu/ffmpeg/trunk..."
-     svn checkout svn://svn.mplayerhq.hu/ffmpeg/trunk ffmpeg
-     #svn checkout -r 7110 svn://svn.mplayerhq.hu/ffmpeg/trunk ffmpeg
-     #svn checkout -r 21687 svn://svn.mplayerhq.hu/mplayer/trunk/libswscale  ffmpeg/libswscale
-     echo "Configuring ffmpeg..."
-     cd ffmpeg; ./configure --prefix=$V_PATH/ffmpeg $ppc_conf --enable-gpl --enable-postproc; cd ..
-   #fi
+   if test ! -r ${ffmpegver} ; then
+     echo "Downloading ${ffmpegver} from www.ffmpeg.org ..."
+     ${DOWNLOAD} http://www.ffmpeg.org/releases/${ffmpegver}.tar.bz2 | tar xjf - && rm -r ffmpeg ; ln -s ${ffmpegver} ffmpeg
+   fi
+   echo "Configuring ffmpeg..."
+   cd ffmpeg; ./configure --prefix=$V_PATH/ffmpeg $ppc_conf --enable-gpl --enable-swscale --enable-postproc; cd ..
    V_INCLUDE="$V_INCLUDE -Iffmpeg/include -Iffmpeg"
-   V_CODEC_LIB="$V_CODEC_LIB ffmpeg/libavcodec/libavcodec.a ffmpeg/libavutil/libavutil.a ffmpeg/libswscale/libswscale.a ffmpeg/libpostproc/libpostproc.a"
+   V_CODEC_LIB="$V_CODEC_LIB ffmpeg/lib/libavcodec.a ffmpeg/lib/libavutil.a ffmpeg/lib/libswscale.a ffmpeg/lib/libpostproc.a"
   else 
     echo "ffmpeg not available without --enable-gpl"
   fi
 fi
 
-AC_ARG_ENABLE(x264-co,        --disable-x264-co      Enable or disable x264 svn checkout, x264co="no", x264co="yes")
+AC_ARG_WITH(x264ver,       --with-x264ver=x264ver-version     specify the version of x264 to download and build, x264ver=$withval, x264ver=x264-snapshot-20070413-2245)
+AC_ARG_ENABLE(x264-co,        --disable-x264-co      Enable or disable x264 download, x264co="no", x264co="yes")
 if test "$x264co" = "yes" ; then
   if test "$gpl" = "yes" ; then
-   if test ! -r "x264" ; then
-     X264_SNAP="x264-snapshot-20070413-2245"
-     echo "Downloading ${X264_SNAP} (r650) of x264 from videolan.org ..."
+   if test ! -r ${x264ver} ; then
+     echo "Downloading ${x264ver} (r650) of x264 from videolan.org ..."
      #svn checkout -r 650 svn://svn.videolan.org/x264/trunk x264
-     curl -s http://downloads.videolan.org/pub/videolan/x264/snapshots/${X264_SNAP}.tar.bz2 | tar xfj - && ln -s ${X264_SNAP} x264
-     echo "Configuring x264..."
-     cd x264; ./configure --prefix=$V_PATH/x264; cd ..
+     ${DOWNLOAD} http://downloads.videolan.org/pub/videolan/x264/snapshots/${x264ver}.tar.bz2 | tar xjf - && ln -sf ${x264ver} x264
    fi
+   echo "Configuring x264..."
+   cd x264; ./configure --prefix=$V_PATH/x264; cd ..
    V_INCLUDE="$V_INCLUDE -Ix264/include"
    V_CODEC_LIB="$V_CODEC_LIB x264/lib/libx264.a"
   else 
