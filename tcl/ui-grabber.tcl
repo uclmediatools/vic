@@ -113,8 +113,8 @@ proc build.v4l2 w {
     frame $w.f.left -relief flat
 
     set m $w.f.left.antiflicker.menu
-    menubutton $w.f.left.antiflicker -menu $m -text "Anti-flicker..." \
-	-relief raised -width 14 -font $f -padx 1 -pady 1
+    menubutton $w.f.left.antiflicker -menu $m -text "Anti-flicker" \
+	-relief raised -width 14 -font $f -padx 1 -pady 1 -indicatoron 1
     menu $m
     $m add radiobutton -label "disabled" -command "grabber antiflicker 0" \
 	-value "disabled" -variable antiflicker -font $f
@@ -816,7 +816,7 @@ proc build.x11 w {
 	set m $w1.menu
 	set m1 $m.m1
 	menubutton $w1.menu -menu $m1 -text "Source:" \
-		-relief raised -width 7 -font $f
+		-relief raised -width 7 -font $f -indicatoron 1
 	label $w1.label -width 6 -font $f
 	frame $w1.row
 	menu $m1

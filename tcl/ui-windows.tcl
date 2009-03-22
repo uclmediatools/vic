@@ -225,8 +225,8 @@ proc open_window src {
 		-highlightthickness 0
 
 	set m $w.bar.mode.menu
-	menubutton $w.bar.mode -text Modes... -menu $m -relief raised \
-		-width 8 -font $f
+	menubutton $w.bar.mode -text Modes -menu $m -relief raised \
+		-width 8 -font $f -indicatoron 1
 	menu $m
 
         if {[string match [ windowingsystem] "aqua"]} { 
@@ -254,8 +254,8 @@ proc open_window src {
 	}
 
 	set m $w.bar.size.menu
-	menubutton $w.bar.size -text Size... -menu $m -relief raised -width 8 \
-		-font $f
+	menubutton $w.bar.size -text Size -menu $m -relief raised -width 8 \
+		-font $f -indicatoron 1
 	menu $m
         if {[string match [ windowingsystem] "aqua"]} {
                 $w.mbar add cascade -label Size -menu $m
@@ -301,7 +301,7 @@ proc open_window src {
 
 # Marcus ... 
 	set m $w.bar.decoder.menu
-	menubutton $w.bar.decoder -text Decoder... -menu $m -relief raised -width 8 -font $f
+	menubutton $w.bar.decoder -text Decoder -menu $m -relief raised -width 8 -font $f -indicatoron 1
         if {[string match [ windowingsystem] "aqua"]} {
                 $w.mbar add cascade -label Decoder -menu $m
         }    	

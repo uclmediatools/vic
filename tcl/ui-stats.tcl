@@ -601,8 +601,8 @@ proc create_info_window src {
 	frame $p
 
 	set m $p.mb.menu
-	menubutton $p.mb -text Stats... -menu $m -relief raised -width 8 \
-		-font $f
+	menubutton $p.mb -text Stats -menu $m -relief raised -width 8 \
+		-font $f -indicatoron 1
 	menu $m
 	$m add command -label RTP -command "create_rtp_window $src" -font $f
 	$m add command -label Decoder \

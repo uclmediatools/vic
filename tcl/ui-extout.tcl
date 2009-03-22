@@ -81,8 +81,8 @@ proc extout_build_buttons { w d } {
 	set f [smallfont]
 
 	set m $w.mb.menu
-	menubutton $w.mb -text Port... -menu $m \
-		-relief raised -font $f
+	menubutton $w.mb -text Port -menu $m \
+		-relief raised -font $f -indicatoron 1
 	#XXX no supported devices have multiple external ports yet
 	$w.mb configure -state disabled
 

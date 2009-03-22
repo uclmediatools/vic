@@ -759,7 +759,7 @@ proc build.device w {
 	if {[string match [ windowingsystem] "aqua"]} {
             menubutton $w -menu $m -text Device -width 8 -pady 4
 	} else {
-	    menubutton $w -menu $m -text Device... \
+	    menubutton $w -menu $m -text Device -indicatoron 1 \
 		-relief raised -width 10 -font $f
 	}
 	menu $m
@@ -968,7 +968,7 @@ proc build.port w {
 	    menubutton $w -menu $w.menu -text Port -width 8 -pady 4 \
                 -state disabled
 	} else {
- 	    menubutton $w -menu $w.menu -text Port... \
+ 	    menubutton $w -menu $w.menu -text Port -indicatoron 1 \
 		-relief raised -width 10 -font $f -state disabled
         }
 	global portButton inputPort
@@ -1012,8 +1012,8 @@ proc build.type w {
 	    menubutton $w -text Signal -menu $m -width 8 -pady 4 \
 		-state disabled
 	} else {
-	    menubutton $w -text Signal... -menu $m -relief raised \
-		-width 10 -font $f -state disabled
+	    menubutton $w -text Signal -menu $m -relief raised \
+		-width 10 -font $f -state disabled -indicatoron 1
 	}
 	menu $m
 	$m add radiobutton -label "auto" -command restart \
@@ -1049,8 +1049,8 @@ proc build.encoder_options w {
 	if {[string match [ windowingsystem] "aqua"]} {
             menubutton $w -text Options -menu $m -width 8 -pady 4
 	} else {
-	    menubutton $w -text Options... -menu $m -relief raised -width 10 \
-		-font $f
+	    menubutton $w -text Options -menu $m -relief raised -width 10 \
+		-font $f -indicatoron 1
  	}
 	menu $m
     	$m add checkbutton -label "Sending Slides" \
@@ -1072,8 +1072,8 @@ proc build.tile w {
  	if {[string match [ windowingsystem] "aqua"]} {
 	    menubutton $w -text Tile -menu $m -width 8 -pady 4
 	} else {
-	    menubutton $w -text Tile... -menu $m -relief raised -width 10 \
-			-font $f
+	    menubutton $w -text Tile -menu $m -relief raised -width 10 \
+			-font $f -indicatoron 1
 	}
 	menu $m
 	$m add radiobutton -label Single -command "redecorate 1" \
@@ -1092,8 +1092,8 @@ proc build.decoder_options w {
 	if {[string match [ windowingsystem] "aqua"]} {
 	    menubutton $w -text Options -menu $m -width 8 -pady 4
 	} else {
- 	    menubutton $w -text Options... -menu $m -relief raised -width 10 \
-		-font $f
+ 	    menubutton $w -text Options -menu $m -relief raised -width 10 \
+		-font $f -indicatoron 1
 	}
 	menu $m
     	$m add checkbutton -label "Mute New Sources" \
@@ -1123,8 +1123,8 @@ proc build.external w {
 			-width 10 -font $f -highlightthickness 0 \
 			-command "extout_select $outputDeviceList"
 	} else {
-		menubutton $w -text External... -menu $m -relief raised \
-			-width 10 -font $f 
+		menubutton $w -text External -menu $m -relief raised \
+			-width 10 -font $f -indicatoron 1
 		menu $m
 		foreach d $outputDeviceList {
 			$m add command -font $f -label [$d nickname] \

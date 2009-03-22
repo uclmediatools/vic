@@ -638,10 +638,10 @@ proc build.src { w src color } {
                 menubutton $w.r.ctrl.info -text info -borderwidth 2 \
                         -font $f -pady 4 -menu $m
         } else {
-                menubutton $w.r.ctrl.info -text info... -borderwidth 2 \
+                menubutton $w.r.ctrl.info -text info -borderwidth 2 \
                         -highlightthickness 1 \
                         -relief groove -font $f -width 5 \
-                        -menu $m
+                        -menu $m -indicatoron 1
         }      
 	build_info_menu $src $m
 
