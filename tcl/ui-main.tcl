@@ -542,12 +542,15 @@ proc build.src { w src color } {
 	set f [smallfont]
 	set stamp $w.stamp
 	frame $stamp -relief ridge -borderwidth 2
-	bind $stamp <Enter> "%W configure -background gray90"
-        if {[string match [ windowingsystem] "aqua"]} {
-                bind $stamp <Enter> "%W configure -background CornflowerBlue"
-        } else {
-                bind $stamp <Enter> "%W configure -background gray90"
-        }   
+	if {[string match [ windowingsystem] "aqua"]} {
+		bind $stamp <Enter> "%W configure -background CornflowerBlue"
+	} elseif {$::tk_version > 8.4} {
+		# correct approach would be to somehow query the theme for
+		# selectforeground and use that instead of hardcoding to white
+		bind $stamp <Enter> "%W configure -background white"
+	} else {
+		bind $stamp <Enter> "%W configure -background gray90"
+	}
 	bind $stamp <Leave> "%W configure -background [resource background]"
 	create_video_widget $stamp.video 80 60
 	global win_is_slow
@@ -555,18 +558,18 @@ proc build.src { w src color } {
 
 	# disable xvideo fro stamp video
 	attach_window $src $stamp.video false 
-        
+
 	if {[string match [ windowingsystem] "aqua"]} {
                 pack $stamp.video -side left -padx 2 -pady 2
                 pack $stamp -side left -anchor nw -padx {4 2} -pady 2
                 frame $w.r -padx 2
-        } else {
+	} else {
                 pack $stamp.video -side left -anchor c -padx 2
                 pack $stamp -side left -fill y
                 frame $w.r
-        }
-        
-	global V	
+	}
+
+	global V
 # Show sender window as raised
 	if { $src == [srctab local] } {
 	  frame $w.r.cw -relief groove -borderwidth 2 -bg gray20

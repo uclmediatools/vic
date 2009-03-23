@@ -102,12 +102,20 @@ proc init_fonts {} {
 		set times14 [search_font $foundry times medium 14]
 	}
 
-	option add *Font $helv12b startupFile
-	option add Vic.medfont $helv12b startupFile
-	option add Vic.smallfont $helv10b startupFile
-	option add Vic.minifont $helv4b startupFile
-	option add Vic.helpfont $times14 startupFile
-	option add Vic.entryfont $helv10 startupFile
+	if {$::tk_version < 8.5} {
+		option add *Font $helv12b startupFile
+		option add Vic.medfont $helv12b startupFile
+		option add Vic.smallfont $helv10b startupFile
+		option add Vic.minifont $helv4b startupFile
+		option add Vic.helpfont $times14 startupFile
+		option add Vic.entryfont $helv10 startupFile
+	} else {
+		option add Vic.medfont TkDefaultFont
+		option add Vic.smallfont TkSmallCaptionFont
+		option add Vic.minifont TkIconFont
+		option add Vic.helpfont TkTooltipFont
+		option add Vic.entryfont TkTextFont
+	}
 
     }
 
@@ -134,7 +142,7 @@ proc init_resources {} {
 	# base priority from widgetDefault to 61 so that user's X resources
 	# won't override these.
 	#
-	if {$tcl_platform(platform) != "windows"} {
+	if {$tcl_platform(platform) != "windows" && $::tk_version < 8.5} {
 		tk_setPalette gray80
 		foreach pal [array names tkPalette] {
 			option add *$pal $tkPalette($pal) 61
