@@ -89,6 +89,10 @@ class DirectShowGrabber : public Grabber {
       ~DirectShowGrabber();
       virtual int  command(int argc, const char*const* argv);
 
+	  inline void  converter(Converter* v) {
+		  converter_ = v;
+	  }
+
       void         capture(BYTE *, long);
 
 	  bool		   hasComposite(){
@@ -148,10 +152,12 @@ class DirectShowGrabber : public Grabber {
 	  bool		   have_I420_;  // YUV 4:2:0 planar
 	  bool		   have_UYVY_;  // YUV 4:2:2 packed
 	  bool		   have_YUY2_;  // as for UYVY but with different component ordering
+	  bool		   have_RGB24_; // RGB 24 bit
 	  bool		   have_DVSD_;  // DV standard definition
 
       u_int        decimate_;    // set in this::command via small/normal/large in vic UI; msp
       BYTE         *last_frame_;
+	  Converter    *converter_;
 
    private:
       IBaseFilter*			 pFilter_;

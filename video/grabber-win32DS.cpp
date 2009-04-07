@@ -129,6 +129,7 @@ input devices are created.  Probably not a good approach, but it is one possibil
 #include "grabber.h"
 #include "device-input.h"
 #include "module.h"
+#include "rgb-converter.h" 
 #include "yuv_convert.h"
 
 #include "grabber-win32DS.h"
@@ -192,6 +193,7 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
    svideoPort = -1;
    compositePort = -1;
    decimate_ = 2;  //default
+   converter_=0;
    cb_mutex_=0;
    crossbar_ = crossbarCursor_ = NULL;
    pDVVideoDecoder_=0;
@@ -219,6 +221,7 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
    have_I420_ = false;
    have_UYVY_ = false;
    have_YUY2_ = false;
+   have_RGB24_= false;
    have_DVSD_ = false;
 
    setport("external-in");
@@ -343,8 +346,10 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
 		   mt_.subtype = MEDIASUBTYPE_UYVY; // Packed YUV 422
 	   } else if (have_I420_) {
 		   mt_.subtype = MEDIASUBTYPE_I420; // Planar YUV 420
+	   } else if (have_RGB24_) {
+		   mt_.subtype = MEDIASUBTYPE_RGB24; // RGB 24 bit
 	   } else {
-		   mt_.subtype = MEDIASUBTYPE_UYVY;
+		   mt_.subtype = MEDIASUBTYPE_RGB24;
 	   }
    } else {
 	   if (have_I420_) {
@@ -353,8 +358,10 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
 		   mt_.subtype = MEDIASUBTYPE_YUY2; // Packed YUV 422
 	   } else if (have_UYVY_) {
 		   mt_.subtype = MEDIASUBTYPE_UYVY; // Packed YUV 422
+	   } else if (have_RGB24_) {
+		   mt_.subtype = MEDIASUBTYPE_RGB24; // RGB 24 bit
 	   } else {
-		   mt_.subtype = MEDIASUBTYPE_UYVY;
+		   mt_.subtype = MEDIASUBTYPE_RGB24;
 	   }
    }
 
@@ -579,6 +586,16 @@ void DirectShowGrabber::start() {
 
    //showErrorMessage(hr);
 
+   switch (cformat_) {
+   case CF_420:
+   case CF_CIF:
+	   converter(new RGB_Converter_420(24, (u_int8_t *)NULL, 0));
+	   break;
+   case CF_422:
+	   converter(new RGB_Converter_422(24, (u_int8_t *)NULL, 0));
+	   break;
+   }
+
    Grabber::start();
    ReleaseMutex(cb_mutex_);
    Grabber::timeout();
@@ -597,6 +614,10 @@ void DirectShowGrabber::stop() {
    //showErrorMessage(hr);
    ReleaseMutex(cb_mutex_);
 
+   if (converter_) {
+	   delete converter_;
+	   converter_ = 0;
+   }
    capturing_  = 0;
    last_frame_ = 0;
 
@@ -693,8 +714,10 @@ int DirectShowGrabber::grab() {
        packedYUYV422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
      else if (have_UYVY_)
        packedUYVY422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+     else if (have_RGB24_)
+       converter_->convert((u_int8_t*)last_frame_, width_, height_, frame_, outw_, outh_, TRUE);
 	 else
-       packedUYVY422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+       converter_->convert((u_int8_t*)last_frame_, width_, height_, frame_, outw_, outh_, TRUE);
      break;
 
    case CF_422:
@@ -704,8 +727,10 @@ int DirectShowGrabber::grab() {
        packedUYVY422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
      else if (have_I420_)
        planarYUYV420_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+     else if (have_RGB24_)
+       converter_->convert((u_int8_t*)last_frame_, width_, height_, frame_, outw_, outh_, TRUE);
 	 else
-       packedUYVY422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+       converter_->convert((u_int8_t*)last_frame_, width_, height_, frame_, outw_, outh_, TRUE);
      break;
    }
 
@@ -814,6 +839,8 @@ int DirectShowGrabber::getCaptureCapabilities() {
                            have_UYVY_ = true; // Packed YUV 422
                        } else if (pmtConfig->subtype == MEDIASUBTYPE_YUY2) {
                            have_YUY2_ = true; // Packed YUV 422
+                       } else if (pmtConfig->subtype == MEDIASUBTYPE_RGB24) {
+                           have_RGB24_ = true; // RGB 24 bit
                        } else if (pmtConfig->subtype == MEDIASUBTYPE_dvsd) {
                            have_DVSD_ = true; // DV Standard definition
                        }
@@ -886,6 +913,8 @@ void DirectShowGrabber::setCaptureOutputFormat() {
               mediasubtype = MEDIASUBTYPE_UYVY; // Packed YUV 422
           else if (have_YUY2_)
               mediasubtype = MEDIASUBTYPE_YUY2; // Packed YUV 422
+          else if (have_RGB24_)
+              mediasubtype = MEDIASUBTYPE_RGB24; // RGB 24 bit
         break;
 
       case CF_422:
@@ -895,6 +924,8 @@ void DirectShowGrabber::setCaptureOutputFormat() {
               mediasubtype = MEDIASUBTYPE_UYVY; // Packed YUV 422
           else if (have_YUY2_)
               mediasubtype = MEDIASUBTYPE_YUY2; // Packed YUV 422
+          else if (have_RGB24_)
+              mediasubtype = MEDIASUBTYPE_RGB24; // RGB 24 bit
           break;
       }
 
