@@ -19,6 +19,7 @@ class PacketBuffer
     int getTotalPkts();
     bool isComplete();
     DataBuffer *getStream();
+    char *getPacket(int);
     void clear();
     DataBuffer *packets[MAX_PACKETS];
   private:

@@ -6,6 +6,10 @@
 #include <math.h>
 #include "debug.h"
 #include "ffmpeg_codec.h"
+/*#include "dsputil.h"
+#include "avcodec.h"
+#include "mpegvideo.h"
+#include "h264.h"*/
 
 #ifndef _UNISTD_H
 extern "C" int getpid();
@@ -237,6 +241,10 @@ int FFMpegCodec::decode(UCHAR * codedstream, int size, UCHAR * vf)
 		return -1;
     }
     
+    if (state) {
+      //H264Context *h = c->priv_data;
+      //printf("h->sps.ref_frame_count: %d",h->sps.ref_frame_count);
+    }
 	if (c->width != width || c->height != height) {
 		debug_msg("ffmpegcodec: resize from %dx%d (framesize:%d) to %dx%d, (size: %d) got_picture: %d, len: %d\n", width, height, 
 			frame_size, c->width, c->height, size, got_picture, len);
