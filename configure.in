@@ -300,7 +300,9 @@ dnl lots of hairy special cases for detecting which frame capture
 dnl support to compile in
 
 AC_MSG_NOTICE([checking for V4L support])
-AC_CHECK_HEADER([linux/videodev.h], [ have_videodev_h=yes; ])
+AC_CHECK_HEADER([linux/videodev.h],
+	[ have_videodev_h=yes; ],
+	[AC_CHECK_HEADER([/usr/local/include/linux/videodev.h],[ have_videodev_h=yes; ])])
 if test x$have_videodev_h = xyes; then
         AC_MSG_NOTICE([suitable V4L support found... using linux/videodev.h])
         V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-video4linux.o"
@@ -336,8 +338,8 @@ if test x$have_V4L = xyes -o x$have_V4L2 = xyes; then
         V_OBJ_GRABBER="$V_OBJ_GRABBER video/yuv_convert.o"
 fi
 
-AC_CHECK_HEADER([libv4lconvert.h], [ have_videodev_h=yes; ])
-if test x$have_videodev_h = xyes; then
+AC_CHECK_HEADER([libv4lconvert.h], [ have_libv4lconvert_h=yes; ])
+if test x$have_libv4lconvert_h = xyes; then
         V_DEFINE="$V_DEFINE -DHAVE_LIBV4L"
         if test x$have_V4L = xyes; then
                 V_LIB_GRABBER="$V_LIB_GRABBER -lv4l1"
@@ -560,8 +562,10 @@ sparc-sun-sunos*)
 	V_LIB="$V_LIB -lipc"
 	;;
 *-*-netbsd*)
+	V_DEFINE="$V_DEFINE -DNetBSD"
 	V_STATIC=""
 	V_TARCMD="tar -h -c -f"
+	OPSYS=netbsd
 	;;
 *-*-freebsd*)
 	V_STATIC=""
