@@ -29,21 +29,26 @@
 
 #include "config.h"
 
-#ifdef WIN32
-//#include <winsock.h>
+#if defined(_WIN32) || defined(_WIN64)
+#define LITTLE_ENDIAN 1234
+#define BIG_ENDIAN 4321
+#define BYTE_ORDER LITTLE_ENDIAN
 #else
 #include <sys/param.h>
 #endif
+
 #ifdef __linux__
 #include <endian.h>
 #endif
+
 #ifndef IPPROTO_IP
 #include <netinet/in.h>
 #endif
+
 #ifndef BYTE_ORDER
 #define LITTLE_ENDIAN 1234
 #define BIG_ENDIAN 4321
-#if defined(ultrix) || defined(__alpha) || defined(__i386__) || defined(__i486__) || defined(_X86_)
+#if defined(ultrix) || defined(__alpha__) || defined(__ia64__) || defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__) || defined(__x86_64__) || defined(__amd64__) || defined(_X86_) 
 #define BYTE_ORDER LITTLE_ENDIAN
 #else
 #define BYTE_ORDER BIG_ENDIAN
@@ -55,5 +60,6 @@
 #else
 #define SHIFT(n) (n)
 #endif
+
 #define EXTRACT(v, n) (((v) >> SHIFT(n)) & 0xff)
 #define SPLICE(v, p, n) (v) |= (p) << SHIFT(n)

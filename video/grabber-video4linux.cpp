@@ -23,7 +23,7 @@
 #include <string.h>
 #include <signal.h>
 #include <errno.h>
-#include <endian.h>
+#include "bsd-endian.h"
 
 #include <sys/types.h>
 #include <sys/fcntl.h>
@@ -48,11 +48,9 @@
 
 extern "C"
 {
-#include <asm/types.h>
-//#include <linux/videodev.h>
+#include <linux/videodev.h>
 }
 
-#include "videodev.h"
 #include "grabber.h"
 #include "vic_tcl.h"
 #include "device-input.h"
@@ -208,8 +206,7 @@ V4lScanner::V4lScanner(const char **dev)
     struct video_capability capability;
     struct video_channel channel;
     struct video_picture pict;
-    unsigned int j;
-    int i, fd;
+    int i, j, fd;
     char *nick, *attr;
 
     // AGTk 3.02 and earlier use VIC_DEVICE env variable to select device
@@ -309,7 +306,7 @@ V4lScanner::V4lScanner(const char **dev)
 
 V4lGrabber::V4lGrabber(const char *cformat, const char *dev)
 {
-    unsigned int i = 0;
+    int i = 0;
     struct video_mmap vid_mmap;
 
     have_mmap = 0;
@@ -430,7 +427,7 @@ V4lGrabber::~V4lGrabber()
 
 int V4lGrabber::command(int argc, const char *const *argv)
 {
-    unsigned int i;
+    int i;
     //struct video_channel     channel;
     //static const char *norms[] = {"pal", "ntsc", "secam", "auto"};
 

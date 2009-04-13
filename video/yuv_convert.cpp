@@ -41,12 +41,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#if defined(_WIN32) || defined(_WIN64) 
-#define BYTE_ORDER 1
-#define BIG_ENDIAN 0
-#else
-#include <endian.h>
-#endif
+#include "bsd-endian.h"
 
 //
 //  planarYUYV422_to_planarYUYV422

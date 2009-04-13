@@ -3,6 +3,8 @@ dnl $Header$ (LBL)
 
 AC_INIT(main.cpp)
 
+AC_PROG_INSTALL
+
 V_PROG="vic"
 V_ALL="$V_PROG"
 V_SHM="-DUSE_SHM"
@@ -297,23 +299,56 @@ fi
 dnl lots of hairy special cases for detecting which frame capture
 dnl support to compile in
 
-AC_ARG_ENABLE(v4l2old,	--enable-v4l2old    Enable or disable old Video4Linux2 grabber (default: disabled), v4l2old=yes, v4l2old=no)
-if test "$v4l2old" = "yes" ; then
-                V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-v4l2-old.o"
-		echo "Using old Linux grabber-v4l2"
-elif test -r /usr/include/linux/videodev.h ; then
-        AC_CHECK_HEADER(libv4lconvert.h,
-        [V_DEFINE="$V_DEFINE -DHAVE_LIBV4L"
-         V_LIB_GRABBER="$V_LIB_GRABBER -lv4l1 -lv4l2"],
-        [V_OBJ_GRABBER="$V_OBJ_GRABBER  video/tinyjpeg.o video/jidctflt.o"])
-        if test -r /usr/include/linux/videodev2.h  ; then
-                V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-v4l2.o video/grabber-video4linux.o video/yuv_convert.o"
-		echo "Using Linux Grabbers: Video4Linux2 and Video4Linux1"
-        else
-                V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-video4linux.o video/yuv_convert.o"
-		echo "Using Linux Grabber: Video4Linux1"
-        fi
+AC_MSG_NOTICE([checking for V4L support])
+AC_CHECK_HEADER([linux/videodev.h], [ have_videodev_h=yes; ])
+if test x$have_videodev_h = xyes; then
+        AC_MSG_NOTICE([suitable V4L support found... using linux/videodev.h])
+        V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-video4linux.o"
+        have_V4L=yes
 fi
+
+AC_MSG_NOTICE([checking for V4L2 support])
+AC_CHECK_HEADER([linux/videodev2.h], [ have_linux_videodev2_h=yes; ])
+AC_CHECK_HEADER([sys/videodev2.h], [ have_sys_videodev2_h=yes; ])
+AC_CHECK_HEADER([sys/videoio.h], [ have_sys_videoio_h=yes; ])
+
+if test x$have_linux_videodev2_h = xyes ; then
+        AC_MSG_NOTICE([suitable V4L2 support found... using linux/videodev2.h])
+        V_DEFINE="$V_DEFINE -DHAVE_LINUX_VIDEODEV2_H"
+        V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-v4l2.o"
+        have_V4L2=yes
+
+elif test x$have_sys_videodev2_h = xyes; then
+        AC_MSG_NOTICE([suitable V4L2 support found... using sys/videodev2.h])
+        V_DEFINE="$V_DEFINE -DHAVE_SYS_VIDEODEV2_H"
+        V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-v4l2.o"
+        have_V4L2=yes
+
+elif test x$have_sys_videodev2_h = xyes; then
+        AC_MSG_NOTICE([suitable V4L2 support found... using sys/videoio.h])
+        V_DEFINE="$V_DEFINE -DHAVE_SYS_VIDEOIO_H"
+        V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-v4l2.o"
+        have_V4L2=yes
+
+fi
+
+if test x$have_V4L = xyes -o x$have_V4L2 = xyes; then
+        V_OBJ_GRABBER="$V_OBJ_GRABBER video/yuv_convert.o"
+fi
+
+AC_CHECK_HEADER([libv4lconvert.h], [ have_videodev_h=yes; ])
+if test x$have_videodev_h = xyes; then
+        V_DEFINE="$V_DEFINE -DHAVE_LIBV4L"
+        if test x$have_V4L = xyes; then
+                V_LIB_GRABBER="$V_LIB_GRABBER -lv4l1"
+        fi
+        if test x$have_V4L2 = xyes; then
+                V_LIB_GRABBER="$V_LIB_GRABBER -lv4l2"
+        fi
+else
+        V_OBJ_GRABBER="$V_OBJ_GRABBER  video/tinyjpeg.o video/jidctflt.o"
+fi
+
 
 if test -r /usr/lib/libvl.so ; then
 	V_LIB_GRABBER="$V_LIB_GRABBER -lvl -ldmedia"
@@ -525,16 +560,15 @@ sparc-sun-sunos*)
 	V_LIB="$V_LIB -lipc"
 	;;
 *-*-netbsd*)
+	V_STATIC=""
 	V_TARCMD="tar -h -c -f"
-	V_LIB="$V_LIB -L/usr/local/lib"
 	;;
 *-*-freebsd*)
 	V_STATIC=""
+	V_DEFINE="$V_DEFINE -DSIGARGS=int -DFreeBSD"
 	if test $ipv6 = yes; then
-		V_DEFINE="$V_DEFINE -DFreeBSD -DHAVE_IPV6"
+		V_DEFINE="$V_DEFINE -DHAVE_IPV6"
 		V_LIB="$V_LIB -L/usr/local/v6/lib"
-	else
-		V_DEFINE="$V_DEFINE -DFreeBSD"
 	fi
 	OPSYS=freebsd
 	;;

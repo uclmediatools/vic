@@ -48,10 +48,16 @@ CC = @CC@
 C++ = @CXX@
 CCOPT = @V_CCOPT@
 
+LDFLAGS= @LDFLAGS@
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+
 INCLUDE_TK = @V_INCLUDE_TK@
 INCLUDE_TCL = @V_INCLUDE_TCL@
 INCLUDE_X11 = @V_INCLUDE_X11@
-INCLUDE_MISC = -I. -Icodec/tmndec -Icodec/tmn-x -Icodec/h263 -Irtp -Irender -Inet -Ivideo -Icodec -I../common/src @V_INCLUDE@ 
+INCLUDE_MISC = -I. -Icodec/tmndec -Icodec/tmn-x -Icodec/h263 -Irtp -Irender -Inet -Ivideo -Icodec @V_INCLUDE@ 
 
 STATIC = @V_STATIC@
 MKDEP = ./mkdep
@@ -85,7 +91,7 @@ OBJ_CRYPT = net/crypt-rijndael.o @V_OBJ_CRYPT@
 CODEC_LIB = @V_CODEC_LIB@ codec/tmndec/libh263.a codec/tmn-x/libh263coder.a
 
 LIB = $(LIB_GRABBER) @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ $(CODEC_LIB) $(VIDEO_LIB) \
-	../common/src/libuclmmbase.a -lm -lz -lpthread @V_LIB_FFMPEG@ @V_LIB_X264@ 
+	-luclmmbase -lm -lz -lpthread @V_LIB_FFMPEG@ @V_LIB_X264@ 
 
 
 INCLUDE = $(INCLUDE_MISC) $(INCLUDE_GRABBER) $(INCLUDE_TK) $(INCLUDE_TCL) \
@@ -341,15 +347,13 @@ ppmtolut: render/ppmtolut/ppmtolut.c
 	$(CC) -o $@ $(CFLAGS) render/ppmtolut/ppmtolut.c -lm $(STATIC)
 
 install: force
-	 cp vic @prefix@/bin/vic
-	 chown bin @prefix@/bin/vic
-	 chgrp bin @prefix@/bin/vic
-	 chmod 555 @prefix@/bin/vic
-	 cp vic.1 @prefix@/man/vic.1
-	 cp histtolut @prefix@/bin/histtolut
-	 chown bin @prefix@/bin/histtolut
-	 chgrp bin @prefix@/bin/histtolut
-	 chmod 555 @prefix@/bin/histtolut
+	test -d $(DESTDIR)@prefix@/bin || \
+		$(INSTALL) -d $(DESTDIR)@prefix@/bin
+	test -d $(DESTDIR)@prefix@/man || \
+		$(INSTALL) -d $(DESTDIR)@prefix@/man/man1
+	$(INSTALL_PROGRAM) vic $(DESTDIR)@prefix@/bin
+	$(INSTALL_PROGRAM) histtolut $(DESTDIR)@prefix@/bin
+	$(INSTALL_DATA) vic.1 $(DESTDIR)@prefix@/man/man1
 
 clean:
 	rm -f *.o codec/jpeg/*.o codec/p64/*.o codec/h263/*.o \
@@ -360,6 +364,7 @@ clean:
 		vic vic.dyn vic.xil h261_play h261_dump jpeg_play cb_wish \
 		mkcube rgb-cube.ppm yuv-map.ppm cm0.c cm1.c ppmtolut \
 		config.cache config.log domake.* dotar.*
+	rm -rf autom4te.cache
 	cd codec/tmn && $(MAKE) clean
 	cd codec/tmndec && $(MAKE) realclean
 	rm -f codec/tmn-x/*.o codec/tmn-x/*.a
@@ -367,6 +372,7 @@ clean:
 realclean:
 	$(MAKE) clean
 	rm -f config.log config.cache config.status
+	rm -rf autom4te.cache
 
 tags:	force
 	ctags -tdwC $(SRC) *.h $(TKSRC)/*.c $(TKSRC)/*.h \

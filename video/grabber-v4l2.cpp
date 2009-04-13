@@ -31,7 +31,6 @@
 #include <string.h>
 #include <signal.h>
 #include <errno.h>
-#include <endian.h>
 
 #include <sys/types.h>
 #include <sys/fcntl.h>
@@ -45,8 +44,13 @@
 
 extern "C"
 {
-#include <asm/types.h>
+#if defined(HAVE_SYS_VIDEOIO_H)
+#include <sys/videoio.h>
+#elif defined(DHAVE_SYS_VIDEODEV2_H)
+#include <sys/videodev2.h]>
+#else
 #include <linux/videodev2.h>
+#endif
 }
 
 #ifdef HAVE_LIBV4L

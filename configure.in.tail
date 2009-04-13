@@ -1,52 +1,35 @@
 dnl standard final commands for vic/vat/etc. autoconf scripts
 dnl $Header$ (LBL)
 
-# tcl7.5 needs a dynamic loading library (unless built with the
-# -disable-load flag).  Try to find the appropriate one.
-
-if test ! -z "$V_NEED_DL" ; then
-	V_LIB_DL=""
-	case "$target" in 
-	*-*-solaris*)
-		V_LIB_DL="dl"
-		;;
-	sparc-sun-sunos*)
-		V_LIB_DL="dl"
-		;;
-	*-*-hpux*)
-		V_LIB_DL="dld"
-		;;
-	*-*-linux*)
-		AC_CHECK_LIB(dl, dlopen, V_LIB_DL="dl", V_LIB_DL="dld")
-		;;
-	*-*-aix4*)
-		V_LIB_DL="ld"
-		;;
-	esac
-	if test ! -z "$V_LIB_DL" ; then
-		AC_CHECK_LIB($V_LIB_DL, main, , V_LIB_DL="", $V_STATIC)
-	fi
-	if test ! -z "$V_LIB_DL" ; then
-		V_LIB="$V_LIB -l$V_LIB_DL"
-	else
-		echo "no dynamic load lib"
-	fi
-fi
-
-AC_SUBST(V_STATIC)
-
-if test "$host_cpu" = alpha ; then 
-	V_DEFINE="$V_DEFINE -DINT_64=u_long"
-fi
-
 # various include hacks
-dirs="/usr/src/local/include-fixes \
-	/import/mcast/include"
+dirs="../common/src \
+	/usr/include/uclmmbase \
+	/usr/include/common-mml \
+	/usr/local/include/uclmmbase \
+	/usr/local/include/common-mml"
+
+if test x$prefix != xNONE ; then
+	dirs="$prefix/include/common-mml $prefix/include/uclmmbase $dirs"
+fi
+
 for dir in $dirs; do
 	if test -d $dir ; then
 		V_INCLUDE="$V_INCLUDE -I$dir"
 	fi
 done
+
+# various linker hacks
+if test x$prefix != xNONE ; then
+	if test -d $prefix/lib64 ; then
+		LDFLAGS="-L$prefix/lib64 $LDFLAGS"
+	else
+		LDFLAGS="-L$prefix/lib $LDFLAGS"
+	fi
+else
+	if test -d ../common/src ; then
+		LDFLAGS="-L../common/src $LDFLAGS"
+	fi
+fi
 
 # always use -g with gcc during development (even with -O)
 #if test "$CC" = gcc && test -f .devel ; then
@@ -55,7 +38,6 @@ if test "$CC" = gcc  ; then
 	V_CCOPT_H261="$V_CCOPT_H261 -g -W -Wall -Wno-return-type"
 	V_DEFINE="$V_DEFINE -fsigned-char"
 fi
-
 
 V_TAR_TARGET=$target_os
 AC_SUBST(V_TAR_TARGET)
@@ -68,6 +50,7 @@ AC_SUBST(V_LIB)
 AC_SUBST(V_DEFINE)
 AC_SUBST(V_SIGRET)
 AC_SUBST(V_SHELL)
+AC_SUBST(V_STATIC)
 AC_SUBST(V_TARCMD)
 AC_SUBST(V_INCLUDE)
 AC_SUBST(V_OBJ)
@@ -79,4 +62,3 @@ AC_OUTPUT(Makefile)
 if test -f .devel ; then
 	make depend
 fi
-
