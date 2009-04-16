@@ -44,6 +44,12 @@ codec/dct.o:
 
 ED_YBITS = 4
 
+prefix      = @prefix@
+exec_prefix = @exec_prefix@
+datarootdir = @datarootdir@
+bindir      = @bindir@
+mandir      = @mandir@
+
 CC = @CC@
 C++ = @CXX@
 CCOPT = @V_CCOPT@
@@ -347,13 +353,13 @@ ppmtolut: render/ppmtolut/ppmtolut.c
 	$(CC) -o $@ $(CFLAGS) render/ppmtolut/ppmtolut.c -lm $(STATIC)
 
 install: force
-	test -d $(DESTDIR)@prefix@/bin || \
-		$(INSTALL) -d $(DESTDIR)@prefix@/bin
+	test -d $(DESTDIR)$(bindir) || \
+		$(INSTALL) -d $(DESTDIR)$(bindir)
 	test -d $(DESTDIR)@prefix@/man || \
-		$(INSTALL) -d $(DESTDIR)@prefix@/man/man1
-	$(INSTALL_PROGRAM) vic $(DESTDIR)@prefix@/bin
-	$(INSTALL_PROGRAM) histtolut $(DESTDIR)@prefix@/bin
-	$(INSTALL_DATA) vic.1 $(DESTDIR)@prefix@/man/man1
+		$(INSTALL) -d $(DESTDIR)$(mandir)/man1
+	$(INSTALL_PROGRAM) vic $(DESTDIR)$(bindir)
+	$(INSTALL_PROGRAM) histtolut $(DESTDIR)$(bindir)
+	$(INSTALL_DATA) vic.1 $(DESTDIR)$(mandir)/man1
 
 clean:
 	rm -f *.o codec/jpeg/*.o codec/p64/*.o codec/h263/*.o \
