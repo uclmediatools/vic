@@ -691,10 +691,15 @@ proc create_mtrace_window {src dir} {
 	}
 
 	global V
-	if {$dir=="to"} {
-		set cmd "|mtrace [$V(data-net) interface] [$src addr] [$V(data-net) addr]"
+	if [file executable /usr/sbin/mtrace] {
+		set mtrace_prog /usr/sbin/mtrace
 	} else {
-		set cmd "|mtrace [$src addr] [$V(data-net) addr]"
+		set mtrace_prog mtrace
+	}
+	if {$dir=="to"} {
+		set cmd "|$mtrace_prog [$V(data-net) interface] [$src addr] [$V(data-net) addr]"
+	} else {
+		set cmd "|$mtrace_prog [$src addr] [$V(data-net) addr]"
 	}
 	if [catch "open {$cmd} r" fd] {
 		$w.t.text insert end "mtrace error: $fd"
