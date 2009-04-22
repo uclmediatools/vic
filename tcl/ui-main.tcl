@@ -536,16 +536,7 @@ proc build.src { w src color } {
 	set f [smallfont]
 	set stamp $w.stamp
 	frame $stamp -relief ridge -borderwidth 2
-	if {[string match [ windowingsystem] "aqua"]} {
-		bind $stamp <Enter> "%W configure -background CornflowerBlue"
-	} elseif {$::tk_version > 8.4} {
-		# correct approach would be to somehow query the theme for
-		# selectforeground and use that instead of hardcoding to white
-		bind $stamp <Enter> "%W configure -background white"
-	} else {
-		bind $stamp <Enter> "%W configure -background gray90"
-	}
-	bind $stamp <Leave> "%W configure -background [resource background]"
+
 	create_video_widget $stamp.video 80 60
 	global win_is_slow
 	set win_is_slow($stamp.video) 1
@@ -573,18 +564,17 @@ proc build.src { w src color } {
 
 	pack $w.r.cw -side left -expand 1 -fill both -anchor w -padx 0
 
-
-        if {[string match [ windowingsystem] "aqua"]} {
+	if {[string match [ windowingsystem] "aqua"]} {
                 label $w.r.cw.name -textvariable src_nickname($src) -font $f \
                         -padx 2 -pady 1 -borderwidth 0 -anchor w
                 label $w.r.cw.addr -textvariable src_info($src) -font $f \
                         -padx 2 -pady 1 -borderwidth 0 -anchor w
-        } else {
+	} else {
                 label $w.r.cw.name -textvariable src_nickname($src) -font $f \
                         -pady 1 -borderwidth 0 -anchor w
                 label $w.r.cw.addr -textvariable src_info($src) -font $f \
                         -pady 1 -borderwidth 0 -anchor w
-        }          
+	}          
 
 
 	global ftext btext ltext
@@ -663,7 +653,18 @@ proc build.src { w src color } {
 	pack $w.r.cw -fill x -side top
 	pack $w.r.ctrl -fill x -side top
 	pack $w.r -side left -expand 1 -fill x
-	
+
+	if {[string match [ windowingsystem] "aqua"]} {
+		bind $stamp <Enter> "%W configure -background CornflowerBlue"
+		bind $stamp <Leave> "%W configure -background [resource background]"
+	} elseif {$::tk_version > 8.4} {
+		bind $stamp <Enter> "%W configure -background [$m cget -activebackground]"
+		bind $stamp <Leave> "%W configure -background [$m cget -background]"
+	} else {
+		bind $stamp <Enter> "%W configure -background gray90"
+		bind $stamp <Leave> "%W configure -background [resource background]"
+	}
+
 	bind $stamp.video <1> "select_thumbnail $w $src"
 	bind $stamp.video <Enter> { focus %W }
 	bind $stamp.video <d> "$src deactivate"
