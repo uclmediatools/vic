@@ -409,7 +409,7 @@ class VfwDevice : public InputDevice {
 	VfwGrabber *grabber_;
 };
 
-#define NUM_DEVS 4
+#define NUM_DEVS 12
 
 class VfwScanner {
  public:
