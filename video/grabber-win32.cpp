@@ -1081,7 +1081,8 @@ VfwGrabber::VideoHandler(HWND hwnd, LPVIDEOHDR vh)
 		vh->lpData, vh->dwFlags, vh->dwBytesUsed, vh->dwTimeCaptured);
 #endif
 
-	if (vh->dwFlags & VHDR_DONE)
+//	if (vh->dwFlags & VHDR_DONE)
+	if (vh->dwFlags & 0x00000001)
 		(gp->capture)(gp, vh->lpData);
 	else if (not_done++ % 10 == 0)
 		debug_msg("Frames not ready! %d\n", not_done);
