@@ -65,12 +65,12 @@ LookupHostAddr(const char *s)
 u_int32_t
 LookupLocalAddr(void)
 {
-	static u_int32_t local_addr;
+	static u_int32_t local_addr=0;
 	char name[MAXHOSTNAMELEN];
-	
-	if (local_addr == 0) {
-		gethostname(name, sizeof(name));
+		
+	if (!gethostname(name, sizeof(name))) {
 		local_addr = LookupHostAddr(name);
+	    debug_msg("gethostname:%x\n",local_addr);
 	}
 	return (local_addr);
 }
