@@ -254,7 +254,7 @@ int IP6Network::open(const char * host, int port, int ttl)
 {
 	char *g_addr;
 	// Check for SSM src address: Src,Group
-	if ((g_addr=strchr(host,(int)','))!=NULL) {
+	if ((g_addr=(char *)strchr(host,(int)','))!=NULL) {
 		char s_addr_ssm[MAXHOSTNAMELEN];
 		int i=0;
 		while (&host[i]<g_addr) {
