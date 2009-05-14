@@ -41,7 +41,7 @@ enum Motion_Est_ID {
 */
 
 typedef unsigned char UCHAR;
-const int MAX_FRAME_SIZE = 2000000;
+const int MAX_FRAME_SIZE = 1920*1080;
 const int MAX_CODED_SIZE = 200000;
 
 
