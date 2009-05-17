@@ -134,29 +134,32 @@ H263_OBJS = codec/h263/h263rtp.o codec/h263/h263dec.o codec/h263/bitIn.o \
 OBJ1 =	net/inet.o net/inet6.o codec/cellb_tables.o tkStripchart.o \
 	md5c.o random.o @V_CPUDETECT_OBJ@ $(H263_OBJS)
 
-#	session-rtpv1.o session-nv.o session-ivs.o # Not supported anymore
 # .cpp objects
-OBJ2 =	main.o iohandler.o timer.o idlecallback.o media-timer.o \
-	rate-variable.o Tcl.o Tcl2.o module.o \
-	net/crypt.o net/crypt-des.o net/pkttbl.o net/pktbuf.o \
-	net/net.o net/net-ip.o net/net-addr.o net/net-ipv6.o \
-	net/mbus_handler.o net/mbus_engine.o net/group-ipc.o net/confbus.o \
-	rtp/session.o rtp/source.o rtp/transmitter.o rtp/pktbuf-rtp.o \
-	video/device.o video/grabber.o video/grabber-still.o video/grabber-file.o \
-	codec/encoder-h261.o codec/encoder-jpeg.o codec/encoder-raw.o \
-	codec/encoder-h263.o codec/encoder-h263v2.o codec/encoder-nv.o \
-	codec/encoder-cellb.o codec/encoder-pvh.o codec/compositor.o \
-	codec/jpeg/jpeg.o codec/p64/p64.o codec/dct.o codec/transcoder-jpeg.o \
-	codec/framer-jpeg.o codec/decoder-pvh.o video/assistor-list.o \
-	codec/decoder.o codec/decoder-jpeg.o codec/decoder-nv.o \
-	codec/decoder-h263.o codec/decoder-h263v2.o codec/decoder-cellb.o \
-	codec/decoder-h261.o codec/decoder-h261v1.o codec/decoder-raw.o \
-	render/renderer.o render/renderer-window.o render/color.o \
-	render/color-pseudo.o render/color-dither.o \
-	render/color-ed.o render/color-quant.o \
-	render/color-gray.o render/color-mono.o render/color-hist.o \
-	render/rgb-converter.o render/vw.o render/ppm.o @V_OBJ@
-
+OBJ2 =	idlecallback.o iohandler.o main.o media-timer.o module.o \
+	rate-variable.o Tcl.o Tcl2.o timer.o \
+	codec/compositor.o codec/dct.o \
+	codec/decoder-cellb.o \
+	codec/decoder-h261.o codec/decoder-h261v1.o codec/decoder-h261as.o \
+	codec/decoder-h263.o codec/decoder-h263v2.o codec/decoder-jpeg.o \
+	codec/decoder-nv.o codec/decoder.o codec/decoder-pvh.o \
+	codec/decoder-raw.o \
+	codec/encoder-cellb.o codec/encoder-h261.o codec/encoder-h261as.o \
+	codec/encoder-h263.o codec/encoder-h263v2.o codec/encoder-jpeg.o \
+	codec/encoder-nv.o codec/encoder-pvh.o codec/encoder-raw.o \
+	codec/framer-jpeg.o \
+	codec/jpeg/jpeg.o \
+	codec/p64/p64.o codec/p64/p64as.o codec/transcoder-jpeg.o \
+	net/confbus.o net/crypt-des.o net/crypt.o net/group-ipc.o \
+	net/mbus_engine.o net/mbus_handler.o net/net-addr.o \
+	net/net-ip.o net/net-ipv6.o net/net.o net/pktbuf.o net/pkttbl.o \
+	render/color-dither.o render/color-ed.o render/color-gray.o \
+	render/color-hist.o render/color-mono.o render/color.o \
+	render/color-pseudo.o render/color-quant.o render/ppm.o \
+	render/renderer.o render/renderer-window.o \
+	render/rgb-converter.o render/vw.o \
+	rtp/pktbuf-rtp.o rtp/session.o rtp/source.o rtp/transmitter.o \
+	video/assistor-list.o video/device.o video/grabber-file.o \
+	video/grabber.o video/grabber-still.o @V_OBJ@
 
 OBJ3 =	cm0.o cm1.o huffcode.o version.o bv.o codec/pvh-huff.o \
 	$(TCL_VIC:.tcl=.o) tk.o
