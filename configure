@@ -1326,7 +1326,6 @@ Optional Features:
 --disable-ffmpeg-co	Enable or disable ffmpeg download
 --disable-x264-co      Enable or disable x264 download
 --disable-cpudetect     Enable or disable runtime cpu detection
---disable-h261as         Enable or disable the h261as codec (default: enabled)
 --enable-dvdecode       Enable or disable dv decoding (default: disabled)
 --enable-xvideo		Enable or disable Xvideo rendering (default: disabled)
 --enable-XvGrabber    Enable or disable old XvGrabber (default: disabled)
@@ -6044,19 +6043,6 @@ if test "$gpl" = "yes" ; then
    echo "No runtime cputect without --enable-gpl"
 fi
 
-V_H261AS=""
-# Check whether --enable-h261as was given.
-if test "${enable_h261as+set}" = set; then
-  enableval=$enable_h261as; h261as=no
-else
-  h261as=yes
-fi
-
-if test "$h261as" = "yes"; then
-   V_OBJ="$V_OBJ codec/p64/p64as.o codec/decoder-h261as.o codec/encoder-h261as.o"
-   V_H261AS="-DUSE_H261AS"
-fi
-
 V_DV=""
 # Check whether --enable-dvdecode was given.
 if test "${enable_dvdecode+set}" = set; then
@@ -7760,7 +7746,7 @@ fi
 
 
 
-V_DEFINE="$V_DEFINE $V_SHM $V_H261AS $V_DV $V_XV $V_CPUDETECT -D$V_ARCH"
+V_DEFINE="$V_DEFINE $V_SHM $V_DV $V_XV $V_CPUDETECT -D$V_ARCH"
 
 
 # various include hacks
