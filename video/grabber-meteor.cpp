@@ -57,8 +57,12 @@
 #include "module.h"
 #include "bsd-endian.h"
 
-#include <machine/ioctl_meteor.h>
-#include <machine/ioctl_bt848.h>
+#if defined(__FreeBSD__)
+ #include <machine/ioctl_meteor.h>
+ #include <machine/ioctl_bt848.h>
+#elif defined(__NetBSD__)
+ #include <dev/ic/bt8xx.h>
+#endif
 
 /*XXX*/
 #define NTSC_WIDTH 320
@@ -163,7 +167,7 @@ MeteorDevice::MeteorDevice(const char* nickname, const char *devname, int free):
 {
 	if(free)
 		attributes_ = "\
-format {422 420} \
+format {422 420 cif} \
 type {pal ntsc secam auto} \
 size {large normal small cif} \
 port {RCA Port-1 Port-2 Port-3 S-Video RGB}";
@@ -178,6 +182,8 @@ int MeteorDevice::command(int argc, const char*const* argv)
 		TclObject* o = 0;
 		if (strcmp(argv[2], "422") == 0)
 			o = new Meteor422Grabber(name_);
+		else if (strcmp(argv[2], "420") == 0)
+			o = new MeteorCIFGrabber(name_);
 		else if (strcmp(argv[2], "cif") == 0)
 			o = new MeteorCIFGrabber(name_);
 		if (o != 0)

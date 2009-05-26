@@ -728,6 +728,39 @@ proc build.qcam {w} {
     set qcamwindow(setbpp) "set qcambpp"
 }
 
+proc build.ov511 {w} {
+    global ov511window
+
+    set f [smallfont]
+    label $w.title -text "Grabber"
+
+    frame $w.f -relief sunken -borderwidth 2
+
+    frame $w.f.s -relief flat
+
+    frame $w.f.s.l -relief flat
+    label $w.f.s.l.red   -font $f -anchor w -text "Red balance"
+    label $w.f.s.l.blue   -font $f -anchor w -text "Blue balance"
+    pack $w.f.s.l.red $w.f.s.l.blue -side top -fill x -expand 1
+
+    frame $w.f.s.s -relief flat
+    scale $w.f.s.s.red    -orient horizontal -width 12 \
+		          -relief groove -showvalue 0 -from 0 -to 255 \
+                          -command "grabber set RED"
+    scale $w.f.s.s.blue   -orient horizontal -width 12 \
+		          -relief groove -showvalue 0 -from 0 -to 255 \
+                          -command "grabber set BLUE"
+
+    pack $w.f.s.s.red $w.f.s.s.blue -side top -fill x -expand 1
+    pack $w.f.s.l $w.f.s.s -side left -fill x -expand 1
+
+    pack $w.f.s -fill x -expand 1
+    pack $w.title $w.f -fill x -expand 1
+
+    set ov511window(setred) "$w.f.s.s.red set"
+    set ov511window(setblue) "$w.f.s.s.blue set"
+}
+
 #
 # X11 Grabber controls
 #
