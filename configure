@@ -7450,7 +7450,8 @@ if test -r /usr/lpp/UMS6000/lib/libUMSobj.a ; then
 	V_OBJ_GRABBER="video/grabber-sunrise.o video/output-sunrise.o $V_OBJ_GRABBER"
 fi
 
-if test -r /usr/include/machine/ioctl_meteor.h ; then
+if test -r /usr/include/machine/ioctl_meteor.h -o \
+    -r /usr/include/dev/ic/bt8xx.h ; then
 	V_OBJ_GRABBER="video/grabber-meteor.o $V_OBJ_GRABBER"
 fi
 
@@ -7505,7 +7506,7 @@ for dir in $places; do
 		V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I$dir"
 		V_LIB_GRABBER="$V_LIB_GRABBER $dir/libvigrapix.a"
 		V_OBJ_GRABBER="video/grabber-vigra.o $V_OBJ_GRABBER"
-    		break
+		break
 	fi
 done
 
@@ -7533,7 +7534,7 @@ for dir in $places; do
 		V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I$dir/include"
 		V_LIB_GRABBER="$V_LIB_GRABBER -L$dir/lib -lXext -lXvid"
 		V_OBJ_GRABBER="video/grabber-plx.o video/assistor-plx.o $V_OBJ_GRABBER"
-    		break
+		break
 	fi
 done
 
@@ -7635,12 +7636,18 @@ sparc-sun-sunos*)
 	V_LIB="$V_LIB -lipc"
 	;;
 *-*-netbsd*)
+	if test "$gpl" = "yes" ; then
+		V_OBJ_GRABBER="video/grabber-ov511.o $V_OBJ_GRABBER"
+	fi
 	V_DEFINE="$V_DEFINE -DNetBSD"
 	V_STATIC=""
 	V_TARCMD="tar -h -c -f"
 	OPSYS=netbsd
 	;;
 *-*-freebsd*)
+	if test "$gpl" = "yes" ; then
+		V_OBJ_GRABBER="video/grabber-ov511.o $V_OBJ_GRABBER"
+	fi
 	V_STATIC=""
 	V_DEFINE="$V_DEFINE -DSIGARGS=int -DFreeBSD"
 	if test $ipv6 = yes; then
