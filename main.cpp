@@ -178,7 +178,7 @@ static class UsageCommand : public TclObject {
 } cmd_usage;
 
 #ifndef SIGARGS
-#if defined(__SUNPRO_CC) || defined(Linux) || defined(__FreeBSD__)
+#if defined(__SUNPRO_CC) || defined(Linux) || defined(__FreeBSD__) || defined(WIN32)
 #define SIGARGS int arg
 #else
 #define SIGARGS ... 
