@@ -36,6 +36,9 @@ static const char rcsid[] =
 #ifdef WIN32
 #include <io.h>
 #define close closesocket
+extern "C" {
+char *find_win32_interface(const char *addr, int ttl);
+}
 #else
 #include <sys/param.h>
 #include <sys/socket.h>
@@ -250,6 +253,15 @@ int IPNetwork::open(const char * host, int port, int ttl)
 		return (-1);
 	}
 	(IPAddress&)local_ = local.sin_addr;
+
+#ifdef WIN32
+	//if (!local_.is_set()) {
+		(IPAddress&)local_ = find_win32_interface(g_addr_, ttl);
+		//(IPAddress&)local_ = "127.0.0.1";
+		debug_msg("find_win32_interface localname:%s\n",(const char*)local_);
+	//}
+#endif
+
 	rsock_ = openrsock(g_addr_, s_addr_ssm_, port, local_);
 	if (rsock_ < 0) {
 		rsock_ = ssock_;
@@ -280,16 +292,19 @@ int IPNetwork::localname(sockaddr_in* p)
 	int len = sizeof(*p), result =0;
 #endif
 
+	// Use Local interface name if already set via command line
+	if (local_.is_set()) {
+		p->sin_addr.s_addr=(IPAddress&)local_;
+		debug_msg("Setting localname from cmd line:%s\n",(const char*)local_);
+		return (0);
+	}
+
 	if ((result = getsockname(ssock_, (struct sockaddr *)p, &len)) < 0) {
 		perror("getsockname");
 		p->sin_addr.s_addr = 0;
 		p->sin_port = 0;
-	}
-	// Use Local interface name if already set via command line
-	if (local_.is_set()) {
-		p->sin_addr.s_addr=(IPAddress&)local_;
-		return (0);
-	}
+	} else 
+	    debug_msg("getsockname localname:%s\n",(const char*)local_);
 
 	if (p->sin_addr.s_addr == 0) {
 		p->sin_addr.s_addr = LookupLocalAddr();
@@ -402,7 +417,7 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
 				struct ip_mreq mr;
 
 				mr.imr_multiaddr.s_addr = g_addri;
-				mr.imr_interface.s_addr = INADDR_ANY;
+				mr.imr_interface.s_addr = locali;
 				if (setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, 
 						(char *)&mr, sizeof(mr)) < 0) {
 					perror("IP_ADD_MEMBERSHIP");
@@ -541,7 +556,7 @@ int IPNetwork::openssock(Address & addr, u_short port, int ttl)
 		/* Slightly nasty one here - set Mcast iface if local inteface
 		 * is specified on command line
 		 */
-		if (((const char*)local_)[0]!='\0') {
+		if (local_.is_set()) {
 			u_int32_t locali = (IPAddress&)local_;
 			if (setsockopt(fd, IPPROTO_IP, IP_MULTICAST_IF,
 						   (char*)&locali, sizeof(locali)) < 0) {
