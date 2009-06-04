@@ -23,6 +23,8 @@
  * ON AN "AS IS" BASIS, AND THE UNIVERSITY OF CALIFORNIA HAS NO OBLIGATION TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  */
+#ifndef HAVE_STDLIB_H
+
 static const char rcsid[] = "$Header$ SPRITE (Berkeley)";
 
 #include <ctype.h>
@@ -187,3 +189,4 @@ strtoul(
     }
     return result;
 }
+#endif
