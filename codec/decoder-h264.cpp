@@ -216,13 +216,13 @@ void H264Decoder::recv(pktbuf * pb)
     }
 
     if (abs(seq - last_seq) > 5) {
-	    fprintf(stderr, "H264_RTP: sequece interrupt!\n");
+	    debug_msg("H264_RTP: sequece interrupt!\n");
 	    idx = seq;
 	    pktIdx = 0;
 	    stream->clear();
     }else if (last_seq + 1 != seq) {
 	    // oops - missing packet
-	    fprintf(stderr, "H264_RTP: missing packet\n");
+	    debug_msg("H264_RTP: missing packet\n");
     }
 
     //===================================================
