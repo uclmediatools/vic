@@ -210,7 +210,7 @@ proc init_local {} {
 	}
 }
 
-proc h261_init_resources {} {
+proc init_resources {} {
 	option add H261_play.dither od startupFile
 	option add H261_play.gamma 0.7 startupFile
 	option add H261_play.medianCutColors 150 startupFile
