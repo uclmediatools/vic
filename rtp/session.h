@@ -143,7 +143,7 @@ public:
 	void build_ts_pkt(CtrlHandler* ch);
 	void build_ackv_pkt(CtrlHandler* ch);
 	void build_ts_echo_pkt(CtrlHandler* ch);
-	void cc_output();
+	//void cc_output();
 
 	// am i a data sender?
 	inline bool am_i_sender() { return is_sender_; }

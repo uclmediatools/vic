@@ -86,6 +86,7 @@ class Transmitter : public TclObject, public Timer,
 	void flush();
 	void send(pktbuf*);
 	inline bool is_cc_on() { return is_cc_active_; }
+	void cc_output();
 
 	/*
 	 * Buffer allocation hooks.

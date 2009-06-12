@@ -649,8 +649,10 @@ void SessionManager::send_xreport(CtrlHandler* ch, int bt, int bye)
 	// set RTCP flag to XR packet
 	flags |= RTCP_PT_XR;
 
+	debug_msg("about to send RTCP XR\n");
+
 	// declare XR packet
-	rtcp_xr* xr = (rtcp_xr*)(rh + 1);
+	rtcp_xr_BT_1_hdr* xr = (rtcp_xr_BT_1_hdr*)(rh + 1);
 
 	// number of XR block contents (initialization)
 	int num_ssrc;	// number of ssrc entry
@@ -668,35 +670,43 @@ void SessionManager::send_xreport(CtrlHandler* ch, int bt, int bye)
 	if (am_i_sender()) {
 		// this block is used for giving seqno and ackofack
 		if(bt == XR_BT_1) {
+	debug_msg("about to send RTCP XR 1\n");
 			// number of block entries
-			num_ssrc = 1;
-			num_begins = 1;
-			num_ends = 1;
+			//num_ssrc = 1;
+			//num_begins = 1;
+			//num_ends = 1;
 			num_chunks = 1;
 
 			// set XR block flags (block type and length)
-			xr->xr_flags = htons(XR_BT_1 << 8);
+			//xr->xr_flags = htons(XR_BT_1 << 8);
+			xr->BT = XR_BT_1;
+			xr->xr_flags.rsvd = 0x00;
+			xr->xr_flags.T = 0x00;
 
 			// allocate report block in memory
-			rb = (u_char *) malloc(sizeof(xr) + num_ssrc 
-					+ num_begins + num_ends + num_chunks);
+			//rb = (u_char *) malloc(sizeof(xr) + num_ssrc*4 
+			//		+ (num_begins + num_ends + num_chunks)*2);
 
 			// set report block entry pointer
-			u_int32_t *ent = (u_int32_t *) (sizeof(xr) + rb);
+			//rtcp_xr_BT_1_hdr *ent = (rtcp_xr_BT_1_hdr *) (sizeof(xr) + rb);
 
 			// ssrc of XR source (currently unused)
-			xrssrc = 0; ent[0] = xrssrc;
+			xrssrc = 255; 
+			//ent[0] = xrssrc;
+			xr->ssrc = htonl(xrssrc);
 
 			// get current RTP data packet seqno from TfwcSndr
-			ent[1] = 0;
-			ent[1] |= htons(tfwc_sndr_get_seqno());
-			ent[1] <<= 16;
-			ent[1] |= htons(tfwc_sndr_get_seqno() + 1);
+			//ent[1] = 0; ent[1] |= htons(tfwc_sndr_get_seqno());
+			xr->begin_seq = htons(tfwc_sndr_get_seqno());
+			//ent[1] <<= 16; ent[1] |= htons(tfwc_sndr_get_seqno() + 1);
+			xr->end_seq = htons(tfwc_sndr_get_seqno() + 1);
 
+			debug_msg("Sending beg_seq: %d, end: %d\n",ntohs(xr->begin_seq),ntohs(xr->end_seq) );
+			
 			// set ack of ack
-			ent[2] = 0;
-			ent[2] |= htons(tfwc_sndr_get_aoa());
-			ent[2] <<= 16;
+			//ent[2] = 0; ent[2] |= htons(tfwc_sndr_get_aoa()); ent[2] <<= 16;
+			u_int16_t *chunks = (u_int16_t *) (xr + 1);
+			chunks[0] = htons(tfwc_sndr_get_aoa());
 
 			//debug_msg("	SeqNo:		%d\n", tfwc_sndr_get_seqno());
 		}
@@ -709,53 +719,41 @@ void SessionManager::send_xreport(CtrlHandler* ch, int bt, int bye)
 		// this block is used for giving ackvec
 		if (bt == XR_BT_1) {
 			// number of block entries
-			num_ssrc = 1;
-			num_begins = 1;
-			num_ends = 1;
+			//num_ssrc = 1;
+			//num_begins = 1;
+			//num_ends = 1;
 
 			// set XR block type
-			xr->xr_flags = htons(XR_BT_1 << 8);
+			//xr->xr_flags = htons(XR_BT_1 << 8);
+			xr->BT = XR_BT_1;
 
 			// number of AckVec array
 			num_chunks = tfwc_rcvr_numvec();
+			if (num_chunks<1) num_chunks=1;
 
 			// allocate report block in memory
-			rb = (u_char *) malloc(sizeof(xr) + num_ssrc 
-					+ num_begins + num_ends + num_chunks);
+			//rb = (u_char *) malloc(sizeof(xr) + num_ssrc 
+			//		+ num_begins + num_ends + num_chunks);
 
 			// set report block entry pointer
-			u_int32_t *ent = (u_int32_t *) (sizeof(xr) + rb);
+			//u_int32_t *ent = (u_int32_t *) (sizeof(xr) + rb);
 
 			// ssrc of XR source (currently unused)
 			xrssrc = 0;
-			ent[0] = xrssrc;
+			//ent[0] = xrssrc;
+			xr->ssrc = htonl(xrssrc);
 
 			// begin/end for AckVec
-			ent[1] = 0;
-			ent[1] |= htons(tfwc_rcvr_begins());
-			ent[1] <<= 16;
-			ent[1] |= htons(tfwc_rcvr_ends());
+			//ent[1] = 0; ent[1] |= htons(tfwc_rcvr_begins());
+        	xr->begin_seq = htons(tfwc_rcvr_begins());
+			//ent[1] <<= 16; ent[1] |= htons(tfwc_rcvr_ends());
+			xr->end_seq = htons(tfwc_rcvr_ends());
 
 			// clone AckVec from TfwcRcvr
-			for (int i = 1; i <= num_chunks; i++) {
-				bool odd = true;
-				int j = i/2 + 1;
+			u_int16_t *chunks = (u_int16_t *) (xr + 1);
 
-				if (i%2 == 0) {
-					odd = false;
-					j -= 1;
-				}
-
-				// clone AckVec array to chunk entry
-				if(odd) {
-					// odd number chunk
-					ent[j+1] = 0;	// initialize
-					ent[j+1] |= htons(tfwc_rcvr_getvec(i-1));
-				} else {
-					// even number chunk
-					ent[j+1] <<= 16; // left-shift first
-					ent[j+1] |= htons(tfwc_rcvr_getvec(i-1));
-				}
+			for (int i = 0; i <= num_chunks; i++) {
+				chunks[i] = htons(tfwc_rcvr_getvec(i));
 			}
 		}
 		else if (bt == XR_BT_3) {
@@ -763,17 +761,20 @@ void SessionManager::send_xreport(CtrlHandler* ch, int bt, int bye)
 		} 
 	} // end of if (am_i_sender())
 
-	++xr;
+	//++xr;
 
-	// XR report block length
-	int xrlen = sizeof(xr);
+	// XR report block length in bytes
+	int xrlen = sizeof(rtcp_xr_BT_1_hdr) + num_chunks*2;
+	// Convert XR report block length to multiples of 32 bit-words minus 1
 	xr->xr_len = htons((xrlen >> 2) - 1);
 
 	// RTCP header flags (this is not the XR header flags)
 	rh->rh_flags = htons(flags);
 
 	// RTCP packet length
-	int len = (u_char *) xr - pktbuf_;	
+	int len = (u_char *) ++xr + num_chunks*2 - pktbuf_;	
+	debug_msg("RTCP XR: len: %d, xrlen=%d\n", len, xrlen);
+	len = sizeof(rtcphdr) + sizeof(rtcp_xr_BT_1_hdr) + num_chunks*2;
 	rh->rh_len = htons((len >> 2) - 1);
 
 	// send XR report block
@@ -1239,61 +1240,74 @@ void SessionManager::parse_xr(rtcphdr* rh, int flags, u_char* ep,
 void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 				const u_char* ep, Address & addr)
 {
-	//printf("\tentering parse_xr_records()\n");
+	printf("\tentering parse_xr_records()\n");
+	rtcp_xr_BT_1_hdr *xr1;
 	UNUSED(ssrc);
 	UNUSED(cnt);
 	UNUSED(ep);
 	UNUSED(addr);
 
-	// XR block flags and length
-	u_int16_t flags = xr->xr_flags;
-	u_int16_t xrlen	= xr->xr_len;
+	// XR block length
+	u_int16_t xrlen	= ntohs(xr->xr_len);
 
 	// XR repport block
-	u_int32_t *rb = (u_int32_t *) malloc(xrlen);
+	//u_int32_t *rb = (u_int32_t *) malloc(xrlen);
 	
-	// parse XR information (xrssrc, begin, end)
-	u_int32_t xrssrc = rb[0]; UNUSED(xrssrc);
-	u_int16_t begin = rb[1] >> 16;
-	u_int16_t end = rb[1] & 0x0000FFFF;
+	if ( xr->BT == XR_BT_1 ) {
+	  xr1 = ( rtcp_xr_BT_1_hdr *) xr;
 
-	// declare chunks
-	int num_chunks = 0; 
-	u_int32_t *chunk;
+	  // parse XR information (xrssrc, begin, end)
+	  u_int32_t xrssrc = ntohl(xr1->ssrc); UNUSED(xrssrc);
+	  u_int16_t begin = ntohs(xr1->begin_seq);
+	  u_int16_t end = ntohs(xr1->end_seq);
 
-	num_chunks = xrlen - 3;	
-	chunk = (u_int32_t *) malloc(sizeof(u_int32_t) * num_chunks);
+	  // declare chunks
+	  int num_chunks = 0; 
+	  u_int16_t *chunk = (u_int16_t *) ++xr1;
 
-	// parse chunks information (AckVec)
-	for (int i = 0; i < num_chunks; i++)
-		chunk[i] = rb[i+2];
+	  // num_chunks = xrlen - sizeof(xr_BT_1_hr)[=3] + 1(countering -1 in hdr calc)
+	  num_chunks = (xrlen - 2)*2;	
+	  //chunk = (u_int32_t *) malloc(sizeof(u_int32_t) * num_chunks);
 
-	// i am an RTP data sender, so do the sender stuffs
-	if (am_i_sender()) {
-		// parse XR chunks
-		tfwc_sndr_recv(flags, begin, end, chunk, num_chunks);
-		// we need to call Transmitter::output(pb) to make Ack driven
-		cc_output();
-	}
-	// i am an RTP data receiver, so do the receiver stuffs
-	else {
-		// parse XR chunks
-		tfwc_rcvr_recv(flags, begin, chunk, num_chunks);
-		// send receiver side XR report
-		ch_[0].send_ackv();
-		//ch_[0].send_ts_echo();
-	}
+	  // parse chunks information (AckVec)
+	  //for (int i = 0; i < num_chunks; i++)
+	  //	chunk[i] = rb[i+2];
+
+	  // i am an RTP data sender, so do the sender stuffs
+	  if (am_i_sender()) {
+		  // parse XR chunks
+		  printf("\tparse_xr - i_am_sender \n");
+		  tfwc_sndr_recv(xr->BT, begin, end, chunk, num_chunks);
+		  // we need to call Transmitter::output(pb) to make Ack driven
+		  cc_output();
+	  }
+	  // i am an RTP data receiver, so do the receiver stuffs
+	  else {
+		  // parse XR chunks
+		  tfwc_rcvr_recv(xr->BT, begin, chunk, num_chunks);
+		  // send receiver side XR report
+		  ch_[0].send_ackv();
+		  //ch_[0].send_ts_echo();
+	  }
+	} else 
+	  debug_msg("UNKNOWN RTCP-XR packet:BT:%d\n",xr->BT);
 }
 
-void SessionManager::cc_output() 
+/*void SessionManager::cc_output() 
 {
 	printf("\tentering cc_output()\n");
 	pktbuf* pb = head_;	// head of the packet queue
 	rtphdr* rh;		// declare rtp header
 
 	// if pb is not 0, then parse rtp header 
-	if (pb != 0) 
-		rh = (rtphdr *) pb->data;
+	if (pb == 0) {
+	  is_first_ = true;
+	  return; 
+	}
+
+	printf("\tThere is a packet available to send cc_output()\n");
+
+	rh = (rtphdr *) pb->data;
 
 	// cwnd value
 	int magic = (int) tfwc_magic();
@@ -1326,7 +1340,7 @@ void SessionManager::cc_output()
 		} else 
 			break;
 	} // end while
-}
+}*/
 
 void CtrlHandler::send_ackv()
 {

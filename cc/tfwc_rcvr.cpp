@@ -55,14 +55,16 @@ TfwcRcvr::TfwcRcvr() :
 	currNumVec_(0),
 	prevNumVec_(0)
 {
-	tfwcAV = (u_int16_t *) malloc(sizeof(u_int16_t *));;
+	tfwcAV = (u_int16_t *) malloc(17);
+	bzero(tfwcAV,17);
 }
 
 void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno, 
-				u_int32_t *chunk, int num_chunks) 
+				u_int16_t *chunk, int num_chunks) 
 {
 	// retrived ackofack
-	u_int16_t ackofack = chunk[num_chunks-1] >> 16;
+	//u_int16_t ackofack = chunk[num_chunks-1] >> 16;
+	u_int16_t ackofack = chunk[0];
 
 	// variables
 	int numLoss		= 0;	// number of packet loss count

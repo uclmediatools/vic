@@ -62,7 +62,7 @@ public:
 
 	// main reception path (XR packet)
 	void tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
-			u_int32_t *chunk, int num_chunks);
+			u_int16_t *chunk, int num_chunks);
 
 	// return current data packet's seqno
 	inline u_int16_t tfwc_sndr_get_seqno() { return seqno_; }
@@ -124,12 +124,13 @@ protected:
 	}
 	// generate seqno vector (interpret ackvec to real sequence numbers)
 	inline void gen_seqvec(u_int16_t begins, u_int16_t ends, 
-			u_int16_t hseq, u_int16_t vec) {
+			u_int16_t hseq, u_int16_t ackvec) {
 		int cnt = ends - begins;	// number of packets in ackvec
 		int offset = 0;				// if the bit is zero, then increment 
-		
+	
+		// ??? Doesn't take account of ackvec from more than one chunk
 		for (int i = 0; i < cnt; i++) {
-			if( CHECK_BIT_AT(vec, (cnt-i)) )
+			if( CHECK_BIT_AT(ackvec, (cnt-i)) )
 				seqvec_[(i-offset)%SSZ] = hseq - i;
 			else
 				offset++;

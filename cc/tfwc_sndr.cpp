@@ -120,7 +120,7 @@ void TfwcSndr::tfwc_sndr_send(pktbuf* pb) {
  * main TFWC reception path
  */
 void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
-		u_int32_t *chunk, int num_chunks)
+		u_int16_t *chunk, int num_chunks)
 {
 	// retrieve ackvec
 	if (type == XR_BT_1) {
@@ -134,7 +134,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		jacked_ = ends_ - 1;
 
 		// declared AckVec
-		ackv_ = (u_int16_t *) malloc (sizeof(u_int16_t) * num_chunks);
+		/*ackv_ = (u_int16_t *) malloc (sizeof(u_int16_t) * num_chunks);
 
 		// clone AckVec from Vic application
 		for (int i = 1; i <= num_chunks; i++) {
@@ -152,10 +152,10 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 			} else {
 				ackv_[i] = chunk[j] & 0x0000FFFF;
 			}
-		}
+		}*/
 
 		// generate seqno vec
-		//gen_seqvec(begins_, ends_, jacked_, ackv);
+		gen_seqvec(begins_, ends_, jacked_, chunk[0]);
 		print_seqvec(begins_, ends_);
 
 		// generate margin vector
