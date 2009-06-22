@@ -147,6 +147,8 @@ struct rtcp_rr {
 #define XR_BT_2	0x02	// Duplicate RLE Report Block
 #define XR_BT_3	0x03	// Packet Receipt Times Report Block
 #define XR_BT_4	0x04	// Receiver Reference Time Report Block
+
+#define XR_BT_ECN	0x44	// ECN Report block - TEST
 struct rtcp_xr {
 	// extended report block header
 	u_int8_t BT;	  /* Block Type */

@@ -139,6 +139,8 @@ public:
 //	virtual void send_report();
 	virtual void send_report(CtrlHandler*, int bye, int app = 0);
 	virtual void send_xreport(CtrlHandler*, int bt, int bye);
+	virtual void send_Xreport(CtrlHandler* ch, uint8_t bt, uint8_t rsvd, uint8_t thin, uint16_t begin_seq, uint16_t end_seq, uint16_t *chunks, uint16_t num_chunks, uint32_t xrssrc);
+
 	void build_aoa_pkt(CtrlHandler* ch);
 	void build_ts_pkt(CtrlHandler* ch);
 	void build_ackv_pkt(CtrlHandler* ch);

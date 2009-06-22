@@ -295,18 +295,20 @@ void Transmitter::cc_output()
         tfwc_sndr_send(pb);
 
         // declare the next packet
-        pktbuf* nx = pb->next;
+        //pktbuf* nx = pb->next;
+        head_ = pb->next;
 
         // call Transmitter::output(pb)
         output(pb);
 
         // move packet pointer
-        pb = nx;
+        //pb = nx;
 
         // if pb is not 0, 
         // then move head pointer and parse rtp header
-        if (pb != 0) {
-            head_ = pb;
+        if (head_ != 0) {
+            pb = head_;
+            //head_ = pb;
             rh = (rtphdr *) pb->data;
         } else {
             break;
