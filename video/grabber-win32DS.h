@@ -37,12 +37,14 @@
 
 #include <dshow.h>   // DirectShow
 #include <amstream.h>   // DirectShow
+
+#pragma include_alias("dxtrans.h", "qedit.h")
 #define __IDxtCompositor_INTERFACE_DEFINED__
 #define __IDxtAlphaSetter_INTERFACE_DEFINED__
 #define __IDxtJpeg_INTERFACE_DEFINED__
 #define __IDxtKey_INTERFACE_DEFINED__
-// Had to comment out #include  <dxtrans.h> from qedit.h - broken M$ setup?!
-// the above #define's make sure it's contents is not needed
+// dxtrans.h is missing with some DirectX SDKs and VisualStudio versions - broken M$ setup?!
+// the above #pragma and #define's make sure it's contents is not needed
 #include <qedit.h>   // DirectShow
 
 #include "crossbar.h"
