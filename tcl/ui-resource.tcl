@@ -28,39 +28,41 @@
 #
 
 global font
-if {[string match [ windowingsystem] "aqua"]} {
-        font create medfont -family {Lucida Grande} -size 12 -weight bold
-        font create smallfont -family {Lucida Grande} -size 10 -weight bold
-        font create minifont -family {Lucida Grande} -size 4
-        font create helpfont -family {Lucida Grande} -size 12
-        font create entryfont -family {Lucida Grande} -size 10
-} else { 
-    set font(helvetica10) {
-	r-normal--*-100-75-75-*-*-*-*
-	r-normal--10-*-*-*-*-*-*-*
-	r-normal--11-*-*-*-*-*-*-*
-	r-normal--*-100-*-*-*-*-*-*
-	r-normal--*-*-*-*-*-*-*-*
-    }
-    set font(helvetica12) {
-	r-normal--*-120-75-75-*-*-*-*
-	r-normal--12-*-*-*-*-*-*-*
-	r-normal--14-*-*-*-*-*-*-*
-	r-normal--*-120-*-*-*-*-*-*
-	r-normal--*-*-*-*-*-*-*-*
-    }
-    set font(helvetica14) {
-	r-normal--*-140-75-75-*-*-*-*
-	r-normal--14-*-*-*-*-*-*-*
-	r-normal--*-140-*-*-*-*-*-*
-	r-normal--*-*-*-*-*-*-*-*
-    }
-    set font(times14) {
-	r-normal--*-140-75-75-*-*-*-*
-	r-normal--14-*-*-*-*-*-*-*
-	r-normal--*-140-*-*-*-*-*-*
-	r-normal--*-*-*-*-*-*-*-*
-    }
+if {$::tk_version < 8.5} {
+	if {[string match [ windowingsystem] "aqua"]} {
+	        font create medfont -family {Lucida Grande} -size 12 -weight bold
+	        font create smallfont -family {Lucida Grande} -size 10 -weight bold
+	        font create minifont -family {Lucida Grande} -size 4
+	        font create helpfont -family {Lucida Grande} -size 12
+	        font create entryfont -family {Lucida Grande} -size 10
+	} else { 
+	        set font(helvetica10) {
+	        r-normal--*-100-75-75-*-*-*-*
+	        r-normal--10-*-*-*-*-*-*-*
+	        r-normal--11-*-*-*-*-*-*-*
+	        r-normal--*-100-*-*-*-*-*-*
+	        r-normal--*-*-*-*-*-*-*-*
+	    }
+	        set font(helvetica12) {
+	        r-normal--*-120-75-75-*-*-*-*
+	        r-normal--12-*-*-*-*-*-*-*
+	        r-normal--14-*-*-*-*-*-*-*
+	        r-normal--*-120-*-*-*-*-*-*
+	        r-normal--*-*-*-*-*-*-*-*
+	    }
+	        set font(helvetica14) {
+	        r-normal--*-140-75-75-*-*-*-*
+	        r-normal--14-*-*-*-*-*-*-*
+	        r-normal--*-140-*-*-*-*-*-*
+	        r-normal--*-*-*-*-*-*-*-*
+	    }
+	        set font(times14) {
+	        r-normal--*-140-75-75-*-*-*-*
+	        r-normal--14-*-*-*-*-*-*-*
+	        r-normal--*-140-*-*-*-*-*-*
+	        r-normal--*-*-*-*-*-*-*-*
+	    }
+	}
 }
 
 proc search_font { foundry style weight points } {
@@ -81,24 +83,24 @@ proc search_font { foundry style weight points } {
 
 proc init_fonts {} {
 	global tcl_platform
-	set foundry [option get . foundry Vic]
-
-	if {$tcl_platform(platform) == "windows"} {
-		set helv10  [search_font $foundry helvetica medium 12]
-		set helv4b [search_font $foundry helvetica bold 10]
-		set helv10b [search_font $foundry helvetica bold 12]
-		set helv12b [search_font $foundry helvetica bold 12]
-		set times14 [search_font $foundry times medium 14]
-	} else {
-	    #ag_puts "in lnonwindows section"
-		set helv4b [search_font $foundry helvetica bold 10]
-		set helv10  [search_font $foundry helvetica medium 10]
-		set helv10b [search_font $foundry helvetica bold 10]
-		set helv12b [search_font $foundry helvetica bold 12]
-		set times14 [search_font $foundry times medium 14]
-	}
 
 	if {$::tk_version < 8.5} {
+		set foundry [option get . foundry Vic]
+
+		if {$tcl_platform(platform) == "windows"} {
+			set helv10  [search_font $foundry helvetica medium 12]
+			set helv4b [search_font $foundry helvetica bold 10]
+			set helv10b [search_font $foundry helvetica bold 12]
+			set helv12b [search_font $foundry helvetica bold 12]
+			set times14 [search_font $foundry times medium 14]
+		} else {
+			set helv4b [search_font $foundry helvetica bold 10]
+			set helv10  [search_font $foundry helvetica medium 10]
+			set helv10b [search_font $foundry helvetica bold 10]
+			set helv12b [search_font $foundry helvetica bold 12]
+			set times14 [search_font $foundry times medium 14]
+		}
+
 		option add *Font $helv12b startupFile
 		option add Vic.medfont $helv12b startupFile
 		option add Vic.smallfont $helv10b startupFile
