@@ -44,28 +44,30 @@ proc helpitem { w text } {
 
 proc build.help { } {
 	set w .help
-	::tk::unsupported::MacWindowStyle style $w plainDBox help {closeBox resizable}
+	if {[string match [ windowingsystem] "aqua"]} {
+		::tk::unsupported::MacWindowStyle style $w plainDBox help {closeBox resizable}
+	}
 	if [winfo exists $w] { return }
 	create_toplevel $w "vic help"
 
 	frame $w.frame -borderwidth 2 -relief raised
 	set p $w.frame
-	helpitem $p "Transmit video by clicking on the ``Transmit'' button \
-in the ``Menu'' window.  You need video capture hardware to do this."
+	helpitem $p "Transmit video by clicking on the \"Transmit\" button \
+in the \"Menu\" window.  You need video capture hardware to do this."
 	helpitem $p "Incoming video streams appear in the main vic window.  \
-If you see the message ``Waiting for video...'', then no one is transmitting \
+If you see the message \"Waiting for video...\", then no one is transmitting \
 video to the conference address you're running on.  Otherwise, you'll \
 see a thumbnail sized image and accompanying information for each source. \
 Click on the thumbnail to open a larger viewing window.  You can tile the \
-thumbnails in multiple columns using the ``Tile'' menu in the ``Menu'' window."
-	helpitem $p "Clicking on the ``mute'' button for a given source will \
+thumbnails in multiple columns using the \"Tile\" menu in the \"Menu\" window."
+	helpitem $p "Clicking on the \"mute\" button for a given source will \
 turn off decoding.  It is usually a good idea to do \
 this for your own, looped-back transmission."
 	helpitem $p "The transmission rate is controlled with the bit-rate \
-and frame-rate sliders in the ``Transmission'' panel of the ``Menu'' window.  \
+and frame-rate sliders in the \"Transmission\" panel of the \"Menu\" window.  \
 The more restrictive setting limits the transmission rate."
 	helpitem $p "The video windows need not be fixed to a given source. \
-The ``Mode...'' menu attached to a viewing window allows you to specify \
+The \"Mode...\" menu attached to a viewing window allows you to specify \
 voice-switched and/or timer-switched modes.   In timer-switched mode, the \
 window automatically cycles through (unmuted) sources, while in \
 voice-switched mode, the window switches to whomever is talking \
@@ -74,7 +76,7 @@ which results in a simple LRU allocation of the windows to most recent \
 speakers.  See the man page for more details."
 	helpitem $p "If the user interface looks peculiar, you might \
 have X resources that conflict with tk.  A common problem is \
-defining ``*background'' and/or ``*foreground''."
+defining \"*background\" and/or \"*foreground\"."
 	helpitem $p "Bugs and suggestions to vic@cs.ucl.ac.uk.  Thanks."
 
 	button $w.frame.ok -text " Dismiss " -borderwidth 2 -relief raised \
