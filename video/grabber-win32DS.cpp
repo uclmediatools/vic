@@ -190,8 +190,6 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
    */
 
    debug_msg("new DirectShowGrabber()\n");
-   svideoPort = -1;
-   compositePort = -1;
    decimate_ = 2;  //default
    converter_=0;
    cb_mutex_=0;
@@ -210,6 +208,12 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
    pFilter_ = NULL;
    capturing_=0;
    max_fps_ = 30;
+
+   memset(inputPorts, 0, NUM_PORTS);
+       
+   numInputPorts =0;
+   initializedPorts =0;
+   svideoPortNum = compositePortNum =1;
 
    if(!strcmp(cformat, "420"))
        cformat_ = CF_420;
@@ -517,15 +521,40 @@ void DirectShowGrabber::routeCrossbar() {
 
     hr = xb->get_PinCounts(&output, &input);
 
-    for( int i = 0; i < input; ++i ) {
-	xb->get_CrossbarPinInfo(TRUE, i, &related, &pinType);
-	if( pinType == PhysConn_Video_SVideo ) {
-	    svideoPort = i;
-	}
-	if( pinType == PhysConn_Video_Composite ) {
-	    compositePort = i;
+    hr = xb->get_PinCounts(&output, &input);
+    if(initializedPorts == 0) {
+	initializedPorts=1;
+	svideoPortNum = 1;
+	compositePortNum = 1;
+	numInputPorts = 0;
+	for( int i = 0; i < input; ++i ) {
+	    xb->get_CrossbarPinInfo(TRUE, i, &related, &pinType);
+	    if( pinType == PhysConn_Video_SVideo ) {
+		debug_msg("Found svideo port %d\n", svideoPortNum);
+		inputPorts[numInputPorts] = new Port();
+		inputPorts[numInputPorts]->id = i;
+		if( svideoPortNum > 1 )
+		    sprintf(inputPorts[numInputPorts]->name,"S-Video%d", svideoPortNum );
+		else
+		    strcpy(inputPorts[numInputPorts]->name,"S-Video");
+		numInputPorts++;
+		svideoPortNum++;
+
+	    }
+	    if( pinType == PhysConn_Video_Composite ) {
+		debug_msg("Found composite port %d\n", compositePortNum);
+		inputPorts[numInputPorts] = new Port();
+		inputPorts[numInputPorts]->id = i;
+		if(compositePortNum > 1 )
+		    sprintf(inputPorts[numInputPorts]->name,"Composite%d", compositePortNum);
+		else
+		    strcpy(inputPorts[numInputPorts]->name,"Composite");
+		numInputPorts++;
+		compositePortNum++;
+	    }
 	}
     }
+
     for( int i = 0; i < output; ++i ) {
 	xb->get_CrossbarPinInfo(FALSE, i, &related, &pinType);
 	if( pinType == PhysConn_Video_VideoDecoder ) {
@@ -533,12 +562,16 @@ void DirectShowGrabber::routeCrossbar() {
 	    break;
 	}
     }
-    if(strcmp(input_port_, "S-Video")==0){
-	port = svideoPort;
-    }else if(strcmp(input_port_, "Composite")==0){
-	port = compositePort;
-    }else{
-	port = 0;
+
+    port = 0;
+    for( int i=0; i<numInputPorts; i++) {
+	if (strcmp(input_port_,inputPorts[i]->name) == 0) {
+	    port = inputPorts[i]->id;
+	    break;
+	}
+    }
+    if( port == 0 ) { 
+	debug_msg("**** Failed to find port for %s\n", input_port_);
     }
 
     if( xb->CanRoute(videoDecoderPort, port) == S_FALSE )
@@ -549,8 +582,8 @@ void DirectShowGrabber::routeCrossbar() {
 	//showErrorMessage(hr);
     }
 
-    xb->get_IsRoutedTo(0, &input);
-    debug_msg("DirectShowGrabber::routeCrossbar():  pin %d is now routed to output pin 0\n", input);
+    xb->get_IsRoutedTo(videoDecoderPort, &input);
+    debug_msg("DirectShowGrabber::routeCrossbar():  pin %d is now routed to output pin %d\n", input, videoDecoderPort);
 }
 
 //-----------------------------
@@ -1091,7 +1124,7 @@ int DirectShowGrabber::command(int argc, const char* const* argv) {
 
 DirectShowDevice::DirectShowDevice(char *friendlyName, IBaseFilter *pCapFilt) : InputDevice(friendlyName) {
 
-   attri_ = new char[128];
+   attri_ = new char[255];
    attri_[0] = 0;
 
    debug_msg("new DirectShowDevice():  friendlyName=%s\n", friendlyName);
@@ -1109,13 +1142,15 @@ DirectShowDevice::DirectShowDevice(char *friendlyName, IBaseFilter *pCapFilt) : 
    }
 
    strcat(attri_, " } type { pal ntsc } port { ");
-   if(o.hasSVideo() || o.hasComposite()){
-     if(o.hasSVideo()){
-       strcat(attri_, "S-Video ");
-     }
-     if(o.hasComposite()){
-       strcat(attri_, "Composite ");
-     }
+
+   Port **inputPorts = o.getInputPorts();
+   if(inputPorts[0] != NULL) {
+       int i=0;
+       while( i < NUM_PORTS && inputPorts[i] != NULL ) {
+           strcat(attri_, inputPorts[i]->name);
+           strcat(attri_, " ");
+           i++;
+       }
    }else{
        strcat(attri_, "external-in ");
    }

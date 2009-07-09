@@ -50,6 +50,8 @@
 #include "crossbar.h"
 
 #define NUM_DEVS 20   // max number of capture devices we'll support
+#define NUM_PORTS 20  // max number of ports on a capture device
+
 //#define showErrorMessage(x)   ShowErrorMessage(x, __LINE__, __FILE__)
 
 //extern void ShowErrorMessage(HRESULT, int, char* );
@@ -85,6 +87,11 @@ class Crossbar {
 
 class Callback;
 
+struct Port {
+       int id;
+       char name[64];
+};
+
 class DirectShowGrabber : public Grabber {
    public:
       DirectShowGrabber(IBaseFilter *, const char * cformat, const char * nick = 0);
@@ -95,18 +102,10 @@ class DirectShowGrabber : public Grabber {
 		  converter_ = v;
 	  }
 
-      void         capture(BYTE *, long);
-
-	  bool		   hasComposite(){
-	      return (compositePort >= 0);
-	  }
+	  void         capture(BYTE *, long);
 
 	  bool		   hasDV_SD(){
 	      return (have_DVSD_);
-	  }
-
-	  bool		   hasSVideo(){
-		  return (svideoPort >= 0);
 	  }
 
 	  int		   maxWidth(){
@@ -125,6 +124,10 @@ class DirectShowGrabber : public Grabber {
 		  return min_height_;
 	  }
 
+	  Port **	   getInputPorts(){
+		  return inputPorts;
+	  }
+
       int          capturing_;
       HANDLE       cb_mutex_;
    protected:
@@ -134,35 +137,39 @@ class DirectShowGrabber : public Grabber {
       virtual void setsize();
       virtual int  grab();
       void         setport(const char *port);
-      int	   getCaptureCapabilities();
+      int          getCaptureCapabilities();
       virtual void setCaptureOutputFormat();
 
       int          useconfig_;
       int          basewidth_;
       int          baseheight_;
       u_int        max_fps_;
-	  int		   max_width_;
-	  int		   max_height_;
-	  int		   min_width_;
-	  int		   min_height_;
-	  int		   width_;
-      int		   height_;
+      int          max_width_;
+      int          max_height_;
+      int          min_width_;
+      int          min_height_;
+      int          width_;
+      int          height_;
       int          cformat_;
-      int          compositePort;
-	  int		   svideoPort;
 
-	  bool		   have_I420_;  // YUV 4:2:0 planar
-	  bool		   have_UYVY_;  // YUV 4:2:2 packed
-	  bool		   have_YUY2_;  // as for UYVY but with different component ordering
-	  bool		   have_RGB24_; // RGB 24 bit
-	  bool		   have_DVSD_;  // DV standard definition
+      Port *       inputPorts[NUM_PORTS];
+      int          numInputPorts;
+      int          initializedPorts;
+      int          compositePortNum;
+      int          svideoPortNum;
+
+      bool         have_I420_;  // YUV 4:2:0 planar
+      bool         have_UYVY_;  // YUV 4:2:2 packed
+      bool         have_YUY2_;  // as for UYVY but with different component ordering
+      bool         have_RGB24_; // RGB 24 bit
+      bool         have_DVSD_;  // DV standard definition
 
       u_int        decimate_;    // set in this::command via small/normal/large in vic UI; msp
       BYTE         *last_frame_;
-	  Converter    *converter_;
+      Converter    *converter_;
 
    private:
-      IBaseFilter*			 pFilter_;
+      IBaseFilter*           pFilter_;
       IBaseFilter*           pCaptureFilter_;
       ISampleGrabber*        pSampleGrabber_;
       IBaseFilter*           pGrabberBaseFilter_;
@@ -173,17 +180,17 @@ class DirectShowGrabber : public Grabber {
       IGraphBuilder*         pGraph_;
       ICaptureGraphBuilder2* pBuild_;
       IMediaControl*         pMediaControl_;
-	  DWORD                  dwRegister_;
+      DWORD                  dwRegister_;
       AM_MEDIA_TYPE          mt_;
       Callback               *callback_;
 
-      IAMCrossbar 			 *pXBar_;
-      Crossbar                       *crossbar_;
-      Crossbar                       *crossbarCursor_;
-      char			     input_port_[20];
-      bool                           findCrossbar(IBaseFilter *);
-      void                           addCrossbar(IAMCrossbar *);
-      void                           routeCrossbar();
+      IAMCrossbar            *pXBar_;
+      Crossbar               *crossbar_;
+      Crossbar               *crossbarCursor_;
+      char                   input_port_[20];
+      bool                   findCrossbar(IBaseFilter *);
+      void                   addCrossbar(IAMCrossbar *);
+      void                   routeCrossbar();
 
 };
 
