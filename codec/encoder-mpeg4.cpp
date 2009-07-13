@@ -90,7 +90,14 @@ void MPEG4Encoder::size(int w, int h)
 
 int MPEG4Encoder::command(int argc, const char *const *argv)
 {
-    if (argc == 3) {
+    if (argc == 2) {
+	if (strcmp(argv[1], "frame-format") == 0) {
+	    Tcl& tcl = Tcl::instance();
+	    tcl.result("420");
+	    return (TCL_OK);
+	}
+    }
+    else if (argc == 3) {
 	if (strcmp(argv[1], "q") == 0) {
 	    // mpeg4.quality = atoi(argv[2]);
 	    // mpeg4.set_max_quantizer(mpeg4.quality);

@@ -46,6 +46,8 @@ const char* Module::fttoa(int ft)
 	case FT_RAW:	  return ("raw");
 	case FT_LDCT:	  return ("ldct");
 	case FT_PVH:	  return ("pvh");
+	case FT_H264:	  return ("h264");
+	case FT_MPEG4:	  return ("mpeg4");
 	}
 	return ("");
 }
@@ -72,6 +74,10 @@ int Module::atoft(const char* s)
 		return FT_LDCT;
 	if (strcasecmp(s, "pvh") == 0)
 		return FT_PVH;
+	if (strcasecmp(s, "h264") == 0)
+		return FT_H264;
+	if (strcasecmp(s, "mpeg4") == 0)
+		return FT_MPEG4;
 	return (-1);
 }
 

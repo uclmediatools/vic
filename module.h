@@ -110,6 +110,8 @@ class CellBFrame : public VideoFrame {
 #define FT_RAW		7
 #define FT_LDCT		8
 #define FT_PVH		9
+#define FT_H264		10
+#define FT_MPEG4	11
 
 class Module : public TclObject {
     public:
