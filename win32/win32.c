@@ -45,8 +45,8 @@ static char rcsid[] =
 #include <malloc.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
-//#include <winsock.h>
 #include <tk.h>
 
 int
@@ -157,8 +157,6 @@ nice(int pri)
 
 extern void TkWinXInit(HINSTANCE hInstance);
 extern int main(int argc, const char *argv[]);
-extern int __argc;
-extern char **__argv;
 
 static char argv0[255];		/* Buffer used to hold argv0. */
 
@@ -227,6 +225,7 @@ ShowMessage(int level, char *msg)
 	       level | MB_OK | MB_TASKMODAL | MB_SETFOREGROUND);
 }
 
+#if 0
 static char szTemp[4096];
 
 int
@@ -287,6 +286,8 @@ perror(const char *msg)
 		LocalFree((HLOCAL)msgBuf);
     }
 }
+#endif
+
 /* Taken from Tcl_PutsObjCmd(); It outputs to stdout or stderr only
  * if a file arg is supplied it [used to] does nothing - ie empty file!
  * Now works with other files.
@@ -493,33 +494,5 @@ WinReg(ClientData clientdata, Tcl_Interp *interp, int argc, const char **argv)
 	}
 	RegCloseKey(hKeyResult);
 	return TCL_OK;
-}
-
-int
-RegGetValue(HKEY* key, char *subkey, char *value, char *dst, int dlen)
-{
-	HKEY lkey;      
-	LONG r;
-	LONG len;
-	DWORD type;
-	
-	r = RegOpenKeyEx(*key, subkey, 0, KEY_READ, &lkey);
-	
-	if (ERROR_SUCCESS == r) {
-		r = RegQueryValueEx(lkey, value, 0, &type, NULL, &len);
-		if (ERROR_SUCCESS == r && len <= dlen && type == REG_SZ) {
-			type = REG_SZ;
-			r = RegQueryValueEx(lkey, value, 0, &type, dst, &len);
-		} else {
-			SetLastError(r);
-			perror("");
-		}
-	} else {
-		SetLastError(r);
-		perror("");
-		return FALSE;
-	}
-	RegCloseKey(lkey);
-	return TRUE;
 }
 
