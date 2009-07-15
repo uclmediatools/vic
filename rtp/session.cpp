@@ -35,7 +35,7 @@ static const char rcsid[] =
 #include <errno.h>
 #include <string.h>
 #ifdef WIN32
-extern "C" int getpid();
+#include <process.h>
 #endif
 #include "source.h"
 #include "vic_tcl.h"

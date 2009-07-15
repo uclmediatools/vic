@@ -159,6 +159,7 @@ char   *ctime(const time_t *);
 #include <stdio.h>
 #include <memory.h>
 #include <errno.h>
+#include <process.h>
 #include <math.h>
 #include <stdlib.h>   /* abs() */
 #include <string.h>
@@ -308,7 +309,7 @@ int gettimeofday(struct timeval *p, struct timezone *z);
 int gethostid(void);
 int getuid(void);
 int getgid(void);
-int getpid(void);
+#define getpid _getpid
 int nice(int);
 int sendmsg(int, struct msghdr*, int);
 time_t time(time_t *);
