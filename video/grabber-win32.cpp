@@ -616,10 +616,6 @@ void VfwGrabber::fps(int f)
 #endif
 }
 
-extern "C" {
-extern char **__argv;
-}
-
 void VfwGrabber::start()
 {
 	debug_msg("VfwGrabber::start() thread=%x\n", GetCurrentThreadId());

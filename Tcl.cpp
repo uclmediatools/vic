@@ -88,7 +88,7 @@ void Tcl::eval(char* s)
 	if (st != TCL_OK) {
 		int n = strlen(application_) + strlen(s);
 		char* wrk = new char[n + 80];
-		sprintf(wrk, "tkerror \"%s: %s\"", application_, s);
+		sprintf(wrk, "bgerror \"%s: %s\"", application_, s);
 		Tcl_GlobalEval(tcl_, wrk);
 		delete[] wrk; //SV-XXX: Debian
 		//exit(1);

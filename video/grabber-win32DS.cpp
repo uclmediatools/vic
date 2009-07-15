@@ -217,9 +217,9 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
 
    if(!strcmp(cformat, "420"))
        cformat_ = CF_420;
-   if(!strcmp(cformat, "422"))
+   else if(!strcmp(cformat, "422"))
        cformat_ = CF_422;
-   if(!strcmp(cformat, "cif"))
+   else if(!strcmp(cformat, "cif"))
        cformat_ = CF_CIF;
 
    have_I420_ = false;
@@ -670,11 +670,6 @@ void DirectShowGrabber::fps(int f) {
 
 void DirectShowGrabber::setsize() {
 
-   if (max_width_ > D1_BASE_WIDTH){
-       max_width_ = D1_BASE_WIDTH;
-       max_height_ = D1_BASE_HEIGHT;
-   }
-
    if (decimate_ == 1 && !have_DVSD_){  //i.e. Large
        width_ = max_width_;
        height_ = max_height_;
@@ -829,6 +824,7 @@ int DirectShowGrabber::getCaptureCapabilities() {
    AM_MEDIA_TYPE            *pmtConfig;
    int                      iCount;
    int                      iSize;
+   int                      preferred_max_width;
    VIDEO_STREAM_CONFIG_CAPS scc;
    HRESULT                  hr;
    VIDEOINFOHEADER          *pVih;
@@ -840,6 +836,7 @@ int DirectShowGrabber::getCaptureCapabilities() {
        return FALSE;
    }
 
+   preferred_max_width = 1024;
    max_width_ = 0;
    max_height_ = 0;
    min_width_ = 0xFFFF;
@@ -858,7 +855,7 @@ int DirectShowGrabber::getCaptureCapabilities() {
                    (pmtConfig->formattype == FORMAT_VideoInfo)         &&
                    (pmtConfig->cbFormat   >= sizeof (VIDEOINFOHEADER)) &&
                    (pmtConfig->pbFormat   != NULL)) {
-                       if(scc.MaxOutputSize.cx > max_width_){
+                       if(scc.MaxOutputSize.cx > max_width_ && scc.MaxOutputSize.cx <= preferred_max_width){
                            max_width_  = scc.MaxOutputSize.cx;
                            max_height_ =  scc.MaxOutputSize.cy;
                        }

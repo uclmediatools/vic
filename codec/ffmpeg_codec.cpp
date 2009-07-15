@@ -11,8 +11,8 @@
 #include "mpegvideo.h"
 #include "h264.h"*/
 
-#ifndef _UNISTD_H
-extern "C" int getpid();
+#ifdef WIN32
+#include <process.h>
 #endif
 
 FFMpegCodec::FFMpegCodec()
