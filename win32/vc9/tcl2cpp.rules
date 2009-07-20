@@ -8,9 +8,9 @@
 			Name="tcl2cpp"
 			DisplayName="Tcl to C++ Tool"
 			CommandLine="&quot;$(OutDir)\tcl2cpp&quot; [Pass]  [Inputs] &gt; [OutputFileName]"
-			Outputs="$(OutDir)\$(InputName).cpp"
+			Outputs="$(OutDir)\$(InputName)-$(SafeParentName).cpp"
 			FileExtensions="*.tcl"
-			ExecutionDescription="tcl2cpp generating &quot;$(InputName).cpp&quot;."
+			ExecutionDescription="tcl2cpp generating &quot;$(InputName)-$(SafeParentName).cpp&quot;."
 			>
 			<Properties>
 				<IntegerProperty
@@ -26,7 +26,7 @@
 					Category="Output"
 					Description="Select the output file name"
 					Switch="[value]"
-					DefaultValue="&quot;$(OutDir)\$(InputName).cpp&quot;"
+					DefaultValue="&quot;$(OutDir)\$(InputName)-$(SafeParentName).cpp&quot;"
 				/>
 			</Properties>
 		</CustomBuildRule>

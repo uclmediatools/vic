@@ -15,10 +15,10 @@
 	</Platforms>
 	<ToolFiles>
 		<ToolFile
-			RelativePath=".\win32\vc9\tcl2cpp.rules"
+			RelativePath=".\win32\vc9\yasm.rules"
 		/>
 		<ToolFile
-			RelativePath=".\win32\vc9\yasm.rules"
+			RelativePath=".\win32\vc9\tcl2cpp.rules"
 		/>
 	</ToolFiles>
 	<Configurations>
@@ -34,7 +34,7 @@
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
-				Name="tcl2cpp"
+				Name="YASM"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -44,7 +44,7 @@
 				Outputs=""
 			/>
 			<Tool
-				Name="YASM"
+				Name="tcl2cpp"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -121,13 +121,13 @@
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
-				Name="tcl2cpp"
+				Name="YASM"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
 			/>
 			<Tool
-				Name="YASM"
+				Name="tcl2cpp"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -204,7 +204,8 @@
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
-				Name="tcl2cpp"
+				Name="YASM"
+				CommandLine="yasm -Xvc -DPREFIX -f $(PlatformName) [AllOptions] [AdditionalOptions] [Inputs]"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -214,8 +215,7 @@
 				Outputs=""
 			/>
 			<Tool
-				Name="YASM"
-				CommandLine="yasm -Xvc -DPREFIX -f $(PlatformName) [AllOptions] [AdditionalOptions] [Inputs]"
+				Name="tcl2cpp"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -292,14 +292,14 @@
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
-				Name="tcl2cpp"
+				Name="YASM"
+				CommandLine="yasm -Xvc -DPREFIX -f $(PlatformName) [AllOptions] [AdditionalOptions] [Inputs]"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
 			/>
 			<Tool
-				Name="YASM"
-				CommandLine="yasm -Xvc -DPREFIX -f $(PlatformName) [AllOptions] [AdditionalOptions] [Inputs]"
+				Name="tcl2cpp"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -1112,11 +1112,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\tcl\ui-ctrlmenu.tcl"
+				RelativePath=".\tcl\entry.tcl"
 				>
 			</File>
 			<File
-				RelativePath=".\tcl\ui-entry.tcl"
+				RelativePath=".\tcl\ui-ctrlmenu.tcl"
 				>
 			</File>
 			<File
@@ -1179,99 +1179,99 @@
 				Name="Generated Source Files"
 				>
 				<File
-					RelativePath="$(OutDir)\accessgrid.cpp"
+					RelativePath="$(OutDir)\accessgrid-tcl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\ag-pixrate.cpp"
+					RelativePath="$(OutDir)\ag-pixrate-tcl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\autoplace_ui.cpp"
+					RelativePath="$(OutDir)\autoplace_ui-tcl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\cf-confbus.cpp"
+					RelativePath="$(OutDir)\cf-confbus-tcl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\cf-main.cpp"
+					RelativePath="$(OutDir)\cf-main-tcl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\cf-network.cpp"
+					RelativePath="$(OutDir)\cf-network-tcl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\cf-tm.cpp"
+					RelativePath="$(OutDir)\cf-tm-tcl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\cf-util.cpp"
+					RelativePath="$(OutDir)\cf-util-tcl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\entry.cpp"
+					RelativePath="$(OutDir)\entry-tcl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\ui-ctrlmenu.cpp"
+					RelativePath="$(OutDir)\ui-ctrlmenu-tcl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\ui-extout.cpp"
+					RelativePath="$(OutDir)\ui-extout-tcl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\ui-grabber.cpp"
+					RelativePath="$(OutDir)\ui-grabber-tcl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\ui-help.cpp"
+					RelativePath="$(OutDir)\ui-help-tcl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\ui-main.cpp"
+					RelativePath="$(OutDir)\ui-main-tcl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\ui-relate.cpp"
+					RelativePath="$(OutDir)\ui-relate-tcl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\ui-resource.cpp"
+					RelativePath="$(OutDir)\ui-resource-tcl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\ui-srclist.cpp"
+					RelativePath="$(OutDir)\ui-srclist-tcl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\ui-stats.cpp"
+					RelativePath="$(OutDir)\ui-stats-tcl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\ui-switcher.cpp"
+					RelativePath="$(OutDir)\ui-switcher-tcl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\ui-titlemaker.cpp"
+					RelativePath="$(OutDir)\ui-titlemaker-tcl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\ui-util.cpp"
+					RelativePath="$(OutDir)\ui-util-tcl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\ui-vdd.cpp"
+					RelativePath="$(OutDir)\ui-vdd-tcl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\ui-win32.cpp"
+					RelativePath="$(OutDir)\ui-win32-tcl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\ui-windows.cpp"
+					RelativePath="$(OutDir)\ui-windows-tcl.cpp"
 					>
 				</File>
 			</Filter>
@@ -1487,11 +1487,19 @@
 					>
 				</File>
 				<File
+					RelativePath="C:\Tcl\lib\tk8.5\button.tcl"
+					>
+				</File>
+				<File
 					RelativePath="C:\Tcl\lib\tk8.5\console.tcl"
 					>
 				</File>
 				<File
 					RelativePath="C:\Tcl\lib\tk8.5\dialog.tcl"
+					>
+				</File>
+				<File
+					RelativePath="C:\Tcl\lib\tk8.5\entry.tcl"
 					>
 				</File>
 				<File
@@ -1516,6 +1524,10 @@
 				</File>
 				<File
 					RelativePath="C:\Tcl\lib\tk8.5\palette.tcl"
+					>
+				</File>
+				<File
+					RelativePath="C:\Tcl\lib\tk8.5\scale.tcl"
 					>
 				</File>
 				<File
@@ -1631,151 +1643,163 @@
 				Name="Generated Source Files"
 				>
 				<File
-					RelativePath="$(OutDir)\altTheme.cpp"
+					RelativePath="$(OutDir)\altTheme-ttk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\bgerror.cpp"
+					RelativePath="$(OutDir)\bgerror-tk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\button.cpp"
+					RelativePath="$(OutDir)\button-tk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\clamTheme.cpp"
+					RelativePath="$(OutDir)\button-ttk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\classicTheme.cpp"
+					RelativePath="$(OutDir)\clamTheme-ttk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\combobox.cpp"
+					RelativePath="$(OutDir)\classicTheme-ttk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\console.cpp"
+					RelativePath="$(OutDir)\combobox-ttk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\cursors.cpp"
+					RelativePath="$(OutDir)\console-tk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\defaults.cpp"
+					RelativePath="$(OutDir)\cursors-ttk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\dialog.cpp"
+					RelativePath="$(OutDir)\defaults-ttk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\focus.cpp"
+					RelativePath="$(OutDir)\dialog-tk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\fonts.cpp"
+					RelativePath="$(OutDir)\entry-tk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\history.cpp"
+					RelativePath="$(OutDir)\focus-tk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\init.cpp"
+					RelativePath="$(OutDir)\fonts-ttk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\listbox.cpp"
+					RelativePath="$(OutDir)\history-tcl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\menu.cpp"
+					RelativePath="$(OutDir)\init-tcl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\menubutton.cpp"
+					RelativePath="$(OutDir)\listbox-tk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\notebook.cpp"
+					RelativePath="$(OutDir)\menu-tk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\obsolete.cpp"
+					RelativePath="$(OutDir)\menubutton-ttk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\optMenu.cpp"
+					RelativePath="$(OutDir)\notebook-ttk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\palette.cpp"
+					RelativePath="$(OutDir)\obsolete-tk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\panedwindow.cpp"
+					RelativePath="$(OutDir)\optMenu-tk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\progress.cpp"
+					RelativePath="$(OutDir)\palette-tk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\scale.cpp"
+					RelativePath="$(OutDir)\panedwindow-ttk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\scrlbar.cpp"
+					RelativePath="$(OutDir)\progress-ttk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\scrollbar.cpp"
+					RelativePath="$(OutDir)\scale-tk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\sizegrip.cpp"
+					RelativePath="$(OutDir)\scale-ttk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\tearoff.cpp"
+					RelativePath="$(OutDir)\scrlbar-tk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\text.cpp"
+					RelativePath="$(OutDir)\scrollbar-ttk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\tk.cpp"
+					RelativePath="$(OutDir)\sizegrip-ttk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\treeview.cpp"
+					RelativePath="$(OutDir)\tearoff-tk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\ttk.cpp"
+					RelativePath="$(OutDir)\text-tk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\unsupported.cpp"
+					RelativePath="$(OutDir)\tk-tk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\utils.cpp"
+					RelativePath="$(OutDir)\treeview-ttk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\winTheme.cpp"
+					RelativePath="$(OutDir)\ttk-ttk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\word.cpp"
+					RelativePath="$(OutDir)\unsupported-tk.cpp"
 					>
 				</File>
 				<File
-					RelativePath="$(OutDir)\xpTheme.cpp"
+					RelativePath="$(OutDir)\utils-ttk.cpp"
+					>
+				</File>
+				<File
+					RelativePath="$(OutDir)\winTheme-ttk.cpp"
+					>
+				</File>
+				<File
+					RelativePath="$(OutDir)\word-tcl.cpp"
+					>
+				</File>
+				<File
+					RelativePath="$(OutDir)\xpTheme-ttk.cpp"
 					>
 				</File>
 			</Filter>
