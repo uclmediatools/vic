@@ -111,7 +111,7 @@ class IPNetwork : public Network {
     		}
     		return (result);
   	}
-	uint8_t recv_tos() { return recv_tos_;}
+	u_int8_t recv_tos() { return recv_tos_;}
     protected:
 	struct sockaddr_in sin;
 	virtual int dorecv(u_char* buf, int len, Address &from, int fd);
@@ -122,7 +122,7 @@ class IPNetwork : public Network {
 	int openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, Address & local);
 	void dosend(u_char* buf, int len, int fd);
 	time_t last_reset_;
-	uint8_t recv_tos_;
+	u_int8_t recv_tos_;
 };
 
 static class IPNetworkMatcher : public Matcher {
@@ -258,15 +258,8 @@ int IPNetwork::open(const char * host, int port, int ttl)
 	(IPAddress&)local_ = local.sin_addr;
 	rsock_ = openrsock(g_addr_, s_addr_ssm_, port, local_);
 	if (rsock_ < 0) {
-	  debug_msg("setting rsock_ = ssock_\n");
 		rsock_ = ssock_;
 	}
-
-#ifdef IP_RECVTOS
-     int optval = 1;
-     if (setsockopt(rsock_, IPPROTO_IP, IP_RECVTOS, &optval, sizeof(optval)) == -1)
-             debug_msg("ERROR setsockopt IP_RECVTOS\n");
-#endif
 
 	lport_ = local.sin_port;
 	last_reset_ = 0;
@@ -364,6 +357,12 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
       * Enable the TOS value from received packets to be
       * returned along with the payload.
       */
+#ifdef IP_RECVTOS
+     int optval = 1;
+     if (setsockopt(fd, IPPROTO_IP, IP_RECVTOS, &optval, sizeof(optval)) == -1)
+             debug_msg("ERROR setsockopt IP_RECVTOS\n");
+#endif
+
 
 	memset((char *)&sin, 0, sizeof(sin));
 	sin.sin_family = AF_INET;
@@ -472,7 +471,6 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
 				sizeof(bufsize)) < 0)
 			perror("SO_RCVBUF");
 	}
-
 	return (fd);
 }
 
@@ -518,8 +516,9 @@ int IPNetwork::openssock(Address & addr, u_short port, int ttl)
         }
 	}
 
-    int c=1;
-    printf("set TOS:%d\n",setsockopt(fd, IPPROTO_IP, IP_TOS, (char*)&c,         sizeof(c)));
+    int c = 1;
+    debug_msg("set TOS:%d\n", 
+		setsockopt(fd, IPPROTO_IP, IP_TOS, (char*)&c, sizeof(c)));
 
 	memset((char *)&sin, 0, sizeof(sin));
 	sin.sin_family = AF_INET;
@@ -604,15 +603,15 @@ int IPNetwork::dorecv(u_char* buf, int len, Address & from, int fd)
 #else
 	int fromlen = sizeof(sfrom);
 #endif
+	int c=255; UNUSED(c);
 	int cc;
 
-#ifdef IP_RECVTOS
 	struct iovec iov[2];
 	unsigned char cbuf[128];
-	struct cmsghdr *cm;
+	struct cmsghdr *cm; UNUSED(cm);
 	struct msghdr m;
-	int found=0;
-	u_char data[2048];
+	int found;
+	//u_char data[2048];
 
 	(void)memset(&m, 0, sizeof(m));
 	(void)memset(&iov, 0, sizeof(iov));
@@ -620,45 +619,41 @@ int IPNetwork::dorecv(u_char* buf, int len, Address & from, int fd)
 	iov[0].iov_base = buf;         /* buffer for packet payload */
 	iov[0].iov_len = len;  /* expected packet length */
 
-	m.msg_name = (sockaddr_in*)&sfrom;             /* sockaddr_in of peer */
+	m.msg_name = (sockaddr*)&sfrom;             /* sockaddr_in of peer */
 	m.msg_namelen = sizeof(sfrom);
 	m.msg_iov = iov;
 	m.msg_iovlen = 1;
 	m.msg_control = (caddr_t)cbuf;   /* buffer for control messages */
 	m.msg_controllen = sizeof(cbuf);
 
-	if ((cc = ::recvmsg(fd, &m, 0)) == -1) {
-		 debug_msg("recvmsg error\n");
-		 return (-1);
-	}
-	debug_msg("recvmsg len:%d\n",cc);
-	for (cm = CMSG_FIRSTHDR(&m); cm != NULL;
+	found = 0;
+/*	if (cc = recvmsg(fd, &m, 0) == -1)
+			 debug_msg("recvmsg problem\n");
+	 for (cm = CMSG_FIRSTHDR(&m); cm != NULL;
 		  cm = CMSG_NXTHDR(&m, cm)) {
 			 if (cm->cmsg_level == IPPROTO_IP &&
 				 cm->cmsg_type == IP_TOS &&
 				 //cm->cmsg_len == CMSG_LEN(sizeof(struct in_addr))) {
 				 cm->cmsg_len ) {
 					 found = 1;
-					 (void)printf("recvmsg TOS: %d\n",
+					 (void)printf("recvopts limit: %d\n",
 						 *(uint8_t *)CMSG_DATA(cm));
 					 recv_tos_ = *(uint8_t *)CMSG_DATA(cm);
 					 break;
 			 } else 
 				debug_msg("recvmsg problem: no IP_TOS (type:%d,len:%d)\n", cm->cmsg_type, cm->cmsg_len);
 
-	}
-	if (cm == NULL && !found);
+	 }
+	 if (cm == NULL && !found);
 			 //debug_msg("recvmsg problem: no cm\n");
+*/
 
-#else
-	cc = ::recvfrom(fd, (char*)buf, len, 0,
-			    (sockaddr*)&sfrom, &fromlen);
+	cc = ::recvfrom(fd, (char*)buf, len, 0, (sockaddr*)&sfrom, &fromlen);
 	if (cc < 0) {
 		if (errno != EWOULDBLOCK)
 			perror("recvfrom");
 		return (-1);
 	}
-#endif
 	(IPAddress&)from = sfrom.sin_addr;
 
 	if (noloopback_broken_ && from == local_ && sfrom.sin_port == lport_)

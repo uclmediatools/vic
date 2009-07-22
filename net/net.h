@@ -90,6 +90,7 @@ public:
 	inline const Address & interface() const { return (local_); }
 	inline int port() const { return (port_); }
 	inline int ttl() const { return (ttl_); }
+	inline u_int8_t recv_tos() const { return (recv_tos_); }
 	inline int noloopback_broken() const { return (noloopback_broken_); }
 	virtual void reset();
 	static void nonblock(int fd);
@@ -110,6 +111,7 @@ protected:
 	int rsock_;
 	int ssock_;
 
+	u_int8_t recv_tos_;
 	int noloopback_broken_;
 	
 	Crypt* crypt_;
