@@ -143,33 +143,34 @@ struct rtcp_rr {
  * :             type-specific block contents                      :
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  */
-#define XR_BT_1	0x01	// Loss RLE Report Block
-#define XR_BT_2	0x02	// Duplicate RLE Report Block
-#define XR_BT_3	0x03	// Packet Receipt Times Report Block
-#define XR_BT_4	0x04	// Receiver Reference Time Report Block
-
+#define XR_BT_1		0x01	// Loss RLE Report Block
+#define XR_BT_2		0x02	// Duplicate RLE Report Block
+#define XR_BT_3		0x03	// Packet Receipt Times Report Block
+#define XR_BT_4		0x04	// Receiver Reference Time Report Block
 #define XR_BT_ECN	0x44	// ECN Report block - TEST
+
+// extended report block header
 struct rtcp_xr {
-	// extended report block header
-	u_int8_t BT;	  /* Block Type */
-	u_int8_t xr_flag;	  /* xr_flag */
+	u_int8_t BT;		/* Block Type */
+	u_int8_t xr_flag;	/* xr_flag */
 	u_int16_t xr_len;	/* XR report block length (in bytes)*/
 };
-
+// extended report block 1 header
 struct rtcp_xr_BT_1_hdr {
-	u_int8_t BT;	  /* Block Type */
-    struct {
-	    u_int8_t rsvd:4; /* Reserved field */
-	    u_int8_t T:4;	  /* Thinning flag */
-	} xr_flags;	
+	// Block Type
+	u_int8_t BT;
+	// type-specific flags
+	struct {
+		u_int8_t rsvd:4;	/* Reserved field */
+		u_int8_t T:4;		/* Thinning flag */
+	} xr_flags;
+	// XR report block length (in bytes)
+	u_int16_t xr_len;
 
-	u_int16_t xr_len;	/* XR report block length (in bytes)*/
 	// type-specific block contents
 	u_int32_t ssrc;/* ssrc of the RTP data pkt being reported upon by this */
-	u_int16_t begin_seq; /* first seqno that this block report */
+	u_int16_t begin_seq;/* first seqno that this block report */
 	u_int16_t end_seq;	/* last seqno that this block report plus 1 */
-	//u_int16_t chunk1;	/* extended report chunks */
-	//u_int16_t chunk2;	/* extended report chunks */
 };
 
 #define RTCP_PT_SR	200	/* sender report */
