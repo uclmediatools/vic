@@ -1084,11 +1084,11 @@ Source* SourceManager::demux(u_int32_t srcid,
 	} else {
 		Source::Layer& sl = s->layer(layer);
 		/*
-		* check for a srcid conflict or loop:
-		*  - believe the new guy if the old guy said he's done.
-		*  - otherwise, don't believe the new guy if we've heard
-		*    from the old guy 'recently'.
-		*/
+		 * check for a srcid conflict or loop:
+		 *  - believe the new guy if the old guy said he's done.
+		 *  - otherwise, don't believe the new guy if we've heard
+		 *    from the old guy 'recently'.
+		 */
 		if (!(s->addr() == addr)) {
 			//?#ifdef notdef
 			u_int32_t t = s->lts_done().tv_sec;
@@ -1110,16 +1110,16 @@ Source* SourceManager::demux(u_int32_t srcid,
 		}
 		if (sl.np() == 0 && sl.nb() == 0) {
 		/*
-		* make sure we get 2 in-seq packets before
-		* accepting source.
-			*/
+		 * make sure we get 2 in-seq packets before
+		 * accepting source.
+		 */
 			//			if ((u_int32_t)((u_int32_t)seq - s->cs() + 31) > 63) {
 			if ((u_int32_t)((u_int32_t)seq - sl.cs() + 31) > 63) {
 				//				s->fs(seq);
 				sl.fs(seq);
 				//				s->cs(seq);
 				sl.cs(seq, s);
-				return (0);
+				//				return (0);
 			}
 		}
 	}
