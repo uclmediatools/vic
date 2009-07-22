@@ -138,7 +138,7 @@ protected:
 	}
 	// ackofack
 	inline u_int16_t ackofack () {
-		return ((mvec_[DUPACKS - 1] - 1) < 0) ?
+		return ((mvec_[DUPACKS - 1] - 1) <= 0) ?
 			0 : (u_int16_t) (mvec_[DUPACKS - 1] - 1);
 	}
 	// print mvec

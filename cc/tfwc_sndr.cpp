@@ -63,11 +63,12 @@ TfwcSndr::TfwcSndr() :
 	ends_(0)
 {
 	// allocate tsvec_ in memory
-	tsvec_ = (double *)malloc(sizeof(double)* TSZ);
+	tsvec_ = (double *)malloc(sizeof(double) * TSZ);
 	// allocate seqvec in memory
-	seqvec_ = (u_int32_t *)malloc(sizeof(u_int32_t)* SSZ );
+	seqvec_ = (u_int32_t *)malloc(sizeof(u_int32_t) * SSZ);
 
 	// for simulating TCP's 3 dupack rule
+	// (allowing packet re-ordering issue)
 	for (int i = 0; i < DUPACKS; i++)
 		mvec_[i] = 0;
 
@@ -102,9 +103,9 @@ void TfwcSndr::tfwc_sndr_send(pktbuf* pb) {
 	rtphdr* rh =(rtphdr*) pb->data;
 
 	// get seqno and mark timestamp for this data packet
-	seqno_ = ntohs(rh->rh_seqno);
-	now_ = tfwc_sndr_now();		// double type (reference time)
-	t_now_ = tfwc_sndr_t_now();	// u_int32_t type (reference time)
+	seqno_	= ntohs(rh->rh_seqno);
+	now_	= tfwc_sndr_now();		// double type (reference time)
+	t_now_	= tfwc_sndr_t_now();	// u_int32_t type (reference time)
 
 	// timestamp vector for loss history update
 	tsvec_[seqno_%TSZ - 1] = now_;
@@ -134,32 +135,23 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		jacked_ = ends_ - 1;
 
 		// declared AckVec
-		/*ackv_ = (u_int16_t *) malloc (sizeof(u_int16_t) * num_chunks);
+		ackv_ = (u_int16_t *) malloc (sizeof(u_int16_t) * num_chunks);
 
 		// clone AckVec from Vic application
-		for (int i = 1; i <= num_chunks; i++) {
-			bool odd = true;
-			int j = i/2 + 1;
+		for (int i = 0; i < num_chunks; i++) {
+			ackv_[i] = ntohs(chunk[i]);	
+		}
 
-			if (i%2 == 0) {
-				odd = false;
-				j -= 1;
-			}
-
-			// clone AckVec array from the received chunk
-			if (odd) {
-				ackv_[i] = chunk[j] >> 16;	
-			} else {
-				ackv_[i] = chunk[j] & 0x0000FFFF;
-			}
-		}*/
-
-		// generate seqno vec
-		gen_seqvec(begins_, ends_, jacked_, chunk[0]);
+		// XXX generate seqno vec
+		printf("    [%s +%d] begins:%d, ends:%d, jacked:%d\n", 
+				__FILE__, __LINE__, begins_, ends_, jacked_);
+		gen_seqvec(begins_, ends_, jacked_, ackv_[0]);
+		free(ackv_);
 		print_seqvec(begins_, ends_);
 
 		// generate margin vector
 		marginvec(jacked_);
+		print_mvec();
 
 		// detect loss
 		// 	@begin: aoa_
@@ -183,7 +175,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		}
 
 		// set ackofack (real number)
-		aoa_ = ackofack();
+		aoa_ = ackofack(); 
 
 		// update RTT with the sampled RTT
 		tao_ = tfwc_sndr_now() - tsvec_[seqno_%TSZ];
@@ -194,7 +186,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		ntep_++;		// number of ts echo packet received
 
 		ts_echo_ = chunk[num_chunks - 1];
-		debug_msg(" ts echo:	%d\n", ts_echo_);
+		printf("    [%s +%d] ts echo:	%f\n", __FILE__,__LINE__, ts_echo_);
 
 		tao_ = 1e-6 * (double)(tfwc_sndr_now() - ts_echo_);
 
@@ -217,12 +209,11 @@ bool TfwcSndr::detect_loss(int end, int begin) {
 	bool is_there = false;
 
 	// generate tempvec elements
-	printf("\tcomparison numbers: (");
+	printf("\tcomparing numbers: (");
 	for (int i = 0; i < numvec; i++) {
 		tempvec[i] = (begin + 1) + i;
 		printf(" %d", tempvec[i]);
-	}
-	printf(" )\n");
+	} printf(" )\n");
 
 	// number of seqvec element
 	int numseq = ends_ - begins_;

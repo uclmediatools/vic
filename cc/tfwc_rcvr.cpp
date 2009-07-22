@@ -55,17 +55,14 @@ TfwcRcvr::TfwcRcvr() :
 	currNumVec_(0),
 	prevNumVec_(0)
 {
-	tfwcAV = (u_int16_t *) malloc(17);
-	bzero(tfwcAV,17);
+	// declare/initialize tfwcAV
+	tfwcAV = (u_int16_t *) malloc(AVSZ);
+	bzero(tfwcAV, AVSZ);
 }
 
 void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno, 
 				u_int16_t *chunk, int num_chunks) 
 {
-	// retrived ackofack
-	//u_int16_t ackofack = chunk[num_chunks-1] >> 16;
-	u_int16_t ackofack = chunk[0];
-
 	// variables
 	int numLoss		= 0;	// number of packet loss count
 	int diffNumElm	= 0;	// difference of AckVec elements (curr vs. prev)
@@ -74,9 +71,13 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 
 	// parse the received seqno and ackofack
 	if (type == XR_BT_1) {
-		//debug_msg("received seqno:  %d\n", seqno);
+		// received data packet seqno
 		currseq_ = seqno;
-		ackofack_ = ackofack;
+		// XXX received ackofack (currently only one chunk)
+		ackofack_ = ntohs(chunk[num_chunks-1]);
+
+		printf("    [%s +%d] seqno: %d, ackofack: %d\n", 
+				__FILE__,__LINE__,currseq_, ackofack_);
 
 		// number of required AckVec element
 		currNumElm_	= currseq_ - ackofack_;
@@ -123,7 +124,7 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 					SET_BIT_VEC(tfwcAV[prevNumVec_ + addiNumVec - 1], 0);
 				}
 			}
-			// current num of AckVeck array can cope with the elements
+			// current AckVeck array can cope with the elements
 			else {
 				// set next bit 0 into AckVec (# of packet loss)
 				for (int i = 0; i < numLoss; i++) 
@@ -135,7 +136,7 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 		}
 
 		// print ackvec
-		//print_ackvec(ackofack_, currseq_, tfwcAV);
+		//print_ackvec(tfwcAV);
 
 		// start seqno that this AckVec is reporting
 		if (ackofack_ != 0)
@@ -152,21 +153,18 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 		prevNumVec_ = currNumVec_;
 	}
 	else if (type == XR_BT_2) {
+		// set timestamp echo
 		ts_echo_ = chunk[num_chunks-1];
 	}
 }
 
-void TfwcRcvr::print_ackvec(u_int16_t begin, u_int16_t end, 
-		u_int16_t bitvec) {
-
-	int elm[64];
-	int cnt = end - begin;
-
-	printf("\tAckVec Built: ");
-	for (int i = 0; i < cnt; i++) {
-		if (CHECK_BIT_AT(bitvec, i+1))
-			elm[i] = (begin + 1) + i;
-		printf(" %d", elm[i]);
-	}
-	printf(" \n");
+void TfwcRcvr::print_ackvec(u_int16_t *ackv) {
+	printf("\t>> AckVec: ");
+	for (int i = currNumVec_; i > 0; i--) {
+		for (int j = 1; i <= currNumElm_; j++) {
+			if (CHECK_BIT_AT(ackv[currNumVec_-i], j)) {
+				printf("%d ", (ackofack_ + j));
+			}
+		}
+	} printf("...... %s +%d\n",__FILE__,__LINE__);
 }

@@ -38,6 +38,8 @@
 
 #include "tfwc_sndr.h"
 
+#define	AVSZ		15		// tfwcAV size
+
 class TfwcRcvr {
 public:
 	TfwcRcvr();
@@ -81,8 +83,7 @@ private:
 	}
 
 	// print built AckVec
-	void print_ackvec(u_int16_t begin, u_int16_t end, 
-			u_int16_t bitvec);
+	void print_ackvec(u_int16_t *ackv);
 
 	/*
 	 * Variables (private)
