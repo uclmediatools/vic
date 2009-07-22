@@ -138,8 +138,12 @@ public:
 	virtual inline void send_bye() { send_report(&ch_[0], 1); }
 //	virtual void send_report();
 	virtual void send_report(CtrlHandler*, int bye, int app = 0);
-	virtual void send_xreport(CtrlHandler*, int bt, int bye);
-	virtual void send_Xreport(CtrlHandler* ch, uint8_t bt, uint8_t rsvd, uint8_t thin, uint16_t begin_seq, uint16_t end_seq, uint16_t *chunks, uint16_t num_chunks, uint32_t xrssrc);
+	virtual void build_xreport(CtrlHandler*, int bt);
+	virtual void send_Xreport(CtrlHandler* ch, 
+		u_int8_t bt, u_int8_t rsvd, u_int8_t thin, 
+		u_int16_t begin_seq, u_int16_t end_seq, 
+		u_int16_t *chunks, u_int16_t num_chunks, 
+		u_int32_t xrssrc);
 
 	void build_aoa_pkt(CtrlHandler* ch);
 	void build_ts_pkt(CtrlHandler* ch);
@@ -156,6 +160,7 @@ protected:
 	virtual int check_format(int fmt) const = 0;
 	virtual void transmit(pktbuf* pb);
 	void send_report(int bye);
+	void send_ECNXreport(CtrlHandler* ch, u_int8_t tos, u_int16_t begin_seq);
 	int build_bye(rtcphdr* rh, Source& local);
 	u_char* build_sdes_item(u_char* p, int code, Source&);
 	int build_sdes(rtcphdr* rh, Source& s);

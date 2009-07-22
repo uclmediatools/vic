@@ -218,9 +218,6 @@ void Transmitter::send(pktbuf* pb)
 	if (is_cc_on()) {
 		// if it is the very first packet, just send it.
 		if(is_first_) {
-			//tfwc_sndr_send(pb);
-			//debug_msg("sending RTP packet\n");
-			//output(pb);
 			if (head_ != 0) {
 				tail_->next = pb;
 				tail_ = pb;
@@ -260,60 +257,65 @@ void Transmitter::send(pktbuf* pb)
 				tail_ = head_ = pb;
 			pb->next = 0;
 		}
-	} // if (is_cc_active_)
+	} // if (is_cc_on())
 }
 
+/*
+ * main CC output routines
+ */
 void Transmitter::cc_output()
 {
-    printf("\tentering cc_output()\n");
-    pktbuf* pb = head_; // head of the packet queue
-    rtphdr* rh;     // declare rtp header
+	printf("\t------------entering cc_output()------------\n");
+	printf("\t|                                          |\n");
+	printf("\tV                                          V\n");
 
-    // if pb is not 0, then parse rtp header 
-    if (pb == 0) {
-      is_first_ = true;
-      return;
-    }
+	// head of the RTP data packet buffer (pb)
+	pktbuf* pb = head_;
 
-    printf("\tThere is a packet available to send cc_output()\n");
+	// if pb is null, then set the next available packet as the first packet of
+	// the packet buffer. and then, return - i.e., do not try sending packets.
+	if (pb == 0) {
+		is_first_ = true;
+		printf("\t=========== PACKET NOT AVAILABLE ===========\n\n");
+		return;
+	}
+	printf("\tthere are packets available to send in cc_output()\n");
 
-    rh = (rtphdr *) pb->data;
+	// pb is not null, hence parse it.
+	rtphdr* rh = (rtphdr *) pb->data;
 
-    // cwnd value
-    int magic = (int) tfwc_magic();
-    debug_msg("cwnd: %d\n", magic);
+	// cwnd value
+	int magic = (int) tfwc_magic();
+	debug_msg("cwnd: %d\n", magic);
 
-    // just acked seqno
-    int jack = (int) tfwc_sndr_jacked();
-    debug_msg("jack: %d\n", jack);
+	// just acked seqno
+	int jack = (int) tfwc_sndr_jacked();
+	debug_msg("jack: %d\n", jack);
+	debug_msg("seqno: %d\n", ntohs(rh->rh_seqno));
 
-    debug_msg("seqno: %d\n", ntohs(rh->rh_seqno));
-    // while packet seqno is within "cwnd + jack", send that packet
-    while (ntohs(rh->rh_seqno) <= magic + jack) {
-        debug_msg("Sending RTP pkt seqno: %d\n", ntohs(rh->rh_seqno));
-        // record seqno and timestamp at TfwcSndr side
-        tfwc_sndr_send(pb);
+	// while packet seqno is within "cwnd + jack", send that packet
+	while (ntohs(rh->rh_seqno) <= magic + jack) {
+		// record seqno and timestamp at TfwcSndr side
+		tfwc_sndr_send(pb);
 
-        // declare the next packet
-        //pktbuf* nx = pb->next;
-        head_ = pb->next;
+		// move head pointer
+		head_ = pb->next;
 
-        // call Transmitter::output(pb)
-        output(pb);
+		// call Transmitter::output(pb)
+		output(pb);
 
-        // move packet pointer
-        //pb = nx;
-
-        // if pb is not 0, 
-        // then move head pointer and parse rtp header
-        if (head_ != 0) {
-            pb = head_;
-            //head_ = pb;
-            rh = (rtphdr *) pb->data;
-        } else {
-            break;
+		// if the moved head pointer is not null, parse packet buffer.
+		// otherwise, break while statement.
+		if (head_ != 0) {
+			pb = head_;
+			rh = (rtphdr *) pb->data;
+		} else {
+			break;
 		}
-    } // end while
+	} // end while ()
+	printf("\t^                                          ^\n");
+	printf("\t|                                          |\n");
+	printf("\t============================================\n");
 }
 
 void Transmitter::timeout()
