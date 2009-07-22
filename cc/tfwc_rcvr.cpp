@@ -50,10 +50,10 @@ TfwcRcvr::TfwcRcvr() :
 	ackofack_(0),
 	begins_(0),
 	ends_(0),
-	currNumElm_(0),
-	prevNumElm_(0),
-	currNumVec_(0),
-	prevNumVec_(0)
+	currNumElm_(1),
+	prevNumElm_(1),
+	currNumVec_(1),
+	prevNumVec_(1)
 {
 	// declare/initialize tfwcAV
 	tfwcAV = (u_int16_t *) malloc(AVSZ);
@@ -79,11 +79,11 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 		printf("    [%s +%d] seqno: %d, ackofack: %d\n", 
 				__FILE__,__LINE__,currseq_, ackofack_);
 
-		// number of required AckVec element
+		// number of AckVec element
 		currNumElm_	= currseq_ - ackofack_;
 		diffNumElm	= currNumElm_ - prevNumElm_;
 
-		// number of array required for building tfwcAV
+		// number of cuhnks for building tfwcAV
 		currNumVec_	= getNumVec(currNumElm_);
 		diffNumVec	= currNumVec_ - prevNumVec_;
 

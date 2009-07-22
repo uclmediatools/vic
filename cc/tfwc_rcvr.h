@@ -74,8 +74,8 @@ protected:
 	int prevNumVec_;		// numver of previous AckVec array
 
 private:
-	// calculate the numver of AckVec array 
-	// (based on the number of given element, i.e, numelm)
+	// calculate the number of AckVec chunks
+	// (based on the number of given elements, i.e, numelm)
 	inline int getNumVec (int numelm) {
 		int num = numelm/16 + 1;
 		if (numelm%16 == 0) num -= 1;
