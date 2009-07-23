@@ -1309,7 +1309,7 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 			// parse XR chunks
 			u_int16_t *chunk = (u_int16_t *) ++xr1;
 			printf("    [%s +%d] begin:%d, chunk[0]:%d\n", 
-					__FILE__,__LINE__, begin, chunk[0]);
+					__FILE__,__LINE__, begin, ntohs(chunk[0]));
 			tfwc_rcvr_recv(xr->BT, begin, chunk, num_chunks);
 
 			// send receiver side XR report

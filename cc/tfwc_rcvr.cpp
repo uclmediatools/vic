@@ -56,7 +56,7 @@ TfwcRcvr::TfwcRcvr() :
 	prevNumVec_(1)
 {
 	// declare/initialize tfwcAV
-	tfwcAV = (u_int16_t *) malloc(AVSZ);
+	tfwcAV = (u_int16_t *) malloc(AVSZ * sizeof(u_int16_t));
 	bzero(tfwcAV, AVSZ);
 }
 
@@ -76,28 +76,47 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 		// XXX received ackofack (currently only one chunk)
 		ackofack_ = ntohs(chunk[num_chunks-1]);
 
-		printf("    [%s +%d] seqno: %d, ackofack: %d\n", 
-				__FILE__,__LINE__,currseq_, ackofack_);
-
 		// number of AckVec element
 		currNumElm_	= currseq_ - ackofack_;
 		diffNumElm	= currNumElm_ - prevNumElm_;
 
-		// number of cuhnks for building tfwcAV
+		// number of chunks for building tfwcAV
 		currNumVec_	= getNumVec(currNumElm_);
 		diffNumVec	= currNumVec_ - prevNumVec_;
 
-		// there is no packet loss
+		// for debugging purpose
+		printf("    [%s +%d] seqno:%d, ackofack:%d\n",
+			__FILE__,__LINE__,currseq_,ackofack_);
+		printf("    [%s +%d] currNumElm:%d, prevNumElm:%d\n", 
+			__FILE__,__LINE__,currNumElm_,prevNumElm_);
+		printf("    [%s +%d] currNumVec:%d, prevNumVec:%d\n", 
+			__FILE__,__LINE__,currNumVec_,prevNumVec_);
+
+		// there is no packet loss (or reordering)
 		if (currseq_ == prevseq_ + 1) {
 			// set next bit to 1
-			SET_BIT_VEC(tfwcAV[currNumVec_-1], 1);
+			if (diffNumElm > 0 || currseq_ == 1)
+				SET_BIT_VEC(tfwcAV[currNumVec_-1], 1);
+			// free unnecessary bits
+			else if (diffNumElm < 0) {
+				// freeing whole AcvVec chunks that is not necessary
+				if (currNumVec_ != prevNumVec_) {
+					for (int i = prevNumVec_; i > currNumVec_; i--) {
+						for (int j = 1; j <= 16; j++)
+							SET_BIT_VEC(tfwcAV[i-1], 0);
+					}
+				}
+				// freeing the rest of bits
+				for (int i = 16; i > currNumElm_%16; i--)
+					CLR_BIT_AT(tfwcAV[currNumVec_-1], i);
+			}
 		} 
-		// we have one or more packet losses
+		// we have one or more packet losses (or reordering)
 		else {
 			// number of packet loss
 			numLoss = currseq_ - prevseq_ - 1;
 
-			// we need more AckVec array (maybe one or more)
+			// we need more AckVec chunks (maybe one or more)
 			if (currNumVec_ != prevNumVec_) {
 				// currently available spaces in the previous tfwcAV array
 				int numAvail = 16 - prevNumElm_%16;
@@ -108,7 +127,7 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 					numLoss--;
 				}
 
-				// then, calculate "additional" AckVec array required
+				// then, calculate "additional" AckVec chunks required
 				addiNumVec = getNumVec(numLoss);
 
 				// fill up zeros accordingly if addiNumVec is greater than 1
@@ -119,12 +138,12 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 					}
 				}
 
-				// finally, fill up zeros at the latest AckVec array
+				// finally, fill up zeros at the latest AckVec chunk
 				for (int i = 0; i < (numLoss%16); i++) {
 					SET_BIT_VEC(tfwcAV[prevNumVec_ + addiNumVec - 1], 0);
 				}
 			}
-			// current AckVeck array can cope with the elements
+			// current AckVeck chunk can cope with the elements
 			else {
 				// set next bit 0 into AckVec (# of packet loss)
 				for (int i = 0; i < numLoss; i++) 
@@ -136,7 +155,7 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 		}
 
 		// print ackvec
-		//print_ackvec(tfwcAV);
+		print_ackvec(tfwcAV);
 
 		// start seqno that this AckVec is reporting
 		if (ackofack_ != 0)
@@ -146,7 +165,7 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 
 		// end seqno is current seqno plus one (according to RFC 3611)
 		ends_ = currseq_ + 1;
-	
+
 		// store seqno, num of AckVec elem, and num of AckVec array
 		prevseq_ = currseq_;
 		prevNumElm_ = currNumElm_;
@@ -160,11 +179,16 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 
 void TfwcRcvr::print_ackvec(u_int16_t *ackv) {
 	printf("\t>> AckVec: ");
-	for (int i = currNumVec_; i > 0; i--) {
-		for (int j = 1; i <= currNumElm_; j++) {
-			if (CHECK_BIT_AT(ackv[currNumVec_-i], j)) {
-				printf("%d ", (ackofack_ + j));
-			}
-		}
+	for (int i = 0; i < currNumVec_; i++) {
+		printf("[%d] ( ", ackv[i]);
+		if (i < 1) {
+			for (int j = 1; j <= 16; j++)
+				if (CHECK_BIT_AT(ackv[i], j))
+					printf("%d ", ackofack_ + j);
+		} else {
+			for (int j = 1; j <= currNumElm_%16; j++)
+				if (CHECK_BIT_AT(ackv[i], j))
+					printf("%d ", ackofack_ + currNumElm_ - j + 1);
+		} printf (") ");
 	} printf("...... %s +%d\n",__FILE__,__LINE__);
 }

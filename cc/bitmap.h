@@ -40,10 +40,10 @@
 #define CTB 0x01        // check tail bit (tail search)
 
 // set bitmap from LSB
-#define SET_BIT_VEC(bitmap, bit) ( bitmap = ((bitmap << 1) | bit) )
+#define SET_BIT_VEC(bitmap, val) ( bitmap = ((bitmap << 1) | val) )
 
 // get bitmap at i-th location
-#define GET_BIT_VEC(bitmap, i, seqno) ( (1 << (seqno - i)) & bitmap )
+#define GET_BIT_VEC(bitmap, i, val) ( (1 << (val - i)) & bitmap )
 
 // bitmap head search
 #define GET_HEAD_VEC(bitmap, i) ( bitmap & (CHB >> i) )
@@ -53,5 +53,11 @@
 
 // check bit at i-th location
 #define CHECK_BIT_AT(bitmap, i) ( bitmap & (1 << (i-1)) )
+
+// set bit at i-th location
+#define SET_BIT_AT(bitmap, i) ( bitmap |= 1 << (i-1) )
+
+// set bit at i-th location
+#define CLR_BIT_AT(bitmap, i) ( bitmap &= ~(1 << (i-1)) )
 
 #endif /* vic_cc_bitmap_h */
