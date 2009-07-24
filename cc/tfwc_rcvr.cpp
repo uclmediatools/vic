@@ -106,8 +106,9 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 							SET_BIT_VEC(tfwcAV[i-1], 0);
 					}
 				}
+				int k = (currNumElm_%16 == 0) ? 16: (currNumElm_%16);
 				// freeing the rest of bits
-				for (int i = 16; i > currNumElm_%16; i--)
+				for (int i = 16; i > k; i--)
 					CLR_BIT_AT(tfwcAV[currNumVec_-1], i);
 			}
 		} 
@@ -178,17 +179,25 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 }
 
 void TfwcRcvr::print_ackvec(u_int16_t *ackv) {
+	// start sequence number
+	int seqno = ackofack_+1;
+
+	// printing...
 	printf("\t>> AckVec: ");
-	for (int i = 0; i < currNumVec_; i++) {
+	for (int i = 0; i < currNumVec_-1; i++) {
 		printf("[%d] ( ", ackv[i]);
-		if (i < (currNumVec_-1)) {
-			for (int j = 1; j <= 16; j++)
-				if (CHECK_BIT_AT(ackv[i], j))
-					printf("%d ", ackofack_ + j);
-		} else {
-			for (int j = 1; j <= currNumElm_%16; j++)
-				if (CHECK_BIT_AT(ackv[i], j))
-					printf("%d ", ackofack_ + currNumElm_ - j + 1);
-		} printf (") ");
-	} printf("...... %s +%d\n",__FILE__,__LINE__);
+		for (int j = 0; j < 16; j++) {
+			if ( CHECK_BIT_AT(ackv[i], (j+1)) )
+				printf("%d ", seqno);
+			seqno++;
+		}
+	} printf (") ");
+
+	int k = (currNumElm_%16 == 0) ? 16: currNumElm_%16;
+	printf("[%d] ( ", ackv[currNumVec_-1]);
+	for (int i = 0; i < k; i++) {
+		if (CHECK_BIT_AT(ackv[currNumVec_-1], (i+1) ))
+			printf("%d ", seqno);
+		seqno++;
+	} printf(")...... %s +%d\n",__FILE__,__LINE__);
 }
