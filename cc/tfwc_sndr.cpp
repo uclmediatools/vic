@@ -145,7 +145,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		// XXX generate seqno vec
 		printf("    [%s +%d] begins:%d, ends:%d, jacked:%d\n", 
 				__FILE__, __LINE__, begins_, ends_, jacked_);
-		gen_seqvec(begins_, ends_, jacked_, ackv_[0]);
+		gen_seqvec(num_chunks, ackv_);
 		free(ackv_);
 		print_seqvec(begins_, ends_);
 
@@ -192,6 +192,37 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 
 		// update RTT
 		//update_rtt(tao_);
+	}
+}
+
+/*
+ * generate seqno vector 
+ * (interpret the received AckVec to real sequence numbers)
+ * @num_chunks: number of AckVec chunks
+ * @ackvec: received AckVec
+ */
+void TfwcSndr::gen_seqvec (u_int16_t num_chunks, u_int16_t *ackvec) {
+	// number of seqvec elements 
+	// (i.e., number of packets in AckVec)
+	int numElm = ends_ - begins_;
+
+	// start of seqvec
+	int start = jacked_;
+
+	int i, j, k = 0;
+	for (i = 0; i < num_chunks-1; i++) {
+		for (j = 0; j < 16; j++) {
+			if ( CHECK_BIT_AT(ackvec[i], (j+1)) )
+				seqvec_[k++%SSZ] = start;
+			start--;
+		}
+	}
+
+	int a = (numElm%16 == 0) ? 16 : numElm%16;
+	for (i = 0; i < a; i++) {
+		if ( CHECK_BIT_AT(ackvec[num_chunks-1], i+1 ))
+			seqvec_[k++%SSZ] = start;
+		start--;
 	}
 }
 

@@ -98,6 +98,9 @@ public:
 	u_int32_t cwnd_;	// congestion window
 
 protected:
+	// generate sequence numbers
+	void gen_seqvec(u_int16_t num_chunks, u_int16_t *ackvec);
+
 	// get the first position in ackvec where 1 is marked
 	inline u_int16_t get_head_pos(u_int16_t ackvec) {
 		int l;
@@ -121,20 +124,6 @@ protected:
 		for (int i = 0; i < DUPACKS; i++) 
 			// round up if it is less than zero
 			mvec_[i] = ((hseq - i) < 0) ? 0 : (hseq - i);
-	}
-	// generate seqno vector (interpret ackvec to real sequence numbers)
-	inline void gen_seqvec(u_int16_t begins, u_int16_t ends, 
-			u_int16_t hseq, u_int16_t ackvec) {
-		int cnt = ends - begins;	// number of packets in ackvec
-		int offset = 0;				// if the bit is zero, then increment 
-	
-		// ??? Doesn't take account of ackvec from more than one chunk
-		for (int i = 0; i < cnt; i++) {
-			if( CHECK_BIT_AT(ackvec, (cnt-i)) )
-				seqvec_[(i-offset)%SSZ] = hseq - i;
-			else
-				offset++;
-		}
 	}
 	// ackofack
 	inline u_int16_t ackofack () {
