@@ -181,7 +181,7 @@ void TfwcRcvr::print_ackvec(u_int16_t *ackv) {
 	printf("\t>> AckVec: ");
 	for (int i = 0; i < currNumVec_; i++) {
 		printf("[%d] ( ", ackv[i]);
-		if (i < 1) {
+		if (i < (currNumVec_-1)) {
 			for (int j = 1; j <= 16; j++)
 				if (CHECK_BIT_AT(ackv[i], j))
 					printf("%d ", ackofack_ + j);
