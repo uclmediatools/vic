@@ -677,7 +677,6 @@ void SessionManager::build_xreport(CtrlHandler* ch, int bt)
 			printf("\t>> about to send RTCP XR (AckVec)\n");
 			// get the number of chunks
 			num_chunks = tfwc_rcvr_numvec();
-			if (num_chunks > 4 ) num_chunks = 1;
 
 			// declare chunks
 			chunks = (u_int16_t *)malloc(num_chunks * sizeof(u_int16_t));

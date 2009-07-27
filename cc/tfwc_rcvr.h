@@ -38,7 +38,7 @@
 
 #include "tfwc_sndr.h"
 
-#define	AVSZ		15		// tfwcAV size
+#define	AVSZ	32		// tfwcAV size
 
 class TfwcRcvr {
 public:
