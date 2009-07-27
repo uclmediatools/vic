@@ -27,6 +27,7 @@ $(APP): $(OBJS)
 clean:
 	@echo "Start cleaning..."
 	$(RM) $(OBJS)
+	$(RM) $(APP)
 	$(RM) *.*~
 
 # delete object files, temporary files, and executable file

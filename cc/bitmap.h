@@ -57,7 +57,7 @@
 // set bit at i-th location
 #define SET_BIT_AT(bitmap, i) ( bitmap |= 1 << (i-1) )
 
-// set bit at i-th location
+// clear bit at i-th location
 #define CLR_BIT_AT(bitmap, i) ( bitmap &= ~(1 << (i-1)) )
 
 #endif /* vic_cc_bitmap_h */
