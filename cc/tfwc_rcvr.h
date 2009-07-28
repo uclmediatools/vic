@@ -38,7 +38,9 @@
 
 #include "tfwc_sndr.h"
 
-#define	AVSZ	32		// tfwcAV size
+// AckVec Size (AVSZ)
+// - AckVec can manage "16 * AVSZ" outstanding packets
+#define	AVSZ	256		// tfwcAV size
 
 class TfwcRcvr {
 public:
