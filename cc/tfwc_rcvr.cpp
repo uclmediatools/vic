@@ -195,8 +195,8 @@ void TfwcRcvr::print_ackvec(u_int16_t *ackv) {
 
 	int k = (currNumElm_%16 == 0) ? 16: currNumElm_%16;
 	printf("[%d] ( ", ackv[currNumVec_-1]);
-	for (int i = 0; i < k; i++) {
-		if (CHECK_BIT_AT(ackv[currNumVec_-1], (i+1) ))
+	for (int i = k; i > 0; i--) {
+		if (CHECK_BIT_AT(ackv[currNumVec_-1], i))
 			printf("%d ", seqno);
 		seqno++;
 	} printf(")...... %s +%d\n",__FILE__,__LINE__);
