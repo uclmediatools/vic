@@ -209,7 +209,7 @@ proc info_update { w src } {
 	if { $note != "" } {
 		set bg [resource infoHighlightColor]
 	} else {
-		set bg [resource background]
+		set bg [$w.title.srcid cget -bg]
 	}
 	$w.title.note configure -background $bg
 }
