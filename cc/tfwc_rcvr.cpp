@@ -95,21 +95,36 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 		// there is no packet loss (or reordering)
 		if (currseq_ == prevseq_ + 1) {
 			// set next bit to 1
-			if (diffNumElm > 0 || currseq_ == 1)
+			if (diffNumElm > 0 || currseq_ == 1) {
 				SET_BIT_VEC(tfwcAV[currNumVec_-1], 1);
+			}
 			// free unnecessary bits
 			else if (diffNumElm < 0) {
-				// freeing whole AcvVec chunks that is not necessary
+				// freeing unnecessary AcvVec chunk(s) 
 				if (currNumVec_ != prevNumVec_) {
 					for (int i = prevNumVec_; i > currNumVec_; i--) {
 						for (int j = 1; j <= 16; j++)
 							SET_BIT_VEC(tfwcAV[i-1], 0);
 					}
 				}
+
+				// set next bit to 1
+				SET_BIT_VEC(tfwcAV[currNumVec_-1], 1);
+
+				// and clear the bit(s) that we don't need it anymore
 				int k = (currNumElm_%16 == 0) ? 16: (currNumElm_%16);
-				// freeing the rest of bits
 				for (int i = 16; i > k; i--)
 					CLR_BIT_AT(tfwcAV[currNumVec_-1], i);
+			}
+			// we just need the same number of AckVec element
+			// (i.e., diffNumElm==0), 
+			// hence just left shift by one and clear the top bit
+			else {
+				// set next bit to 1
+				SET_BIT_VEC(tfwcAV[currNumVec_-1], 1);
+
+				// and clear the bit which we don't need it anymore
+				CLR_BIT_AT(tfwcAV[currNumVec_-1], currNumElm_+1);
 			}
 		} 
 		// we have one or more packet losses (or reordering)
@@ -153,6 +168,15 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 
 			// then, set this packet as received (this is important)
 			SET_BIT_VEC(tfwcAV[currNumVec_-1], 1);
+
+			// and clear the top two bits which we don't need
+			// (because we have pushed '0' and '1' at the end of this AckVec)
+			// it doesn't really matter if diffNumElm is greater than 0.
+			if (diffNumElm <= 0) {
+				int b = abs(diffNumElm) + currNumElm_ + numLoss;
+				for (int i = currNumElm_+1; i <= b; i++)
+					CLR_BIT_AT(tfwcAV[currNumVec_-1], i);
+			}
 		}
 
 		// print ackvec

@@ -101,6 +101,12 @@ protected:
 	// generate sequence numbers
 	void gen_seqvec(u_int16_t num_chunks, u_int16_t *ackvec);
 
+	// init loss related variables
+	inline void init_loss_var() {
+		is_loss_ = false;
+		num_loss_ = 0;
+	}
+
 	// get the first position in ackvec where 1 is marked
 	inline u_int16_t get_head_pos(u_int16_t ackvec) {
 		int l;
@@ -136,11 +142,9 @@ protected:
 				mvec_[0], mvec_[1], mvec_[2]);
 	}
 	// printf seqvec
-	inline void print_seqvec(u_int16_t begins, u_int16_t ends) {
-        int cnt = ends - begins;  // number of packets in ackvec
-
+	inline void print_seqvec(int numelm) {
 		printf("\tsequence numbers: (");
-		for (int i = 0; i < cnt; i++)
+		for (int i = 0; i < numelm; i++)
 			printf(" %d", seqvec_[i]);
 		printf(" )\n");
 	}
@@ -194,6 +198,7 @@ private:
 	bool is_loss_;
 	bool is_first_loss_seen_;
 	bool is_tfwc_on_;
+	int num_loss_;	// number of detected packet loss
 	double f_p_;	// f(p) = sqrt(2/3)*p + 12*p*(1+32*p^2)*sqrt(3/8)*p
 	double p_;		// packet loss probability
 	double t_win_;      // temporal cwin size to get p_ value
@@ -208,8 +213,8 @@ private:
 	double I_tot1_;		// form 1 to n
 	double tot_weight_;	// total weight
 	int hsz_;		// current history size
-	u_int32_t firstvec_;
-	u_int32_t lastvec_;
+	u_int32_t first_elm_;
+	u_int32_t last_elm_;
 
 	// RTT related variables
 	double srtt_;	// smoothed RTT

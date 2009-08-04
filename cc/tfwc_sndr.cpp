@@ -90,6 +90,8 @@ TfwcSndr::TfwcSndr() :
 	is_tfwc_on_ = false;
 	is_first_loss_seen_ = false;
 	first_lost_pkt_ = -1;
+	is_loss_ = false;
+	num_loss_ = 0;
 
 	avg_interval_ = 0.0;
 	I_tot0_ = 0.0;
@@ -147,7 +149,6 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 				__FILE__, __LINE__, begins_, ends_, jacked_);
 		gen_seqvec(num_chunks, ackv_);
 		free(ackv_);
-		print_seqvec(begins_, ends_);
 
 		// generate margin vector
 		marginvec(jacked_);
@@ -180,6 +181,9 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		// update RTT with the sampled RTT
 		tao_ = tfwc_sndr_now() - tsvec_[seqno_%TSZ];
 		update_rtt(tao_);
+
+		// initialize variables for the next pkt reception
+		init_loss_var();
 	}
 	// retrieve ts echo
 	else if (type == XR_BT_3) {
@@ -213,8 +217,9 @@ void TfwcSndr::gen_seqvec (u_int16_t num_chunks, u_int16_t *ackvec) {
 	for (i = 0; i < num_chunks-1; i++) {
 		for (j = 0; j < 16; j++) {
 			if ( CHECK_BIT_AT(ackvec[i], (j+1)) )
-				seqvec_[k++%SSZ] = start;
-			start--;
+				seqvec_[k%SSZ] = start;
+		else num_loss_++;
+			k++; start--;
 		}
 	}
 
@@ -222,8 +227,12 @@ void TfwcSndr::gen_seqvec (u_int16_t num_chunks, u_int16_t *ackvec) {
 	for (i = 0; i < a; i++) {
 		if ( CHECK_BIT_AT(ackvec[num_chunks-1], i+1 ))
 			seqvec_[k++%SSZ] = start;
+		else num_loss_++;
 		start--;
 	}
+
+	// printing retrieved sequence numbers from received AckVec
+	print_seqvec(numElm - num_loss_);
 }
 
 /*
@@ -234,14 +243,14 @@ bool TfwcSndr::detect_loss(int end, int begin) {
 	bool ret;	// 'true' when there is a loss
 	int lc = 0;	// loss counter
 
-	// number of tempvec element
-	int numvec = (end - begin < 0) ? 0 : end - begin;
-	u_int32_t tempvec[numvec];
+	// number of tempvec element when no loss
+	int numelm = (end - begin < 0) ? 0 : end - begin;
+	u_int32_t tempvec[numelm];
 	bool is_there = false;
 
 	// generate tempvec elements
 	printf("\tcomparing numbers: (");
-	for (int i = 0; i < numvec; i++) {
+	for (int i = 0; i < numelm; i++) {
 		tempvec[i] = (begin + 1) + i;
 		printf(" %d", tempvec[i]);
 	} printf(" )\n");
@@ -250,14 +259,16 @@ bool TfwcSndr::detect_loss(int end, int begin) {
 	int numseq = ends_ - begins_;
 
 	// compare tempvec and seqvec
-	for (int i = 0; i < numvec; i++) {
+	for (int i = 0; i < numelm; i++) {
 		for (int j = 0; j < numseq; j++) {
 			if (tempvec[i] == seqvec_[j]) {
+				printf("\t\tyes! -- s:[%d] t:[%d]\n", seqvec_[j], tempvec[i]);
 				is_there = true;
 				break;
 			}
 		}
 
+		// packet loss should be captured by now
 		if(!is_there) {
 			if(!is_first_loss_seen_) 
 				first_lost_pkt_ = tempvec[i];
@@ -266,8 +277,8 @@ bool TfwcSndr::detect_loss(int end, int begin) {
 	}
 	
 	// store elements
-	firstvec_ = tempvec[0];
-	lastvec_ = firstvec_ + (numvec - 1);
+	first_elm_ = tempvec[0];
+	last_elm_ = first_elm_ + (numelm - 1);
 
 	return ret = (lc > 0) ? true : false;
 }
@@ -373,7 +384,6 @@ void TfwcSndr::pseudo_history() {
  *   o  marking pseudo loss history and loss rate
  */
 void TfwcSndr::dupack_action() {
-
 	// this is the very first packet loss
 	is_first_loss_seen_ = true;
 
@@ -420,11 +430,11 @@ void TfwcSndr::pseudo_p() {
 void TfwcSndr::loss_history() {
 	bool is_loss;		// is there a loss found in seqvec?
 	bool is_new_event;	// is this a new loss event?
-	int numvec = lastvec_ - firstvec_ + 1;
+	int numvec = last_elm_ - first_elm_ + 1;
 	u_int32_t tempvec[numvec];
 
 	for (int i = 0; i < numvec; i++)
-		tempvec[i] = firstvec_ + i;
+		tempvec[i] = first_elm_ + i;
 
 	// compare tempvec[] with seqvec
 	for (int i = 0; i < numvec; i++) {
