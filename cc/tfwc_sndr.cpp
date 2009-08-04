@@ -262,7 +262,6 @@ bool TfwcSndr::detect_loss(int end, int begin) {
 	for (int i = 0; i < numelm; i++) {
 		for (int j = 0; j < numseq; j++) {
 			if (tempvec[i] == seqvec_[j]) {
-				printf("\t\tyes! -- s:[%d] t:[%d]\n", seqvec_[j], tempvec[i]);
 				is_there = true;
 				break;
 			}
