@@ -209,13 +209,14 @@ void TfwcSndr::gen_seqvec (u_int16_t num_chunks, u_int16_t *ackvec) {
 	// number of seqvec elements 
 	// (i.e., number of packets in AckVec)
 	int numElm = ends_ - begins_;
+	int x = numElm%BITLEN;
 
 	// start of seqvec
 	int start = jacked_;
 
 	int i, j, k = 0;
 	for (i = 0; i < num_chunks-1; i++) {
-		for (j = 0; j < 16; j++) {
+		for (j = 0; j < BITLEN; j++) {
 			if ( CHECK_BIT_AT(ackvec[i], (j+1)) )
 				seqvec_[k%SSZ] = start;
 		else num_loss_++;
@@ -223,7 +224,7 @@ void TfwcSndr::gen_seqvec (u_int16_t num_chunks, u_int16_t *ackvec) {
 		}
 	}
 
-	int a = (numElm%16 == 0) ? 16 : numElm%16;
+	int a = (x == 0) ? BITLEN : x;
 	for (i = 0; i < a; i++) {
 		if ( CHECK_BIT_AT(ackvec[num_chunks-1], i+1 ))
 			seqvec_[k++%SSZ] = start;
