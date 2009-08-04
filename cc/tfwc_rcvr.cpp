@@ -79,6 +79,8 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 		// number of AckVec element
 		currNumElm_	= currseq_ - ackofack_;
 		diffNumElm	= currNumElm_ - prevNumElm_;
+		int x = currNumElm_%BITLEN;
+		int y = prevNumElm_%BITLEN;
 
 		// number of chunks for building tfwcAV
 		currNumVec_	= getNumVec(currNumElm_);
@@ -94,48 +96,48 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 
 		// there is no packet loss (or reordering)
 		if (currseq_ == prevseq_ + 1) {
-			// set next bit to 1
-			if (diffNumElm > 0 || currseq_ == 1) {
+			// we just need the same number of AckVec elements,
+			// hence just left shift by one and clear the top bit
+			if (diffNumElm == 0) {
+				// set next bit to 1
 				SET_BIT_VEC(tfwcAV[currNumVec_-1], 1);
+
+				// and clear the top bit which we don't need it anymore
+				if (x != 0)
+					CLR_BIT_AT(tfwcAV[currNumVec_-1], x+1);
 			}
-			// free unnecessary bits
+			// we just need less number of AckVec elements,
+			// hence first free unnecessary AckVec chunk(s) and set bit.
 			else if (diffNumElm < 0) {
-				// freeing unnecessary AcvVec chunk(s) 
+				// firstly, freeing unnecessary AcvVec chunk(s) 
 				if (currNumVec_ != prevNumVec_) {
 					for (int i = prevNumVec_; i > currNumVec_; i--) {
-						for (int j = 1; j <= 16; j++)
+						for (int j = 1; j <= BITLEN; j++)
 							SET_BIT_VEC(tfwcAV[i-1], 0);
 					}
 				}
-
 				// set next bit to 1
 				SET_BIT_VEC(tfwcAV[currNumVec_-1], 1);
-
 				// and clear the bit(s) that we don't need it anymore
-				int k = (currNumElm_%16 == 0) ? 16: (currNumElm_%16);
-				for (int i = 16; i > k; i--)
+				int k = (x == 0) ? BITLEN: x;
+				for (int i = BITLEN; i > k; i--)
 					CLR_BIT_AT(tfwcAV[currNumVec_-1], i);
 			}
-			// we just need the same number of AckVec element
-			// (i.e., diffNumElm==0), 
-			// hence just left shift by one and clear the top bit
-			else {
-				// set next bit to 1
+			// otherwise, just set next bit to 1
+			// (i.e., we need more AckVec elements)
+			else
 				SET_BIT_VEC(tfwcAV[currNumVec_-1], 1);
-
-				// and clear the bit which we don't need it anymore
-				CLR_BIT_AT(tfwcAV[currNumVec_-1], currNumElm_+1);
-			}
 		} 
 		// we have one or more packet losses (or reordering)
 		else {
 			// number of packet loss
 			numLoss = currseq_ - prevseq_ - 1;
+			int z = numLoss%BITLEN;
 
 			// we need more AckVec chunks (maybe one or more)
 			if (currNumVec_ != prevNumVec_) {
 				// currently available spaces in the previous tfwcAV array
-				int numAvail = 16 - prevNumElm_%16;
+				int numAvail = BITLEN - y;
 
 				// first, fill up zeros into those available spaces
 				for (int i = 0; i < numAvail; i++) {
@@ -148,15 +150,15 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 
 				// fill up zeros accordingly if addiNumVec is greater than 1
 				for (int i = 0; i < (addiNumVec - 1); i++) {
-					for (int j = 0; j < 16; j++) {
-						SET_BIT_VEC(tfwcAV[prevNumVec_ + i], 0);
+					for (int j = 0; j < BITLEN; j++) {
+						SET_BIT_VEC(tfwcAV[prevNumVec_+i], 0);
 						numLoss--;
 					}
 				}
 
 				// finally, fill up zeros at the latest AckVec chunk
-				for (int i = 0; i < (numLoss%16); i++) {
-					SET_BIT_VEC(tfwcAV[prevNumVec_ + addiNumVec - 1], 0);
+				for (int i = 0; i < z; i++) {
+					SET_BIT_VEC(tfwcAV[prevNumVec_+addiNumVec-1], 0);
 				}
 			}
 			// current AckVeck chunk can cope with the elements
@@ -172,9 +174,9 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 			// and clear the top two bits which we don't need
 			// (because we have pushed '0' and '1' at the end of this AckVec)
 			// it doesn't really matter if diffNumElm is greater than 0.
-			if (diffNumElm <= 0) {
-				int b = abs(diffNumElm) + currNumElm_ + numLoss;
-				for (int i = currNumElm_+1; i <= b; i++)
+			if ( (diffNumElm <= 0) && (x != 0) ) {
+				int b = abs(diffNumElm) + x + z;
+				for (int i = x + 1; i <= b; i++)
 					CLR_BIT_AT(tfwcAV[currNumVec_-1], i);
 			}
 		}
@@ -205,19 +207,20 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 void TfwcRcvr::print_ackvec(u_int16_t *ackv) {
 	// start sequence number
 	int seqno = ackofack_+1;
+	int x = currNumElm_%BITLEN;
 
 	// printing...
 	printf("\t>> AckVec: ");
 	for (int i = 0; i < currNumVec_-1; i++) {
 		printf("[%d] ( ", ackv[i]);
-		for (int j = 0; j < 16; j++) {
+		for (int j = 0; j < BITLEN; j++) {
 			if ( CHECK_BIT_AT(ackv[i], (j+1)) )
 				printf("%d ", seqno);
 			seqno++;
 		}
 	} printf (") ");
 
-	int k = (currNumElm_%16 == 0) ? 16: currNumElm_%16;
+	int k = (x == 0) ? BITLEN: x;
 	printf("[%d] ( ", ackv[currNumVec_-1]);
 	for (int i = k; i > 0; i--) {
 		if (CHECK_BIT_AT(ackv[currNumVec_-1], i))
