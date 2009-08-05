@@ -67,6 +67,9 @@ TfwcSndr::TfwcSndr() :
 	// allocate seqvec in memory
 	seqvec_ = (u_int32_t *)malloc(sizeof(u_int32_t) * SSZ);
 
+	// is TFWC running?
+	is_running_ = false;
+
 	// for simulating TCP's 3 dupack rule
 	// (allowing packet re-ordering issue)
 	for (int i = 0; i < DUPACKS; i++)
@@ -106,17 +109,30 @@ void TfwcSndr::tfwc_sndr_send(pktbuf* pb) {
 
 	// get seqno and mark timestamp for this data packet
 	seqno_	= ntohs(rh->rh_seqno);
-	now_	= tfwc_sndr_now();		// double type (reference time)
-	t_now_	= tfwc_sndr_t_now();	// u_int32_t type (reference time)
+	now_	= tfwc_sndr_now();		// (double) type 
+	t_now_	= tfwc_sndr_t_now();	// (u_int32_t) type 
+
+	// is TFWC running? (is this the first data packet?)
+	if (!is_running_) {
+		ref_time_ = now_;
+		ref_t_time_ = t_now_;
+		is_running_ = true;
+	}
+
+	// interpret human-readable time format
+	now_	-= ref_time_;	// (double) type
+	//t_now_	-= ref_t_time_;	// (u_int32_t) type
 
 	// timestamp vector for loss history update
 	tsvec_[seqno_%TSZ - 1] = now_;
 
+	printf("\t>> now_:%f, tsvec_[%d]:%f\n", 
+			now(), seqno_%TSZ - 1, tsvec_[seqno_%TSZ-1]);
+
 	// sequence number must be greater than zero
 	assert (seqno_ > 0);
-	//debug_msg("sent seqno:		%d\n", seqno_);
-
-	ndtp_++;	// number of data packet sent
+	// number of total data packet sent
+	ndtp_++;
 }
 
 /*
@@ -179,7 +195,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		aoa_ = ackofack(); 
 
 		// update RTT with the sampled RTT
-		tao_ = tfwc_sndr_now() - tsvec_[seqno_%TSZ];
+		tao_ = now() - tsvec_[seqno_%TSZ];
 		update_rtt(tao_);
 
 		// initialize variables for the next pkt reception
@@ -192,7 +208,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		ts_echo_ = chunk[num_chunks - 1];
 		printf("    [%s +%d] ts echo:	%f\n", __FILE__,__LINE__, ts_echo_);
 
-		tao_ = 1e-6 * (double)(tfwc_sndr_now() - ts_echo_);
+		tao_ = now() - ts_echo_;
 
 		// update RTT
 		//update_rtt(tao_);

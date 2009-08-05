@@ -86,9 +86,12 @@ public:
 	// set timestamp in double type (TfwcSndr)
 	inline double tfwc_sndr_now() {
 		timeval tv;
-		::gettimeofday(&tv, 0);
+		::gettimeofday(&tv, NULL);
 		return ((double) tv.tv_sec + 1e-6 * (double) tv.tv_usec);
 	}
+
+	// return the current time
+	inline double now() { return now_; }
 
 	// return timestamp in u_int32_t type
 	inline u_int32_t tfwc_sndr_get_ts() { return t_now_; }
@@ -191,6 +194,10 @@ private:
 	int ntep_;		// number of ts echo packet received
 	int nsve_;		// number of seqvec element
 	int epoch_;		// communication epoch
+
+	bool is_running_;	// is TFWC running? 
+	double ref_time_;	// reference time for gettimeofday
+	u_int32_t ref_t_time_;	// reference time (uint32 format)
 
 	u_int32_t *seqvec_;		// generated seqno vec
 	double *tsvec_;			// timestamp vector
