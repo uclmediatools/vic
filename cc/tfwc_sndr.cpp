@@ -242,12 +242,12 @@ void TfwcSndr::gen_seqvec (u_int16_t num_chunks, u_int16_t *ackvec) {
  */
 bool TfwcSndr::detect_loss(int end, int begin) {
 	bool ret;	// 'true' when there is a loss
-	int lc = 0;	// loss counter
+	bool gotIn = false;
+	int count = 0; // packet loss counter
 
 	// number of tempvec element when no loss
 	int numelm = (end - begin < 0) ? 0 : end - begin;
 	u_int32_t tempvec[numelm];
-	bool is_there = false;
 
 	// generate tempvec elements
 	printf("\tcomparing numbers: (");
@@ -257,30 +257,33 @@ bool TfwcSndr::detect_loss(int end, int begin) {
 	} printf(" )\n");
 
 	// number of seqvec element
-	int numseq = ends_ - begins_;
+	int numseq = ends_ - begins_ - num_loss_;
 
 	// compare tempvec and seqvec
 	for (int i = 0; i < numelm; i++) {
-		for (int j = 0; j < numseq; j++) {
+		for (int j = numseq-1; j >= 0; j--) {
 			if (tempvec[i] == seqvec_[j]) {
-				is_there = true;
-				break;
+				gotIn = true;
+				// we found it, so reset count
+				count = 0; break;
+			} else {
+				gotIn = false; 
+				count++;
 			}
-		}
+		} // packet loss should be captured by now
 
-		// packet loss should be captured by now
-		if(!is_there) {
+		// record the very first lost packet seqno
+		if(!gotIn) {
 			if(!is_first_loss_seen_) 
 				first_lost_pkt_ = tempvec[i];
-			lc++;
 		}
 	}
 	
-	// store elements
+	// store tempvec elements for updating loss history
 	first_elm_ = tempvec[0];
 	last_elm_ = first_elm_ + (numelm - 1);
 
-	return ret = (lc > 0) ? true : false;
+	return ret = (count > 0) ? true : false;
 }
 
 /*
