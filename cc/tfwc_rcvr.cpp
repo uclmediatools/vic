@@ -73,7 +73,7 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 	if (type == XR_BT_1) {
 		// received data packet seqno
 		currseq_ = seqno;
-		// XXX received ackofack (currently only one chunk)
+		// received ackofack 
 		ackofack_ = ntohs(chunk[num_chunks-1]);
 
 		// number of AckVec element
@@ -155,6 +155,10 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 						numLoss--;
 					}
 				}
+
+				// we need to update 'z' accordingly
+				// (at this point, 'z' should be equal to 'numLoss')
+				z = numLoss%BITLEN;
 
 				// finally, fill up zeros at the latest AckVec chunk
 				for (int i = 0; i < z; i++) {
