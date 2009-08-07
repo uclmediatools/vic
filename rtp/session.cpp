@@ -654,7 +654,7 @@ void SessionManager::build_xreport(CtrlHandler* ch, int bt)
 		// this block is used for giving seqno and ackofack
 		if(bt == XR_BT_1) {
 			printf("\t>> about to send RTCP XR (seqno, AoA)\n");
-			// get the number of chunks (currently 1 chunk)
+			// set the number of chunks for giving ackofack
 			num_chunks = 1;
 			chunks = (u_int16_t *)malloc(num_chunks * sizeof(u_int16_t));
 			// set AckofAck
@@ -675,7 +675,7 @@ void SessionManager::build_xreport(CtrlHandler* ch, int bt)
 		// this block is used for giving ackvec
 		if (bt == XR_BT_1) {
 			printf("\t>> about to send RTCP XR (AckVec)\n");
-			// get the number of chunks
+			// get the number of required chunks for giving AckVec
 			num_chunks = tfwc_rcvr_numvec();
 
 			// declare chunks
@@ -745,14 +745,6 @@ void SessionManager::send_Xreport(CtrlHandler* ch, u_int8_t bt,
 
 	printf("\t>> sending RTCP XR: BT:%d, begin:%d, end:%d\n",
 			bt, ntohs(xr->begin_seq), ntohs(xr->end_seq));
-
-	// XXX XR num_chunks too large??
-	if (num_chunks > 512) {
-		debug_msg("ERROR: num_chunks too large:%d \
-				- NOT sending pkt\n", num_chunks);
-		num_chunks = 1;
-		//return;
-	}
 
 	// declare XR report chunks
 	u_int16_t *xrchunks = (u_int16_t *) (xr + 1);
