@@ -317,6 +317,9 @@ V4l2Scanner::V4l2Scanner(const char **dev)
                                 debug_msg("%s ", estd.name);
                         }
                 }
+                if (k == 0) {
+                        strcat(attr,"ntsc pal ");
+                }
                 debug_msg("\n");
 
                 strcat(attr,"} ");

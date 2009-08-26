@@ -687,7 +687,7 @@ proc insert_grabber_panel devname {
 proc select_device device {
 	global transmitButton logoButton sizeButtons portButton formatButtons \
 		videoFormat defaultFormat lastDevice defaultPort inputPort \
-		transmitButtonState logoButtonState typeButton
+		defaultType inputType transmitButtonState logoButtonState typeButton
 
 	#
 	# Remember settings of various controls for previous device
@@ -698,6 +698,7 @@ proc select_device device {
 	if [info exists lastDevice] {
 		set defaultFormat($lastDevice) $videoFormat
 		set defaultPort($lastDevice) $inputPort
+		set defaultType($lastDevice) $inputType
 		release_device
 	}
 	set lastDevice $device
@@ -734,6 +735,7 @@ proc select_device device {
 	}
 	if [device_supports $device type *] {
 		$typeButton configure -state normal
+		attach_types $device
 	} else {
 		$typeButton configure -state disabled
 	}
@@ -1003,29 +1005,56 @@ proc attach_ports device {
 
 proc build.type w {
 	set f [smallfont]
-
-	set m $w.menu
-  	if {[string match [ windowingsystem] "aqua"]} {
-	    menubutton $w -text Signal -menu $m -width 8 -pady 4 \
-		-state disabled
+	# create the menubutton but don't defer the menu creation until later
+	if {[string match [ windowingsystem] "aqua"]} {
+	    menubutton $w -menu $w.menu -text Signal -width 8 -pady 4 \
+                -state disabled
 	} else {
-	    menubutton $w -text Signal -menu $m -relief raised \
-		-width 10 -font $f -state disabled -indicatoron 1
-	}
-	menu $m
-	$m add radiobutton -label "auto" -command restart \
-		-value auto -variable inputType -font $f
-	$m add radiobutton -label "NTSC" -command restart \
-		-value ntsc -variable inputType -font $f
-	$m add radiobutton -label "PAL" -command restart \
-		-value pal -variable inputType -font $f
-	$m add radiobutton -label "SECAM" -command restart \
-		-value secam -variable inputType -font $f
-
-	global inputType typeButton
-	#set inputType auto
-    	set inputType [string tolower [option get . inputType Vic]]
+ 	    menubutton $w -menu $w.menu -text Signal -indicatoron 1 \
+		-relief raised -width 10 -font $f -state disabled
+        }
+	global typeButton inputType
 	set typeButton $w
+	set inputType undefined
+}
+
+proc attach_types device {
+	global typeButton inputType defaultType
+	catch "destroy $typeButton.menu"
+	set typenames [attribute_class [$device attributes] type]
+	set f [smallfont]
+	set m $typeButton.menu
+	menu $m
+	foreach typename $typenames {
+		set type [string tolower $typename]
+
+		if { $type == "ntsc" } {
+			set typename "NTSC"
+		} elseif { $type == "pal" } {
+			set typename "PAL"
+		} elseif { $type == "secam" } {
+			set typename "SECAM"
+		} elseif { $type == "auto" } {
+			set typename "auto"
+		}
+
+		$m add radiobutton -label $typename -command restart \
+			-value $type -variable inputType -font $f
+	}
+	if ![info exists defaultType($device)] {
+		set nn [$device nickname]
+		if [info exists defaultType($nn)] {
+			set defaultType($device) $defaultType($nn)
+		} else {
+			set s [string tolower [option get . inputType Vic]]
+			if { $s != "" } {
+				set defaultType($device) $s
+			} else {
+				set defaultType($device) [lindex $typenames 0]
+			}
+		}
+	}
+	set inputType $defaultType($device)
 }
 
 proc build.encoder_buttons w {
