@@ -42,6 +42,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/* QuickTime is not available to 64-bit clients */
+
+#if !__LP64__
+
 #include <QuickTime/QuickTime.h>
 #include <Carbon/Carbon.h>
 #include <stdio.h>
@@ -785,4 +789,6 @@ void MacOSXGrabber::packed422_to_planar420(char *dest, const char *src)
        	}
     }
 }
+
+#endif // !__LP64__
 
