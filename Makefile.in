@@ -34,10 +34,10 @@ all:	$(ALL)
 
 # Special case for H261 encoder - no optimisation if using linux gcc 2.96
 codec/dct.o:
-	rm -f $@; $(C++) -o $@ -c @V_CCOPT_H261@ $(BFLAGS) $*.cpp
+	rm -f $@; $(CXX) -o $@ -c @V_CCOPT_H261@ $(BFLAGS) $*.cpp
 
 .cpp.o:
-	rm -f $@; $(C++) -o $@ -c $(CFLAGS) $*.cpp
+	rm -f $@; $(CXX) -o $@ -c $(CFLAGS) $*.cpp
 
 .c.o:
 	rm -f $@; $(CC) -o $@ -c $(CFLAGS) $*.c
@@ -51,7 +51,7 @@ bindir      = @bindir@
 mandir      = @mandir@
 
 CC = @CC@
-C++ = @CXX@
+CXX = @CXX@
 CCOPT = @V_CCOPT@
 
 LDFLAGS= @LDFLAGS@
@@ -209,41 +209,41 @@ OBJ_H261DUMP = h261_dump.o p64/p64.o p64/p64dump.o huffcode.o dct.o bv.o
 # Don't allow building of the non-DES version...
 #vic:	$(OBJ) $(OBJ_GRABBER) $(JV_LIB)
 #	rm -f $@
-#	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(LIB) $(STATIC)
+#	$(CXX) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(LIB) $(STATIC)
 
 vic: $(CODEC_LIB) $(VIDEO_LIB) $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)  $(OBJ_XIL)
 	rm -f $@
-	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(OBJ_CRYPT) $(LIB) $(STATIC)
+	$(CXX) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(OBJ_CRYPT) $(LIB) $(STATIC)
 
 vic.dyn: $(CODEC_LIB) $(VIDEO_LIB) $(OBJ) $(OBJ_GRABBER) $(JV_LIB)
 	rm -f $@
-	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(LIB)
+	$(CXX) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(LIB)
 
 # XIL support 
 #
 vic.xil: $(CODEC_LIB) $(VIDEO_LIB) $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)  $(OBJ_XIL)
 	rm -f $@
-	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_XIL) $(OBJ_GRABBER) $(OBJ_CRYPT) $(LIB) $(STATIC) @V_LIB_XIL@
+	$(CXX) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_XIL) $(OBJ_GRABBER) $(OBJ_CRYPT) $(LIB) $(STATIC) @V_LIB_XIL@
 
 histtolut: render/histtolut/histtolut.cpp render/histtolut/convex_hull.o
 	rm -f $@
-	$(C++) -o $@ $(CFLAGS) render/histtolut/histtolut.cpp render/histtolut/convex_hull.o
+	$(CXX) -o $@ $(CFLAGS) render/histtolut/histtolut.cpp render/histtolut/convex_hull.o
 
 vdd: $(OBJ_VDD)
 	rm -f $@
-	$(C++) -o $@ $(CFLAGS) $(LDFLAGS) $(OBJ_VDD) $(LIB) $(STATIC)
+	$(CXX) -o $@ $(CFLAGS) $(LDFLAGS) $(OBJ_VDD) $(LIB) $(STATIC)
 
 cb_wish: $(OBJ_CB)
 	rm -f $@
-	$(C++) -o $@ $(CFLAGS) $(LDFLAGS) $(OBJ_CB) $(LIB_CB) $(STATIC)
+	$(CXX) -o $@ $(CFLAGS) $(LDFLAGS) $(OBJ_CB) $(LIB_CB) $(STATIC)
 
 jpeg_play: $(OBJ_JPEGPLAY)
 	rm -f $@
-	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ_JPEGPLAY) $(LIB) $(STATIC)
+	$(CXX) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ_JPEGPLAY) $(LIB) $(STATIC)
 
 h261_play: $(OBJ_H261PLAY)
 	rm -f $@
-	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ_H261PLAY) $(LIB) $(STATIC)
+	$(CXX) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ_H261PLAY) $(LIB) $(STATIC)
 
 h261_dump: $(OBJ_H261DUMP)
 	rm -f $@
@@ -251,18 +251,18 @@ h261_dump: $(OBJ_H261DUMP)
 
 h261tortp: h261tortp.cpp
 	rm -f $@
-	$(C++) -o $@ $(CFLAGS) h261tortp.cpp
+	$(CXX) -o $@ $(CFLAGS) h261tortp.cpp
 
 tcl2c++: tcl/tcl2cpp/tcl2cpp.c
 	rm -f $@
-	$(C++) -o $@ $(CFLAGS) tcl/tcl2cpp/tcl2cpp.c
+	$(CXX) -o $@ $(CFLAGS) tcl/tcl2cpp/tcl2cpp.c
 
 #
 # Compile without optimzation to work around an OSF compiler bug.
 #
 Tcl2.o: vic_tcl.h
 	rm -f $@
-	$(C++) -c $(BFLAGS) Tcl2.cpp
+	$(CXX) -c $(BFLAGS) Tcl2.cpp
 
 #
 # pass-1 embedded tcl files
@@ -270,7 +270,7 @@ Tcl2.o: vic_tcl.h
 tk.o: $(TK_LIBRARY_FILES) tcl2c++
 	base=tk; rm -f $@ $$base.cpp ; \
 		./tcl2c++ 1 $(TK_LIBRARY_FILES) > $$base.cpp ; \
-		$(C++) -o $@ -c $(CFLAGS) $$base.cpp ; rm -f $$base.cpp
+		$(CXX) -o $@ -c $(CFLAGS) $$base.cpp ; rm -f $$base.cpp
 
 #
 # pass-2 embedded tcl files
@@ -279,7 +279,7 @@ TCL_VIC_OBJS=$(TCL_VIC:.tcl=.o) ui-vdd.o ui-h261_play.o
 $(TCL_VIC_OBJS): tcl2c++
 	base=$(@:.o=); rm -f $@ $$base.cpp ; \
 		./tcl2c++ 2 tcl/$$base.tcl > tcl/$$base.cpp ; \
-		$(C++) -o $@ -c $(CFLAGS) tcl/$$base.cpp ; rm -f tcl/$$base.cpp
+		$(CXX) -o $@ -c $(CFLAGS) tcl/$$base.cpp ; rm -f tcl/$$base.cpp
 
 accessgrid.o: tcl/accessgrid.tcl
 ag-pixrate.o: tcl/ag-pixrate.tcl 
@@ -329,7 +329,7 @@ huffcode.c: mkhuff
 
 mkhuff: codec/p64/mkhuff.cpp 
 	rm -f $@
-	$(C++) -o $@ $(CFLAGS) codec/p64/mkhuff.cpp $(STATIC)
+	$(CXX) -o $@ $(CFLAGS) codec/p64/mkhuff.cpp $(STATIC)
 
 bv.c: mkbv
 	rm -f $@
@@ -337,7 +337,7 @@ bv.c: mkbv
 
 mkbv: render/mkbv/mkbv.c
 	rm -f $@
-	$(C++) -o $@ $(CFLAGS) render/mkbv/mkbv.c $(STATIC)
+	$(CXX) -o $@ $(CFLAGS) render/mkbv/mkbv.c $(STATIC)
 
 rgb-cube.ppm: mkcube
 	rm -f $@
@@ -349,7 +349,7 @@ yuv-map.ppm: mkcube
 
 mkcube: render/mkcube/mkcube.cpp
 	rm -f $@
-	$(C++) -o $@ $(CFLAGS) render/mkcube/mkcube.cpp $(STATIC)
+	$(CXX) -o $@ $(CFLAGS) render/mkcube/mkcube.cpp $(STATIC)
 
 ppmtolut: render/ppmtolut/ppmtolut.c
 	rm -f $@
@@ -457,9 +457,9 @@ x264/lib/libx264.a:
 	(cd x264; make; make install )
 
 codec/tmn-x/libh263coder.a:
-	(cd codec/tmn-x; $(MAKE) CC=$(CC) CCOPT="$(CCOPT)" )
+	(cd codec/tmn-x; $(MAKE) CC="$(CC)" CCOPT="$(CCOPT)" )
 
 codec/tmndec/libh263.a:
-	(cd codec/tmndec; $(MAKE) CC=$(CC) CCOPT="$(CCOPT)" -f Makefile.lib)
+	(cd codec/tmndec; $(MAKE) CC="$(CC)" CCOPT="$(CCOPT)" -f Makefile.lib)
 strip:	vic
 	strip vic
