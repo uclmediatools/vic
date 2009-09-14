@@ -104,7 +104,7 @@ TfwcSndr::TfwcSndr() :
 
 void TfwcSndr::tfwc_sndr_send(pktbuf* pb) {
 
-	// get RTP hearder information
+	// get RTP header information
 	rtphdr* rh =(rtphdr*) pb->data;
 
 	// get seqno and mark timestamp for this data packet

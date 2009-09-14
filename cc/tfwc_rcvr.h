@@ -45,8 +45,8 @@
 class TfwcRcvr {
 public:
 	TfwcRcvr();
-	void tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno, 
-			u_int16_t *chunk, int num_chunks);
+	void tfwc_rcvr_recv_aoa(u_int16_t type, u_int16_t *chunk, int num_chunks);
+	void tfwc_rcvr_recv_seqno(u_int16_t seqno);
 
 protected:
 	// AckVec clone
@@ -83,6 +83,9 @@ private:
 		if (numelm%16 == 0) num -= 1;
 		return num;
 	}
+
+	// returning AckOfAck
+	inline u_int16_t ackofack() { return ackofack_; }
 
 	// print built AckVec
 	void print_ackvec(u_int16_t *ackv);

@@ -60,147 +60,11 @@ TfwcRcvr::TfwcRcvr() :
 	bzero(tfwcAV, AVSZ);
 }
 
-void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno, 
-				u_int16_t *chunk, int num_chunks) 
+void TfwcRcvr::tfwc_rcvr_recv_aoa(u_int16_t type, u_int16_t *chunk, int num_chunks) 
 {
-	// variables
-	int numLoss		= 0;	// number of packet loss count
-	int diffNumElm	= 0;	// difference of AckVec elements (curr vs. prev)
-	int diffNumVec	= 0;	// difference of AckVec array (curr vs. prev)
-	int addiNumVec	= 0;	// additional AckVec array required
-
-	// parse the received seqno and ackofack
 	if (type == XR_BT_1) {
-		// received data packet seqno
-		currseq_ = seqno;
 		// received ackofack 
 		ackofack_ = ntohs(chunk[num_chunks-1]);
-
-		// number of AckVec element
-		currNumElm_	= currseq_ - ackofack_;
-		diffNumElm	= currNumElm_ - prevNumElm_;
-		int x = currNumElm_%BITLEN;
-		int y = prevNumElm_%BITLEN;
-
-		// number of chunks for building tfwcAV
-		currNumVec_	= getNumVec(currNumElm_);
-		diffNumVec	= currNumVec_ - prevNumVec_;
-
-		// for debugging purpose
-		printf("    [%s +%d] seqno:%d, ackofack:%d\n",
-			__FILE__,__LINE__,currseq_,ackofack_);
-		printf("    [%s +%d] currNumElm:%d, prevNumElm:%d\n", 
-			__FILE__,__LINE__,currNumElm_,prevNumElm_);
-		printf("    [%s +%d] currNumVec:%d, prevNumVec:%d\n", 
-			__FILE__,__LINE__,currNumVec_,prevNumVec_);
-
-		// there is no packet loss (or reordering)
-		if (currseq_ == prevseq_ + 1) {
-			// we just need the same number of AckVec elements,
-			// hence just left shift by one and clear the top bit
-			if (diffNumElm == 0) {
-				// set next bit to 1
-				SET_BIT_VEC(tfwcAV[currNumVec_-1], 1);
-
-				// and clear the top bit which we don't need it anymore
-				if (x != 0)
-					CLR_BIT_AT(tfwcAV[currNumVec_-1], x+1);
-			}
-			// we just need less number of AckVec elements,
-			// hence first free unnecessary AckVec chunk(s) and set bit.
-			else if (diffNumElm < 0) {
-				// firstly, freeing unnecessary AcvVec chunk(s) 
-				if (currNumVec_ != prevNumVec_) {
-					for (int i = prevNumVec_; i > currNumVec_; i--) {
-						for (int j = 1; j <= BITLEN; j++)
-							SET_BIT_VEC(tfwcAV[i-1], 0);
-					}
-				}
-				// set next bit to 1
-				SET_BIT_VEC(tfwcAV[currNumVec_-1], 1);
-				// and clear the bit(s) that we don't need it anymore
-				int k = (x == 0) ? BITLEN: x;
-				for (int i = BITLEN; i > k; i--)
-					CLR_BIT_AT(tfwcAV[currNumVec_-1], i);
-			}
-			// otherwise, just set next bit to 1
-			// (i.e., we need more AckVec elements)
-			else
-				SET_BIT_VEC(tfwcAV[currNumVec_-1], 1);
-		} 
-		// we have one or more packet losses (or reordering)
-		else {
-			// number of packet loss
-			numLoss = currseq_ - prevseq_ - 1;
-			int z = numLoss%BITLEN;
-
-			// we need more AckVec chunks (maybe one or more)
-			if (currNumVec_ != prevNumVec_) {
-				// currently available spaces in the previous tfwcAV array
-				int numAvail = BITLEN - y;
-
-				// first, fill up zeros into those available spaces
-				for (int i = 0; i < numAvail; i++) {
-					SET_BIT_VEC(tfwcAV[prevNumVec_-1], 0);
-					numLoss--;
-				}
-
-				// then, calculate "additional" AckVec chunks required
-				addiNumVec = getNumVec(numLoss);
-
-				// fill up zeros accordingly if addiNumVec is greater than 1
-				for (int i = 0; i < (addiNumVec - 1); i++) {
-					for (int j = 0; j < BITLEN; j++) {
-						SET_BIT_VEC(tfwcAV[prevNumVec_+i], 0);
-						numLoss--;
-					}
-				}
-
-				// we need to update 'z' accordingly
-				// (at this point, 'z' should be equal to 'numLoss')
-				z = numLoss%BITLEN;
-
-				// finally, fill up zeros at the latest AckVec chunk
-				for (int i = 0; i < z; i++) {
-					SET_BIT_VEC(tfwcAV[prevNumVec_+addiNumVec-1], 0);
-				}
-			}
-			// current AckVeck chunk can cope with the elements
-			else {
-				// set next bit 0 into AckVec (# of packet loss)
-				for (int i = 0; i < numLoss; i++) 
-					SET_BIT_VEC(tfwcAV[currNumVec_-1], 0);
-			}
-
-			// then, set this packet as received (this is important)
-			SET_BIT_VEC(tfwcAV[currNumVec_-1], 1);
-
-			// and clear the top two bits which we don't need
-			// (because we have pushed '0' and '1' at the end of this AckVec)
-			// it doesn't really matter if diffNumElm is greater than 0.
-			if ( (diffNumElm <= 0) && (x != 0) ) {
-				int b = abs(diffNumElm) + x + z;
-				for (int i = x + 1; i <= b; i++)
-					CLR_BIT_AT(tfwcAV[currNumVec_-1], i);
-			}
-		}
-
-		// print ackvec
-		print_ackvec(tfwcAV);
-
-		// start seqno that this AckVec is reporting
-		if (ackofack_ != 0)
-			begins_ = ackofack_ + 1;
-		else
-			begins_ = 1;
-
-		// end seqno is current seqno plus one (according to RFC 3611)
-		ends_ = currseq_ + 1;
-
-		// store seqno, num of AckVec elem, and num of AckVec array
-		prevseq_ = currseq_;
-		prevNumElm_ = currNumElm_;
-		prevNumVec_ = currNumVec_;
 	}
 	else if (type == XR_BT_2) {
 		// set timestamp echo
@@ -208,9 +72,147 @@ void TfwcRcvr::tfwc_rcvr_recv(u_int16_t type, u_int16_t seqno,
 	}
 }
 
+void TfwcRcvr::tfwc_rcvr_recv_seqno(u_int16_t seqno)
+{
+	// variables
+	int numLoss		= 0;	// number of packet loss count
+	int diffNumElm	= 0;	// difference of AckVec elements (curr vs. prev)
+	int diffNumVec	= 0;	// difference of AckVec array (curr vs. prev)
+	int addiNumVec	= 0;	// additional AckVec array required
+
+	// received data packet seqno
+	currseq_ = seqno;
+
+	// number of AckVec element
+	currNumElm_	= currseq_ - ackofack();
+	diffNumElm	= currNumElm_ - prevNumElm_;
+	int x = currNumElm_%BITLEN;
+	int y = prevNumElm_%BITLEN;
+
+	// number of chunks for building tfwcAV
+	currNumVec_	= getNumVec(currNumElm_);
+	diffNumVec	= currNumVec_ - prevNumVec_;
+
+	// for debugging purpose
+	printf("    [%s +%d] seqno:%d, ackofack:%d\n",
+		__FILE__,__LINE__,currseq_,ackofack());
+	printf("    [%s +%d] currNumElm:%d, prevNumElm:%d\n", 
+		__FILE__,__LINE__,currNumElm_,prevNumElm_);
+	printf("    [%s +%d] currNumVec:%d, prevNumVec:%d\n", 
+		__FILE__,__LINE__,currNumVec_,prevNumVec_);
+
+	// there is no packet loss (or reordering)
+	if (currseq_ == prevseq_ + 1) {
+		// we just need the same number of AckVec elements,
+		// hence just left shift by one and clear the top bit
+		if (diffNumElm == 0) {
+			// set next bit to 1
+			SET_BIT_VEC(tfwcAV[currNumVec_-1], 1);
+
+			// and clear the top bit which we don't need it anymore
+			if (x != 0)
+				CLR_BIT_AT(tfwcAV[currNumVec_-1], x+1);
+		}
+		// we just need less number of AckVec elements,
+		// hence first free unnecessary AckVec chunk(s) and set bit.
+		else if (diffNumElm < 0) {
+			// firstly, freeing unnecessary AcvVec chunk(s) 
+			if (currNumVec_ != prevNumVec_) {
+				for (int i = prevNumVec_; i > currNumVec_; i--) {
+					for (int j = 1; j <= BITLEN; j++)
+						SET_BIT_VEC(tfwcAV[i-1], 0);
+				}
+			}
+			// set next bit to 1
+			SET_BIT_VEC(tfwcAV[currNumVec_-1], 1);
+			// and clear the bit(s) that we don't need it anymore
+			int k = (x == 0) ? BITLEN: x;
+			for (int i = BITLEN; i > k; i--)
+				CLR_BIT_AT(tfwcAV[currNumVec_-1], i);
+		}
+		// otherwise, just set next bit to 1
+		// (i.e., we need more AckVec elements)
+		else
+			SET_BIT_VEC(tfwcAV[currNumVec_-1], 1);
+	} 
+	// we have one or more packet losses (or reordering)
+	else {
+		// number of packet loss
+		numLoss = currseq_ - prevseq_ - 1;
+		int z = numLoss%BITLEN;
+
+		// we need more AckVec chunks (maybe one or more)
+		if (currNumVec_ != prevNumVec_) {
+			// currently available spaces in the previous tfwcAV array
+			int numAvail = BITLEN - y;
+
+			// first, fill up zeros into those available spaces
+			for (int i = 0; i < numAvail; i++) {
+				SET_BIT_VEC(tfwcAV[prevNumVec_-1], 0);
+				numLoss--;
+			}
+
+			// then, calculate "additional" AckVec chunks required
+			addiNumVec = getNumVec(numLoss);
+
+			// fill up zeros accordingly if addiNumVec is greater than 1
+			for (int i = 0; i < (addiNumVec - 1); i++) {
+				for (int j = 0; j < BITLEN; j++) {
+					SET_BIT_VEC(tfwcAV[prevNumVec_+i], 0);
+					numLoss--;
+				}
+			}
+
+			// we need to update 'z' accordingly
+			// (at this point, 'z' should be equal to 'numLoss')
+			z = numLoss%BITLEN;
+
+			// finally, fill up zeros at the latest AckVec chunk
+			for (int i = 0; i < z; i++) {
+				SET_BIT_VEC(tfwcAV[prevNumVec_+addiNumVec-1], 0);
+			}
+		}
+		// current AckVeck chunk can cope with the elements
+		else {
+			// set next bit 0 into AckVec (# of packet loss)
+			for (int i = 0; i < numLoss; i++) 
+				SET_BIT_VEC(tfwcAV[currNumVec_-1], 0);
+		}
+
+		// then, set this packet as received (this is important)
+		SET_BIT_VEC(tfwcAV[currNumVec_-1], 1);
+
+		// and clear the top two bits which we don't need
+		// (because we have pushed '0' and '1' at the end of this AckVec)
+		// it doesn't really matter if diffNumElm is greater than 0.
+		if ( (diffNumElm <= 0) && (x != 0) ) {
+			int b = abs(diffNumElm) + x + z;
+			for (int i = x + 1; i <= b; i++)
+				CLR_BIT_AT(tfwcAV[currNumVec_-1], i);
+		}
+	}
+
+	// print ackvec
+	print_ackvec(tfwcAV);
+
+	// start seqno that this AckVec is reporting
+	if (ackofack() != 0)
+		begins_ = ackofack() + 1;
+	else
+		begins_ = 1;
+
+	// end seqno is current seqno plus one (according to RFC 3611)
+	ends_ = currseq_ + 1;
+
+	// store seqno, num of AckVec elem, and num of AckVec array
+	prevseq_ = currseq_;
+	prevNumElm_ = currNumElm_;
+	prevNumVec_ = currNumVec_;
+}
+
 void TfwcRcvr::print_ackvec(u_int16_t *ackv) {
 	// start sequence number
-	int seqno = ackofack_+1;
+	int seqno = ackofack()+1;
 	int x = currNumElm_%BITLEN;
 
 	// printing...

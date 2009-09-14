@@ -959,6 +959,7 @@ int SessionManager::build_bye(rtcphdr* rh, Source& ls)
 void SessionManager::recv(DataHandler* dh)
 {
 	int layer = dh - dh_;
+	u_int16_t seqno;	// received RTP data packet seqno
 	pktbuf* pb = pool_->alloc(layer);
 	Address * addrp;
 	/* leave room in case we need to expand rtpv1 into an rtpv2 header */
@@ -996,6 +997,21 @@ void SessionManager::recv(DataHandler* dh)
 		return;
 	}
 	pb->len = cc;
+
+	// RTP data receiver need to extract seqno
+	// and send XR report back to the sender.
+	if (!am_i_sender()) {
+		// retrieve RTP seqno
+		rtphdr* rh = (rtphdr*)pb->data;
+		seqno = ntohs(rh->rh_seqno);
+		// pass seqno to tfwc receiver to build up AckVec
+		tfwc_rcvr_recv_seqno(seqno);
+		printf("\n\treceived seqno: %d\n\n", seqno);
+
+		// send receiver side XR report (AckVec)
+		ch_[0].send_ackv();
+		//ch_[0].send_ts_echo();
+	}
 	
 	//bp += sizeof(*rh);
 	//cc -= sizeof(*rh);
@@ -1290,7 +1306,7 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 			// we need to call Transmitter::output(pb) to make Ack driven
 			cc_output();
 		}
-		// i am an RTP data receiver, so do the receiver stuffs (build AckVec)
+		// i am an RTP data receiver, so receive ackofack 
 		else {
 			int num_chunks = 1;
 			printf(">>> parse_xr - i_am_receiver\n");
@@ -1301,11 +1317,7 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 			u_int16_t *chunk = (u_int16_t *) ++xr1;
 			printf("    [%s +%d] begin:%d, chunk[0]:%d\n", 
 					__FILE__,__LINE__, begin, ntohs(chunk[0]));
-			tfwc_rcvr_recv(xr->BT, begin, chunk, num_chunks);
-
-			// send receiver side XR report
-			ch_[0].send_ackv();
-			//ch_[0].send_ts_echo();
+			tfwc_rcvr_recv_aoa(xr->BT, chunk, num_chunks);
 		} // end of XR block type 1
 	} else {
 		// XXX
