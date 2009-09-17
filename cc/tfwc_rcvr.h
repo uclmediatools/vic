@@ -79,8 +79,8 @@ private:
 	// calculate the number of AckVec chunks
 	// (based on the number of given elements, i.e, numelm)
 	inline int getNumVec (int numelm) {
-		int num = numelm/16 + 1;
-		if (numelm%16 == 0) num -= 1;
+		int num = numelm/BITLEN + 1;
+		if (numelm%BITLEN == 0) num--;
 		return num;
 	}
 
