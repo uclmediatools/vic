@@ -117,7 +117,7 @@ void TfwcRcvr::tfwc_rcvr_recv_seqno(u_int16_t seqno)
 		// hence first free unnecessary AckVec chunk(s) and set bit.
 		else if (diffNumElm < 0) {
 			// firstly, freeing unnecessary AcvVec chunk(s) 
-			if (currNumVec_ != prevNumVec_) {
+			if (currNumVec_ < prevNumVec_) {
 				for (int i = prevNumVec_; i > currNumVec_; i--) {
 					for (int j = 1; j <= BITLEN; j++)
 						SET_BIT_VEC(tfwcAV[i-1], 0);
