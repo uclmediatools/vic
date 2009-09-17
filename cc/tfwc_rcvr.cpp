@@ -142,7 +142,7 @@ void TfwcRcvr::tfwc_rcvr_recv_seqno(u_int16_t seqno)
 		int z = numLoss%BITLEN;
 
 		// we need more AckVec chunks (maybe one or more)
-		if (currNumVec_ != prevNumVec_) {
+		if (currNumVec_ > prevNumVec_) {
 			// currently available spaces in the previous tfwcAV array
 			int numAvail = BITLEN - y;
 
