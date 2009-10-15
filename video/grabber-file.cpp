@@ -244,7 +244,6 @@ int FileGrabber::grab() {
 	// which = framesize_ + framesize_/2
 	memcpy (frame_, file_device.frame_ + num_frame_, 
 			framesize_ + (framesize_ >> 1));
-	//memset(frame_+framesize_+framesize_/4,128,framesize_/4);
 
 	if ((num_frame_ += framesize_ + (framesize_ >> 1)) 
 			< file_device.len_) {
