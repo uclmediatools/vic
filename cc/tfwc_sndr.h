@@ -62,7 +62,7 @@ public:
 
 	// main reception path (XR packet)
 	void tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
-			u_int16_t *chunk, int num_chunks);
+			u_int16_t *chunk);
 
 	// return current data packet's seqno
 	inline u_int16_t tfwc_sndr_get_seqno() { return seqno_; }
@@ -102,7 +102,7 @@ public:
 
 protected:
 	// generate sequence numbers
-	void gen_seqvec(u_int16_t num_chunks, u_int16_t *ackvec);
+	void gen_seqvec(u_int16_t *ackvec);
 
 	// init loss related variables
 	inline void init_loss_var() {

@@ -51,13 +51,13 @@
 // bitmap tail search
 #define GET_TAIL_VEC(bitmap, i) ( bitmap & (CTB << i) )
 
-// check bit at i-th location
+// check bit at i-th location, where (i >= 1)
 #define CHECK_BIT_AT(bitmap, i) ( bitmap & (1 << (i-1)) )
 
-// set bit at i-th location
+// set bit at i-th location, where (i >= 1)
 #define SET_BIT_AT(bitmap, i) ( bitmap |= 1 << (i-1) )
 
-// clear bit at i-th location
+// clear bit at i-th location, where (i >= 1)
 #define CLR_BIT_AT(bitmap, i) ( bitmap &= ~(1 << (i-1)) )
 
 #endif /* vic_cc_bitmap_h */

@@ -64,8 +64,11 @@ TfwcSndr::TfwcSndr() :
 {
 	// allocate tsvec_ in memory
 	tsvec_ = (double *)malloc(sizeof(double) * TSZ);
+	bzero(tsvec_, TSZ);
+
 	// allocate seqvec in memory
 	seqvec_ = (u_int32_t *)malloc(sizeof(u_int32_t) * SSZ);
+	bzero(seqvec_, SSZ);
 
 	// is TFWC running?
 	is_running_ = false;
@@ -139,32 +142,40 @@ void TfwcSndr::tfwc_sndr_send(pktbuf* pb) {
  * main TFWC reception path
  */
 void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
-		u_int16_t *chunk, int num_chunks)
+		u_int16_t *chunk)
 {
+	// number of ack received
+	nakp_++;
+
+	// get start/end seqno that this XR chunk reports
+	begins_ = begin;	// lowest packet seqno
+	ends_ = end;		// highest packet seqno
+
+	// get the number of AckVec chunks
+	//   use seqno space to work out the num chunks
+	//   (add one to num unless exactly divisible by BITLEN
+	//   - so it is large enough to accomodate all the bits
+	int num_chunks = (ends_-begins_)/BITLEN + ((ends_-begins_)%BITLEN > 0);
+
 	// retrieve ackvec
 	if (type == XR_BT_1) {
-		nakp_++;		// number of ack packet received
-
-		// get start/end seqno that this XR chunk reports
-		begins_ = begin;
-		ends_ = end;
-
-		// just acked seqno (head seqno of this ackvec)
+		// just acked seqno 
+		// i.e.,) head seqno(= highest seqno) of this ackvec
 		jacked_ = ends_ - 1;
 
 		// declared AckVec
 		ackv_ = (u_int16_t *) malloc (sizeof(u_int16_t) * num_chunks);
+		bzero(ackv_, num_chunks);
 
-		// clone AckVec from Vic application
-		for (int i = 0; i < num_chunks; i++) {
-			ackv_[i] = ntohs(chunk[i]);	
-		}
+		// clone AckVec from Vic 
+		for (int i = 0; i < num_chunks; i++) 
+			ackv_[i] = ntohs(chunk[i]);
 
-		// XXX generate seqno vec
 		printf("    [%s +%d] begins:%d, ends:%d, jacked:%d\n", 
 				__FILE__, __LINE__, begins_, ends_, jacked_);
-		gen_seqvec(num_chunks, ackv_);
-		free(ackv_);
+
+		// generate seqno vector
+		gen_seqvec(ackv_);
 
 		// generate margin vector
 		marginvec(jacked_);
@@ -199,6 +210,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		update_rtt(tao_);
 
 		// initialize variables for the next pkt reception
+		free(ackv_);
 		init_loss_var();
 	}
 	// retrieve ts echo
@@ -221,35 +233,40 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
  * @num_chunks: number of AckVec chunks
  * @ackvec: received AckVec
  */
-void TfwcSndr::gen_seqvec (u_int16_t num_chunks, u_int16_t *ackvec) {
+void TfwcSndr::gen_seqvec (u_int16_t *ackvec) {
 	// number of seqvec elements 
-	// (i.e., number of packets in AckVec)
+	// (i.e., number of packets that this AckVec is representing)
 	int numElm = ends_ - begins_;
-	int x = numElm%BITLEN;
 
-	// start of seqvec
-	int start = jacked_;
+	// number of AckVec chunks
+	int x = numElm%BITLEN;
+	int num_chunks = numElm/BITLEN + (x > 0);
 
 	int i, j, k = 0;
+	// start of seqvec
+	//int start = jacked_;
+	int start = begins_;	// lowest seqno
+
 	for (i = 0; i < num_chunks-1; i++) {
-		for (j = 0; j < BITLEN; j++) {
-			if ( CHECK_BIT_AT(ackvec[i], (j+1)) )
+		for (j = BITLEN; j > 0; j--) {
+			if( CHECK_BIT_AT(ackvec[i], j) )
 				seqvec_[k%SSZ] = start;
-		else num_loss_++;
-			k++; start--;
+			else num_loss_++;
+			k++; start++;
 		}
 	}
-
 	int a = (x == 0) ? BITLEN : x;
-	for (i = 0; i < a; i++) {
-		if ( CHECK_BIT_AT(ackvec[num_chunks-1], i+1 ))
+	for (i = a; i > 0; i--) {
+		if( CHECK_BIT_AT(ackvec[num_chunks-1], i) )
 			seqvec_[k++%SSZ] = start;
 		else num_loss_++;
-		start--;
+		start++;
 	}
 
+	// therefore, the number of seqvec is:
+	int num_seqvec = numElm - num_loss_;
 	// printing retrieved sequence numbers from received AckVec
-	print_seqvec(numElm - num_loss_);
+	print_seqvec(num_seqvec);
 }
 
 /*

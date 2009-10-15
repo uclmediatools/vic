@@ -36,16 +36,14 @@
 #ifndef vic_tfwc_rcvr_h
 #define vic_tfwc_rcvr_h
 
+#include <vector>
+#include <algorithm>
 #include "tfwc_sndr.h"
-
-// AckVec Size (AVSZ)
-// - AckVec can manage "16 * AVSZ" outstanding packets
-#define	AVSZ	256		// tfwcAV size
 
 class TfwcRcvr {
 public:
 	TfwcRcvr();
-	void tfwc_rcvr_recv_aoa(u_int16_t type, u_int16_t *chunk, int num_chunks);
+	void tfwc_rcvr_recv_aoa(u_int16_t type, u_int16_t *chunk);
 	void tfwc_rcvr_recv_seqno(u_int16_t seqno);
 
 protected:
@@ -59,23 +57,22 @@ protected:
 	// AckVec end seqno plus one
 	inline u_int16_t tfwc_rcvr_ends() { return ends_; }
 	// number of AckVec array
-	inline u_int16_t tfwc_rcvr_numvec() { return currNumVec_; }
+	inline u_int16_t tfwc_rcvr_numvec() { return numVec_; }
 
 	/*
 	 * Variables
 	 */
 	u_int16_t *tfwcAV;		// AckVec array (bit vector array)
-	u_int16_t currseq_;		// current sequence number
-	u_int16_t prevseq_;		// previous sequence number
 	u_int16_t ackofack_;	// ackofack
-	u_int16_t begins_;		// begin seqno that XR chunk is reporting
-	u_int16_t ends_;		// end seqno + 1 that XR chunk is reporting
-	u_int16_t currNumElm_;	// number of current AckVec elements
-	u_int16_t prevNumElm_;	// number of previous AckVec elements
-	int	currNumVec_;		// numver of current AckVec array
-	int prevNumVec_;		// numver of previous AckVec array
-
+    u_int16_t begins_;      // begin seqno that XR chunk is reporting
+    u_int16_t ends_;        // end seqno + 1 that XR chunk is reporting
+	int numElm_;			// number of tfwcAV elements
+	int numVec_;			// number of tfwcAV chunks
 private:
+	// TFWC sender's AckVec Routine
+	void tfwc_ackvec();
+	void reset();
+
 	// calculate the number of AckVec chunks
 	// (based on the number of given elements, i.e, numelm)
 	inline int getNumVec (int numelm) {
@@ -88,12 +85,20 @@ private:
 	inline u_int16_t ackofack() { return ackofack_; }
 
 	// print built AckVec
-	void print_ackvec(u_int16_t *ackv);
+	void print_tfwcAV();
+	void print_vec(std::vector<int> v);
 
 	/*
 	 * Variables (private)
 	 */
 	u_int32_t ts_echo_;	// for time stamp echoing
+
+	// actual AckVec and its iterator
+	std::vector<int> avec_;
+	std::vector<int>::iterator avit_;
+	// reference vector and its iterator
+	std::vector<int> rvec_;
+	std::vector<int>::iterator rvit_;
 };
 
 #endif

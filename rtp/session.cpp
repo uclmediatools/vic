@@ -1283,41 +1283,30 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 		// i am an RTP data sender, so do the sender stuffs (AoA)
 		if (am_i_sender()) {
 			printf(">>> parse_xr - i_am_sender\n");
-			// num_chunks = xrlen - sizeof(xr_BT_1_hr)[=3*32bit] +
-			// 1 (counteracting -1 in hdr calc)
-			//int num_chunks = (xrlen + 1 - 3) * 2;
-			//printf("\tnum_chunks:%d, beg:%d, end:%d\n", num_chunks, begin, end);
-
-
-			// use seqno space to work out length 
-			// (add one to num unless exactly divisible by 16 
-			// - so it is large enough to accommodate all the bits )
-			int num_chunks = (end - begin)/16 + ((end - begin)%16 > 0); 
-
-			// this is just a double check - it should be the same as
-			// the above num_chunks calculation
-			printf("    [%s +%d] num_chunks:%d, beg:%d, end:%d, xr1len:%d (xrlen:%d)\n", 
-					__FILE__,__LINE__, num_chunks, begin, end, ntohs(xr1->xr_len), xrlen);
-
 			// parse XR chunks
 			u_int16_t *chunk = (u_int16_t *) ++xr1;
-			tfwc_sndr_recv(xr->BT, begin, end, chunk, num_chunks);
+
+			printf("    [%s +%d] beg:%d, end:%d, xr1len:%d (xrlen:%d)\n", 
+					__FILE__,__LINE__,begin, end, ntohs(xr1->xr_len), xrlen);
+
+			// TFWC sender
+			tfwc_sndr_recv(xr->BT, begin, end, chunk);
 
 			// we need to call Transmitter::output(pb) to make Ack driven
 			cc_output();
 		}
 		// i am an RTP data receiver, so receive ackofack 
 		else {
-			int num_chunks = 1;
 			printf(">>> parse_xr - i_am_receiver\n");
-			printf("    [%s +%d] num_chunks:%d, beg:%d, end:%d\n", 
-					__FILE__,__LINE__,num_chunks, begin, end);
+			printf("    [%s +%d] beg:%d, end:%d\n", 
+					__FILE__,__LINE__, begin, end);
 
 			// parse XR chunks
 			u_int16_t *chunk = (u_int16_t *) ++xr1;
 			printf("    [%s +%d] begin:%d, chunk[0]:%d\n", 
 					__FILE__,__LINE__, begin, ntohs(chunk[0]));
-			tfwc_rcvr_recv_aoa(xr->BT, chunk, num_chunks);
+			// TFWC receiver
+			tfwc_rcvr_recv_aoa(xr->BT, chunk);
 		} // end of XR block type 1
 	} else {
 		// XXX
