@@ -54,6 +54,12 @@ class VideoFrame {
 	int layer_;
 };
 
+/* YUV Frame uses I420(fourcc code) representation - Each frame is
+ * stored as firstly the Y(Intensity) at full resolution - ie WxH
+ * Followed by U(Chrominance Cb) subsampled 2x2 i.e. W/2*H/2
+ * Followed by V(Chrominance Cr) also subsampled 2x2 
+ * Hence 12 bits/pixel and frame size = WxH+2*(W/2*H/2)
+ */
 class YuvFrame : public VideoFrame {
     public:
 	    inline YuvFrame(u_int32_t ts, u_int8_t* bp, u_int8_t* crvec,

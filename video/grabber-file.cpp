@@ -238,10 +238,13 @@ int FileGrabber::grab() {
 
     int frc = 0; 
 
-	// "framesize_" is just the number of pixels, 
-	// so the number of bytes becomes "3 * framesize_ / 2"
+	// "framesize_" is just the number of pixels for a frame, 
+	// YUV frame is Y at full res followed by Y then U subsampled
+	// by 2x2 so the number of bytes becomes = W*H + 2*(W/2*H/2)
+	// which = framesize_ + framesize_/2
 	memcpy (frame_, file_device.frame_ + num_frame_, 
 			framesize_ + (framesize_ >> 1));
+	//memset(frame_+framesize_+framesize_/4,128,framesize_/4);
 
 	if ((num_frame_ += framesize_ + (framesize_ >> 1)) 
 			< file_device.len_) {
