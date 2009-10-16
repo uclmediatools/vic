@@ -1277,16 +1277,16 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 		u_int16_t begin	 = ntohs(xr1->begin_seq);
 		u_int16_t end	 = ntohs(xr1->end_seq);
 
+		// parse XR chunks
+		u_int16_t *chunk = (u_int16_t *) ++xr1;
+
 		// i am an RTP data sender, so do the sender stuffs (AoA)
 		if (am_i_sender()) {
 			printf(">>> parse_xr - i_am_sender\n");
-			// parse XR chunks
-			u_int16_t *chunk = (u_int16_t *) ++xr1;
-
 			printf("    [%s +%d] beg:%d, end:%d, xr1len:%d (xrlen:%d)\n", 
 					__FILE__,__LINE__,begin, end, ntohs(xr1->xr_len), xrlen);
 
-			// TFWC sender
+			// TFWC sender (getting AckVec)
 			tfwc_sndr_recv(xr->BT, begin, end, chunk);
 
 			// we need to call Transmitter::output(pb) to make Ack driven
@@ -1295,16 +1295,10 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 		// i am an RTP data receiver, so receive ackofack 
 		else {
 			printf(">>> parse_xr - i_am_receiver\n");
-			printf("    [%s +%d] beg:%d, end:%d\n", 
-					__FILE__,__LINE__, begin, end);
+			printf("    [%s +%d] chunk[0]:%d\n", 
+					__FILE__,__LINE__, ntohs(chunk[0]));
 
-			// parse XR chunks
-			u_int16_t *chunk = (u_int16_t *) ++xr1;
-
-			printf("    [%s +%d] begin:%d, chunk[0]:%d\n", 
-					__FILE__,__LINE__, begin, ntohs(chunk[0]));
-
-			// TFWC receiver
+			// TFWC receiver (getting ackofack)
 			tfwc_rcvr_recv_aoa(xr->BT, chunk);
 		} // end of XR block type 1
 	} else {
