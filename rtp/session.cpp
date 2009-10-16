@@ -646,25 +646,23 @@ void SessionManager::build_xreport(CtrlHandler* ch, int bt)
 {
 	printf("\tentering build_xreport()..................  %s +%d\n",
 			__FILE__,__LINE__);
-	u_int16_t num_chunks;
-	u_int16_t *chunks;
 
-	// i am an RTP data sender, so i convey a packet seqno and ackofack
+	// declare chunks
+	u_int16_t num_chunks = 1;
+	u_int16_t *chunks = (u_int16_t *)malloc(sizeof(u_int16_t *));
+
+	// i am an RTP data sender, so i convey an ackofack information
 	if (am_i_sender()) {
 		// this block is used for giving seqno and ackofack
 		if(bt == XR_BT_1) {
-			printf("\t>> about to send RTCP XR (seqno, AoA)\n");
-			// set the number of chunks for giving ackofack
-			num_chunks = 1;
-			chunks = (u_int16_t *)malloc(num_chunks * sizeof(u_int16_t));
+			printf("\t>> about to send RTCP XR (ackofack)\n");
 			// set AckofAck
+			bzero(chunks, num_chunks);
 			chunks[num_chunks-1] = tfwc_sndr_get_aoa();
 
 			// send_Xreport (sender's report)
-			//	Note: begin_seq (== tfwc_sndr_get_seqno()) is
-			//	actually the seqno of the last sent data packet
-			send_Xreport(ch, XR_BT_1, 0, 0, tfwc_sndr_get_seqno(),
-					tfwc_sndr_get_seqno() + 1, chunks, num_chunks, 0);
+			// - just sending ackofack information
+			send_Xreport(ch, XR_BT_1, 0, 0, 0, 0, chunks, num_chunks, 0);
 		}
 		else if (bt == XR_BT_3) {
 			/*XXX*/
@@ -677,11 +675,9 @@ void SessionManager::build_xreport(CtrlHandler* ch, int bt)
 			printf("\t>> about to send RTCP XR (AckVec)\n");
 			// get the number of required chunks for giving AckVec
 			num_chunks = tfwc_rcvr_numvec();
+			bzero(chunks, num_chunks);
 
-			// declare chunks
-			chunks = (u_int16_t *)malloc(num_chunks * sizeof(u_int16_t));
-
-			// printing chunks
+			// set/printing chunks
 			printf("\t   printing chunks: ");
 			for (int i = 0; i < num_chunks; i++) {
 				chunks[i] = tfwc_rcvr_getvec(i);
@@ -689,6 +685,7 @@ void SessionManager::build_xreport(CtrlHandler* ch, int bt)
 			} printf("...........%s +%d\n",__FILE__,__LINE__);
 
 			// send_Xreport (receiver's report)
+			// - sending AckVec
 			send_Xreport(ch, XR_BT_1, 0, 0, tfwc_rcvr_begins(), 
 					tfwc_rcvr_ends(), chunks, num_chunks, 0);
 		}
@@ -1303,8 +1300,10 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 
 			// parse XR chunks
 			u_int16_t *chunk = (u_int16_t *) ++xr1;
+
 			printf("    [%s +%d] begin:%d, chunk[0]:%d\n", 
 					__FILE__,__LINE__, begin, ntohs(chunk[0]));
+
 			// TFWC receiver
 			tfwc_rcvr_recv_aoa(xr->BT, chunk);
 		} // end of XR block type 1
@@ -1314,55 +1313,6 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 	}
 	printf("-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\n");
 }
-
-/*void SessionManager::cc_output() 
-{
-	printf("\tentering cc_output()\n");
-	pktbuf* pb = head_;	// head of the packet queue
-	rtphdr* rh;		// declare rtp header
-
-	// if pb is not 0, then parse rtp header 
-	if (pb == 0) {
-	  is_first_ = true;
-	  return; 
-	}
-
-	printf("\tThere is a packet available to send cc_output()\n");
-
-	rh = (rtphdr *) pb->data;
-
-	// cwnd value
-	int magic = (int) tfwc_magic();
-	debug_msg("cwnd: %d\n", magic);
-
-	// just acked seqno
-	int jack = (int) tfwc_sndr_jacked();
-	debug_msg("jack: %d\n", jack);
-
-	// while packet seqno is within "cwnd + jack", send that packet
-	while (ntohs(rh->rh_seqno) <= magic + jack) {
-		debug_msg("seqno: %d\n", ntohs(rh->rh_seqno));
-		// record seqno and timestamp at TfwcSndr side
-		tfwc_sndr_send(pb);
-
-		// declare the next packet
-		pktbuf* nx = pb->next;
-
-		// call Transmitter::output(pb)
-		output(pb);
-
-		// move packet pointer
-		pb = nx;
-
-		// if pb is not 0, 
-		// then move head pointer and parse rtp header
-		if (pb != 0) {
-			head_ = pb;
-			rh = (rtphdr *) pb->data;
-		} else 
-			break;
-	} // end while
-}*/
 
 void CtrlHandler::send_ackv()
 {
@@ -1580,4 +1530,3 @@ void SessionManager::recv(CtrlHandler* ch)
 	}
 	return;
 }
-

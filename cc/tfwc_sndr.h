@@ -64,9 +64,6 @@ public:
 	void tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 			u_int16_t *chunk);
 
-	// return current data packet's seqno
-	inline u_int16_t tfwc_sndr_get_seqno() { return seqno_; }
-
 	// return ackofack
 	inline u_int16_t tfwc_sndr_get_aoa() { return aoa_; }
 
