@@ -373,6 +373,8 @@ void TfwcSndr::control() {
 	// cwnd should always be greater than 1
 	if (cwnd_ < 1)
 		cwnd_ = 1;
+
+	printf("\tnow: %f\tcwnd: %d\n", now_, cwnd_);
 }
 
 /*

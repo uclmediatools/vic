@@ -286,11 +286,11 @@ void Transmitter::cc_output()
 
 	// cwnd value
 	int magic = (int) tfwc_magic();
-	debug_msg("cwnd: %d\n", magic);
+	//debug_msg("cwnd: %d\n", magic);
 
 	// just acked seqno
 	int jack = (int) tfwc_sndr_jacked();
-	debug_msg("jack: %d\n", jack);
+	//debug_msg("jack: %d\n", jack);
 	debug_msg("seqno: %d\n", ntohs(rh->rh_seqno));
 
 	// while packet seqno is within "cwnd + jack", send that packet
