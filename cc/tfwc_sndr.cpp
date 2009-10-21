@@ -60,15 +60,18 @@ TfwcSndr::TfwcSndr() :
 	epoch_(1),
 	jacked_(0),
 	begins_(0),
-	ends_(0)
+	ends_(0),
+	num_elm_(1),
+	num_vec_(1)
 {
 	// allocate tsvec_ in memory
 	tsvec_ = (double *)malloc(sizeof(double) * TSZ);
-	bzero(tsvec_, TSZ);
+	clear_tsv(TSZ);
 
 	// allocate seqvec in memory
 	seqvec_ = (u_int32_t *)malloc(sizeof(u_int32_t) * SSZ);
-	bzero(seqvec_, SSZ);
+	clear_sqv(SSZ);
+	num_seqvec_ = 0;
 
 	// is TFWC running?
 	is_running_ = false;
@@ -149,13 +152,14 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 
 	// get start/end seqno that this XR chunk reports
 	begins_ = begin;	// lowest packet seqno
-	ends_ = end;		// highest packet seqno
+	ends_ = end;		// highest packet seqno plus one
 
 	// get the number of AckVec chunks
 	//   use seqno space to work out the num chunks
 	//   (add one to num unless exactly divisible by BITLEN
 	//   - so it is large enough to accomodate all the bits
-	int num_chunks = (ends_-begins_)/BITLEN + ((ends_-begins_)%BITLEN > 0);
+	num_elm_ = ends_ - begins_;
+	num_vec_ = num_elm_/BITLEN + (num_elm_%BITLEN > 0);
 
 	// retrieve ackvec
 	if (type == XR_BT_1) {
@@ -164,17 +168,18 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		jacked_ = ends_ - 1;
 
 		// declared AckVec
-		ackv_ = (u_int16_t *) malloc (sizeof(u_int16_t) * num_chunks);
-		bzero(ackv_, num_chunks);
+		ackv_ = (u_int16_t *) malloc (sizeof(u_int16_t) * num_vec_);
+		clear_ackv(num_vec_);
 
 		// clone AckVec from Vic 
-		for (int i = 0; i < num_chunks; i++) 
+		for (int i = 0; i < num_vec_; i++) 
 			ackv_[i] = ntohs(chunk[i]);
 
 		printf("    [%s +%d] begins:%d, ends:%d, jacked:%d\n", 
 				__FILE__, __LINE__, begins_, ends_, jacked_);
 
 		// generate seqno vector
+		clear_sqv(num_seqvec_);
 		gen_seqvec(ackv_);
 
 		// generate margin vector
@@ -201,6 +206,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		else {
 			control();
 		}
+		printf("\tnow: %f\tcwnd: %d\n", now_, cwnd_);
 
 		// set ackofack (real number)
 		aoa_ = ackofack(); 
@@ -217,7 +223,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	else if (type == XR_BT_3) {
 		ntep_++;		// number of ts echo packet received
 
-		ts_echo_ = chunk[num_chunks - 1];
+		ts_echo_ = chunk[num_vec_ - 1];
 		printf("    [%s +%d] ts echo:	%f\n", __FILE__,__LINE__, ts_echo_);
 
 		tao_ = now() - ts_echo_;
@@ -230,44 +236,36 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 /*
  * generate seqno vector 
  * (interpret the received AckVec to real sequence numbers)
- * @num_chunks: number of AckVec chunks
  * @ackvec: received AckVec
  */
 void TfwcSndr::gen_seqvec (u_int16_t *ackvec) {
-	// number of seqvec elements 
-	// (i.e., number of packets that this AckVec is representing)
-	int num_elm = ends_ - begins_;
-
-	// number of AckVec chunks
-	int x = num_elm%BITLEN;
-	int num_chunks = num_elm/BITLEN + (x > 0);
-
 	int i, j, k = 0;
+	int x = num_elm_%BITLEN;
 
 	// start of seqvec (lowest seqno)
 	int start = begins_;
 
-	for (i = 0; i < num_chunks-1; i++) {
+	for (i = 0; i < num_vec_-1; i++) {
 		for (j = BITLEN; j > 0; j--) {
 			if( CHECK_BIT_AT(ackvec[i], j) )
-				seqvec_[k%SSZ] = start;
+				seqvec_[k++%SSZ] = start;
 			else num_loss_++;
-			k++; start++;
+			start++;
 		}
 	}
 
 	int a = (x == 0) ? BITLEN : x;
 	for (i = a; i > 0; i--) {
-		if( CHECK_BIT_AT(ackvec[num_chunks-1], i) )
+		if( CHECK_BIT_AT(ackvec[num_vec_-1], i) )
 			seqvec_[k++%SSZ] = start;
 		else num_loss_++;
 		start++;
 	}
 
-	// therefore, the number of seqvec is:
-	int num_seqvec = num_elm - num_loss_;
+	// therefore, the number of seqvec elements is:
+	num_seqvec_ = num_elm_ - num_loss_;
 	// printing retrieved sequence numbers from received AckVec
-	print_seqvec(num_seqvec);
+	print_seqvec(num_seqvec_);
 }
 
 /*
@@ -280,22 +278,21 @@ bool TfwcSndr::detect_loss(int end, int begin) {
 	int count = 0; // packet loss counter
 
 	// number of tempvec element when no loss
-	int num_elm = ((end - begin  + 1) < 0) ? 0 : (end - begin + 1);
-	u_int32_t tempvec[num_elm];
+	//int num = ((end - begin  + 1) < 0) ? 0 : (end - begin + 1);
+	int num = end - begin + 1;
+	printf("\tnum_tempvec: %d\n", num);
+	u_int32_t tempvec[num];
 
 	// generate tempvec elements
 	printf("\tcomparing numbers: (");
-	for (int i = 0; i < num_elm; i++) {
+	for (int i = 0; i < num; i++) {
 		tempvec[i] = begin + i;
 		printf(" %d", tempvec[i]);
 	} printf(" )\n");
 
-	// number of seqvec element
-	int num_seqvec = num_elm - num_loss_;
-
 	// compare tempvec and seqvec
-	for (int i = 0; i < num_elm; i++) {
-		for (int j = num_seqvec-1; j >= 0; j--) {
+	for (int i = 0; i < num; i++) {
+		for (int j = num_seqvec_-1; j >= 0; j--) {
 			if (tempvec[i] == seqvec_[j]) {
 				is_there = true;
 				// we found it, so reset count
@@ -315,7 +312,7 @@ bool TfwcSndr::detect_loss(int end, int begin) {
 	
 	// store tempvec elements for updating loss history
 	first_elm_ = tempvec[0];
-	last_elm_ = first_elm_ + num_elm;
+	last_elm_ = first_elm_ + num;
 
 	return ret = (count > 0) ? true : false;
 }

@@ -186,6 +186,24 @@ private:
 	// dupack action
 	void dupack_action();
 
+	// clear timestamp vector
+	inline void clear_tsv (int n) {
+		for (int i = 0; i < n; i++)
+			tsvec_[i] = 0;
+	}
+
+	// clear seqvec
+	inline void clear_sqv (int n) {
+		for (int i = 0; i < n; i++)
+			seqvec_[i] = 0;
+	}
+
+	// clear ackvec
+	inline void clear_ackv (int n) {
+		for (int i = 0; i < n; i++)
+			ackv_[i] = 0;
+	}
+
 	int ndtp_;		// number of data packet sent
 	int nakp_;		// number of ackvec packet received
 	int ntep_;		// number of ts echo packet received
@@ -197,6 +215,7 @@ private:
 	u_int32_t ref_t_time_;	// reference time (uint32 format)
 
 	u_int32_t *seqvec_;		// generated seqno vec
+	int	num_seqvec_;		// number of seqvec elements
 	double *tsvec_;			// timestamp vector
 	u_int16_t jacked_;		// just acked seqno (head of ackvec)
 	bool is_loss_;
@@ -240,6 +259,8 @@ private:
 	// XR chunk begin/end
 	u_int16_t begins_;	// start seqno that this XR chunk reports
 	u_int16_t ends_;	// end seqno + 1 that this XR chunk reports
+	int	num_elm_;		// number of ackvec elements
+	int num_vec_;		// numver of ackvec chunks
 };
 
 #endif
