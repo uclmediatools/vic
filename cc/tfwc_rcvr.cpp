@@ -53,7 +53,7 @@ TfwcRcvr::TfwcRcvr() :
 {
 	// tfwcAV (bit vector)
 	tfwcAV = (u_int16_t *) malloc(sizeof(u_int16_t *));
-	bzero(tfwcAV, numVec_);
+	clear_avec(numVec_);
 }
 
 // retrive ackofack from RTCP control channel
@@ -73,27 +73,29 @@ void TfwcRcvr::tfwc_rcvr_recv_aoa(u_int16_t type, u_int16_t *chunk)
 // retrieve data packet sequence number from RTP data channel
 void TfwcRcvr::tfwc_rcvr_recv_seqno(u_int16_t seqno)
 {
+	// required number of AckVec elements
+	numElm_ = seqno - ackofack_;
+
+	// required number of AckVec chunks
+	numVec_ = numElm_/BITLEN + (numElm_%BITLEN > 0);
+
 	// reset necessary variables before start
 	reset();
-
-	// required number of AckVec elements
-	numElm_ = seqno - ackofack();
 
 	// reference vector
 	for (int i = 1; i <= numElm_; i++)
 		rvec_.push_back(ackofack_ + i);
 
 	// push back the current seqno
-	avec_.push_back(seqno);
+	// (if this is duplicate seqno, skip adding it)
+	if (find(avec_.begin(), avec_.end(), seqno) == avec_.end())
+		avec_.push_back(seqno);
 	sort(avec_.begin(), avec_.end());
 
 	// then, trim upto ackofack (inclusive)
 	avit_ = find(avec_.begin(), avec_.end(), ackofack_);
 	if (avit_ != avec_.end()) 
 		avec_.erase(avec_.begin(), ++avit_);
-
-	// required number of AckVec chunks
-	numVec_ = numElm_/BITLEN + (numElm_%BITLEN > 0);
 
 	// now, build tfwcAV chunks
 	tfwc_ackvec();
@@ -125,7 +127,7 @@ void TfwcRcvr::tfwc_ackvec() {
 				tfwcAV[cv] = (tfwcAV[cv] << 1) | 1;
 				cb++;
 			} 
-			else {
+			if (cb == BITLEN) {
 				cb = 0;
 				cv++;
 			}
@@ -136,7 +138,7 @@ void TfwcRcvr::tfwc_ackvec() {
 				tfwcAV[cv] = (tfwcAV[cv] << 1) | 0;
 				cb++;
 			}
-			else {
+			if (cb == BITLEN) {
 				cb = 0;
 				cv++;
 			}
@@ -163,6 +165,6 @@ void TfwcRcvr::print_tfwcAV() {
 
 // reset
 void TfwcRcvr::reset() {
-	bzero(tfwcAV, numVec_);
 	rvec_.clear();
+	clear_avec(numVec_);
 }

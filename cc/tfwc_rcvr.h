@@ -84,6 +84,12 @@ private:
 	// returning AckOfAck
 	inline u_int16_t ackofack() { return ackofack_; }
 
+	// clear tfwcAV
+	inline void clear_avec(int num) {
+		for (int i = 0; i < num; i++)
+			tfwcAV[i] = 0;
+	}
+
 	// print built AckVec
 	void print_tfwcAV();
 	void print_vec(std::vector<int> v);
