@@ -651,13 +651,11 @@ void SessionManager::build_xreport(CtrlHandler* ch, int bt)
 	u_int16_t num_chunks = 1;
 	u_int16_t *chunks = (u_int16_t *)malloc(sizeof(u_int16_t *));
 
-	// i am an RTP data sender, so i convey an ackofack information
+	// i am an RTP data sender
 	if (am_i_sender()) {
-		// this block is used for giving seqno and ackofack
+		// this block is used for giving ackofack
 		if(bt == XR_BT_1) {
-			printf("\t>> about to send RTCP XR (ackofack)\n");
 			// set AckofAck
-			bzero(chunks, num_chunks);
 			chunks[num_chunks-1] = tfwc_sndr_get_aoa();
 
 			// send_Xreport (sender's report)
@@ -668,21 +666,20 @@ void SessionManager::build_xreport(CtrlHandler* ch, int bt)
 			/*XXX*/
 		} 
 	} 
-	// i am an RTP data receiver, so i convey ackvec information
+	// i am an RTP data receiver
 	else {
 		// this block is used for giving ackvec
 		if (bt == XR_BT_1) {
-			printf("\t>> about to send RTCP XR (AckVec)\n");
 			// get the number of required chunks for giving AckVec
 			num_chunks = tfwc_rcvr_numvec();
-			bzero(chunks, num_chunks);
-
+			
 			// set/printing chunks
-			printf("\t   printing chunks: ");
+			//printf("\t   printing chunks: ");
 			for (int i = 0; i < num_chunks; i++) {
 				chunks[i] = tfwc_rcvr_getvec(i);
-				printf("[%d:%x] ", i, chunks[i]);
-			} printf("...........%s +%d\n",__FILE__,__LINE__);
+			//	printf("[%d:%x] ", i, chunks[i]);
+			} 
+			//printf("...........%s +%d\n",__FILE__,__LINE__);
 
 			// send_Xreport (receiver's report)
 			// - sending AckVec
