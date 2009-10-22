@@ -291,10 +291,10 @@ void Transmitter::cc_output()
 	// just acked seqno
 	int jack = (int) tfwc_sndr_jacked();
 	//debug_msg("jack: %d\n", jack);
-	debug_msg("seqno: %d\n", ntohs(rh->rh_seqno));
 
 	// while packet seqno is within "cwnd + jack", send that packet
 	while (ntohs(rh->rh_seqno) <= magic + jack) {
+		debug_msg("seqno: %d\n", ntohs(rh->rh_seqno));
 		// record seqno and timestamp at TfwcSndr side
 		tfwc_sndr_send(pb);
 
