@@ -149,7 +149,6 @@ public:
 	void build_ts_pkt(CtrlHandler* ch);
 	void build_ackv_pkt(CtrlHandler* ch);
 	void build_ts_echo_pkt(CtrlHandler* ch);
-	//void cc_output();
 
 	// am i a data sender?
 	inline bool am_i_sender() { return is_sender_; }
@@ -182,8 +181,6 @@ protected:
 	void parse_sdes(rtcphdr* rh, int flags, u_char* ep, Source* ps,
 			Address & addr, u_int32_t ssrc, int layer);
 	void parse_bye(rtcphdr* rh, int flags, u_char* ep, Source* ps);
-	//u_char* build_ackv_pkt(rtcp_xr* xr, u_int32_t ssrc);
-	//u_char* build_ts_echo_pkt(rtcp_xr* xr, u_int32_t ssrc);
 
 	int parseopts(const u_char* bp, int cc, Address & addr) const;
 	int ckid(const char*, int len);
