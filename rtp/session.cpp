@@ -648,13 +648,15 @@ void SessionManager::build_xreport(CtrlHandler* ch, int bt)
 			__FILE__,__LINE__);
 
 	// declare chunks
-	u_int16_t num_chunks = 1;
-	u_int16_t *chunks = (u_int16_t *)malloc(sizeof(u_int16_t *));
+	u_int16_t *chunks;
+	u_int16_t num_chunks;
 
 	// i am an RTP data sender
 	if (am_i_sender()) {
 		// this block is used for giving ackofack
 		if(bt == XR_BT_1) {
+			num_chunks = 1;
+			chunks = (u_int16_t *) malloc(num_chunks * sizeof(u_int16_t));
 			// set AckofAck
 			chunks[num_chunks-1] = tfwc_sndr_get_aoa();
 
@@ -672,6 +674,7 @@ void SessionManager::build_xreport(CtrlHandler* ch, int bt)
 		if (bt == XR_BT_1) {
 			// get the number of required chunks for giving AckVec
 			num_chunks = tfwc_rcvr_numvec();
+			chunks = (u_int16_t *) malloc(num_chunks * sizeof(u_int16_t));
 			
 			// set/printing chunks
 			//printf("\t   printing chunks: ");
