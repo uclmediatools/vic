@@ -99,7 +99,7 @@ public:
 
 protected:
 	// generate sequence numbers
-	void gen_seqvec(u_int16_t *ackvec);
+	void gen_seqvec(u_int16_t *v, int n);
 
 	// init loss related variables
 	inline void init_loss_var() {
@@ -185,6 +185,12 @@ private:
 
 	// dupack action
 	void dupack_action();
+
+	// AckVec clone from Vic 
+	inline void clone_ackv(u_int16_t *c, int n) {
+		for (int i = 0; i < n; i++)
+			ackv_[i] = ntohs(c[i]);
+	}
 
 	// clear timestamp vector
 	inline void clear_tsv (int n) {

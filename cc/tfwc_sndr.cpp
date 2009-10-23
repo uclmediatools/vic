@@ -169,26 +169,24 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 
 		// declared AckVec
 		ackv_ = (u_int16_t *) malloc (sizeof(u_int16_t) * num_vec_);
+		// clear the existing AckVec
 		clear_ackv(num_vec_);
-
 		// clone AckVec from Vic 
-		for (int i = 0; i < num_vec_; i++) 
-			ackv_[i] = ntohs(chunk[i]);
+		clone_ackv(chunk, num_vec_);
 
 		printf("    [%s +%d] begins:%d, ends:%d, jacked:%d\n", 
 				__FILE__, __LINE__, begins_, ends_, jacked_);
 
 		// generate seqno vector
-		clear_sqv(num_seqvec_);
-		gen_seqvec(ackv_);
+		gen_seqvec(ackv_, num_vec_);
 
 		// generate margin vector
 		marginvec(jacked_);
 		print_mvec();
 
 		// detect loss
-		// 	@begin: aoa_+1
-		// 	@end: mvec_[DUPACKS] - 1
+		// 	@begin: aoa_+1 (lowest seqno)
+		// 	@end: mvec_[DUPACKS-1] - 1
 		is_loss_ = detect_loss(mvec_[DUPACKS-1]-1, aoa_+1);
 
 		// TFWC is not turned on (i.e., no packet loss yet)
@@ -238,16 +236,19 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
  * (interpret the received AckVec to real sequence numbers)
  * @ackvec: received AckVec
  */
-void TfwcSndr::gen_seqvec (u_int16_t *ackvec) {
+void TfwcSndr::gen_seqvec (u_int16_t *v, int n) {
+	// clear seqvec before starts
+	clear_sqv(num_seqvec_);
+
 	int i, j, k = 0;
 	int x = num_elm_%BITLEN;
 
 	// start of seqvec (lowest seqno)
 	int start = begins_;
 
-	for (i = 0; i < num_vec_-1; i++) {
+	for (i = 0; i < n-1; i++) {
 		for (j = BITLEN; j > 0; j--) {
-			if( CHECK_BIT_AT(ackvec[i], j) )
+			if( CHECK_BIT_AT(v[i], j) )
 				seqvec_[k++%SSZ] = start;
 			else num_loss_++;
 			start++;
@@ -256,7 +257,7 @@ void TfwcSndr::gen_seqvec (u_int16_t *ackvec) {
 
 	int a = (x == 0) ? BITLEN : x;
 	for (i = a; i > 0; i--) {
-		if( CHECK_BIT_AT(ackvec[num_vec_-1], i) )
+		if( CHECK_BIT_AT(v[n-1], i) )
 			seqvec_[k++%SSZ] = start;
 		else num_loss_++;
 		start++;
@@ -278,9 +279,7 @@ bool TfwcSndr::detect_loss(int end, int begin) {
 	int count = 0; // packet loss counter
 
 	// number of tempvec element when no loss
-	//int num = ((end - begin  + 1) < 0) ? 0 : (end - begin + 1);
 	int num = end - begin + 1;
-	printf("\tnum_tempvec: %d\n", num);
 	u_int32_t tempvec[num];
 
 	// generate tempvec elements
