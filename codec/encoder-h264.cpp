@@ -192,8 +192,9 @@ int H264Encoder::consume(const VideoFrame * vf)
 		rh->rh_flags |= htons(RTP_M);	// set M bit
 		pb->len = nalSize + RTP_HDR_LEN + FU_HDR_LEN;
 
+#ifdef H264DEBUG
 		debug_msg( "NAL : ");
-
+#endif
 		if (FU_HDR_LEN==2) {
 			//==============================================
 			//Last fragment of FU-A
@@ -201,16 +202,22 @@ int H264Encoder::consume(const VideoFrame * vf)
 	       		pb->data[12] = 0x00 | (NALhdr & 0x60) | 28; 	//FU indicator
        			pb->data[13] = 0x40  | NALtype; 		//FU header
 			
+#ifdef H264DEBUG
 			debug_msg( "FU_Indicator=0x%02x, FU_Header=0x%02x, ", pb->data[12], pb->data[13]);
+#endif
 		} 
 		else {
 	       		pb->data[12] = NALhdr; 				//NAL Header
+#ifdef H264DEBUG
 			debug_msg( "-----------------, --------------, ");
+#endif
 		}
 
 		memcpy(&pb->data[RTP_HDR_LEN + FU_HDR_LEN], data + offset, nalSize);
 
+#ifdef H264DEBUG
 		debug_msg( "i=%d/%d, nalSize=%4d len=%4d firstFrag=%d offset=%4d\n", i, numNAL, nalSize, pb->len, firstFragment, offset);
+#endif
 
 		nalSize = 0;
 		offset = 0;
@@ -228,7 +235,9 @@ int H264Encoder::consume(const VideoFrame * vf)
 
 		memcpy(&pb->data[RTP_HDR_LEN + FU_HDR_LEN], data + offset, NAL_FRAG_THRESH - FU_HDR_LEN);
 
-		//debug_msg( "FU-A: FU_Indicator=0x%02x, FU_Header=0x%02x, i=%d/%d, nalSize=%4d len=%4d firstFrag=%d offset=%4d\n",  pb->data[12], pb->data[13], i, numNAL, nalSize, pb->len, firstFragment, offset);
+#ifdef H264DEBUG
+		debug_msg( "FU-A: FU_Indicator=0x%02x, FU_Header=0x%02x, i=%d/%d, nalSize=%4d len=%4d firstFrag=%d offset=%4d\n",  pb->data[12], pb->data[13], i, numNAL, nalSize, pb->len, firstFragment, offset);
+#endif
 
 		nalSize -= (NAL_FRAG_THRESH-FU_HDR_LEN);
 		offset += (NAL_FRAG_THRESH-FU_HDR_LEN);
