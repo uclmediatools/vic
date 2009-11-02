@@ -300,13 +300,15 @@ int IPNetwork::localname(sockaddr_in* p)
 	}
 
 	if ((result = getsockname(ssock_, (struct sockaddr *)p, &len)) < 0) {
+	        debug_msg("getsockname failed, perror following:");
 		perror("getsockname");
 		p->sin_addr.s_addr = 0;
 		p->sin_port = 0;
 	} else 
-	    debug_msg("getsockname localname:%s\n",(const char*)local_);
+	    debug_msg("getsockname succeeded sin_addr.s_addr:%x\n",p->sin_addr.s_addr);
 
 	if (p->sin_addr.s_addr == 0) {
+		debug_msg("getsockname returned 0 so resorting to gethostname()\n");
 		p->sin_addr.s_addr = LookupLocalAddr();
 		result = ((p->sin_addr.s_addr != 0) ? (0) : (-1));
 	}

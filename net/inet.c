@@ -70,7 +70,7 @@ LookupLocalAddr(void)
 		
 	if (!gethostname(name, sizeof(name))) {
 		local_addr = LookupHostAddr(name);
-	    debug_msg("gethostname:%x\n",local_addr);
+	    debug_msg("gethostname Name:%s (looked up addr[Hex]:%x)\n",name, local_addr);
 	}
 	return (local_addr);
 }
