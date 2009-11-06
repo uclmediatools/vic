@@ -632,6 +632,9 @@ armv4l-*-linux)
         if test "$target_cpu" = powerpc; then
             V_CCOPT="-O2 $ppc_tune"
         fi
+	if ! file -L  /System/Library/Frameworks//QuickTime.framework/QuickTime 2>/dev/null | grep x86_64 >/dev/null 2>&1; then
+          V_CCOPT="$V_CCOPT -arch i386"
+	fi
         OPSYS=macosx
         ;;
 esac
