@@ -972,8 +972,8 @@ void DirectShowGrabber::setCaptureOutputFormat() {
                   (scc.MaxOutputSize.cx <= width_)                    &&
                   (scc.MaxOutputSize.cy <= height_)*/){
 
-               if ((abs(width_ - scc.MaxOutputSize.cx) + abs(height_ - scc.MaxOutputSize.cy))<
-                   (abs(width_ - curr_w) +abs(height_ - curr_h))) {
+               if ( (width_ <= scc.MaxOutputSize.cx) && (width_ >= scc.MinOutputSize.cx) &&
+				   (height_ <= scc.MaxOutputSize.cx) && (height_ >= scc.MinOutputSize.cy)) {
 
                     pVih = (VIDEOINFOHEADER *)pmtConfig->pbFormat;
                     //pVih->bmiHeader.biWidth     = width_;
