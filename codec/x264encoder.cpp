@@ -8,6 +8,7 @@
 #include "libavcodec/avcodec.h"
 #include "databuffer.h"
 extern "C"{
+#include "inttypes.h"
 #include "x264.h"
 }
 
@@ -60,7 +61,7 @@ bool x264Encoder::init(int w, int h, int bps, int fps)
     param->b_cabac = 0;
     
     //DONOT ENABLE PSNR ANALYSE
-    param->analyse.b_psnr = 1;
+    //param->analyse.b_psnr = 1;
     
     param->i_keyint_max = 50;
     param->i_keyint_min = 20;
