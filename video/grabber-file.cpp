@@ -56,9 +56,6 @@ static const char rcsid[] =
 #include "transmitter.h"
 #include "module.h"
 
-//#define DEBUG 1
-#undef DEBUG
-
 class FileGrabber : public Grabber {
 public:
 	FileGrabber();
@@ -96,19 +93,15 @@ FileDevice::FileDevice(const char* s) : InputDevice(s),
 {
 	attributes_ = "format { 420 } size { small large cif }";
 
-#ifdef DEBUG
     debug_msg("FileDevice::FileDevice name=%s\n", s);
-#endif /* DEBUG */
 }
 
 /*
  * FileDevice
  */
 int FileDevice::command(int argc, const char*const* argv) {
-#ifdef DEBUG
 	for (int i = 0; i < argc; i++)
 		debug_msg("FileDevice\t%s\n", argv[i]);
-#endif
     if (argc == 3)
     {
 		if (strcmp(argv[1], "open") == 0)
@@ -164,6 +157,8 @@ void FileDevice::load_file(const char * const f) {
     frame_ = new char[len_ + 1];
 	fread(frame_, len_, 1, fp);
 
+	debug_msg("Successfully loaded %s\n", f);
+
 	devstat_ = 0;	// device is now ready
     fclose(fp);
 }
@@ -172,11 +167,9 @@ void FileDevice::load_file(const char * const f) {
  * StillYuvGraber
  */
 int FileGrabber::command(int argc, const char* const* argv) {
-#ifdef DEBUG
 	debug_msg("FileGrabber::command argc=%d\n", argc);
 	for (int i = 0; i < argc; i++)
 		debug_msg("\"%s\"\n", argv[i]);
-#endif
 	//Tcl& tcl = Tcl::instance();
 
     if (argc == 3) {
@@ -201,13 +194,13 @@ FileGrabber::FileGrabber() :
 }
 
 FileGrabber::~FileGrabber() {
-#ifdef DEBUG
     debug_msg("Destroy FileGrabber\n");
-#endif
 }
 
 void FileGrabber::start() {
-	Grabber::start();
+    debug_msg("Start FileGrabber\n");
+	frameclock_ = gettimeofday_usecs();
+	timeout();
 }
 
 void FileGrabber::stop() {
@@ -215,9 +208,7 @@ void FileGrabber::stop() {
 }
 
 void FileGrabber::setsize() {
-#ifdef DEBUG
 	debug_msg("FileGrabber::setsize()\n");
-#endif
 
 	if(running_)
 		stop();
@@ -232,16 +223,11 @@ void FileGrabber::setsize() {
 }
 
 int FileGrabber::grab() {
-#ifdef DEBUG
-	debug_msg("FileGrabber::grab() called\n");
-#endif
 
     int frc = 0; 
 
-	// "framesize_" is just the number of pixels for a frame, 
-	// YUV frame is Y at full res followed by Y then U subsampled
-	// by 2x2 so the number of bytes becomes = W*H + 2*(W/2*H/2)
-	// which = framesize_ + framesize_/2
+	// "framesize_" is just the number of pixels, 
+	// so the number of bytes becomes "3 * framesize_ / 2"
 	memcpy (frame_, file_device.frame_ + num_frame_, 
 			framesize_ + (framesize_ >> 1));
 
@@ -252,9 +238,7 @@ int FileGrabber::grab() {
 		num_frame_=0;
 	}
  	
-#ifdef DEBUG
-	debug_msg(" number of frames: %d\n", num_frame_);
-#endif
+//	debug_msg(" number of frames: %d\n", num_frame_);
 
 	suppress(frame_);
 	saveblks(frame_);
