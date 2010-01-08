@@ -127,9 +127,9 @@ proc net_open_ip { sessionType session dst } {
 			incr port 
 			incr layer
 			if { [$dn ismulticast] } { incr offset }
-			set ldn [new network $IPaddrFamily]
-			$ldn open $base$separator$offset $port $ttl
-			$session data-net $ldn $layer
+			set dnl [new network $IPaddrFamily]
+			$dnl open $base$separator$offset $port $ttl
+			$session data-net $dnl $layer
 
 			if { $sessionType != "nv" } {
 				if { $sessionType == "ivs" } {
