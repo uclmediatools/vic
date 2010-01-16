@@ -343,6 +343,61 @@ else
         V_OBJ_GRABBER="$V_OBJ_GRABBER  video/tinyjpeg.o video/jidctflt.o"
 fi
 
+AC_ARG_WITH(decklink,
+    AC_HELP_STRING([--with-decklink=dir], [directory containing DeckLinkAPIDispatch.cpp]),
+    with_decklinkapidispatch=${withval})
+AC_MSG_NOTICE([checking for Blackmagic DeckLink SDK])
+AC_CACHE_VAL(ac_cv_c_decklinkapidispatch,[
+        # First check to see if --with-decklink was specified.
+        if test x"${with_decklinkapidispatch}" != x ; then
+                case ${with_decklinkapidispatch} in
+                */DeckLinkAPIDispatch.cpp )
+                        if test -f ${with_decklinkapidispatch}; then
+                                AC_MSG_WARN([--with-decklink argument should refer to directory containing DeckLinkAPIDispatch.cpp, not to DeckLinkAPIDispatch.cpp itself])
+                                with_decklinkapidispatch=`echo ${with_decklinkapidispatch} | sed 's!/DeckLinkAPIDispatch\.cpp!!'`
+                        fi ;;
+                esac
+                if test -f "${with_decklinkapidispatch}/DeckLinkAPIDispatch.cpp" ; then
+                    ac_cv_c_decklinkapidispatch=`(cd ${with_decklinkapidispatch}; pwd)`
+                else
+                    AC_MSG_ERROR([${with_decklinkapidispatch} directory doesn't contain DeckLinkAPIDispatch.cpp])
+                fi
+        fi
+
+        # then check for a private Blackmagic DeckLink SDK installation
+        if test x"${ac_cv_c_decklinkapidispatch}" = x ; then
+		as_save_IFS=$IFS
+		IFS=`echo`
+                for i in \
+                        `ls -dr "Blackmagic DeckLink SDK "[[0-9]]* 2>/dev/null` \
+                        `ls -dr ../"Blackmagic DeckLink SDK "[[0-9]]* 2>/dev/null` \
+                        `ls -dr $HOME/"Blackmagic DeckLink SDK "[[0-9]]* 2>/dev/null` \
+                        `ls -dr $HOME/Downloads/"Blackmagic DeckLink SDK "[[0-9]]* 2>/dev/null` \
+                        `ls -dr /usr/local/"Blackmagic DeckLink SDK "[[0-9]]* 2>/dev/null` \
+                        `ls -dr /opt/local/"Blackmagic DeckLink SDK "[[0-9]]* 2>/dev/null` ; do
+                        case "$target" in
+                        *linux* )
+                                if test -f "$i/Linux/include/DeckLinkAPIDispatch.cpp" ; then
+                                        ac_cv_c_decklinkapidispatch=`(cd "$i/Linux/include"; pwd)`
+                                        break
+                                fi ;;
+                        *darwin* )
+                                if test -f "$i/Mac/include/DeckLinkAPIDispatch.cpp" ; then
+                                        ac_cv_c_decklinkapidispatch=`(cd "$i/Mac/include"; pwd)`
+                                        break
+                                fi ;;
+                        esac
+                done
+		IFS=$as_save_IFS
+        fi
+])
+if test x"${ac_cv_c_decklinkapidispatch}" = x ; then
+	AC_MSG_WARN([no DeckLinkAPIDispatch.cpp file found])
+else
+	AC_MSG_RESULT([found ${ac_cv_c_decklinkapidispatch}/DeckLinkAPIDispatch.cpp])
+	V_INCLUDE="$V_INCLUDE -I\"${ac_cv_c_decklinkapidispatch}\""
+	V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-decklink.o"
+fi
 
 if test -r /usr/lib/libvl.so ; then
 	V_LIB_GRABBER="$V_LIB_GRABBER -lvl -ldmedia"
@@ -641,7 +696,7 @@ esac
 
 case "$target" in
    *-*-darwin*)
-        V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-macosx.o"
+        V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-macosx.o video/yuv_convert.o"
         ;;
    *)
         V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-x11.o"

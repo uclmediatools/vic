@@ -2,7 +2,7 @@
 /*
  * grabber-declink.cpp
  *
- * Copyright (c) 2009 The University of Queensland.
+ * Copyright (c) 2010 The University of Queensland.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,8 +47,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "DeckLinkAPI.h"
 #include "yuv_convert.h"
+
+#include "DeckLinkAPIDispatch.cpp"
 
 #undef debug_msg
 #define debug_msg(args...) fprintf(stderr, args)
@@ -72,39 +73,39 @@
 class DeckLinkCaptureDelegate : public IDeckLinkInputCallback {
 public:
     DeckLinkCaptureDelegate(int32_t width, int32_t height) {
-	mRefCount = 1;
-	mReadIndex = 0;
-	mWriteIndex = 0;
-	for (int i = 0; i < mBufferSize; i++) {
-	    mBuffer[i] = new uint8_t[width * height * 2];
-	    memset((void *)mBuffer[i], width * height, sizeof(uint8_t));
-	}
+        mRefCount = 1;
+        mReadIndex = 0;
+        mWriteIndex = 0;
+        for (int i = 0; i < mBufferSize; i++) {
+            mBuffer[i] = new uint8_t[width * height * 2];
+            memset((void *)mBuffer[i], width * height, sizeof(uint8_t));
+        }
     }
 
     ~DeckLinkCaptureDelegate() {
-	for (int i = 0; i < mBufferSize; i++) {
-	    delete [] mBuffer[i];
-	}
+        for (int i = 0; i < mBufferSize; i++) {
+            delete [] mBuffer[i];
+        }
     }
 
     uint8_t *GetVideoFrame() {
 
-	if(mReadIndex == mWriteIndex) {
-	    return NULL;
-	}
- 
-	uint8_t *retval = (uint8_t *)(mBuffer[mReadIndex]);
-	int nextElement = (mReadIndex + 1) % mBufferSize;
-	mReadIndex = nextElement;
+        if(mReadIndex == mWriteIndex) {
+            return NULL;
+        }
+
+        uint8_t *retval = (uint8_t *)(mBuffer[mReadIndex]);
+        int nextElement = (mReadIndex + 1) % mBufferSize;
+        mReadIndex = nextElement;
 
 // fprintf(stderr, "*pop * mBuffer[%i] = 0x%lx\n", mReadIndex, mBuffer[mReadIndex]);
 
-	return retval;
+        return retval;
 
     }
 
     virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, LPVOID *ppv) {
-	return E_NOINTERFACE;
+        return E_NOINTERFACE;
     }
 
     virtual ULONG STDMETHODCALLTYPE AddRef() {
@@ -112,37 +113,37 @@ public:
     }
 
     virtual ULONG STDMETHODCALLTYPE Release() {
-	int32_t newRefValue;
+        int32_t newRefValue;
 
-	newRefValue = __sync_fetch_and_sub(&mRefCount, 1);
+        newRefValue = __sync_fetch_and_sub(&mRefCount, 1);
 
-	if (newRefValue == 0) {
-	    delete this;
-	    return 0;
-	}  
-	return newRefValue;
+        if (newRefValue == 0) {
+            delete this;
+            return 0;
+        }
+        return newRefValue;
     }
 
     virtual HRESULT VideoInputFrameArrived(IDeckLinkVideoInputFrame* arrivedFrame, IDeckLinkAudioInputPacket*) {
 
-	void *videoFrame;
+        void *videoFrame;
         arrivedFrame->GetBytes(&videoFrame);
 
-	int nextElementIndex = (mWriteIndex + 1) % mBufferSize;
-	
-	if(nextElementIndex != mReadIndex) {
-	    memcpy((void *)(mBuffer[mWriteIndex]), videoFrame, arrivedFrame->GetRowBytes() * arrivedFrame->GetHeight());
+        int nextElementIndex = (mWriteIndex + 1) % mBufferSize;
+        
+        if(nextElementIndex != mReadIndex) {
+            memcpy((void *)(mBuffer[mWriteIndex]), videoFrame, arrivedFrame->GetRowBytes() * arrivedFrame->GetHeight());
 
 // fprintf(stderr, "*push* mBuffer[%i] = 0x%lx\n", mWriteIndex, mBuffer[mWriteIndex]);
-	    mWriteIndex = nextElementIndex;
+            mWriteIndex = nextElementIndex;
 
-	}
+        }
 
-	return S_OK;
+        return S_OK;
     }
 
     virtual HRESULT STDMETHODCALLTYPE VideoInputFormatChanged(BMDVideoInputFormatChangedEvents, IDeckLinkDisplayMode*, BMDDetectedVideoInputFormatFlags) {
-	return S_OK;
+        return S_OK;
     }
 
 
@@ -212,26 +213,39 @@ DeckLinkScanner::DeckLinkScanner(int maxNumDevices)
 
     deckLinkIterator = CreateDeckLinkIteratorInstance();
     if (deckLinkIterator == NULL) {
-	debug_msg("DeckLinkScanner: DeckLink iterator instance could not be created\n");
-	return;
+        debug_msg("DeckLinkScanner: DeckLink iterator instance could not be created\n");
+        return;
     }
 
     memset(devs_, 0, sizeof(devs_));
     // Enumerate all DeckLink cards on this system
     while (deckLinkIterator->Next(&deckLink) == S_OK && n < maxNumDevices) {
-	const char * deviceNameString = NULL;
+                
+#ifdef __APPLE__
+        char deviceNameString[64] = {};
+        CFStringRef modelName;
 
-	result = deckLink->GetModelName(&deviceNameString);
-	if (result == S_OK) {
-	    debug_msg("Adding device %s\n", deviceNameString);
-	    
+        result = deckLink->GetModelName(&modelName);
+                
+        if (result == S_OK) {
+            CFStringGetCString(modelName, deviceNameString, sizeof(deviceNameString), kCFStringEncodingASCII);
+        }
+#else
+        const char * deviceNameString = NULL;
 
-	    char *nick = new char[strlen(deviceNameString) + 10];
-                sprintf(nick,"DeckLink-%s", deviceNameString);
+        result = deckLink->GetModelName(&deviceNameString);
+#endif
 
-	    devs_[n] = new DeckLinkDevice(nick, deckLink);
-	    n++;
-	}
+        if (result == S_OK) {
+            debug_msg("Adding device %s\n", deviceNameString);
+
+            char *nick = new char[strlen(deviceNameString) + 10];
+            sprintf(nick,"DeckLink-%s", deviceNameString);
+
+            devs_[n] = new DeckLinkDevice(nick, deckLink);
+            n++;
+        }
+
     }
 }
 
@@ -239,9 +253,9 @@ DeckLinkScanner::~DeckLinkScanner() {
     debug_msg("~DeckLinkScanner\n");
     /*
     for (int i = 0; i < NUM_DEVS; i++) {
-	if (devs_[i]) {
-	    debug_msg("Deleteing device %d\n", i);
-	    delete devs_[i];
+        if (devs_[i]) {
+            debug_msg("Deleteing device %d\n", i);
+            delete devs_[i];
         }
     }
     */
@@ -260,16 +274,16 @@ DeckLinkDevice::DeckLinkDevice(const char* name, IDeckLink* deckLink) : InputDev
 
     result = deckLink->QueryInterface(IID_IDeckLinkConfiguration, (void**)&deckLinkConfiguration);
     if (result != S_OK) {
-	debug_msg("DecLinkDevice: Could not obtain the IDeckLinkConfiguration interface - %08x\n", result);
-	strcpy(attr,"disabled");
-	return;
+        debug_msg("DecLinkDevice: Could not obtain the IDeckLinkConfiguration interface - %08x\n", result);
+        strcpy(attr,"disabled");
+        return;
     }
 
     result = deckLinkConfiguration->GetConfigurationValidator(&deckLinkValidator);
     if (result != S_OK) {
-	debug_msg("DecLinkDevice: Could not obtain the configuration validator interface\n");
-	strcpy(attr,"disabled");
-	return;
+        debug_msg("DecLinkDevice: Could not obtain the configuration validator interface\n");
+        strcpy(attr,"disabled");
+        return;
     }
 
     strcpy(attr,"format { 420 422 cif } ");
@@ -278,56 +292,69 @@ DeckLinkDevice::DeckLinkDevice(const char* name, IDeckLink* deckLink) : InputDev
     strcat(attr,"port { ");
 
     if (deckLinkValidator->SetVideoInputFormat(bmdVideoConnectionSDI) == S_OK) {
-	strcat(attr,"SDI ");
+        strcat(attr,"SDI ");
     }
     if (deckLinkValidator->SetVideoInputFormat(bmdVideoConnectionHDMI) == S_OK) {
-	strcat(attr,"HDMI ");
+        strcat(attr,"HDMI ");
     }
     if (deckLinkValidator->SetVideoInputFormat(bmdVideoConnectionComponent) == S_OK) {
-	strcat(attr,"Component ");
+        strcat(attr,"Component ");
     }
     if (deckLinkValidator->SetVideoInputFormat(bmdVideoConnectionComposite) == S_OK) {
-	strcat(attr,"Composite ");
+        strcat(attr,"Composite ");
     }
     if (deckLinkValidator->SetVideoInputFormat(bmdVideoConnectionSVideo) == S_OK) {
-	strcat(attr,"S-Video ");
+        strcat(attr,"S-Video ");
     }
     if (deckLinkValidator->SetVideoInputFormat(bmdVideoConnectionOpticalSDI) == S_OK) {
-	strcat(attr,"Optical-SDI ");
+        strcat(attr,"Optical-SDI ");
     }
     strcat(attr,"} ");
 
     result = deckLink->QueryInterface(IID_IDeckLinkInput, (void**)&deckLinkInput);
     if (result != S_OK) {
-	debug_msg("DecLinkDevice: Could not obtain the IDeckLinkInput interface\n");
-	strcpy(attr, "disabled");
-	return;
+        debug_msg("DecLinkDevice: Could not obtain the IDeckLinkInput interface\n");
+        strcpy(attr, "disabled");
+        return;
     }
 
     result = deckLinkInput->GetDisplayModeIterator(&displayModeIterator);
     if (result != S_OK) {
-	debug_msg("DecLinkDevice: Could not obtain the video input display mode iterator\n");
-	strcpy(attr, "disabled");
-	return;
+        debug_msg("DecLinkDevice: Could not obtain the video input display mode iterator\n");
+        strcpy(attr, "disabled");
+        return;
     }
 
     strcat(attr,"type { ");
     while (displayModeIterator->Next(&displayMode) == S_OK) {
-	const char *displayModeString = NULL;
-	char typeString[128];
+        char typeString[128];
 
-	result = displayMode->GetName(&displayModeString);
-	if (result == S_OK) {
-	    strncpy(typeString, displayModeString, sizeof(typeString));
-	    typeString[sizeof(typeString) - 1] = 0;
-	    for (unsigned int i=0 ; i < strlen(typeString) ; i++) {
-		if (typeString[i]==' ') typeString[i]='-';
-	    }
+#ifdef __APPLE__
+        char displayModeString[64] = {};
 
-	    strcat(attr, typeString);
-	    strcat(attr, " ");
-	}
-	displayMode->Release();
+        CFStringRef displayModeName;
+        result = displayMode->GetName(&displayModeName);
+
+        if (result == S_OK) {
+            CFStringGetCString(displayModeName, displayModeString, sizeof(displayModeString), kCFStringEncodingASCII);
+        }
+#else
+        const char *displayModeString = NULL;
+
+        result = displayMode->GetName(&displayModeString);
+#endif
+
+        if (result == S_OK) {
+            strncpy(typeString, displayModeString, sizeof(typeString));
+            typeString[sizeof(typeString) - 1] = 0;
+            for (unsigned int i=0 ; i < strlen(typeString) ; i++) {
+                if (typeString[i]==' ') typeString[i]='-';
+            }
+
+            strcat(attr, typeString);
+            strcat(attr, " ");
+        }
+        displayMode->Release();
     }
     strcat(attr,"} ");
 
@@ -336,19 +363,19 @@ DeckLinkDevice::DeckLinkDevice(const char* name, IDeckLink* deckLink) : InputDev
 
 
     if (displayModeIterator != NULL) {
-	displayModeIterator->Release();
+        displayModeIterator->Release();
     }
-  
+
     if (deckLinkInput != NULL) {
-	deckLinkInput->Release();
+        deckLinkInput->Release();
     }
 
     if (deckLinkValidator != NULL) {
-	deckLinkValidator->Release();
+        deckLinkValidator->Release();
     }
-        
+
     if (deckLinkConfiguration != NULL) {
-	deckLinkConfiguration->Release();
+        deckLinkConfiguration->Release();
     }
 }
 
@@ -356,13 +383,13 @@ int DeckLinkDevice::command(int argc, const char*const* argv)
 {
     Tcl& tcl = Tcl::instance();
     if (argc == 3) {
-	if (strcmp(argv[1], "open") == 0) {
-	    TclObject* o = 0;
-	    o = new DeckLinkGrabber(argv[2], deckLink_);
-	    if (o != 0)
-		tcl.result(o->name());
-	    return (TCL_OK);
-	}
+        if (strcmp(argv[1], "open") == 0) {
+            TclObject* o = 0;
+            o = new DeckLinkGrabber(argv[2], deckLink_);
+            if (o != 0)
+                tcl.result(o->name());
+            return (TCL_OK);
+        }
     }
     return (InputDevice::command(argc, argv));
 }
@@ -370,8 +397,6 @@ int DeckLinkDevice::command(int argc, const char*const* argv)
 DeckLinkDevice::~DeckLinkDevice()
 {
 }
-
-
 
 DeckLinkGrabber::DeckLinkGrabber(const char *cformat, IDeckLink* deckLink) :
     deckLink_(deckLink), displayMode_(NULL)
@@ -385,7 +410,7 @@ DeckLinkGrabber::DeckLinkGrabber(const char *cformat, IDeckLink* deckLink) :
 
     result = deckLink->QueryInterface(IID_IDeckLinkInput, (void**)&deckLinkInput_);
     if (result != S_OK) {
-	debug_msg("DecLinkDevice: Could not obtain the IDeckLinkInput interface\n");
+        debug_msg("DecLinkDevice: Could not obtain the IDeckLinkInput interface\n");
     }
     running_  = 0;
 }
@@ -395,120 +420,133 @@ int DeckLinkGrabber::command(int argc, const char*const* argv)
     HRESULT result;
 
     if (argc == 3) {
-	if (strcmp(argv[1], "decimate") == 0) {
-	    decimate_ = atoi(argv[2]);
+        if (strcmp(argv[1], "decimate") == 0) {
+            decimate_ = atoi(argv[2]);
 
-	    if (running_) {
-		stop(); start();
-	    }
-	    return (TCL_OK);
-	}
+            if (running_) {
+                stop(); start();
+            }
+            return (TCL_OK);
+        }
 
-	if (strcmp(argv[1], "port") == 0) {
-	    IDeckLinkConfiguration *deckLinkConfiguration = NULL;
-	    BMDVideoConnection bmdVideoConnection = bmdVideoConnectionHDMI;
+        if (strcmp(argv[1], "port") == 0) {
+            IDeckLinkConfiguration *deckLinkConfiguration = NULL;
+            BMDVideoConnection bmdVideoConnection = bmdVideoConnectionHDMI;
 
-	    result = deckLink_->QueryInterface(IID_IDeckLinkConfiguration, (void**)&deckLinkConfiguration);
+            result = deckLink_->QueryInterface(IID_IDeckLinkConfiguration, (void**)&deckLinkConfiguration);
 
-	    if (result != S_OK) {
-		debug_msg("DecLinkGrabber: Could not obtain the IDeckLinkConfiguration interface\n");
-		return TCL_ERROR;
-	    }
+            if (result != S_OK) {
+                debug_msg("DecLinkGrabber: Could not obtain the IDeckLinkConfiguration interface\n");
+                return TCL_ERROR;
+            }
 
-	    if (strcasecmp(argv[2], "SDI") == 0) {
-		bmdVideoConnection = bmdVideoConnectionSDI;
+            if (strcasecmp(argv[2], "SDI") == 0) {
+                bmdVideoConnection = bmdVideoConnectionSDI;
 
-	    } else if(strcasecmp(argv[2], "HDMI") == 0) {
-		bmdVideoConnection = bmdVideoConnectionHDMI;
+            } else if(strcasecmp(argv[2], "HDMI") == 0) {
+                bmdVideoConnection = bmdVideoConnectionHDMI;
 
-	    } else if(strcasecmp(argv[2], "Component") == 0) {
-		bmdVideoConnection = bmdVideoConnectionComponent;
+            } else if(strcasecmp(argv[2], "Component") == 0) {
+                bmdVideoConnection = bmdVideoConnectionComponent;
 
-	    } else if(strcasecmp(argv[2], "Composite") == 0) {
-		bmdVideoConnection = bmdVideoConnectionComposite;
+            } else if(strcasecmp(argv[2], "Composite") == 0) {
+                bmdVideoConnection = bmdVideoConnectionComposite;
 
-	    } else if(strcasecmp(argv[2], "S-Video") == 0) {
-		bmdVideoConnection = bmdVideoConnectionSVideo;
+            } else if(strcasecmp(argv[2], "S-Video") == 0) {
+                bmdVideoConnection = bmdVideoConnectionSVideo;
 
-	    } else if(strcasecmp(argv[2], "Optical-SDI") == 0) {
-		bmdVideoConnection = bmdVideoConnectionOpticalSDI;
-	    }
+            } else if(strcasecmp(argv[2], "Optical-SDI") == 0) {
+                bmdVideoConnection = bmdVideoConnectionOpticalSDI;
+            }
 
-	    result = deckLinkConfiguration->SetVideoInputFormat(bmdVideoConnection);
+            result = deckLinkConfiguration->SetVideoInputFormat(bmdVideoConnection);
 
-	    if (result != S_OK) {
-		debug_msg("DecLinkGrabber: Could not set input video connection\n");
-		return TCL_ERROR;
-	    }
+            if (result != S_OK) {
+                debug_msg("DecLinkGrabber: Could not set input video connection\n");
+                return TCL_ERROR;
+            }
 
-	    if (deckLinkConfiguration != NULL) {
-		deckLinkConfiguration->Release();
-	    }
+            if (deckLinkConfiguration != NULL) {
+                deckLinkConfiguration->Release();
+            }
 
-	    if (running_) {
-		stop(); start();
-	    }
-	    
-	    return (TCL_OK);
-	}
+            if (running_) {
+                stop(); start();
+            }
+        
+            return (TCL_OK);
+        }
 
-	if (strcmp(argv[1], "fps") == 0) {
-	    debug_msg("V4L2: fps %s\n",argv[2]);
-	}
+        if (strcmp(argv[1], "fps") == 0) {
+            debug_msg("DecLinkGrabber: fps %s\n",argv[2]);
+        }
 
-	if (strcmp(argv[1], "type") == 0 || strcmp(argv[1], "format") == 0) {
+        if (strcmp(argv[1], "type") == 0 || strcmp(argv[1], "format") == 0) {
 
-	    IDeckLinkDisplayModeIterator *displayModeIterator = NULL;
-	    IDeckLinkDisplayMode *displayMode = NULL;
+            IDeckLinkDisplayModeIterator *displayModeIterator = NULL;
+            IDeckLinkDisplayMode *displayMode = NULL;
 
-	    result = deckLinkInput_->GetDisplayModeIterator(&displayModeIterator);
-	    if (result != S_OK) {
-		debug_msg("DecLinkDevice: Could not obtain the video input display mode iterator\n");
-		return TCL_ERROR;
-	    }
+            result = deckLinkInput_->GetDisplayModeIterator(&displayModeIterator);
+            if (result != S_OK) {
+                debug_msg("DecLinkDevice: Could not obtain the video input display mode iterator\n");
+                return TCL_ERROR;
+            }
 
-	    while (displayModeIterator->Next(&displayMode) == S_OK) {
-		const char *displayModeString = NULL;
-		char typeString[128];
+            while (displayModeIterator->Next(&displayMode) == S_OK) {
+                char typeString[128];
 
-		result = displayMode->GetName(&displayModeString);
-		if (result == S_OK) {
-		    strncpy(typeString, displayModeString, sizeof(typeString));
-		    typeString[sizeof(typeString) - 1] = 0;
-		    for (unsigned int i=0 ; i < strlen(typeString) ; i++) {
-			if (typeString[i]==' ') typeString[i] = '-';
-		    }
-		    if (strcasecmp(argv[2], typeString) == 0) {
-			displayMode_ = displayMode->GetDisplayMode();
-			displayModeWidth_ = displayMode->GetWidth();
-			displayModeHeight_ = displayMode->GetHeight();
-			displayMode->GetFrameRate(&displayModeFrameDuration_, &displayModeTimeScale_);
+#ifdef __APPLE__
+                char displayModeString[64] = {};
+
+                CFStringRef displayModeName;
+                result = displayMode->GetName(&displayModeName);
+
+                if (result == S_OK) {
+                    CFStringGetCString(displayModeName, displayModeString, sizeof(displayModeString), kCFStringEncodingASCII);
+                }
+#else
+                const char *displayModeString = NULL;
+
+                result = displayMode->GetName(&displayModeString);
+#endif
+
+                if (result == S_OK) {
+                    strncpy(typeString, displayModeString, sizeof(typeString));
+                    typeString[sizeof(typeString) - 1] = 0;
+                    for (unsigned int i=0 ; i < strlen(typeString) ; i++) {
+                        if (typeString[i]==' ') typeString[i] = '-';
+                    }
+                    if (strcasecmp(argv[2], typeString) == 0) {
+                        displayMode_ = displayMode->GetDisplayMode();
+                        displayModeWidth_ = displayMode->GetWidth();
+                        displayModeHeight_ = displayMode->GetHeight();
+                        displayMode->GetFrameRate(&displayModeFrameDuration_, &displayModeTimeScale_);
 fprintf(stderr, "DisplayMode width=%li height=%li frame duration=%li time scale=%li\n", displayModeWidth_, displayModeHeight_,displayModeFrameDuration_,  displayModeTimeScale_);
-			break;
-		    }
-		}
-	    }
+                        break;
+                    }
+                }
+            }
 
-	    if (displayMode != NULL) {
-		displayMode->Release();
-	    }
+            if (displayMode != NULL) {
+                displayMode->Release();
+            }
 
-	    if (displayModeIterator != NULL) {
-		displayModeIterator->Release();
-	    }
+            if (displayModeIterator != NULL) {
+                displayModeIterator->Release();
+            }
 
-	    if (running_) {
-		stop(); start();
-	    }
+            if (running_) {
+                stop(); start();
+            }
 
-	    return TCL_OK;
-	}
+            return TCL_OK;
+        }
 
     } else if (argc == 2) {
-	if (strcmp(argv[1], "format") == 0 ||
-	    strcmp(argv[1], "type") == 0) {
-	    return TCL_OK;
-	}
+        if (strcmp(argv[1], "format") == 0 ||
+            strcmp(argv[1], "type") == 0) {
+            return TCL_OK;
+        }
     }
 
     return (Grabber::command(argc, argv));
@@ -517,9 +555,8 @@ fprintf(stderr, "DisplayMode width=%li height=%li frame duration=%li time scale=
 
 DeckLinkGrabber::~DeckLinkGrabber()
 {
-
     if (deckLinkInput_ != NULL) {
-	deckLinkInput_->Release();
+        deckLinkInput_->Release();
     }
 }
 
@@ -530,51 +567,51 @@ void DeckLinkGrabber::start()
     // Set the image size.
     switch (decimate_) {
     case 1: // full-sized
-	width_ = displayModeWidth_;
-	height_ = displayModeHeight_;
-	break;
+        width_ = displayModeWidth_;
+        height_ = displayModeHeight_;
+        break;
     case 2: // CIF-sized
-	width_ = CIF_WIDTH;
-	height_ = CIF_HEIGHT;
-	break;
+        width_ = CIF_WIDTH;
+        height_ = CIF_HEIGHT;
+        break;
     case 4: // QCIF-sized
-	width_ = QCIF_WIDTH;
-	height_ = QCIF_HEIGHT;
-	break;
+        width_ = QCIF_WIDTH;
+        height_ = QCIF_HEIGHT;
+        break;
     }
 
     switch (cformat_) {
     case CF_422:
-	set_size_422(width_, height_);
-	break;
+        set_size_422(width_, height_);
+        break;
     case CF_420:
-	set_size_420(width_, height_);
-	break;
+        set_size_420(width_, height_);
+        break;
     case CF_CIF:
-	set_size_cif(width_, height_);
-	break;
+        set_size_cif(width_, height_);
+        break;
     }
 
     result = deckLinkInput_->EnableVideoInput(displayMode_, bmdFormat8BitYUV, 0);
     if (result != S_OK) {
-	debug_msg("DecLinkGrabber: Could not enable video input\n");
-	return;
+        debug_msg("DecLinkGrabber: Could not enable video input\n");
+        return;
     }
 
     delegate_ = new DeckLinkCaptureDelegate(width_, height_);
-        
+
     result = deckLinkInput_->SetCallback(delegate_);
 
     if (result != S_OK) {
-	debug_msg("DecStartStreams();LinkGrabber: Could not set callback\n");
-	return;
+        debug_msg("DecStartStreams();LinkGrabber: Could not set callback\n");
+        return;
     }
 
     result = deckLinkInput_->StartStreams();
 
     if (result != S_OK) {
-	debug_msg("DecStartStreams();LinkGrabber: Could not start streams\n");
-	return;
+        debug_msg("DecStartStreams();LinkGrabber: Could not start streams\n");
+        return;
     }
 
     // Allocate the reference buffer.
@@ -596,23 +633,23 @@ void DeckLinkGrabber::stop()
 int DeckLinkGrabber::grab()
 {
     if (!delegate_) {
-	return 0;
+        return 0;
     }
 
     uint8_t *fr = delegate_->GetVideoFrame();
     if (fr == NULL) {
-	return 0;
+        return 0;
     }
 
     // Need to fix, should do HDYC (a packed UYVY variation) to YUYV instead
     switch (cformat_) {
     case CF_420:
     case CF_CIF:
-	packedUYVY422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)fr, inw_, inh_);
+        packedUYVY422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)fr, inw_, inh_);
       break;
 
     case CF_422:
-	packedUYVY422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)fr, inw_, inh_);
+        packedUYVY422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)fr, inw_, inh_);
       break;
     }
 
