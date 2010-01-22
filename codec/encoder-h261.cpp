@@ -776,8 +776,6 @@ int H261PixelEncoder::consume(const VideoFrame *vf)
 int
 H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 {
-	tx_->flush();
-
 	pktbuf* pb = pool_->alloc(vf->ts_, RTP_PT_H261);
 	bs_ = &pb->data[HDRSIZE];
 	bc_ = bs_;
