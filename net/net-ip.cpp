@@ -250,9 +250,11 @@ int IPNetwork::open(const char * host, int port, int ttl)
 	 */
 	sockaddr_in local;
 	if (localname(&local) < 0) {
-		return (-1);
-	}
-	(IPAddress&)local_ = local.sin_addr;
+		//return (-1);
+		(IPAddress&)local_ = "127.0.0.1";
+		printf("Can NOT determine local IP address - using loopback address. If you want to be able to receive packets from other machines add this command line option: -i local_ip_addr \n");
+	} else
+                (IPAddress&)local_ = local.sin_addr;
 
 #ifdef WIN32
 	//if (!local_.is_set()) {
