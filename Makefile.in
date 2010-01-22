@@ -50,7 +50,7 @@ CC = @CC@
 CXX = @CXX@
 CCOPT = @V_CCOPT@
 
-LDFLAGS= @LDFLAGS@
+LDFLAGS= @V_LDFLAGS@
 
 INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -207,17 +207,17 @@ OBJ_H261DUMP = h261_dump.o p64/p64.o p64/p64dump.o huffcode.o dct.o bv.o
 #	rm -f $@
 #	$(CXX) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(LIB) $(STATIC)
 
-vic: $(CODEC_LIB) $(VIDEO_LIB) $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)  $(OBJ_XIL)
+vic: $(VIDEO_LIB) $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)  $(OBJ_XIL)
 	rm -f $@
 	$(CXX) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(OBJ_CRYPT) $(LIB) $(STATIC)
 
-vic.dyn: $(CODEC_LIB) $(VIDEO_LIB) $(OBJ) $(OBJ_GRABBER) $(JV_LIB)
+vic.dyn: $(VIDEO_LIB) $(OBJ) $(OBJ_GRABBER) $(JV_LIB)
 	rm -f $@
 	$(CXX) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(LIB)
 
 # XIL support 
 #
-vic.xil: $(CODEC_LIB) $(VIDEO_LIB) $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)  $(OBJ_XIL)
+vic.xil: $(VIDEO_LIB) $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)  $(OBJ_XIL)
 	rm -f $@
 	$(CXX) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_XIL) $(OBJ_GRABBER) $(OBJ_CRYPT) $(LIB) $(STATIC) @V_LIB_XIL@
 
@@ -430,25 +430,25 @@ ffmpeg/libavutil/libavutil.a: ffmpeg/lib/libavutil.a
 ffmpeg/libswscale/libswscale.a: ffmpeg/lib/libswscale.a
 ffmpeg/libpostproc/libpostproc.a: ffmpeg/lib/libpostproc.a
 
-ffmpeg/lib/libavcodec.a:
-	(cd ffmpeg/libavcodec; make; make install )
+codec/ffmpeg_codec.o: ffmpeg/lib/libavcodec.a ffmpeg/lib/libavutil.a ffmpeg/lib/libswscale.a ffmpeg/lib/libpostproc.a
 
-ffmpeg/lib/libavutil.a:
-	(cd ffmpeg/libavutil; make; make install )
+ffmpeg/lib/libavcodec.a ffmpeg/lib/libavutil.a ffmpeg/lib/libswscale.a ffmpeg/lib/libpostproc.a:
+	(cd ffmpeg; @V_CCLDFLAGS32@ $(MAKE); @V_CCLDFLAGS32@ $(MAKE) install )
 
-ffmpeg/lib/libswscale.a:
-	(cd ffmpeg/libswscale; make; make install )
-
-ffmpeg/lib/libpostproc.a:
-	(cd ffmpeg/libpostproc; make; make install )
+codec/x264encoder.o: x264/lib/libx264.a
 
 x264/lib/libx264.a:
-	(cd x264; make; make install )
+	(cd x264; @V_CCLDFLAGS32@ $(MAKE); @V_CCLDFLAGS32@ $(MAKE) install )
+
+codec/encoder-h263v2.o: codec/tmn-x/libh263coder.a
 
 codec/tmn-x/libh263coder.a:
 	(cd codec/tmn-x; $(MAKE) CC="$(CC)" CCOPT="$(CCOPT)" )
 
+codec/decoder-h263v2.o: codec/tmndec/libh263.a
+
 codec/tmndec/libh263.a:
 	(cd codec/tmndec; $(MAKE) CC="$(CC)" CCOPT="$(CCOPT)" -f Makefile.lib)
+
 strip:	vic
 	strip vic

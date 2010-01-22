@@ -603,6 +603,8 @@ V_SIGRET
 V_DEFINE
 V_TAR_EXTRA
 V_CCOPT_H261
+V_CCLDFLAGS32
+V_LDFLAGS
 V_CCOPT
 V_ALL
 V_TAR_TARGET
@@ -723,6 +725,11 @@ with_tcl
 with_tk
 with_aix_shm
 with_qcam
+enable_dvdecode
+enable_xvideo
+with_decklink
+enable_XvGrabber
+enable_Linux1394Grabber
 enable_gpl
 with_ffmpegver
 enable_ffmpeg_co
@@ -733,11 +740,6 @@ with_ffmpeglib
 with_x264inc
 with_x264lib
 enable_cpudetect
-enable_dvdecode
-enable_xvideo
-with_decklink
-enable_XvGrabber
-enable_Linux1394Grabber
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1368,14 +1370,14 @@ Optional Features:
 --enable-ipv6		build with ipv6 enabled
 --disable-aquatcl	build with aquatcl enabled
 --disable-aquatk	build with aquatk enabled
---enable-gpl	Enable or disable  use of gpl functionality - H264 MPEG4 Swscale
---disable-ffmpeg-co	Enable or disable ffmpeg download
---disable-x264-co      Enable or disable x264 download
---disable-cpudetect     Enable or disable runtime cpu detection
 --enable-dvdecode       Enable or disable dv decoding (default: disabled)
 --enable-xvideo		Enable or disable Xvideo rendering (default: disabled)
 --enable-XvGrabber    Enable or disable old XvGrabber (default: disabled)
 --enable-Linux1394Grabber    Enable or disable Linux1394XvGrabber (default: disabled)
+--enable-gpl	Enable or disable  use of gpl functionality - H264 MPEG4 Swscale
+--disable-ffmpeg-co	Enable or disable ffmpeg download
+--disable-x264-co      Enable or disable x264 download
+--disable-cpudetect     Enable or disable runtime cpu detection
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -1386,13 +1388,13 @@ Optional Packages:
   --with-tk               directory containing tk configuration (tkConfig.sh)
 --with-aix-shm=path	specify a pathname for the AIX shm X extension library file
 --with-qcam=dir     specify directory with qcam.h for Connectix QuickCam device driver
+  --with-decklink=dir     directory containing DeckLinkAPIDispatch.cpp
 --with-ffmpegver=ffmpeg-version     specify the version of ffmpeg to download and build
 --with-x264ver=x264ver-version     specify the version of x264 to download and build
 --with-ffmpeginc=dir     specify the prefix directory of ffmpeg header
 --with-ffmpeglib=dir     specify the directory of ffmpeg library
 --with-x264inc=dir     specify the directory of x264 header
 --with-x264lib=dir     specify the directory of x264 library
-  --with-decklink=dir     directory containing DeckLinkAPIDispatch.cpp
 
 Some influential environment variables:
   CC          C compiler command
@@ -2297,9 +2299,7 @@ case "$arch" in
     case "$target" in (*darwin*) V_DEFINE="$V_DEFINE -DSYS_DARWIN";; esac
     ppc_conf="--disable-altivec"
     ppc_tune="-mcpu=G3"
-    echo test1
     if sysctl hw.vectorunit 2>/dev/null | grep "hw.vectorunit: 1" >/dev/null 2>&1; then
-    echo testa
     	ppc_conf=""
     	ppc_tune="-mcpu=G4 -mtune=G4"
     fi
@@ -4656,6 +4656,24 @@ V_LIB_FFMPEG=""
 V_LIB_X264=""
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for buggy version of GCC-2.96" >&5
+$as_echo_n "checking for buggy version of GCC-2.96... " >&6; }
+if test $CC = gcc ; then
+     if $CC --version | grep 2.96 >&/dev/null; then
+           { $as_echo "$as_me:${as_lineno-$LINENO}: result: Yes - Turning off optimisation for dct code" >&5
+$as_echo "Yes - Turning off optimisation for dct code" >&6; }
+           V_CCOPT_H261="";
+     else
+           { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+     fi
+fi
+
+if test -f codec/encoder-bvc.cpp ; then
+	V_OBJ="$V_OBJ codec/encoder-bvc.o codec/decoder-bvc.o"
+fi
+
+
 # Check whether --with-aix-shm was given.
 if test "${with_aix_shm+set}" = set; then :
   withval=$with_aix_shm; lib=$withval
@@ -4686,530 +4704,6 @@ if test "$qcamdir" != "" -a ! -r $qcamdir/qcam.h ; then
 	exit 1
 fi
 
-# Check whether --enable-gpl was given.
-if test "${enable_gpl+set}" = set; then :
-  enableval=$enable_gpl; gpl="yes"
-else
-  gpl="no"
-fi
-
-if test "$gpl" = "yes" ; then
-  V_DEFINE="$V_DEFINE -DHAVE_SWSCALE"
-  V_OBJ="$V_OBJ codec/packetbuffer.o codec/databuffer.o \
-    codec/ffmpeg_codec.o codec/encoder-mpeg4.o codec/decoder-mpeg4.o \
-    codec/x264encoder.o codec/encoder-h264.o codec/decoder-h264.o \
-    codec/rtp_h264_depayloader.o render/color-swscale.o video/deinterlace.o"
-else
-  V_OBJ="$V_OBJ render/color-true.o  render/color-hi.o"
-fi
-
-# Extract the first word of "wget", so it can be a program name with args.
-set dummy wget; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if test "${ac_cv_prog_DOWNLOAD+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$DOWNLOAD"; then
-  ac_cv_prog_DOWNLOAD="$DOWNLOAD" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_prog_DOWNLOAD="wget -O -"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi
-fi
-DOWNLOAD=$ac_cv_prog_DOWNLOAD
-if test -n "$DOWNLOAD"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DOWNLOAD" >&5
-$as_echo "$DOWNLOAD" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-# Extract the first word of "curl", so it can be a program name with args.
-set dummy curl; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if test "${ac_cv_prog_DOWNLOAD+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$DOWNLOAD"; then
-  ac_cv_prog_DOWNLOAD="$DOWNLOAD" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_prog_DOWNLOAD="curl -s"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi
-fi
-DOWNLOAD=$ac_cv_prog_DOWNLOAD
-if test -n "$DOWNLOAD"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DOWNLOAD" >&5
-$as_echo "$DOWNLOAD" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-
-
-# Check whether --with-ffmpegver was given.
-if test "${with_ffmpegver+set}" = set; then :
-  withval=$with_ffmpegver; ffmpegver=$withval
-else
-  ffmpegver=ffmpeg-0.5
-fi
-
-# Check whether --enable-ffmpeg-co was given.
-if test "${enable_ffmpeg_co+set}" = set; then :
-  enableval=$enable_ffmpeg_co; ffmpegco="no"
-else
-  ffmpegco="yes"
-fi
-
-if test "$ffmpegco" = "yes" ; then
-  if test "$gpl" = "yes" ; then
-   if test ! -r ${ffmpegver} ; then
-     echo "Downloading ${ffmpegver} from www.ffmpeg.org ..."
-     ${DOWNLOAD} http://www.ffmpeg.org/releases/${ffmpegver}.tar.bz2 | tar xjf - && rm -r ffmpeg ; ln -s ${ffmpegver} ffmpeg
-   fi
-   echo "Configuring ffmpeg..."
-   cd ffmpeg; ./configure --prefix=$V_PATH/ffmpeg $ppc_conf --enable-gpl --enable-swscale --enable-postproc; cd ..
-   V_INCLUDE="$V_INCLUDE -Iffmpeg/include -Iffmpeg"
-   V_CODEC_LIB="$V_CODEC_LIB ffmpeg/lib/libavcodec.a ffmpeg/lib/libavutil.a ffmpeg/lib/libswscale.a ffmpeg/lib/libpostproc.a"
-  else
-    echo "ffmpeg not available without --enable-gpl"
-  fi
-fi
-
-
-# Check whether --with-x264ver was given.
-if test "${with_x264ver+set}" = set; then :
-  withval=$with_x264ver; x264ver=$withval
-else
-  x264ver=x264-snapshot-20070413-2245
-fi
-
-# Check whether --enable-x264-co was given.
-if test "${enable_x264_co+set}" = set; then :
-  enableval=$enable_x264_co; x264co="no"
-else
-  x264co="yes"
-fi
-
-if test "$x264co" = "yes" ; then
-  if test "$gpl" = "yes" ; then
-   if test ! -r ${x264ver} ; then
-     echo "Downloading ${x264ver} (r650) of x264 from videolan.org ..."
-     #svn checkout -r 650 svn://svn.videolan.org/x264/trunk x264
-     ${DOWNLOAD} http://downloads.videolan.org/pub/videolan/x264/snapshots/${x264ver}.tar.bz2 | tar xjf - && ln -sf ${x264ver} x264
-   fi
-   echo "Configuring x264..."
-   cd x264; ./configure --prefix=$V_PATH/x264; cd ..
-   V_INCLUDE="$V_INCLUDE -Ix264/include"
-   V_CODEC_LIB="$V_CODEC_LIB x264/lib/libx264.a"
-  else
-    echo "x264 not available without --enable-gpl"
-  fi
-fi
-
-
-# Check whether --with-ffmpeginc was given.
-if test "${with_ffmpeginc+set}" = set; then :
-  withval=$with_ffmpeginc; ffmpeginc=$withval
-else
-  ffmpeginc=""
-fi
-
-
-# Check whether --with-ffmpeglib was given.
-if test "${with_ffmpeglib+set}" = set; then :
-  withval=$with_ffmpeglib; ffmpeglib=$withval
-else
-  ffmpeglib=""
-fi
-
-
-if test "$gpl" = "yes" ; then
-  if test "$ffmpegco" != "yes"; then
-
-	if test "$ffmpeginc" != "" ; then
-	   if test ! -r $ffmpeginc/ffmpeg/avcodec.h ; then
-	        echo "Error! you need to have $ffmpeginc/ffmpeg/avcodec.h around"
-	        exit 1
-	   elif test ! -r $ffmpeginc/ffmpeg/avutil.h ; then
-	        echo "Error! you need to have $ffmpeginc/ffmpeg/avutil.h around"
-	        exit 1
-	   elif test ! -r $ffmpeginc/ffmpeg/swscale.h ; then
-	        echo "Error! you need to have $ffmpeginc/ffmpeg/swscale.h around"
-	        exit 1
-	   fi
-	   echo "checking for FFmpeg headers...yes"
-	   V_INCLUDE="$V_INCLUDE -I$ffmpeginc"
-
-	else
-
-	   ac_fn_c_check_header_mongrel "$LINENO" "ffmpeg/avcodec.h" "ac_cv_header_ffmpeg_avcodec_h" "$ac_includes_default"
-if test "x$ac_cv_header_ffmpeg_avcodec_h" = x""yes; then :
-
-else
-
-        	echo "Error! you need to have avcodec.h around."
-	        exit -1
-
-fi
-
-
-	   ac_fn_c_check_header_mongrel "$LINENO" "ffmpeg/avutil.h" "ac_cv_header_ffmpeg_avutil_h" "$ac_includes_default"
-if test "x$ac_cv_header_ffmpeg_avutil_h" = x""yes; then :
-
-else
-
-	        echo "Error! you need to have avutil.h around."
-	        exit -1
-
-fi
-
-
-	   ac_fn_c_check_header_mongrel "$LINENO" "ffmpeg/swscale.h" "ac_cv_header_ffmpeg_swscale_h" "$ac_includes_default"
-if test "x$ac_cv_header_ffmpeg_swscale_h" = x""yes; then :
-
-else
-
-	        echo "Error! you need to have swscale.h around."
-	        exit -1
-
-fi
-
-
-	fi
-
-	if test "$ffmpeglib" != "" ; then
-	   if test ! -r $ffmpeglib/libavcodec.a ; then
-		echo "Error! you need to have $ffmpeglib/libavcodec.a around"
-	   elif test ! -r $ffmpeglib/libavutil.a ; then
-	        echo "Error! you need to have $ffmpeglib/libavutil.a around"
-	   elif test ! -r $ffmpeglib/libswscale.a ; then
-	        echo "Error! you need to have $ffmpeglib/libswscale.a around"
-           elif test ! -r $ffmpeglib/libpostproc.a ; then
-                echo "Error! you need to have $ffmpeglib/libpostproc.a around"
-           fi
-
-	   V_LIB_FFMPEG="-L$ffmpeglib -lavcodec -lavutil -lswscale -lpostproc"
-	else
-	   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lavcodec" >&5
-$as_echo_n "checking for main in -lavcodec... " >&6; }
-if test "${ac_cv_lib_avcodec_main+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lavcodec  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-
-int
-main ()
-{
-return main ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_avcodec_main=yes
-else
-  ac_cv_lib_avcodec_main=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_avcodec_main" >&5
-$as_echo "$ac_cv_lib_avcodec_main" >&6; }
-if test "x$ac_cv_lib_avcodec_main" = x""yes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBAVCODEC 1
-_ACEOF
-
-  LIBS="-lavcodec $LIBS"
-
-else
-
-	        echo "Error! you need to have libavcodec around."
-	        exit -1
-
-fi
-
-	   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lavutil" >&5
-$as_echo_n "checking for main in -lavutil... " >&6; }
-if test "${ac_cv_lib_avutil_main+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lavutil  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-
-int
-main ()
-{
-return main ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_avutil_main=yes
-else
-  ac_cv_lib_avutil_main=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_avutil_main" >&5
-$as_echo "$ac_cv_lib_avutil_main" >&6; }
-if test "x$ac_cv_lib_avutil_main" = x""yes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBAVUTIL 1
-_ACEOF
-
-  LIBS="-lavutil $LIBS"
-
-else
-
-	        echo "Error! you need to have libavutil around."
-	        exit -1
-
-fi
-
-	   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lswscale" >&5
-$as_echo_n "checking for main in -lswscale... " >&6; }
-if test "${ac_cv_lib_swscale_main+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lswscale  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-
-int
-main ()
-{
-return main ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_swscale_main=yes
-else
-  ac_cv_lib_swscale_main=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_swscale_main" >&5
-$as_echo "$ac_cv_lib_swscale_main" >&6; }
-if test "x$ac_cv_lib_swscale_main" = x""yes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBSWSCALE 1
-_ACEOF
-
-  LIBS="-lswscale $LIBS"
-
-else
-
-	        echo "Error! you need to have libswscale around."
-	        exit -1
-
-fi
-
-
-           { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lpostproc" >&5
-$as_echo_n "checking for main in -lpostproc... " >&6; }
-if test "${ac_cv_lib_postproc_main+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lpostproc  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-
-int
-main ()
-{
-return main ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_postproc_main=yes
-else
-  ac_cv_lib_postproc_main=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_postproc_main" >&5
-$as_echo "$ac_cv_lib_postproc_main" >&6; }
-if test "x$ac_cv_lib_postproc_main" = x""yes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBPOSTPROC 1
-_ACEOF
-
-  LIBS="-lpostproc $LIBS"
-
-else
-
-                echo "Error! you need to have libpostproc around."
-                exit -1
-
-fi
-
-
-	   V_LIB_FFMPEG="-lavcodec -lavutil -lswscale -lpostproc"
-	fi
-  fi
-fi
-
-
-# Check whether --with-x264inc was given.
-if test "${with_x264inc+set}" = set; then :
-  withval=$with_x264inc; x264inc=$withval
-else
-  x264inc=""
-fi
-
-
-# Check whether --with-x264lib was given.
-if test "${with_x264lib+set}" = set; then :
-  withval=$with_x264lib; x264lib=$withval
-else
-  x264lib=""
-fi
-
-if test "$gpl" = "yes" ; then
-  if test "$x264co" != "yes" ; then
-	if test "$x264inc" != "" ; then
-	   if test ! -r $x264inc/x264.h ; then
-	        echo "Error! you need to have $x264inc/x264.h around."
-	        exit 1
-	   fi
-	   V_INCLUDE="$V_INCLUDE -I$x264inc"
-	elif test ! -r /usr/local/include/x264.h -a ! -r /usr/include/x264.h ; then
-	        echo "Error! you need to have x264.h around."
-	        exit 1
-	else
-	   echo "checking for x264.h...yes"
-	fi
-
-	if test "$x264lib" != "" ; then
-	   if test ! -r $x264lib/libx264.a ; then
-	        echo "Error! you need to have $x264lib/libx264.a around"
-		exit 1
-	   fi
-	   V_LIB_X264="-L$x264lib -lx264"
-	else
-	   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lx264" >&5
-$as_echo_n "checking for main in -lx264... " >&6; }
-if test "${ac_cv_lib_x264_main+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lx264  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-
-int
-main ()
-{
-return main ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_x264_main=yes
-else
-  ac_cv_lib_x264_main=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_x264_main" >&5
-$as_echo "$ac_cv_lib_x264_main" >&6; }
-if test "x$ac_cv_lib_x264_main" = x""yes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBX264 1
-_ACEOF
-
-  LIBS="-lx264 $LIBS"
-
-else
-
-	        echo "Error! you need to have libx264 around."
-	        exit -1
-
-fi
-
-	   V_LIB_X264="-lx264"
-	fi
- fi
-fi
-
-V_CPUDETECT=""
-# Check whether --enable-cpudetect was given.
-if test "${enable_cpudetect+set}" = set; then :
-  enableval=$enable_cpudetect; cpudetect="no"
-else
-  cpudetect="yes"
-fi
-
-if test "$gpl" = "yes" ; then
- if test "$cpudetect" = "yes"; then
-    echo "using CPU runtime detection..."
-    V_CPUDETECT="-DRUNTIME_CPUDETECT"
-    V_CPUDETECT_OBJ="cpu/cpudetect.o cpu/cpuid.o"
- fi
- else
-   echo "No runtime cputect without --enable-gpl"
-fi
 
 V_DV=""
 # Check whether --enable-dvdecode was given.
@@ -5872,35 +5366,559 @@ armv4l-*-linux)
         if test "$target_cpu" = powerpc; then
             V_CCOPT="-O2 $ppc_tune"
         fi
-	if ! file -L  /System/Library/Frameworks//QuickTime.framework/QuickTime 2>/dev/null | grep x86_64 >/dev/null 2>&1; then
-          V_CCOPT="$V_CCOPT -arch i386"
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for 64-bit gcc on OSX" >&5
+$as_echo_n "checking for 64-bit gcc on OSX... " >&6; }
+	if gcc -v 2>&1 | grep host=x86_64 >& /dev/null ; then
+	   if ! file -L  /System/Library/Frameworks/QuickTime.framework/QuickTime 2>&1 | grep x86_64 >&/dev/null; then
+              { $as_echo "$as_me:${as_lineno-$LINENO}: result: Yes but forcing 32-bit due to QT" >&5
+$as_echo "Yes but forcing 32-bit due to QT" >&6; }
+              V_CCOPT="$V_CCOPT -arch i386"
+              V_LDFLAGS="$V_LDFLAGS -arch i386  -mmacosx-version-min=10.4"
+              V_CCLDFLAGS32="LDFLAGS='-arch i386 -mmacosx-version-min=10.4' CFLAGS='-arch i386'"
+	   fi
+	else
+              { $as_echo "$as_me:${as_lineno-$LINENO}: result: No - using 32-bit" >&5
+$as_echo "No - using 32-bit" >&6; }
 	fi
         OPSYS=macosx
-        ;;
-esac
-
-case "$target" in
-   *-*-darwin*)
-        V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-macosx.o video/yuv_convert.o"
+        V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-macosx.o"
         ;;
    *)
         V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-x11.o"
         ;;
 esac
 
-
-if test $CC = gcc ; then
-     echo $ac_n "checking version of GCC""... $ac_c"
-     GCC_version=`$CC --version`
-     echo "$GCC_version"
-     if test "$GCC_version" = 2.96 ; then
-           echo "Turning off optimisation for dct code"
-           V_CCOPT_H261="";
-     fi
+# Check whether --enable-gpl was given.
+if test "${enable_gpl+set}" = set; then :
+  enableval=$enable_gpl; gpl="yes"
+else
+  gpl="no"
 fi
 
-if test -f codec/encoder-bvc.cpp ; then
-	V_OBJ="$V_OBJ codec/encoder-bvc.o codec/decoder-bvc.o"
+if test "$gpl" = "yes" ; then
+  V_DEFINE="$V_DEFINE -DHAVE_SWSCALE"
+  V_OBJ="$V_OBJ codec/packetbuffer.o codec/databuffer.o \
+    codec/ffmpeg_codec.o codec/encoder-mpeg4.o codec/decoder-mpeg4.o \
+    codec/x264encoder.o codec/encoder-h264.o codec/decoder-h264.o \
+    codec/rtp_h264_depayloader.o render/color-swscale.o video/deinterlace.o"
+else
+  V_OBJ="$V_OBJ render/color-true.o  render/color-hi.o"
+fi
+
+# Extract the first word of "wget", so it can be a program name with args.
+set dummy wget; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_prog_DOWNLOAD+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$DOWNLOAD"; then
+  ac_cv_prog_DOWNLOAD="$DOWNLOAD" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_prog_DOWNLOAD="wget -O -"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+DOWNLOAD=$ac_cv_prog_DOWNLOAD
+if test -n "$DOWNLOAD"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DOWNLOAD" >&5
+$as_echo "$DOWNLOAD" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+# Extract the first word of "curl", so it can be a program name with args.
+set dummy curl; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_prog_DOWNLOAD+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$DOWNLOAD"; then
+  ac_cv_prog_DOWNLOAD="$DOWNLOAD" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_prog_DOWNLOAD="curl -s"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+DOWNLOAD=$ac_cv_prog_DOWNLOAD
+if test -n "$DOWNLOAD"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DOWNLOAD" >&5
+$as_echo "$DOWNLOAD" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+
+
+# Check whether --with-ffmpegver was given.
+if test "${with_ffmpegver+set}" = set; then :
+  withval=$with_ffmpegver; ffmpegver=$withval
+else
+  ffmpegver=ffmpeg
+fi
+
+# Check whether --enable-ffmpeg-co was given.
+if test "${enable_ffmpeg_co+set}" = set; then :
+  enableval=$enable_ffmpeg_co; ffmpegco="no"
+else
+  ffmpegco="yes"
+fi
+
+if test "$ffmpegco" = "yes" ; then
+  if test "$gpl" = "yes" ; then
+   if test ! -d ${ffmpegver} ; then
+      echo "Checking out r20462 (and 29824 of libswscale) of ffmpeg from svn://svn.ffmpeg.org/ffmpeg/trunk..."
+      svn checkout -q -r 20462 svn://svn.ffmpeg.org/ffmpeg/trunk ffmpeg
+      svn checkout -q -r 29824 svn://svn.ffmpeg.org/mplayer/trunk/libswscale  ffmpeg/libswscale
+   fi
+   patch --dry-run -sf -p0 < ffmpeg.iocom.patch >& /dev/null
+   if test $? = 0; then
+      echo "Patching ffmpeg h264 for IOCOM decode compatibility..."
+      patch -p0 < ffmpeg.iocom.patch
+   else
+      echo "ffmpeg has already been patched for IOCOM decode compatibility"
+   fi
+   echo "Configuring ffmpeg..."
+   echo "cd ffmpeg && ${V_CCLDFLAGS32} ./configure --prefix=$V_PATH/ffmpeg $ppc_conf --enable-gpl --enable-postproc; cd .."
+   cd ffmpeg && eval ${V_CCLDFLAGS32} ./configure --prefix=$V_PATH/ffmpeg $ppc_conf --enable-gpl --enable-postproc; cd ..
+   V_INCLUDE="$V_INCLUDE -Iffmpeg/include -Iffmpeg"
+   V_CODEC_LIB="$V_CODEC_LIB -Lffmpeg/lib -lavcodec -lavutil -lswscale -lpostproc "
+  else
+   echo "ffmpeg not available without --enable-gpl"
+  fi
+fi
+
+
+# Check whether --with-x264ver was given.
+if test "${with_x264ver+set}" = set; then :
+  withval=$with_x264ver; x264ver=$withval
+else
+  x264ver=x264-snapshot-20090708-2245
+fi
+
+# Check whether --enable-x264-co was given.
+if test "${enable_x264_co+set}" = set; then :
+  enableval=$enable_x264_co; x264co="no"
+else
+  x264co="yes"
+fi
+
+if test "$x264co" = "yes" ; then
+  if test "$gpl" = "yes" ; then
+   if test ! -d ${x264ver} ; then
+     echo "Downloading ${x264ver} of x264 from videolan.org ..."
+     ${DOWNLOAD} http://downloads.videolan.org/pub/videolan/x264/snapshots/${x264ver}.tar.bz2 | tar xjf - && ln -sf ${x264ver} x264
+   fi
+   echo "Configuring x264..."
+   cd x264 && eval ${V_CCLDFLAGS32} ./configure --prefix=$V_PATH/x264; cd ..
+   V_INCLUDE="$V_INCLUDE -Ix264/include"
+   V_CODEC_LIB="$V_CODEC_LIB -Lx264/lib -lx264"
+  else
+   echo "x264 not available without --enable-gpl"
+  fi
+fi
+
+
+# Check whether --with-ffmpeginc was given.
+if test "${with_ffmpeginc+set}" = set; then :
+  withval=$with_ffmpeginc; ffmpeginc=$withval
+else
+  ffmpeginc=""
+fi
+
+
+# Check whether --with-ffmpeglib was given.
+if test "${with_ffmpeglib+set}" = set; then :
+  withval=$with_ffmpeglib; ffmpeglib=$withval
+else
+  ffmpeglib=""
+fi
+
+
+if test "$gpl" = "yes" ; then
+  if test "$ffmpegco" != "yes"; then
+
+	if test "$ffmpeginc" != "" ; then
+	   if test ! -r $ffmpeginc/ffmpeg/avcodec.h ; then
+	        echo "Error! you need to have $ffmpeginc/ffmpeg/avcodec.h around"
+	        exit 1
+	   elif test ! -r $ffmpeginc/ffmpeg/avutil.h ; then
+	        echo "Error! you need to have $ffmpeginc/ffmpeg/avutil.h around"
+	        exit 1
+	   elif test ! -r $ffmpeginc/ffmpeg/swscale.h ; then
+	        echo "Error! you need to have $ffmpeginc/ffmpeg/swscale.h around"
+	        exit 1
+	   fi
+	   echo "checking for FFmpeg headers...yes"
+	   V_INCLUDE="$V_INCLUDE -I$ffmpeginc"
+
+	else
+
+	   ac_fn_c_check_header_mongrel "$LINENO" "ffmpeg/avcodec.h" "ac_cv_header_ffmpeg_avcodec_h" "$ac_includes_default"
+if test "x$ac_cv_header_ffmpeg_avcodec_h" = x""yes; then :
+
+else
+
+        	echo "Error! you need to have avcodec.h around."
+	        exit -1
+
+fi
+
+
+	   ac_fn_c_check_header_mongrel "$LINENO" "ffmpeg/avutil.h" "ac_cv_header_ffmpeg_avutil_h" "$ac_includes_default"
+if test "x$ac_cv_header_ffmpeg_avutil_h" = x""yes; then :
+
+else
+
+	        echo "Error! you need to have avutil.h around."
+	        exit -1
+
+fi
+
+
+	   ac_fn_c_check_header_mongrel "$LINENO" "ffmpeg/swscale.h" "ac_cv_header_ffmpeg_swscale_h" "$ac_includes_default"
+if test "x$ac_cv_header_ffmpeg_swscale_h" = x""yes; then :
+
+else
+
+	        echo "Error! you need to have swscale.h around."
+	        exit -1
+
+fi
+
+
+	fi
+
+	if test "$ffmpeglib" != "" ; then
+	   if test ! -r $ffmpeglib/libavcodec.a ; then
+		echo "Error! you need to have $ffmpeglib/libavcodec.a around"
+	   elif test ! -r $ffmpeglib/libavutil.a ; then
+	        echo "Error! you need to have $ffmpeglib/libavutil.a around"
+	   elif test ! -r $ffmpeglib/libswscale.a ; then
+	        echo "Error! you need to have $ffmpeglib/libswscale.a around"
+           elif test ! -r $ffmpeglib/libpostproc.a ; then
+                echo "Error! you need to have $ffmpeglib/libpostproc.a around"
+           fi
+
+	   V_LIB_FFMPEG="-L$ffmpeglib -lavcodec -lavutil -lswscale -lpostproc"
+	else
+	   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lavcodec" >&5
+$as_echo_n "checking for main in -lavcodec... " >&6; }
+if test "${ac_cv_lib_avcodec_main+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lavcodec  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_avcodec_main=yes
+else
+  ac_cv_lib_avcodec_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_avcodec_main" >&5
+$as_echo "$ac_cv_lib_avcodec_main" >&6; }
+if test "x$ac_cv_lib_avcodec_main" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBAVCODEC 1
+_ACEOF
+
+  LIBS="-lavcodec $LIBS"
+
+else
+
+	        echo "Error! you need to have libavcodec around."
+	        exit -1
+
+fi
+
+	   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lavutil" >&5
+$as_echo_n "checking for main in -lavutil... " >&6; }
+if test "${ac_cv_lib_avutil_main+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lavutil  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_avutil_main=yes
+else
+  ac_cv_lib_avutil_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_avutil_main" >&5
+$as_echo "$ac_cv_lib_avutil_main" >&6; }
+if test "x$ac_cv_lib_avutil_main" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBAVUTIL 1
+_ACEOF
+
+  LIBS="-lavutil $LIBS"
+
+else
+
+	        echo "Error! you need to have libavutil around."
+	        exit -1
+
+fi
+
+	   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lswscale" >&5
+$as_echo_n "checking for main in -lswscale... " >&6; }
+if test "${ac_cv_lib_swscale_main+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lswscale  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_swscale_main=yes
+else
+  ac_cv_lib_swscale_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_swscale_main" >&5
+$as_echo "$ac_cv_lib_swscale_main" >&6; }
+if test "x$ac_cv_lib_swscale_main" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBSWSCALE 1
+_ACEOF
+
+  LIBS="-lswscale $LIBS"
+
+else
+
+	        echo "Error! you need to have libswscale around."
+	        exit -1
+
+fi
+
+
+           { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lpostproc" >&5
+$as_echo_n "checking for main in -lpostproc... " >&6; }
+if test "${ac_cv_lib_postproc_main+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lpostproc  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_postproc_main=yes
+else
+  ac_cv_lib_postproc_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_postproc_main" >&5
+$as_echo "$ac_cv_lib_postproc_main" >&6; }
+if test "x$ac_cv_lib_postproc_main" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBPOSTPROC 1
+_ACEOF
+
+  LIBS="-lpostproc $LIBS"
+
+else
+
+                echo "Error! you need to have libpostproc around."
+                exit -1
+
+fi
+
+
+	   V_LIB_FFMPEG="-lavcodec -lavutil -lswscale -lpostproc"
+	fi
+  fi
+fi
+
+
+# Check whether --with-x264inc was given.
+if test "${with_x264inc+set}" = set; then :
+  withval=$with_x264inc; x264inc=$withval
+else
+  x264inc=""
+fi
+
+
+# Check whether --with-x264lib was given.
+if test "${with_x264lib+set}" = set; then :
+  withval=$with_x264lib; x264lib=$withval
+else
+  x264lib=""
+fi
+
+if test "$gpl" = "yes" ; then
+  if test "$x264co" != "yes" ; then
+	if test "$x264inc" != "" ; then
+	   if test ! -r $x264inc/x264.h ; then
+	        echo "Error! you need to have $x264inc/x264.h around."
+	        exit 1
+	   fi
+	   V_INCLUDE="$V_INCLUDE -I$x264inc"
+	elif test ! -r /usr/local/include/x264.h -a ! -r /usr/include/x264.h ; then
+	        echo "Error! you need to have x264.h around."
+	        exit 1
+	else
+	   echo "checking for x264.h...yes"
+	fi
+
+	if test "$x264lib" != "" ; then
+	   if test ! -r $x264lib/libx264.a ; then
+	        echo "Error! you need to have $x264lib/libx264.a around"
+		exit 1
+	   fi
+	   V_LIB_X264="-L$x264lib -lx264"
+	else
+	   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lx264" >&5
+$as_echo_n "checking for main in -lx264... " >&6; }
+if test "${ac_cv_lib_x264_main+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lx264  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_x264_main=yes
+else
+  ac_cv_lib_x264_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_x264_main" >&5
+$as_echo "$ac_cv_lib_x264_main" >&6; }
+if test "x$ac_cv_lib_x264_main" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBX264 1
+_ACEOF
+
+  LIBS="-lx264 $LIBS"
+
+else
+
+	        echo "Error! you need to have libx264 around."
+	        exit -1
+
+fi
+
+	   V_LIB_X264="-lx264"
+	fi
+ fi
+fi
+
+V_CPUDETECT=""
+# Check whether --enable-cpudetect was given.
+if test "${enable_cpudetect+set}" = set; then :
+  enableval=$enable_cpudetect; cpudetect="no"
+else
+  cpudetect="yes"
+fi
+
+if test "$gpl" = "yes" ; then
+ if test "$cpudetect" = "yes"; then
+    echo "Using CPU runtime detection..."
+    V_CPUDETECT="-DRUNTIME_CPUDETECT"
+    V_CPUDETECT_OBJ="cpu/cpudetect.o cpu/cpuid.o"
+ fi
+ else
+   echo "No runtime cputect without --enable-gpl"
 fi
 
 
@@ -5938,13 +5956,13 @@ done
 # various linker hacks
 if test x$prefix != xNONE ; then
 	if test -d $prefix/lib64 ; then
-		LDFLAGS="-L$prefix/lib64 $LDFLAGS"
+		V_LDFLAGS="-L$prefix/lib64 $V_LDFLAGS"
 	else
-		LDFLAGS="-L$prefix/lib $LDFLAGS"
+		V_LDFLAGS="-L$prefix/lib $V_LDFLAGS"
 	fi
 else
 	if test -d ../common/src ; then
-		LDFLAGS="-L../common/src $LDFLAGS"
+		V_LDFLAGS="-L../common/src $V_LDFLAGS"
 	fi
 fi
 
@@ -5957,6 +5975,8 @@ if test "$CC" = gcc  ; then
 fi
 
 V_TAR_TARGET=$target_os
+
+
 
 
 

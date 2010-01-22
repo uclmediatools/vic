@@ -21,13 +21,13 @@ done
 # various linker hacks
 if test x$prefix != xNONE ; then
 	if test -d $prefix/lib64 ; then
-		LDFLAGS="-L$prefix/lib64 $LDFLAGS"
+		V_LDFLAGS="-L$prefix/lib64 $V_LDFLAGS"
 	else
-		LDFLAGS="-L$prefix/lib $LDFLAGS"
+		V_LDFLAGS="-L$prefix/lib $V_LDFLAGS"
 	fi
 else
 	if test -d ../common/src ; then
-		LDFLAGS="-L../common/src $LDFLAGS"
+		V_LDFLAGS="-L../common/src $V_LDFLAGS"
 	fi
 fi
 
@@ -44,6 +44,8 @@ AC_SUBST(V_TAR_TARGET)
 
 AC_SUBST(V_ALL)
 AC_SUBST(V_CCOPT)
+AC_SUBST(V_LDFLAGS)
+AC_SUBST(V_CCLDFLAGS32)
 AC_SUBST(V_CCOPT_H261)
 AC_SUBST(V_TAR_EXTRA)
 AC_SUBST(V_LIB)
