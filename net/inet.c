@@ -57,8 +57,10 @@ LookupHostAddr(const char *s)
      }
    }
    hp = gethostbyname(s);
-   if (hp == 0)
+   if (hp == 0){
+       herror("Failed to lookup address using gethostbyname()");
        return (0);
+   }
    return *((u_int32_t **)hp->h_addr_list)[0];
 }
 
