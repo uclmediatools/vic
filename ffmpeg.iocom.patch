@@ -1,0 +1,11 @@
+--- ffmpeg/libavcodec/h264.c	2010-01-22 12:15:55.000000000 +0000
++++ ffmpeg/libavcodec/h264.c.mod	2010-01-22 12:13:37.000000000 +0000
+@@ -3406,7 +3406,7 @@ static int execute_ref_pic_marking(H264C
+         }
+     }
+ 
+-    if (h->long_ref_count + h->short_ref_count > h->sps.ref_frame_count){
++    if ((h->long_ref_count + h->short_ref_count > 1) && h->long_ref_count + h->short_ref_count > h->sps.ref_frame_count){
+ 
+         /* We have too many reference frames, probably due to corrupted
+          * stream. Need to discard one frame. Prevents overrun of the
