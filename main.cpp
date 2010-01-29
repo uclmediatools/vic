@@ -517,7 +517,7 @@ int main(int argc, const char** argv)
 			usage(NULL);
 	}
 
-
+	Tcl_FindExecutable(argv[0]);
 	Tcl::init("vic");
 	Tcl& tcl = Tcl::instance();
 

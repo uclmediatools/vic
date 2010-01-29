@@ -42,6 +42,9 @@ static const char rcsid[] =
 #undef Status
 #include "vic_tcl.h"
 #include <sys/types.h>
+#ifdef USE_ZVFS
+#include "zvfs.h"
+#endif
 
 Tcl Tcl::instance_;
 
@@ -62,7 +65,23 @@ void Tcl::init(Tcl_Interp* tcl, const char* application)
 {
 	instance_.tcl_ = tcl;
 	instance_.application_ = application;
-	Tcl_Init(tcl); //SV-XXX: FreeBSD
+
+#ifdef USE_ZVFS
+	Zvfs_Init(tcl);
+	Zvfs_Mount(tcl, (char *)Tcl_GetNameOfExecutable(), "/zvfs");
+	Tcl_SetVar2(tcl, "env", "TCL_LIBRARY", "/zvfs/tcl", TCL_GLOBAL_ONLY);
+	Tcl_SetVar2(tcl, "env", "TK_LIBRARY", "/zvfs/tk", TCL_GLOBAL_ONLY);
+
+	Tcl_SetVar(tcl, "auto_path", "/zvfs/tcl /zvfs/tk /zvfs/vic", TCL_GLOBAL_ONLY);
+	Tcl_SetVar(tcl, "tcl_libPath", "/zvfs/tcl /zvfs/tk /zvfs/vic", TCL_GLOBAL_ONLY);
+#endif
+	//Tk_InitConsoleChannels(tcl);
+	Tcl_Init(tcl);
+
+#ifdef USE_ZVFS
+	Tcl_SetVar(tcl, "auto_path", "/zvfs/tcl /zvfs/tk /zvfs/vic", TCL_GLOBAL_ONLY);
+	Tcl_SetVar(tcl, "tcl_libPath", "/zvfs/tcl /zvfs/tk /zvfs/vic", TCL_GLOBAL_ONLY);
+#endif
 }
 
 void Tcl::evalc(const char* s)

@@ -38,10 +38,6 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description=""
-				CommandLine=""
-				AdditionalDependencies=""
-				Outputs=""
 			/>
 			<Tool
 				Name="tcl2cpp"
@@ -209,10 +205,6 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description=""
-				CommandLine=""
-				AdditionalDependencies=""
-				Outputs=""
 			/>
 			<Tool
 				Name="tcl2cpp"
@@ -230,7 +222,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories=".\;codec;render;rtp;net;win32;video;..\common\src;codec\tmndec;&quot;codec\tmn-x&quot;;codec\jpeg;codec\p64;C:\Tcl\include\tcl8.5;C:\msys\1.0\local\include;C:\msys\local\include;c:\mingw\local\include;&quot;$(DXSDK_DIR)\include&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;HAVE_IPv6;HAVE_SWSCALE;USE_DDRAW;HAVE_STDLIB_H;SASR;ED_YBITS=4;SIGRET=void;SIGARGS=int;NLAYER=8;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WIN32_WINNT=_WIN32_WINNT_WINXP"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;HAVE_IPv6;USE_ZVFS;USE_DDRAW;HAVE_SWSCALE;HAVE_STDLIB_H;SASR;ED_YBITS=4;SIGRET=void;SIGARGS=int;NLAYER=8;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WIN32_WINNT=_WIN32_WINNT_WINXP"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -249,7 +241,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tcl85.lib tk85.lib uclmm.lib ws2_32.lib iphlpapi.lib vfw32.lib ddraw.lib dxguid.lib strmiids.lib quartz.lib libgcc.a libmingwex.lib libavcodec.a libavutil.a libpostproc.a libswscale.a libpthread.a libx264.a"
+				AdditionalDependencies="tcl85.lib tk85.lib uclmm.lib ws2_32.lib iphlpapi.lib vfw32.lib ddraw.lib dxguid.lib strmiids.lib quartz.lib libgcc.a libmingwex.a libavcodec.a libavutil.a libpostproc.a libswscale.a libpthread.a libx264.a libz.a"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="C:\Tcl\lib;&quot;$(DXSDK_DIR)\Lib\x86&quot;;C:\msys\1.0\lib;&quot;C:\mingw\lib\gcc\mingw32\4.2.1-sjlj&quot;;c:\mingw\local\lib;c:\mingw\local\bin;c:\mingw\lib;C:\msys\lib;&quot;$(SolutionDir)Debug&quot;;C:\msys\1.0\local\lib;C:\msys\local\lib;C:\msys\1.0\lib\gcc\mingw32\4.4.0;C:\msys\1.0\lib\gcc\mingw32\4.2.0;C:\msys\lib\gcc\mingw32\4.4.0;C:\msys\lib\gcc\mingw32\4.2.0"
 				IgnoreDefaultLibraryNames="MSVCRTD.lib"
@@ -277,6 +269,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Appending zip file to vic.exe and adjusting zip offset"
+				CommandLine="if exist $(IntDir)\vic.exe del $(IntDir)\vic.exe&#x0D;&#x0A;&#x0D;&#x0A;@echo on&#x0D;&#x0A;move $(OutDir)\vic.exe $(IntDir)&#x0D;&#x0A;copy /B $(IntDir)\vic.exe + $(IntDir)\vic-zvfs.zip $(OutDir)\vic.exe&#x0D;&#x0A;zip.exe -A  $(OutDir)\vic.exe&#x0D;&#x0A;@echo off&#x0D;&#x0A;&#x0D;&#x0A;del $(IntDir)\vic.exe&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -315,7 +309,7 @@
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				AdditionalIncludeDirectories=".\;codec;render;rtp;net;win32;video;..\common\src;codec\tmndec;&quot;codec\tmn-x&quot;;codec\jpeg;codec\p64;C:\Tcl\include\tcl8.5;C:\msys\1.0\local\include;C:\msys\local\include;&quot;$(DXSDK_DIR)\include&quot;"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;HAVE_IPv6;USE_DDRAW;HAVE_SWSCALE;HAVE_STDLIB_H;SASR;ED_YBITS=4;SIGRET=void;SIGARGS=int;NLAYER=8;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WIN32_WINNT=_WIN32_WINNT_WINXP"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;HAVE_IPv6;USE_ZVFS;USE_DDRAW;HAVE_SWSCALE;HAVE_STDLIB_H;SASR;ED_YBITS=4;SIGRET=void;SIGARGS=int;NLAYER=8;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WIN32_WINNT=_WIN32_WINNT_WINXP"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
@@ -333,9 +327,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tcl85.lib tk85.lib uclmm.lib ws2_32.lib iphlpapi.lib vfw32.lib strmiids.lib ddraw.lib quartz.lib libavcodec.a libavutil.a libpostproc.a libswscale.a libx264.a libgcc.a libmingwex.a"
+				AdditionalDependencies="tcl85.lib tk85.lib uclmm.lib ws2_32.lib iphlpapi.lib vfw32.lib ddraw.lib dxguid.lib strmiids.lib quartz.lib libgcc.a libmingwex.a libavcodec.a libavutil.a libpostproc.a libswscale.a libpthread.a libx264.a libz.a"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="C:\Tcl\lib;&quot;$(DXSDK_DIR)\Lib\x86&quot;;C:\msys\1.0\lib;C:\msys\lib;&quot;$(SolutionDir)Debug&quot;;C:\msys\1.0\local\lib;C:\msys\local\lib;C:\msys\1.0\lib\gcc\mingw32\4.4.0;C:\msys\1.0\lib\gcc\mingw32\4.2.0;C:\msys\lib\gcc\mingw32\4.4.0;C:\msys\lib\gcc\mingw32\4.2.0"
+				AdditionalLibraryDirectories="C:\Tcl\lib;&quot;$(DXSDK_DIR)\Lib\x86&quot;;C:\msys\1.0\lib;&quot;C:\mingw\lib\gcc\mingw32\4.2.1-sjlj&quot;;c:\mingw\local\lib;c:\mingw\local\bin;c:\mingw\lib;C:\msys\lib;&quot;$(SolutionDir)Release&quot;;C:\msys\1.0\local\lib;C:\msys\local\lib;C:\msys\1.0\lib\gcc\mingw32\4.4.0;C:\msys\1.0\lib\gcc\mingw32\4.2.0;C:\msys\lib\gcc\mingw32\4.4.0;C:\msys\lib\gcc\mingw32\4.2.0"
+				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -362,6 +357,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Appending zip file to vic.exe and adjust zip offset"
+				CommandLine="if exist $(IntDir)\vic.exe del $(IntDir)\vic.exe&#x0D;&#x0A;&#x0D;&#x0A;@echo on&#x0D;&#x0A;move $(OutDir)\vic.exe $(IntDir)&#x0D;&#x0A;copy /B $(IntDir)\vic.exe + $(IntDir)\vic-zvfs.zip $(OutDir)\vic.exe&#x0D;&#x0A;zip.exe -A  $(OutDir)\vic.exe&#x0D;&#x0A;@echo off&#x0D;&#x0A;&#x0D;&#x0A;del $(IntDir)\vic.exe&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>
@@ -1082,98 +1079,462 @@
 			<File
 				RelativePath=".\tcl\accessgrid.tcl"
 				>
+				<FileConfiguration
+					Name="Debug (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\ag-pixrate.tcl"
 				>
+				<FileConfiguration
+					Name="Debug (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\autoplace_ui.tcl"
 				>
+				<FileConfiguration
+					Name="Debug (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\cf-confbus.tcl"
 				>
+				<FileConfiguration
+					Name="Debug (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\cf-main.tcl"
 				>
+				<FileConfiguration
+					Name="Debug (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\cf-network.tcl"
 				>
+				<FileConfiguration
+					Name="Debug (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\cf-tm.tcl"
 				>
+				<FileConfiguration
+					Name="Debug (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\cf-util.tcl"
 				>
+				<FileConfiguration
+					Name="Debug (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\entry.tcl"
 				>
+				<FileConfiguration
+					Name="Debug (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\ui-ctrlmenu.tcl"
 				>
+				<FileConfiguration
+					Name="Debug (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\ui-extout.tcl"
 				>
+				<FileConfiguration
+					Name="Debug (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\ui-grabber.tcl"
 				>
+				<FileConfiguration
+					Name="Debug (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\ui-help.tcl"
 				>
+				<FileConfiguration
+					Name="Debug (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\ui-main.tcl"
 				>
+				<FileConfiguration
+					Name="Debug (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\ui-relate.tcl"
 				>
+				<FileConfiguration
+					Name="Debug (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\ui-resource.tcl"
 				>
+				<FileConfiguration
+					Name="Debug (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\ui-srclist.tcl"
 				>
+				<FileConfiguration
+					Name="Debug (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\ui-stats.tcl"
 				>
+				<FileConfiguration
+					Name="Debug (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\ui-switcher.tcl"
 				>
+				<FileConfiguration
+					Name="Debug (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\ui-titlemaker.tcl"
 				>
+				<FileConfiguration
+					Name="Debug (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\ui-util.tcl"
 				>
-			</File>
-			<File
-				RelativePath=".\tcl\ui-vdd.tcl"
-				>
+				<FileConfiguration
+					Name="Debug (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\ui-win32.tcl"
 				>
+				<FileConfiguration
+					Name="Debug (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\tcl\ui-windows.tcl"
 				>
+				<FileConfiguration
+					Name="Debug (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (GPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="tcl2cpp"
+					/>
+				</FileConfiguration>
 			</File>
 			<Filter
 				Name="Generated Source Files"
@@ -1181,98 +1542,462 @@
 				<File
 					RelativePath="$(OutDir)\accessgrid-tcl.cpp"
 					>
+					<FileConfiguration
+						Name="Debug (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="$(OutDir)\ag-pixrate-tcl.cpp"
 					>
+					<FileConfiguration
+						Name="Debug (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="$(OutDir)\autoplace_ui-tcl.cpp"
 					>
+					<FileConfiguration
+						Name="Debug (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="$(OutDir)\cf-confbus-tcl.cpp"
 					>
+					<FileConfiguration
+						Name="Debug (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="$(OutDir)\cf-main-tcl.cpp"
 					>
+					<FileConfiguration
+						Name="Debug (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="$(OutDir)\cf-network-tcl.cpp"
 					>
+					<FileConfiguration
+						Name="Debug (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="$(OutDir)\cf-tm-tcl.cpp"
 					>
+					<FileConfiguration
+						Name="Debug (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="$(OutDir)\cf-util-tcl.cpp"
 					>
+					<FileConfiguration
+						Name="Debug (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="$(OutDir)\entry-tcl.cpp"
 					>
+					<FileConfiguration
+						Name="Debug (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="$(OutDir)\ui-ctrlmenu-tcl.cpp"
 					>
+					<FileConfiguration
+						Name="Debug (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="$(OutDir)\ui-extout-tcl.cpp"
 					>
+					<FileConfiguration
+						Name="Debug (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="$(OutDir)\ui-grabber-tcl.cpp"
 					>
+					<FileConfiguration
+						Name="Debug (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="$(OutDir)\ui-help-tcl.cpp"
 					>
+					<FileConfiguration
+						Name="Debug (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="$(OutDir)\ui-main-tcl.cpp"
 					>
+					<FileConfiguration
+						Name="Debug (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="$(OutDir)\ui-relate-tcl.cpp"
 					>
+					<FileConfiguration
+						Name="Debug (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="$(OutDir)\ui-resource-tcl.cpp"
 					>
+					<FileConfiguration
+						Name="Debug (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="$(OutDir)\ui-srclist-tcl.cpp"
 					>
+					<FileConfiguration
+						Name="Debug (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="$(OutDir)\ui-stats-tcl.cpp"
 					>
+					<FileConfiguration
+						Name="Debug (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="$(OutDir)\ui-switcher-tcl.cpp"
 					>
+					<FileConfiguration
+						Name="Debug (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="$(OutDir)\ui-titlemaker-tcl.cpp"
 					>
+					<FileConfiguration
+						Name="Debug (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="$(OutDir)\ui-util-tcl.cpp"
 					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\ui-vdd-tcl.cpp"
-					>
+					<FileConfiguration
+						Name="Debug (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="$(OutDir)\ui-win32-tcl.cpp"
 					>
+					<FileConfiguration
+						Name="Debug (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="$(OutDir)\ui-windows-tcl.cpp"
 					>
+					<FileConfiguration
+						Name="Debug (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release (GPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 			</Filter>
 		</Filter>
@@ -1339,12 +2064,74 @@
 				RelativePath="&quot;$(OutDir)\version.c&quot;"
 				>
 			</File>
+			<File
+				RelativePath=".\zvfs.c"
+				>
+				<FileConfiguration
+					Name="Debug (nonGPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (nonGPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
 			<Filter
 				Name="VIC Common Header Files"
 				>
 				<File
 					RelativePath=".\config.h"
 					>
+				</File>
+				<File
+					RelativePath=".\zvfs.h"
+					>
+					<FileConfiguration
+						Name="Debug (nonGPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release (nonGPL)|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug (GPL)|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+							Description="Performing Zip File Build Step"
+							CommandLine="cd $(IntDir)&#x0D;&#x0A;&#x0D;&#x0A;if exist vic-zvfs.zip del /Q vic-zvfs.zip&#x0D;&#x0A;if exist vic-zvfs rmdir /S /Q vic-zvfs&#x0D;&#x0A;&#x0D;&#x0A;mkdir vic-zvfs\tcl&#x0D;&#x0A;mkdir vic-zvfs\tk&#x0D;&#x0A;mkdir vic-zvfs\vic&#x0D;&#x0A;&#x0D;&#x0A;@echo on&#x0D;&#x0A;&#x0D;&#x0A;copy C:\Tcl\lib\tcl8.5\init.tcl vic-zvfs\tcl\&#x0D;&#x0A;copy C:\Tcl\lib\tcl8.5\auto.tcl vic-zvfs\tcl\&#x0D;&#x0A;xcopy C:\Tcl\lib\tcl8.5\encoding\*.enc vic-zvfs\tcl\encoding\ /Q&#x0D;&#x0A;xcopy C:\Tcl\lib\tk8.5\*.tcl vic-zvfs\tk\ /Q&#x0D;&#x0A;xcopy C:\Tcl\lib\tk8.5\ttk\*.tcl vic-zvfs\tk\ttk\ /Q&#x0D;&#x0A;xcopy C:\Tcl\lib\tk8.5\msgs\*.msg vic-zvfs\tk\msgs\ /Q&#x0D;&#x0A;xcopy $(InputDir)tcl\*.tcl vic-zvfs\vic\  /Q&#x0D;&#x0A;&#x0D;&#x0A;del vic-zvfs\vic\tkerror.tcl&#x0D;&#x0A;del vic-zvfs\vic\ui-entry.tcl&#x0D;&#x0A;del vic-zvfs\vic\ui-h261_play.tcl&#x0D;&#x0A;del vic-zvfs\vic\ui-unix.tcl&#x0D;&#x0A;del vic-zvfs\vic\ui-vdd.tcl&#x0D;&#x0A;&#x0D;&#x0A;cd vic-zvfs\tcl&#x0D;&#x0A;echo auto_mkindex . | C:\Tcl\bin\tclsh85.exe&#x0D;&#x0A;&#x0D;&#x0A;cd ..\tk&#x0D;&#x0A;echo auto_mkindex . | C:\Tcl\bin\tclsh85.exe&#x0D;&#x0A;&#x0D;&#x0A;cd ..\vic&#x0D;&#x0A;echo auto_mkindex . | C:\Tcl\bin\tclsh85.exe&#x0D;&#x0A;&#x0D;&#x0A;cd ..&#x0D;&#x0A;zip.exe -q -r ..\vic-zvfs.zip  tcl  tk  vic&#x0D;&#x0A;&#x0D;&#x0A;@echo of&#x0D;&#x0A;&#x0D;&#x0A;cd ..&#x0D;&#x0A;rmdir /S /Q vic-zvfs&#x0D;&#x0A;"
+							AdditionalDependencies="tcl\accessgrid.tcl;tcl\ag-pixrate.tcl;tcl\autoplace_ui.tcl;tcl\cf-confbus.tcl;tcl\cf-main.tcl;tcl\cf-network.tcl;tcl\cf-tm.tcl;tcl\cf-util.tcl;tcl\entry.tcl;tcl\ui-ctrlmenu.tcl;tcl\ui-extout.tcl;tcl\ui-grabber.tcl;tcl\ui-help.tcl;tcl\ui-main.tcl;tcl\ui-relate.tcl;tcl\ui-resource.tcl;tcl\ui-srclist.tcl;tcl\ui-stats.tcl;tcl\ui-switcher.tcl;tcl\ui-titlemaker.tcl;tcl\ui-util.tcl;tcl\ui-win32.tcl;tcl\ui-windows.tcl"
+							Outputs="$(IntDir)\vic-zvfs.zip"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release (GPL)|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+							Description="Performing Zip File Build Step"
+							CommandLine="cd $(IntDir)&#x0D;&#x0A;&#x0D;&#x0A;if exist vic-zvfs.zip del /Q vic-zvfs.zip&#x0D;&#x0A;if exist vic-zvfs rmdir /S /Q vic-zvfs&#x0D;&#x0A;&#x0D;&#x0A;mkdir vic-zvfs\tcl&#x0D;&#x0A;mkdir vic-zvfs\tk&#x0D;&#x0A;mkdir vic-zvfs\vic&#x0D;&#x0A;&#x0D;&#x0A;@echo on&#x0D;&#x0A;&#x0D;&#x0A;copy C:\Tcl\lib\tcl8.5\init.tcl vic-zvfs\tcl\&#x0D;&#x0A;copy C:\Tcl\lib\tcl8.5\auto.tcl vic-zvfs\tcl\&#x0D;&#x0A;xcopy C:\Tcl\lib\tcl8.5\encoding\*.enc vic-zvfs\tcl\encoding\ /Q&#x0D;&#x0A;xcopy C:\Tcl\lib\tk8.5\*.tcl vic-zvfs\tk\ /Q&#x0D;&#x0A;xcopy C:\Tcl\lib\tk8.5\ttk\*.tcl vic-zvfs\tk\ttk\ /Q&#x0D;&#x0A;xcopy C:\Tcl\lib\tk8.5\msgs\*.msg vic-zvfs\tk\msgs\ /Q&#x0D;&#x0A;xcopy $(InputDir)tcl\*.tcl vic-zvfs\vic\  /Q&#x0D;&#x0A;&#x0D;&#x0A;del vic-zvfs\vic\tkerror.tcl&#x0D;&#x0A;del vic-zvfs\vic\ui-entry.tcl&#x0D;&#x0A;del vic-zvfs\vic\ui-h261_play.tcl&#x0D;&#x0A;del vic-zvfs\vic\ui-unix.tcl&#x0D;&#x0A;del vic-zvfs\vic\ui-vdd.tcl&#x0D;&#x0A;&#x0D;&#x0A;cd vic-zvfs\tcl&#x0D;&#x0A;echo auto_mkindex . | C:\Tcl\bin\tclsh85.exe&#x0D;&#x0A;&#x0D;&#x0A;cd ..\tk&#x0D;&#x0A;echo auto_mkindex . | C:\Tcl\bin\tclsh85.exe&#x0D;&#x0A;&#x0D;&#x0A;cd ..\vic&#x0D;&#x0A;echo auto_mkindex . | C:\Tcl\bin\tclsh85.exe&#x0D;&#x0A;&#x0D;&#x0A;cd ..&#x0D;&#x0A;zip.exe -q -r ..\vic-zvfs.zip  tcl  tk  vic&#x0D;&#x0A;&#x0D;&#x0A;@echo of&#x0D;&#x0A;&#x0D;&#x0A;cd ..&#x0D;&#x0A;rmdir /S /Q vic-zvfs&#x0D;&#x0A;&#x0D;&#x0A;"
+							AdditionalDependencies="tcl\accessgrid.tcl;tcl\ag-pixrate.tcl;tcl\autoplace_ui.tcl;tcl\cf-confbus.tcl;tcl\cf-main.tcl;tcl\cf-network.tcl;tcl\cf-tm.tcl;tcl\cf-util.tcl;tcl\entry.tcl;tcl\ui-ctrlmenu.tcl;tcl\ui-extout.tcl;tcl\ui-grabber.tcl;tcl\ui-help.tcl;tcl\ui-main.tcl;tcl\ui-relate.tcl;tcl\ui-resource.tcl;tcl\ui-srclist.tcl;tcl\ui-stats.tcl;tcl\ui-switcher.tcl;tcl\ui-titlemaker.tcl;tcl\ui-util.tcl;tcl\ui-vdd.tcl;tcl\ui-win32.tcl;tcl\ui-windows.tcl"
+							Outputs="$(IntDir)\vic-zvfs.zip"
+						/>
+					</FileConfiguration>
 				</File>
 			</Filter>
 		</Filter>
@@ -1463,1662 +2250,6 @@
 				RelativePath=".\win32\win32X.c"
 				>
 			</File>
-		</Filter>
-		<Filter
-			Name="ActiveTCL"
-			>
-			<Filter
-				Name="tcl"
-				>
-				<File
-					RelativePath="C:\Tcl\lib\tcl8.5\history.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tcl8.5\init.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tcl8.5\word.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-			</Filter>
-			<Filter
-				Name="tk"
-				>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\bgerror.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\button.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\console.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\dialog.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\entry.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\focus.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\listbox.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\menu.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\obsolete.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\optMenu.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\palette.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\scale.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\scrlbar.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\tearoff.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\text.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\tk.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\unsupported.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-			</Filter>
-			<Filter
-				Name="ttk"
-				>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\ttk\altTheme.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\ttk\button.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\ttk\clamTheme.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\ttk\classicTheme.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\ttk\combobox.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\ttk\cursors.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\ttk\defaults.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\ttk\entry.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\ttk\fonts.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\ttk\menubutton.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\ttk\notebook.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\ttk\panedwindow.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\ttk\progress.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\ttk\scale.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\ttk\scrollbar.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\ttk\sizegrip.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\ttk\treeview.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\ttk\ttk.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\ttk\utils.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\ttk\winTheme.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="C:\Tcl\lib\tk8.5\ttk\xpTheme.tcl"
-					>
-					<FileConfiguration
-						Name="Debug (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (nonGPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release (GPL)|Win32"
-						>
-						<Tool
-							Name="tcl2cpp"
-							Pass="1"
-						/>
-					</FileConfiguration>
-				</File>
-			</Filter>
-			<Filter
-				Name="Generated Source Files"
-				>
-				<File
-					RelativePath="$(OutDir)\altTheme-ttk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\bgerror-tk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\button-tk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\button-ttk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\clamTheme-ttk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\classicTheme-ttk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\combobox-ttk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\console-tk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\cursors-ttk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\defaults-ttk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\dialog-tk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\entry-tk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\focus-tk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\fonts-ttk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\history-tcl.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\init-tcl.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\listbox-tk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\menu-tk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\menubutton-ttk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\notebook-ttk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\obsolete-tk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\optMenu-tk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\palette-tk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\panedwindow-ttk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\progress-ttk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\scale-tk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\scale-ttk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\scrlbar-tk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\scrollbar-ttk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\sizegrip-ttk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\tearoff-tk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\text-tk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\tk-tk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\treeview-ttk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\ttk-ttk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\unsupported-tk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\utils-ttk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\winTheme-ttk.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\word-tcl.cpp"
-					>
-				</File>
-				<File
-					RelativePath="$(OutDir)\xpTheme-ttk.cpp"
-					>
-				</File>
-			</Filter>
 		</Filter>
 		<Filter
 			Name="cpu"
