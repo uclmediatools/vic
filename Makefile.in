@@ -450,5 +450,7 @@ codec/decoder-h263v2.o: codec/tmndec/libh263.a
 codec/tmndec/libh263.a:
 	(cd codec/tmndec; $(MAKE) CC="$(CC)" CCOPT="$(CCOPT)" -f Makefile.lib)
 
+gpllibs: ffmpeg/lib/libavcodec.a ffmpeg/lib/libavutil.a ffmpeg/lib/libswscale.a ffmpeg/lib/libpostproc.a x264/lib/libx264.a
+
 strip:	vic
 	strip vic
