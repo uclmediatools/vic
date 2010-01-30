@@ -2147,6 +2147,46 @@
 				>
 			</File>
 			<File
+				RelativePath=".\video\DeckLinkAPI.idl"
+				>
+				<FileConfiguration
+					Name="Debug (nonGPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCMIDLTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (nonGPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCMIDLTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\DeckLinkAPI_i.c"
+				>
+				<FileConfiguration
+					Name="Debug (nonGPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (nonGPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\video\deinterlace.cpp"
 				>
 				<FileConfiguration
@@ -2169,6 +2209,26 @@
 			<File
 				RelativePath=".\video\device.cpp"
 				>
+			</File>
+			<File
+				RelativePath=".\video\grabber-decklink.cpp"
+				>
+				<FileConfiguration
+					Name="Debug (nonGPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release (nonGPL)|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\video\grabber-file.cpp"

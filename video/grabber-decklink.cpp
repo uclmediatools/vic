@@ -1,4 +1,3 @@
-
 /*
  * grabber-declink.cpp
  *
@@ -37,7 +36,6 @@
  */
 
 #include <stdio.h>
-#include <unistd.h>
 #include <sys/types.h>
 
 #include "grabber.h"
@@ -47,13 +45,21 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <atlbase.h>
+#include "DeckLinkAPI_h.h"
+#include "inttypes.h"
+#else
+#include <unistd.h>
+#include "DeckLinkAPIDispatch.cpp"
+#endif
+
 #include "yuv_convert.h"
 
-#include "DeckLinkAPIDispatch.cpp"
-
+#if !defined(_WIN32) && !defined(_WIN64)
 #undef debug_msg
 #define debug_msg(args...) fprintf(stderr, args)
-
+#endif
 
 #define NUM_DEVS 5   // max number of DeckLink capture devices we'll support
 
@@ -109,14 +115,21 @@ public:
     }
 
     virtual ULONG STDMETHODCALLTYPE AddRef() {
+#if defined(_WIN32) || defined(_WIN64) 
+       return InterlockedIncrement((LONG*)&mRefCount);
+#else
        return __sync_fetch_and_add(&mRefCount, 1);
+#endif
     }
 
     virtual ULONG STDMETHODCALLTYPE Release() {
         int32_t newRefValue;
 
+#if defined(_WIN32) || defined(_WIN64) 
+        newRefValue = InterlockedDecrement((LONG*)&mRefCount);
+#else
         newRefValue = __sync_fetch_and_sub(&mRefCount, 1);
-
+#endif
         if (newRefValue == 0) {
             delete this;
             return 0;
@@ -124,7 +137,7 @@ public:
         return newRefValue;
     }
 
-    virtual HRESULT VideoInputFrameArrived(IDeckLinkVideoInputFrame* arrivedFrame, IDeckLinkAudioInputPacket*) {
+    virtual HRESULT STDMETHODCALLTYPE VideoInputFrameArrived(IDeckLinkVideoInputFrame* arrivedFrame, IDeckLinkAudioInputPacket*) {
 
         void *videoFrame;
         arrivedFrame->GetBytes(&videoFrame);
@@ -206,22 +219,39 @@ static DeckLinkScanner find_decklink_devices(NUM_DEVS);
 
 DeckLinkScanner::DeckLinkScanner(int maxNumDevices)
 {
-    IDeckLinkIterator* deckLinkIterator;
     IDeckLink* deckLink;
     int n = 0;
     HRESULT result;
 
+#if defined(_WIN32) || defined(_WIN64) 
+    CComPtr<IDeckLinkIterator> deckLinkIterator = NULL;
+	if (CoCreateInstance(CLSID_CDeckLinkIterator, NULL, CLSCTX_ALL, IID_IDeckLinkIterator, (void**)&deckLinkIterator) != S_OK || deckLinkIterator == NULL) {
+        debug_msg("DeckLinkScanner: DeckLink iterator instance could not be created\n");
+        return;
+	}
+#else
+    IDeckLinkIterator* deckLinkIterator;
     deckLinkIterator = CreateDeckLinkIteratorInstance();
     if (deckLinkIterator == NULL) {
         debug_msg("DeckLinkScanner: DeckLink iterator instance could not be created\n");
         return;
     }
+#endif
 
     memset(devs_, 0, sizeof(devs_));
     // Enumerate all DeckLink cards on this system
     while (deckLinkIterator->Next(&deckLink) == S_OK && n < maxNumDevices) {
-                
-#ifdef __APPLE__
+
+#if defined(_WIN32) || defined(_WIN64) 
+        char deviceNameString[64] = {};
+        CComBSTR cardNameBSTR;
+
+        result = deckLink->GetModelName(&cardNameBSTR);
+	    if (result == S_OK) {
+            CW2A tmpstr1(cardNameBSTR);
+            strncpy_s(deviceNameString, sizeof(deviceNameString), tmpstr1, _TRUNCATE);
+	    }
+#elif __APPLE__
         char deviceNameString[64] = {};
         CFStringRef modelName;
 
@@ -251,14 +281,13 @@ DeckLinkScanner::DeckLinkScanner(int maxNumDevices)
 
 DeckLinkScanner::~DeckLinkScanner() {
     debug_msg("~DeckLinkScanner\n");
-    /*
+
     for (int i = 0; i < NUM_DEVS; i++) {
         if (devs_[i]) {
-            debug_msg("Deleteing device %d\n", i);
+            debug_msg("Deleting DeckLink device %d\n", i);
             delete devs_[i];
         }
     }
-    */
 }
 
 DeckLinkDevice::DeckLinkDevice(const char* name, IDeckLink* deckLink) : InputDevice(name), grabber_(0), deckLink_(deckLink)
@@ -329,7 +358,16 @@ DeckLinkDevice::DeckLinkDevice(const char* name, IDeckLink* deckLink) : InputDev
     while (displayModeIterator->Next(&displayMode) == S_OK) {
         char typeString[128];
 
-#ifdef __APPLE__
+#if defined(_WIN32) || defined(_WIN64) 
+        char displayModeString[64] = {};
+        CComBSTR displayModeNameBSTR;
+
+        result = displayMode->GetName(&displayModeNameBSTR) == S_OK;
+	    if (result == S_OK) {
+            CW2A tmpstr1(displayModeNameBSTR);
+            strncpy_s(displayModeString, sizeof(displayModeString), tmpstr1, _TRUNCATE);
+	    }
+#elif __APPLE__
         char displayModeString[64] = {};
 
         CFStringRef displayModeName;
@@ -399,7 +437,7 @@ DeckLinkDevice::~DeckLinkDevice()
 }
 
 DeckLinkGrabber::DeckLinkGrabber(const char *cformat, IDeckLink* deckLink) :
-    deckLink_(deckLink), displayMode_(NULL)
+    deckLink_(deckLink)
 {
     HRESULT result;
 
@@ -495,7 +533,16 @@ int DeckLinkGrabber::command(int argc, const char*const* argv)
             while (displayModeIterator->Next(&displayMode) == S_OK) {
                 char typeString[128];
 
-#ifdef __APPLE__
+#if defined(_WIN32) || defined(_WIN64) 
+                char displayModeString[64] = {};
+                CComBSTR displayModeNameBSTR;
+
+                result = displayMode->GetName(&displayModeNameBSTR);
+	            if (result == S_OK) {
+                    CW2A tmpstr1(displayModeNameBSTR);
+                    strncpy_s(displayModeString, sizeof(displayModeString), tmpstr1, _TRUNCATE);
+	            }
+#elif __APPLE__
                 char displayModeString[64] = {};
 
                 CFStringRef displayModeName;
