@@ -68,6 +68,9 @@ proc build.bar w {
     	button $w.bar.autoplace -text Autoplace \
 				-font [smallfont] \
 				-command "ag_autoplace::show_ui"
+	label $w.bar.dummy -text " "
+        pack $w.bar.title -side left -fill both -expand 1
+        pack $w.bar.menu $w.bar.autoplace $w.bar.help $w.bar.quit $w.bar.dummy -side left -padx 1 -pady 1 
     } else {
         global V
         set net $V(data-net)
@@ -81,12 +84,12 @@ proc build.bar w {
         button $w.bar.help -text Help -relief raised \
                 -font [smallfont] -highlightthickness 1 \
                 -command "toggle_window .help"
-	    button $w.bar.autoplace -text Autoplace -relief raised  \
+        button $w.bar.autoplace -text Autoplace -relief raised  \
 				-font [smallfont] -highlightthickness 1 \
 				-command "ag_autoplace::show_ui"
+        pack $w.bar.title -side left -fill both -expand 1
+        pack $w.bar.menu $w.bar.autoplace $w.bar.help $w.bar.quit -side left -padx 1 -pady 1 
     }                                
-    pack $w.bar.title -side left -fill both -expand 1
-    pack $w.bar.menu $w.bar.autoplace $w.bar.help $w.bar.quit -side left -padx 1 -pady 1 
 }
 
 proc build.bar2 w {
