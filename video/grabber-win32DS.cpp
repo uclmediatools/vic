@@ -211,9 +211,9 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
 
    memset(inputPorts, 0, NUM_PORTS);
        
-   numInputPorts =0;
-   initializedPorts =0;
-   svideoPortNum = compositePortNum =1;
+   numInputPorts = 0;
+   initializedPorts = 0;
+   svideoPortNum = compositePortNum = 1;
 
    if(!strcmp(cformat, "420"))
        cformat_ = CF_420;
@@ -518,8 +518,6 @@ void DirectShowGrabber::routeCrossbar() {
 
     xb->get_IsRoutedTo(0, &input);
     debug_msg("DirectShowGrabber::routeCrossbar():  pin %d is routed to output pin 0\n", input);
-
-    hr = xb->get_PinCounts(&output, &input);
 
     hr = xb->get_PinCounts(&output, &input);
     if(initializedPorts == 0) {
@@ -1143,7 +1141,7 @@ DirectShowDevice::DirectShowDevice(char *friendlyName, IBaseFilter *pCapFilt) : 
    Port **inputPorts = o.getInputPorts();
    if(inputPorts[0] != NULL) {
        int i=0;
-       while( i < NUM_PORTS && inputPorts[i] != NULL ) {
+       while( i <  NUM_PORTS && inputPorts[i] != NULL ) {
            strcat(attri_, inputPorts[i]->name);
            strcat(attri_, " ");
            i++;
