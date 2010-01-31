@@ -111,7 +111,24 @@ public:
     }
 
     virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, LPVOID *ppv) {
-        return E_NOINTERFACE;
+        HRESULT result = E_NOINTERFACE;
+
+#if defined(_WIN32) || defined(_WIN64) 
+        // Initialise the return result
+        *ppv = NULL;
+
+        // Obtain the IUnknown interface and compare it the provided REFIID
+        if (iid == IID_IUnknown) {
+            *ppv = this;
+            AddRef();
+            result = S_OK;
+        } else if (iid == IID_IDeckLinkInputCallback) {
+            *ppv = (IDeckLinkInputCallback*)this;
+            AddRef();
+            result = S_OK;
+        }
+#endif
+        return result;
     }
 
     virtual ULONG STDMETHODCALLTYPE AddRef() {
@@ -224,9 +241,17 @@ DeckLinkScanner::DeckLinkScanner(int maxNumDevices)
     HRESULT result;
 
 #if defined(_WIN32) || defined(_WIN64) 
+	// Initialize COM on this thread
+	result = CoInitializeEx(NULL,COINIT_MULTITHREADED);
+	if (FAILED(result)) {
+		debug_msg("DeckLinkScanner: Failed COM subsystem initialisation.\n");
+		return;
+	}
+
     CComPtr<IDeckLinkIterator> deckLinkIterator = NULL;
 	if (CoCreateInstance(CLSID_CDeckLinkIterator, NULL, CLSCTX_ALL, IID_IDeckLinkIterator, (void**)&deckLinkIterator) != S_OK || deckLinkIterator == NULL) {
         debug_msg("DeckLinkScanner: DeckLink iterator instance could not be created\n");
+        CoUninitialize();
         return;
 	}
 #else
@@ -275,7 +300,6 @@ DeckLinkScanner::DeckLinkScanner(int maxNumDevices)
             devs_[n] = new DeckLinkDevice(nick, deckLink);
             n++;
         }
-
     }
 }
 
@@ -288,6 +312,9 @@ DeckLinkScanner::~DeckLinkScanner() {
             delete devs_[i];
         }
     }
+#if defined(_WIN32) || defined(_WIN64) 
+	CoUninitialize();
+#endif
 }
 
 DeckLinkDevice::DeckLinkDevice(const char* name, IDeckLink* deckLink) : InputDevice(name), grabber_(0), deckLink_(deckLink)
@@ -362,7 +389,7 @@ DeckLinkDevice::DeckLinkDevice(const char* name, IDeckLink* deckLink) : InputDev
         char displayModeString[64] = {};
         CComBSTR displayModeNameBSTR;
 
-        result = displayMode->GetName(&displayModeNameBSTR) == S_OK;
+        result = displayMode->GetName(&displayModeNameBSTR);
 	    if (result == S_OK) {
             CW2A tmpstr1(displayModeNameBSTR);
             strncpy_s(displayModeString, sizeof(displayModeString), tmpstr1, _TRUNCATE);
