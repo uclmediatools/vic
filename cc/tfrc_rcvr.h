@@ -1,7 +1,9 @@
 /*
- * Copyright (c) 2008 University College London
+ * Copyright (c) 2010 University College London
  * All rights reserved.
  * 
+ * AUTHOR: Soo-Hyun Choi <s.choi@cs.ucl.ac.uk>
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -10,14 +12,10 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *  This product includes software developed by the MASH Research
- *  Group at the University of California Berkeley.
- * 4. Neither the name of the University nor of the Research Group may be
- *    used to endorse or promote products derived from this software without
+ * 3. Neither the name of the University nor of the Laboratory may be used
+ *    to endorse or promote products derived from this software without
  *    specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
