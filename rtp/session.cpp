@@ -648,8 +648,8 @@ void SessionManager::build_xreport(CtrlHandler* ch, int bt)
 			__FILE__,__LINE__);
 
 	// declare chunks
-	u_int16_t *chunks;
-	u_int16_t num_chunks;
+	u_int16_t *chunks = NULL;
+	u_int16_t num_chunks = 0;
 
 	// i am an RTP data sender
 	if (am_i_sender()) {
