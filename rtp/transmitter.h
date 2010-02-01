@@ -52,6 +52,10 @@
 #include "cc/tfwc_sndr.h"
 #include "cc/tfwc_rcvr.h"
 
+#define NOCC	100
+#define WBCC	101
+#define RBCC	102
+
 /*
  * The base object for performing the outbound path of
  * the application level protocol.
@@ -86,7 +90,8 @@ class Transmitter : public TclObject, public Timer,
 	void flush();
 	void send(pktbuf*);
 	inline bool is_cc_on() { return is_cc_active_; }
-	void cc_output();
+	void cc_tfwc_output();
+	void cc_tfrc_output();
 
 	/*
 	 * Buffer allocation hooks.
@@ -125,8 +130,9 @@ protected:
 	static u_int16_t seqno_;
 
 	/* Cc related variables */
-	bool is_cc_active_;		/* is Cc module activated?		*/
+	bool is_cc_active_;	/* is Cc module activated?		*/
 	bool is_first_;		/* is this first CC'd data packet?	*/
+	int cc_type_;
 
     private:
 	static pktbuf* freehdrs_;

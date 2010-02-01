@@ -92,7 +92,8 @@ Transmitter::Transmitter() :
 	loop_layer_(1000),
 	loopback_(0),
 	is_cc_active_(1),
-	is_first_(1)
+	is_first_(1),
+	cc_type_(0)
 {
 	memset((char*)&mh_, 0, sizeof(mh_));
 	mh_.msg_iovlen = 2;
@@ -213,9 +214,11 @@ double Transmitter::txtime(pktbuf* pb)
 
 void Transmitter::send(pktbuf* pb)
 {
-	// CC is active, so just follow CC routines 
-	// (i.e., not sending packets here)
-	if (is_cc_on()) {
+	switch (cc_type_) {
+	//
+	// window-based congestion control (TFWC)
+	//
+	case WBCC:
 		// if it is the very first packet, just send it.
 		if(is_first_) {
 			if (head_ != 0) {
@@ -224,7 +227,7 @@ void Transmitter::send(pktbuf* pb)
 			} else
 				tail_ = head_ = pb;
 			pb->next = 0;
-			cc_output();
+			cc_tfwc_output();
 			is_first_ = false;
 		} 
 		// if it is not, just queue up the packets.
@@ -236,9 +239,40 @@ void Transmitter::send(pktbuf* pb)
 				tail_ = head_ = pb;
 			pb->next = 0;
 		}
-	} 
-	// CC is not active, so just go for the normal operation
-	else {
+		break;
+
+	//
+	// rate-based congestion control (TFRC)
+	//
+	case RBCC:
+		// if it is the very first packet, just send it.
+		if(is_first_) {
+			if (head_ != 0) {
+				tail_->next = pb;
+				tail_ = pb;
+			} else
+				tail_ = head_ = pb;
+			pb->next = 0;
+			cc_tfrc_output();
+			is_first_ = false;
+		} 
+		// if it is not, just queue up the packets.
+		else {
+			if (head_ != 0) {
+				tail_->next = pb;
+				tail_ = pb;
+			} else
+				tail_ = head_ = pb;
+			pb->next = 0;
+		}
+		break;
+
+	//
+	// without congestion control
+	//
+	case NOCC:
+	default:
+		// CC is not active, so just go for the normal operation
 		if (!busy_) {
 			double delay = txtime(pb);
 			nextpkttime_ = gettimeofday_secs() + delay;
@@ -257,15 +291,15 @@ void Transmitter::send(pktbuf* pb)
 				tail_ = head_ = pb;
 			pb->next = 0;
 		}
-	} // if (is_cc_on())
+	} // switch (cc_type)
 }
 
 /*
- * main CC output routines
+ * main TFWC CC output routines
  */
-void Transmitter::cc_output()
+void Transmitter::cc_tfwc_output()
 {
-	printf("\t------------entering cc_output()------------\n");
+	printf("\t------------entering cc_tfwc_output()------------\n");
 	printf("\t|                                          |\n");
 	printf("\tV                                          V\n");
 
@@ -279,7 +313,7 @@ void Transmitter::cc_output()
 		printf("\t=========== PACKET NOT AVAILABLE ===========\n\n");
 		return;
 	}
-	printf("\tthere are packets available to send in cc_output()\n");
+	printf("\tthere are packets available to send in cc_tfwc_output()\n");
 
 	// pb is not null, hence parse it.
 	rtphdr* rh = (rtphdr *) pb->data;
@@ -316,6 +350,13 @@ void Transmitter::cc_output()
 	printf("\t^                                          ^\n");
 	printf("\t|                                          |\n");
 	printf("\t============================================\n");
+}
+
+/*
+ * main TFRC CC output
+ */
+void Transmitter::cc_tfrc_output() {
+	// TBA
 }
 
 void Transmitter::timeout()
