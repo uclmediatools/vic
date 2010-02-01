@@ -653,12 +653,20 @@ void SessionManager::build_xreport(CtrlHandler* ch, int bt)
 
 	// i am an RTP data sender
 	if (am_i_sender()) {
-		// this block is used for giving ackofack
 		if(bt == XR_BT_1) {
 			num_chunks = 1;
 			chunks = (u_int16_t *) malloc(num_chunks * sizeof(u_int16_t));
-			// set AckofAck
-			chunks[num_chunks-1] = tfwc_sndr_get_aoa();
+
+			switch (cc_type_) {
+			case WBCC:
+				// this block is used for giving ackofack
+				// set AckofAck
+				chunks[num_chunks-1] = tfwc_sndr_get_aoa();
+				break;
+
+			case RBCC:
+				break;
+			}
 
 			// send_Xreport (sender's report)
 			// - just sending ackofack information
@@ -672,18 +680,25 @@ void SessionManager::build_xreport(CtrlHandler* ch, int bt)
 	else {
 		// this block is used for giving ackvec
 		if (bt == XR_BT_1) {
-			// get the number of required chunks for giving AckVec
-			num_chunks = tfwc_rcvr_numvec();
-			chunks = (u_int16_t *) malloc(num_chunks * sizeof(u_int16_t));
+			switch (cc_type_) {
+			case WBCC:
+				// get the number of required chunks for giving AckVec
+				num_chunks = tfwc_rcvr_numvec();
+				chunks = (u_int16_t *) 
+					malloc(num_chunks * sizeof(u_int16_t));
 			
-			// set/printing chunks
-			//printf("\t   printing chunks: ");
-			for (int i = 0; i < num_chunks; i++) {
-				chunks[i] = tfwc_rcvr_getvec(i);
-			//	printf("[%d:%x] ", i, chunks[i]);
-			} 
-			//printf("...........%s +%d\n",__FILE__,__LINE__);
+				// set/printing chunks
+				//printf("\t   printing chunks: ");
+				for (int i = 0; i < num_chunks; i++) {
+					chunks[i] = tfwc_rcvr_getvec(i);
+				//	printf("[%d:%x] ", i, chunks[i]);
+				} 
+				//printf("...........%s +%d\n",__FILE__,__LINE__);
+					break;
 
+			case RBCC:
+				break;
+			}
 			// send_Xreport (receiver's report)
 			// - sending AckVec
 			send_Xreport(ch, XR_BT_1, 0, 0, tfwc_rcvr_begins(), 
@@ -1290,7 +1305,7 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 			tfwc_sndr_recv(xr->BT, begin, end, chunk);
 
 			// we need to call Transmitter::output(pb) to make Ack driven
-			cc_output();
+			cc_tfwc_output();
 		}
 		// i am an RTP data receiver, so receive ackofack 
 		else {
