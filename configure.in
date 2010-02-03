@@ -192,9 +192,7 @@ else
         V_OBJ_GRABBER="$V_OBJ_GRABBER  video/tinyjpeg.o video/jidctflt.o"
 fi
 
-AC_ARG_WITH(decklink,
-    AC_HELP_STRING([--with-decklink=dir], [directory containing DeckLinkAPIDispatch.cpp]),
-    with_decklinkapidispatch=${withval})
+AC_ARG_WITH(decklink,--with-decklink=dir     specify directory containing DeckLinkAPIDispatch.cpp, with_decklinkapidispatch=${withval})
 AC_MSG_NOTICE([checking for Blackmagic DeckLink SDK])
 AC_CACHE_VAL(ac_cv_c_decklinkapidispatch,[
         # First check to see if --with-decklink was specified.
@@ -553,10 +551,15 @@ dnl If gcc 32bit then we need to set these flags for compilation of ffmpeg and x
         OPSYS=macosx
         V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-macosx.o video/yuv_convert.o"
         ;;
-   *-*-mingw*)
+*-*-mingw*)
         ffmpeg_conf="$ffmpeg_conf --enable-memalign-hack"
         ;;
-   *)
+esac
+
+case "$target" in
+*-*-darwin* | *-*-mingw* | *-*-cygwin* | *-*-pw32*)
+        ;;
+*)
         V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-x11.o"
         ;;
 esac
