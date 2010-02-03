@@ -105,6 +105,7 @@ class CtrlHandler : public DataHandler, public Timer {
 	void send_aoa();	// send ackofack (TfwcSndr side)
 	void send_ts();		// send timestamp (TfwcSndr side)
 	void send_ackv();
+	void send_p();
 	void send_ts_echo();
 
 	// i am an RTP data sender/receiver
@@ -148,6 +149,7 @@ public:
 	void build_aoa_pkt(CtrlHandler* ch);
 	void build_ts_pkt(CtrlHandler* ch);
 	void build_ackv_pkt(CtrlHandler* ch);
+	void build_p_pkt(CtrlHandler* ch);
 	void build_ts_echo_pkt(CtrlHandler* ch);
 
 	// am i a data sender?

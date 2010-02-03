@@ -462,11 +462,15 @@ void SessionManager::transmit(pktbuf* pb)
 		if (n != 0)
 			n->send(pb);
 
-		// if CC is on, send an RTCP XR (aoa) packet 
+		// if window-based CC is on, send an RTCP XR (aoa) packet 
 		// upon every RTP data packet transmission.
-		if(is_cc_on()) {
+		switch (cc_type_) {
+		case WBCC:
 			ch_[0].send_aoa();	// send ack of ack
 			//ch_[0].send_ts();	// send time stamp
+			break;
+		case RBCC:
+			break;
 		}
 	}
 }
@@ -662,15 +666,16 @@ void SessionManager::build_xreport(CtrlHandler* ch, int bt)
 				// this block is used for giving ackofack
 				// set AckofAck
 				chunks[num_chunks-1] = tfwc_sndr_get_aoa();
+
+				// send_Xreport (sender's report)
+				// - just sending ackofack information
+				send_Xreport(ch, XR_BT_1, 0, 0, 0, 0, chunks, num_chunks, 0);
 				break;
 
 			case RBCC:
+				// for TFRC, no action needed here.
 				break;
 			}
-
-			// send_Xreport (sender's report)
-			// - just sending ackofack information
-			send_Xreport(ch, XR_BT_1, 0, 0, 0, 0, chunks, num_chunks, 0);
 		}
 		else if (bt == XR_BT_3) {
 			/*XXX*/
@@ -1016,13 +1021,21 @@ void SessionManager::recv(DataHandler* dh)
 		// retrieve RTP seqno
 		rtphdr* rh = (rtphdr*)pb->data;
 		seqno = ntohs(rh->rh_seqno);
-		// pass seqno to tfwc receiver to build up AckVec
-		tfwc_rcvr_recv_seqno(seqno);
-		printf("\n\treceived seqno: %d\n\n", seqno);
 
-		// send receiver side XR report (AckVec)
-		ch_[0].send_ackv();
-		//ch_[0].send_ts_echo();
+		switch (cc_type_) {
+		case WBCC:
+			// pass seqno to tfwc receiver to build up AckVec
+			tfwc_rcvr_recv_seqno(seqno);
+			printf("\n\treceived seqno: %d\n\n", seqno);
+
+			// send receiver side XR report (AckVec)
+			ch_[0].send_ackv();
+			//ch_[0].send_ts_echo();
+			break;
+		case RBCC:
+			ch_[0].send_p();
+			break;
+		}
 	}
 	
 	//bp += sizeof(*rh);
@@ -1300,21 +1313,35 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 			printf(">>> parse_xr - i_am_sender\n");
 			printf("    [%s +%d] beg:%d, end:%d, xr1len:%d (xrlen:%d)\n", 
 					__FILE__,__LINE__,begin, end, ntohs(xr1->xr_len), xrlen);
+			
+			switch (cc_type_) {
+			case WBCC:
+				// TFWC sender (getting AckVec)
+				tfwc_sndr_recv(xr->BT, begin, end, chunk);
+				// we need to call Transmitter::output(pb) to make Ack driven
+				cc_tfwc_output();
+				break;
 
-			// TFWC sender (getting AckVec)
-			tfwc_sndr_recv(xr->BT, begin, end, chunk);
-
-			// we need to call Transmitter::output(pb) to make Ack driven
-			cc_tfwc_output();
+			case RBCC:
+				break;
+			}
 		}
 		// i am an RTP data receiver, so receive ackofack 
 		else {
-			printf(">>> parse_xr - i_am_receiver\n");
-			printf("    [%s +%d] chunk[0]:%d\n", 
+			switch (cc_type_) {
+			case WBCC:
+				printf(">>> parse_xr - i_am_receiver\n");
+				printf("    [%s +%d] chunk[0]:%d\n", 
 					__FILE__,__LINE__, ntohs(chunk[0]));
 
-			// TFWC receiver (getting ackofack)
-			tfwc_rcvr_recv_aoa(xr->BT, chunk);
+				// TFWC receiver (getting ackofack)
+				tfwc_rcvr_recv_aoa(xr->BT, chunk);
+				break;
+
+			case RBCC:
+				// do nothing
+				break;
+			}
 		} // end of XR block type 1
 	} else {
 		// XXX
@@ -1323,23 +1350,44 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 	printf("-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\n");
 }
 
+
+// send AckVec 
+// (TFWC data receiver side)
 void CtrlHandler::send_ackv()
 {
 	i_am_receiver();
 	sm_->build_ackv_pkt(this);
 }
 
+// send loss event rate 
+// (TFRC data receiver side)
+void CtrlHandler::send_p() {
+	i_am_receiver();
+	sm_->build_p_pkt(this);
+}
+
+// send timestamp echo
 void CtrlHandler::send_ts_echo()
 {
 	i_am_receiver();
 	sm_->build_ts_echo_pkt(this);
 }
 
+// build AckVec packet 
+// (TFWC data receiver side)
 void SessionManager::build_ackv_pkt(CtrlHandler* ch)
 {
 	// RTCP XR (block type 1)
 	// this block contains ackvec
 	build_xreport(ch, XR_BT_1);
+}
+
+// build loss event rate report packet
+// (TFRC data receiver side)
+void SessionManager::build_p_pkt(CtrlHandler* ch)
+{
+	// this block conveys loss event rate
+	build_xreport (ch, XR_BT_1);
 }
 
 void SessionManager::build_ts_echo_pkt(CtrlHandler* ch)
