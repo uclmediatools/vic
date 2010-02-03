@@ -50,7 +50,7 @@ proc build.titlemaker w {
 	set f [smallfont]
 
 	#bind $w <q> "logo_quit"
-	#bind $w <Enter> "focus %W"	
+	#bind $w <Enter> "focus %W"
 	#bind $w <Enter> "focus $w"
 	
 	frame $w.b 
@@ -60,10 +60,17 @@ proc build.titlemaker w {
 	label $w.b.file.label -text "Overlay Image file:" -font $f -anchor w
 	mk.entry $w.b.file tm.update.filename $selectedFile
 	$w.b.file.entry configure -width 39
-	button $w.b.file.selectfile \
-		-relief raised -command "logo_fileselect $w.b.file.entry" \
-		-font $f -highlightthickness 0 \
-		-image $icons(file_open)
+	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+		ttk::button $w.b.file.selectfile \
+			-compound image \
+			-command "logo_fileselect $w.b.file.entry" \
+			-image $icons(file_open)
+	} else {
+		button $w.b.file.selectfile \
+			-relief raised -command "logo_fileselect $w.b.file.entry" \
+			-font $f -highlightthickness 0 \
+			-image $icons(file_open)
+	}
 	pack $w.b.file.label  -side left -anchor w -fill x -expand 1
 	pack $w.b.file.entry $w.b.file.selectfile -side left -padx 2 -anchor w -fill x -expand 1
 	pack $w.b.file -side top
