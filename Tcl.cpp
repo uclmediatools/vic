@@ -107,7 +107,11 @@ void Tcl::eval(char* s)
 	if (st != TCL_OK) {
 		int n = strlen(application_) + strlen(s);
 		char* wrk = new char[n + 80];
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION < 5)
+		sprintf(wrk, "tkerror \"%s: %s\"", application_, s);
+#else
 		sprintf(wrk, "bgerror \"%s: %s\"", application_, s);
+#endif
 		Tcl_GlobalEval(tcl_, wrk);
 		delete[] wrk; //SV-XXX: Debian
 		//exit(1);
