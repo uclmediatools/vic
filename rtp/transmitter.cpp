@@ -93,7 +93,7 @@ Transmitter::Transmitter() :
 	loopback_(0),
 	is_cc_active_(1),
 	is_first_(1),
-	cc_type_(0)
+	cc_type_(WBCC)
 {
 	memset((char*)&mh_, 0, sizeof(mh_));
 	mh_.msg_iovlen = 2;
