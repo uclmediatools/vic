@@ -91,7 +91,7 @@ static FileDevice file_device("filedev");
 FileDevice::FileDevice(const char* s) : InputDevice(s),
 		frame_(NULL), len_(0), devstat_(-1)
 {
-	attributes_ = "format { 420 } size { small large cif }";
+	attributes_ = "format { 420 cif } size { small large cif }";
 
     debug_msg("FileDevice::FileDevice name=%s\n", s);
 }
@@ -100,15 +100,18 @@ FileDevice::FileDevice(const char* s) : InputDevice(s),
  * FileDevice
  */
 int FileDevice::command(int argc, const char*const* argv) {
-	for (int i = 0; i < argc; i++)
-		debug_msg("FileDevice\t%s\n", argv[i]);
+
+	//for (int i = 0; i < argc; i++)
+	//	debug_msg("FileDevice\t%s\n", argv[i]);
+
     if (argc == 3)
     {
 		if (strcmp(argv[1], "open") == 0)
 		{
 		    const char* fmt = argv[2];
 			TclObject* o = 0;
-			if (strcmp(fmt, "cif") == 0) 
+			if (strcmp(fmt, "cif") == 0 
+				|| strcmp(fmt, "420") == 0) 
 				o = file_grabber();
 		    if (o != 0)
 				Tcl::instance().result(o->name());
