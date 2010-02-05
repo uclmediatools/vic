@@ -52,7 +52,7 @@ proc build.bar w {
 	global title
 
 	frame $w.bar  -borderwidth 0
-	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		global V
 		set net $V(data-net)
 		label $w.bar.title -text "Address: [$net addr]  Port: [$net port]  TTL: [$net ttl]" -font [smallfont] -justify left
@@ -64,7 +64,7 @@ proc build.bar w {
 			-command "toggle_window .help"
 		ttk::button $w.bar.autoplace -text Autoplace \
 			-command "ag_autoplace::show_ui"
-	} elseif {[windowingsystem] eq "aqua"} {
+	} elseif {[windowingsystem] == "aqua"} {
 		global V
 		set net $V(data-net)
 		label $w.bar.title -text "Address: [$net addr]  Port: [$net port]  TTL: [$net ttl]" -font [smallfont] -justify left
@@ -101,7 +101,7 @@ proc build.bar w {
 	pack $w.bar.title -side left -fill both -expand 1
 	pack $w.bar.menu $w.bar.autoplace $w.bar.help $w.bar.quit -side left -padx 1 -pady 1
 
-	if {[windowingsystem] eq "aqua"} {
+	if {[windowingsystem] == "aqua"} {
 		label $w.bar.gap -text " "
 		pack $w.bar.gap -side left -padx 1 -pady 1
 
@@ -112,7 +112,7 @@ proc build.bar2 w {
 
 	frame $w.bar2 -relief ridge -borderwidth 0
 
-	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		ttk::button $w.bar2.autoplace -text Autoplace \
 			-command "ag_autoplace::show_ui"
 		ttk::button $w.bar2.pixrate -text Pixrate \
@@ -569,11 +569,11 @@ proc build.src { w src color } {
 	# disable xvideo for stamp video
 	attach_window $src $stamp.video false
 
-	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		pack $stamp.video -side left -padx 2 -pady 2
 		pack $stamp -side left -anchor nw -padx {4 2} -pady 2
 		frame $w.r -padx 2
-	} elseif {[windowingsystem] eq "aqua"} {
+	} elseif {[windowingsystem] == "aqua"} {
 		pack $stamp.video -side left -padx 2 -pady 2
 		pack $stamp -side left -anchor nw -padx {4 2} -pady 2
 		frame $w.r -padx 2
@@ -594,12 +594,12 @@ proc build.src { w src color } {
 	pack $w.r.cw -side left -expand 1 -fill both -anchor w -padx 0
 
 
-	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		label $w.r.cw.name -textvariable src_nickname($src) -font $f \
 			-padx 2 -pady 1 -borderwidth 0 -anchor w
 		label $w.r.cw.addr -textvariable src_info($src) -font $f \
 			-padx 2 -pady 1 -borderwidth 0 -anchor w
-	} elseif {[windowingsystem] eq "aqua"} {
+	} elseif {[windowingsystem] == "aqua"} {
 		label $w.r.cw.name -textvariable src_nickname($src) -font $f \
 			-padx 2 -pady 1 -borderwidth 0 -anchor w
 		label $w.r.cw.addr -textvariable src_info($src) -font $f \
@@ -631,7 +631,7 @@ proc build.src { w src color } {
 	set mutebutton($src) $V(muteNewSources)
 	$src mute $mutebutton($src)
 
-	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		ttk::checkbutton $w.r.ctrl.mute -text mute -width 4 \
 			-command "$src mute \$mutebutton($src)" \
 			-variable mutebutton($src)
@@ -639,7 +639,7 @@ proc build.src { w src color } {
 		ttk::checkbutton $w.r.ctrl.color -text color -width 4 \
 			-command "\[$src handler\] color \$colorbutton($src)" \
 			-variable colorbutton($src)
-	} elseif {[windowingsystem] eq "aqua"} {
+	} elseif {[windowingsystem] == "aqua"} {
 		checkbutton $w.r.ctrl.mute -text mute -borderwidth 2 \
 			-font $f -width 4 \
 			-command "$src mute \$mutebutton($src)" \
@@ -664,9 +664,9 @@ proc build.src { w src color } {
 	}
 
 	set m $w.r.ctrl.info.menu$src
-	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		ttk::menubutton $w.r.ctrl.info -text info -menu $m
-	} elseif {[windowingsystem] eq "aqua"} {
+	} elseif {[windowingsystem] == "aqua"} {
 		menubutton $w.r.ctrl.info -text info -borderwidth 2 \
 			-font $f -pady 4 -menu $m
 	} else {
@@ -677,11 +677,11 @@ proc build.src { w src color } {
 	}
 	build_info_menu $src $m
 
-	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		pack $w.r.ctrl.mute -side left -expand 1
 		pack $w.r.ctrl.color -side left -expand 1
 		pack $w.r.ctrl.info -side left -fill x -expand 1
-	} elseif {[windowingsystem] eq "aqua"} {
+	} elseif {[windowingsystem] == "aqua"} {
 		pack $w.r.ctrl.mute -side left -expand 1
 		pack $w.r.ctrl.color -side left -expand 1
 		pack $w.r.ctrl.info -side left -fill x -expand 1
@@ -706,7 +706,7 @@ proc build.src { w src color } {
 	if {$::tk_version > 8.4} {
 		bind $stamp <Enter> "%W configure -background [$m cget -activebackground]"
 		bind $stamp <Leave> "%W configure -background [$m cget -background]"
-	} elseif {[windowingsystem] eq "aqua"} {
+	} elseif {[windowingsystem] == "aqua"} {
 		bind $stamp <Enter> "%W configure -background CornflowerBlue"
 		bind $stamp <Leave> "%W configure -background [resource background]"
 	} else {

@@ -34,7 +34,7 @@ proc windowingsystem { } {
 		# call exists first in tk 8.4, one possible
 		# reason for failure)
 		global tcl_platform
-		if {$tcl_platform(platform) eq "windows"} {
+		if {$tcl_platform(platform) == "windows"} {
 			set tkws win32
 		} else {
 			# default to x11 otherwise
@@ -46,7 +46,7 @@ proc windowingsystem { } {
 
 proc fork_histtolut { } {
 	global V
-	if { $V(dither) eq "gray" } {
+	if { $V(dither) == "gray" } {
 		open_dialog "cannot optimize grayscale rendering"
 		return
 	}
@@ -83,7 +83,7 @@ proc fork_histtolut { } {
 	#
 	#XXX -n
 	set eflag ""
-	if { $V(dither) eq "ed" } {
+	if { $V(dither) == "ed" } {
 		set eflag "-e"
 	}
 	if [catch \
@@ -149,7 +149,7 @@ proc build.menu { } {
 		[[srctab local] srcid] [$net ttl] [[srctab local] sdes name] \
 		[[srctab local] sdes note]
 
-	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		ttk::button $w.dismiss -text Dismiss \
 			-command "toggle_window $w"
 	} else {
@@ -171,7 +171,7 @@ proc build.menu { } {
 
 proc defaultDevice {} {
 	set d [resource defaultDevice]
-	if { $d eq "" } {
+	if { $d == "" } {
 		set d [resource device]
 	}
 	return $d
@@ -181,19 +181,19 @@ proc selectInitialDevice {} {
 	global videoDevice inputDeviceList
 	set d [defaultDevice]
 	foreach v $inputDeviceList {
-		if { [$v nickname] eq "$d" && \
-			[$v attributes] ne "disabled" } {
+		if { [$v nickname] == "$d" && \
+			[$v attributes] != "disabled" } {
 			set videoDevice $v
 			select_device $v
 			return
 		}
 	}
-	if { [string toupper [string range $d 0 4]] eq "V4L2:" } {
+	if { [string toupper [string range $d 0 4]] == "V4L2:" } {
 		set d [string range $d 5 end]
 		foreach v $inputDeviceList {
 			set k [expr [string length [$v nickname]] - [string length $d]]
-			if { [string range [$v nickname] 0 4] eq "V4L2-" && \
-				[string range [$v nickname] $k end] eq "$d" && \
+			if { [string range [$v nickname] 0 4] == "V4L2-" && \
+				[string range [$v nickname] $k end] == "$d" && \
 				[$v attributes] != "disabled" } {
 				set videoDevice $v
 				select_device $v
@@ -201,12 +201,12 @@ proc selectInitialDevice {} {
 			}
 		}
 	}
-	if { [string toupper [string range $d 0 3]] eq "V4L:" } {
+	if { [string toupper [string range $d 0 3]] == "V4L:" } {
 		set d [string range $d 4 end]
 		foreach v $inputDeviceList {
 			set k [expr [string length [$v nickname]] - [string length $d]]
-			if { [string range [$v nickname] 0 3] eq "V4L-" && \
-				[string range [$v nickname] $k end] eq "$d" && \
+			if { [string range [$v nickname] 0 3] == "V4L-" && \
+				[string range [$v nickname] $k end] == "$d" && \
 				[$v attributes] != "disabled" } {
 				set videoDevice $v
 				select_device $v
@@ -258,12 +258,12 @@ proc build.session { w dst port srcid ttl name note } {
 
 	frame $w.nb.frame.b
 
-	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		ttk::button $w.nb.frame.b.stats -text "Global Stats" \
 			-command create_global_window
 		ttk::button $w.nb.frame.b.members -text Members \
 			-command "toggle_window .srclist"
-	} elseif {[windowingsystem] eq "aqua"} {
+	} elseif {[windowingsystem] == "aqua"} {
 		button $w.nb.frame.b.stats -text "Global Stats" -padx 10 \
 			-anchor c -font $f -command create_global_window
 		button $w.nb.frame.b.members -text Members -padx 10 \
@@ -329,7 +329,7 @@ proc grabber args {
 }
 
 proc create_encoder fmt {
-	if { $fmt eq "nvdct" } {
+	if { $fmt == "nvdct" } {
 		set encoder [new module nv]
 		$encoder use-dct 1
 	} else {
@@ -353,7 +353,7 @@ proc transmit { } {
 		# if that doesn't work, try anything else
 
 		if { [inList $videoFormat $DF] } {
-			if { $videoFormat eq "h261" || $videoFormat eq "cellb" || $videoFormat eq "jpeg"} {
+			if { $videoFormat == "h261" || $videoFormat == "cellb" || $videoFormat == "jpeg"} {
 				# use special hardware tag...
 				set encoder ""
 				if  { $useHardwareComp } {
@@ -367,7 +367,7 @@ proc transmit { } {
 			}
 			set grabtarget $encoder
 			set grabq ""
-		} elseif { $videoFormat eq "h261" && [inList jpeg $DF] && $useJPEGforH261 } {
+		} elseif { $videoFormat == "h261" && [inList jpeg $DF] && $useJPEGforH261 } {
 			# just jpeg->h261 at this time
 			set transcoder [new transcoder jpeg/dct]
 			set encoder [new module h261/dct]
@@ -388,7 +388,7 @@ proc transmit { } {
 		set ff [$grabtarget frame-format]
 		set V(grabber) [$videoDevice open $ff]
 		# special cases
-		if { $V(grabber) eq "" && $ff eq "420" } {
+		if { $V(grabber) == "" && $ff == "420" } {
 			# try cif instead of 420
 			set V(grabber) [$videoDevice open cif]
 		}
@@ -486,7 +486,7 @@ proc build.buttons w {
 	global logoButton
 	set logoButton $w.logo
 
-	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		ttk::checkbutton $w.send -text "Transmit" \
 			-command transmit \
 			-variable transmitButtonState \
@@ -524,7 +524,7 @@ proc doNothing { args } {
 
 proc update_encoder_param {  } {
 	global videoFormat fps_slider bps_slider
-	if {$videoFormat eq "mpeg4" || $videoFormat eq "h264"} {
+	if {$videoFormat == "mpeg4" || $videoFormat == "h264"} {
 		encoder kbps [expr round([$bps_slider get])]
 		encoder fps [expr round([$fps_slider get])]
 	}
@@ -536,7 +536,7 @@ proc set_bps { w value } {
 	set value [expr round($value)]
 	if [have grabber] {
 		grabber bps $value
-		if {$videoFormat eq "mpeg4" || $videoFormat eq "h264"} {
+		if {$videoFormat == "mpeg4" || $videoFormat == "h264"} {
 			encoder kbps $value
 		}
 
@@ -552,7 +552,7 @@ proc set_fps { w value } {
 	set value [expr round($value)]
 	if [have grabber] {
 		grabber fps $value
-		if {$videoFormat eq "mpeg4" || $videoFormat eq "h264"} {
+		if {$videoFormat == "mpeg4" || $videoFormat == "h264"} {
 			encoder fps $value
 		}
 	}
@@ -577,7 +577,7 @@ proc build.sliders w {
 	pack $w.info.label -side left
 	pack $w.info.bps $w.info.fps -side right
 
-	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		frame $w.bps
 		ttk::scale $w.bps.scale -orient horizontal \
 			-value 0 -from 1 -to [option get . maxbw Vic] \
@@ -626,7 +626,7 @@ proc build.sliders w {
 
 proc attribute_class { attr class } {
 	while { [llength $attr] >= 2 } {
-		if { [lindex $attr 0] eq $class } {
+		if { [lindex $attr 0] == $class } {
 			return [lindex $attr 1]
 		}
 		set attr [lrange $attr 2 end]
@@ -654,7 +654,7 @@ proc inList { item L } {
 proc device_supports { device class attr } {
 	set L [$device attributes]
 	set L [attribute_class $L $class]
-	if { $attr eq "*" } {
+	if { $attr == "*" } {
 		if { $L == "" } {
 			return 0
 		} else {
@@ -705,7 +705,7 @@ proc insert_grabber_panel devname {
 	set w .menu.$devname
 	global grabberPanel
 	if [info exists grabberPanel] {
-		if { "$grabberPanel" eq "$w" } {
+		if { "$grabberPanel" == "$w" } {
 			return
 		}
 		pack forget $grabberPanel
@@ -748,7 +748,7 @@ proc select_device device {
 	foreach b $formatButtons {
 		set fmt [lindex [$b configure -value] 4]
 		#XXX
-		if { $fmt eq "bvc" && ![yesno enableBVC] } {
+		if { $fmt == "bvc" && ![yesno enableBVC] } {
 			$b configure -state disabled
 		} elseif { [inList $fmt $fmtList] } {
 			$b configure -state normal
@@ -796,9 +796,9 @@ proc build.device w {
 	set f [smallfont]
 
 	set m $w.menu
-	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		ttk::menubutton $w -menu $m -text Device -width 8
-	} elseif {[windowingsystem] eq "aqua"} {
+	} elseif {[windowingsystem] == "aqua"} {
 		menubutton $w -menu $m -text Device -width 8 -pady 4
 	} else {
 		menubutton $w -menu $m -text Device -indicatoron 1 \
@@ -808,13 +808,13 @@ proc build.device w {
 
 	global defaultFormat inputDeviceList videoFormat
 	set videoFormat [option get . defaultFormat Vic]
-	if { $videoFormat eq "h.261" } {
+	if { $videoFormat == "h.261" } {
 		set videoFormat h261
-	} elseif { $videoFormat eq "h.263plus"} {
+	} elseif { $videoFormat == "h.263plus"} {
 		set videoFormat h263+
-	} elseif { $videoFormat eq "mpeg4"} {
+	} elseif { $videoFormat == "mpeg4"} {
 		set videoFormat mpeg4
-	} elseif { $videoFormat eq "h264"} {
+	} elseif { $videoFormat == "h264"} {
 		set videoFormat h264
 	}
 
@@ -827,11 +827,11 @@ proc build.device w {
 		return
 	}
 	foreach d $inputDeviceList {
-		if { [$d nickname] eq "still" && ![yesno stillGrabber] } {
+		if { [$d nickname] == "still" && ![yesno stillGrabber] } {
 			set defaultFormat($d) $videoFormat
 			continue
 		}
-		if { [$d nickname] eq "filedev" && ![yesno fileGrabber] } {
+		if { [$d nickname] == "filedev" && ![yesno fileGrabber] } {
 			set defaultFormat($d) $videoFormat
 			continue
 		}
@@ -839,7 +839,7 @@ proc build.device w {
 		$m add radiobutton -label [$d nickname] \
 			-command "select_device $d" \
 			-value $d -variable videoDevice -font $f
-		if { "[$d attributes]" eq "disabled" } {
+		if { "[$d attributes]" == "disabled" } {
 			$m entryconfigure [$d nickname] -state disabled
 		}
 		set fmtList [device_formats $d]
@@ -855,7 +855,7 @@ proc format_col3 { w n0 n1 n2 } {
 	set f [smallfont]
 	frame $w
 
-	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		ttk::radiobutton $w.b0 -text $n0 \
 			-variable videoFormat -value $n0 \
 			-command "select_format $n0" -state disabled
@@ -902,7 +902,7 @@ proc format_col { w n0 n1 } {
 		set reliefn1 flat
 	}
 
-	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		ttk::radiobutton $w.b0 -text $n0 \
 			-variable videoFormat -value $n0 \
 			-command "select_format $n0" -state disabled
@@ -948,7 +948,7 @@ proc build.encoderLayer_scale w {
 	frame $w.tb
 	label $w.title -text "Layers" -font $f -anchor w
 	label $w.tb.value -text 0 -font $f -width 3
-	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		ttk::scale $w.tb.scale -orient horizontal \
 			-value 0 -from 0 -to $numLayers \
 			-variable numEncoderLayers \
@@ -1016,7 +1016,7 @@ proc build.size w {
 
 	set b $w.b
 	frame $b
-	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		ttk::radiobutton $b.b0 -text "small" -command "restart" \
 			-variable inputSize -value 4
 		ttk::radiobutton $b.b1 -text "normal" -command "restart" \
@@ -1044,10 +1044,10 @@ proc build.size w {
 proc build.port w {
 	set f [smallfont]
 	# create the menubutton but don't defer the menu creation until later
-	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		ttk::menubutton $w -menu $w.menu -text Port -width 8 \
 			-state disabled
-	} elseif {[windowingsystem] eq "aqua"} {
+	} elseif {[windowingsystem] == "aqua"} {
 		menubutton $w -menu $w.menu -text Port -width 8 -pady 4 \
 			-state disabled
 	} else {
@@ -1090,10 +1090,10 @@ proc attach_ports device {
 proc build.type w {
 	set f [smallfont]
 	# create the menubutton but don't defer the menu creation until later
-	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		ttk::menubutton $w -menu $w.menu -text Signal -width 8 \
 			-state disabled
-	} elseif {[windowingsystem] eq "aqua"} {
+	} elseif {[windowingsystem] == "aqua"} {
 		menubutton $w -menu $w.menu -text Signal -width 8 -pady 4 \
 			-state disabled
 	} else {
@@ -1115,13 +1115,13 @@ proc attach_types device {
 	foreach typename $typenames {
 		set type [string tolower $typename]
 
-		if { $type eq "ntsc" } {
+		if { $type == "ntsc" } {
 			set typename "NTSC"
-		} elseif { $type eq "pal" } {
+		} elseif { $type == "pal" } {
 			set typename "PAL"
-		} elseif { $type eq "secam" } {
+		} elseif { $type == "secam" } {
 			set typename "SECAM"
-		} elseif { $type eq "auto" } {
+		} elseif { $type == "auto" } {
 			set typename "auto"
 		}
 
@@ -1160,9 +1160,9 @@ proc build.encoder_options w {
 	set f [smallfont]
 	set m $w.menu
 
-	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		ttk::menubutton $w -text Options -menu $m -width 8
-	} elseif {[windowingsystem] eq "aqua"} {
+	} elseif {[windowingsystem] == "aqua"} {
 		menubutton $w -text Options -menu $m -width 8 -pady 4
 	} else {
 		menubutton $w -text Options -menu $m -relief raised -width 10 \
@@ -1175,7 +1175,7 @@ proc build.encoder_options w {
 		-variable useJPEGforH261 -font $f -command restart
 	$m add checkbutton -label "Use Hardware Encode" \
 		-variable useHardwareComp -font $f -command restart
-	if { $tcl_platform(platform) eq "windows" || [windowingsystem] eq "aqua"} {
+	if { $tcl_platform(platform) == "windows" || [windowingsystem] == "aqua"} {
 		$m add checkbutton -label "Configure on Transmit" \
 			-variable configOnTransmit -font $f \
 			-command  "grabber useconfig \$configOnTransmit"
@@ -1185,9 +1185,9 @@ proc build.encoder_options w {
 proc build.tile w {
 	set f [smallfont]
 	set m $w.menu
-	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		ttk::menubutton $w -text Tile -menu $m -width 8
-	} elseif {[windowingsystem] eq "aqua"} {
+	} elseif {[windowingsystem] == "aqua"} {
 		menubutton $w -text Tile -menu $m -width 8 -pady 4
 	} else {
 		menubutton $w -text Tile -menu $m -relief raised -width 10 \
@@ -1207,9 +1207,9 @@ proc build.tile w {
 proc build.decoder_options w {
 	set f [smallfont]
 	set m $w.menu
-	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		ttk::menubutton $w -text Options -menu $m -width 8
-	} elseif {[windowingsystem] eq "aqua"} {
+	} elseif {[windowingsystem] == "aqua"} {
 		menubutton $w -text Options -menu $m -width 8 -pady 4
 	} else {
 		menubutton $w -text Options -menu $m -relief raised -width 10 \
@@ -1238,7 +1238,7 @@ proc build.external w {
 		set outputDeviceList ""
 	}
 
-	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		if { [llength $outputDeviceList] <= 1 } {
 			ttk::button $w -text External -width 10 \
 				-command "extout_select $outputDeviceList"
@@ -1282,7 +1282,7 @@ proc build.dither w {
 	}
 	set v $w.h0
 	frame $v
-	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		ttk::radiobutton $v.b0 -text "Ordered" -command set_dither \
 			-variable $var -state $state \
 			-value od
@@ -1644,14 +1644,14 @@ set lastFmt ""
 proc select_format fmt {
 	global qscale qlabel videoDevice videoFormat qscale_val lastFmt inputSize
 
-	if { $fmt eq "h261" || $fmt eq "pvh"} {
+	if { $fmt == "h261" || $fmt == "pvh"} {
 		# H.261 supports only QCIF/CIF
 		disable_large_button
 	} else {
 		enable_large_button
 	}
 
-	if { $fmt eq "pvh"} {
+	if { $fmt == "pvh"} {
 		set w .menu.encoder.f.encoderLayer
 		if ![winfo exists $w] {
 			frame $w
@@ -1668,7 +1668,7 @@ proc select_format fmt {
 	set proc $fmt\_setq
 
 	if [inList $proc [info commands *_setq]] {
-		if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+		if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 			$qscale state !disabled
 			$qscale configure -command $proc
 		} else {
@@ -1676,7 +1676,7 @@ proc select_format fmt {
 		}
 		$qlabel configure -foreground black
 	} else {
-		if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+		if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 			$qscale state !active
 			$qscale state disabled
 		} else {
@@ -1706,7 +1706,7 @@ proc select_format fmt {
 # MM
 
 		set ff [$encoder frame-format]
-		if { "$ff" eq "[$V(encoder) frame-format]" && [windowingsystem] ne "aqua"} {
+		if { "$ff" == "[$V(encoder) frame-format]" && [windowingsystem] != "aqua"} {
 			#
 			# new framer has the same format as the
 			# old one.  just replace the old one without
@@ -1743,7 +1743,7 @@ proc select_format fmt {
 proc init_grabber { grabber } {
 	global V configOnTransmit tcl_platform
 
-	if { $tcl_platform(platform) eq "windows" || [windowingsystem] eq "aqua"} {
+	if { $tcl_platform(platform) == "windows" || [windowingsystem] == "aqua"} {
 		$grabber useconfig $configOnTransmit
 	}
 
@@ -1775,8 +1775,8 @@ proc init_grabber { grabber } {
 	global inputPort inputType portButton typeButton
 	# MacOS-X requires port and input type to be set before decimate
 	# is called otherwise the channel device's input may be busy
-	if {[windowingsystem] eq "aqua"} {
-		if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {[windowingsystem] == "aqua"} {
+		if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 			$portButton instate {active} {
 				$grabber port $inputPort
 			}
@@ -1784,10 +1784,10 @@ proc init_grabber { grabber } {
 				$grabber type $inputType
 			}
 		} else {
-			if { [$portButton cget -state] eq "normal" } {
+			if { [$portButton cget -state] == "normal" } {
 				$grabber port $inputPort
 			}
-			if { [$typeButton cget -state] eq "normal" } {
+			if { [$typeButton cget -state] == "normal" } {
 				$grabber type $inputType
 			}
 		}
@@ -1797,12 +1797,12 @@ proc init_grabber { grabber } {
 	$grabber bps [expr round([$bps_slider get])]
 	$grabber decimate $inputSize
 
-	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		$qscale instate {!disabled} {
 			set cmd [$qscale cget -command]
 			$cmd [expr round([$qscale get])]
 		}
-		if {[windowingsystem] ne "aqua"} {
+		if {[windowingsystem] != "aqua"} {
 			$portButton instate {!disabled} {
 				$grabber port $inputPort
 			}
@@ -1811,15 +1811,15 @@ proc init_grabber { grabber } {
 			}
 		}
 	} else {
-		if { [lindex [$qscale configure -state] 4] eq "normal" } {
+		if { [lindex [$qscale configure -state] 4] == "normal" } {
 			set cmd [lindex [$qscale configure -command] 4]
 			$cmd [$qscale get]
 		}
-		if {[windowingsystem] ne "aqua"} {
-			if { [$portButton cget -state] eq "normal" } {
+		if {[windowingsystem] != "aqua"} {
+			if { [$portButton cget -state] == "normal" } {
 				$grabber port $inputPort
 			}
-			if { [$typeButton cget -state] eq "normal" } {
+			if { [$typeButton cget -state] == "normal" } {
 				$grabber type $inputType
 			}
 		}
@@ -1833,7 +1833,7 @@ proc build.q w {
 	frame $w.tb
 	label $w.title -text "Quality" -font $f -anchor w
 	label $w.tb.value -text 0 -font $f -width 3
-	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		ttk::scale $w.tb.scale -orient horizontal \
 			-value 0 -from 0 -to 99
 	} else {
@@ -1893,7 +1893,7 @@ proc set_dither {} {
 
 proc revert_to_gray {} {
 	global V
-	if { $V(dither) eq "gray" } {
+	if { $V(dither) == "gray" } {
 		#XXX
 		puts stderr "vic: out of colors"
 		exit 1

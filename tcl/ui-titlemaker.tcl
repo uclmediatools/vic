@@ -60,7 +60,7 @@ proc build.titlemaker w {
 	label $w.b.file.label -text "Overlay Image file:" -font $f -anchor w
 	mk.entry $w.b.file tm.update.filename $selectedFile
 	$w.b.file.entry configure -width 39
-	if {$::tk_version > 8.4 && [windowingsystem] ne "x11"} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		ttk::button $w.b.file.selectfile \
 			-compound image \
 			-command "logo_fileselect $w.b.file.entry" \
