@@ -96,7 +96,7 @@ public:
 
 class IPNetwork : public Network {
     public:
-		IPNetwork() : Network(*(new IPAddress), *(new IPAddress), *(new IPAddress)) {;}
+		IPNetwork() : Network(*(new IPAddress), *(new IPAddress), *(new IPAddress)), local_preset(0) {;}
 	virtual int command(int argc, const char*const* argv);
 	virtual void reset();
 	virtual Address* alloc(const char* name) { 
@@ -116,6 +116,7 @@ class IPNetwork : public Network {
 	int open(const char * host, int port, int ttl);
 	int close();
 	int localname(sockaddr_in*);
+	int local_preset;  // Indicates if local_ has been set on cmd line
 	int openssock(Address & addr, u_short port, int ttl);
 	int openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, Address & local);
 	void dosend(u_char* buf, int len, int fd);
@@ -206,8 +207,10 @@ int IPNetwork::command(int argc, const char*const* argv)
 		if (strcmp(argv[1], "open") == 0) {
 			int port = htons(atoi(argv[3]));
 			int ttl = atoi(argv[4]);
-			if (strlen(tcl.attr("ifAddr"))>1)
+			if (strlen(tcl.attr("ifAddr"))>1) {
 				(IPAddress&)local_ = tcl.attr("ifAddr");
+				local_preset=1;
+                        }
 			if (open(argv[2], port, ttl) < 0)
 				tcl.result("0");
 			else
@@ -250,19 +253,16 @@ int IPNetwork::open(const char * host, int port, int ttl)
 	 */
 	sockaddr_in local;
 	if (localname(&local) < 0) {
-		//return (-1);
-		(IPAddress&)local_ = "127.0.0.1";
-		printf("Can NOT determine local IP address - using loopback address. If you want to be able to receive packets from other machines add this command line option: -i local_ip_addr \n");
-	} else
-                (IPAddress&)local_ = local.sin_addr;
-
 #ifdef WIN32
-	//if (!local_.is_set()) {
 		(IPAddress&)local_ = find_win32_interface(g_addr_, ttl);
-		//(IPAddress&)local_ = "127.0.0.1";
 		debug_msg("find_win32_interface localname:%s\n",(const char*)local_);
-	//}
 #endif
+	        if (local.sin_addr.s_addr == 0) {
+                  (IPAddress&)local_ = "127.0.0.1";
+                  printf("Can NOT determine local IP address - using loopback address. If you want to be able to receive packets from other machines add this command line option: -i local_ip_addr \n");
+                }
+          } else
+                (IPAddress&)local_ = local.sin_addr;
 
 	rsock_ = openrsock(g_addr_, s_addr_ssm_, port, local_);
 	if (rsock_ < 0) {
@@ -295,7 +295,7 @@ int IPNetwork::localname(sockaddr_in* p)
 #endif
 
 	// Use Local interface name if already set via command line
-	if (local_.is_set()) {
+	if (local_preset) {
 		p->sin_addr.s_addr=(IPAddress&)local_;
 		debug_msg("Setting localname from cmd line:%s\n",(const char*)local_);
 		return (0);
@@ -307,7 +307,7 @@ int IPNetwork::localname(sockaddr_in* p)
 		p->sin_addr.s_addr = 0;
 		p->sin_port = 0;
 	} else 
-	    debug_msg("getsockname succeeded sin_addr.s_addr:%x\n",p->sin_addr.s_addr);
+	        debug_msg("getsockname succeeded sin_addr.s_addr:%x\n",p->sin_addr.s_addr);
 
 	if (p->sin_addr.s_addr == 0) {
 		debug_msg("getsockname returned 0 so resorting to gethostname()\n");
@@ -422,11 +422,18 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
 
 				mr.imr_multiaddr.s_addr = g_addri;
 				mr.imr_interface.s_addr = locali;
-				if (setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, 
+				if (setsockopt(fd, IPPROTO_IP,IP_ADD_MEMBERSHIP, 
 						(char *)&mr, sizeof(mr)) < 0) {
-					perror("IP_ADD_MEMBERSHIP");
-					exit(1);
-				}
+			   	    perror("IP_ADD_MEMBERSHIP");
+                                    debug_msg("Failed to join multicast group using local addr - maybe there's a problem with your DNS/hosts setup?\n");
+                                    mr.imr_interface.s_addr = INADDR_ANY;
+                                    if (setsockopt(fd, IPPROTO_IP,IP_ADD_MEMBERSHIP, 
+                                                    (char *)&mr, sizeof(mr)) < 0) {
+                                            perror("IP_ADD_MEMBERSHIP");
+                                            debug_msg("Failed to join multicast group- exiting\n");
+                                            exit(1);
+                                    }
+                                 }
 		}
 	} else
 #endif /* IP_ADD_MEMBERSHIP */
@@ -560,7 +567,7 @@ int IPNetwork::openssock(Address & addr, u_short port, int ttl)
 		/* Slightly nasty one here - set Mcast iface if local inteface
 		 * is specified on command line
 		 */
-		if (local_.is_set()) {
+		if (local_preset) {
 			u_int32_t locali = (IPAddress&)local_;
 			if (setsockopt(fd, IPPROTO_IP, IP_MULTICAST_IF,
 						   (char*)&locali, sizeof(locali)) < 0) {
