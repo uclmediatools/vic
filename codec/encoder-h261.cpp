@@ -131,6 +131,16 @@ class H261Encoder : public TransmitterModule {
 	virtual void encode_mb(u_int mba, const u_char* frm,
 		       u_int loff, u_int coff, int how) = 0;
 
+	inline double h261_now() {
+		timeval tv;
+		::gettimeofday(&tv, NULL);
+		return ((double) tv.tv_sec + 1e-6 * (double) tv.tv_usec);
+	}
+	double ts_off_;	// timestamp offset
+	double enc_start_;	// encoding start timestamp
+	double enc_end_;	// encoding end timestamp
+	int encno_;	// number of encoding routine 
+
 	/* bit buffer */
 	BB_INT bb_;
 	u_int nbb_;
@@ -207,6 +217,12 @@ static class H261EncoderMatcher : public Matcher {
 H261Encoder::H261Encoder(int ft) : TransmitterModule(ft),
 	bs_(0), bc_(0), ngob_(12)
 {
+	// h261 gettimeofday
+	ts_off_ = h261_now();
+	enc_start_ = 0.0;
+	enc_end_ = 0.0;
+	encno_ = 1;
+
 	for (int q = 0; q < 32; ++q) {
 		llm_[q] = 0;
 		clm_[q] = 0;
@@ -710,6 +726,7 @@ H261DCTEncoder::encode_mb(u_int mba, const u_char* frm,
 int
 H261Encoder::flush(pktbuf* pb, int nbit, pktbuf* npb)
 {
+	printf("\nH261Encoder flush()\n");
 	/* flush bit buffer */
 	STORE_BITS(bb_, bc_);
 
@@ -780,6 +797,12 @@ int H261PixelEncoder::consume(const VideoFrame *vf)
 int
 H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 {
+	//printf("\nH261Encoder encode()\n");
+	// XXX experimental
+	enc_start_ = h261_now() - ts_off_;
+	printf("\nh261_encode_start\tnow: %f\n", enc_start_);
+	//
+
 	tx_->flush();
 
 	pktbuf* pb = pool_->alloc(vf->ts_, RTP_PT_H261);
@@ -873,5 +896,12 @@ H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 		}
 	}
 	cc += flush(pb, ((bc_ - bs_) << 3) + nbb_, 0);
+
+	// XXX experimental
+	enc_end_ = h261_now() - ts_off_;
+	printf("\nh261_encode_end\tnow: %f\n", enc_end_);
+	printf("\n\nnum: %d\tenc_time: %f\n\n", 
+		encno_++, (enc_end_ - enc_start_));
+
 	return (cc);
 }
