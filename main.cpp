@@ -134,21 +134,23 @@ static void
 usage(const char *szOffending)
 {
 	char win_usage[] = "\
-			    VIC is a multicast (or unicast) video tool. It is best to start it\n\
-			    using a multicast directory tool, like sdr or multikit. If desired VIC\n\
-			    can be launched from the command line using:\n\n\
-			    vic <address>/<port>\n\n\
-			    where <address> is machine name, or a multicast IP address, and <port> is\n\
-			    the connection identifier (an even number between 1024-65536).\n\n\
-			    For more details see:\n\n\
-			    http://www-mice.cs.ucl.ac.uk/multimedia/software/vic/faq.html\n\
+VIC is a multicast (or unicast) video tool. It is best to start it\n\
+using a multicast directory tool, like sdr or multikit. If desired VIC\n\
+can be launched from the command line using:\n\n\
+\tvic <address>/<port>\n\n\
+where <address> is machine name, or a multicast IP address, and <port> is\n\
+the connection identifier (an even number between 1024-65536).\n\n\
+For more details see:\n\
+\thttp://www-mice.cs.ucl.ac.uk/multimedia/software/vic/faq.html\n\n\
 Options: vic [-HPs] [-A nv|ivs|rtp] [-B maxbps] [-C conf]\n\
-	 \t[-c ed|gray|od|quantize] [-D device] [-d display]\n\
-	 \t[-f bvc|cellb|h261|jpeg|nv|mpeg4|h264] [-F maxfps] [-i ifAddr ] [-I channel]\n\
-	 \t[-K key ] [-L flowLabel (ip6 only)] [-l (creates log file)]\n\
-	 \t[-M colormap] [-m mtu] [-N session] [-n atm|ip|ip6|rtip]\n\
-	 \t[-o clipfile] [-t ttl] [-U interval] [-u script] [-v version] [-V visual]\n\
-	 \t[-x ifIndex (ip6 only)] [-X resource=value] [-j numlayers] dest/port[/fmt/ttl]\n";
+    [-c ed|gray|od|quantize] [-D device] [-d display]\n\
+    [-f bvc|cellb|h261|jpeg|nv|mpeg4|h264] [-F maxfps] [-i ifAddr ]\n\
+    [-I channel] [-K key ] [-L flowLabel (ip6 only)] [-l (creates log file)]\n\
+    [-M colormap] [-m mtu] [-N session] [-n atm|ip|ip6|rtip]\n\
+    [-o clipfile] [-Q (queries and lists input devices)] [-t ttl]\n\
+    [-U interval] [-u script] [-v version] [-V visual]\n\
+    [-x ifIndex (ip6 only)] [-X resource=value] [-j numlayers]\n\
+    dest/port[/fmt/ttl]\n";
 
 	if (szOffending == NULL) {
 		szOffending = win_usage;
@@ -411,6 +413,12 @@ heuristic_random()
 	return (out[0] ^ out[1] ^ out[2] ^ out[3]);
 }
 
+void print_input_device_details(Tcl& tcl)
+{
+	tcl.evalc("print_input_device_details");
+	exit(0);
+}
+
 void loadbitmaps(Tcl_Interp* tcl)
 {
 	static char rev[] = {
@@ -499,7 +507,7 @@ int main(int argc, const char** argv)
 #endif
 	// Option list; If letter is followed by ':' then it takes an argument
 	const char* options = 
-		"A:B:C:c:D:d:f:F:HI:i:j:K:lL:M:m:N:n:o:Pq:rsST:t:U:u:vV:w:x:X:y";
+		"A:B:C:c:D:d:f:F:HI:i:j:K:lL:M:m:N:n:o:Pq:QrsST:t:U:u:vV:w:x:X:y";
 	/* process display and window (-use) options before initialising tcl/tk */
 	char buf[256], tmp[256];
 	const char *display=0, *use=0;
@@ -534,7 +542,7 @@ int main(int argc, const char** argv)
 		   then set display to localhost:0.0
 		*/
 		if (XOpenDisplay(display)==NULL) {
-      			if ((display != NULL) && (strcmp(display,":0.0") == 0)) {
+			if ((display != NULL) && (strcmp(display,":0.0") == 0)) {
 				strcpy(buf,"-name vic -display ");
 				gethostname(&buf[19],sizeof(buf)-19);
 				strcat(buf,":0");
@@ -542,7 +550,7 @@ int main(int argc, const char** argv)
 		} else sprintf (buf, "-name vic");
 	} else sprintf (buf, "-name vic -dispay %s", display);
 #else
-   	sprintf(buf,display?
+	sprintf(buf,display?
 		    "-name vic -display %s" :
 		    "-name vic",
 		  display);
@@ -684,6 +692,10 @@ int main(int argc, const char** argv)
 
 		case 'q':
 			tcl.add_option("jpegQfactor", optarg);
+			break;
+
+		case 'Q':
+			print_input_device_details(tcl);
 			break;
 
 		case 'r':

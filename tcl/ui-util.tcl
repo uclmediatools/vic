@@ -313,3 +313,43 @@ proc updateName { w name } {
 	}
 	return -1
 }
+
+proc print_input_device_details {} {
+	global inputDeviceList
+
+	foreach v $inputDeviceList {
+		if {[$v attributes] != "disabled" &&
+			"[$v nickname]" != "still" && "[$v nickname]" != "filedev" } {
+			puts -nonewline "inputDevice \{\"[$v nickname]\"\} "
+
+			puts -nonewline "port \{"
+			set i 0
+			set portnames [attribute_class [$v attributes] port]
+			foreach port $portnames {
+				if {$i > 0} {puts -nonewline " "}
+				puts -nonewline "\"$port\""
+				incr i
+			}
+
+			puts -nonewline "\} type \{"
+			set i 0
+			set typenames [attribute_class [$v attributes] type]
+			foreach typename $typenames {
+					if {$i > 0} {puts -nonewline " "}
+					puts -nonewline "\"$typename\""
+					incr i
+			}
+
+			puts -nonewline "\} size \{"
+			set i 0
+			set sizeList [attribute_class [$v attributes] size]
+			foreach size $sizeList {
+					if {$i > 0} {puts -nonewline " "}
+					puts -nonewline "\"$size\""
+					incr i
+			}
+			puts "\}"
+		}
+	}
+}
+
