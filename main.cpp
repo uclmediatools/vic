@@ -413,8 +413,36 @@ heuristic_random()
 	return (out[0] ^ out[1] ^ out[2] ^ out[3]);
 }
 
+#ifdef WIN32
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION == 0)
+int
+SimplePutsCmd(ClientData clientData, Tcl_Interp *interp, int argc, char **argv)
+#else
+int
+SimplePutsCmd(ClientData clientData, Tcl_Interp *interp, int argc, const char **argv)
+#endif
+{
+    int i, newline;
+
+    i = 1;
+    newline = 1;
+    if ((argc >= 2) && (strcmp(argv[1], "-nonewline") == 0)) {
+		newline = 0;
+		i++;
+    }
+	printf("%s", argv[i]);
+	if (newline) printf("\n");
+
+	return TCL_OK;
+}
+#endif
+
 void print_input_device_details(Tcl& tcl)
 {
+#ifdef WIN32
+		tcl.CreateCommand("puts", SimplePutsCmd, NULL);
+#endif
+
 	tcl.evalc("print_input_device_details");
 	exit(0);
 }
