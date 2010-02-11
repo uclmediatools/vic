@@ -726,7 +726,7 @@ H261DCTEncoder::encode_mb(u_int mba, const u_char* frm,
 int
 H261Encoder::flush(pktbuf* pb, int nbit, pktbuf* npb)
 {
-	fprintf(stderr,"\nH261Encoder flush()\n");
+	//fprintf(stderr,"\nH261Encoder flush()\n");
 	/* flush bit buffer */
 	STORE_BITS(bb_, bc_);
 
