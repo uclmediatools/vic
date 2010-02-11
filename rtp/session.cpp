@@ -648,7 +648,7 @@ void SessionManager::announce(CtrlHandler* ch)
  */
 void SessionManager::build_xreport(CtrlHandler* ch, int bt) 
 {
-	printf("\tentering build_xreport()..................  %s +%d\n",
+	fprintf(stderr, "\tentering build_xreport()..................  %s +%d\n",
 			__FILE__,__LINE__);
 
 	// declare chunks
@@ -693,12 +693,12 @@ void SessionManager::build_xreport(CtrlHandler* ch, int bt)
 					malloc(num_chunks * sizeof(u_int16_t));
 			
 				// set/printing chunks
-				//printf("\t   printing chunks: ");
+				//fprintf(stderr, "\t   printing chunks: ");
 				for (int i = 0; i < num_chunks; i++) {
 					chunks[i] = tfwc_rcvr_getvec(i);
-				//	printf("[%d:%x] ", i, chunks[i]);
+				//	fprintf(stderr, "[%d:%x] ", i, chunks[i]);
 				} 
-				//printf("...........%s +%d\n",__FILE__,__LINE__);
+				//fprintf(stderr, "...........%s +%d\n",__FILE__,__LINE__);
 					break;
 
 			case RBCC:
@@ -760,18 +760,18 @@ void SessionManager::send_Xreport(CtrlHandler* ch, u_int8_t bt,
 	xr->begin_seq = htons(begin_seq);
 	xr->end_seq = htons(end_seq);
 
-	printf("\t>> sending RTCP XR: BT:%d, begin:%d, end:%d\n",
+	fprintf(stderr, "\t>> sending RTCP XR: BT:%d, begin:%d, end:%d\n",
 			bt, ntohs(xr->begin_seq), ntohs(xr->end_seq));
 
 	// declare XR report chunks
 	u_int16_t *xrchunks = (u_int16_t *) (xr + 1);
 
 	// copy XR chunks and printing 
-	printf("\t   printing chunks: ");
+	fprintf(stderr, "\t   printing chunks: ");
 	for (i = 0; i < num_chunks; i++) {
-		printf("[%d:%x] ", i, chunks[i]);
+		fprintf(stderr, "[%d:%x] ", i, chunks[i]);
 		xrchunks[i] = htons(chunks[i]);
-	} printf("...........%s +%d\n",__FILE__,__LINE__);
+	} fprintf(stderr, "...........%s +%d\n",__FILE__,__LINE__);
 
 	// if num_chunks is odd then increment it by one as packet size is
 	// measured in 32-bits pieces. And add Null chunk onto the end.
@@ -791,7 +791,7 @@ void SessionManager::send_Xreport(CtrlHandler* ch, u_int8_t bt,
 
 	// RTCP packet length
 	int len = (u_char *) ++xr + (num_chunks * 2) - pktbuf_;
-	printf("\t   RTCP XR: len: %d, xrlen: %d\n", len, xrlen);
+	fprintf(stderr, "\t   RTCP XR: len: %d, xrlen: %d\n", len, xrlen);
 	len = sizeof(rtcphdr) + sizeof(rtcp_xr_BT_1_hdr) + (num_chunks * 2);
 	rh->rh_len = htons((len >> 2) - 1);
 
@@ -1026,7 +1026,7 @@ void SessionManager::recv(DataHandler* dh)
 		case WBCC:
 			// pass seqno to tfwc receiver to build up AckVec
 			tfwc_rcvr_recv_seqno(seqno);
-			printf("\n\treceived seqno: %d\n\n", seqno);
+			fprintf(stderr, "\n\treceived seqno: %d\n\n", seqno);
 
 			// send receiver side XR report (AckVec)
 			ch_[0].send_ackv();
@@ -1284,7 +1284,8 @@ void SessionManager::parse_xr(rtcphdr* rh, int flags, u_char* ep,
 void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 		const u_char* ep, Address & addr)
 {
-	printf("~~~~~~~~~~~~~~~~~~entering parse_xr_records()~~~~~~~~~~~~~~~~~~\n");
+	fprintf(stderr, 
+	"~~~~~~~~~~~~~~~~~~entering parse_xr_records()~~~~~~~~~~~~~~~~~~\n");
 	UNUSED(ssrc);
 	UNUSED(cnt);
 	UNUSED(ep);
@@ -1310,9 +1311,10 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 
 		// i am an RTP data sender, so do the sender stuffs (AoA)
 		if (am_i_sender()) {
-			printf(">>> parse_xr - i_am_sender\n");
-			printf("    [%s +%d] beg:%d, end:%d, xr1len:%d (xrlen:%d)\n", 
-					__FILE__,__LINE__,begin, end, ntohs(xr1->xr_len), xrlen);
+			fprintf(stderr, ">>> parse_xr - i_am_sender\n");
+			fprintf(stderr, 
+				"    [%s +%d] beg:%d, end:%d, xr1len:%d (xrlen:%d)\n", 
+				__FILE__,__LINE__,begin, end, ntohs(xr1->xr_len), xrlen);
 			
 			switch (cc_type_) {
 			case WBCC:
@@ -1330,8 +1332,8 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 		else {
 			switch (cc_type_) {
 			case WBCC:
-				printf(">>> parse_xr - i_am_receiver\n");
-				printf("    [%s +%d] chunk[0]:%d\n", 
+				fprintf(stderr, ">>> parse_xr - i_am_receiver\n");
+				fprintf(stderr, "    [%s +%d] chunk[0]:%d\n", 
 					__FILE__,__LINE__, ntohs(chunk[0]));
 
 				// TFWC receiver (getting ackofack)
@@ -1347,7 +1349,8 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 		// XXX
 		debug_msg("UNKNOWN RTCP XR Packet: BT:%d\n", xr->BT);
 	}
-	printf("-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\n");
+	fprintf(stderr,
+	"-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\n");
 }
 
 
