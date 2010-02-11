@@ -99,6 +99,14 @@ class Transmitter : public TclObject, public Timer,
 	//pktbuf* alloch(u_int32_t, int fmt);
 	//void release(pktbuf*);
 	//pktbuf* alloc(u_int32_t, int fmt);
+
+	inline double tx_now() {
+		timeval tv;
+		::gettimeofday(&tv, NULL);
+		return ((double) tv.tv_sec + 1e-6 * (double) tv.tv_usec);
+	}
+	double tx_now_offset_;
+
 protected:
 	void update(int nbytes);
 	void dump(int fd, iovec*, int iovel) const;
