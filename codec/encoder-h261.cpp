@@ -726,7 +726,7 @@ H261DCTEncoder::encode_mb(u_int mba, const u_char* frm,
 int
 H261Encoder::flush(pktbuf* pb, int nbit, pktbuf* npb)
 {
-	printf("\nH261Encoder flush()\n");
+	fprintf(stderr,"\nH261Encoder flush()\n");
 	/* flush bit buffer */
 	STORE_BITS(bb_, bc_);
 
@@ -797,11 +797,9 @@ int H261PixelEncoder::consume(const VideoFrame *vf)
 int
 H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 {
-	//printf("\nH261Encoder encode()\n");
-	// XXX experimental
+	//fprintf(stderr,"\nH261Encoder encode()\n");
 	enc_start_ = h261_now() - ts_off_;
-	printf("\nh261_encode_start\tnow: %f\n", enc_start_);
-	//
+	fprintf(stderr,"\nh261_encode_start\tnow: %f\n", enc_start_);
 
 	tx_->flush();
 
@@ -899,8 +897,8 @@ H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 
 	// XXX experimental
 	enc_end_ = h261_now() - ts_off_;
-	printf("\nh261_encode_end\tnow: %f\n", enc_end_);
-	printf("\n\nnum: %d\tenc_time: %f\n\n", 
+	fprintf(stderr,"\nh261_encode_end\tnow: %f\n", enc_end_);
+	fprintf(stderr,"\n\nnum: %d\tenc_time: %f\n\n", 
 		encno_++, (enc_end_ - enc_start_));
 
 	return (cc);
