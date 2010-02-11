@@ -130,8 +130,8 @@ void TfwcSndr::tfwc_sndr_send(pktbuf* pb) {
 	// timestamp vector for loss history update
 	tsvec_[seqno_%TSZ - 1] = now_;
 
-	printf("\t>> now_:%f, tsvec_[%d]:%f\n", 
-			now(), seqno_%TSZ - 1, tsvec_[seqno_%TSZ-1]);
+	fprintf(stderr, "\t>> now_:%f, tsvec_[%d]:%f\n", 
+		now(), seqno_%TSZ - 1, tsvec_[seqno_%TSZ-1]);
 
 	// sequence number must be greater than zero
 	assert (seqno_ > 0);
@@ -172,7 +172,8 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		// clone AckVec from Vic 
 		clone_ackv(chunk, num_vec_);
 
-		printf("    [%s +%d] begins:%d, ends:%d, jacked:%d\n", 
+		fprintf(stderr, 
+		"    [%s +%d] begins:%d, ends:%d, jacked:%d\n", 
 				__FILE__, __LINE__, begins_, ends_, jacked_);
 
 		// generate seqno vector
@@ -202,7 +203,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		else {
 			control();
 		}
-		printf("\tnow: %f\tcwnd: %d\n", now_, cwnd_);
+		fprintf(stderr, "\tnow: %f\tcwnd: %d\n", now_, cwnd_);
 
 		// set ackofack (real number)
 		aoa_ = ackofack(); 
@@ -220,7 +221,8 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		ntep_++;		// number of ts echo packet received
 
 		ts_echo_ = chunk[num_vec_ - 1];
-		printf("    [%s +%d] ts echo:	%f\n", __FILE__,__LINE__, ts_echo_);
+		fprintf(stderr,
+		"    [%s +%d] ts echo:	%f\n", __FILE__,__LINE__, ts_echo_);
 
 		tao_ = now() - ts_echo_;
 
@@ -281,11 +283,11 @@ bool TfwcSndr::detect_loss(int end, int begin) {
 	u_int32_t tempvec[num];
 
 	// generate tempvec elements
-	printf("\tcomparing numbers: (");
+	fprintf(stderr, "\tcomparing numbers: (");
 	for (int i = 0; i < num; i++) {
 		tempvec[i] = begin + i;
-		printf(" %d", tempvec[i]);
-	} printf(" )\n");
+		fprintf(stderr, " %d", tempvec[i]);
+	} fprintf(stderr, " )\n");
 
 	// compare tempvec and seqvec
 	for (int i = 0; i < num; i++) {

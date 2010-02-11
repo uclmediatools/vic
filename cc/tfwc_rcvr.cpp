@@ -147,18 +147,18 @@ void TfwcRcvr::tfwc_ackvec() {
 // print vector elements
 void TfwcRcvr::print_vec(std::vector<int> v) {
 	std::vector<int>::iterator iter;
-	printf("\t>> vec: ");
+	fprintf(stderr, "\t>> vec: ");
 	for (iter = v.begin(); iter != v.end(); iter++)
-		printf("%d ", *iter);
-	printf("\n");
+		fprintf(stderr, "%d ", *iter);
+	fprintf(stderr, "\n");
 }
 
 // print bit vectors (in decimal format)
 void TfwcRcvr::print_tfwcAV() {
-	printf("\t>> tfwcAV: ");
+	fprintf(stderr, "\t>> tfwcAV: ");
 	for (int i = 0; i < numVec_; i++)
-		printf("[%d:%d] ", i, tfwcAV[i]);
-	printf("\n");
+		fprintf(stderr, "[%d:%d] ", i, tfwcAV[i]);
+	fprintf(stderr, "\n");
 }
 
 // reset
