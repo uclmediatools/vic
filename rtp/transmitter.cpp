@@ -299,9 +299,9 @@ void Transmitter::send(pktbuf* pb)
  */
 void Transmitter::cc_tfwc_output()
 {
-	printf("\t------------entering cc_tfwc_output()------------\n");
-	printf("\t|                                          |\n");
-	printf("\tV                                          V\n");
+	fprintf(stderr,"\t---------entering cc_tfwc_output()----------\n");
+	fprintf(stderr,"\t|                                          |\n");
+	fprintf(stderr,"\tV                                          V\n");
 
 	// head of the RTP data packet buffer (pb)
 	pktbuf* pb = head_;
@@ -310,11 +310,12 @@ void Transmitter::cc_tfwc_output()
 	// the packet buffer. and then, return - i.e., do not try sending packets.
 	if (pb == 0) {
 		is_first_ = true;
-		printf("\t=========== PACKET NOT AVAILABLE ===========\n\n");
+		fprintf(stderr,
+		"\t=========== PACKET NOT AVAILABLE ===========\n\n");
 		return;
 	}
-	printf("\tthere are packets available to send in cc_tfwc_output()\n");
 
+	//printf("\tthere are packets available to send in cc_tfwc_output()\n");
 	// pb is not null, hence parse it.
 	rtphdr* rh = (rtphdr *) pb->data;
 
@@ -326,9 +327,13 @@ void Transmitter::cc_tfwc_output()
 	int jack = (int) tfwc_sndr_jacked();
 	//debug_msg("jack: %d\n", jack);
 
+	//fprintf(stderr, "\tXXX num: %d\tcwnd: %d\tjack: %d\n",
+	//	ntohs(rh->rh_seqno), magic, jack);
+
 	// while packet seqno is within "cwnd + jack", send that packet
 	while (ntohs(rh->rh_seqno) <= magic + jack) {
-		debug_msg("\nnow: %f\tseqno: %d\n", now(), ntohs(rh->rh_seqno));
+		fprintf(stderr, "\n\tnow: %f\tseqno: %d\n\n", 
+			tx_now()-tx_now_offset_, ntohs(rh->rh_seqno));
 		// record seqno and timestamp at TfwcSndr side
 		tfwc_sndr_send(pb);
 
@@ -347,9 +352,9 @@ void Transmitter::cc_tfwc_output()
 			break;
 		}
 	} // end while ()
-	printf("\t^                                          ^\n");
-	printf("\t|                                          |\n");
-	printf("\t============================================\n");
+	fprintf(stderr,"\t^                                          ^\n");
+	fprintf(stderr,"\t|                                          |\n");
+	fprintf(stderr,"\t============================================\n");
 }
 
 /*
@@ -383,24 +388,34 @@ void Transmitter::timeout()
 
 void Transmitter::flush()
 {
-	if (!is_cc_on()) {
-		if (busy_) {
-			busy_ = 0;
-			cancel();
-		}
+	//fprintf(stderr, "\nTransmitter::flush()\n\n");
+	switch (cc_type_) {
+		case WBCC:
+			cc_tfwc_output();
+			break;
+		case RBCC:
+			cc_tfrc_output();
+			break;
+		case NOCC:
+		default:
+			if (busy_) {
+				busy_ = 0;
+				cancel();
+			}
 
-		pktbuf* p = head_;
-		while (p != 0) {
-			pktbuf* n = p->next;
-			output(p);
-			p = n;
-		}
-		head_ = 0;
+			pktbuf* p = head_;
+			while (p != 0) {
+				pktbuf* n = p->next;
+				output(p);
+				p = n;
+			}
+			head_ = 0;
 	}
 }
 
 void Transmitter::output(pktbuf* pb)
 {
+	//fprintf(stderr, "\n\tTransmitter::output()\n");
 	//if (dumpfd_ >= 0)
 	//	dump(dumpfd_, pb->iov, mh_.msg_iovlen);
 //dprintf("layer: %d \n",pb->layer);
