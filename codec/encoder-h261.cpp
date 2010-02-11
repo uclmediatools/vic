@@ -798,6 +798,7 @@ int
 H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 {
 	//fprintf(stderr,"\nH261Encoder encode()\n");
+	tx_->tx_now_offset_ = ts_off_;
 	enc_start_ = h261_now() - ts_off_;
 	fprintf(stderr,"\nh261_encode_start\tnow: %f\n", enc_start_);
 
