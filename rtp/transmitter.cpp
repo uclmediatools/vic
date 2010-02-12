@@ -388,28 +388,19 @@ void Transmitter::timeout()
 
 void Transmitter::flush()
 {
-	//fprintf(stderr, "\nTransmitter::flush()\n\n");
-	switch (cc_type_) {
-		case WBCC:
-			cc_tfwc_output();
-			break;
-		case RBCC:
-			cc_tfrc_output();
-			break;
-		case NOCC:
-		default:
-			if (busy_) {
-				busy_ = 0;
-				cancel();
-			}
+	if (!is_cc_on()) {
+		if (busy_) {
+			busy_ = 0;
+			cancel();
+		}
 
-			pktbuf* p = head_;
-			while (p != 0) {
-				pktbuf* n = p->next;
-				output(p);
-				p = n;
-			}
-			head_ = 0;
+		pktbuf* p = head_;
+		while (p != 0) {
+			pktbuf* n = p->next;
+			output(p);
+			p = n;
+		}
+		head_ = 0;
 	}
 }
 
