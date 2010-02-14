@@ -145,6 +145,8 @@ proc init_resources {} {
 		foreach pal [array names tkPalette] {
 			option add *$pal $tkPalette($pal) 61
 		}
+	} elseif {[windowingsystem] == "aqua" && $::tk_version > 8.4} {
+		tk_setPalette systemSheetBackground
 	}
 
 	option add *Radiobutton.relief flat startupFile

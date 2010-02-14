@@ -124,14 +124,13 @@ proc toggle_window w {
 		}
 		wm geometry $w +$x+$y
 		wm deiconify $w
+		raise $w
 	} elseif { [winfo ismapped $w] } {
 		wm withdraw $w
 	} else {
 		wm deiconify $w
+		raise $w
 	}
-        if {[string match [ windowingsystem] "aqua"]} {
-           raise $w
-        }
 }
 
 proc create_toplevel { w title } {
