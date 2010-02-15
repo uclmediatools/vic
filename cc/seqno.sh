@@ -18,6 +18,7 @@ set yrange [$3:$4]
 plot \
 	"encs.xg" with impulses, \
 	"ence.xg" with impulses, \
+	"inXR.xg" with impulses, \
 	"seqno.xg" ls 3
 
 EOF

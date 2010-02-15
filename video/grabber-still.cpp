@@ -79,6 +79,17 @@ public:
 	StillYuvGrabber();
 	virtual ~StillYuvGrabber();
 	virtual int command(int argc, const char* const* argv);
+	
+	inline double stillYuv_now() {
+		timeval tv;
+		::gettimeofday(&tv, NULL);
+		return ((double) tv.tv_sec + 1e-6 * (double) tv.tv_usec);
+	}
+	double stillYuv_ts_off_;
+	double start_grab_;
+	double end_grab_;
+	int num_grab_;
+
 protected:
 	void start();
 	void stop();
@@ -293,6 +304,10 @@ int StillYuvGrabber::command(int argc, const char* const* argv)
 StillYuvGrabber::StillYuvGrabber() :
 	width_(0), height_(0), num_frame_(0)
 {
+	stillYuv_ts_off_ = stillYuv_now();
+	start_grab_ = 0.0;
+	end_grab_ = 0.0;
+	num_grab_ = 1;
 }
 
 StillYuvGrabber::~StillYuvGrabber()
@@ -335,6 +350,12 @@ int StillYuvGrabber::grab()
 #ifdef DEBUG
 	debug_msg("StillYuvGrabber::grab() called\n");
 #endif
+
+	// time measurement
+	target_->offset_ = stillYuv_ts_off_;
+	start_grab_ = stillYuv_now() - stillYuv_ts_off_;
+	fprintf(stderr, "start_grab\tnow: %f\n", start_grab_);
+
     int frc=0; //SV-XXX: gcc4 warns for initialisation
 
 	// "framesize_" is just the number of pixels, 
@@ -356,5 +377,11 @@ int StillYuvGrabber::grab()
 	YuvFrame f(media_ts(), (u_int8_t *) frame_, crvec_, outw_, outh_);
 
 	frc = target_->consume(&f);
+
+	// time measurement
+	end_grab_ = stillYuv_now() - stillYuv_ts_off_;
+	fprintf(stderr, "end_grab\tnow: %f\n", end_grab_);
+	fprintf(stderr, "num: %d\tgrab_time: %f\n",
+		num_grab_++, end_grab_ - start_grab_);
     return frc;
 }

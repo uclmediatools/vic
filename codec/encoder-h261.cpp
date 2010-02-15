@@ -218,7 +218,6 @@ H261Encoder::H261Encoder(int ft) : TransmitterModule(ft),
 	bs_(0), bc_(0), ngob_(12)
 {
 	// h261 gettimeofday
-	ts_off_ = h261_now();
 	enc_start_ = 0.0;
 	enc_end_ = 0.0;
 	encno_ = 1;
@@ -798,9 +797,10 @@ int
 H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 {
 	//fprintf(stderr,"\nH261Encoder encode()\n");
+	ts_off_ = offset();
 	tx_->tx_now_offset_ = ts_off_;
 	enc_start_ = h261_now() - ts_off_;
-	fprintf(stderr,"\nh261_encode_start\tnow: %f\n", enc_start_);
+	fprintf(stderr,"h261_encode_start\tnow: %f\n", enc_start_);
 
 	tx_->flush();
 
@@ -896,10 +896,10 @@ H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 	}
 	cc += flush(pb, ((bc_ - bs_) << 3) + nbb_, 0);
 
-	// XXX experimental
+	// time measurement
 	enc_end_ = h261_now() - ts_off_;
 	fprintf(stderr,"\nh261_encode_end\tnow: %f\n", enc_end_);
-	fprintf(stderr,"\n\nnum: %d\tenc_time: %f\n\n", 
+	fprintf(stderr,"num: %d\tenc_time: %f\n", 
 		encno_++, (enc_end_ - enc_start_));
 
 	return (cc);

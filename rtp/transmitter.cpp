@@ -327,8 +327,8 @@ void Transmitter::cc_tfwc_output()
 	int jack = (int) tfwc_sndr_jacked();
 	//debug_msg("jack: %d\n", jack);
 
-	//fprintf(stderr, "\tXXX num: %d\tcwnd: %d\tjack: %d\n",
-	//	ntohs(rh->rh_seqno), magic, jack);
+	//fprintf(stderr, "\tXXX now: %f\tnum: %d\tcwnd: %d\tjack: %d\n",
+	//tx_now()-tx_now_offset_, ntohs(rh->rh_seqno), magic, jack);
 
 	// while packet seqno is within "cwnd + jack", send that packet
 	while (ntohs(rh->rh_seqno) <= magic + jack) {

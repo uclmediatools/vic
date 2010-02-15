@@ -1318,6 +1318,8 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 			
 			switch (cc_type_) {
 			case WBCC:
+				fprintf(stderr, 
+				"\tincomingXR\tnow: %f\n",tx_now()-tx_now_offset_);
 				// TFWC sender (getting AckVec)
 				tfwc_sndr_recv(xr->BT, begin, end, chunk);
 				// we need to call Transmitter::output(pb) to make Ack driven

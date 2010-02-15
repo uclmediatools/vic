@@ -122,6 +122,10 @@ class Module : public TclObject {
 	virtual int consume(const VideoFrame*) = 0;
 	virtual int command(int argc, const char*const* argv);
 	inline int ft() const { return (ft_); }
+
+	double offset_;
+	inline double offset() { return offset_; }
+
     protected:
 	Module(int ft);
 	static int atoft(const char* s);
