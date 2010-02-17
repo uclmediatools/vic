@@ -219,7 +219,7 @@ void Transmitter::send(pktbuf* pb)
 	// window-based congestion control (TFWC)
 	//
 	case WBCC:
-		// if it is the very first packet, just send it.
+		// pb is empty - try sending a packet
 		if(is_buf_empty_) {
 			if (head_ != 0) {
 				tail_->next = pb;
@@ -230,7 +230,7 @@ void Transmitter::send(pktbuf* pb)
 			cc_tfwc_output();
 			is_buf_empty_ = false;
 		} 
-		// if it is not, just queue up the packets.
+		// if not, check if cwnd allows send this packet
 		else {
 			if (head_ != 0) {
 				tail_->next = pb;
@@ -246,7 +246,7 @@ void Transmitter::send(pktbuf* pb)
 	// rate-based congestion control (TFRC)
 	//
 	case RBCC:
-		// if it is the very first packet, just send it.
+		// pb is empty
 		if(is_buf_empty_) {
 			if (head_ != 0) {
 				tail_->next = pb;
@@ -256,8 +256,8 @@ void Transmitter::send(pktbuf* pb)
 			pb->next = 0;
 			cc_tfrc_output();
 			is_buf_empty_ = false;
-		} 
-		// if it is not, just queue up the packets.
+		}
+		// pb is not emtpy
 		else {
 			if (head_ != 0) {
 				tail_->next = pb;
