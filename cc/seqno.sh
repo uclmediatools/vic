@@ -22,3 +22,43 @@ plot \
 	"seqno.xg" ls 3
 
 EOF
+
+gnuplot -persist << EOF
+set terminal postscript eps enhanced color
+set output "seqno.eps"
+
+set title "time-seqno plot"
+set xlabel "time (sec)"
+set ylabel "seqno"
+
+set mxtics 2
+set mytics 2
+
+set xrange [$1:$2]
+set yrange [$3:$4]
+
+plot \
+"encs.xg" with impulses title "start encoding", \
+"ence.xg" with impulses title "end encoding" lc 4 lt 1, \
+"inXR.xg" with impulses title "ackvec arrival" lt 1 lc 2, \
+"seqno.xg" pt 4 lc 3 title "packet"
+
+EOF
+
+gnuplot -persist << EOF
+set terminal postscript eps enhanced color
+set output "enct.eps"
+
+set title "encoding time"
+set xlabel "num encoding"
+set ylabel "time (sec)"
+
+set yrange [0:0.005]
+set mxtics 2
+set mytics 2
+
+plot \
+"enct.xg" with lines title "encoding time", \
+"grt.xg" with lines lt 1 lc 3 title "grabbing time"
+
+EOF
