@@ -92,7 +92,7 @@ Transmitter::Transmitter() :
 	loop_layer_(1000),
 	loopback_(0),
 	is_cc_active_(1),
-	is_first_(1),
+	is_buf_empty_(1),
 	cc_type_(WBCC)
 {
 	memset((char*)&mh_, 0, sizeof(mh_));
@@ -220,7 +220,7 @@ void Transmitter::send(pktbuf* pb)
 	//
 	case WBCC:
 		// if it is the very first packet, just send it.
-		if(is_first_) {
+		if(is_buf_empty_) {
 			if (head_ != 0) {
 				tail_->next = pb;
 				tail_ = pb;
@@ -228,7 +228,7 @@ void Transmitter::send(pktbuf* pb)
 				tail_ = head_ = pb;
 			pb->next = 0;
 			cc_tfwc_output();
-			is_first_ = false;
+			is_buf_empty_ = false;
 		} 
 		// if it is not, just queue up the packets.
 		else {
@@ -238,6 +238,7 @@ void Transmitter::send(pktbuf* pb)
 			} else
 				tail_ = head_ = pb;
 			pb->next = 0;
+			cc_tfwc_output(pb);
 		}
 		break;
 
@@ -246,7 +247,7 @@ void Transmitter::send(pktbuf* pb)
 	//
 	case RBCC:
 		// if it is the very first packet, just send it.
-		if(is_first_) {
+		if(is_buf_empty_) {
 			if (head_ != 0) {
 				tail_->next = pb;
 				tail_ = pb;
@@ -254,7 +255,7 @@ void Transmitter::send(pktbuf* pb)
 				tail_ = head_ = pb;
 			pb->next = 0;
 			cc_tfrc_output();
-			is_first_ = false;
+			is_buf_empty_ = false;
 		} 
 		// if it is not, just queue up the packets.
 		else {
@@ -294,14 +295,45 @@ void Transmitter::send(pktbuf* pb)
 	} // switch (cc_type)
 }
 
+void Transmitter::cc_tfwc_output(pktbuf* pb) 
+{
+//	fprintf(stderr,"\t--------entering cc_tfwc_output(pb)---------\n");
+//	fprintf(stderr,"\t|                                          |\n");
+//	fprintf(stderr,"\tV                                          V\n");
+
+	// pb is not null, hence parse it.
+	rtphdr* rh = (rtphdr *) pb->data;
+
+	int magic = (int) tfwc_magic();
+	//debug_msg("cwnd: %d\n", magic);
+	int jack = (int) tfwc_sndr_jacked();
+	//debug_msg("jack: %d\n", jack);
+	
+	if (ntohs(rh->rh_seqno) <= magic + jack) {
+		fprintf(stderr, "\n\tnow: %f\tseqno: %d\n\n", 
+			tx_now()-tx_now_offset_, ntohs(rh->rh_seqno));
+		// record seqno and timestamp at TfwcSndr side
+		tfwc_sndr_send(pb);
+
+		// move head pointer
+		head_ = pb->next;
+
+		// call Transmitter::output(pb)
+		output(pb);
+	}
+//	fprintf(stderr,"\t^                                          ^\n");
+//	fprintf(stderr,"\t|                                          |\n");
+//	fprintf(stderr,"\t============================================\n");
+}
+
 /*
  * main TFWC CC output routines
  */
 void Transmitter::cc_tfwc_output()
 {
-	fprintf(stderr,"\t---------entering cc_tfwc_output()----------\n");
-	fprintf(stderr,"\t|                                          |\n");
-	fprintf(stderr,"\tV                                          V\n");
+//	fprintf(stderr,"\t---------entering cc_tfwc_output()----------\n");
+//	fprintf(stderr,"\t|                                          |\n");
+//	fprintf(stderr,"\tV                                          V\n");
 
 	// head of the RTP data packet buffer (pb)
 	pktbuf* pb = head_;
@@ -309,9 +341,9 @@ void Transmitter::cc_tfwc_output()
 	// if pb is null, then set the next available packet as the first packet of
 	// the packet buffer. and then, return - i.e., do not try sending packets.
 	if (pb == 0) {
-		is_first_ = true;
-		fprintf(stderr,
-		"\t=========== PACKET NOT AVAILABLE ===========\n\n");
+		is_buf_empty_ = true;
+//		fprintf(stderr,
+//		"\t=========== PACKET NOT AVAILABLE ===========\n\n");
 		return;
 	}
 
@@ -321,11 +353,11 @@ void Transmitter::cc_tfwc_output()
 
 	// cwnd value
 	int magic = (int) tfwc_magic();
-	//debug_msg("cwnd: %d\n", magic);
+//	debug_msg("cwnd: %d\n", magic);
 
 	// just acked seqno
 	int jack = (int) tfwc_sndr_jacked();
-	//debug_msg("jack: %d\n", jack);
+//	debug_msg("jack: %d\n", jack);
 
 	//fprintf(stderr, "\tXXX now: %f\tnum: %d\tcwnd: %d\tjack: %d\n",
 	//tx_now()-tx_now_offset_, ntohs(rh->rh_seqno), magic, jack);
@@ -352,9 +384,9 @@ void Transmitter::cc_tfwc_output()
 			break;
 		}
 	} // end while ()
-	fprintf(stderr,"\t^                                          ^\n");
-	fprintf(stderr,"\t|                                          |\n");
-	fprintf(stderr,"\t============================================\n");
+//	fprintf(stderr,"\t^                                          ^\n");
+//	fprintf(stderr,"\t|                                          |\n");
+//	fprintf(stderr,"\t============================================\n");
 }
 
 /*

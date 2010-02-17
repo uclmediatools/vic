@@ -91,6 +91,7 @@ class Transmitter : public TclObject, public Timer,
 	void send(pktbuf*);
 	inline bool is_cc_on() { return is_cc_active_; }
 	void cc_tfwc_output();
+	void cc_tfwc_output(pktbuf*);
 	void cc_tfrc_output();
 
 	/*
@@ -139,7 +140,7 @@ protected:
 
 	/* Cc related variables */
 	bool is_cc_active_;	/* is Cc module activated?		*/
-	bool is_first_;		/* is this first CC'd data packet?	*/
+	bool is_buf_empty_;		/* is pktbuf empty?	*/
 	int cc_type_;
 
     private:
