@@ -70,7 +70,7 @@ protected:
 	int decimate_;
 	int width_;			// width in pixel
 	int height_;		// height in pixel
-	int num_frame_;		// current frame number
+	int nbytes_;		// current bytes
 };
 
 class FileDevice : public InputDevice {
@@ -92,8 +92,7 @@ FileDevice::FileDevice(const char* s) : InputDevice(s),
 		frame_(NULL), len_(0), devstat_(-1)
 {
 	attributes_ = "format { 420 cif } size { small large cif }";
-
-    debug_msg("FileDevice::FileDevice name=%s\n", s);
+//	debug_msg("FileDevice::FileDevice name=%s\n", s);
 }
 
 /*
@@ -170,10 +169,10 @@ void FileDevice::load_file(const char * const f) {
  * StillYuvGraber
  */
 int FileGrabber::command(int argc, const char* const* argv) {
-	debug_msg("FileGrabber::command argc=%d\n", argc);
-	for (int i = 0; i < argc; i++)
-		debug_msg("\"%s\"\n", argv[i]);
-	//Tcl& tcl = Tcl::instance();
+//	debug_msg("FileGrabber::command argc=%d\n", argc);
+//	for (int i = 0; i < argc; i++)
+//		debug_msg("\"%s\"\n", argv[i]);
+//	Tcl& tcl = Tcl::instance();
 
     if (argc == 3) {
         if (strcmp(argv[1], "decimate") == 0) {
@@ -190,18 +189,18 @@ int FileGrabber::command(int argc, const char* const* argv) {
 }
 
 FileGrabber::FileGrabber() :
-	width_(0), height_(0), num_frame_(0)
+	width_(0), height_(0), nbytes_(0)
 {
 	// set device status 
 	status_ = file_device.devstat_;
 }
 
 FileGrabber::~FileGrabber() {
-    debug_msg("Destroy FileGrabber\n");
+    //debug_msg("Destroy FileGrabber\n");
 }
 
 void FileGrabber::start() {
-    debug_msg("Start FileGrabber\n");
+//	debug_msg("Start FileGrabber\n");
 	frameclock_ = gettimeofday_usecs();
 	timeout();
 }
@@ -211,7 +210,7 @@ void FileGrabber::stop() {
 }
 
 void FileGrabber::setsize() {
-	debug_msg("FileGrabber::setsize()\n");
+//	debug_msg("FileGrabber::setsize()\n");
 
 	if(running_)
 		stop();
@@ -221,27 +220,25 @@ void FileGrabber::setsize() {
 	height_ = 288;
 
 	set_size_420(width_, height_);
-	//crinit(width_, height_);
 	allocref();
 }
 
 int FileGrabber::grab() {
-
     int frc = 0; 
 
 	// "framesize_" is just the number of pixels, 
 	// so the number of bytes becomes "3 * framesize_ / 2"
-	memcpy (frame_, file_device.frame_ + num_frame_, 
+	memcpy (frame_, file_device.frame_ + nbytes_, 
 			framesize_ + (framesize_ >> 1));
 
-	if ((num_frame_ += framesize_ + (framesize_ >> 1)) 
+	if ((nbytes_ += framesize_ + (framesize_ >> 1)) 
 			< file_device.len_) {
 		// we are good here
 	} else {
-		num_frame_=0;
+		nbytes_=0;
 	}
  	
-//	debug_msg(" number of frames: %d\n", num_frame_);
+//	debug_msg(" number of bytes: %d\n", nbytes_);
 
 	suppress(frame_);
 	saveblks(frame_);
