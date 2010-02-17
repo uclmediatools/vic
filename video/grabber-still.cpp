@@ -99,7 +99,7 @@ protected:
 	int decimate_;
 	int width_;			// width in pixel
 	int height_;		// height in pixel
-	int num_frame_;		// current frame number
+	int nbytes_;		// current bytes
 };
 
 class StillDevice : public InputDevice {
@@ -112,13 +112,14 @@ public:
     void load_file(const char * const file);
     char *frame_;
     int len_;
+	int devstat_;	// device status
 private:
 };
 
 static StillDevice still_device("still");
 
 StillDevice::StillDevice(const char* s) : InputDevice(s),
-		frame_(NULL), len_(0)
+		frame_(NULL), len_(0), devstat_(-1)
 {
     attributes_ = "format { 411 422 jpeg cif } size { small large cif }";
     
@@ -193,7 +194,9 @@ void StillDevice::load_file(const char * const f)
     
     frame_ = new char[len_ + 1];
 	fread(frame_, len_, 1, fp);
+	debug_msg("Successfully loaded %s\n", f);
 
+	devstat_ = 0;	// device is now ready
     fclose(fp);
 }
 
@@ -222,6 +225,8 @@ int StillGrabber::command(int argc, const char * const * argv)
 
 StillGrabber::StillGrabber() 
 {
+	// set device status
+	status_ = still_device.devstat_;
 }
 
 StillGrabber::~StillGrabber()
@@ -302,7 +307,7 @@ int StillYuvGrabber::command(int argc, const char* const* argv)
 }
 
 StillYuvGrabber::StillYuvGrabber() :
-	width_(0), height_(0), num_frame_(0)
+	width_(0), height_(0), nbytes_(0)
 {
 	stillYuv_ts_off_ = stillYuv_now();
 	start_grab_ = 0.0;
@@ -360,28 +365,28 @@ int StillYuvGrabber::grab()
 
 	// "framesize_" is just the number of pixels, 
 	// so the number of bytes becomes "3 * framesize_ / 2"
-	memcpy (frame_, still_device.frame_ + num_frame_, 
+	memcpy (frame_, still_device.frame_ + nbytes_, 
 			framesize_ + (framesize_ >> 1));
 
-	if ((num_frame_ += framesize_+(framesize_ >> 1)) < still_device.len_) {
+	if ((nbytes_ += framesize_+(framesize_ >> 1)) < still_device.len_) {
 	} else {
-		num_frame_=0;
+		nbytes_=0;
 	}
  	
 #ifdef DEBUG
-	debug_msg(" number of frames: %d\n", num_frame_);
+	debug_msg(" number of bytes: %d\n", nbytes_);
 #endif
 
 	suppress(frame_);
 	saveblks(frame_);
 	YuvFrame f(media_ts(), (u_int8_t *) frame_, crvec_, outw_, outh_);
 
-	frc = target_->consume(&f);
-
 	// time measurement
 	end_grab_ = stillYuv_now() - stillYuv_ts_off_;
 	fprintf(stderr, "end_grab\tnow: %f\n", end_grab_);
 	fprintf(stderr, "num: %d\tgrab_time: %f\n",
 		num_grab_++, end_grab_ - start_grab_);
+
+	frc = target_->consume(&f);
     return frc;
 }
