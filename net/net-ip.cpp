@@ -118,6 +118,7 @@ class IPNetwork : public Network {
 	int localname(sockaddr_in*);
 	int local_preset;  // Indicates if local_ has been set on cmd line
 	int openssock(Address & addr, u_short port, int ttl);
+	int disconnect_sock(int fd);
 	int openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, Address & local);
 	void dosend(u_char* buf, int len, int fd);
 	time_t last_reset_;
@@ -264,6 +265,7 @@ int IPNetwork::open(const char * host, int port, int ttl)
           } else
                 (IPAddress&)local_ = local.sin_addr;
 
+	disconnect_sock(ssock_);
 	rsock_ = openrsock(g_addr_, s_addr_ssm_, port, local_);
 	if (rsock_ < 0) {
 		rsock_ = ssock_;
@@ -307,7 +309,7 @@ int IPNetwork::localname(sockaddr_in* p)
 		p->sin_addr.s_addr = 0;
 		p->sin_port = 0;
 	} else 
-	        debug_msg("getsockname succeeded sin_addr.s_addr:%x\n",p->sin_addr.s_addr);
+	        debug_msg("getsockname succeeded sin_addr.s_addr:%x(%s)\n",p->sin_addr.s_addr,inet_ntoa(p->sin_addr));
 
 	if (p->sin_addr.s_addr == 0) {
 		debug_msg("getsockname returned 0 so resorting to gethostname()\n");
@@ -326,13 +328,13 @@ void IPNetwork::reset()
 		last_reset_ = t;
 		(void)::close(ssock_);
 		ssock_ = openssock(g_addr_, port_, ttl_);
+		disconnect_sock(ssock_);
 	}
 }
 
 int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, Address & local)
 {
 	int fd;
-	struct sockaddr_in sin;
 
 	u_int32_t g_addri = (IPAddress&)g_addr;
 	u_int32_t g_addri_ssm = (IPAddress&)s_addr_ssm;
@@ -407,34 +409,36 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
                         exit (1);
                 }
         } else
-                        
 #endif /* IP_ADD_SOURCE_MEMBERSHIP */
 		{
-				/* 
-				* XXX This is bogus multicast setup that really
-				* shouldn't have to be done (group membership should be
-				* implicit in the IP class D address, route should contain
-				* ttl & no loopback flag, etc.).  Steve Deering has promised
-				* to fix this for the 4.4bsd release.  We're all waiting
-				* with bated breath.
-				*/
-				struct ip_mreq mr;
+		/* 
+		* XXX This is bogus multicast setup that really
+		* shouldn't have to be done (group membership should be
+		* implicit in the IP class D address, route should contain
+		* ttl & no loopback flag, etc.).  Steve Deering has promised
+		* to fix this for the 4.4bsd release.  We're all waiting
+		* with bated breath.
+		*/
+		struct ip_mreq mr;
 
-				mr.imr_multiaddr.s_addr = g_addri;
-				mr.imr_interface.s_addr = locali;
-				if (setsockopt(fd, IPPROTO_IP,IP_ADD_MEMBERSHIP, 
-						(char *)&mr, sizeof(mr)) < 0) {
-			   	    perror("IP_ADD_MEMBERSHIP");
-                                    debug_msg("Failed to join multicast group using local addr - maybe there's a problem with your DNS/hosts setup?\n");
-                                    mr.imr_interface.s_addr = INADDR_ANY;
-                                    if (setsockopt(fd, IPPROTO_IP,IP_ADD_MEMBERSHIP, 
-                                                    (char *)&mr, sizeof(mr)) < 0) {
-                                            perror("IP_ADD_MEMBERSHIP");
-                                            debug_msg("Failed to join multicast group- exiting\n");
-                                            exit(1);
-                                    }
-                                 }
+		mr.imr_multiaddr.s_addr = g_addri;
+		if (local_preset) {
+		    mr.imr_interface.s_addr = locali;
+		    if (setsockopt(fd, IPPROTO_IP,IP_ADD_MEMBERSHIP, 
+				    (char *)&mr, sizeof(mr)) < 0) {
+			perror("IP_ADD_MEMBERSHIP");
+			debug_msg("Failed to join multicast group using preset local addr?\n");
+		    }
+		} else {
+		    mr.imr_interface.s_addr = INADDR_ANY;
+		    if (setsockopt(fd, IPPROTO_IP,IP_ADD_MEMBERSHIP, 
+				    (char *)&mr, sizeof(mr)) < 0) {
+			    perror("IP_ADD_MEMBERSHIP");
+			    debug_msg("Failed to join multicast group- exiting\n");
+			    exit(1);
+		    }
 		}
+ 	}
 	} else
 #endif /* IP_ADD_MEMBERSHIP */
 	{
@@ -466,6 +470,8 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
 		sin.sin_port = 0;
 		sin.sin_addr.s_addr = g_addri;
 		connect(fd, (struct sockaddr *)&sin, sizeof(sin));
+		
+		
 #endif
 	}
 	/*
@@ -485,7 +491,6 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
 int IPNetwork::openssock(Address & addr, u_short port, int ttl)
 {
 	int fd;
-//	struct sockaddr_in sin;
 
 	u_int32_t addri = (IPAddress&)addr;
 
@@ -532,10 +537,11 @@ int IPNetwork::openssock(Address & addr, u_short port, int ttl)
 /*	Got rid of connect and vic then uses sin in the sendto() function in
  *	the dosend() method
  *
- *	if (connect(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
+ */	if (connect(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
 		perror("connect");
 		exit(1);
-	}*/
+	}
+
 	if (IN_CLASSD(ntohl(addri))) {
 #ifdef IP_ADD_MEMBERSHIP
 		char c;
@@ -597,6 +603,12 @@ you must specify a unicast destination\n");
 	return (fd);
 }
 
+int IPNetwork::disconnect_sock(int fd)
+{
+	memset((char *)&sin, 0, sizeof(sin));
+	sin.sin_family = AF_UNSPEC;
+ 	connect(fd, (struct sockaddr *)&sin, sizeof(sin));
+}
 
 
 int IPNetwork::dorecv(u_char* buf, int len, Address & from, int fd)
