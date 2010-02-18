@@ -435,9 +435,9 @@ codec/ffmpeg_codec.o: ffmpeg/lib/libavcodec.a ffmpeg/lib/libavutil.a ffmpeg/lib/
 ffmpeg/lib/libavcodec.a ffmpeg/lib/libavutil.a ffmpeg/lib/libswscale.a ffmpeg/lib/libpostproc.a:
 	(cd ffmpeg; @V_CCLDFLAGS32@ $(MAKE); @V_CCLDFLAGS32@ $(MAKE) install )
 
-codec/x264encoder.o: x264/lib/libx264.a
+codec/x264encoder.o: x264/lib/libx264.a x264/include/x264.h
 
-x264/lib/libx264.a:
+x264/lib/libx264.a x264/include/x264.h:
 	(cd x264; @V_CCLDFLAGS32@ $(MAKE); @V_CCLDFLAGS32@ $(MAKE) install )
 
 codec/encoder-h263v2.o: codec/tmn-x/libh263coder.a
