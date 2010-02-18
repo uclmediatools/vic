@@ -522,11 +522,11 @@ int IPNetwork::openssock(Address & addr, u_short port, int ttl)
 	sin.sin_port = port;
 	sin.sin_addr.s_addr = INADDR_ANY;
 	if (bind(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
-        sin.sin_port = 0;
-        if (bind(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
-            perror("bind");
-            exit(1);
-        }
+	  sin.sin_port = 0;
+	  if (bind(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
+	      perror("bind");
+	      exit(1);
+	  }
 	}
 
 	memset((char *)&sin, 0, sizeof(sin));
@@ -534,10 +534,10 @@ int IPNetwork::openssock(Address & addr, u_short port, int ttl)
 	sin.sin_port = port;
 	sin.sin_addr.s_addr = addri;
 
-/*	Got rid of connect and vic then uses sin in the sendto() function in
- *	the dosend() method
- *
- */	if (connect(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
+	/* Connect() is useful for localname() call to find the iface addr being used
+	 * Because of a problem with OSX we disconnect this socket once localname() has 
+	 * found out the ip address of the interface */
+ 	if (connect(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
 		perror("connect");
 		exit(1);
 	}
