@@ -475,6 +475,15 @@ void SessionManager::transmit(pktbuf* pb)
 	}
 }
 
+void SessionManager::tx_data_only(pktbuf* pb) 
+{
+	if (pb->layer < loop_layer_) {
+		Network* n = dh_[pb->layer].net();
+		if (n != 0)
+			n->send(pb);
+	}
+}
+
 // sending ack of ack packet (RTCP XR report packet)
 void CtrlHandler::send_aoa()
 {

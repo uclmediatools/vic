@@ -113,7 +113,9 @@ protected:
 	void dump(int fd, iovec*, int iovel) const;
 	void loopback(pktbuf*);
 	void output(pktbuf* pb);
+	void output_data_only(pktbuf* pb);
 	virtual void transmit(pktbuf* pb) = 0;
+	virtual void tx_data_only(pktbuf* pb) = 0;
 	double gettimeofday_secs() const;
 	double txtime(pktbuf* pb);
 

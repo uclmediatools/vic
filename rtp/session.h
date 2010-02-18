@@ -160,6 +160,7 @@ protected:
 	void demux(pktbuf* pb, Address & addr);
 	virtual int check_format(int fmt) const = 0;
 	virtual void transmit(pktbuf* pb);
+	virtual void tx_data_only(pktbuf* pb);
 	void send_report(int bye);
 	void send_ECNXreport(CtrlHandler* ch, u_int8_t tos, u_int16_t begin_seq);
 	int build_bye(rtcphdr* rh, Source& local);

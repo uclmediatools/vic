@@ -320,8 +320,8 @@ void Transmitter::cc_tfwc_output(pktbuf* pb)
 		// move head pointer
 		head_ = pb->next;
 
-		// call Transmitter::output(pb)
-		output(pb);
+		// call Transmitter::output_data_only(pb)
+		output_data_only(pb);
 	}
 //	fprintf(stderr,"\t^                                          ^\n");
 //	fprintf(stderr,"\t|                                          |\n");
@@ -449,6 +449,12 @@ void Transmitter::output(pktbuf* pb)
 	transmit(pb);
 	loopback(pb);
 //	pb->release() is called by decoder in loopback;
+}
+
+void Transmitter::output_data_only(pktbuf* pb) 
+{
+	tx_data_only(pb);
+	loopback(pb);
 }
 
 /*void Transmitter::release(pktbuf* pb)
