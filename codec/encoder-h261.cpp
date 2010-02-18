@@ -800,7 +800,7 @@ H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 	ts_off_ = offset();
 	tx_->tx_now_offset_ = ts_off_;
 	enc_start_ = h261_now() - ts_off_;
-	fprintf(stderr,"h261_encode_start\tnow: %f\n", enc_start_);
+	fprintf(stderr,">>>h261_encode_start\tnow: %f\n", enc_start_);
 
 	tx_->flush();
 
@@ -898,8 +898,8 @@ H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 
 	// time measurement
 	enc_end_ = h261_now() - ts_off_;
-	fprintf(stderr,"\nh261_encode_end\tnow: %f\n", enc_end_);
-	fprintf(stderr,"num: %d\tenc_time: %f\n", 
+	fprintf(stderr,"\n>>>h261_encode_end\tnow: %f\n", enc_end_);
+	fprintf(stderr,"   num: %d\tenc_time: %f\n\n", 
 		encno_++, (enc_end_ - enc_start_));
 
 	return (cc);

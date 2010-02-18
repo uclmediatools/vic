@@ -71,9 +71,6 @@ TfwcSndr::TfwcSndr() :
 	clear_sqv(SSZ);
 	num_seqvec_ = 0;
 
-	// is TFWC running?
-	is_running_ = false;
-
 	// for simulating TCP's 3 dupack rule
 	// (allowing packet re-ordering issue)
 	for (int i = 0; i < DUPACKS; i++)
@@ -106,37 +103,23 @@ TfwcSndr::TfwcSndr() :
 	tot_weight_ = 0.0;
 }
 
-void TfwcSndr::tfwc_sndr_send(pktbuf* pb) {
+void TfwcSndr::tfwc_sndr_send(int seqno, double now, double offset) {
 
-	// get RTP header information
-	rtphdr* rh =(rtphdr*) pb->data;
-
-	// get seqno and mark timestamp for this data packet
-	seqno_	= ntohs(rh->rh_seqno);
-	now_	= tfwc_sndr_now();		// (double) type 
-	t_now_	= tfwc_sndr_t_now();	// (u_int32_t) type 
-
-	// is TFWC running? (is this the first data packet?)
-	if (!is_running_) {
-		ref_time_ = now_;
-		ref_t_time_ = t_now_;
-		is_running_ = true;
-	}
-
-	// interpret human-readable time format
-	now_	-= ref_time_;	// (double) type
-	//t_now_	-= ref_t_time_;	// (u_int32_t) type
+	// parse seqno and mark timestamp for this data packet
+	seqno_	= seqno;
+	now_	= now;
+	ts_off_ = offset;
 
 	// timestamp vector for loss history update
 	tsvec_[seqno_%TSZ - 1] = now_;
 
-	fprintf(stderr, "\t>> now_:%f, tsvec_[%d]:%f\n", 
-		now(), seqno_%TSZ - 1, tsvec_[seqno_%TSZ-1]);
+	//fprintf(stderr, "\t>> now_:%f, tsvec_[%d]:%f\n", 
+	//	now_, seqno_%TSZ - 1, tsvec_[seqno_%TSZ-1]);
 
 	// sequence number must be greater than zero
-	assert (seqno_ > 0);
+	//assert (seqno_ > 0);
 	// number of total data packet sent
-	ndtp_++;
+	//ndtp_++;
 }
 
 /*
@@ -146,7 +129,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		u_int16_t *chunk)
 {
 	// number of ack received
-	nakp_++;
+	//nakp_++;
 
 	// get start/end seqno that this XR chunk reports
 	begins_ = begin;	// lowest packet seqno
@@ -172,9 +155,9 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		// clone AckVec from Vic 
 		clone_ackv(chunk, num_vec_);
 
-		fprintf(stderr, 
-		"    [%s +%d] begins:%d, ends:%d, jacked:%d\n", 
-				__FILE__, __LINE__, begins_, ends_, jacked_);
+		//fprintf(stderr, 
+		//"    [%s +%d] begins:%d, ends:%d, jacked:%d\n", 
+		//		__FILE__, __LINE__, begins_, ends_, jacked_);
 
 		// generate seqno vector
 		gen_seqvec(ackv_, num_vec_);
@@ -203,7 +186,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		else {
 			control();
 		}
-		fprintf(stderr, "\tnow: %f\tcwnd: %d\n", now_, cwnd_);
+		fprintf(stderr, "\tnow: %f\tcwnd: %d\n", now(), cwnd_);
 
 		// set ackofack (real number)
 		aoa_ = ackofack(); 

@@ -648,8 +648,8 @@ void SessionManager::announce(CtrlHandler* ch)
  */
 void SessionManager::build_xreport(CtrlHandler* ch, int bt) 
 {
-	fprintf(stderr, "\tentering build_xreport()..................  %s +%d\n",
-			__FILE__,__LINE__);
+	//fprintf(stderr, "\tentering build_xreport()..................  %s +%d\n",
+	//		__FILE__,__LINE__);
 
 	// declare chunks
 	u_int16_t *chunks = NULL;
@@ -767,11 +767,11 @@ void SessionManager::send_Xreport(CtrlHandler* ch, u_int8_t bt,
 	u_int16_t *xrchunks = (u_int16_t *) (xr + 1);
 
 	// copy XR chunks and printing 
-	fprintf(stderr, "\t   printing chunks: ");
+	//fprintf(stderr, "\t   printing chunks: ");
 	for (i = 0; i < num_chunks; i++) {
-		fprintf(stderr, "[%d:%x] ", i, chunks[i]);
+	//	fprintf(stderr, "[%d:%x] ", i, chunks[i]);
 		xrchunks[i] = htons(chunks[i]);
-	} fprintf(stderr, "...........%s +%d\n",__FILE__,__LINE__);
+	} //fprintf(stderr, "...........%s +%d\n",__FILE__,__LINE__);
 
 	// if num_chunks is odd then increment it by one as packet size is
 	// measured in 32-bits pieces. And add Null chunk onto the end.
@@ -791,7 +791,7 @@ void SessionManager::send_Xreport(CtrlHandler* ch, u_int8_t bt,
 
 	// RTCP packet length
 	int len = (u_char *) ++xr + (num_chunks * 2) - pktbuf_;
-	fprintf(stderr, "\t   RTCP XR: len: %d, xrlen: %d\n", len, xrlen);
+	//fprintf(stderr, "\t   RTCP XR: len: %d, xrlen: %d\n", len, xrlen);
 	len = sizeof(rtcphdr) + sizeof(rtcp_xr_BT_1_hdr) + (num_chunks * 2);
 	rh->rh_len = htons((len >> 2) - 1);
 
@@ -1312,9 +1312,9 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 		// i am an RTP data sender, so do the sender stuffs (AoA)
 		if (am_i_sender()) {
 			fprintf(stderr, ">>> parse_xr - i_am_sender\n");
-			fprintf(stderr, 
-				"    [%s +%d] beg:%d, end:%d, xr1len:%d (xrlen:%d)\n", 
-				__FILE__,__LINE__,begin, end, ntohs(xr1->xr_len), xrlen);
+			//fprintf(stderr, 
+			//	"    [%s +%d] beg:%d, end:%d, xr1len:%d (xrlen:%d)\n", 
+			//	__FILE__,__LINE__,begin, end, ntohs(xr1->xr_len), xrlen);
 			
 			switch (cc_type_) {
 			case WBCC:

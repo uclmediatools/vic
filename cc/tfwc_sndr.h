@@ -55,8 +55,8 @@
 class TfwcSndr {
 public:
 	TfwcSndr();
-	// parse RTP data packet from Transmitter module
-	void tfwc_sndr_send(pktbuf*);
+	// parse seqno and timestamp
+	void tfwc_sndr_send(int, double, double);
 
 	// main reception path (XR packet)
 	void tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
@@ -86,7 +86,7 @@ public:
 	}
 
 	// return the current time
-	inline double now() { return now_; }
+	inline double now() { return (tfwc_sndr_now()-ts_off_); }
 
 	// return timestamp in u_int32_t type
 	inline u_int32_t tfwc_sndr_get_ts() { return t_now_; }
@@ -136,15 +136,15 @@ protected:
 	}
 	// print mvec
 	inline void print_mvec() {
-		printf("\tmargin numbers: ( %d %d %d )\n", 
+		fprintf(stderr, "\tmargin numbers: ( %d %d %d )\n", 
 				mvec_[0], mvec_[1], mvec_[2]);
 	}
 	// printf seqvec
 	inline void print_seqvec(int numelm) {
-		printf("\tsequence numbers: (");
+		fprintf(stderr, "\tsequence numbers: (");
 		for (int i = 0; i < numelm; i++)
-			printf(" %d", seqvec_[i]);
-		printf(" )\n");
+			fprintf(stderr, " %d", seqvec_[i]);
+		fprintf(stderr, " )\n");
 	}
 
 	int mvec_[DUPACKS]; // margin vec (simulatinmg TCP 3 dupacks)
@@ -215,7 +215,7 @@ private:
 	int epoch_;		// communication epoch
 
 	bool is_running_;	// is TFWC running? 
-	double ref_time_;	// reference time for gettimeofday
+	double ts_off_;		// timestamp offset for gettimeofday
 	u_int32_t ref_t_time_;	// reference time (uint32 format)
 
 	u_int32_t *seqvec_;		// generated seqno vec

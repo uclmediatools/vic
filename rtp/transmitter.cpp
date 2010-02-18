@@ -313,7 +313,9 @@ void Transmitter::cc_tfwc_output(pktbuf* pb)
 		fprintf(stderr, "\n\tnow: %f\tseqno: %d\n\n", 
 			tx_now()-tx_now_offset_, ntohs(rh->rh_seqno));
 		// record seqno and timestamp at TfwcSndr side
-		tfwc_sndr_send(pb);
+		tfwc_sndr_send(ntohs(rh->rh_seqno), 
+				tx_now()-tx_now_offset_,
+				tx_now_offset_);
 
 		// move head pointer
 		head_ = pb->next;
@@ -367,7 +369,9 @@ void Transmitter::cc_tfwc_output()
 		fprintf(stderr, "\n\tnow: %f\tseqno: %d\n\n", 
 			tx_now()-tx_now_offset_, ntohs(rh->rh_seqno));
 		// record seqno and timestamp at TfwcSndr side
-		tfwc_sndr_send(pb);
+		tfwc_sndr_send(ntohs(rh->rh_seqno), 
+				tx_now()-tx_now_offset_,
+				tx_now_offset_);
 
 		// move head pointer
 		head_ = pb->next;
