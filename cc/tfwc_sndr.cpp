@@ -531,4 +531,5 @@ void TfwcSndr::avg_loss_interval() {
 
 	// this is average loss interval
 	avg_interval_ = I_tot_ / tot_weight_;
+	fprintf(stderr, "now: %f\tALI: %f\n", now(), avg_interval_);
 }
