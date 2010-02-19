@@ -37,8 +37,8 @@ proc user_dev {} {
 		set deviceName "still"
 
 		foreach v $inputDeviceList {
-			puts "deviceList: [$inputDeviceList nickname]"
-			if { [$inputDeviceList nickname] == "$deviceName" } {
+			puts "deviceList: [$v nickname]"
+			if { [string last $deviceName [$v nickname]] != -1 } {
 				set videoDevice $v
 				select_device $v
 				$v file "foreman.yuv"
