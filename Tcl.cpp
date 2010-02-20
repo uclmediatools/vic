@@ -44,6 +44,9 @@ static const char rcsid[] =
 #include <sys/types.h>
 #ifdef USE_ZVFS
 #include "zvfs.h"
+extern "C" {
+	char *TclSetPreInitScript(char *string);
+}
 #endif
 
 Tcl Tcl::instance_;
@@ -74,6 +77,25 @@ void Tcl::init(Tcl_Interp* tcl, const char* application)
 
 	Tcl_SetVar(tcl, "auto_path", "/zvfs/tcl /zvfs/tk /zvfs/vic", TCL_GLOBAL_ONLY);
 	Tcl_SetVar(tcl, "tcl_libPath", "/zvfs/tcl /zvfs/tk /zvfs/vic", TCL_GLOBAL_ONLY);
+	TclSetPreInitScript("\n"
+"proc tclInit {} {\n"
+"  global tcl_libPath tcl_library env\n"
+"  rename tclInit {}\n"
+"  set tcl_library [set env(TCL_LIBRARY)]\n"
+"  set tclfile [file join $tcl_library init.tcl]\n"
+"  if {[file exists $tclfile]} {\n"
+"    set errors {}\n"
+"    if {[catch {uplevel #0 [list source $tclfile]} msg opts]} {\n"
+"      append errors \"$tclfile: $msg\n\"\n"
+"      append errors \"[dict get $opts -errorinfo]\n\"\n"
+"      set msg \"Can't find a usable init.tcl in the following location: \n\"\n"
+"      append msg \"$errors\n\n\"\n"
+"      append msg \"This probably means that VIC wasn't built properly.\n\"\n"
+"      error $msg\n"
+"    }\n"
+"  }\n"
+"}\n"
+"tclInit");
 #endif
 	//Tk_InitConsoleChannels(tcl);
 	Tcl_Init(tcl);
