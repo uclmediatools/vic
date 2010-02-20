@@ -607,7 +607,7 @@ int IPNetwork::disconnect_sock(int fd)
 {
 	memset((char *)&sin, 0, sizeof(sin));
 	sin.sin_family = AF_UNSPEC;
- 	connect(fd, (struct sockaddr *)&sin, sizeof(sin));
+ 	return connect(fd, (struct sockaddr *)&sin, sizeof(sin));
 }
 
 
