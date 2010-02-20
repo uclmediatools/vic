@@ -111,7 +111,7 @@ void TfwcSndr::tfwc_sndr_send(int seqno, double now, double offset) {
 	ts_off_ = offset;
 
 	// timestamp vector for loss history update
-	tsvec_[seqno_%TSZ - 1] = now_;
+	tsvec_[seqno_%TSZ] = now_;
 
 	//fprintf(stderr, "\t>> now_:%f, tsvec_[%d]:%f\n", 
 	//	now_, seqno_%TSZ - 1, tsvec_[seqno_%TSZ-1]);
@@ -514,14 +514,20 @@ void TfwcSndr::avg_loss_interval() {
 	tot_weight_ = 0;
 
 	// make a decision whether to include the most recent loss interval
+	fprintf(stderr, "\n\tHIST_0 [");
 	for (int i = 0; i < hsz_; i++) {
 		I_tot0_ += weight_[i] * history_[i];
 		tot_weight_ += weight_[i];
+		print_history_item(i);
 	}
+	fprintf(stderr, "]\n");
+	fprintf(stderr, "\tHIST_1 [");
 	for (int i = 1; i < hsz_ + 1; i++) {
 		I_tot1_ += weight_[i-1] * history_[i];
-		tot_weight_ += weight_[i];
+		//tot_weight_ += weight_[i];
+		print_history_item(i);
 	}
+	fprintf(stderr, "]\n");
 
 	// compare I_tot0_ and I_tot1_ and use larger value
 	if (I_tot0_ < I_tot1_)
@@ -531,5 +537,13 @@ void TfwcSndr::avg_loss_interval() {
 
 	// this is average loss interval
 	avg_interval_ = I_tot_ / tot_weight_;
-	fprintf(stderr, "now: %f\tALI: %f\n", now(), avg_interval_);
+	fprintf(stderr, "\tnow: %f\tALI: %f\n\n", now(), avg_interval_);
+}
+
+/*
+ * print history item
+ */
+void TfwcSndr::print_history_item (int i) {
+	fprintf(stderr, "%d", history_[i]);
+	if (i < hsz_ - 1) fprintf(stderr, ", ");
 }

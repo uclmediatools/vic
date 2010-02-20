@@ -170,6 +170,7 @@ private:
 
 	// calcuate average loss interval
 	void avg_loss_interval();
+	void print_history_item (int);
 
 	// calculate loss history
 	void loss_history();
@@ -233,7 +234,7 @@ private:
 	double pseudo_p_;	// faked packet loss probability
 	double pseudo_interval_;// faked loss interval
 	double avg_interval_;	// average loss interval
-	double history_[HSZ+1];	// loss interval history
+	int history_[HSZ+1];	// loss interval history
 	double weight_[HSZ+1];	// weight for calculating avg loss interval
 	double I_tot_;		// total sum
 	double I_tot0_;		// from 0 to n-1
