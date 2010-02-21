@@ -241,19 +241,19 @@ DeckLinkScanner::DeckLinkScanner(int maxNumDevices)
     HRESULT result;
 
 #if defined(_WIN32) || defined(_WIN64) 
-	// Initialize COM on this thread
-	result = CoInitializeEx(NULL,COINIT_MULTITHREADED);
-	if (FAILED(result)) {
-		debug_msg("DeckLinkScanner: Failed COM subsystem initialisation.\n");
-		return;
-	}
+    // Initialize COM on this thread
+    result = CoInitializeEx(NULL,COINIT_MULTITHREADED);
+    if (FAILED(result)) {
+        debug_msg("DeckLinkScanner: Failed COM subsystem initialisation.\n");
+        return;
+    }
 
     CComPtr<IDeckLinkIterator> deckLinkIterator = NULL;
-	if (CoCreateInstance(CLSID_CDeckLinkIterator, NULL, CLSCTX_ALL, IID_IDeckLinkIterator, (void**)&deckLinkIterator) != S_OK || deckLinkIterator == NULL) {
+    if (CoCreateInstance(CLSID_CDeckLinkIterator, NULL, CLSCTX_INPROC_SERVER, IID_IDeckLinkIterator, (void**)&deckLinkIterator) != S_OK || deckLinkIterator == NULL) {
         debug_msg("DeckLinkScanner: DeckLink iterator instance could not be created\n");
         CoUninitialize();
         return;
-	}
+    }
 #else
     IDeckLinkIterator* deckLinkIterator;
     deckLinkIterator = CreateDeckLinkIteratorInstance();
@@ -272,16 +272,16 @@ DeckLinkScanner::DeckLinkScanner(int maxNumDevices)
         CComBSTR cardNameBSTR;
 
         result = deckLink->GetModelName(&cardNameBSTR);
-	    if (result == S_OK) {
+        if (result == S_OK) {
             CW2A tmpstr1(cardNameBSTR);
             strncpy_s(deviceNameString, sizeof(deviceNameString), tmpstr1, _TRUNCATE);
-	    }
+        }
 #elif __APPLE__
         char deviceNameString[64] = {};
         CFStringRef modelName;
 
         result = deckLink->GetModelName(&modelName);
-                
+
         if (result == S_OK) {
             CFStringGetCString(modelName, deviceNameString, sizeof(deviceNameString), kCFStringEncodingASCII);
         }
@@ -313,7 +313,7 @@ DeckLinkScanner::~DeckLinkScanner() {
         }
     }
 #if defined(_WIN32) || defined(_WIN64) 
-	CoUninitialize();
+    CoUninitialize();
 #endif
 }
 
@@ -390,10 +390,10 @@ DeckLinkDevice::DeckLinkDevice(const char* name, IDeckLink* deckLink) : InputDev
         CComBSTR displayModeNameBSTR;
 
         result = displayMode->GetName(&displayModeNameBSTR);
-	    if (result == S_OK) {
+        if (result == S_OK) {
             CW2A tmpstr1(displayModeNameBSTR);
             strncpy_s(displayModeString, sizeof(displayModeString), tmpstr1, _TRUNCATE);
-	    }
+        }
 #elif __APPLE__
         char displayModeString[64] = {};
 
@@ -565,10 +565,10 @@ int DeckLinkGrabber::command(int argc, const char*const* argv)
                 CComBSTR displayModeNameBSTR;
 
                 result = displayMode->GetName(&displayModeNameBSTR);
-	            if (result == S_OK) {
+                if (result == S_OK) {
                     CW2A tmpstr1(displayModeNameBSTR);
                     strncpy_s(displayModeString, sizeof(displayModeString), tmpstr1, _TRUNCATE);
-	            }
+                }
 #elif __APPLE__
                 char displayModeString[64] = {};
 
@@ -694,6 +694,9 @@ void DeckLinkGrabber::start()
     fprintf(stderr, "Grabber::start()\n");
     Grabber::start();
     running_ = 1;
+#if defined(_WIN32) || defined(_WIN64)
+    Grabber::timeout();
+#endif
 }
 
 void DeckLinkGrabber::stop()
