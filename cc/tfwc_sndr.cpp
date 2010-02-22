@@ -114,7 +114,7 @@ void TfwcSndr::tfwc_sndr_send(int seqno, double now, double offset) {
 	tsvec_[seqno_%TSZ] = now_;
 
 	//fprintf(stderr, "\t>> now_:%f, tsvec_[%d]:%f\n", 
-	//	now_, seqno_%TSZ - 1, tsvec_[seqno_%TSZ-1]);
+	//	now_, seqno_%TSZ, tsvec_[seqno_%TSZ]);
 
 	// sequence number must be greater than zero
 	//assert (seqno_ > 0);
@@ -192,7 +192,9 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		aoa_ = ackofack(); 
 
 		// update RTT with the sampled RTT
-		tao_ = now() - tsvec_[ends_%TSZ];
+		tao_ = now() - tsvec_[jacked_%TSZ];
+		//fprintf(stderr, "\t<< :now_%f, tsvec_[%d]:%f, rtt: %f\n", 
+		//	now(), jacked_%TSZ, tsvec_[jacked_%TSZ], tao_);
 		update_rtt(tao_);
 
 		// initialize variables for the next pkt reception
