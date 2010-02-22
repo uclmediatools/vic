@@ -763,6 +763,11 @@ proc select_device device {
 	} else {
 		$sizeButtons.b0 configure -state disabled
 	}
+        if { [device_supports $device size normal] || [device_supports $device size cif] } {
+		$sizeButtons.b1 configure -state normal
+	} else {
+		$sizeButtons.b1 configure -state disabled
+	}
 	if [device_supports $device size large] {
 		$sizeButtons.b2 configure -state normal
 	} else {

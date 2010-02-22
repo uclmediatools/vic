@@ -342,8 +342,8 @@ DeckLinkDevice::DeckLinkDevice(const char* name, IDeckLink* deckLink) : InputDev
         return;
     }
 
-    strcpy(attr,"format { 420 422 cif } ");
-    strcat(attr,"size { small large cif } ");
+    strcpy(attr,"format { 420 422 } ");
+    strcat(attr,"size { large } ");
 
     strcat(attr,"port { ");
 
@@ -718,7 +718,6 @@ int DeckLinkGrabber::grab()
         return 0;
     }
 
-    // Need to fix, should do HDYC (a packed UYVY variation) to YUYV instead
     switch (cformat_) {
     case CF_420:
     case CF_CIF:
