@@ -171,6 +171,7 @@ private:
 	// calcuate average loss interval
 	void avg_loss_interval();
 	void print_history_item (int);
+	void print_history_item (int, int);
 
 	// calculate loss history
 	void loss_history();

@@ -192,7 +192,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		aoa_ = ackofack(); 
 
 		// update RTT with the sampled RTT
-		tao_ = now() - tsvec_[seqno_%TSZ];
+		tao_ = now() - tsvec_[ends_%TSZ];
 		update_rtt(tao_);
 
 		// initialize variables for the next pkt reception
@@ -512,20 +512,21 @@ void TfwcSndr::avg_loss_interval() {
 	I_tot0_ = 0;
 	I_tot1_ = 0;
 	tot_weight_ = 0;
+	int i = 0, j = 0;
 
 	// make a decision whether to include the most recent loss interval
 	fprintf(stderr, "\n\tHIST_0 [");
-	for (int i = 0; i < hsz_; i++) {
+	for (i = 0; i < hsz_; i++) {
 		I_tot0_ += weight_[i] * history_[i];
 		tot_weight_ += weight_[i];
 		print_history_item(i);
 	}
 	fprintf(stderr, "]\n");
 	fprintf(stderr, "\tHIST_1 [");
-	for (int i = 1; i < hsz_ + 1; i++) {
+	for (i = 1, j = 0; i < hsz_ + 1; i++, j++) {
 		I_tot1_ += weight_[i-1] * history_[i];
 		//tot_weight_ += weight_[i];
-		print_history_item(i);
+		print_history_item(i, j);
 	}
 	fprintf(stderr, "]\n");
 
@@ -546,4 +547,9 @@ void TfwcSndr::avg_loss_interval() {
 void TfwcSndr::print_history_item (int i) {
 	fprintf(stderr, "%d", history_[i]);
 	if (i < hsz_ - 1) fprintf(stderr, ", ");
+}
+
+void TfwcSndr::print_history_item (int i, int j) {
+	fprintf(stderr, "%d", history_[i]);
+	if (j < hsz_ - 1) fprintf(stderr, ", ");
 }
