@@ -97,6 +97,9 @@ Transmitter::Transmitter() :
 {
 	memset((char*)&mh_, 0, sizeof(mh_));
 	mh_.msg_iovlen = 2;
+
+	// CC related...
+	epc_ = 0;	// experimental packet counter
 }
 
 /* Return time of day in seconds */

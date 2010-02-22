@@ -144,6 +144,7 @@ protected:
 	bool is_cc_active_;	/* is Cc module activated?		*/
 	bool is_buf_empty_;		/* is pktbuf empty?	*/
 	int cc_type_;
+	int epc_;		/* experimental packet counter */
 
     private:
 	static pktbuf* freehdrs_;
