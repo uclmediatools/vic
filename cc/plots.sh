@@ -74,6 +74,7 @@ set ylabel "cwnd"
 set mxtics 5
 set mytics 2
 set xrange [$1:$2]
+set yrange [0:]
 set grid xtics ytics mytics
 
 plot "cwnd.xg" w lp lc 3 pt 4 ps .4 title "cwnd"
@@ -90,6 +91,7 @@ set ylabel "ALI"
 set mxtics 5
 set mytics 2
 set xrange [$1:$2]
+set yrange [0:]
 set grid xtics ytics mytics
 
 plot "ALI.xg" w lp lc 1 pt 5 ps .4 title "ALI"
