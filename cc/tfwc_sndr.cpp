@@ -113,7 +113,7 @@ void TfwcSndr::tfwc_sndr_send(int seqno, double now, double offset) {
 	// timestamp vector for loss history update
 	tsvec_[seqno_%TSZ] = now_;
 
-	//fprintf(stderr, "\t>> now_: %f, tsvec_[%d]: %f\n", 
+	//fprintf(stderr, "\t>> now_: %f tsvec_[%d]: %f\n", 
 	//	now_, seqno_%TSZ, tsvec_[seqno_%TSZ]);
 
 	// sequence number must be greater than zero
@@ -156,7 +156,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		clone_ackv(chunk, num_vec_);
 
 		//fprintf(stderr, 
-		//"    [%s +%d] begins:%d, ends:%d, jacked:%d\n", 
+		//"    [%s +%d] begins: %d ends: %d jacked: %d\n", 
 		//		__FILE__, __LINE__, begins_, ends_, jacked_);
 
 		// generate seqno vector
@@ -193,7 +193,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 
 		// update RTT with the sampled RTT
 		tao_ = now() - tsvec_[jacked_%TSZ];
-		//fprintf(stderr, "\t<< now_: %f, tsvec_[%d]: %f, rtt: %f\n", 
+		//fprintf(stderr, "\t<< now_: %f tsvec_[%d]: %f rtt: %f\n", 
 		//	now(), jacked_%TSZ, tsvec_[jacked_%TSZ], tao_);
 		update_rtt(tao_);
 
