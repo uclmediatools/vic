@@ -520,20 +520,19 @@ void TfwcSndr::avg_loss_interval() {
 	int i = 0, j = 0;
 
 	// make a decision whether to include the most recent loss interval
-	fprintf(stderr, "\n\tHIST_0 [");
+	//fprintf(stderr, "\n\tHIST_0 [");
 	for (i = 0; i < hsz_; i++) {
 		I_tot0_ += weight_[i] * history_[i];
 		tot_weight_ += weight_[i];
-		print_history_item(i);
+	//	print_history_item(i);
 	}
-	fprintf(stderr, "]\n");
-	fprintf(stderr, "\tHIST_1 [");
+	//fprintf(stderr, "]\n");
+	//fprintf(stderr, "\tHIST_1 [");
 	for (i = 1, j = 0; i < hsz_ + 1; i++, j++) {
 		I_tot1_ += weight_[i-1] * history_[i];
-		//tot_weight_ += weight_[i];
-		print_history_item(i, j);
+	//	print_history_item(i, j);
 	}
-	fprintf(stderr, "]\n");
+	//fprintf(stderr, "]\n");
 
 	// compare I_tot0_ and I_tot1_ and use larger value
 	if (I_tot0_ < I_tot1_)
