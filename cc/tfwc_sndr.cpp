@@ -296,7 +296,7 @@ bool TfwcSndr::detect_loss(int end, int begin) {
 	
 	// store tempvec elements for updating loss history
 	first_elm_ = tempvec[0];
-	last_elm_ = first_elm_ + num;
+	last_elm_ = first_elm_ + (num - 1);
 
 	return ret = (count > 0) ? true : false;
 }
@@ -446,9 +446,10 @@ void TfwcSndr::pseudo_p() {
  * compute simulated loss history
  */
 void TfwcSndr::loss_history() {
-	bool is_loss;		// is there a loss found in seqvec?
-	bool is_new_event;	// is this a new loss event?
+	bool is_loss = false;		// is there a loss found in seqvec?
+	bool is_new_event = false;	// is this a new loss event?
 	int numvec = last_elm_ - first_elm_ + 1;
+	fprintf(stderr, "\tlast: %d first: %d\n", last_elm_, first_elm_);
 	u_int32_t tempvec[numvec];
 
 	for (int i = 0; i < numvec; i++)
@@ -457,7 +458,7 @@ void TfwcSndr::loss_history() {
 	// compare tempvec[] with seqvec
 	for (int i = 0; i < numvec; i++) {
 		// is there a loss found?
-		for (int j = 0; j < numvec; j++) {
+		for (int j = 0; j < num_seqvec_; j++) {
 			if (tempvec[i] == seqvec_[j]) {
 				is_loss = false;
 				break;
@@ -466,10 +467,12 @@ void TfwcSndr::loss_history() {
 		}
 
 		// is this a new loss event?
-		if (tsvec_[tempvec[i]%TSZ] - ts_ > srtt_)
+		if (is_loss) {
+			if (tsvec_[tempvec[i]%TSZ] - ts_ > srtt_)
 			is_new_event = true;
-		else
+			else
 			is_new_event = false;
+		}
 
 		// compute loss history (compare tempvec and seqvec)
 		// o  everytime it sees a loss
