@@ -62,3 +62,35 @@ plot \
 "grt.xg" with lines lt 1 lc 3 title "grabbing time"
 
 EOF
+
+gnuplot -persist << EOF
+set terminal postscript eps enhanced color
+set output "cwnd.eps"
+
+set title "cwnd"
+set xlabel "vic run time (sec)"
+set ylabel "cwnd"
+
+set mxtics 5
+set mytics 2
+set xrange [$1:$2]
+set grid xtics ytics mytics
+
+plot "cwnd.xg" w lp lc 3 pt 4 ps .4 title "cwnd"
+EOF
+
+gnuplot -persist << EOF
+set terminal postscript eps enhanced color
+set output "ALI.eps"
+
+set title "average loss interval"
+set xlabel "vic run time (sec)"
+set ylabel "ALI"
+
+set mxtics 5
+set mytics 2
+set xrange [$1:$2]
+set grid xtics ytics mytics
+
+plot "ALI.xg" w lp lc 1 pt 5 ps .4 title "ALI"
+EOF
