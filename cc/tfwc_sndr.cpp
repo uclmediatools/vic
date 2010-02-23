@@ -449,7 +449,6 @@ void TfwcSndr::loss_history() {
 	bool is_loss = false;		// is there a loss found in seqvec?
 	bool is_new_event = false;	// is this a new loss event?
 	int numvec = last_elm_ - first_elm_ + 1;
-	fprintf(stderr, "\tlast: %d first: %d\n", last_elm_, first_elm_);
 	u_int32_t tempvec[numvec];
 
 	for (int i = 0; i < numvec; i++)
