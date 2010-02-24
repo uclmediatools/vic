@@ -4538,7 +4538,7 @@ echo "${ECHO_T}Tcl ${TCL_VERSION}${TCL_PATCH_LEVEL}" >&6; }
         V_DEFINE="$V_DEFINE -DMAC_OSX_TCL"
     fi
 
-elif test "${TCL_VERSION}" == "8.0" ; then
+elif test "${TCL_VERSION}" = "8.0" ; then
     if test -f "${TCL_SRC_DIR}/generic/tcl2c.c" ; then
         { echo "$as_me:$LINENO: result: UCL Tcl ${TCL_VERSION}${TCL_PATCH_LEVEL}" >&5
 echo "${ECHO_T}UCL Tcl ${TCL_VERSION}${TCL_PATCH_LEVEL}" >&6; }
