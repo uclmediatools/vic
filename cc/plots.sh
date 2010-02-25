@@ -16,10 +16,10 @@ set xrange [$1:$2]
 set yrange [$3:$4]
 
 plot \
-	"encs.xg" with impulses, \
-	"ence.xg" with impulses, \
-	"inXR.xg" with impulses, \
-	"seqno.xg" ls 3
+	"encs.xg" with impulses title "start encoding", \
+	"ence.xg" with impulses title "end encoding", \
+	"inXR.xg" with impulses title "ackvec arrival", \
+	"seqno.xg" ls 3 title "packet"
 
 EOF
 
