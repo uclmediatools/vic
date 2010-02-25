@@ -2,7 +2,7 @@
 
 # packet seqno trace in time
 grep seqno trace.s | grep -v pid | awk '{if($1=="now:" && $3=="seqno:") print}' | awk '{print $2" "$4}' > seqno.tr
-cc/tools/asv seqno.tr
+cc/tools/asv seqno seqno.tr
 rm seqno.tr
 
 # start encoding
@@ -31,3 +31,8 @@ grep cwnd trace.s | awk '{print $2" "$4}' > cwnd.xg
 
 # ALI
 grep ALI trace.s | awk '{print $2" "$4}' > ALI.xg
+
+# dropped packet seqno
+grep drop trace.s | awk '{print $2" "$4}' > drop.tr
+cc/tools/asv drop drop.tr
+rm drop.tr

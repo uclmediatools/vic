@@ -49,8 +49,8 @@ int main (int argc, char *argv[]) {
 		exit (0);
 	}
 
-	ifstream fin (argv[1]);
-	string option = argv[2]; 
+	string option = argv[1]; 
+	ifstream fin (argv[2]);
 	ofstream fout;
 
 	// variables
