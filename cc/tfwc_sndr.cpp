@@ -193,9 +193,9 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 
 		// update RTT with the sampled RTT
 		tao_ = now() - tsvec_[jacked_%TSZ];
-		//fprintf(stderr, "\t<< now_: %f tsvec_[%d]: %f rtt: %f\n", 
-		//	now(), jacked_%TSZ, tsvec_[jacked_%TSZ], tao_);
 		update_rtt(tao_);
+		//fprintf(stderr, "\t<< now_: %f tsvec_[%d]: %f rtt: %f srtt: %f\n", 
+		//	now(), jacked_%TSZ, tsvec_[jacked_%TSZ], tao_, srtt_);
 
 		// initialize variables for the next pkt reception
 		free(ackv_);
