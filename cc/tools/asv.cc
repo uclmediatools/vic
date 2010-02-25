@@ -45,11 +45,12 @@ using namespace std;
 int main (int argc, char *argv[]) {
 
 	if (argc < 2) {
-		cout << "Usage: " << endl;
+		cout << "Usage: ./asv <desired output filename> <input file>" << endl;
 		exit (0);
 	}
 
-	ifstream fin (argv[1]); 
+	ifstream fin (argv[1]);
+	string option = argv[2]; 
 	ofstream fout;
 
 	// variables
@@ -60,7 +61,7 @@ int main (int argc, char *argv[]) {
 	if (fin.is_open()) {
 		// preparing for the output file
 		stringstream ss;
-		ss << "seqno" << ".xg";
+		ss << option << ".xg";
 		fout.open(ss.str().c_str());
 
 		// get input file stream
