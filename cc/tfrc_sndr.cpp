@@ -31,3 +31,10 @@
  * $Id$
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <sys/types.h>
+
+#include "tfrc_sndr.h"
+#include "formula.h"
