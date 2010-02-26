@@ -353,7 +353,7 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
 	   } else if (have_RGB24_) {
 		   mt_.subtype = MEDIASUBTYPE_RGB24; // RGB 24 bit
 	   } else {
-		   mt_.subtype = MEDIASUBTYPE_RGB24;
+		   mt_.subtype = MEDIASUBTYPE_UYVY;
 	   }
    } else {
 	   if (have_I420_) {
@@ -365,7 +365,7 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
 	   } else if (have_RGB24_) {
 		   mt_.subtype = MEDIASUBTYPE_RGB24; // RGB 24 bit
 	   } else {
-		   mt_.subtype = MEDIASUBTYPE_RGB24;
+		   mt_.subtype = MEDIASUBTYPE_UYVY;
 	   }
    }
 
@@ -743,7 +743,7 @@ int DirectShowGrabber::grab() {
      else if (have_RGB24_)
        converter_->convert((u_int8_t*)last_frame_, width_, height_, frame_, outw_, outh_, TRUE);
 	 else
-       converter_->convert((u_int8_t*)last_frame_, width_, height_, frame_, outw_, outh_, TRUE);
+       packedUYVY422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
      break;
 
    case CF_422:
@@ -756,7 +756,7 @@ int DirectShowGrabber::grab() {
      else if (have_RGB24_)
        converter_->convert((u_int8_t*)last_frame_, width_, height_, frame_, outw_, outh_, TRUE);
 	 else
-       converter_->convert((u_int8_t*)last_frame_, width_, height_, frame_, outw_, outh_, TRUE);
+       packedUYVY422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
      break;
    }
 
