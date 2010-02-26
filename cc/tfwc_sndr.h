@@ -39,6 +39,7 @@
 #define DUPACKS 3   // simulating TCP's 3 dupacks
 #define TSZ	1000	// tsvec_ size
 #define SSZ 1000	// seqvec_ size
+#define RSZ 1000	// refvec_ size
 
 #define SHORT_HISTORY		// history size = 8
 #ifdef  SHORT_HISTORY
@@ -99,10 +100,12 @@ protected:
 	// generate sequence numbers
 	void gen_seqvec(u_int16_t *v, int n);
 
-	// init loss related variables
-	inline void init_loss_var() {
-		is_loss_ = false;
-		num_loss_ = 0;
+	// generate reference seqno
+	void gen_refvec(int end, int begin);
+
+	// init variables
+	inline void init_var() {
+		num_missing_ = 0;
 	}
 
 	// get the first position in ackvec where 1 is marked
@@ -163,7 +166,8 @@ private:
 	void update_rtt(double tao);
 
 	// detect packet loss
-	bool detect_loss(int, int);
+	// (to capture the very first lost packet loss)
+	bool detect_loss();
 
 	// control congestion window
 	void control();
@@ -210,6 +214,12 @@ private:
 			ackv_[i] = 0;
 	}
 
+	// clear refvec
+	inline void clear_refv (int n) {
+		for (int i = 0; i < n; i++)
+			refvec_[i] = 0;
+	}
+
 	int ndtp_;		// number of data packet sent
 	int nakp_;		// number of ackvec packet received
 	int ntep_;		// number of ts echo packet received
@@ -222,12 +232,13 @@ private:
 
 	u_int32_t *seqvec_;		// generated seqno vec
 	int	num_seqvec_;		// number of seqvec elements
+	u_int32_t *refvec_;		// reference seqno vec
+	int num_refvec_;		// number of refvec elements
 	double *tsvec_;			// timestamp vector
 	u_int16_t jacked_;		// just acked seqno (head of ackvec)
-	bool is_loss_;
 	bool is_first_loss_seen_;
 	bool is_tfwc_on_;
-	int num_loss_;	// number of detected packet loss
+	int num_missing_;	// number of missing seqno
 	double f_p_;	// f(p) = sqrt(2/3)*p + 12*p*(1+32*p^2)*sqrt(3/8)*p
 	double p_;		// packet loss probability
 	double t_win_;      // temporal cwin size to get p_ value
@@ -242,8 +253,6 @@ private:
 	double I_tot1_;		// form 1 to n
 	double tot_weight_;	// total weight
 	int hsz_;		// current history size
-	u_int32_t first_elm_;
-	u_int32_t last_elm_;
 
 	// RTT related variables
 	double srtt_;	// smoothed RTT
