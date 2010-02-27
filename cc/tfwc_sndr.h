@@ -61,7 +61,7 @@ public:
 
 	// main reception path (XR packet)
 	void tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
-			u_int16_t *chunk);
+			u_int16_t *chunk, double so_rtime);
 
 	// return ackofack
 	inline u_int16_t tfwc_sndr_get_aoa() { return aoa_; }
@@ -160,6 +160,7 @@ protected:
 	double ts_;			// time stamp (double type)
 	double ts_echo_;	// time stamp echo (double type)
 	double now_;		// real-time now
+	double so_recv_;	// SO_TIMESTAMP (XR packet reception)
 	double tao_;		// sampled RTT
 private:
 	// update RTT

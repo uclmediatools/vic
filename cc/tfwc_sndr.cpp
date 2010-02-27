@@ -51,6 +51,7 @@ TfwcSndr::TfwcSndr() :
 	t_ts_(0),
 	t_ts_echo_(0),
 	now_(0),
+	so_recv_(0),
 	ndtp_(0),
 	nakp_(0),
 	ntep_(0),
@@ -130,7 +131,7 @@ void TfwcSndr::tfwc_sndr_send(int seqno, double now, double offset) {
  * main TFWC reception path
  */
 void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
-		u_int16_t *chunk)
+		u_int16_t *chunk, double so_rtime)
 {
 	// number of ack received
 	//nakp_++;
@@ -138,6 +139,9 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	// get start/end seqno that this XR chunk reports
 	begins_ = begin;	// lowest packet seqno
 	ends_ = end;		// highest packet seqno plus one
+
+	// so_timestamp (timestamp for packet reception)
+	so_recv_ = so_rtime;
 
 	// get the number of AckVec chunks
 	//   use seqno space to work out the num chunks
@@ -191,16 +195,16 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		else {
 			control();
 		}
-		fprintf(stderr, "\tnow: %f\tcwnd: %d\n", now(), cwnd_);
+		fprintf(stderr, "\tnow: %f\tcwnd: %d\n", so_recv_, cwnd_);
 
 		// set ackofack (real number)
 		aoa_ = ackofack(); 
 
 		// update RTT with the sampled RTT
-		tao_ = now() - tsvec_[jacked_%TSZ];
+		tao_ = so_recv_ - tsvec_[jacked_%TSZ];
 		update_rtt(tao_);
-		//fprintf(stderr, "\t<< now_: %f tsvec_[%d]: %f rtt: %f srtt: %f\n", 
-		//	now(), jacked_%TSZ, tsvec_[jacked_%TSZ], tao_, srtt_);
+		fprintf(stderr, "\t<< now_: %f tsvec_[%d]: %f rtt: %f srtt: %f\n", 
+			so_recv_, jacked_%TSZ, tsvec_[jacked_%TSZ], tao_, srtt_);
 
 		// initialize variables for the next pkt reception
 		free(ackv_);
