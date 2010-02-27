@@ -1306,6 +1306,9 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 	// XR repport block
 	rtcp_xr_BT_1_hdr *xr1;
 
+	// so_timestamp
+	double so_rtime;
+
 	if ( xr->BT == XR_BT_1 && xr->xr_flag == 0 ) {
 		// XR block type 1
 		xr1 = (rtcp_xr_BT_1_hdr *) xr;
@@ -1327,10 +1330,15 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 			
 			switch (cc_type_) {
 			case WBCC:
-				fprintf(stderr, 
-				"\tincomingXR\tnow: %f\n",tx_now()-tx_now_offset_);
+				fprintf(stderr, "\tincomingXR\tnow: %f\n", recv_ts_);
+				// SO_TIMESTAMP
+				//so_rtime = ch_[0].net()->recv_so_time();
+				//fprintf(stderr, "*** recv_ts: %f so_rtime: %f diff: %f\n",
+				//		recv_ts_, so_rtime, recv_ts_-so_rtime);
+
 				// TFWC sender (getting AckVec)
-				tfwc_sndr_recv(xr->BT, begin, end, chunk);
+				tfwc_sndr_recv(xr->BT, begin, end, chunk, recv_ts_);
+
 				// we need to call Transmitter::output(pb) to make Ack driven
 				cc_tfwc_output();
 				break;
@@ -1496,6 +1504,9 @@ void SessionManager::parse_bye(rtcphdr* rh, int flags, u_char* ep, Source* ps)
  */
 void SessionManager::recv(CtrlHandler* ch)
 {
+	// timestamp for XR reception 
+	recv_ts_ = tx_now() - tx_now_offset_;
+
 	Address * srcp;
 	int cc = ch->recv(pktbuf_, 2 * RTP_MTU, srcp);
 	if (cc <= 0)

@@ -231,8 +231,8 @@ protected:
 
 	// AckVector
 	u_int16_t ackvec_;	// this is a bit vector
-	u_int32_t ts_;		// timestamp
-	u_int32_t ts_echo_;	// timestamp echo
+	// timestamp
+	double recv_ts_;	// receive timestamp
 };
 
 class AudioSessionManager : public SessionManager {
