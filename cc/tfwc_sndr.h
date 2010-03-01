@@ -282,6 +282,7 @@ private:
 	double I_tot1_;		// form 1 to n
 	double tot_weight_;	// total weight
 	int hsz_;		// current history size
+	bool timer_driven_;	// is TFWC being driven by timer-out?
 
 	// RTT related variables
 	double srtt_;	// smoothed RTT

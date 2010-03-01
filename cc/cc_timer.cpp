@@ -32,6 +32,7 @@
  */
 
 #include <assert.h>
+#include <stdlib.h>
 #include "cc_timer.h"
 
 void CcTimerHandler::sched(double delay) {

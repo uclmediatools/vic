@@ -117,6 +117,8 @@ TfwcSndr::TfwcSndr() :
 	I_tot0_ = 0.0;
 	I_tot1_ = 0.0;
 	tot_weight_ = 0.0;
+
+	timer_driven_ = false;
 }
 
 void TfwcSndr::tfwc_sndr_send(int seqno, double now, double offset) {
@@ -136,6 +138,9 @@ void TfwcSndr::tfwc_sndr_send(int seqno, double now, double offset) {
 	//assert (seqno_ > 0);
 	// number of total data packet sent
 	//ndtp_++;
+	
+	// set retransmission timer
+	set_rtx_timer();
 }
 
 /*
@@ -580,10 +585,14 @@ void TfwcSndr::print_history_item (int i, int j) {
  * retransmission timer-out
  */
 void TfwcSndr::expire(int option) {
-	if (option == TFWC_TIMER_RTX)
+	if (option == TFWC_TIMER_RTX) {
+		if(!timer_driven_)
 		reset_rtx_timer(1);
-	else
+		else
 		reset_rtx_timer(0);
+
+		// TBA - need to add send method here
+	}
 }
 
 /*
