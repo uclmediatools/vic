@@ -54,7 +54,14 @@
 #include "DeckLinkAPIDispatch.cpp"
 #endif
 
+#ifdef HAVE_SWSCALE
+extern "C" {
+#include "libswscale/swscale.h"
+#include "libavutil/avutil.h"
+}
+#else
 #include "yuv_convert.h"
+#endif
 
 #if !defined(_WIN32) && !defined(_WIN64)
 #undef debug_msg
@@ -78,13 +85,19 @@
 
 class DeckLinkCaptureDelegate : public IDeckLinkInputCallback {
 public:
-    DeckLinkCaptureDelegate(int32_t width, int32_t height) {
+    DeckLinkCaptureDelegate(int32_t width, int32_t height, int format) {
         mRefCount = 1;
         mReadIndex = 0;
         mWriteIndex = 0;
+#ifdef HAVE_SWSCALE
+        sws_context = NULL;
+#endif
+        outw = width;
+        outh = height;
+        cformat = format;
         for (int i = 0; i < mBufferSize; i++) {
             mBuffer[i] = new uint8_t[width * height * 2];
-            memset((void *)mBuffer[i], width * height, sizeof(uint8_t));
+            memset((void *)mBuffer[i], width * height * 2, sizeof(uint8_t));
         }
     }
 
@@ -148,6 +161,11 @@ public:
         newRefValue = __sync_fetch_and_sub(&mRefCount, 1);
 #endif
         if (newRefValue == 0) {
+#ifdef HAVE_SWSCALE
+            if (sws_context != NULL){
+                sws_freeContext(sws_context);
+            }
+#endif
             delete this;
             return 0;
         }
@@ -160,9 +178,61 @@ public:
         arrivedFrame->GetBytes(&videoFrame);
 
         int nextElementIndex = (mWriteIndex + 1) % mBufferSize;
-        
+
         if(nextElementIndex != mReadIndex) {
+#ifdef HAVE_SWSCALE
+            int flags = SWS_FAST_BILINEAR;
+
+            if (sws_context == NULL){
+
+#ifdef RUNTIME_CPUDETECT
+                flags |= (available_cpu_flags & FF_CPU_MMX ? SWS_CPU_CAPS_MMX : 0);
+                flags |= (available_cpu_flags & FF_CPU_MMXEXT ? SWS_CPU_CAPS_MMX2 : 0);
+                flags |= (available_cpu_flags & FF_CPU_3DNOW ? SWS_CPU_CAPS_3DNOW : 0);
+                flags |= (available_cpu_flags & FF_CPU_ALTIVEC ? SWS_CPU_CAPS_ALTIVEC : 0);
+#elif defined(HAVE_MMX)
+                flags |= SWS_CPU_CAPS_MMX;
+#if defined(HAVE_MMX2)
+                flags |= SWS_CPU_CAPS_MMX2;
+#endif
+#elif defined(HAVE_3DNOW)
+                flags |= SWS_CPU_CAPS_3DNOW;
+#endif
+                PixelFormat in_format = PIX_FMT_UYVY422;
+
+                PixelFormat out_format = PIX_FMT_YUV420P;
+                if (cformat == CF_422) {
+                    out_format = PIX_FMT_YUV422P;
+                }
+
+                // Accelerated Colour conversion routines
+                sws_context = sws_getContext(arrivedFrame->GetWidth(), arrivedFrame->GetHeight(), in_format,
+                                             outw, outh, out_format, flags, NULL, NULL, NULL);
+                if(sws_context == NULL){
+                    debug_msg("DeckLinkCaptureDelegate: error! cannot allocate memory for swscontext!\n");
+                    return S_FALSE;
+                } 
+            }
+
+            sws_src[0] = (uint8_t*)videoFrame;
+            sws_src[1] = sws_src[2] = NULL;
+            sws_src_stride[0] = arrivedFrame->GetRowBytes();
+            sws_src_stride[1] = sws_src_stride[2] = 0;
+
+            sws_tar[0] = (uint8_t*)mBuffer[mWriteIndex];
+            sws_tar[1] = sws_tar[0] + outw * outh;
+            if (cformat == CF_422) {
+                sws_tar[2] = sws_tar[1] + outw * outh / 2;
+            } else {
+                sws_tar[2] = sws_tar[1] + outw * outh / 4;
+            }
+            sws_tar_stride[0] = outw;
+            sws_tar_stride[1] = sws_tar_stride[2] = outw/2;
+
+            sws_scale(sws_context, sws_src, sws_src_stride, 0, arrivedFrame->GetHeight(), sws_tar, sws_tar_stride);
+#else
             memcpy((void *)(mBuffer[mWriteIndex]), videoFrame, arrivedFrame->GetRowBytes() * arrivedFrame->GetHeight());
+#endif
 
 // fprintf(stderr, "*push* mBuffer[%i] = 0x%lx\n", mWriteIndex, mBuffer[mWriteIndex]);
             mWriteIndex = nextElementIndex;
@@ -176,13 +246,20 @@ public:
         return S_OK;
     }
 
-
 private:
     volatile int32_t mRefCount;
     volatile int32_t mReadIndex;
     volatile int32_t mWriteIndex;
     static const int32_t mBufferSize = 4;
     volatile uint8_t *mBuffer[mBufferSize];
+#ifdef HAVE_SWSCALE
+    SwsContext *sws_context;
+    uint8_t *sws_src[3];
+    uint8_t *sws_tar[3];
+    int sws_src_stride[3];
+    int sws_tar_stride[3];
+#endif
+    int cformat, outw, outh;
 };
 
 
@@ -207,8 +284,6 @@ protected:
     BMDDisplayMode displayMode_;
     long displayModeWidth_;
     long displayModeHeight_;
-    BMDTimeValue displayModeFrameDuration_;
-    BMDTimeScale displayModeTimeScale_;
 
     DeckLinkCaptureDelegate *delegate_;
 };
@@ -342,8 +417,8 @@ DeckLinkDevice::DeckLinkDevice(const char* name, IDeckLink* deckLink) : InputDev
         return;
     }
 
-    strcpy(attr,"format { 420 422 } ");
-    strcat(attr,"size { large } ");
+    strcpy(attr,"format { 420 422 cif } ");
+    strcat(attr,"size { small cif large } ");
 
     strcat(attr,"port { ");
 
@@ -455,6 +530,8 @@ int DeckLinkDevice::command(int argc, const char*const* argv)
                 tcl.result(o->name());
             return (TCL_OK);
         }
+    } else if (argc == 2) {
+        tcl.evalc("set_software_scale_buttons_state");
     }
     return (InputDevice::command(argc, argv));
 }
@@ -478,6 +555,7 @@ DeckLinkGrabber::DeckLinkGrabber(const char *cformat, IDeckLink* deckLink) :
         debug_msg("DecLinkDevice: Could not obtain the IDeckLinkInput interface\n");
     }
     running_  = 0;
+    delegate_ = NULL;
 }
 
 int DeckLinkGrabber::command(int argc, const char*const* argv)
@@ -485,16 +563,20 @@ int DeckLinkGrabber::command(int argc, const char*const* argv)
     HRESULT result;
 
     if (argc == 3) {
-        if (strcmp(argv[1], "decimate") == 0) {
+        if (strcmp(argv[1], "setSoftwareScale") == 0) {
+            if (running_) {
+                stop(); start();
+            }
+            return (TCL_OK);
+
+        } else if (strcmp(argv[1], "decimate") == 0) {
             decimate_ = atoi(argv[2]);
 
             if (running_) {
                 stop(); start();
             }
             return (TCL_OK);
-        }
-
-        if (strcmp(argv[1], "port") == 0) {
+        } else if (strcmp(argv[1], "port") == 0) {
             IDeckLinkConfiguration *deckLinkConfiguration = NULL;
             BMDVideoConnection bmdVideoConnection = bmdVideoConnectionHDMI;
 
@@ -540,13 +622,11 @@ int DeckLinkGrabber::command(int argc, const char*const* argv)
             }
         
             return (TCL_OK);
-        }
 
-        if (strcmp(argv[1], "fps") == 0) {
+        } else if (strcmp(argv[1], "fps") == 0) {
             debug_msg("DecLinkGrabber: fps %s\n",argv[2]);
-        }
 
-        if (strcmp(argv[1], "type") == 0 || strcmp(argv[1], "format") == 0) {
+        } else if (strcmp(argv[1], "type") == 0 || strcmp(argv[1], "format") == 0) {
 
             IDeckLinkDisplayModeIterator *displayModeIterator = NULL;
             IDeckLinkDisplayMode *displayMode = NULL;
@@ -594,8 +674,6 @@ int DeckLinkGrabber::command(int argc, const char*const* argv)
                         displayMode_ = displayMode->GetDisplayMode();
                         displayModeWidth_ = displayMode->GetWidth();
                         displayModeHeight_ = displayMode->GetHeight();
-                        displayMode->GetFrameRate(&displayModeFrameDuration_, &displayModeTimeScale_);
-fprintf(stderr, "DisplayMode width=%li height=%li frame duration=%li time scale=%li\n", displayModeWidth_, displayModeHeight_,displayModeFrameDuration_,  displayModeTimeScale_);
                         break;
                     }
                 }
@@ -632,17 +710,37 @@ DeckLinkGrabber::~DeckLinkGrabber()
     if (deckLinkInput_ != NULL) {
         deckLinkInput_->Release();
     }
+    if (delegate_ != NULL) {
+        delegate_->Release();
+    }
 }
 
 void DeckLinkGrabber::start()
 {
     HRESULT result;
+    int flags = TCL_GLOBAL_ONLY;
+    Tcl& tcl = Tcl::instance();
+    const char* setSoftwareScale = Tcl_GetVar(tcl.interp(), "setSoftwareScale", flags);
 
     // Set the image size.
     switch (decimate_) {
     case 1: // full-sized
-        width_ = displayModeWidth_;
-        height_ = displayModeHeight_;
+        if (strcmp(setSoftwareScale, "960p") == 0) {
+            width_ = int(960 * displayModeWidth_ / displayModeHeight_);
+            height_ = 960;
+        } else if (strcmp(setSoftwareScale, "720p") == 0) {
+            width_ = int(720 * displayModeWidth_ / displayModeHeight_);
+            height_ = 720;
+        } else if (strcmp(setSoftwareScale, "576p") == 0) {
+          width_ = int(576 * displayModeWidth_ / displayModeHeight_);
+          height_ = 576;
+        } else if (strcmp(setSoftwareScale, "480p") == 0) {
+          width_ = int(480 * displayModeWidth_ / displayModeHeight_);
+          height_ = 480;
+        } else {
+          width_ = displayModeWidth_;
+          height_ = displayModeHeight_;
+        }
         break;
     case 2: // CIF-sized
         width_ = CIF_WIDTH;
@@ -672,7 +770,10 @@ void DeckLinkGrabber::start()
         return;
     }
 
-    delegate_ = new DeckLinkCaptureDelegate(width_, height_);
+    if (delegate_) {
+        delegate_->Release();
+    }
+    delegate_ = new DeckLinkCaptureDelegate(outw_, outh_, cformat_);
 
     result = deckLinkInput_->SetCallback(delegate_);
 
@@ -713,11 +814,27 @@ int DeckLinkGrabber::grab()
         return 0;
     }
 
+    if (!running_) {
+        return 0;
+    }
+
     uint8_t *fr = delegate_->GetVideoFrame();
     if (fr == NULL) {
         return 0;
     }
 
+#ifdef HAVE_SWSCALE
+    switch (cformat_) {
+    case CF_420:
+    case CF_CIF:
+        memcpy((char *)frame_, (char *)fr, outw_ * outh_ * 3 / 2);
+      break;
+
+    case CF_422:
+        memcpy((char *)frame_, (char *)fr, outw_ * outh_ * 2);
+      break;
+    }
+#else
     switch (cformat_) {
     case CF_420:
     case CF_CIF:
@@ -728,7 +845,7 @@ int DeckLinkGrabber::grab()
         packedUYVY422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)fr, inw_, inh_);
       break;
     }
-
+#endif
     suppress(frame_);
     saveblks(frame_);
     YuvFrame f(media_ts(), frame_, crvec_, outw_, outh_);
