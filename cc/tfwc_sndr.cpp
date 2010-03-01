@@ -43,6 +43,17 @@
 #include "transmitter.h"
 #include "tfwc_sndr.h"
 
+
+/*
+ * retransmission timer
+ */
+void TfwcRtxTimer::timeout() {
+	s_ -> expire(TFWC_TIMER_RTX);
+}
+
+/* 
+ * TFWC sender definition
+ */
 TfwcSndr::TfwcSndr() :
 	seqno_(0),
 	cwnd_(1),
@@ -563,4 +574,43 @@ void TfwcSndr::print_history_item (int i) {
 void TfwcSndr::print_history_item (int i, int j) {
 	fprintf(stderr, "%d", history_[i]);
 	if (j < hsz_ - 1) fprintf(stderr, ", ");
+}
+
+/*
+ * retransmission timer-out
+ */
+void TfwcSndr::expire(int option) {
+	if (option == TFWC_TIMER_RTX)
+		reset_rtx_timer(1);
+	else
+		reset_rtx_timer(0);
+}
+
+/*
+ * reset Rtx Timer
+ */
+void TfwcSndr::reset_rtx_timer (int backoff) {
+	if(backoff)
+		backoff_timer();
+
+	set_rtx_timer();
+}
+
+/*
+ * backoff Rtx Timer
+ */
+void TfwcSndr::backoff_timer() {
+	if (srtt_ < 0) srtt_ = 1.0;
+	rto_ = 2.0 * srtt_;
+
+	if (rto_ > maxrto_)
+		rto_ = maxrto_;
+}
+
+/*
+ * set Rtx Timer
+ */
+void TfwcSndr::set_rtx_timer() {
+	// resched() is basically msched(miliseconds)
+	rtx_timer_ -> resched(rto_ * 1000.);
 }

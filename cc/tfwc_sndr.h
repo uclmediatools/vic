@@ -35,6 +35,7 @@
 #define vic_tfwc_sndr_h
 
 #include "bitmap.h"	// bitmap operations
+#include "cc_timer.h"
 
 #define DUPACKS 3   // simulating TCP's 3 dupacks
 #define TSZ	1000	// tsvec_ size
@@ -53,6 +54,23 @@
 
 #define BITLEN	16
 
+// timer related
+#define TFWC_TIMER_RTX		0
+#define TFWC_TIMER_RESET	1
+
+class TfwcSndr;
+
+// re-transmission timer
+class TfwcRtxTimer : public CcTimerHandler {
+public:
+	TfwcRtxTimer(TfwcSndr *s) : CcTimerHandler() { s_ = s;}
+	virtual void timeout();
+
+protected:
+	TfwcSndr *s_;
+};
+
+// TFWC sender class
 class TfwcSndr {
 public:
 	TfwcSndr();
@@ -95,6 +113,9 @@ public:
 	// variables
 	u_int16_t seqno_;	// packet sequence number
 	u_int32_t cwnd_;	// congestion window
+
+	// Rtx timer
+	void expire(int option);
 
 protected:
 	// generate sequence numbers
@@ -150,6 +171,12 @@ protected:
 		fprintf(stderr, " )\n");
 	}
 
+	// retransmission timer
+	TfwcRtxTimer *rtx_timer_;
+	void set_rtx_timer();
+	void reset_rtx_timer(int backoff);
+	void backoff_timer();
+
 	int mvec_[DUPACKS]; // margin vec (simulatinmg TCP 3 dupacks)
 	u_int16_t *ackv_;	// received AckVec (from TfwcRcvr)
 	u_int32_t pvec_;	// sent packet list
@@ -162,6 +189,7 @@ protected:
 	double now_;		// real-time now
 	double so_recv_;	// SO_TIMESTAMP (XR packet reception)
 	double tao_;		// sampled RTT
+
 private:
 	// update RTT
 	void update_rtt(double tao);
