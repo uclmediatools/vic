@@ -27,6 +27,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+# init_grabber_panel if invoked ensures ui-grabber.tcl gets sourced
+proc init_grabber_panel {} {
+}
+
 proc build.dc10 w {
     build.v4l $w
 }
@@ -187,6 +191,52 @@ proc build.v4l2 w {
     pack $w.f.right.top $w.f.right.bottom -side top -fill x -expand 1
     pack $w.f.left $w.f.right -side left -expand 1 -fill x
     pack $w.f -expand 1 -fill x
+}
+
+proc build.decklink w {
+    global setSoftwareScale softwareScaleButtons
+
+    label $w.title -text "Blackmagic DeckLink-Grabber"
+    frame $w.f -relief sunken -borderwidth 2
+
+    label $w.f.scaling -text "Software Scaling : "
+
+    if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
+        ttk::radiobutton $w.f.b0 -text "none" -command "grabber setSoftwareScale none" \
+           -variable setSoftwareScale -value "none"
+        ttk::radiobutton $w.f.b1 -text "960p" -command "grabber setSoftwareScale 960p" \
+            -variable setSoftwareScale -value "9600p"
+        ttk::radiobutton $w.f.b2 -text "720p" -command "grabber setSoftwareScale 720p" \
+            -variable setSoftwareScale -value "720p"
+        ttk::radiobutton $w.f.b3 -text "576p" -command "grabber setSoftwareScale 576p" \
+            -variable setSoftwareScale -value "576p"
+        ttk::radiobutton $w.f.b4 -text "480p" -command "grabber setSoftwareScale 480p" \
+            -variable setSoftwareScale -value "480p"
+    } else {
+        set f [smallfont]
+        radiobutton $w.f.b0 -text "none" -command "grabber setSoftwareScale none" \
+            -padx 0 -pady 0 \
+            -anchor w -variable setSoftwareScale -font $f -relief flat -value "none"
+        radiobutton $w.f.b1 -text "960p" -command "grabber setSoftwareScale 960p" \
+            -padx 0 -pady 0 \
+            -anchor w -variable setSoftwareScale -font $f -relief flat -value "9600p"
+        radiobutton $w.f.b2 -text "720p" -command "grabber setSoftwareScale 720p" \
+            -padx 0 -pady 0 \
+            -anchor w -variable setSoftwareScale -font $f -relief flat -value "720p"
+        radiobutton $w.f.b3 -text "576p" -command "grabber setSoftwareScale 576p" \
+            -padx 0 -pady 0 \
+            -anchor w -variable setSoftwareScale -font $f -relief flat -value "576p"
+        radiobutton $w.f.b4 -text "480p" -command "grabber setSoftwareScale 480p" \
+            -padx 0 -pady 0 \
+            -anchor w -variable setSoftwareScale -font $f -relief flat -value "480p"
+    }
+    pack $w.f.scaling $w.f.b0 $w.f.b1 $w.f.b2 $w.f.b3 $w.f.b4 -fill x -side left
+
+    pack $w.title $w.f -fill x -expand 1
+
+    set setSoftwareScale "none"
+    set softwareScaleButtons $w.f
+    set_software_scale_buttons_state
 }
 
 proc build.meteor w {

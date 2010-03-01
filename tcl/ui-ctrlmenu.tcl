@@ -711,7 +711,8 @@ proc insert_grabber_panel devname {
 		pack forget $grabberPanel
 		unset grabberPanel
 	}
-	if { [info procs build.$devname] != "" } {
+	init_grabber_panel
+	if {[info procs build.$devname] != "" } {
 		if ![winfo exists $w] {
 			frame $w
 			build.$devname $w
@@ -1615,8 +1616,8 @@ proc restart { } {
 		} else {
 			close_device
 		}
-
 	}
+	set_software_scale_buttons_state
 }
 
 proc disable_large_button { } {
@@ -1632,6 +1633,25 @@ proc enable_large_button { } {
 	if { [info exists videoDevice] && \
 		[device_supports $videoDevice size large] } {
 		$sizeButtons.b2 configure -state normal
+	}
+}
+
+proc set_software_scale_buttons_state { } {
+	global inputSize softwareScaleButtons
+	if { [info exists softwareScaleButtons] } {
+		if { $inputSize == 1 } {
+			$softwareScaleButtons.b0 configure -state normal
+			$softwareScaleButtons.b1 configure -state normal
+			$softwareScaleButtons.b2 configure -state normal
+			$softwareScaleButtons.b3 configure -state normal
+			$softwareScaleButtons.b4 configure -state normal
+		} else {
+			$softwareScaleButtons.b0 configure -state disabled
+			$softwareScaleButtons.b1 configure -state disabled
+			$softwareScaleButtons.b2 configure -state disabled
+			$softwareScaleButtons.b3 configure -state disabled
+			$softwareScaleButtons.b4 configure -state disabled
+		}
 	}
 }
 
