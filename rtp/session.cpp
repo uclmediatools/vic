@@ -1372,6 +1372,11 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 	"-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\n");
 }
 
+// receive AckVec (force to receive)
+// (TFWC data sender side)
+void CtrlHandler::recv_ackv() {
+	sm_->recv(this);
+}
 
 // send AckVec 
 // (TFWC data receiver side)

@@ -107,6 +107,7 @@ class CtrlHandler : public DataHandler, public Timer {
 	void send_ackv();
 	void send_p();
 	void send_ts_echo();
+	void recv_ackv();	// receive ackvec (TfwcSndr side)
 
 	// i am an RTP data sender/receiver
 	inline void i_am_sender() { is_sender_ = true; }
