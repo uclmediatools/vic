@@ -74,7 +74,11 @@ protected:
 // TFWC sender class
 class TfwcSndr {
 public:
+	// constructor
 	TfwcSndr();
+
+	virtual void cc_tfwc_output() = 0;
+
 	// parse seqno and timestamp
 	void tfwc_sndr_send(int, double, double);
 

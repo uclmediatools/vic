@@ -90,7 +90,7 @@ class Transmitter : public TclObject, public Timer,
 	void flush();
 	void send(pktbuf*);
 	inline bool is_cc_on() { return is_cc_active_; }
-	void cc_tfwc_output();
+	virtual void cc_tfwc_output();
 	void cc_tfwc_output(pktbuf*);
 	void cc_tfrc_output();
 
