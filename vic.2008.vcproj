@@ -74,7 +74,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tcl85.lib tk85.lib uclmm.lib ws2_32.lib iphlpapi.lib vfw32.lib ddraw.lib dxguid.lib strmiids.lib quartz.lib"
+				AdditionalDependencies="tcl85.lib tk85.lib uclmm.lib ws2_32.lib comsuppwd.lib iphlpapi.lib vfw32.lib ddraw.lib dxguid.lib strmiids.lib quartz.lib"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="C:\Tcl\lib;&quot;$(DXSDK_DIR)\Lib\x86&quot;;&quot;$(SolutionDir)Debug&quot;"
 				IgnoreDefaultLibraryNames=""
@@ -157,7 +157,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tcl85.lib tk85.lib uclmm.lib ws2_32.lib iphlpapi.lib vfw32.lib ddraw.lib dxguid.lib strmiids.lib quartz.lib"
+				AdditionalDependencies="tcl85.lib tk85.lib uclmm.lib ws2_32.lib comsuppwd.lib iphlpapi.lib vfw32.lib ddraw.lib dxguid.lib strmiids.lib quartz.lib"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="C:\Tcl\lib;&quot;$(DXSDK_DIR)\Lib\x86&quot;;&quot;$(SolutionDir)Release&quot;"
 				GenerateDebugInformation="true"
@@ -241,7 +241,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tcl85.lib tk85.lib uclmm.lib ws2_32.lib iphlpapi.lib vfw32.lib ddraw.lib dxguid.lib strmiids.lib quartz.lib libgcc.a libmingwex.a libavcodec.a libavutil.a libpostproc.a libswscale.a libpthread.a libx264.a libz.a"
+				AdditionalDependencies="tcl85.lib tk85.lib uclmm.lib ws2_32.lib comsuppwd.lib iphlpapi.lib vfw32.lib ddraw.lib dxguid.lib strmiids.lib quartz.lib libgcc.a libmingwex.a libavcodec.a libavutil.a libpostproc.a libswscale.a libpthread.a libx264.a libz.a"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="C:\Tcl\lib;&quot;$(DXSDK_DIR)\Lib\x86&quot;;C:\msys\1.0\lib;&quot;C:\mingw\lib\gcc\mingw32\4.2.1-sjlj&quot;;c:\mingw\local\lib;c:\mingw\local\bin;c:\mingw\lib;C:\msys\lib;&quot;$(SolutionDir)Debug&quot;;C:\msys\1.0\local\lib;C:\msys\local\lib;C:\msys\1.0\lib\gcc\mingw32\4.4.0;C:\msys\1.0\lib\gcc\mingw32\4.2.0;C:\msys\lib\gcc\mingw32\4.4.0;C:\msys\lib\gcc\mingw32\4.2.0"
 				IgnoreDefaultLibraryNames="MSVCRTD.lib"
@@ -327,7 +327,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tcl85.lib tk85.lib uclmm.lib ws2_32.lib iphlpapi.lib vfw32.lib ddraw.lib dxguid.lib strmiids.lib quartz.lib libgcc.a libmingwex.a libavcodec.a libavutil.a libpostproc.a libswscale.a libpthread.a libx264.a libz.a"
+				AdditionalDependencies="tcl85.lib tk85.lib uclmm.lib ws2_32.lib comsuppwd.lib iphlpapi.lib vfw32.lib ddraw.lib dxguid.lib strmiids.lib quartz.lib libgcc.a libmingwex.a libavcodec.a libavutil.a libpostproc.a libswscale.a libpthread.a libx264.a libz.a"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="C:\Tcl\lib;&quot;$(DXSDK_DIR)\Lib\x86&quot;;C:\msys\1.0\lib;&quot;C:\mingw\lib\gcc\mingw32\4.2.1-sjlj&quot;;c:\mingw\local\lib;c:\mingw\local\bin;c:\mingw\lib;C:\msys\lib;&quot;$(SolutionDir)Release&quot;;C:\msys\1.0\local\lib;C:\msys\local\lib;C:\msys\1.0\lib\gcc\mingw32\4.4.0;C:\msys\1.0\lib\gcc\mingw32\4.2.0;C:\msys\lib\gcc\mingw32\4.4.0;C:\msys\lib\gcc\mingw32\4.2.0"
 				IgnoreDefaultLibraryNames=""

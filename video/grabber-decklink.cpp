@@ -46,7 +46,8 @@
 #include <string.h>
 
 #if defined(_WIN32) || defined(_WIN64)
-#include <atlbase.h>
+#include <objbase.h>
+#include <comutil.h>
 #include "DeckLinkAPI_h.h"
 #include "inttypes.h"
 #else
@@ -89,6 +90,8 @@ public:
         mRefCount = 1;
         mReadIndex = 0;
         mWriteIndex = 0;
+        mLastReadFrameNum = 0;
+        mLastWriteFrameNum = 0;
 #ifdef HAVE_SWSCALE
         sws_context = NULL;
 #endif
@@ -112,6 +115,12 @@ public:
         if(mReadIndex == mWriteIndex) {
             return NULL;
         }
+
+		// ignore older frames
+		if (mLastReadFrameNum >= mBufferFrameNum[mReadIndex] && mLastReadFrameNum <= 0xFFFFFFFF - mBufferSize) {
+            return NULL;
+        }
+        mLastReadFrameNum = mBufferFrameNum[mReadIndex];
 
         uint8_t *retval = (uint8_t *)(mBuffer[mReadIndex]);
         int nextElement = (mReadIndex + 1) % mBufferSize;
@@ -235,8 +244,8 @@ public:
 #endif
 
 // fprintf(stderr, "*push* mBuffer[%i] = 0x%lx\n", mWriteIndex, mBuffer[mWriteIndex]);
+			mBufferFrameNum[mWriteIndex] = ++mLastWriteFrameNum;
             mWriteIndex = nextElementIndex;
-
         }
 
         return S_OK;
@@ -252,6 +261,9 @@ private:
     volatile int32_t mWriteIndex;
     static const int32_t mBufferSize = 4;
     volatile uint8_t *mBuffer[mBufferSize];
+    volatile int32_t mLastReadFrameNum;
+    volatile int32_t mLastWriteFrameNum;
+    volatile uint32_t mBufferFrameNum[mBufferSize];
 #ifdef HAVE_SWSCALE
     SwsContext *sws_context;
     uint8_t *sws_src[3];
@@ -323,8 +335,9 @@ DeckLinkScanner::DeckLinkScanner(int maxNumDevices)
         return;
     }
 
-    CComPtr<IDeckLinkIterator> deckLinkIterator = NULL;
-    if (CoCreateInstance(CLSID_CDeckLinkIterator, NULL, CLSCTX_INPROC_SERVER, IID_IDeckLinkIterator, (void**)&deckLinkIterator) != S_OK || deckLinkIterator == NULL) {
+    IDeckLinkIterator* deckLinkIterator;
+    result = CoCreateInstance(CLSID_CDeckLinkIterator, NULL, CLSCTX_INPROC_SERVER, IID_IDeckLinkIterator, (void**)&deckLinkIterator);
+    if (FAILED(result)) {
         debug_msg("DeckLinkScanner: DeckLink iterator instance could not be created\n");
         CoUninitialize();
         return;
@@ -344,11 +357,11 @@ DeckLinkScanner::DeckLinkScanner(int maxNumDevices)
 
 #if defined(_WIN32) || defined(_WIN64) 
         char deviceNameString[64] = {};
-        CComBSTR cardNameBSTR;
+        BSTR cardNameBSTR;
 
         result = deckLink->GetModelName(&cardNameBSTR);
         if (result == S_OK) {
-            CW2A tmpstr1(cardNameBSTR);
+            _bstr_t tmpstr1(cardNameBSTR);
             strncpy_s(deviceNameString, sizeof(deviceNameString), tmpstr1, _TRUNCATE);
         }
 #elif __APPLE__
@@ -462,11 +475,11 @@ DeckLinkDevice::DeckLinkDevice(const char* name, IDeckLink* deckLink) : InputDev
 
 #if defined(_WIN32) || defined(_WIN64) 
         char displayModeString[64] = {};
-        CComBSTR displayModeNameBSTR;
+        BSTR displayModeNameBSTR;
 
         result = displayMode->GetName(&displayModeNameBSTR);
         if (result == S_OK) {
-            CW2A tmpstr1(displayModeNameBSTR);
+            _bstr_t tmpstr1(displayModeNameBSTR);
             strncpy_s(displayModeString, sizeof(displayModeString), tmpstr1, _TRUNCATE);
         }
 #elif __APPLE__
@@ -642,11 +655,11 @@ int DeckLinkGrabber::command(int argc, const char*const* argv)
 
 #if defined(_WIN32) || defined(_WIN64) 
                 char displayModeString[64] = {};
-                CComBSTR displayModeNameBSTR;
+                BSTR displayModeNameBSTR;
 
                 result = displayMode->GetName(&displayModeNameBSTR);
                 if (result == S_OK) {
-                    CW2A tmpstr1(displayModeNameBSTR);
+                    _bstr_t tmpstr1(displayModeNameBSTR);
                     strncpy_s(displayModeString, sizeof(displayModeString), tmpstr1, _TRUNCATE);
                 }
 #elif __APPLE__
