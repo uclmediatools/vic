@@ -173,7 +173,7 @@ protected:
 	}
 
 	// retransmission timer
-	TfwcRtxTimer *rtx_timer_;
+	TfwcRtxTimer rtx_timer_;
 	void set_rtx_timer();
 	void reset_rtx_timer(int backoff);
 	void backoff_timer();

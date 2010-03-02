@@ -57,6 +57,7 @@ void TfwcRtxTimer::timeout() {
 TfwcSndr::TfwcSndr() :
 	seqno_(0),
 	cwnd_(1),
+	rtx_timer_(this),
 	aoa_(0),
 	t_now_(0),
 	t_ts_(0),
@@ -671,7 +672,7 @@ void TfwcSndr::backoff_timer() {
  */
 void TfwcSndr::set_rtx_timer() {
 	// resched() is basically msched(miliseconds)
-	rtx_timer_ -> resched(rto_ * 1000.);
+	rtx_timer_.resched(rto_ * 1000.);
 }
 
 /*
