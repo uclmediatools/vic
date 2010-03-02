@@ -118,7 +118,12 @@ TfwcSndr::TfwcSndr() :
 	I_tot1_ = 0.0;
 	tot_weight_ = 0.0;
 
-	timer_driven_ = false;
+	to_driven_ = false;
+	tcp_tick_ = 0.01;
+	srtt_init_ = 12;
+	rttvar_exp_ = 2;
+	t_srtt_ = int(srtt_init_/tcp_tick_) << T_SRTT_BITS;
+	t_rttvar_ = int(rttvar_init_/tcp_tick_) << T_RTTVAR_BITS;
 }
 
 void TfwcSndr::tfwc_sndr_send(int seqno, double now, double offset) {
@@ -221,6 +226,10 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		update_rtt(tao_);
 		fprintf(stderr, "\t<< now_: %f tsvec_[%d]: %f rtt: %f srtt: %f\n", 
 			so_recv_, jacked_%TSZ, tsvec_[jacked_%TSZ], tao_, srtt_);
+
+		// is TFWC being driven by timeout mechanism?
+		if(to_driven_ && is_tfwc_on_)
+			new_rto(tao_);
 
 		// initialize variables for the next pkt reception
 		free(ackv_);
@@ -334,6 +343,35 @@ bool TfwcSndr::detect_loss() {
  * update RTT using the sampled RTT value
  */
 void TfwcSndr::update_rtt(double rtt_sample) {
+	// calculate t0_ 
+	t_rtt_ = int(rtt_sample/tcp_tick_ + .5);
+	if(t_rtt_ == 0) t_rtt_ = 1;
+
+	if(t_srtt_ != 0) {
+		register short rtt_delta;
+		rtt_delta = t_rtt_ - (t_srtt_ >> T_SRTT_BITS);
+
+		if ((t_srtt_ += rtt_delta) <= 0)
+			t_srtt_ = 1;
+
+		if (rtt_delta < 0)
+			rtt_delta = -rtt_delta;
+
+		rtt_delta -= (t_rttvar_ >> T_RTTVAR_BITS);
+		if((t_rttvar_ += rtt_delta) <= 0)
+			t_rttvar_ = 1;
+	}
+	else {
+		t_srtt_ = t_rtt_ << T_SRTT_BITS;
+		t_rttvar_ = t_rtt_ << (T_RTTVAR_BITS-1);
+	}
+
+	// finally, t0_ = (smoothed RTT) + 4 * (rtt variance)
+	t0_ = (((t_rttvar_ << (rttvar_exp_ + (T_SRTT_BITS - T_RTTVAR_BITS)))
+			+ t_srtt_)  >> T_SRTT_BITS ) * tcp_tick_;
+	
+	if (t0_ < minrto_)
+		t0_ = minrto_;
 
 	// calculate smoothed RTT
 	if (srtt_ < 0) {
@@ -348,10 +386,12 @@ void TfwcSndr::update_rtt(double rtt_sample) {
 	}
 
 	// update the current RTO
-	if (k_ * rttvar_ > g_) 
+	if(!to_driven_) {
+		if (k_ * rttvar_ > g_) 
 		rto_ = srtt_ + k_ * rttvar_;
-	else
+		else
 		rto_ = srtt_ + g_;
+	}
 
 	// 'rto' could be rounded by 'maxrto'
 	if (rto_ > maxrto_)
@@ -376,9 +416,14 @@ void TfwcSndr::control() {
 	f_p_ = term1 + term2;
 
 	// TFWC congestion window
-	t_win_ = 1 / f_p_;
-
+	t_win_ = 1. / f_p_;
 	cwnd_ = (int) (t_win_ + .5);
+
+	// timeout driven when cwnd is less than 2
+	if (t_win_ < 2.)
+		to_driven_ = true;
+	else
+		to_driven_ = false;
 
 	// cwnd should always be greater than 1
 	if (cwnd_ < 1)
@@ -586,12 +631,17 @@ void TfwcSndr::print_history_item (int i, int j) {
  */
 void TfwcSndr::expire(int option) {
 	if (option == TFWC_TIMER_RTX) {
-		if(!timer_driven_)
+		if(!to_driven_)
 		reset_rtx_timer(1);
 		else
 		reset_rtx_timer(0);
 
-		// TBA - need to add send method here
+		// artificially inflate the latest ack
+		if(!to_driven_)
+			jacked_++;
+
+		// trigger packet sending
+		tx_->cc_tfwc_output();
 	}
 }
 
@@ -622,4 +672,20 @@ void TfwcSndr::backoff_timer() {
 void TfwcSndr::set_rtx_timer() {
 	// resched() is basically msched(miliseconds)
 	rtx_timer_ -> resched(rto_ * 1000.);
+}
+
+/*
+ * new RTO calculation
+ */
+void TfwcSndr::new_rto(double rtt) {
+	double tmp1 = 3. * sqrt(p_ * 3./8.);
+	double tmp2 = t0_ * p_ * (1. + 32. * pow(p_, 2.));
+
+	if(tmp1 > 1.)
+		tmp1 = 1.;
+
+	double term1 = rtt * sqrt(p_ * 2./3.);
+	double term2 = tmp1 * tmp2;
+
+	rto_ = (term1 + term2) * sqrt(rtt)/sqrtrtt_;
 }

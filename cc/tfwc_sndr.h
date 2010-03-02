@@ -49,8 +49,8 @@
 #define HSZ 16  // history size for avg loss history
 #endif
 
-#define T_RTTVAR_BITS	2	// XXX not used
-#define T_SRTT_BITS		3	// XXX not used
+#define T_RTTVAR_BITS	2
+#define T_SRTT_BITS		3
 
 #define BITLEN	16
 
@@ -59,6 +59,7 @@
 #define TFWC_TIMER_RESET	1
 
 class TfwcSndr;
+class Transmitter;
 
 // re-transmission timer
 class TfwcRtxTimer : public CcTimerHandler {
@@ -190,6 +191,8 @@ protected:
 	double so_recv_;	// SO_TIMESTAMP (XR packet reception)
 	double tao_;		// sampled RTT
 
+	Transmitter *tx_;
+
 private:
 	// update RTT
 	void update_rtt(double tao);
@@ -218,6 +221,9 @@ private:
 
 	// dupack action
 	void dupack_action();
+
+	// new RTO
+	void new_rto(double rtt);
 
 	// AckVec clone from Vic 
 	inline void clone_ackv(u_int16_t *c, int n) {
@@ -282,7 +288,7 @@ private:
 	double I_tot1_;		// form 1 to n
 	double tot_weight_;	// total weight
 	int hsz_;		// current history size
-	bool timer_driven_;	// is TFWC being driven by timer-out?
+	bool to_driven_;	// is TFWC being driven by timer-out?
 
 	// RTT related variables
 	double srtt_;	// smoothed RTT
@@ -290,11 +296,6 @@ private:
 	double rto_;	// retransmission timeout
 	double minrto_;	// min RTO allowed
 	double maxrto_;	// max RTO
-	double alpha_;	// smoothing factor for RTT/RTO calculation
-	double beta_;	// smoothing factor for RTT/RTO calculation
-	double g_;		// timer granularity
-	int k_;			// k value
-	double t0_;		// t0 value at TCP throughput equation
 	double df_;		// decay factor
 	double sqrtrtt_;	// the mean of the sqrt of RTT
 
@@ -306,6 +307,20 @@ private:
 	u_int16_t ends_;	// end seqno + 1 that this XR chunk reports
 	int	num_elm_;		// number of ackvec elements
 	int num_vec_;		// numver of ackvec chunks
+
+	// TCP's RTO calculation
+	double alpha_;	// smoothing factor for RTT/RTO calculation
+	double beta_;	// smoothing factor for RTT/RTO calculation
+	double g_;		// timer granularity
+	int k_;			// k value
+	int t_rtt_;		// RTT
+	int t_rttvar_;	// RTT variance
+	int t_srtt_;	// smoothed RTT
+	int srtt_init_;	// initial val for t_srtt_
+	int rttvar_init_;	// initial val for t_rttvar_
+	int rttvar_exp_;	// exponent of multiple for t0_
+	double t0_;		// t0 value at TCP throughput equation
+	double tcp_tick_;
 };
 
 #endif
