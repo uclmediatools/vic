@@ -5055,7 +5055,7 @@ else
             exit 1
         fi
     fi
-    V_LIB_TCL=$TCL_LIB_SPEC
+    V_LIB_TCL=`echo $TCL_LIB_SPEC | sed 's#-L/usr/lib[0-9]* ##'`
 fi
 
 
@@ -5109,7 +5109,7 @@ which comes with the PrivateHeaders folder." >&2;}
         echo "can't find tk.tcl in ${TK_PACKAGE_PATH}"
         exit 1
     fi
-    V_LIB_TK=$TK_LIB_SPEC
+    V_LIB_TK=`echo $TK_LIB_SPEC | sed 's#-L/usr/lib[0-9]* ##'`
 fi
 
 V_INCLUDE_X11=$TK_XINCLUDES
