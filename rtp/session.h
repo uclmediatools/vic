@@ -104,10 +104,10 @@ class CtrlHandler : public DataHandler, public Timer {
 	inline double rint() const { return (rint_); }
 	void send_aoa();	// send ackofack (TfwcSndr side)
 	void send_ts();		// send timestamp (TfwcSndr side)
-	void send_ackv();
+	void send_ackv();	// send ackvec (TfwcRcvr side)
+	void recv_ackv();	// receive ackvec (TfwcSndr side)
 	void send_p();
 	void send_ts_echo();
-	void recv_ackv();	// receive ackvec (TfwcSndr side)
 
 	// i am an RTP data sender/receiver
 	inline void i_am_sender() { is_sender_ = true; }
@@ -146,6 +146,9 @@ public:
 		u_int16_t begin_seq, u_int16_t end_seq, 
 		u_int16_t *chunks, u_int16_t num_chunks, 
 		u_int32_t xrssrc);
+
+	// receive XR
+	virtual void recv_xreport();
 
 	void build_aoa_pkt(CtrlHandler* ch);
 	void build_ts_pkt(CtrlHandler* ch);
@@ -234,6 +237,8 @@ protected:
 	u_int16_t ackvec_;	// this is a bit vector
 	// timestamp
 	double recv_ts_;	// receive timestamp
+
+	bool get_xr_only_;
 };
 
 class AudioSessionManager : public SessionManager {

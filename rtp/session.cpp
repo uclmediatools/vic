@@ -224,7 +224,8 @@ rtcp_avg_size_(128.),
 confid_(-1),
 seqno_(0),		// RTP data packet seqno (from RTP header)
 lastseq_(0),	// last received packet's seqno
-ackvec_(0)		// bit vector (AckVec)
+ackvec_(0),		// bit vector (AckVec)
+get_xr_only_(0)
 {
 	/*XXX For adios() to send bye*/
 	manager = this;
@@ -1340,7 +1341,10 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 				tfwc_sndr_recv(xr->BT, begin, end, chunk, recv_ts_);
 
 				// we need to call Transmitter::output(pb) to make Ack driven
+				if(!get_xr_only_)
 				cc_tfwc_output();
+				else
+				get_xr_only_ = false;
 				break;
 
 			case RBCC:
@@ -1370,6 +1374,12 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 	}
 	fprintf(stderr,
 	"-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\n");
+}
+
+// receive XR (AckVec)
+void SessionManager::recv_xreport() {
+	get_xr_only_ = true;
+	ch_[0].recv_ackv();
 }
 
 // receive AckVec (force to receive)

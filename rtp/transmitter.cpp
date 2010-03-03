@@ -304,6 +304,9 @@ void Transmitter::cc_tfwc_output(pktbuf* pb)
 //	fprintf(stderr,"\t|                                          |\n");
 //	fprintf(stderr,"\tV                                          V\n");
 
+	// receive XR (ackvec) before sending
+	//recv_xreport();
+
 	// pb is not null, hence parse it.
 	rtphdr* rh = (rtphdr *) pb->data;
 
@@ -339,6 +342,9 @@ void Transmitter::cc_tfwc_output()
 //	fprintf(stderr,"\t---------entering cc_tfwc_output()----------\n");
 //	fprintf(stderr,"\t|                                          |\n");
 //	fprintf(stderr,"\tV                                          V\n");
+
+	// receive XR (ackvec) before sending
+	//recv_xreport();
 
 	// head of the RTP data packet buffer (pb)
 	pktbuf* pb = head_;
