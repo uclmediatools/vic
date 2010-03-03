@@ -205,7 +205,7 @@ proc build.decklink w {
         ttk::radiobutton $w.f.b0 -text "none" -command "grabber setSoftwareScale none" \
            -variable setSoftwareScale -value "none"
         ttk::radiobutton $w.f.b1 -text "960p" -command "grabber setSoftwareScale 960p" \
-            -variable setSoftwareScale -value "9600p"
+            -variable setSoftwareScale -value "960p"
         ttk::radiobutton $w.f.b2 -text "720p" -command "grabber setSoftwareScale 720p" \
             -variable setSoftwareScale -value "720p"
         ttk::radiobutton $w.f.b3 -text "576p" -command "grabber setSoftwareScale 576p" \
