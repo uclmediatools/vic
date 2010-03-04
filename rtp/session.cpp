@@ -459,6 +459,11 @@ void SessionManager::transmit(pktbuf* pb)
 	// receive XR before sending
 	recv_xreport(ch_);
 
+	// get seqno
+	rtphdr* rh = (rtphdr *) pb->data;
+	fprintf(stderr, "\n\tnow: %f\tseqno: %d\n\n",
+		tx_now()-tx_now_offset_, ntohs(rh->rh_seqno));
+
 	// Using loop_layer for now to restrict transmission as well
 	if (pb->layer < loop_layer_) {
 	//	if ( pb->layer <0 ) exit(1);
@@ -482,6 +487,11 @@ void SessionManager::tx_data_only(pktbuf* pb)
 {
 	// receive XR before sending
 	recv_xreport(ch_);
+
+	// get seqno
+	rtphdr* rh = (rtphdr *) pb->data;
+	fprintf(stderr, "\n\tnow: %f\tseqno: %d\n\n",
+		tx_now()-tx_now_offset_, ntohs(rh->rh_seqno));
 
 	if (pb->layer < loop_layer_) {
 		Network* n = dh_[pb->layer].net();
