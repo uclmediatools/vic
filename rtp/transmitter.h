@@ -94,9 +94,6 @@ class Transmitter : public TclObject, public Timer,
 	void cc_tfwc_output(pktbuf*);
 	void cc_tfrc_output();
 
-	// receive XR
-	virtual void recv_xreport() = 0;
-
 	/*
 	 * Buffer allocation hooks.
 	 */

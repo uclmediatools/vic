@@ -105,7 +105,6 @@ class CtrlHandler : public DataHandler, public Timer {
 	void send_aoa();	// send ackofack (TfwcSndr side)
 	void send_ts();		// send timestamp (TfwcSndr side)
 	void send_ackv();	// send ackvec (TfwcRcvr side)
-	void recv_ackv();	// receive ackvec (TfwcSndr side)
 	void send_p();
 	void send_ts_echo();
 
@@ -141,14 +140,14 @@ public:
 //	virtual void send_report();
 	virtual void send_report(CtrlHandler*, int bye, int app = 0);
 	virtual void build_xreport(CtrlHandler*, int bt);
-	virtual void send_Xreport(CtrlHandler* ch, 
+	virtual void send_xreport(CtrlHandler* ch, 
 		u_int8_t bt, u_int8_t rsvd, u_int8_t thin, 
 		u_int16_t begin_seq, u_int16_t end_seq, 
 		u_int16_t *chunks, u_int16_t num_chunks, 
 		u_int32_t xrssrc);
 
 	// receive XR
-	virtual void recv_xreport();
+	void recv_xreport(CtrlHandler*);
 
 	void build_aoa_pkt(CtrlHandler* ch);
 	void build_ts_pkt(CtrlHandler* ch);
@@ -178,11 +177,11 @@ protected:
 	void parse_rr(rtcphdr* rh, int flags, u_char* ep,
 		      Source* ps, Address & addr, int layer);
 	void parse_xr(rtcphdr* rh, int flags, u_char* ep,
-		      Source* ps, Address & addr, int layer);
+		      Source* ps, Address & addr, int layer, int op);
 	void parse_rr_records(u_int32_t ssrc, rtcp_rr* r, int cnt,
 			      const u_char* ep, Address & addr);
 	void parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
-			      const u_char* ep, Address & addr);
+			      const u_char* ep, Address & addr, int op);
 	int sdesbody(u_int32_t* p, u_char* ep, Source* ps,
 		     Address & addr, u_int32_t ssrc, int layer);
 	void parse_sdes(rtcphdr* rh, int flags, u_char* ep, Source* ps,
@@ -237,8 +236,6 @@ protected:
 	u_int16_t ackvec_;	// this is a bit vector
 	// timestamp
 	double recv_ts_;	// receive timestamp
-
-	bool get_xr_only_;
 };
 
 class AudioSessionManager : public SessionManager {

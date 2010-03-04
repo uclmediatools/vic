@@ -224,8 +224,7 @@ rtcp_avg_size_(128.),
 confid_(-1),
 seqno_(0),		// RTP data packet seqno (from RTP header)
 lastseq_(0),	// last received packet's seqno
-ackvec_(0),		// bit vector (AckVec)
-get_xr_only_(0)
+ackvec_(0)		// bit vector (AckVec)
 {
 	/*XXX For adios() to send bye*/
 	manager = this;
@@ -456,6 +455,10 @@ void SessionManager::transmit(pktbuf* pb)
 	//mh_.msg_iov = pb->iov;
 	//	dh_[.net()->send(mh_);
 		//debug_msg("L %d,",pb->layer);
+	
+	// receive XR before sending
+	recv_xreport(ch_);
+
 	// Using loop_layer for now to restrict transmission as well
 	if (pb->layer < loop_layer_) {
 	//	if ( pb->layer <0 ) exit(1);
@@ -468,7 +471,6 @@ void SessionManager::transmit(pktbuf* pb)
 		switch (cc_type_) {
 		case WBCC:
 			ch_[0].send_aoa();	// send ack of ack
-			//ch_[0].send_ts();	// send time stamp
 			break;
 		case RBCC:
 			break;
@@ -478,6 +480,9 @@ void SessionManager::transmit(pktbuf* pb)
 
 void SessionManager::tx_data_only(pktbuf* pb) 
 {
+	// receive XR before sending
+	recv_xreport(ch_);
+
 	if (pb->layer < loop_layer_) {
 		Network* n = dh_[pb->layer].net();
 		if (n != 0)
@@ -630,7 +635,7 @@ void SessionManager::send_ECNXreport(CtrlHandler* ch,
 					u_int8_t tos, u_int16_t begin_seq)
 {
 	u_int16_t chunk = (tos & 0x03) << 14;
-	send_Xreport(ch, XR_BT_1, XR_BT_ECN, 0, 
+	send_xreport(ch, XR_BT_1, XR_BT_ECN, 0, 
 				 begin_seq, begin_seq, &chunk, 1, 0);
 }
 
@@ -677,9 +682,9 @@ void SessionManager::build_xreport(CtrlHandler* ch, int bt)
 				// set AckofAck
 				chunks[num_chunks-1] = tfwc_sndr_get_aoa();
 
-				// send_Xreport (sender's report)
+				// send_xreport (sender's report)
 				// - just sending ackofack information
-				send_Xreport(ch, XR_BT_1, 0, 0, 0, 0, chunks, num_chunks, 0);
+				send_xreport(ch, XR_BT_1, 0, 0, 0, 0, chunks, num_chunks, 0);
 				break;
 
 			case RBCC:
@@ -714,9 +719,9 @@ void SessionManager::build_xreport(CtrlHandler* ch, int bt)
 			case RBCC:
 				break;
 			}
-			// send_Xreport (receiver's report)
+			// send_xreport (receiver's report)
 			// - sending AckVec
-			send_Xreport(ch, XR_BT_1, 0, 0, tfwc_rcvr_begins(), 
+			send_xreport(ch, XR_BT_1, 0, 0, tfwc_rcvr_begins(), 
 					tfwc_rcvr_ends(), chunks, num_chunks, 0);
 		}
 		else if (bt == XR_BT_3) {
@@ -726,7 +731,7 @@ void SessionManager::build_xreport(CtrlHandler* ch, int bt)
 }
 
 // New version
-void SessionManager::send_Xreport(CtrlHandler* ch, u_int8_t bt, 					
+void SessionManager::send_xreport(CtrlHandler* ch, u_int8_t bt,
 		u_int8_t rsvd, u_int8_t thin, 
 		u_int16_t begin_seq, u_int16_t end_seq, 
 		u_int16_t *chunks, u_int16_t num_chunks, 
@@ -1255,7 +1260,6 @@ void SessionManager::parse_sr(rtcphdr* rh, int flags, u_char*ep,
 	s->map_ntp_time(t);
 	s->map_rtp_time(s->convert_time(t));
 	s->rtp2ntp(1);
-	//printf("Got SR\n");
 
 	int cnt = flags >> 8 & 0x1f;
 	parse_rr_records(ssrc, (rtcp_rr*)(sr + 1), cnt, ep, addr);
@@ -1277,7 +1281,7 @@ void SessionManager::parse_rr(rtcphdr* rh, int flags, u_char* ep,
 }
 
 void SessionManager::parse_xr(rtcphdr* rh, int flags, u_char* ep,
-							  Source* ps, Address & addr, int layer)
+					  Source* ps, Address & addr, int layer, int op)
 {
 	Source* s;
 	u_int32_t ssrc = rh->rh_ssrc;	// RTCP's ssrc
@@ -1288,11 +1292,11 @@ void SessionManager::parse_xr(rtcphdr* rh, int flags, u_char* ep,
 
 	s->layer(layer).lts_ctrl(unixtime());
 	int cnt = flags >> 8 & 0x1f;	// reception report count
-	parse_xr_records(ssrc, (rtcp_xr*)(rh + 1), cnt, ep, addr);
+	parse_xr_records(ssrc, (rtcp_xr*)(rh + 1), cnt, ep, addr, op);
 }
 
 void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
-		const u_char* ep, Address & addr)
+		const u_char* ep, Address & addr, int op)
 {
 	fprintf(stderr, 
 	"~~~~~~~~~~~~~~~~~~entering parse_xr_records()~~~~~~~~~~~~~~~~~~\n");
@@ -1341,10 +1345,8 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 				tfwc_sndr_recv(xr->BT, begin, end, chunk, recv_ts_);
 
 				// we need to call Transmitter::output(pb) to make Ack driven
-				if(!get_xr_only_)
+				if(op)
 				cc_tfwc_output();
-				else
-				get_xr_only_ = false;
 				break;
 
 			case RBCC:
@@ -1377,15 +1379,100 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 }
 
 // receive XR (AckVec)
-void SessionManager::recv_xreport() {
-	get_xr_only_ = true;
-	ch_[0].recv_ackv();
-}
+void SessionManager::recv_xreport(CtrlHandler *ch) {
+	// timestamp for XR reception
+	recv_ts_ = tx_now() - tx_now_offset_;
 
-// receive AckVec (force to receive)
-// (TFWC data sender side)
-void CtrlHandler::recv_ackv() {
-	sm_->recv(this);
+	Address * srcp;
+	int cc = ch->recv(pktbuf_, 2 * RTP_MTU, srcp);
+
+	// return when no RTCP arrived in the socket buffer
+	if (cc <= 0)
+		return;
+
+	rtcphdr* rh = (rtcphdr *)pktbuf_;
+	// ignore loopback packets
+	if (!loopback_) {
+		SourceManager& sm = SourceManager::instance();
+		if (rh->rh_ssrc == (*sm.localsrc()).srcid())
+		return;
+	}
+	if (cc < int(sizeof(*rh))) {
+		++nrunt_;
+		return;
+	}
+
+	// filter out junk report and other types of RTCP packet.
+	// here, we expect it to be XR only.
+	switch(ntohs(rh->rh_flags) & 0xc0ff) {
+	case RTP_VERSION << 14 | RTCP_PT_XR:
+		break;
+	case RTP_VERSION << 14 | RTCP_PT_SR:
+	case RTP_VERSION << 14 | RTCP_PT_RR:
+	case RTP_VERSION << 14 | RTCP_PT_BYE:
+		debug_msg("warning: detected wrong RTCP packet types!\n");
+		return;
+	default:
+		++badversion_;
+		return;
+	}
+
+	// we're safe to assume that this is XR packet.
+	// -- compute average size estimator.
+	rtcp_avg_size_ += RTCP_SIZE_GAIN * (double (cc + 28) - rtcp_avg_size_);
+	Address & addr = *srcp;
+
+	// XXX sdes related stuffs (do we need it here?)
+	// -- first record in compound packet must be the ssrc of the sender of this
+	// packet. pull it out for the use in sdes parsing.
+	// -- note: sdes record does not contain the ssrc of the sender.
+	u_int32_t ssrc = rh->rh_ssrc;
+	Source* ps = SourceManager::instance().lookup(ssrc, ssrc, addr);
+	if (ps == 0) return;
+
+	int layer = ch - ch_;
+	int rtcp_pkt_id;
+
+	// parse RTCP records (while loop enables to parse "compound packet")
+	// -- we expect it to be XR.
+	u_char* epack = (u_char *)rh + cc;
+	while ((u_char *)rh < epack) {
+		u_int len = (ntohs(rh->rh_len) << 2) + 4;
+		u_char* ep = (u_char *)rh + len;
+		// bad length
+		if (ep > epack) {
+			ps->badsesslen(1);
+			return;
+		}
+		// bad version
+		u_int flags = ntohs(rh->rh_flags);
+		if (flags >> 14 != RTP_VERSION) {
+			ps->badsessver(1);
+			return;
+		}
+
+		switch (flags & 0xff) {
+		case RTCP_PT_XR:
+			rtcp_pkt_id = RTCP_PT_XR;
+			parse_xr(rh, flags, ep, ps, addr, layer, 0);
+			break;
+		case RTCP_PT_SR:
+			rtcp_pkt_id = RTCP_PT_SR;
+		case RTCP_PT_RR:
+			rtcp_pkt_id = RTCP_PT_RR;
+		case RTCP_PT_BYE:
+			rtcp_pkt_id = RTCP_PT_BYE;
+		case RTCP_PT_SDES:
+			rtcp_pkt_id = RTCP_PT_SDES;
+			debug_msg("warning: wrong RTCP packet type! %d\n", rtcp_pkt_id);
+			return;
+		default:
+			ps->badsessopt(1);
+			break;
+		}
+		rh = (rtcphdr *)ep;
+	}
+	return;
 }
 
 // send AckVec 
@@ -1608,7 +1695,7 @@ void SessionManager::recv(CtrlHandler* ch)
 			break;
 
 		case RTCP_PT_XR:
-			parse_xr(rh, flags, ep, ps, addr, layer);
+			parse_xr(rh, flags, ep, ps, addr, layer, 1);
 			break;
 
 		case RTCP_PT_SDES:
