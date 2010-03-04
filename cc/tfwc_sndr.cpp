@@ -125,6 +125,8 @@ TfwcSndr::TfwcSndr() :
 	rttvar_exp_ = 2;
 	t_srtt_ = int(srtt_init_/tcp_tick_) << T_SRTT_BITS;
 	t_rttvar_ = int(rttvar_init_/tcp_tick_) << T_RTTVAR_BITS;
+
+	prevno_ = -1;
 }
 
 void TfwcSndr::tfwc_sndr_send(int seqno, double now, double offset) {
@@ -177,6 +179,8 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		// just acked seqno 
 		// i.e.,) head seqno(= highest seqno) of this ackvec
 		jacked_ = ends_ - 1;
+		if (jacked_ < prevno_)
+		debug_msg("warning: packet reordering occurred!\n");
 
 		// declared AckVec
 		ackv_ = (u_int16_t *) malloc (sizeof(u_int16_t) * num_vec_);

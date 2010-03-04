@@ -132,6 +132,7 @@ protected:
 	// init variables
 	inline void init_var() {
 		num_missing_ = 0;
+		prevno_ = jacked_;
 	}
 
 	// get the first position in ackvec where 1 is marked
@@ -325,6 +326,9 @@ private:
 	int rttvar_exp_;	// exponent of multiple for t0_
 	double t0_;		// t0 value at TCP throughput equation
 	double tcp_tick_;
+
+	// other variables
+	u_int16_t prevno_;	// previous highest packet sequence number
 };
 
 #endif
