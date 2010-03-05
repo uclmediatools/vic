@@ -55,13 +55,18 @@
 #include "DeckLinkAPIDispatch.cpp"
 #endif
 
+#include "yuv_convert.h"
+
 #ifdef HAVE_SWSCALE
 extern "C" {
 #include "libswscale/swscale.h"
 #include "libavutil/avutil.h"
+
+#include "config_arch.h"
+#include "cpu/cpudetect.h"
+
+static int available_cpu_flags = cpu_check();
 }
-#else
-#include "yuv_convert.h"
 #endif
 
 #if !defined(_WIN32) && !defined(_WIN64)
