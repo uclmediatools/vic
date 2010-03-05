@@ -37,6 +37,7 @@
 #ifndef vic_net_h
 #define vic_net_h
 
+#include <sys/time.h>
 #include "inet.h"
 #include "vic_tcl.h"
 
@@ -90,12 +91,18 @@ public:
 	inline const Address & interface() const { return (local_); }
 	inline int port() const { return (port_); }
 	inline int ttl() const { return (ttl_); }
-	inline u_int8_t recv_tos() const { return (recv_tos_); }
 	inline int noloopback_broken() const { return (noloopback_broken_); }
 	virtual void reset();
 	static void nonblock(int fd);
 	inline Crypt* crypt() const { return (crypt_); }
 	virtual Address* alloc(const char* name) { UNUSED(name); return (0);}
+
+	// IP_TOS
+	inline u_int8_t recv_tos() const { return (recv_tos_); }
+	// SO_TIMESTAMP
+	inline double recv_so_time() const {
+	return ((double) tvrecv.tv_sec + 1e-6 * (double) tvrecv.tv_usec);
+	}
 
 protected:
 	virtual void dosend(u_char* buf, int len, int fd);
@@ -111,9 +118,16 @@ protected:
 	int rsock_;
 	int ssock_;
 
+	// IP_TOS--------------
 	u_int8_t recv_tos_;
 	int noloopback_broken_;
-	
+	//---------------------
+
+	// SO_TIMESTAMP--------
+	struct timeval tvrecv;
+	int tvlen;
+	//---------------------
+
 	Crypt* crypt_;
 
 	static u_char* wrkbuf_;
@@ -121,6 +135,4 @@ protected:
 	static void expand_wrkbuf(int len);
 	static int cpmsg(const msghdr& mh);
 };
-
-
 #endif
