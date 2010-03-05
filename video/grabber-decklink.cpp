@@ -211,7 +211,7 @@ public:
                 return S_OK;
             }
 
-            int flags = SWS_FAST_BILINEAR;
+            int flags = SWS_BILINEAR;
 
             if (sws_context == NULL){
 
