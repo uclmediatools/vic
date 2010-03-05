@@ -104,8 +104,12 @@ public:
         outh = height;
         cformat = format;
         for (int i = 0; i < mBufferSize; i++) {
-            mBuffer[i] = new uint8_t[width * height * 2];
-            memset((void *)mBuffer[i], width * height * 2, sizeof(uint8_t));
+            if (cformat == CF_422) {
+                    mBuffer[i] = new uint8_t[width * height * 2];
+            } else {
+                    mBuffer[i] = new uint8_t[width * height * 3 / 2];
+            }
+            mBufferFrameNum[i] = 0;
         }
     }
 
@@ -121,8 +125,8 @@ public:
             return NULL;
         }
 
-		// ignore older frames
-		if (mLastReadFrameNum >= mBufferFrameNum[mReadIndex] && mLastReadFrameNum <= 0xFFFFFFFF - mBufferSize) {
+        // ignore older frames
+        if (mLastReadFrameNum >= mBufferFrameNum[mReadIndex] && mLastReadFrameNum <= 0xFFFFFFFF - mBufferSize) {
             return NULL;
         }
         mLastReadFrameNum = mBufferFrameNum[mReadIndex];
@@ -131,10 +135,7 @@ public:
         int nextElement = (mReadIndex + 1) % mBufferSize;
         mReadIndex = nextElement;
 
-// fprintf(stderr, "*pop * mBuffer[%i] = 0x%lx\n", mReadIndex, mBuffer[mReadIndex]);
-
         return retval;
-
     }
 
     virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, LPVOID *ppv) {
@@ -195,6 +196,21 @@ public:
 
         if(nextElementIndex != mReadIndex) {
 #ifdef HAVE_SWSCALE
+            // don't use SWSCALE to scale 1920x1080 to 1920x1072
+            if (outh == 1072) {
+                if (cformat == CF_422) {
+                    packedUYVY422_to_planarYUYV422((char *)mBuffer[mWriteIndex], outw, outh,
+                                                   (char *)videoFrame, arrivedFrame->GetWidth(), arrivedFrame->GetHeight());
+                } else {
+                    packedUYVY422_to_planarYUYV420((char *)mBuffer[mWriteIndex], outw, outh,
+                                                   (char *)videoFrame, arrivedFrame->GetWidth(), arrivedFrame->GetHeight());
+                }
+                mBufferFrameNum[mWriteIndex] = ++mLastWriteFrameNum;
+                mWriteIndex = nextElementIndex;
+
+                return S_OK;
+            }
+
             int flags = SWS_FAST_BILINEAR;
 
             if (sws_context == NULL){
@@ -245,11 +261,15 @@ public:
 
             sws_scale(sws_context, sws_src, sws_src_stride, 0, arrivedFrame->GetHeight(), sws_tar, sws_tar_stride);
 #else
-            memcpy((void *)(mBuffer[mWriteIndex]), videoFrame, arrivedFrame->GetRowBytes() * arrivedFrame->GetHeight());
+            if (cformat == CF_422) {
+                packedUYVY422_to_planarYUYV422((char *)mBuffer[mWriteIndex], outw, outh,
+                                               (char *)videoFrame, arrivedFrame->GetWidth(), arrivedFrame->GetHeight());
+            } else {
+                packedUYVY422_to_planarYUYV420((char *)mBuffer[mWriteIndex], outw, outh,
+                                               (char *)videoFrame, arrivedFrame->GetWidth(), arrivedFrame->GetHeight());
+            }
 #endif
-
-// fprintf(stderr, "*push* mBuffer[%i] = 0x%lx\n", mWriteIndex, mBuffer[mWriteIndex]);
-			mBufferFrameNum[mWriteIndex] = ++mLastWriteFrameNum;
+            mBufferFrameNum[mWriteIndex] = ++mLastWriteFrameNum;
             mWriteIndex = nextElementIndex;
         }
 
@@ -742,7 +762,7 @@ void DeckLinkGrabber::start()
 
     // Set the image size.
     switch (decimate_) {
-    case 1: // full-sized
+    case 1: // large-size
         if (strcmp(setSoftwareScale, "960p") == 0) {
             width_ = int(960 * displayModeWidth_ / displayModeHeight_);
             height_ = 960;
@@ -760,12 +780,12 @@ void DeckLinkGrabber::start()
           height_ = displayModeHeight_;
         }
         break;
-    case 2: // CIF-sized
-        width_ = CIF_WIDTH;
+    case 2: // CIF-size
+        width_ = int(CIF_HEIGHT * displayModeWidth_ / displayModeHeight_);
         height_ = CIF_HEIGHT;
         break;
-    case 4: // QCIF-sized
-        width_ = QCIF_WIDTH;
+    case 4: // QCIF-size
+        width_ = int(QCIF_HEIGHT * displayModeWidth_ / displayModeHeight_);
         height_ = QCIF_HEIGHT;
         break;
     }
@@ -791,7 +811,11 @@ void DeckLinkGrabber::start()
     if (delegate_) {
         delegate_->Release();
     }
-    delegate_ = new DeckLinkCaptureDelegate(outw_, outh_, cformat_);
+    if (decimate_ >= 2) {
+        delegate_ = new DeckLinkCaptureDelegate(width_, height_, cformat_);
+    } else {
+        delegate_ = new DeckLinkCaptureDelegate(outw_, outh_, cformat_);
+    }
 
     result = deckLinkInput_->SetCallback(delegate_);
 
@@ -841,29 +865,33 @@ int DeckLinkGrabber::grab()
         return 0;
     }
 
-#ifdef HAVE_SWSCALE
-    switch (cformat_) {
-    case CF_420:
-    case CF_CIF:
-        memcpy((char *)frame_, (char *)fr, outw_ * outh_ * 3 / 2);
-      break;
 
-    case CF_422:
-        memcpy((char *)frame_, (char *)fr, outw_ * outh_ * 2);
-      break;
-    }
-#else
-    switch (cformat_) {
-    case CF_420:
-    case CF_CIF:
-        packedUYVY422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)fr, inw_, inh_);
-      break;
+    switch (decimate_) {
+    case 1: // large-size
+        if (cformat_ == CF_422) {
+            memcpy((char *)frame_, (char *)fr, outw_ * outh_ * 2);
+        } else {
+            memcpy((char *)frame_, (char *)fr, outw_ * outh_ * 3 / 2);
+        }
+        break;
 
-    case CF_422:
-        packedUYVY422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)fr, inw_, inh_);
-      break;
+    case 2: // CIF-size
+        if (cformat_ == CF_422) {
+            planarYUYV422_to_planarYUYV422((char *)frame_, CIF_WIDTH, CIF_HEIGHT, (char *)fr, width_, height_);
+        } else {
+            planarYUYV420_to_planarYUYV420((char *)frame_, CIF_WIDTH, CIF_HEIGHT, (char *)fr, width_, height_);
+        }
+        break;
+
+    case 4: // QCIF-size
+        if (cformat_ == CF_422) {
+            planarYUYV422_to_planarYUYV422((char *)frame_, QCIF_WIDTH, QCIF_HEIGHT, (char *)fr, width_, height_);
+        } else {
+            planarYUYV420_to_planarYUYV420((char *)frame_, QCIF_WIDTH, QCIF_HEIGHT, (char *)fr, width_, height_);
+        }
+        break;
     }
-#endif
+
     suppress(frame_);
     saveblks(frame_);
     YuvFrame f(media_ts(), frame_, crvec_, outw_, outh_);
