@@ -202,15 +202,15 @@ proc build.decklink w {
     label $w.f.scaling -text "Software Scaling : "
 
     if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
-        ttk::radiobutton $w.f.b0 -text "none" -command "grabber setSoftwareScale none" \
+        ttk::radiobutton $w.f.b0 -text "none" -command "restart" \
            -variable setSoftwareScale -value "none"
-        ttk::radiobutton $w.f.b1 -text "960p" -command "grabber setSoftwareScale 960p" \
+        ttk::radiobutton $w.f.b1 -text "960p" -command "restart" \
             -variable setSoftwareScale -value "960p"
-        ttk::radiobutton $w.f.b2 -text "720p" -command "grabber setSoftwareScale 720p" \
+        ttk::radiobutton $w.f.b2 -text "720p" -command "restart" \
             -variable setSoftwareScale -value "720p"
-        ttk::radiobutton $w.f.b3 -text "576p" -command "grabber setSoftwareScale 576p" \
+        ttk::radiobutton $w.f.b3 -text "576p" -command "restart" \
             -variable setSoftwareScale -value "576p"
-        ttk::radiobutton $w.f.b4 -text "480p" -command "grabber setSoftwareScale 480p" \
+        ttk::radiobutton $w.f.b4 -text "480p" -command "restart" \
             -variable setSoftwareScale -value "480p"
     } else {
         set f [smallfont]

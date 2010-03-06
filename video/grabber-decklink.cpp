@@ -601,13 +601,7 @@ int DeckLinkGrabber::command(int argc, const char*const* argv)
     HRESULT result;
 
     if (argc == 3) {
-        if (strcmp(argv[1], "setSoftwareScale") == 0) {
-            if (running_) {
-                stop(); start();
-            }
-            return (TCL_OK);
-
-        } else if (strcmp(argv[1], "decimate") == 0) {
+        if (strcmp(argv[1], "decimate") == 0) {
             decimate_ = atoi(argv[2]);
 
             if (running_) {
@@ -876,18 +870,11 @@ int DeckLinkGrabber::grab()
         break;
 
     case 2: // CIF-size
-        if (cformat_ == CF_422) {
-            planarYUYV422_to_planarYUYV422((char *)frame_, CIF_WIDTH, CIF_HEIGHT, (char *)fr, width_, height_);
-        } else {
-            planarYUYV420_to_planarYUYV420((char *)frame_, CIF_WIDTH, CIF_HEIGHT, (char *)fr, width_, height_);
-        }
-        break;
-
     case 4: // QCIF-size
         if (cformat_ == CF_422) {
-            planarYUYV422_to_planarYUYV422((char *)frame_, QCIF_WIDTH, QCIF_HEIGHT, (char *)fr, width_, height_);
+            planarYUYV422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)fr, width_, height_);
         } else {
-            planarYUYV420_to_planarYUYV420((char *)frame_, QCIF_WIDTH, QCIF_HEIGHT, (char *)fr, width_, height_);
+            planarYUYV420_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)fr, width_, height_);
         }
         break;
     }
