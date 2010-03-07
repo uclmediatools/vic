@@ -817,12 +817,11 @@ void  DeleteMediaType( AM_MEDIA_TYPE *pmt)
 }
 //--------------------------------
 
-int DirectShowGrabber::getCaptureCapabilities() {
+int DirectShowGrabber::getCaptureCapabilities(int preferred_max_width) {
    IAMStreamConfig          *pConfig;
    AM_MEDIA_TYPE            *pmtConfig;
    int                      iCount;
    int                      iSize;
-   int                      preferred_max_width;
    VIDEO_STREAM_CONFIG_CAPS scc;
    HRESULT                  hr;
    VIDEOINFOHEADER          *pVih;
@@ -834,7 +833,6 @@ int DirectShowGrabber::getCaptureCapabilities() {
        return FALSE;
    }
 
-   preferred_max_width = 1024;
    max_width_ = 0;
    max_height_ = 0;
    min_width_ = 0xFFFF;
@@ -890,6 +888,10 @@ int DirectShowGrabber::getCaptureCapabilities() {
        }
    }
    pConfig->Release();
+
+   if (min_height_>=NTSC_BASE_HEIGHT && preferred_max_width != 1920)
+       getCaptureCapabilities(1920);
+
    if (max_width_>0)
        return TRUE;
 
