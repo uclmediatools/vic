@@ -33,7 +33,7 @@ proc build.srclist { } {
 	toplevel $w
 	wm withdraw $w
 	wm geometry $w 300x320
-	bind $w <Enter> "focus $w"
+	#bind $w <Enter> "focus $w"
 	#XXX
 	wm title $w "VIC Members"
 	wm minsize $w 0 0

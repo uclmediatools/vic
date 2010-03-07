@@ -349,7 +349,7 @@ proc open_window src {
 		$w.bar.size.menu add cascade -menu $m -label Mode
         }
 
-	bind $w <Enter> { focus %W }
+	#bind $w <Enter> { focus %W }
 	#wm focusmodel $w active
 
 	bind $w <s> "resize $v 176 144; set size$w 176x144"
@@ -570,7 +570,7 @@ proc open_full_window src {
 	pack $w.frame.video -anchor c
 	pack $w.frame -expand 1 -fill both
 
-	bind $w <Enter> { focus %W }
+	#bind $w <Enter> { focus %W }
 
 	bind $w <d> "destroy_userwin $v"
 	bind $w <q> "destroy_userwin $v"

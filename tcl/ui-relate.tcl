@@ -478,7 +478,7 @@ proc build.new.interface {} {
 	#
 	# emulate implicit keyboard focus
 	#
-	bind . <Enter> { focus %W }
+	#bind . <Enter> { focus %W }
 	#wm focusmodel . active
 	bind . <q> { adios }
 	bind . <Control-c> { adios }

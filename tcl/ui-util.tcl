@@ -146,7 +146,7 @@ proc create_toplevel { w title } {
 	wm transient $w .
 	wm title $w $title
 	wm iconname $w $title
-	bind $w <Enter> "focus $w"
+	#bind $w <Enter> "focus $w"
 }
 
 #
@@ -191,7 +191,7 @@ proc open_dialog text {
 	wm geom $w +$x+$y
 	wm deiconify $w
 
-	bind $w <Enter> "focus $w"
+	#bind $w <Enter> "focus $w"
 }
 
 proc helpitem { w text } {
