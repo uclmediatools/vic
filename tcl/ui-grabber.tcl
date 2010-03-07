@@ -214,19 +214,19 @@ proc build.decklink w {
             -variable setSoftwareScale -value "480p"
     } else {
         set f [smallfont]
-        radiobutton $w.f.b0 -text "none" -command "grabber setSoftwareScale none" \
+        radiobutton $w.f.b0 -text "none" -command "restart" \
             -padx 0 -pady 0 \
             -anchor w -variable setSoftwareScale -font $f -relief flat -value "none"
-        radiobutton $w.f.b1 -text "960p" -command "grabber setSoftwareScale 960p" \
+        radiobutton $w.f.b1 -text "960p" -command "restart" \
             -padx 0 -pady 0 \
             -anchor w -variable setSoftwareScale -font $f -relief flat -value "960p"
-        radiobutton $w.f.b2 -text "720p" -command "grabber setSoftwareScale 720p" \
+        radiobutton $w.f.b2 -text "720p" -command "restart" \
             -padx 0 -pady 0 \
             -anchor w -variable setSoftwareScale -font $f -relief flat -value "720p"
-        radiobutton $w.f.b3 -text "576p" -command "grabber setSoftwareScale 576p" \
+        radiobutton $w.f.b3 -text "576p" -command "restart" \
             -padx 0 -pady 0 \
             -anchor w -variable setSoftwareScale -font $f -relief flat -value "576p"
-        radiobutton $w.f.b4 -text "480p" -command "grabber setSoftwareScale 480p" \
+        radiobutton $w.f.b4 -text "480p" -command "restart" \
             -padx 0 -pady 0 \
             -anchor w -variable setSoftwareScale -font $f -relief flat -value "480p"
     }
