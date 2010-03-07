@@ -198,12 +198,20 @@ proc open_window src {
 		wm geometry $w +$userwin_x($src)+$userwin_y($src)
 		wm positionfrom $w user
 		set size$w $userwin_size($src)
-		set d [split $userwin_size($src) x]
-		create_video_widget $w.frame.video [lindex $d 0] [lindex $d 1]
+		if {$userwin_size($src) == "half"} {
+			create_video_widget $w.frame.video [expr $iw / 2] [expr $ih / 2]
+		} elseif {$userwin_size($src) == "original"} {
+			create_video_widget $w.frame.video $iw $ih
+		} elseif {$userwin_size($src) == "double"} {
+			create_video_widget $w.frame.video [expr $iw * 2] [expr $ih * 2]
+		} else {
+			set d [split $userwin_size($src) x]
+			create_video_widget $w.frame.video [lindex $d 0] [lindex $d 1]
+		}
 	} else {
-	   # show the video frame accroding to it's resolution
-	   create_video_widget $w.frame.video $iw $ih
-	   set size$w [format "%sx%s" $iw $ih]
+		# show the video frame according to it's resolution
+		create_video_widget $w.frame.video $iw $ih
+		set size$w [format "%sx%s" $iw $ih]
 	}
 	#elseif [isCIF [rtp_format $src]] {
 	#	create_video_widget $w.frame.video 352 288
