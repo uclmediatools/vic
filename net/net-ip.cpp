@@ -476,14 +476,13 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
 	}
 	/*
 	 * XXX don't need this for the session socket.
-	 */	
-	int bufsize = 80 * 1024;
-	if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, (char *)&bufsize,
-			sizeof(bufsize)) < 0) {
-		bufsize = 32 * 1024;
+	 */
+	for (int bufsize = 1024 * 1024; bufsize >= 32 * 1024; bufsize /= 2) {
 		if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, (char *)&bufsize,
-				sizeof(bufsize)) < 0)
-			perror("SO_RCVBUF");
+			       sizeof(bufsize)) >= 0)
+		{
+			break;
+		}
 	}
 	return (fd);
 }
@@ -592,13 +591,12 @@ you must specify a unicast destination\n");
 	/*
 	 * XXX don't need this for the session socket.
 	 */
-	int bufsize = 80 * 1024;
-	if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, (char *)&bufsize,
-		       sizeof(bufsize)) < 0) {
-		bufsize = 48 * 1024;
-		if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, (char *)&bufsize,
-			       sizeof(bufsize)) < 0)
-			perror("SO_SNDBUF");
+	for (int bufsize = 1024 * 1024; bufsize >= 32 * 1024; bufsize /= 2) {
+		if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, (char *)&bufsize,
+			       sizeof(bufsize)) >= 0)
+		{
+			break;
+		}
 	}
 	return (fd);
 }
@@ -607,7 +605,7 @@ int IPNetwork::disconnect_sock(int fd)
 {
 	memset((char *)&sin, 0, sizeof(sin));
 	sin.sin_family = AF_UNSPEC;
- 	return connect(fd, (struct sockaddr *)&sin, sizeof(sin));
+	return connect(fd, (struct sockaddr *)&sin, sizeof(sin));
 }
 
 
