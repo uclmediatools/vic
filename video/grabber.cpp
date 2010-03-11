@@ -169,7 +169,7 @@ void Grabber::contrast(double c)
 	double dmin = min, dmax = max;
 	double dslope = 219. / (dmax - dmin) * c;
 	double dy = 16.;
-	int i;
+	u_int i;
 	for (i = 0; i < min; ++i)
 		ynorm_[i] = u_char(dy);
 	for ( ; i < max; ++i) {
@@ -434,10 +434,12 @@ void Grabber::set_size_411(int w, int h)
 
 	int s = w * h;
 	framesize_ = s;
-	int n = s + (s >> 1) + 2 * GRABBER_VPAD * outw_;
-	framebase_ = new u_char[n];
-	/* initialize to gray */
-	memset(framebase_, 0x80, n);
+	int ny = s + GRABBER_VPAD * outw_;	// Y size
+	int nuv = (s >> 1) + GRABBER_VPAD * outw_;	// U + V size
+	framebase_ = new u_char[ny + nuv];
+	/* initialize to black */
+	memset(framebase_, 0, ny);
+	memset(framebase_ + ny, 0x80, nuv);
 	frame_ = framebase_ + GRABBER_VPAD * outw_;
 	crinit(w, h);
 
