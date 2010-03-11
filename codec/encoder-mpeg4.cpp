@@ -62,7 +62,7 @@ static class MPEG4EncoderMatcher:public Matcher
 
 encoder_matcher_mpeg4;
 
-MPEG4Encoder::MPEG4Encoder():TransmitterModule(FT_YUV_CIF)
+MPEG4Encoder::MPEG4Encoder():TransmitterModule(FT_YUV_420)
 {
     state = false;
     mpeg4.init(true, CODEC_ID_MPEG4, PIX_FMT_YUV420P);
@@ -90,14 +90,7 @@ void MPEG4Encoder::size(int w, int h)
 
 int MPEG4Encoder::command(int argc, const char *const *argv)
 {
-    if (argc == 2) {
-	if (strcmp(argv[1], "frame-format") == 0) {
-	    Tcl& tcl = Tcl::instance();
-	    tcl.result("420");
-	    return (TCL_OK);
-	}
-    }
-    else if (argc == 3) {
+    if (argc == 3) {
 	if (strcmp(argv[1], "q") == 0) {
 	    // mpeg4.quality = atoi(argv[2]);
 	    // mpeg4.set_max_quantizer(mpeg4.quality);

@@ -91,7 +91,7 @@ H264Decoder::H264Decoder():Decoder(0 /* 0 byte extra header */)
     decimation_ = 420;
     /*
      * Assume CIF.  Picture header will trigger a resize if
-     * we encounter QCIF instead.
+     * we encounter another size instead.
      */
     inw_ = 352;
     inh_ = 288;

@@ -67,7 +67,7 @@ MPEG4Decoder::MPEG4Decoder():Decoder(2)
     decimation_ = 420;
     /*
      * Assume CIF.  Picture header will trigger a resize if
-     * we encounter QCIF instead.
+     * we encounter another size instead.
      */
     inw_ = 0;
     inh_ = 0;
