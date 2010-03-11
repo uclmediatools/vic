@@ -108,6 +108,9 @@ class Transmitter : public TclObject, public Timer,
 	}
 	double tx_now_offset_;
 
+	// Tx pktbuf size
+	int tx_buf_size();
+
 protected:
 	void update(int nbytes);
 	void dump(int fd, iovec*, int iovel) const;

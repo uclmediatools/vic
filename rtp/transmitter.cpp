@@ -215,6 +215,19 @@ double Transmitter::txtime(pktbuf* pb)
 	return (8 * cc / (1000. * kbps_));
 }
 
+/*
+ * Tx pktbuf size
+ */
+int Transmitter::tx_buf_size() {
+	int size = 0;
+	pktbuf* pb = head_;
+	while (pb) {
+		size++;
+		pb = pb->next;
+	}	
+	return size;
+}
+
 void Transmitter::send(pktbuf* pb)
 {
 	switch (cc_type_) {
