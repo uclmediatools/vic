@@ -113,10 +113,31 @@ static const char rcsid[] =
 		bb |= (BB_INT)(bits) << (NBIT - (nbb)); \
 }
 
+// frame history size to keep track the number of packets per frame
+#define FHSIZE	10
 
 class H261Encoder : public TransmitterModule {
     public:
 	void setq(int q);
+
+	// Tx pktbuf size
+	int txq_beg_;
+	int txq_end_;
+	int txq_dif_;
+	// number of transmitted packets for this round of encoding
+	int num_sent_;
+	// number of sent packets in between two encoding instances
+	// (these packets were sent from the Tx queue upon XR reception)
+	int sent_more_;
+	// packets per frame
+	int ppframe_[FHSIZE];
+	inline void init_ppframe() {
+		for (int i = 0; i < FHSIZE; i++)
+		ppframe_[i] = 0;
+	}
+	// video frame number
+	int vfno_;
+
     protected:
 	H261Encoder(int ft);
 	~H261Encoder();
@@ -136,10 +157,8 @@ class H261Encoder : public TransmitterModule {
 		::gettimeofday(&tv, NULL);
 		return ((double) tv.tv_sec + 1e-6 * (double) tv.tv_usec);
 	}
-	double ts_off_;	// timestamp offset
 	double enc_start_;	// encoding start timestamp
 	double enc_end_;	// encoding end timestamp
-	int encno_;	// number of encoding routine 
 
 	/* bit buffer */
 	BB_INT bb_;
@@ -176,6 +195,8 @@ class H261Encoder : public TransmitterModule {
 	u_int coff_[12];	/* where to find U given gob# */
 	u_int loff_[12];	/* where to find Y given gob# */
 	u_int blkno_[12];	/* for CR */
+
+private:
 };
 
 class H261DCTEncoder : public H261Encoder {
@@ -220,7 +241,21 @@ H261Encoder::H261Encoder(int ft) : TransmitterModule(ft),
 	// h261 gettimeofday
 	enc_start_ = 0.0;
 	enc_end_ = 0.0;
-	encno_ = 1;
+
+	// Tx pktbuf size
+	txq_beg_ = 0;
+	txq_end_ = 0;
+	txq_dif_ = 0;
+	// number of transmitted packets for this round of encoding
+	num_sent_ = 0;
+	// number of sent packets in between two encoding instances
+	// (these packets were sent from the Tx queue upon XR reception)
+	sent_more_ = 0;
+
+	// packets per frame
+	init_ppframe();
+	// video frame number
+	vfno_ = 0;
 
 	for (int q = 0; q < 32; ++q) {
 		llm_[q] = 0;
@@ -768,6 +803,10 @@ H261Encoder::flush(pktbuf* pb, int nbit, pktbuf* npb)
 		} else
 			bb_ = 0;
 	}
+	// increment the number of packets for this frame
+	ppframe_[vfno_%FHSIZE]++;
+	fprintf(stderr, "\tnow: %f\tppframe[%d]: %d\n",
+	h261_now()-offset(), vfno_%FHSIZE, ppframe_[vfno_%FHSIZE]);
 	tx_->send(pb);
 
 	return (cc + HDRSIZE);
@@ -785,21 +824,70 @@ int H261DCTEncoder::consume(const VideoFrame *vf)
 
 int H261PixelEncoder::consume(const VideoFrame *vf)
 {
+	// adjust timestamp offset
+	tx_->tx_now_offset_ = offset();
+
+	// (get the necessary stats before encoding) ---------------------*
+	// Tx queue size before entering this encoding
+	txq_beg_ = tx_->tx_buf_size();
+	// sent packets after the previous encoding round, 
+	// but before starting this encoding instance.
+	// -- these packets were sent from the Tx queue 
+	//    upon XR reception in between two encoding instances.
+	sent_more_ = txq_end_ - txq_beg_;
+
+	fprintf(stderr, "\tnow: %f\tsent: %d more: %d vf[%d]: %d\n",
+	h261_now()-offset(), num_sent_, sent_more_, vfno_%FHSIZE, ppframe_[vfno_%FHSIZE]);
+
+	// all encoded packets associated with 
+	// the previously captured frame have been sent 
+	if (num_sent_ + sent_more_ == ppframe_[vfno_%FHSIZE]) {
+	}
+	// some packets associated with 
+	// the previously captured frame have not been sent
+	if (num_sent_ + sent_more_ < ppframe_[vfno_%FHSIZE]) {
+	}
+	// more packets have been sent than the encoded packets
+	// perhaps, there were some packets in the tx queue, and
+	// cwnd has been increrased allowing sending them all.
+	if (num_sent_ + sent_more_ > ppframe_[vfno_%FHSIZE]) {
+	}
+	// ---------------------------------------------------------------*
+
+	// increment frame number
+	if (vfno_++%FHSIZE == 0) 
+	init_ppframe();
+
+	// check size
 	if (!samesize(vf))
 		size(vf->width_, vf->height_);
 
+	// main encoding loop
+	// (send packets while encoding)
 	YuvFrame* p = (YuvFrame*)vf;
-	return(encode(p, p->crvec_));
+	int cc = encode(p, p->crvec_);
+
+	// Tx queue size after finishing encoding
+	txq_end_ = tx_->tx_buf_size();
+	txq_dif_ = txq_end_ - txq_beg_;
+	// number of Tx'd packets during this encoding instance
+	// (these Tx'd packets may include the previous frame(s).)
+	num_sent_ = ppframe_[vfno_%FHSIZE] - txq_dif_;
+
+	fprintf(stderr, "   now: %f\ttxq_end: %d\tdif: %d\n", 
+		h261_now()-offset(), txq_end_, txq_dif_);
+
+	fprintf(stderr, "   now: %f\tenc_time: %f\n\n", 
+		h261_now()-offset(), (enc_end_ - enc_start_));
+
+	return(cc);
 }
 		
 
 int
 H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 {
-	//fprintf(stderr,"\nH261Encoder encode()\n");
-	ts_off_ = offset();
-	tx_->tx_now_offset_ = ts_off_;
-	enc_start_ = h261_now() - ts_off_;
+	enc_start_ = h261_now()-offset();
 	fprintf(stderr,">>>h261_encode_start\tnow: %f\n", enc_start_);
 
 	tx_->flush();
@@ -897,10 +985,8 @@ H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 	cc += flush(pb, ((bc_ - bs_) << 3) + nbb_, 0);
 
 	// time measurement
-	enc_end_ = h261_now() - ts_off_;
+	enc_end_ = h261_now()-offset();
 	fprintf(stderr,"\n>>>h261_encode_end\tnow: %f\n", enc_end_);
-	fprintf(stderr,"   num: %d\tenc_time: %f\n\n", 
-		encno_++, (enc_end_ - enc_start_));
 
 	return (cc);
 }
