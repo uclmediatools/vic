@@ -2416,7 +2416,8 @@
 				<Tool
 					Name="VCCustomBuildTool"
 					Description="Generating &quot;version.c&quot;."
-					CommandLine="for /F %%v in (VERSION) do @echo const char version[] = &quot;%%v&quot;; &gt; &quot;$(OutDir)\version.c&quot;&#x0D;&#x0A;"
+					CommandLine="for /F %%v in (VERSION) do @echo const char version[] = &quot;%%v (Debug GPL)&quot;; &gt; &quot;$(OutDir)\version.c&quot;&#x0D;&#x0A;"
+					AdditionalDependencies="vic.2008.vcproj"
 					Outputs="&quot;$(OutDir)\version.c&quot;"
 				/>
 			</FileConfiguration>
@@ -2426,7 +2427,8 @@
 				<Tool
 					Name="VCCustomBuildTool"
 					Description="Generating &quot;version.c&quot;."
-					CommandLine="for /F %%v in (VERSION) do @echo const char version[] = &quot;%%v&quot;; &gt; &quot;$(OutDir)\version.c&quot;&#x0D;&#x0A;"
+					CommandLine="for /F %%v in (VERSION) do @echo const char version[] = &quot;%%v (nonGPL)&quot;; &gt; &quot;$(OutDir)\version.c&quot;&#x0D;&#x0A;"
+					AdditionalDependencies="vic.2008.vcproj"
 					Outputs="&quot;$(OutDir)\version.c&quot;"
 				/>
 			</FileConfiguration>
@@ -2436,7 +2438,8 @@
 				<Tool
 					Name="VCCustomBuildTool"
 					Description="Generating &quot;version.c&quot;."
-					CommandLine="for /F %%v in (VERSION) do @echo const char version[] = &quot;%%v&quot;; &gt; &quot;$(OutDir)\version.c&quot;&#x0D;&#x0A;"
+					CommandLine="for /F %%v in (VERSION) do @echo const char version[] = &quot;%%v (Debug GPL)&quot;; &gt; &quot;$(OutDir)\version.c&quot;&#x0D;&#x0A;"
+					AdditionalDependencies="vic.2008.vcproj"
 					Outputs="&quot;$(OutDir)\version.c&quot;"
 				/>
 			</FileConfiguration>
@@ -2446,7 +2449,8 @@
 				<Tool
 					Name="VCCustomBuildTool"
 					Description="Generating &quot;version.c&quot;."
-					CommandLine="for /F %%v in (VERSION) do @echo const char version[] = &quot;%%v&quot;; &gt; &quot;$(OutDir)\version.c&quot;&#x0D;&#x0A;"
+					CommandLine="for /F %%v in (VERSION) do @echo const char version[] = &quot;%%v (GPL)&quot;; &gt; &quot;$(OutDir)\version.c&quot;&#x0D;&#x0A;"
+					AdditionalDependencies="vic.2008.vcproj"
 					Outputs="&quot;$(OutDir)\version.c&quot;"
 				/>
 			</FileConfiguration>
