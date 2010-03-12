@@ -127,7 +127,7 @@ TfwcSndr::TfwcSndr() :
 	t_srtt_ = int(srtt_init_/tcp_tick_) << T_SRTT_BITS;
 	t_rttvar_ = int(rttvar_init_/tcp_tick_) << T_RTTVAR_BITS;
 
-	prevno_ = -1;
+	prevno_ = 0;
 }
 
 void TfwcSndr::tfwc_sndr_send(int seqno, double now, double offset) {
