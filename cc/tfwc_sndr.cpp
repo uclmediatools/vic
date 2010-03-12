@@ -48,6 +48,7 @@
  * retransmission timer
  */
 void TfwcRtxTimer::timeout() {
+	debug_msg("\t*------ TIMEOUT! ------*\n");
 	s_ -> expire(TFWC_TIMER_RTX);
 }
 
