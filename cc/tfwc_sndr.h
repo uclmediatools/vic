@@ -76,6 +76,7 @@ class TfwcSndr {
 public:
 	// constructor
 	TfwcSndr();
+	virtual ~TfwcSndr() {};
 
 	virtual void cc_tfwc_output() = 0;
 
