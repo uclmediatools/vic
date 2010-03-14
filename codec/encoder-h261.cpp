@@ -138,6 +138,9 @@ class H261Encoder : public TransmitterModule {
 	// video frame number
 	int vfno_;
 
+	// should we suspend grabbing?
+	virtual bool suspend_grabbing();
+
     protected:
 	H261Encoder(int ft);
 	~H261Encoder();
@@ -989,4 +992,34 @@ H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 	fprintf(stderr,"\n>>>h261_encode_end\tnow: %f\n", enc_end_);
 
 	return (cc);
+}
+
+/*
+ * if Tx queue is building up more than 5 frames, roughly,
+ * then we should suspend grabbing to prevent it from growing up forever.
+ */
+bool H261Encoder::suspend_grabbing() {
+	// Tx queue len (in packets) at the time of calling this method
+	int txq = tx_->tx_buf_size();
+	// highest watermark
+	int highmark = 0;
+
+	if (vfno_ < FHSIZE) 
+	return false;
+
+	for (int i = 0; i < FHSIZE; i++)
+		highmark += ppframe_[vfno_%FHSIZE];
+
+	// highmark is the average number of packets per frame
+	// (average window size is equal to FHSIZE)
+	highmark /= FHSIZE;
+
+	// now, highmark is set to "5 * (num packets per frame)",
+	// which roughly represents 5 frames.
+	highmark = 5 * highmark;
+
+	if (txq > highmark)
+		return true;
+
+	return false;
 }

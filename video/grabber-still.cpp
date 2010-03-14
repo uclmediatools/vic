@@ -100,6 +100,9 @@ protected:
 	int width_;			// width in pixel
 	int height_;		// height in pixel
 	int nbytes_;		// current bytes
+private:
+	void fps(int v);
+	double ini_ftime_;	// initial frametime
 };
 
 class StillDevice : public InputDevice {
@@ -174,6 +177,7 @@ void StillDevice::load_file(const char * const f)
 {
     FILE *fp;
     struct stat s;
+	size_t r;
     
     fp = fopen(f, "r");
     if (fp == (FILE *) NULL)
@@ -193,7 +197,7 @@ void StillDevice::load_file(const char * const f)
 		delete[] frame_; //SV-XXX: Debian
     
     frame_ = new char[len_ + 1];
-	fread(frame_, len_, 1, fp);
+	r = fread(frame_, len_, 1, fp);
 	debug_msg("Successfully loaded %s\n", f);
 
 	devstat_ = 0;	// device is now ready
@@ -290,20 +294,33 @@ int StillYuvGrabber::command(int argc, const char* const* argv)
     }
 
     if (argc == 3)
-    {
-        if (strcmp(argv[1], "q") == 0)
-        {
-            return (TCL_OK);
-        }
-        if (strcmp(argv[1], "decimate") == 0)
-        {
-            decimate_ = atoi(argv[2]);
-            setsize();
-            if (running_)
-                start();
-        }
-    }
-    return (Grabber::command(argc, argv));
+	{
+		if (strcmp(argv[1], "send") == 0) {
+			if (atoi(argv[2])) {
+				if (!running_) {
+				start();
+				running_ = 1;
+				}
+			} else {
+				if (running_) {
+				stop();
+				running_ = 0;
+				}
+			}
+			return (TCL_OK);
+		}
+		if (strcmp(argv[1], "fps") == 0)
+		{
+			fps(atoi(argv[2]));
+			return (TCL_OK);
+		}
+		if (strcmp(argv[1], "decimate") == 0)
+		{
+			decimate_ = atoi(argv[2]);
+			setsize();
+		}
+	}
+	return (Grabber::command(argc, argv));
 }
 
 StillYuvGrabber::StillYuvGrabber() :
@@ -322,8 +339,14 @@ StillYuvGrabber::~StillYuvGrabber()
 #endif
 }
 
+void StillYuvGrabber::fps(int v) {
+	Grabber::fps(v);
+	ini_ftime_ = 1e6 / double(v);
+}
+
 void StillYuvGrabber::start()
 {
+	target_->offset_ = stillYuv_ts_off_;
 	Grabber::start();
 }
 
@@ -357,11 +380,15 @@ int StillYuvGrabber::grab()
 #endif
 
 	// time measurement
-	target_->offset_ = stillYuv_ts_off_;
 	start_grab_ = stillYuv_now() - stillYuv_ts_off_;
 	fprintf(stderr, "start_grab\tnow: %f\n", start_grab_);
 
     int frc=0; //SV-XXX: gcc4 warns for initialisation
+
+	// check if Tx queue is growing too much.
+	// if so, we should suspend grabbing more frames.
+	if (target_->suspend_grabbing())
+	return (frc);
 
 	// "framesize_" is just the number of pixels, 
 	// so the number of bytes becomes "3 * framesize_ / 2"
