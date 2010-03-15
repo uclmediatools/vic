@@ -36,3 +36,6 @@ grep ALI trace.s | awk '{print $2" "$4}' > ALI.xg
 grep drop trace.s | awk '{print $2" "$4}' > drop.tr
 cc/tools/asv drop drop.tr
 rm drop.tr
+
+# tx queue len
+grep txq_end trace.s | awk '{print $2" "$4}' > txq.xg

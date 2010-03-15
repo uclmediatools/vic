@@ -19,6 +19,8 @@ plot \
 	"encs.xg" with impulses title "start encoding", \
 	"ence.xg" with impulses title "end encoding", \
 	"inXR.xg" with impulses title "ackvec arrival", \
+	"txq.xg"  with linespoints lw 2.5 pt 5 title "tx queue", \
+	"cwnd.xg" with linespoints lw 2.5 lc 9 pt 6 title "cwnd", \
 	"seqno.xg" ls 3 title "packet"
 
 EOF
@@ -41,6 +43,8 @@ plot \
 "encs.xg" with impulses title "start encoding", \
 "ence.xg" with impulses title "end encoding" lc 4 lt 1, \
 "inXR.xg" with impulses title "ackvec arrival" lt 1 lc 2, \
+"txq.xg"  with linespoints lw 2.5 lc 0 lt 1 pt 5 title "tx queue", \
+"cwnd.xg" with linespoints lw 2.5 lc 9 lt 1 pt 6 title "cwnd", \
 "seqno.xg" pt 4 lc 3 title "packet"
 
 EOF
@@ -73,7 +77,7 @@ set ylabel "cwnd"
 
 set mxtics 5
 set mytics 2
-set xrange [$1:$2]
+set xrange [0:]
 set yrange [0:]
 set grid xtics ytics mytics
 
@@ -90,7 +94,7 @@ set ylabel "ALI"
 
 set mxtics 5
 set mytics 2
-set xrange [$1:$2]
+set xrange [0:]
 set yrange [0:]
 set grid xtics ytics mytics
 
