@@ -125,7 +125,7 @@ class Module : public TclObject {
 
 	double offset_;
 	inline double offset() { return offset_; }
-	virtual bool suspend_grabbing() const {};
+	virtual bool suspend_grabbing() {};
 
     protected:
 	Module(int ft);

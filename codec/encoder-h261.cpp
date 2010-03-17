@@ -139,7 +139,7 @@ class H261Encoder : public TransmitterModule {
 	int vfno_;
 
 	// should we suspend grabbing?
-	bool suspend_grabbing();
+	virtual bool suspend_grabbing();
 
     protected:
 	H261Encoder(int ft);
