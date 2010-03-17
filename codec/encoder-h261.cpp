@@ -833,6 +833,8 @@ int H261PixelEncoder::consume(const VideoFrame *vf)
 	// (get the necessary stats before encoding) ---------------------*
 	// Tx queue size before entering this encoding
 	txq_beg_ = tx_->tx_buf_size();
+	fprintf(stderr, "   now: %f\ttxq_now: %d\n", 
+		h261_now()-offset(), txq_beg_);
 	// sent packets after the previous encoding round, 
 	// but before starting this encoding instance.
 	// -- these packets were sent from the Tx queue 
@@ -840,7 +842,8 @@ int H261PixelEncoder::consume(const VideoFrame *vf)
 	sent_more_ = txq_end_ - txq_beg_;
 
 	fprintf(stderr, "\tnow: %f\tsent: %d more: %d vf[%d]: %d\n",
-	h261_now()-offset(), num_sent_, sent_more_, vfno_%FHSIZE, ppframe_[vfno_%FHSIZE]);
+	h261_now()-offset(), num_sent_, sent_more_, 
+	vfno_%FHSIZE, ppframe_[vfno_%FHSIZE]);
 
 	// all encoded packets associated with 
 	// the previously captured frame have been sent 
@@ -877,7 +880,7 @@ int H261PixelEncoder::consume(const VideoFrame *vf)
 	// (these Tx'd packets may include the previous frame(s).)
 	num_sent_ = ppframe_[vfno_%FHSIZE] - txq_dif_;
 
-	fprintf(stderr, "   now: %f\ttxq_end: %d\tdif: %d\n", 
+	fprintf(stderr, "   now: %f\ttxq_now: %d\tdif: %d\n", 
 		h261_now()-offset(), txq_end_, txq_dif_);
 
 	fprintf(stderr, "   now: %f\tenc_time: %f\n\n", 

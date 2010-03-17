@@ -38,4 +38,4 @@ cc/tools/asv drop drop.tr
 rm drop.tr
 
 # tx queue len
-grep txq_end trace.s | awk '{print $2" "$4}' > txq.xg
+grep txq_now trace.s | awk '{print $2" "$4}' > txq.xg
