@@ -96,7 +96,7 @@ public:
 
 class IPNetwork : public Network {
     public:
-		IPNetwork() : Network(*(new IPAddress), *(new IPAddress), *(new IPAddress)), local_preset(0) {;}
+		IPNetwork() : Network(*(new IPAddress), *(new IPAddress), *(new IPAddress)), local_preset_(0) {;}
 	virtual int command(int argc, const char*const* argv);
 	virtual void reset();
 	virtual Address* alloc(const char* name) { 
@@ -111,17 +111,18 @@ class IPNetwork : public Network {
     		return (result);
   	}
     protected:
-	struct sockaddr_in sin;
+	struct sockaddr_in sin_;//Sockaddr setup in ssock, used by sendto in dosend
+	time_t last_reset_;
+	int    local_preset_;// Indicates if local_ has been set on cmd line
+
 	virtual int dorecv(u_char* buf, int len, Address &from, int fd);
 	int open(const char * host, int port, int ttl);
 	int close();
 	int localname(sockaddr_in*);
-	int local_preset;  // Indicates if local_ has been set on cmd line
 	int openssock(Address & addr, u_short port, int ttl);
 	int disconnect_sock(int fd);
 	int openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, Address & local);
 	void dosend(u_char* buf, int len, int fd);
-	time_t last_reset_;
 };
 
 static class IPNetworkMatcher : public Matcher {
@@ -210,7 +211,7 @@ int IPNetwork::command(int argc, const char*const* argv)
 			int ttl = atoi(argv[4]);
 			if (strlen(tcl.attr("ifAddr"))>1) {
 				(IPAddress&)local_ = tcl.attr("ifAddr");
-				local_preset=1;
+				local_preset_=1;
                         }
 			if (open(argv[2], port, ttl) < 0)
 				tcl.result("0");
@@ -297,7 +298,7 @@ int IPNetwork::localname(sockaddr_in* p)
 #endif
 
 	// Use Local interface name if already set via command line
-	if (local_preset) {
+	if (local_preset_) {
 		p->sin_addr.s_addr=(IPAddress&)local_;
 		debug_msg("Setting localname from cmd line:%s\n",(const char*)local_);
 		return (0);
@@ -335,6 +336,7 @@ void IPNetwork::reset()
 int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, Address & local)
 {
 	int fd;
+        struct sockaddr_in sin;
 
 	u_int32_t g_addri = (IPAddress&)g_addr;
 	u_int32_t g_addri_ssm = (IPAddress&)s_addr_ssm;
@@ -382,6 +384,7 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
 		if (bind(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
 			sin.sin_addr.s_addr = INADDR_ANY;
 			if (bind(fd, (struct sockaddr*)&sin, sizeof(sin)) < 0) {
+                                debug_msg("Error binding Recv mcast socket\n");
 				perror("bind");
 				exit(1);
 			}
@@ -422,7 +425,7 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
 		struct ip_mreq mr;
 
 		mr.imr_multiaddr.s_addr = g_addri;
-		if (local_preset) {
+		if (local_preset_) {
 		    mr.imr_interface.s_addr = locali;
 		    if (setsockopt(fd, IPPROTO_IP,IP_ADD_MEMBERSHIP, 
 				    (char *)&mr, sizeof(mr)) < 0) {
@@ -449,9 +452,10 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
 		 */
 		sin.sin_addr.s_addr = locali;
 		if (bind(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
+                        debug_msg("Error binding Recv ucast socket\n");
 			perror("bind");
-            ::close(fd);
-            return (-1);
+                        ::close(fd);
+                        return (-1);
 		}
 		/*
 		 * Despite several attempts on our part to get this fixed,
@@ -516,27 +520,28 @@ int IPNetwork::openssock(Address & addr, u_short port, int ttl)
 	}
 #endif
 
-	memset((char *)&sin, 0, sizeof(sin));
-	sin.sin_family = AF_INET;
-	sin.sin_port = port;
-	sin.sin_addr.s_addr = INADDR_ANY;
-	if (bind(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
-	  sin.sin_port = 0;
-	  if (bind(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
+	memset((char *)&sin_, 0, sizeof(sin_));
+	sin_.sin_family = AF_INET;
+	sin_.sin_port = port;
+	sin_.sin_addr.s_addr = INADDR_ANY;
+	if (bind(fd, (struct sockaddr *)&sin_, sizeof(sin_)) < 0) {
+	  sin_.sin_port = 0;
+	  if (bind(fd, (struct sockaddr *)&sin_, sizeof(sin_)) < 0) {
+              debug_msg("Error binding send socket\n");
 	      perror("bind");
 	      exit(1);
 	  }
 	}
 
-	memset((char *)&sin, 0, sizeof(sin));
-	sin.sin_family = AF_INET;
-	sin.sin_port = port;
-	sin.sin_addr.s_addr = addri;
+	memset((char *)&sin_, 0, sizeof(sin_));
+	sin_.sin_family = AF_INET;
+	sin_.sin_port = port;
+	sin_.sin_addr.s_addr = addri;
 
-	/* Connect() is useful for localname() call to find the iface addr being used
-	 * Because of a problem with OSX we disconnect this socket once localname() has 
-	 * found out the ip address of the interface */
- 	if (connect(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
+	/* Connect() is useful for localname() to find the interface addr
+         * being used. Also because of a problem with OSX we disconnect this
+         * socket once localname() has found out the ip addr of the iface */
+ 	if (connect(fd, (struct sockaddr *)&sin_, sizeof(sin_)) < 0) {
 		perror("connect");
 		exit(1);
 	}
@@ -572,7 +577,7 @@ int IPNetwork::openssock(Address & addr, u_short port, int ttl)
 		/* Slightly nasty one here - set Mcast iface if local inteface
 		 * is specified on command line
 		 */
-		if (local_preset) {
+		if (local_preset_) {
 			u_int32_t locali = (IPAddress&)local_;
 			if (setsockopt(fd, IPPROTO_IP, IP_MULTICAST_IF,
 						   (char*)&locali, sizeof(locali)) < 0) {
@@ -603,6 +608,8 @@ you must specify a unicast destination\n");
 
 int IPNetwork::disconnect_sock(int fd)
 {
+        struct sockaddr_in sin;
+
 	memset((char *)&sin, 0, sizeof(sin));
 	sin.sin_family = AF_UNSPEC;
 	return connect(fd, (struct sockaddr *)&sin, sizeof(sin));
@@ -634,7 +641,7 @@ int IPNetwork::dorecv(u_char* buf, int len, Address & from, int fd)
 
 void IPNetwork::dosend(u_char* buf, int len, int fd)
 {
-	int cc = ::sendto(fd, (char*)buf, len, 0, (struct sockaddr *)&sin, sizeof(sin));
+	int cc = ::sendto(fd, (char*)buf, len, 0, (struct sockaddr *)&sin_, sizeof(sin_));
 	if (cc < 0) {
 		switch (errno) {
 		case ECONNREFUSED:
