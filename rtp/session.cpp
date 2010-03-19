@@ -497,7 +497,14 @@ int SessionManager::build_sdes(rtcphdr* rh, Source& ls)
 		nameslot = RTCP_SDES_NAME;
 		noteslot = RTCP_SDES_NAME;
 	}
+
 	u_int seq = (++sdes_seq_) & 0x7;
+	// if loc is set as a tcl resource, change to use 10 different packets
+	// with loc on the last even one
+	const char* loc = ls.sdes(RTCP_SDES_LOC);
+	if ( loc && *loc )
+		seq = sdes_seq_ % 10;
+
 	switch (seq) {
 
 	case 0:  case 4:
@@ -509,6 +516,9 @@ int SessionManager::build_sdes(rtcphdr* rh, Source& ls)
 		break;
 	case 6:
 		p = build_sdes_item(p, RTCP_SDES_TOOL, ls);
+		break;
+	case 8:
+		p = build_sdes_item(p, RTCP_SDES_LOC, ls);
 		break;
 	default:
 		p = build_sdes_item(p, nameslot, ls);

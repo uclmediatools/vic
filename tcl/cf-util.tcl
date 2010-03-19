@@ -134,6 +134,7 @@ proc init_late {} {
 	$src sdes email [resource rtpEmail]
 	$src sdes note [resource rtpNote]
 	$src sdes cname $cname
+	$src sdes loc [resource loc]
 	set tool $V(app)-[version]
 	global tcl_platform
 	if {[info exists tcl_platform(os)] && $tcl_platform(os) != "" && \
