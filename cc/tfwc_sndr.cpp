@@ -127,7 +127,11 @@ TfwcSndr::TfwcSndr() :
 	t_srtt_ = int(srtt_init_/tcp_tick_) << T_SRTT_BITS;
 	t_rttvar_ = int(rttvar_init_/tcp_tick_) << T_RTTVAR_BITS;
 
-	prevno_ = 0;
+	// allocate previously received ackvec in memory
+	pvec_ = (u_int16_t *)malloc(sizeof(u_int16_t) * num_vec_);
+	clear_pvec(num_vec_);
+	__jacked_ = 0;
+	__begins_ = 0;
 }
 
 void TfwcSndr::tfwc_sndr_send(int seqno, double now, double offset) {
@@ -144,9 +148,9 @@ void TfwcSndr::tfwc_sndr_send(int seqno, double now, double offset) {
 	//	now_, seqno_%TSZ, tsvec_[seqno_%TSZ]);
 
 	// sequence number must be greater than zero
-	//assert (seqno_ > 0);
+	assert (seqno_ > 0);
 	// number of total data packet sent
-	//ndtp_++;
+	ndtp_++;
 	
 	// set retransmission timer
 	set_rtx_timer();
@@ -158,102 +162,152 @@ void TfwcSndr::tfwc_sndr_send(int seqno, double now, double offset) {
 void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		u_int16_t *chunk, double so_rtime)
 {
+switch (type) {
+// retrieve ackvec
+case XR_BT_1: 
+  {
 	// number of ack received
-	//nakp_++;
+	nakp_++;
+	// so_timestamp (timestamp for packet reception)
+	so_recv_ = so_rtime;
+	// packet reordering?
+	bool reorder = false;
 
 	// get start/end seqno that this XR chunk reports
 	begins_ = begin;	// lowest packet seqno
 	ends_ = end;		// highest packet seqno plus one
 
-	// so_timestamp (timestamp for packet reception)
-	so_recv_ = so_rtime;
+	// just acked seqno 
+	// i.e.,) head seqno(= highest seqno) of this ackvec
+	jacked_ = ends_ - 1;
 
 	// get the number of AckVec chunks
 	//   use seqno space to work out the num chunks
 	//   (add one to num unless exactly divisible by BITLEN
 	//   - so it is large enough to accomodate all the bits
-	num_elm_ = ends_ - begins_;
-	num_vec_ = num_elm_/BITLEN + (num_elm_%BITLEN > 0);
+	num_elm_ = get_numelm(begins_, jacked_);
+	num_vec_ = get_numvec(num_elm_);
 
-	// retrieve ackvec
-	if (type == XR_BT_1) {
-		// just acked seqno 
-		// i.e.,) head seqno(= highest seqno) of this ackvec
-		jacked_ = ends_ - 1;
-		if (jacked_ < prevno_)
+	// declared AckVec
+	ackv_ = (u_int16_t *) malloc (sizeof(u_int16_t) * num_vec_);
+	// clear the existing AckVec
+	clear_ackv(num_vec_);
+	// clone AckVec from Vic
+	clone_ackv(chunk, num_vec_);
+
+	// packet reorder detection
+	int shift = 0;
+	if (jacked_ < __jacked_) {
 		debug_msg("warning: packet reordering occurred!\n");
-
-		// declared AckVec
-		ackv_ = (u_int16_t *) malloc (sizeof(u_int16_t) * num_vec_);
-		// clear the existing AckVec
-		clear_ackv(num_vec_);
-		// clone AckVec from Vic 
-		clone_ackv(chunk, num_vec_);
-
-		//fprintf(stderr, 
-		//"    [%s +%d] begins: %d ends: %d jacked: %d\n", 
-		//		__FILE__, __LINE__, begins_, ends_, jacked_);
-
-		// generate seqno vector
-		gen_seqvec(ackv_, num_vec_);
-
-		// generate margin vector
-		marginvec(jacked_);
-		print_mvec();
-
-		// generate reference vector
-		// (it represents seqvec when there are no losses)
-		// 	@begin: aoa_+1 (lowest seqno)
-		// 	@end: mvec_[DUPACKS-1] - 1
-		gen_refvec(mvec_[DUPACKS-1]-1, aoa_+1);
-
-		// TFWC is not turned on (i.e., no packet loss yet)
-		if(!is_tfwc_on_) {
-			if(detect_loss()) {
-				is_tfwc_on_ = true;
-				dupack_action();
-				ts_ = tsvec_[first_lost_pkt_%TSZ];
-			} else {
-				// TCP-like AIMD control
-				cwnd_ += 1;
-			}
-		} 
-		// TFWC is turned on, so control that way
-		else {
-			control();
+		if(jacked_ < aoa_) {
+			debug_msg("warning: this ack is older than AoA!\n");
+			return;
 		}
-		fprintf(stderr, "\tnow: %f\tcwnd: %d\n", so_recv_, cwnd_);
-
-		// set ackofack (real number)
-		aoa_ = ackofack(); 
-
-		// update RTT with the sampled RTT
-		tao_ = so_recv_ - tsvec_[jacked_%TSZ];
-		update_rtt(tao_);
-		fprintf(stderr, "\t<< now_: %f tsvec_[%d]: %f rtt: %f srtt: %f\n", 
-			so_recv_, jacked_%TSZ, tsvec_[jacked_%TSZ], tao_, srtt_);
-
-		// is TFWC being driven by timeout mechanism?
-		if(to_driven_ && is_tfwc_on_)
-			new_rto(tao_);
-
-		// initialize variables for the next pkt reception
-		free(ackv_);
-		init_var();
+		shift = __jacked_ - jacked_;
+		// restore the previous state variables
+		replace(__begins_, __jacked_);
+		num_elm_ = get_numelm(begins_, jacked_);
+		num_vec_ = get_numvec(num_elm_);
+		reorder = true;
 	}
-	// retrieve ts echo
-	else if (type == XR_BT_3) {
-		ntep_++;		// number of ts echo packet received
-
-		ts_echo_ = chunk[num_vec_ - 1];
-		fprintf(stderr,
-		"    [%s +%d] ts echo:	%f\n", __FILE__,__LINE__, ts_echo_);
-
-		tao_ = now() - ts_echo_;
-
-		// update RTT
-		//update_rtt(tao_);
+	else {
+		free(pvec_);
 	}
+
+	//fprintf(stderr, 
+	//"    [%s +%d] begins: %d ends: %d jacked: %d\n", 
+	//		__FILE__, __LINE__, begins_, ends_, jacked_);
+
+	// if packet reordering occurred, insert re-ordered seqno
+	// into the received ackvec using previously received ackvec
+	if(reorder) {
+		for (int i = 0; i < num_vec_; i++) {
+		ackv_[i] = (ackv_[i] << shift) | pvec_[i];
+		}
+	}
+
+	// generate seqno vector
+	gen_seqvec(ackv_, num_vec_);
+
+	// generate margin vector
+	marginvec(jacked_);
+	print_mvec();
+
+	// generate reference vector
+	// (it represents seqvec when there are no losses)
+	// 	@begin: aoa_+1 (lowest seqno)
+	// 	@end: mvec_[DUPACKS-1] - 1
+	gen_refvec(mvec_[DUPACKS-1]-1, aoa_+1);
+
+	// TFWC is not turned on (i.e., no packet loss yet)
+	if(!is_tfwc_on_) {
+		if(detect_loss()) {
+			is_tfwc_on_ = true;
+			dupack_action();
+			ts_ = tsvec_[first_lost_pkt_%TSZ];
+		} else {
+			// TCP-like AIMD control
+			cwnd_ += 1;
+		}
+	} 
+	// TFWC is turned on, so control that way
+	else {
+		control();
+	}
+	fprintf(stderr, "\tnow: %f\tcwnd: %d\n", so_recv_, cwnd_);
+
+	// set ackofack (real number)
+	aoa_ = ackofack(); 
+
+	// sampled RTT
+	if(!reorder)
+	tao_ = so_recv_ - tsvec_[jacked_%TSZ];
+	// update RTT with the sampled RTT
+	update_rtt(tao_);
+	fprintf(stderr, "\t<< now_: %f tsvec_[%d]: %f rtt: %f srtt: %f\n", 
+		so_recv_, jacked_%TSZ, tsvec_[jacked_%TSZ], tao_, srtt_);
+
+	// is TFWC being driven by timeout mechanism?
+	if(to_driven_ && is_tfwc_on_)
+		new_rto(tao_);
+	
+	// reset variables for the next pkt reception
+	reset_var();
+  }
+  break;
+
+// retrieve ts echo
+case XR_BT_3:
+  {
+	ntep_++;		// number of ts echo packet received
+	ts_echo_ = chunk[num_vec_ - 1];
+	//fprintf(stderr, "    [%s +%d] ts echo:	%f\n", 
+	//	__FILE__,__LINE__, ts_echo_);
+
+	tao_ = now() - ts_echo_;
+  }
+  break;
+
+default:
+  break;
+} // end switch (type)
+return;
+}
+
+void TfwcSndr::reset_var() {
+	num_missing_ = 0;
+
+	// store jack'ed and begins
+	store(begins_, jacked_);
+	// declare pvec to store ackv
+	pvec_ = (u_int16_t *)malloc(sizeof(u_int16_t) * num_vec_);
+	clear_pvec(num_vec_);
+	// store ackv
+	copy_ackv(num_vec_);
+	//print_vec(pvec_, num_vec_);
+
+	// finally, free ackvec
+	free(ackv_);
 }
 
 /*

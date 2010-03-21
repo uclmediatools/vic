@@ -130,11 +130,8 @@ protected:
 	// generate reference seqno
 	void gen_refvec(int end, int begin);
 
-	// init variables
-	inline void init_var() {
-		num_missing_ = 0;
-		prevno_ = jacked_;
-	}
+	// reset variables
+	void reset_var();
 
 	// get the first position in ackvec where 1 is marked
 	inline u_int16_t get_head_pos(u_int16_t ackvec) {
@@ -177,6 +174,13 @@ protected:
 			fprintf(stderr, " %d", seqvec_[i]);
 		fprintf(stderr, " )\n");
 	}
+	// print vec
+	inline void print_vec(u_int16_t *vec, int numelm) {
+		fprintf(stderr, "\t(");
+		for (int i = 0; i < numelm; i++)
+			fprintf(stderr, " %d", vec[i]);
+		fprintf(stderr, " )\n");
+	}
 
 	// retransmission timer
 	TfwcRtxTimer rtx_timer_;
@@ -186,7 +190,7 @@ protected:
 
 	int mvec_[DUPACKS]; // margin vec (simulatinmg TCP 3 dupacks)
 	u_int16_t *ackv_;	// received AckVec (from TfwcRcvr)
-	u_int32_t pvec_;	// sent packet list
+	u_int16_t *pvec_;	// previous (stored) AckVec
 	u_int16_t aoa_;		// ack of ack
 	u_int32_t t_now_;	// the time when the data packet sent
 	u_int32_t t_ts_;		// time stamp (u_int32_t type)
@@ -237,6 +241,12 @@ private:
 			ackv_[i] = ntohs(c[i]);
 	}
 
+	// copy AckVec to store
+	inline void copy_ackv(int n) {
+		for(int i = 0; i < n; i++)
+			pvec_[i] = ackv_[i];
+	}
+
 	// clear timestamp vector
 	inline void clear_tsv (int n) {
 		for (int i = 0; i < n; i++)
@@ -255,10 +265,36 @@ private:
 			ackv_[i] = 0;
 	}
 
+	// clear ackvec
+	inline void clear_pvec (int n) {
+		for (int i = 0; i < n; i++)
+			pvec_[i] = 0;
+	}
+
 	// clear refvec
 	inline void clear_refv (int n) {
 		for (int i = 0; i < n; i++)
 			refvec_[i] = 0;
+	}
+
+	// number of ackvec chunks
+	inline int get_numvec(int n) {
+		return (n/BITLEN + (n%BITLEN > 0));	
+	}
+
+	// number of ackvec elements
+	inline int get_numelm (int begin, int end) {
+		return (end - begin + 1);
+	}
+
+	// replace jack'ed and begins from the previous ackvec
+	inline void replace (u_int16_t lowest, u_int16_t highest) {
+		begins_ = lowest; jacked_ = highest;
+	}
+
+	// store jack'ed and begins
+	inline void store (u_int16_t lowest, u_int16_t highest) {
+		__begins_ = lowest; __jacked_ = highest;
 	}
 
 	int ndtp_;		// number of data packet sent
@@ -328,8 +364,9 @@ private:
 	double t0_;		// t0 value at TCP throughput equation
 	double tcp_tick_;
 
-	// other variables
-	u_int16_t prevno_;	// previous highest packet sequence number
+	// highest/lowest packet sequence numbers (prev ackvec)
+	u_int16_t __jacked_;	// previous highest packet sequence number
+	u_int16_t __begins_;	// previous lowest packet sequence number
 };
 
 #endif
