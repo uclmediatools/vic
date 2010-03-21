@@ -629,16 +629,7 @@ public:
 };
 
 // Instantiate the video capture device.
-#if 1
-// this doesn't work with MacOS X 10.3 (QuickTime pthread problem),
-// but works fine with 10.4 
 static MacOSXScanner find_capture_devices;
-#else
-// this C function is called from main as a workaround for MacOS X 10.3
-extern "C" void find_macosx_capture_devices(void) {
-    MacOSXScanner macOSXScanner;
-}
-#endif
 
 MacOSXScanner::MacOSXScanner()
 {

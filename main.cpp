@@ -46,12 +46,6 @@ static const char rcsid[] =
 #include <string.h>
 #include <ctype.h>
 
-
-#if 0
-   // XXX - MacOS X 10.3 Ptheard workaround
-   extern "C" void find_macosx_capture_devices(void);
-#endif
-
 #ifdef WIN32
 //#include <winsock.h>
 #include <process.h>
@@ -498,10 +492,6 @@ int main(int argc, const char** argv)
 	opterr = 1;
 #endif
 
-#if 0
-       // XXX - MacOS X 10.3 Ptheard workaround
-       find_macosx_capture_devices();
-#endif
 	// Option list; If letter is followed by ':' then it takes an argument
 	const char* options = 
 		"A:B:C:c:D:d:f:F:HI:i:j:K:lL:M:m:N:n:o:Pq:rsST:t:U:u:vV:w:x:X:y";
