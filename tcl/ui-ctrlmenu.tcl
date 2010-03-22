@@ -1683,7 +1683,8 @@ proc select_format fmt {
 
 	set proc $fmt\_setq
 	if [inList $proc [info commands *_setq]] {
-		$qscale configure -state normal -command $proc
+		#$qscale configure -state normal -command $proc
+		$qscale configure -command $proc
 		$qlabel configure -foreground black
 	} else {
 		$qscale configure -state disabled 
