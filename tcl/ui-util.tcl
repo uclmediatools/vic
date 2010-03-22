@@ -321,6 +321,8 @@ proc updateName { w name } {
 proc print_input_device_details {} {
 	global inputDeviceList
 
+	puts ""
+	puts ""
 	foreach v $inputDeviceList {
 		if {[$v attributes] != "disabled" &&
 			"[$v nickname]" != "still" && "[$v nickname]" != "filedev" } {
@@ -355,5 +357,6 @@ proc print_input_device_details {} {
 			puts "\}"
 		}
 	}
+	puts ""
 }
 
