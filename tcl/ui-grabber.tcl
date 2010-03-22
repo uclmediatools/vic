@@ -190,6 +190,52 @@ proc build.v4l2 w {
     pack $w.f -expand 1 -fill x
 }
 
+proc build.decklink w {
+    global setSoftwareScale softwareScaleButtons
+
+    label $w.title -text "Blackmagic DeckLink-Grabber"
+    frame $w.f -relief sunken -borderwidth 2
+
+    label $w.f.scaling -text "Software Scaling : "
+
+    if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
+        ttk::radiobutton $w.f.b0 -text "none" -command "restart" \
+           -variable setSoftwareScale -value "none"
+        ttk::radiobutton $w.f.b1 -text "960p" -command "restart" \
+            -variable setSoftwareScale -value "960p"
+        ttk::radiobutton $w.f.b2 -text "720p" -command "restart" \
+            -variable setSoftwareScale -value "720p"
+        ttk::radiobutton $w.f.b3 -text "576p" -command "restart" \
+            -variable setSoftwareScale -value "576p"
+        ttk::radiobutton $w.f.b4 -text "480p" -command "restart" \
+            -variable setSoftwareScale -value "480p"
+    } else {
+        set f [smallfont]
+        radiobutton $w.f.b0 -text "none" -command "restart" \
+            -padx 0 -pady 0 \
+            -anchor w -variable setSoftwareScale -font $f -relief flat -value "none"
+        radiobutton $w.f.b1 -text "960p" -command "restart" \
+            -padx 0 -pady 0 \
+            -anchor w -variable setSoftwareScale -font $f -relief flat -value "960p"
+        radiobutton $w.f.b2 -text "720p" -command "restart" \
+            -padx 0 -pady 0 \
+            -anchor w -variable setSoftwareScale -font $f -relief flat -value "720p"
+        radiobutton $w.f.b3 -text "576p" -command "restart" \
+            -padx 0 -pady 0 \
+            -anchor w -variable setSoftwareScale -font $f -relief flat -value "576p"
+        radiobutton $w.f.b4 -text "480p" -command "restart" \
+            -padx 0 -pady 0 \
+            -anchor w -variable setSoftwareScale -font $f -relief flat -value "480p"
+    }
+    pack $w.f.scaling $w.f.b0 $w.f.b1 $w.f.b2 $w.f.b3 $w.f.b4 -fill x -side left
+
+    pack $w.title $w.f -fill x -expand 1
+
+    set setSoftwareScale "none"
+    set softwareScaleButtons $w.f
+    set_software_scale_buttons_state
+}
+
 proc build.meteor w {
 #
 # The meteor has the same controls as the slicvideo, so just call that
@@ -646,6 +692,21 @@ proc build.still w {
     pack $w.title $w.f -fill x -expand 1
     
     pack $w.f.label -side left 
+    pack $w.f.entry -side left -fill x -expand 1
+}
+
+proc build.stilldev w {
+    set f [smallfont]
+    label $w.title -text "FileGrabber"
+
+    frame $w.f -relief sunken -borderwidth 2
+    label $w.f.label  -font $f -anchor e -text "File"
+
+    mk.entry $w.f set.still.frame "frame"
+
+    pack $w.title $w.f -fill x -expand 1
+
+    pack $w.f.label -side left
     pack $w.f.entry -side left -fill x -expand 1
 }
 
