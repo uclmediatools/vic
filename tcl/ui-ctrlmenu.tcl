@@ -1802,10 +1802,10 @@ proc init_grabber { grabber } {
 	# is called otherwise the channel device's input may be busy
 	if {[windowingsystem] == "aqua"} {
 		if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
-			$portButton instate {active} {
+			$portButton instate {!disabled} {
 				$grabber port $inputPort
 			}
-			$typeButton instate {active} {
+			$typeButton instate {!disabled} {
 				$grabber type $inputType
 			}
 		} else {
