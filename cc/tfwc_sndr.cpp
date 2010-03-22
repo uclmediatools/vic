@@ -172,6 +172,8 @@ case XR_BT_1:
 	so_recv_ = so_rtime;
 	// packet reordering?
 	bool reorder = false;
+	// reordered ack delivery?
+	bool outofack = false;
 
 	// get start/end seqno that this XR chunk reports
 	begins_ = begin;	// lowest packet seqno
@@ -180,6 +182,10 @@ case XR_BT_1:
 	// just acked seqno 
 	// i.e.,) head seqno(= highest seqno) of this ackvec
 	jacked_ = ends_ - 1;
+
+	//fprintf(stderr, 
+	//"    [%s +%d] begins: %d ends: %d jacked: %d\n", 
+	//	__FILE__, __LINE__, begins_, ends_, jacked_);
 
 	// get the number of AckVec chunks
 	//   use seqno space to work out the num chunks
@@ -195,28 +201,39 @@ case XR_BT_1:
 	// clone AckVec from Vic
 	clone_ackv(chunk, num_vec_);
 
-	// packet reorder detection
+	// detect packet reordering and reordered ack delivery
 	int shift = 0;
 	if (jacked_ < __jacked_) {
-		debug_msg("warning: packet reordering occurred!\n");
+		// this ack is deprecated message (e.g., too old).
 		if(jacked_ < aoa_) {
-			debug_msg("warning: this ack is older than AoA!\n");
-			return;
+		  debug_msg("warning: this ack is older than AoA!\n");
+		  return;
 		}
-		shift = __jacked_ - jacked_;
-		// restore the previous state variables
-		replace(__begins_, __jacked_);
-		num_elm_ = get_numelm(begins_, jacked_);
-		num_vec_ = get_numvec(num_elm_);
-		reorder = true;
+		// this ack is delivered out-of-order
+		else if(begins_ <= aoa_) {
+		  debug_msg("warning: this ack itself is out-of-order!\n");
+		  outofack = true;
+		  // cwnd process
+		  if(is_tfwc_on_) control();
+		  else cwnd_++;
+		  // update RTT using previously sampled RTT
+		  update_rtt(tao_);
+		  return;
+		}
+		// packet is out-of-order
+		else {
+		  debug_msg("warning: packet reordering occurred!\n");
+		  shift = __jacked_ - jacked_;
+		  // restore the previous state variables
+		  replace(__begins_, __jacked_);
+		  num_elm_ = get_numelm(begins_, jacked_);
+		  num_vec_ = get_numvec(num_elm_);
+		  reorder = true;
+		}
 	}
 	else {
 		free(pvec_);
 	}
-
-	//fprintf(stderr, 
-	//"    [%s +%d] begins: %d ends: %d jacked: %d\n", 
-	//		__FILE__, __LINE__, begins_, ends_, jacked_);
 
 	// if packet reordering occurred, insert re-ordered seqno
 	// into the received ackvec using previously received ackvec
@@ -227,6 +244,7 @@ case XR_BT_1:
 	}
 
 	// generate seqno vector
+	//print_vec(ackv_, num_vec_);
 	gen_seqvec(ackv_, num_vec_);
 
 	// generate margin vector
@@ -264,8 +282,6 @@ case XR_BT_1:
 	tao_ = so_recv_ - tsvec_[jacked_%TSZ];
 	// update RTT with the sampled RTT
 	update_rtt(tao_);
-	fprintf(stderr, "\t<< now_: %f tsvec_[%d]: %f rtt: %f srtt: %f\n", 
-		so_recv_, jacked_%TSZ, tsvec_[jacked_%TSZ], tao_, srtt_);
 
 	// is TFWC being driven by timeout mechanism?
 	if(to_driven_ && is_tfwc_on_)
@@ -456,6 +472,9 @@ void TfwcSndr::update_rtt(double rtt_sample) {
 	// 'rto' could be rounded by 'maxrto'
 	if (rto_ > maxrto_)
 		rto_ = maxrto_;
+
+	fprintf(stderr, "\t<< now_: %f tsvec_[%d]: %f rtt: %f srtt: %f\n", 
+		so_recv_, jacked_%TSZ, tsvec_[jacked_%TSZ], tao_, srtt_);
 }
 
 /*

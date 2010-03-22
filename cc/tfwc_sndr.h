@@ -175,9 +175,9 @@ protected:
 		fprintf(stderr, " )\n");
 	}
 	// print vec
-	inline void print_vec(u_int16_t *vec, int numelm) {
+	inline void print_vec(u_int16_t *vec, int c) {
 		fprintf(stderr, "\t(");
-		for (int i = 0; i < numelm; i++)
+		for (int i = 0; i < c; i++)
 			fprintf(stderr, " %d", vec[i]);
 		fprintf(stderr, " )\n");
 	}
