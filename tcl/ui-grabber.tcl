@@ -24,6 +24,10 @@
 # ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
 # FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
 
+# init_grabber_panel if invoked ensures ui-grabber.tcl gets sourced
+proc init_grabber_panel {} {
+}
+
 proc build.dc10 w {
     build.v4l $w
 }
