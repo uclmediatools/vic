@@ -129,7 +129,7 @@ extern "C" int gethostname(char* name, int len);
 }
 #endif
 
-	static void
+static void
 usage(char *szOffending)
 {
 	char win_usage[] = "\
@@ -146,7 +146,8 @@ Options: vic [-HPs] [-A nv|ivs|rtp] [-B maxbps] [-C conf]\n\
 	\t[-f bvc|cellb|h261|jpeg|nv|mpeg4|h264] [-F maxfps] [-i ifAddr ] [-I channel]\n\
 	\t[-K key ] [-L flowLabel (ip6 only)] [-l (creates log file)]\n\
 	\t[-M colormap] [-m mtu] [-N session] [-n atm|ip|ip6|rtip]\n\
-	\t[-o clipfile] [-t ttl] [-U interval] [-u script] [-v version] [-V visual]\n\
+	\t[-o clipfile] [-Q (queries and lists input devices)] [-t ttl]\n\ 
+	\t[-U interval] [-u script] [-v version] [-V visual]\n\
 	\t[-x ifIndex (ip6 only)] [-X resource=value] [-j numlayers] dest/port[/fmt/ttl]\n";
 
 	if (szOffending == NULL) {
@@ -177,7 +178,7 @@ static class UsageCommand : public TclObject {
 } cmd_usage;
 
 #ifndef SIGARGS
-#if defined(__SUNPRO_CC) || defined(Linux) || defined(__FreeBSD__)
+#if defined(__SUNPRO_CC) || defined(Linux) || defined(__FreeBSD__) || defined(WIN32)
 #define SIGARGS int arg
 #else
 #define SIGARGS ... 
@@ -410,6 +411,40 @@ heuristic_random()
 	return (out[0] ^ out[1] ^ out[2] ^ out[3]);
 }
 
+#ifdef WIN32
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION == 0)
+int
+SimplePutsCmd(ClientData clientData, Tcl_Interp *interp, int argc, char **argv)
+#else
+int
+SimplePutsCmd(ClientData clientData, Tcl_Interp *interp, int argc, const char **argv)
+#endif
+{
+	int i, newline;
+
+	i = 1;
+	newline = 1;
+	if ((argc >= 2) && (strcmp(argv[1], "-nonewline") == 0)) {
+		newline = 0;
+		i++;
+	}
+	printf("%s", argv[i]);
+	if (newline) printf("\n");
+
+	return TCL_OK;
+}
+#endif
+
+void print_input_device_details(Tcl& tcl)
+{
+#ifdef WIN32
+	tcl.CreateCommand("puts", SimplePutsCmd, NULL);
+#endif
+
+	tcl.evalc("print_input_device_details");
+	exit(0);
+}
+
 void loadbitmaps(Tcl_Interp* tcl)
 {
 	static char rev[] = {
@@ -494,7 +529,7 @@ int main(int argc, const char** argv)
 
 	// Option list; If letter is followed by ':' then it takes an argument
 	const char* options = 
-		"A:B:C:c:D:d:f:F:HI:i:j:K:lL:M:m:N:n:o:Pq:rsST:t:U:u:vV:w:x:X:y";
+		"A:B:C:c:D:d:f:F:HI:i:j:K:lL:M:m:N:n:o:Pq:QrsST:t:U:u:vV:w:x:X:y";
 	/* process display and window (-use) options before initialising tcl/tk */
 	char buf[256], tmp[256];
 	const char *display=0, *use=0;
@@ -679,6 +714,10 @@ int main(int argc, const char** argv)
 		case 'q':
 			tcl.add_option("jpegQfactor", optarg);
 			break;
+
+        case 'Q':
+            print_input_device_details(tcl);
+            break;
 
 		case 'r':
 			tcl.add_option("relateInterface","true");
