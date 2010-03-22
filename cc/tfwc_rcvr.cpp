@@ -58,14 +58,24 @@ TfwcRcvr::TfwcRcvr() :
 void TfwcRcvr::tfwc_rcvr_recv_aoa(u_int16_t type, u_int16_t *chunk)
 {
 	int num_chunks = 1;
-	if (type == XR_BT_1) {
-		// received ackofack 
-		ackofack_ = ntohs(chunk[num_chunks-1]);
-	}
-	else if (type == XR_BT_2) {
-		// set timestamp echo
-		ts_echo_ = chunk[num_chunks-1];
-	}
+	switch (type) {
+	case XR_BT_1:
+	  {
+	  // received ackofack 
+	  ackofack_ = ntohs(chunk[num_chunks-1]);
+	  }
+	  break;
+	case XR_BT_3:
+	  {
+	  // set timestamp echo
+	  ts_echo_ = chunk[num_chunks-1];
+	  }
+	  break;
+	default:
+	  break;
+	} // end switch (type)
+
+	return;
 }
 
 // retrieve data packet sequence number from RTP data channel
