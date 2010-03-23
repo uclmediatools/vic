@@ -52,12 +52,16 @@ TfwcRcvr::TfwcRcvr() :
 	// tfwcAV (bit vector)
 	tfwcAV = (u_int16_t *) malloc(sizeof(u_int16_t *));
 	clear_avec(numVec_);
+	// previous ackofack
+	__ackofack_ = 0;
 }
 
 // retrive ackofack from RTCP control channel
 void TfwcRcvr::tfwc_rcvr_recv_aoa(u_int16_t type, u_int16_t *chunk)
 {
 	int num_chunks = 1;
+	__ackofack_ = ackofack_;
+
 	switch (type) {
 	case XR_BT_1:
 	  {
@@ -81,6 +85,11 @@ void TfwcRcvr::tfwc_rcvr_recv_aoa(u_int16_t type, u_int16_t *chunk)
 // retrieve data packet sequence number from RTP data channel
 void TfwcRcvr::tfwc_rcvr_recv_seqno(u_int16_t seqno)
 {
+	// out-of-order packet reception
+	// (use previous ackofack)
+	if (seqno < ends_ - 1)
+		ackofack_ = __ackofack_;
+
 	// required number of AckVec elements
 	numElm_ = seqno - ackofack_;
 

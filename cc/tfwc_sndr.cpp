@@ -162,9 +162,9 @@ void TfwcSndr::tfwc_sndr_send(int seqno, double now, double offset) {
 void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		u_int16_t *chunk, double so_rtime)
 {
-switch (type) {
-// retrieve ackvec
-case XR_BT_1: 
+  switch (type) {
+  // retrieve ackvec
+  case XR_BT_1: 
   {
 	// number of ack received
 	nakp_++;
@@ -200,9 +200,10 @@ case XR_BT_1:
 	clear_ackv(num_vec_);
 	// clone AckVec from Vic
 	clone_ackv(chunk, num_vec_);
+	//print_vec(ackv_, num_vec_);
 
 	// detect packet reordering and reordered ack delivery
-	int shift = 0;
+	int shift = abs(__jacked_ - jacked_);
 	if (jacked_ < __jacked_) {
 		// this ack is deprecated message (e.g., too old).
 		if(jacked_ < aoa_) {
@@ -210,7 +211,7 @@ case XR_BT_1:
 		  return;
 		}
 		// this ack is delivered out-of-order
-		else if(begins_ <= aoa_) {
+		else if(out_of_ack(jacked_, seqvec_, num_seqvec_)) {
 		  debug_msg("warning: this ack itself is out-of-order!\n");
 		  outofack = true;
 		  // cwnd process
@@ -223,7 +224,6 @@ case XR_BT_1:
 		// packet is out-of-order
 		else {
 		  debug_msg("warning: packet reordering occurred!\n");
-		  shift = __jacked_ - jacked_;
 		  // restore the previous state variables
 		  replace(__begins_, __jacked_);
 		  num_elm_ = get_numelm(begins_, jacked_);
@@ -240,6 +240,14 @@ case XR_BT_1:
 	if(reorder) {
 		for (int i = 0; i < num_vec_; i++) {
 		ackv_[i] = (ackv_[i] << shift) | pvec_[i];
+		}
+	}
+	// this will ensure constructing ackv correctly,
+	// when there is packet re-ordering.
+	// (e.g., if packet reordering, then ack will be ordered that way.)
+	else {
+		for (int i = 0; i < num_vec_; i++) {
+		ackv_[i] = (pvec_[i] << shift) | ackv_[i];
 		}
 	}
 
@@ -275,6 +283,7 @@ case XR_BT_1:
 	fprintf(stderr, "\tnow: %f\tcwnd: %d\n", so_recv_, cwnd_);
 
 	// set ackofack (real number)
+	if(!reorder)
 	aoa_ = ackofack(); 
 
 	// sampled RTT
@@ -292,8 +301,8 @@ case XR_BT_1:
   }
   break;
 
-// retrieve ts echo
-case XR_BT_3:
+  // retrieve ts echo
+  case XR_BT_3:
   {
 	ntep_++;		// number of ts echo packet received
 	ts_echo_ = chunk[num_vec_ - 1];
@@ -304,10 +313,25 @@ case XR_BT_3:
   }
   break;
 
-default:
+  default:
   break;
-} // end switch (type)
-return;
+  } // end switch (type)
+
+  return;
+}
+
+/*
+ * detect out-of-ordered ack delivery
+ * -- if just ack'ed seqno (jack) is already in sequence vector,
+ *    then, this ack should've been arrived earlier.
+ *    (i.e., this ack is out-of-ordered)
+ */
+bool TfwcSndr::out_of_ack(u_int16_t target, u_int32_t *sqv, int n) {
+	for (int i = 0; i < n; i++) {
+		if (sqv[i] == target)
+		return true;
+	}
+	return false;
 }
 
 void TfwcSndr::reset_var() {

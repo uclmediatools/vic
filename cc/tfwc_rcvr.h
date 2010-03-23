@@ -103,6 +103,9 @@ private:
 	// reference vector and its iterator
 	std::vector<int> rvec_;
 	std::vector<int>::iterator rvit_;
+
+	// out-of-order packet reception
+	u_int16_t __ackofack_;	// previous ackofack
 };
 
 #endif

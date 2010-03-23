@@ -235,6 +235,9 @@ private:
 	// new RTO
 	void new_rto(double rtt);
 
+	// determine out-of-ordered ack delivery
+	bool out_of_ack (u_int16_t, u_int32_t*, int);
+
 	// AckVec clone from Vic 
 	inline void clone_ackv(u_int16_t *c, int n) {
 		for (int i = 0; i < n; i++)
