@@ -224,6 +224,8 @@ void MacOSXGrabber::start() {
 	
     // Don't do anything if QuickTime failed.
     if (!quicktime_) return;
+
+	format();
 	
     // start the sequencer
     err = SGStartRecord(seqGrab);
@@ -403,9 +405,9 @@ void MacOSXGrabber::format() {
 			
         } else {
 			fprintf(stderr, "      format() - reformat not implemented!\n");
-			//            UnlockPixels(GetGWorldPixMap(gWorld_));
-			//            UpdateGWorld(&gWorld_, kYUVUPixelFormat, &frameRect_, 0, NULL, 0);
-			//            if (!LockPixels(GetGWorldPixMap(gWorld_))) throw Exception("LockPixels");
+			UnlockPixels(GetGWorldPixMap(gWorld_));
+			UpdateGWorld(&gWorld_, kYUVUPixelFormat, &frameRect_, 0, NULL, 0);
+			if (!LockPixels(GetGWorldPixMap(gWorld_))) throw Exception("LockPixels");
         }
     } catch (Exception e) {
         fprintf(stderr, "QuickTime error[%d]: %s\n", err, e.string);
@@ -449,15 +451,13 @@ int MacOSXGrabber::setport(const char *port) {
 }
 
 int MacOSXGrabber::command(int argc, const char*const* argv) {
-    // fprintf(stderr,"### MacOSXGrabber::command : argv[1] = %s\n", argv[1]);
+    //fprintf(stderr,"### MacOSXGrabber::command : argv[1] = %s\n", argv[1]);
     if (argc == 3) {
 		if (strcmp(argv[1], "decimate") == 0) {
 			decimate_ = atoi(argv[2]);
 			if (running_) {
-				stop();
+				stop(); start();
 			}
-			format();
-			start();
 			return(TCL_OK);
 
 		} else if (strcmp(argv[1], "port") == 0) {
@@ -475,6 +475,10 @@ int MacOSXGrabber::command(int argc, const char*const* argv) {
 				input_standard_ = secamIn;
 			else
 				input_standard_ = ntscIn;
+
+			if(running_) {
+				stop(); start();
+			}
 
 			return(TCL_OK);
 
