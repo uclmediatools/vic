@@ -316,39 +316,59 @@ proc updateName { w name } {
 proc print_input_device_details {} {
 	global inputDeviceList
 
+	puts "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"
+	puts ""
+	if {[llength $inputDeviceList] == 0} {
+		puts "<devices />"
+		return
+	}
+	puts "<devices>"
 	foreach v $inputDeviceList {
 		if {[$v attributes] != "disabled" &&
 			"[$v nickname]" != "still" && "[$v nickname]" != "filedev" } {
-			puts -nonewline "inputDevice \{\"[$v nickname]\"\} "
 
-			puts -nonewline "port \{"
-			set i 0
+			puts "	<device>"
+			set nickname [string map {"<" "&lt;"  ">" "&gt;"  "&" "&amp;"  "\"" "&quot;"  "'" "&apos;"} [$v nickname]]
+			puts "		<nickname>$nickname</nickname>"
+
 			set portnames [attribute_class [$v attributes] port]
-			foreach port $portnames {
-				if {$i > 0} {puts -nonewline " "}
-				puts -nonewline "\"$port\""
-				incr i
+			if {[llength $portnames] == 0} {
+			puts "		<ports />"
+			} else {
+				puts "		<ports>"
+				foreach port $portnames {
+					set port [string map {"<" "&lt;"  ">" "&gt;"  "&" "&amp;"  "\"" "&quot;"  "'" "&apos;"} $port]
+					puts "			<port>$port</port>"
+				}
+				puts "		</ports>"
 			}
 
-			puts -nonewline "\} type \{"
-			set i 0
 			set typenames [attribute_class [$v attributes] type]
-			foreach typename $typenames {
-					if {$i > 0} {puts -nonewline " "}
-					puts -nonewline "\"$typename\""
-					incr i
+			if {[llength $typenames] == 0} {
+				puts "		<types />"
+			} else {
+				puts "		<types>"
+				foreach type $typenames {
+					set type [string map {"<" "&lt;"  ">" "&gt;"  "&" "&amp;" "\""  "&quot;"  "'" "&apos;"} $type]
+					puts "			<type>$type</type>"
+				}
+				puts "		</types>"
 			}
 
-			puts -nonewline "\} size \{"
-			set i 0
 			set sizeList [attribute_class [$v attributes] size]
-			foreach size $sizeList {
-					if {$i > 0} {puts -nonewline " "}
-					puts -nonewline "\"$size\""
-					incr i
+			if {[llength $sizeList] == 0} {
+				puts "		<sizes />"
+			} else {
+				puts "		<sizes>"
+				foreach size $sizeList {
+					set size [string map {"<" "&lt;"  ">" "&gt;"  "&" "&amp;"  "\"" "&quot;"  "'" "&apos;"} $size]
+					puts "			<size>$size</size>"
+				}
+				puts "		</sizes>"
 			}
-			puts "\}"
+			puts "	</device>"
 		}
 	}
+	puts "</devices>"
 }
 
