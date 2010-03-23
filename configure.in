@@ -586,13 +586,27 @@ armv4l-*-linux)
         if test "$target_cpu" = powerpc; then
             V_CCOPT="-O2 $ppc_tune"
         fi
+dnl Check for 64-bit host gcc - in Snow Leopard+
+        AC_MSG_CHECKING([for 64-bit gcc on OSX])
+    if gcc -v 2>&1 | grep host=x86_64 >& /dev/null ; then
+dnl Check for lack of 64-bit support in QT - an issue in Snow Leopard+
+       if ! file -L  /System/Library/Frameworks/QuickTime.framework/QuickTime 2>&1 | grep x86_64 >&/dev/null; then
+              AC_MSG_RESULT([Yes but forcing 32-bit due to QT])
+              V_CCOPT="$V_CCOPT -arch i386"
+              V_LDFLAGS="$V_LDFLAGS -arch i386  -mmacosx-version-min=10.4"
+dnl If gcc 32bit then we need to set these flags for compilation of ffmpeg and x264
+              V_CCLDFLAGS32="LDFLAGS='-arch i386 -mmacosx-version-min=10.4' CFLAGS='-arch i386'"
+       fi
+    else
+              AC_MSG_RESULT([No - using 32-bit])
+    fi
         OPSYS=macosx
+        V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-macosx.o"
         ;;
 esac
 
 case "$target" in
    *-*-darwin*)
-        V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-macosx.o"
         ;;
    *)
         V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-x11.o"

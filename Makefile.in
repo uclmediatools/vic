@@ -40,9 +40,6 @@ ALL = @V_ALL@ histtolut
 all:	$(ALL)
 
 # Special case for H261 encoder - no optimisation if using linux gcc 2.96
-codec/dct.o:
-	rm -f $@; $(C++) -o $@ -c @V_CCOPT_H261@ $(BFLAGS) $*.cpp
-
 .cpp.o:
 	rm -f $@; $(C++) -o $@ -c $(CFLAGS) $*.cpp
 
@@ -252,13 +249,6 @@ h261tortp: h261tortp.cpp
 tcl2c++: tcl/tcl2cpp/tcl2cpp.c
 	rm -f $@
 	$(C++) -o $@ $(CFLAGS) tcl/tcl2cpp/tcl2cpp.c
-
-#
-# Compile without optimzation to work around an OSF compiler bug.
-#
-Tcl2.o: vic_tcl.h
-	rm -f $@
-	$(C++) -c $(BFLAGS) Tcl2.cpp
 
 #
 # pass-1 embedded tcl files
