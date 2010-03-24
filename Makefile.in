@@ -169,7 +169,6 @@ OBJ_VDD = vdd.o p64/p64.o p64/p64dump.o \
 	Tcl.o Tcl2.o vw.o cm0.o cm1.o \
 	dct.o huffcode.o bv.o iohandler.o timer.o \
 	ui-vdd.o tk.o random.o
-	# color-true.o color-hi.o
 
 OBJ_H261PLAY = h261_play.o p64/p64.o p64/p64dump.o \
 	module.o renderer.o renderer-window.o color.o \
@@ -179,7 +178,6 @@ OBJ_H261PLAY = h261_play.o p64/p64.o p64/p64dump.o \
 	Tcl.o Tcl2.o vw.o cm0.o cm1.o \
 	dct.o huffcode.o bv.o iohandler.o timer.o \
 	ui-h261_play.o tk.o random.o
-	# color-true.o color-hi.o
 
 OBJ_JPEGPLAY = jpeg_play.o jpeg/jpeg.o \
 	renderer.o renderer-window.o color.o \
@@ -189,7 +187,6 @@ OBJ_JPEGPLAY = jpeg_play.o jpeg/jpeg.o \
 	Tcl.o Tcl2.o vw.o cm0.o cm1.o \
 	dct.o huffcode.o jpeg_play_tcl.o bv.o iohandler.o timer.o \
 	ui-jpeg_play.o tk.o random.o
-	# color-true.o color-hi.o
 	
 LIB_CB = @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ -lm
 OBJ_CB = net/cbAppInit.o net/cb.o net/confbus.o net/group-ipc.o iohandler.o \
