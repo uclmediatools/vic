@@ -80,13 +80,6 @@ public:
 	virtual ~StillYuvGrabber();
 	virtual int command(int argc, const char* const* argv);
 	
-	inline double stillYuv_now() {
-		timeval tv;
-		::gettimeofday(&tv, NULL);
-		return ((double) tv.tv_sec + 1e-6 * (double) tv.tv_usec);
-	}
-	double stillYuv_ts_off_;
-
 protected:
 	void start();
 	void stop();
@@ -323,7 +316,7 @@ int StillYuvGrabber::command(int argc, const char* const* argv)
 StillYuvGrabber::StillYuvGrabber() :
 	width_(0), height_(0), nbytes_(0)
 {
-	stillYuv_ts_off_ = stillYuv_now();
+	grabber_ts_off_ = grabber_now();
 }
 
 StillYuvGrabber::~StillYuvGrabber()
@@ -340,7 +333,7 @@ void StillYuvGrabber::fps(int v) {
 
 void StillYuvGrabber::start()
 {
-	target_->offset_ = stillYuv_ts_off_;
+	target_->offset_ = grabber_ts_off_;
 	Grabber::start();
 }
 
@@ -374,7 +367,7 @@ int StillYuvGrabber::grab()
 #endif
 
 	// time measurement
-	start_grab_ = stillYuv_now() - stillYuv_ts_off_;
+	start_grab_ = grabber_now() - grabber_ts_off_;
 	fprintf(stderr, "start_grab\tnow: %f\n", start_grab_);
 
     int frc=0; //SV-XXX: gcc4 warns for initialisation
@@ -403,7 +396,7 @@ int StillYuvGrabber::grab()
 	YuvFrame f(media_ts(), (u_int8_t *) frame_, crvec_, outw_, outh_);
 
 	// time measurement
-	end_grab_ = stillYuv_now() - stillYuv_ts_off_;
+	end_grab_ = grabber_now() - grabber_ts_off_;
 	fprintf(stderr, "end_grab\tnow: %f\n", end_grab_);
 	fprintf(stderr, "num: %f\tgrab_time: %f\n",
 		end_grab_, end_grab_ - start_grab_);

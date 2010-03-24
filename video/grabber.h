@@ -78,6 +78,12 @@ class Grabber : public TclObject, public Timer, public MediaTimer {
 	int background() const;
 
 	// time measurement
+	inline double grabber_now() {
+        timeval tv;
+        ::gettimeofday(&tv, NULL);
+        return ((double) tv.tv_sec + 1e-6 * (double) tv.tv_usec);
+	}
+	double grabber_ts_off_;
 	double start_grab_;
 	double end_grab_;
 
