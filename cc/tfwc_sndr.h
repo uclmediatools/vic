@@ -290,14 +290,14 @@ private:
 		return (end - begin + 1);
 	}
 
-	// replace jack'ed and begins from the previous ackvec
-	inline void replace (u_int16_t lowest, u_int16_t highest) {
-		begins_ = lowest; jacked_ = highest;
+	// replace jack'ed 
+	inline void replace (u_int16_t highest) {
+		jacked_ = highest;
 	}
 
-	// store jack'ed and begins
-	inline void store (u_int16_t lowest, u_int16_t highest) {
-		__begins_ = lowest; __jacked_ = highest;
+	// store jack'ed 
+	inline void store (u_int16_t highest) {
+		__jacked_ = highest;
 	}
 
 	int ndtp_;		// number of data packet sent
@@ -369,7 +369,6 @@ private:
 
 	// highest/lowest packet sequence numbers (prev ackvec)
 	u_int16_t __jacked_;	// previous highest packet sequence number
-	u_int16_t __begins_;	// previous lowest packet sequence number
 };
 
 #endif

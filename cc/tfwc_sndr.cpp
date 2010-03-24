@@ -131,7 +131,6 @@ TfwcSndr::TfwcSndr() :
 	pvec_ = (u_int16_t *)malloc(sizeof(u_int16_t) * num_vec_);
 	clear_pvec(num_vec_);
 	__jacked_ = 0;
-	__begins_ = 0;
 }
 
 void TfwcSndr::tfwc_sndr_send(int seqno, double now, double offset) {
@@ -207,12 +206,12 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	if (jacked_ < __jacked_) {
 		// this ack is deprecated message (e.g., too old).
 		if(jacked_ < aoa_) {
-		  debug_msg("warning: this ack is older than AoA!\n");
+		  debug_msg("warning: this ack(%d) is older than AoA(%d)!\n",jacked_,aoa_);
 		  return;
 		}
 		// this ack is delivered out-of-order
 		else if(out_of_ack(jacked_, seqvec_, num_seqvec_)) {
-		  debug_msg("warning: this ack itself is out-of-order!\n");
+		  debug_msg("warning: this ack(%d) itself is out-of-order!\n",jacked_);
 		  outofack = true;
 		  // cwnd process
 		  if(is_tfwc_on_) control();
@@ -224,8 +223,9 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		// packet is out-of-order
 		else {
 		  debug_msg("warning: packet reordering occurred!\n");
-		  // restore the previous state variables
-		  replace(__begins_, __jacked_);
+		  // replace just ack'ed seqno
+		  replace(__jacked_);
+		  // re-calculate numelm and numvec
 		  num_elm_ = get_numelm(begins_, jacked_);
 		  num_vec_ = get_numvec(num_elm_);
 		  reorder = true;
@@ -283,7 +283,6 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	fprintf(stderr, "\tnow: %f\tcwnd: %d\n", so_recv_, cwnd_);
 
 	// set ackofack (real number)
-	if(!reorder)
 	aoa_ = ackofack(); 
 
 	// sampled RTT
@@ -337,8 +336,8 @@ bool TfwcSndr::out_of_ack(u_int16_t target, u_int32_t *sqv, int n) {
 void TfwcSndr::reset_var() {
 	num_missing_ = 0;
 
-	// store jack'ed and begins
-	store(begins_, jacked_);
+	// store jack'ed
+	store(jacked_);
 	// declare pvec to store ackv
 	pvec_ = (u_int16_t *)malloc(sizeof(u_int16_t) * num_vec_);
 	clear_pvec(num_vec_);
