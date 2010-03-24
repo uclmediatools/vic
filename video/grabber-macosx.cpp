@@ -113,6 +113,13 @@ public:
 	
     // Overridden functions.
     virtual int command(int argc, const char*const* argv);
+
+	inline double MacOSX_now() {
+		timeval tv;
+		::gettimeofday(&tv, NULL);
+		return ((double) tv.tv_sec + 1e-6 * (double) tv.tv_usec);
+	}
+	double MacOSX_ts_off_;
 	
 protected:
     // sequence grabber support requires a callback function
@@ -187,6 +194,9 @@ MacOSXGrabber::MacOSXGrabber(const char* format, const char* dev) {
     port_[0] = 0;
     useconfig_ = false;
 
+	// time measurement
+	MacOSX_ts_off_ = MacOSX_now();
+
      // allocate prezeroed nonrelocatable block of memory
 	sgDataProcRefCon = (SGDataProcRefCon *)NewPtrClear(sizeof(SGDataProcRefCon));
 
@@ -225,6 +235,9 @@ void MacOSXGrabber::start() {
     // Don't do anything if QuickTime failed.
     if (!quicktime_) return;
 
+	// time measurement
+	target_->offset_ = MacOSX_ts_off_;
+
 	format();
 	
     // start the sequencer
@@ -246,6 +259,11 @@ void MacOSXGrabber::stop() {
 }
 
 int MacOSXGrabber::grab() {
+	// time measurement------------------*
+	start_grab_ = MacOSX_now() - MacOSX_ts_off_;
+	fprintf(stderr, "start_grab\tnow: %f\n", start_grab_);
+	//-----------------------------------*
+
     if (sgDataProcRefCon->decomSeq == 0) {
 		if (setupDecom()) {
 			return 0;
@@ -255,6 +273,13 @@ int MacOSXGrabber::grab() {
     suppress(frame_);
     saveblks(frame_);
     YuvFrame f(media_ts(), frame_, crvec_, outw_, outh_, format_);
+
+	// time measurement------------------*
+	end_grab_ = MacOSX_now() - MacOSX_ts_off_;
+    fprintf(stderr, "end_grab\tnow: %f\n", end_grab_);
+    fprintf(stderr, "num: %f\tgrab_time: %f\n",
+        end_grab_, end_grab_ - start_grab_);
+	//-----------------------------------*
 
     if(target_)
        return(target_->consume(&f));

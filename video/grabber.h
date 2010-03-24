@@ -76,6 +76,11 @@ class Grabber : public TclObject, public Timer, public MediaTimer {
 	virtual int grab();
 	virtual void timeout();
 	int background() const;
+
+	// time measurement
+	double start_grab_;
+	double end_grab_;
+
  protected:
 	/* hooks for conditional replenishment algorithm */
 	void suppress(const u_char* devbuf);

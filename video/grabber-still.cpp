@@ -86,9 +86,6 @@ public:
 		return ((double) tv.tv_sec + 1e-6 * (double) tv.tv_usec);
 	}
 	double stillYuv_ts_off_;
-	double start_grab_;
-	double end_grab_;
-	int num_grab_;
 
 protected:
 	void start();
@@ -327,9 +324,6 @@ StillYuvGrabber::StillYuvGrabber() :
 	width_(0), height_(0), nbytes_(0)
 {
 	stillYuv_ts_off_ = stillYuv_now();
-	start_grab_ = 0.0;
-	end_grab_ = 0.0;
-	num_grab_ = 1;
 }
 
 StillYuvGrabber::~StillYuvGrabber()
@@ -411,8 +405,8 @@ int StillYuvGrabber::grab()
 	// time measurement
 	end_grab_ = stillYuv_now() - stillYuv_ts_off_;
 	fprintf(stderr, "end_grab\tnow: %f\n", end_grab_);
-	fprintf(stderr, "num: %d\tgrab_time: %f\n",
-		num_grab_++, end_grab_ - start_grab_);
+	fprintf(stderr, "num: %f\tgrab_time: %f\n",
+		end_grab_, end_grab_ - start_grab_);
 
 	frc = target_->consume(&f);
     return frc;

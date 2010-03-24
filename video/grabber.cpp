@@ -85,6 +85,10 @@ Grabber::Grabber()
 	contrast_ = 1.0;
 	for (int i = 0; i < 256; ++i)
 		ynorm_[i] = i;
+
+	// time measurement
+	start_grab_ = 0.;
+	end_grab_ = 0.;
 }
 
 Grabber::~Grabber()
