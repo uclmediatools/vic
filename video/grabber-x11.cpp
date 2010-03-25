@@ -1237,7 +1237,9 @@ X11Grabber::X11Grabber(const char* name, const char* format)
 	decimate_ = 1; /* XXX */
 	basewidth_ = PAL_WIDTH * 2;
 	baseheight_ = PAL_HEIGHT * 2;
-	
+
+	// time measurement
+	grabber_ts_off_ = grabber_now();
 }
 
 X11Grabber::~X11Grabber()
@@ -1279,6 +1281,9 @@ X11Grabber::format()
 void
 X11Grabber::start()
 {
+	// time measurement
+	target_->offset_ = grabber_ts_off_;
+
 	format();
 	/* XXX prepare for continuous capture */
 	Grabber::start();
@@ -1298,7 +1303,7 @@ X11Grabber::command(int argc, const char*const* argv)
 {
     if (argc >= 3) {
 	if (strcmp(argv[1], "decimate") == 0) {
-	    int dec = atoi(argv[2]);
+	    u_int dec = atoi(argv[2]);
 	    Tcl& tcl = Tcl::instance();
 	    if (dec <= 0) {
 		tcl.resultf("%s: divide by zero", argv[0]);
@@ -1404,10 +1409,23 @@ X11Grabber::capture()
 
 int X11Grabber::grab()
 {
-    if (capture() == 0)
-	return (0);
-    suppress(frame_);
-    saveblks(frame_);
+	// time measurement------------------*
+	start_grab_ = grabber_now() - grabber_ts_off_;
+	fprintf(stderr, "start_grab\tnow: %f\n", start_grab_);
+	//-----------------------------------*
+
+	if (capture() == 0)
+		return (0);
+	suppress(frame_);
+	saveblks(frame_);
+
+	// time measurement------------------*
+	end_grab_ = grabber_now() - grabber_ts_off_;
+	fprintf(stderr, "end_grab\tnow: %f\n", end_grab_);
+	fprintf(stderr, "num: %f\tgrab_time: %f\n",
+			end_grab_, end_grab_ - start_grab_);
+	//-----------------------------------*
+
     YuvFrame f(media_ts(), frame_, crvec_, outw_, outh_);
     return (target_->consume(&f));
 }
