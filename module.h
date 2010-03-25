@@ -150,6 +150,7 @@ class TransmitterModule : public Module {
     public:
 	~TransmitterModule();
 	virtual int command(int argc, const char*const* argv);
+	inline double get_now() { return (tx_->tx_now() - offset()); };
     protected:
 	TransmitterModule(int ft);
 	Transmitter* tx_;

@@ -155,11 +155,6 @@ class H261Encoder : public TransmitterModule {
 	virtual void encode_mb(u_int mba, const u_char* frm,
 		       u_int loff, u_int coff, int how) = 0;
 
-	inline double h261_now() {
-		timeval tv;
-		::gettimeofday(&tv, NULL);
-		return ((double) tv.tv_sec + 1e-6 * (double) tv.tv_usec);
-	}
 	double enc_start_;	// encoding start timestamp
 	double enc_end_;	// encoding end timestamp
 
@@ -809,7 +804,7 @@ H261Encoder::flush(pktbuf* pb, int nbit, pktbuf* npb)
 	// increment the number of packets for this frame
 	ppframe_[vfno_%FHSIZE]++;
 	fprintf(stderr, "\tnow: %f\tppframe[%d]: %d\n",
-	h261_now()-offset(), vfno_%FHSIZE, ppframe_[vfno_%FHSIZE]);
+	get_now(), vfno_%FHSIZE, ppframe_[vfno_%FHSIZE]);
 	tx_->send(pb);
 
 	return (cc + HDRSIZE);
@@ -834,7 +829,7 @@ int H261PixelEncoder::consume(const VideoFrame *vf)
 	// Tx queue size before entering this encoding
 	txq_beg_ = tx_->tx_buf_size();
 	fprintf(stderr, "   now: %f\ttxq_now: %d\n", 
-		h261_now()-offset(), txq_beg_);
+		get_now(), txq_beg_);
 	// sent packets after the previous encoding round, 
 	// but before starting this encoding instance.
 	// -- these packets were sent from the Tx queue 
@@ -842,7 +837,7 @@ int H261PixelEncoder::consume(const VideoFrame *vf)
 	sent_more_ = txq_end_ - txq_beg_;
 
 	fprintf(stderr, "\tnow: %f\tsent: %d more: %d vf[%d]: %d\n",
-	h261_now()-offset(), num_sent_, sent_more_, 
+	get_now(), num_sent_, sent_more_, 
 	vfno_%FHSIZE, ppframe_[vfno_%FHSIZE]);
 
 	// all encoded packets associated with 
@@ -881,10 +876,10 @@ int H261PixelEncoder::consume(const VideoFrame *vf)
 	num_sent_ = ppframe_[vfno_%FHSIZE] - txq_dif_;
 
 	fprintf(stderr, "   now: %f\ttxq_now: %d\tdif: %d\n", 
-		h261_now()-offset(), txq_end_, txq_dif_);
+		get_now(), txq_end_, txq_dif_);
 
 	fprintf(stderr, "   now: %f\tenc_time: %f\n\n", 
-		h261_now()-offset(), (enc_end_ - enc_start_));
+		get_now(), (enc_end_ - enc_start_));
 
 	return(cc);
 }
@@ -893,7 +888,7 @@ int H261PixelEncoder::consume(const VideoFrame *vf)
 int
 H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 {
-	enc_start_ = h261_now()-offset();
+	enc_start_ = get_now();
 	fprintf(stderr,">>>h261_encode_start\tnow: %f\n", enc_start_);
 
 	tx_->flush();
@@ -991,7 +986,7 @@ H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 	cc += flush(pb, ((bc_ - bs_) << 3) + nbb_, 0);
 
 	// time measurement
-	enc_end_ = h261_now()-offset();
+	enc_end_ = get_now();
 	fprintf(stderr,"\n>>>h261_encode_end\tnow: %f\n", enc_end_);
 
 	return (cc);
