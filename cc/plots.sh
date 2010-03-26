@@ -9,7 +9,7 @@ set style line 4 lt 4 pt 4 lw 1.5
 set style line 5 lt 5 pt 4 lw 1.5
 
 set mxtics 2
-set mytics 2
+set mytics 4
 set grid
 
 set xrange [$1:$2]
@@ -34,7 +34,7 @@ set xlabel "time (sec)"
 set ylabel "seqno"
 
 set mxtics 2
-set mytics 2
+set mytics 4
 
 set xrange [$1:$2]
 set yrange [$3:$4]
