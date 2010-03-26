@@ -133,12 +133,13 @@ TfwcSndr::TfwcSndr() :
 	__jacked_ = 0;
 }
 
-void TfwcSndr::tfwc_sndr_send(int seqno, double now, double offset) {
+void TfwcSndr::tfwc_sndr_send(int seqno, double now) {
+	if(seqno_ == 0)
+	ts_off_ = tx_ts_offset();
 
 	// parse seqno and mark timestamp for this data packet
 	seqno_	= seqno;
 	now_	= now;
-	ts_off_ = offset;
 
 	// timestamp vector for loss history update
 	tsvec_[seqno_%TSZ] = now_;
@@ -206,21 +207,20 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	if (jacked_ < __jacked_) {
 		// this ack is deprecated message (e.g., too old).
 		if(jacked_ < aoa_) {
-		  debug_msg("warning: this ack(%d) is older than AoA(%d)!\n",jacked_,aoa_);
+		  debug_msg("warning: this ack(%d) is older than AoA(%d)!\n", jacked_,aoa_);
+		  // trigger packets out to keep Jacob's packet conservation rule
+		  cc_tfwc_output();
 		  return;
 		}
 		// this ack is delivered out-of-order
 		else if(out_of_ack(jacked_, seqvec_, num_seqvec_)) {
 		  debug_msg("warning: this ack(%d) itself is out-of-order!\n",jacked_);
 		  outofack = true;
-		  // cwnd process
-		  if(is_tfwc_on_) control();
-		  else cwnd_++;
-		  // update RTT using previously sampled RTT
-		  update_rtt(tao_);
+		  // trigger packets out to keep Jacob's packet conservation rule
+		  cc_tfwc_output();
 		  return;
 		}
-		// packet is out-of-order
+		// packet is out-of-order, so adjust ackvec re-construction
 		else {
 		  debug_msg("warning: packet reordering occurred!\n");
 		  // replace just ack'ed seqno
@@ -285,11 +285,12 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	// set ackofack (real number)
 	aoa_ = ackofack(); 
 
+	if(!reorder) {
 	// sampled RTT
-	if(!reorder)
 	tao_ = so_recv_ - tsvec_[jacked_%TSZ];
 	// update RTT with the sampled RTT
 	update_rtt(tao_);
+	}
 
 	// is TFWC being driven by timeout mechanism?
 	if(to_driven_ && is_tfwc_on_)
@@ -334,7 +335,9 @@ bool TfwcSndr::out_of_ack(u_int16_t target, u_int32_t *sqv, int n) {
 }
 
 void TfwcSndr::reset_var() {
+	// init vars------------*
 	num_missing_ = 0;
+	//----------------------*
 
 	// store jack'ed
 	store(jacked_);

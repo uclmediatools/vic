@@ -107,6 +107,7 @@ class Transmitter : public TclObject, public Timer,
 		return ((double) tv.tv_sec + 1e-6 * (double) tv.tv_usec);
 	}
 	double tx_now_offset_;
+	virtual inline double tx_ts_offset() { return (tx_now_offset_); }
 
 	// Tx pktbuf size
 	int tx_buf_size();

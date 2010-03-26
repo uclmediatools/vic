@@ -79,9 +79,10 @@ public:
 	virtual ~TfwcSndr() {};
 
 	virtual void cc_tfwc_output() = 0;
+	virtual double tx_ts_offset() = 0;
 
 	// parse seqno and timestamp
-	void tfwc_sndr_send(int, double, double);
+	void tfwc_sndr_send(int, double);
 
 	// main reception path (XR packet)
 	void tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
