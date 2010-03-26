@@ -366,16 +366,16 @@ int StillYuvGrabber::grab()
 	debug_msg("StillYuvGrabber::grab() called\n");
 #endif
 
-	// time measurement
-	start_grab_ = grabber_now() - grabber_ts_off_;
-	fprintf(stderr, "start_grab\tnow: %f\n", start_grab_);
-
     int frc=0; //SV-XXX: gcc4 warns for initialisation
 
 	// check if Tx queue is growing too much.
 	// if so, we should suspend grabbing more frames.
 	if (target_->suspend_grabbing())
 	return (frc);
+
+	// time measurement
+	start_grab_ = grabber_now() - grabber_ts_off_;
+	fprintf(stderr, "start_grab\tnow: %f\n", start_grab_);
 
 	// "framesize_" is just the number of pixels, 
 	// so the number of bytes becomes "3 * framesize_ / 2"
