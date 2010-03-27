@@ -459,7 +459,11 @@ void SessionManager::transmit(pktbuf* pb, bool recv_by_ch)
 	// receive XR before sending
 	if(!recv_by_ch)
 	recv_xreport(ch_, pb);
+
+	// print RTP seqno
 	print_rtp_seqno(pb);
+	// record seqno and timestamp at TfwcSndr side
+	tfwc_sndr_send(pb, tx_get_now());
 
 	// Using loop_layer for now to restrict transmission as well
 	if (pb->layer < loop_layer_) {
@@ -488,6 +492,8 @@ void SessionManager::tx_data_only(pktbuf* pb, bool flag)
 
 	// print RTP seqno
 	print_rtp_seqno(pb);
+	// record seqno and timestamp at TfwcSndr side
+	tfwc_sndr_send(pb, tx_get_now());
 
 	if (pb->layer < loop_layer_) {
 		Network* n = dh_[pb->layer].net();

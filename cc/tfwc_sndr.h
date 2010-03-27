@@ -85,7 +85,7 @@ public:
 	virtual int tx_buf_size() = 0;
 
 	// parse seqno and timestamp
-	void tfwc_sndr_send(int, double);
+	void tfwc_sndr_send(pktbuf*, double);
 
 	// main reception path (XR packet)
 	void tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
@@ -333,6 +333,12 @@ private:
 	// print ALI for debugging
 	inline void print_ALI() {
 	fprintf(stderr, "\tnow: %f\tALI: %f\n\n", so_recv_, avg_interval_);
+	}
+
+	// print packet's timestamp record
+	inline void print_packet_tsvec() {
+	fprintf(stderr, "\t>> now: %f tsvec_[%d]: %f\n",
+	now_, seqno_%TSZ, tsvec_[seqno_%TSZ]);
 	}
 
 	int ndtp_;		// number of data packet sent

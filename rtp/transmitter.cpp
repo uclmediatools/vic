@@ -326,8 +326,6 @@ void Transmitter::cc_tfwc_output(pktbuf* pb)
 	//debug_msg("jack: %d\n", jack);
 	
 	if (ntohs(rh->rh_seqno) <= magic + jack) {
-		// record seqno and timestamp at TfwcSndr side
-		tfwc_sndr_send(ntohs(rh->rh_seqno), tx_get_now());
 		// move head pointer
 		head_ = pb->next;
 		// call Transmitter::output_data_only w/ XR reception
@@ -370,8 +368,6 @@ void Transmitter::cc_tfwc_output(bool recv_by_ch)
 
 	// while packet seqno is within "cwnd + jack", send that packet
 	while (ntohs(rh->rh_seqno) <= magic + jack) {
-		// record seqno and timestamp at TfwcSndr side
-		tfwc_sndr_send(ntohs(rh->rh_seqno), tx_get_now());
 		// move head pointer
 		head_ = pb->next;
 		// call Transmitter::output(pb)
@@ -407,8 +403,6 @@ void Transmitter::cc_tfwc_trigger(pktbuf* pb) {
 
 	// parse pb data
 	rtphdr* rh = (rtphdr *) pb->data;
-	// record seqno and timestamp at TfwcSndr side
-	tfwc_sndr_send(ntohs(rh->rh_seqno), tx_get_now());
 	// move head pointer
 	head_ = pb->next;
 	// call Transmitter::output_data_only w/o XR reception

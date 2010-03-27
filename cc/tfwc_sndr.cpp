@@ -136,19 +136,19 @@ TfwcSndr::TfwcSndr() :
 	reorder_ = false;
 }
 
-void TfwcSndr::tfwc_sndr_send(int seqno, double now) {
+void TfwcSndr::tfwc_sndr_send(pktbuf* pb, double now) {
+	// the very first data packet
 	if(seqno_ == 0)
 	ts_off_ = tx_ts_offset();
 
 	// parse seqno and mark timestamp for this data packet
-	seqno_	= seqno;
+	rtphdr* rh = (rtphdr *) pb->data;
+	seqno_	= ntohs(rh->rh_seqno);
 	now_	= now;
 
 	// timestamp vector for loss history update
 	tsvec_[seqno_%TSZ] = now_;
-
-	//fprintf(stderr, "\t>> now_: %f tsvec_[%d]: %f\n", 
-	//	now_, seqno_%TSZ, tsvec_[seqno_%TSZ]);
+	print_packet_tsvec();
 
 	// sequence number must be greater than zero
 	assert (seqno_ > 0);
