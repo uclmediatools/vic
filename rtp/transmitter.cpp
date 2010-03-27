@@ -65,6 +65,9 @@ static const char rcsid[] =
 extern "C" writev(int, iovec*, int);
 #endif
 
+#define NO_XR_RECV 0
+#define XR_RECV 1
+
 //Transmitter::pktbuf* Transmitter::freehdrs_;
 //Transmitter::buffer* Transmitter::freebufs_;
 int Transmitter::nbufs_;
@@ -313,10 +316,7 @@ void Transmitter::send(pktbuf* pb)
 
 void Transmitter::cc_tfwc_output(pktbuf* pb) 
 {
-//	fprintf(stderr,"\t--------entering cc_tfwc_output(pb)---------\n");
-//	fprintf(stderr,"\t|                                          |\n");
-//	fprintf(stderr,"\tV                                          V\n");
-
+	//cc_output_banner_top();
 	// pb is not null, hence parse it.
 	rtphdr* rh = (rtphdr *) pb->data;
 
@@ -327,26 +327,21 @@ void Transmitter::cc_tfwc_output(pktbuf* pb)
 	
 	if (ntohs(rh->rh_seqno) <= magic + jack) {
 		// record seqno and timestamp at TfwcSndr side
-		tfwc_sndr_send(ntohs(rh->rh_seqno), tx_now()-tx_now_offset_);
+		tfwc_sndr_send(ntohs(rh->rh_seqno), tx_get_now());
 		// move head pointer
 		head_ = pb->next;
-		// call Transmitter::output_data_only(pb)
-		output_data_only(pb);
+		// call Transmitter::output_data_only w/ XR reception
+		output_data_only(pb, XR_RECV);
 	}
-//	fprintf(stderr,"\t^                                          ^\n");
-//	fprintf(stderr,"\t|                                          |\n");
-//	fprintf(stderr,"\t============================================\n");
+	//cc_output_banner_bottom();
 }
 
 /*
  * main TFWC CC output routines
  */
-void Transmitter::cc_tfwc_output()
+void Transmitter::cc_tfwc_output(bool recv_by_ch)
 {
-//	fprintf(stderr,"\t---------entering cc_tfwc_output()----------\n");
-//	fprintf(stderr,"\t|                                          |\n");
-//	fprintf(stderr,"\tV                                          V\n");
-
+	//cc_output_banner_top();
 	// head of the RTP data packet buffer (pb)
 	pktbuf* pb = head_;
 
@@ -359,7 +354,6 @@ void Transmitter::cc_tfwc_output()
 		return;
 	}
 
-	//printf("\tthere are packets available to send in cc_tfwc_output()\n");
 	// pb is not null, hence parse it.
 	rtphdr* rh = (rtphdr *) pb->data;
 
@@ -372,16 +366,16 @@ void Transmitter::cc_tfwc_output()
 //	debug_msg("jack: %d\n", jack);
 
 	//fprintf(stderr, "\tXXX now: %f\tnum: %d\tcwnd: %d\tjack: %d\n",
-	//tx_now()-tx_now_offset_, ntohs(rh->rh_seqno), magic, jack);
+	//tx_get_now(), ntohs(rh->rh_seqno), magic, jack);
 
 	// while packet seqno is within "cwnd + jack", send that packet
 	while (ntohs(rh->rh_seqno) <= magic + jack) {
 		// record seqno and timestamp at TfwcSndr side
-		tfwc_sndr_send(ntohs(rh->rh_seqno), tx_now()-tx_now_offset_);
+		tfwc_sndr_send(ntohs(rh->rh_seqno), tx_get_now());
 		// move head pointer
 		head_ = pb->next;
 		// call Transmitter::output(pb)
-		output(pb);
+		output(pb, recv_by_ch);
 
 		// if the moved head pointer is not null, parse packet buffer.
 		// otherwise, break while statement.
@@ -392,9 +386,33 @@ void Transmitter::cc_tfwc_output()
 			break;
 		}
 	} // end while ()
-//	fprintf(stderr,"\t^                                          ^\n");
-//	fprintf(stderr,"\t|                                          |\n");
-//	fprintf(stderr,"\t============================================\n");
+	//cc_output_banner_bottom();
+}
+
+/*
+ * trigger packet out forcefully
+ */
+void Transmitter::cc_tfwc_trigger(pktbuf* pb) {
+	// if pb is null here, it means this routine was called 
+	// by SessionManager::recv(CtrlHandler* ch).
+	// therefore, assign pktbuf's head to pb.
+	if (pb == 0)
+	pb = head_;
+
+	// if pb is null here, it means the actual pkbuf is empty!
+	if (pb == 0) {
+		is_buf_empty_ = true;
+		return;
+	}
+
+	// parse pb data
+	rtphdr* rh = (rtphdr *) pb->data;
+	// record seqno and timestamp at TfwcSndr side
+	tfwc_sndr_send(ntohs(rh->rh_seqno), tx_get_now());
+	// move head pointer
+	head_ = pb->next;
+	// call Transmitter::output_data_only w/o XR reception
+	output_data_only(pb, NO_XR_RECV);
 }
 
 /*
@@ -444,20 +462,20 @@ void Transmitter::flush()
 	}
 }
 
-void Transmitter::output(pktbuf* pb)
+void Transmitter::output(pktbuf* pb, bool recv_by_ch)
 {
 	//fprintf(stderr, "\n\tTransmitter::output()\n");
 	//if (dumpfd_ >= 0)
 	//	dump(dumpfd_, pb->iov, mh_.msg_iovlen);
 //dprintf("layer: %d \n",pb->layer);
-	transmit(pb);
+	transmit(pb, recv_by_ch);
 	loopback(pb);
 //	pb->release() is called by decoder in loopback;
 }
 
-void Transmitter::output_data_only(pktbuf* pb) 
+void Transmitter::output_data_only(pktbuf* pb, bool flag) 
 {
-	tx_data_only(pb);
+	tx_data_only(pb, flag);
 	loopback(pb);
 }
 

@@ -90,8 +90,9 @@ class Transmitter : public TclObject, public Timer,
 	void flush();
 	void send(pktbuf*);
 	inline bool is_cc_on() { return is_cc_active_; }
-	virtual void cc_tfwc_output();
-	void cc_tfwc_output(pktbuf*);
+	virtual void cc_tfwc_output(bool recv_by_ch=0);
+	virtual void cc_tfwc_output(pktbuf*);
+	virtual void cc_tfwc_trigger(pktbuf*);
 	void cc_tfrc_output();
 
 	/*
@@ -107,19 +108,20 @@ class Transmitter : public TclObject, public Timer,
 		return ((double) tv.tv_sec + 1e-6 * (double) tv.tv_usec);
 	}
 	double tx_now_offset_;
+	inline double tx_get_now() { return (tx_now()-tx_ts_offset()); }
 	virtual inline double tx_ts_offset() { return (tx_now_offset_); }
 
 	// Tx pktbuf size
-	int tx_buf_size();
+	virtual int tx_buf_size();
 
 protected:
 	void update(int nbytes);
 	void dump(int fd, iovec*, int iovel) const;
 	void loopback(pktbuf*);
-	void output(pktbuf* pb);
-	void output_data_only(pktbuf* pb);
-	virtual void transmit(pktbuf* pb) = 0;
-	virtual void tx_data_only(pktbuf* pb) = 0;
+	void output(pktbuf* pb, bool recv_by_ch=0);
+	void output_data_only(pktbuf* pb, bool flag);
+	virtual void transmit(pktbuf* pb, bool recv_by_ch=0) = 0;
+	virtual void tx_data_only(pktbuf* pb, bool flag) = 0;
 	double gettimeofday_secs() const;
 	double txtime(pktbuf* pb);
 
@@ -155,6 +157,18 @@ protected:
 	static buffer* freebufs_;
 	static int nbufs_;
 	static int nhdrs_;
+
+	// print banner
+	inline void cc_output_banner_top() {
+	fprintf(stderr,"\t--------entering cc_tfwc_output()-----------\n");
+	fprintf(stderr,"\t|                                          |\n");
+	fprintf(stderr,"\tV                                          V\n");
+	}
+	inline void cc_output_banner_bottom() {
+	fprintf(stderr,"\t^                                          ^\n");
+	fprintf(stderr,"\t|                                          |\n");
+	fprintf(stderr,"\t============================================\n");
+	}
 };
 
 #endif

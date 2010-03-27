@@ -147,7 +147,7 @@ public:
 		u_int32_t xrssrc);
 
 	// receive XR
-	void recv_xreport(CtrlHandler*);
+	void recv_xreport(CtrlHandler*, pktbuf*);
 
 	void build_aoa_pkt(CtrlHandler* ch);
 	void build_ts_pkt(CtrlHandler* ch);
@@ -162,8 +162,8 @@ protected:
 //	void demux(rtphdr* rh, u_char* bp, int cc, Address & addr, int layer);
 	void demux(pktbuf* pb, Address & addr);
 	virtual int check_format(int fmt) const = 0;
-	virtual void transmit(pktbuf* pb);
-	virtual void tx_data_only(pktbuf* pb);
+	virtual void transmit(pktbuf* pb, bool recv_by_ch=0);
+	virtual void tx_data_only(pktbuf* pb, bool flag);
 	void send_report(int bye);
 	void send_ECNXreport(CtrlHandler* ch, u_int8_t tos, u_int16_t begin_seq);
 	int build_bye(rtcphdr* rh, Source& local);
@@ -177,11 +177,11 @@ protected:
 	void parse_rr(rtcphdr* rh, int flags, u_char* ep,
 		      Source* ps, Address & addr, int layer);
 	void parse_xr(rtcphdr* rh, int flags, u_char* ep,
-		      Source* ps, Address & addr, int layer, int op);
+		      Source* ps, Address & addr, int layer, bool recv_by_ch, pktbuf* pb=0);
 	void parse_rr_records(u_int32_t ssrc, rtcp_rr* r, int cnt,
 			      const u_char* ep, Address & addr);
 	void parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
-			      const u_char* ep, Address & addr, int op);
+			      const u_char* ep, Address & addr, bool recv_by_ch, pktbuf* pb);
 	int sdesbody(u_int32_t* p, u_char* ep, Source* ps,
 		     Address & addr, u_int32_t ssrc, int layer);
 	void parse_sdes(rtcphdr* rh, int flags, u_char* ep, Source* ps,
@@ -236,6 +236,45 @@ protected:
 	u_int16_t ackvec_;	// this is a bit vector
 	// timestamp
 	double recv_ts_;	// receive timestamp
+
+private:
+	// print RTP data packet's seqno
+	inline void print_rtp_seqno(u_int16_t seqno) {
+	fprintf(stderr, "\n\tnow: %f\tseqno: %d\n\n",tx_get_now(),seqno);
+	}
+	inline void print_rtp_seqno(pktbuf* pb) {
+	rtphdr* rh = (rtphdr *) pb->data;
+	fprintf(stderr, "\n\tnow: %f\tseqno: %d\n\n",
+		tx_get_now(),ntohs(rh->rh_seqno));
+	}
+
+	// print sender's XR info
+	inline void sender_xr_info(u_int16_t b, 
+		u_int16_t e, 
+		rtcp_xr_BT_1_hdr* xrh,
+		u_int16_t l) 
+	{
+		debug_msg("beg:%d, end:%d, xr1len:%d (xrlen:%d)\n",
+		b,e,ntohs(xrh->xr_len),l);
+	}
+	// print sender's XR info
+	inline void sender_xr_ts_info(double ts) {
+	fprintf(stderr, "*** recv_ts: %f so_rtime: %f diff: %f\n",
+		recv_ts_, ts, recv_ts_-ts);
+	}
+	// print receiver's XR info
+	inline void receiver_xr_info(u_int16_t *c) {
+		debug_msg("chunk[0]:%d\n", ntohs(c[0]));
+	}
+	// print parse XR banner
+	inline void parse_xr_banner_top() {
+	fprintf(stderr,
+	"~~~~~~~~~~~~~~~~~~entering parse_xr_records()~~~~~~~~~~~~~~~~~~\n");
+	}
+	inline void parse_xr_banner_bottom() {
+	fprintf(stderr,
+	"-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\n");
+	}
 };
 
 class AudioSessionManager : public SessionManager {

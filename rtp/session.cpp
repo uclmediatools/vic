@@ -450,19 +450,16 @@ int SessionManager::command(int argc, const char*const* argv)
 	return (TCL_ERROR);
 }
 
-void SessionManager::transmit(pktbuf* pb)
+void SessionManager::transmit(pktbuf* pb, bool recv_by_ch)
 {
 	//mh_.msg_iov = pb->iov;
 	//	dh_[.net()->send(mh_);
 		//debug_msg("L %d,",pb->layer);
-	
-	// receive XR before sending
-	recv_xreport(ch_);
 
-	// get seqno
-	rtphdr* rh = (rtphdr *) pb->data;
-	fprintf(stderr, "\n\tnow: %f\tseqno: %d\n\n",
-		tx_now()-tx_now_offset_, ntohs(rh->rh_seqno));
+	// receive XR before sending
+	if(!recv_by_ch)
+	recv_xreport(ch_, pb);
+	print_rtp_seqno(pb);
 
 	// Using loop_layer for now to restrict transmission as well
 	if (pb->layer < loop_layer_) {
@@ -483,15 +480,14 @@ void SessionManager::transmit(pktbuf* pb)
 	}
 }
 
-void SessionManager::tx_data_only(pktbuf* pb) 
+void SessionManager::tx_data_only(pktbuf* pb, bool flag) 
 {
 	// receive XR before sending
-	recv_xreport(ch_);
+	if(flag)
+	recv_xreport(ch_, pb);
 
-	// get seqno
-	rtphdr* rh = (rtphdr *) pb->data;
-	fprintf(stderr, "\n\tnow: %f\tseqno: %d\n\n",
-		tx_now()-tx_now_offset_, ntohs(rh->rh_seqno));
+	// print RTP seqno
+	print_rtp_seqno(pb);
 
 	if (pb->layer < loop_layer_) {
 		Network* n = dh_[pb->layer].net();
@@ -1291,7 +1287,7 @@ void SessionManager::parse_rr(rtcphdr* rh, int flags, u_char* ep,
 }
 
 void SessionManager::parse_xr(rtcphdr* rh, int flags, u_char* ep,
-					  Source* ps, Address & addr, int layer, int op)
+		Source* ps, Address & addr, int layer, bool recv_by_ch, pktbuf* pb)
 {
 	Source* s;
 	u_int32_t ssrc = rh->rh_ssrc;	// RTCP's ssrc
@@ -1302,14 +1298,13 @@ void SessionManager::parse_xr(rtcphdr* rh, int flags, u_char* ep,
 
 	s->layer(layer).lts_ctrl(unixtime());
 	int cnt = flags >> 8 & 0x1f;	// reception report count
-	parse_xr_records(ssrc, (rtcp_xr*)(rh + 1), cnt, ep, addr, op);
+	parse_xr_records(ssrc, (rtcp_xr*)(rh + 1), cnt, ep, addr, recv_by_ch, pb);
 }
 
 void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
-		const u_char* ep, Address & addr, int op)
+		const u_char* ep, Address & addr, bool recv_by_ch, pktbuf* pb)
 {
-	fprintf(stderr, 
-	"~~~~~~~~~~~~~~~~~~entering parse_xr_records()~~~~~~~~~~~~~~~~~~\n");
+	parse_xr_banner_top();
 	UNUSED(ssrc);
 	UNUSED(cnt);
 	UNUSED(ep);
@@ -1322,7 +1317,7 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 	rtcp_xr_BT_1_hdr *xr1;
 
 	// so_timestamp
-	double so_rtime;
+	double so_rtime = 0.;
 
 	if ( xr->BT == XR_BT_1 && xr->xr_flag == 0 ) {
 		// XR block type 1
@@ -1339,24 +1334,20 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 		// i am an RTP data sender, so do the sender stuffs (AoA)
 		if (am_i_sender()) {
 			fprintf(stderr, ">>> parse_xr - i_am_sender\n");
-			//fprintf(stderr, 
-			//	"    [%s +%d] beg:%d, end:%d, xr1len:%d (xrlen:%d)\n", 
-			//	__FILE__,__LINE__,begin, end, ntohs(xr1->xr_len), xrlen);
-			
+			//sender_xr_info(begin, end, xr1, xrlen);
 			switch (cc_type_) {
 			case WBCC:
 				fprintf(stderr, "\tincomingXR\tnow: %f\n", recv_ts_);
 				// SO_TIMESTAMP
 				//so_rtime = ch_[0].net()->recv_so_time();
-				//fprintf(stderr, "*** recv_ts: %f so_rtime: %f diff: %f\n",
-				//		recv_ts_, so_rtime, recv_ts_-so_rtime);
+				//sender_xr_ts_info(so_rtime);
 
 				// TFWC sender (getting AckVec)
-				tfwc_sndr_recv(xr->BT, begin, end, chunk, recv_ts_);
+				tfwc_sndr_recv(xr->BT, begin, end, chunk, recv_ts_, recv_by_ch, pb);
 
 				// we need to call Transmitter::output(pb) to make Ack driven
-				if(op)
-				cc_tfwc_output();
+				if(recv_by_ch)
+				cc_tfwc_output(recv_by_ch);
 				break;
 
 			case RBCC:
@@ -1368,8 +1359,7 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 			switch (cc_type_) {
 			case WBCC:
 				fprintf(stderr, ">>> parse_xr - i_am_receiver\n");
-				fprintf(stderr, "    [%s +%d] chunk[0]:%d\n", 
-					__FILE__,__LINE__, ntohs(chunk[0]));
+				receiver_xr_info(chunk);
 
 				// TFWC receiver (getting ackofack)
 				tfwc_rcvr_recv_aoa(xr->BT, chunk);
@@ -1384,14 +1374,14 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 		// XXX
 		debug_msg("UNKNOWN RTCP XR Packet: BT:%d\n", xr->BT);
 	}
-	fprintf(stderr,
-	"-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\n");
+	parse_xr_banner_bottom();
 }
 
 // receive XR (AckVec)
-void SessionManager::recv_xreport(CtrlHandler *ch) {
+void SessionManager::recv_xreport(CtrlHandler *ch, pktbuf* pb) {
+	fprintf(stderr, "    retrieve XR-----------------\n");
 	// timestamp for XR reception
-	recv_ts_ = tx_now() - tx_now_offset_;
+	recv_ts_ = tx_get_now();
 
 	Address * srcp;
 	int cc = ch->recv(pktbuf_, 2 * RTP_MTU, srcp);
@@ -1464,7 +1454,7 @@ void SessionManager::recv_xreport(CtrlHandler *ch) {
 		switch (flags & 0xff) {
 		case RTCP_PT_XR:
 			rtcp_pkt_id = RTCP_PT_XR;
-			parse_xr(rh, flags, ep, ps, addr, layer, 0);
+			parse_xr(rh, flags, ep, ps, addr, layer, 0, pb);
 			break;
 		case RTCP_PT_SR:
 			rtcp_pkt_id = RTCP_PT_SR;
@@ -1482,6 +1472,7 @@ void SessionManager::recv_xreport(CtrlHandler *ch) {
 		}
 		rh = (rtcphdr *)ep;
 	}
+	fprintf(stderr, "--------------------------------\n");
 	return;
 }
 
@@ -1617,7 +1608,7 @@ void SessionManager::parse_bye(rtcphdr* rh, int flags, u_char* ep, Source* ps)
 void SessionManager::recv(CtrlHandler* ch)
 {
 	// timestamp for XR reception 
-	recv_ts_ = tx_now() - tx_now_offset_;
+	recv_ts_ = tx_get_now();
 
 	Address * srcp;
 	int cc = ch->recv(pktbuf_, 2 * RTP_MTU, srcp);

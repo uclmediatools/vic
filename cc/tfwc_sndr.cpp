@@ -131,6 +131,9 @@ TfwcSndr::TfwcSndr() :
 	pvec_ = (u_int16_t *)malloc(sizeof(u_int16_t) * num_vec_);
 	clear_pvec(num_vec_);
 	__jacked_ = 0;
+
+	// packet reordering
+	reorder_ = false;
 }
 
 void TfwcSndr::tfwc_sndr_send(int seqno, double now) {
@@ -160,7 +163,7 @@ void TfwcSndr::tfwc_sndr_send(int seqno, double now) {
  * main TFWC reception path
  */
 void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
-		u_int16_t *chunk, double so_rtime)
+		u_int16_t *chunk, double so_rtime, bool recv_by_ch, pktbuf* pb)
 {
   switch (type) {
   // retrieve ackvec
@@ -171,9 +174,10 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	// so_timestamp (timestamp for packet reception)
 	so_recv_ = so_rtime;
 	// packet reordering?
-	bool reorder = false;
+	reorder_ = false;
 	// reordered ack delivery?
-	bool outofack = false;
+	bool outofack = false; 
+	UNUSED(outofack);
 
 	// get start/end seqno that this XR chunk reports
 	begins_ = begin;	// lowest packet seqno
@@ -183,9 +187,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	// i.e.,) head seqno(= highest seqno) of this ackvec
 	jacked_ = ends_ - 1;
 
-	//fprintf(stderr, 
-	//"    [%s +%d] begins: %d ends: %d jacked: %d\n", 
-	//	__FILE__, __LINE__, begins_, ends_, jacked_);
+	//print_xr_info();
 
 	// get the number of AckVec chunks
 	//   use seqno space to work out the num chunks
@@ -202,25 +204,33 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	clone_ackv(chunk, num_vec_);
 	//print_vec(ackv_, num_vec_);
 
+	//---------------------------------------------------------*
 	// detect packet reordering and reordered ack delivery
 	int shift = abs(__jacked_ - jacked_);
 	if (jacked_ < __jacked_) {
+		//
 		// this ack is deprecated message (e.g., too old).
+		//
 		if(jacked_ < aoa_) {
 		  debug_msg("warning: this ack(%d) is older than AoA(%d)!\n", jacked_,aoa_);
 		  // trigger packets out to keep Jacob's packet conservation rule
-		  cc_tfwc_output();
+		  packet_clocking(pb, recv_by_ch);
 		  return;
 		}
+		//
 		// this ack is delivered out-of-order
+		//
 		else if(out_of_ack(jacked_, seqvec_, num_seqvec_)) {
 		  debug_msg("warning: this ack(%d) itself is out-of-order!\n",jacked_);
-		  outofack = true;
+		  // if the disorder is beyond 3 dupack rule,
 		  // trigger packets out to keep Jacob's packet conservation rule
-		  cc_tfwc_output();
+		  if(shift >= DUPACKS)
+		  packet_clocking(pb, recv_by_ch);
 		  return;
 		}
+		//
 		// packet is out-of-order, so adjust ackvec re-construction
+		//
 		else {
 		  debug_msg("warning: packet reordering occurred!\n");
 		  // replace just ack'ed seqno
@@ -228,16 +238,17 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		  // re-calculate numelm and numvec
 		  num_elm_ = get_numelm(begins_, jacked_);
 		  num_vec_ = get_numvec(num_elm_);
-		  reorder = true;
+		  reorder_ = true;
 		}
 	}
 	else {
 		free(pvec_);
 	}
+	//---------------------------------------------------------*
 
 	// if packet reordering occurred, insert re-ordered seqno
 	// into the received ackvec using previously received ackvec
-	if(reorder) {
+	if(reorder_) {
 		for (int i = 0; i < num_vec_; i++) {
 		ackv_[i] = (ackv_[i] << shift) | pvec_[i];
 		}
@@ -265,32 +276,38 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	// 	@end: mvec_[DUPACKS-1] - 1
 	gen_refvec(mvec_[DUPACKS-1]-1, aoa_+1);
 
+	// we have detected packet re-ordering!!!
+	// so, we've updated/corrected received ackvec
+	// by inserting "jacked" to the previous ackvec.
+	// finally, we only need to clock packets out.
+	// (i.e., do NOT update cwnd and RTT)
+	if(reorder_) {
+		// triggering only if the disorder is beyond 3 dupack rule,
+		if (shift >= DUPACKS)
+		packet_clocking(pb, recv_by_ch);
+		reset_var();
+		return;
+	}
+
 	// TFWC is not turned on (i.e., no packet loss yet)
 	if(!is_tfwc_on_) {
-		if(detect_loss()) {
-			is_tfwc_on_ = true;
-			dupack_action();
-			ts_ = tsvec_[first_lost_pkt_%TSZ];
-		} else {
-			// TCP-like AIMD control
-			cwnd_ += 1;
-		}
+		if(detect_loss())
+		dupack_action(); 
+		else
+		cwnd_++; // TCP-like AIMD
 	} 
 	// TFWC is turned on, so control that way
 	else {
 		control();
 	}
-	fprintf(stderr, "\tnow: %f\tcwnd: %d\n", so_recv_, cwnd_);
 
 	// set ackofack (real number)
 	aoa_ = ackofack(); 
 
-	if(!reorder) {
 	// sampled RTT
 	tao_ = so_recv_ - tsvec_[jacked_%TSZ];
 	// update RTT with the sampled RTT
 	update_rtt(tao_);
-	}
 
 	// is TFWC being driven by timeout mechanism?
 	if(to_driven_ && is_tfwc_on_)
@@ -435,7 +452,7 @@ bool TfwcSndr::detect_loss() {
 		// record the very first lost packet seqno
 		if(!is_there) {
 			if(!is_first_loss_seen_) 
-				first_lost_pkt_ = refvec_[i];
+			first_lost_pkt_ = refvec_[i];
 		}
 	}
 	return ret = (count > 0) ? true : false;
@@ -499,8 +516,7 @@ void TfwcSndr::update_rtt(double rtt_sample) {
 	if (rto_ > maxrto_)
 		rto_ = maxrto_;
 
-	fprintf(stderr, "\t<< now_: %f tsvec_[%d]: %f rtt: %f srtt: %f\n", 
-		so_recv_, jacked_%TSZ, tsvec_[jacked_%TSZ], tao_, srtt_);
+	print_rtt_info();
 }
 
 /*
@@ -533,6 +549,8 @@ void TfwcSndr::control() {
 	// cwnd should always be greater than 1
 	if (cwnd_ < 1)
 		cwnd_ = 1;
+	
+	print_cwnd();
 }
 
 /*
@@ -603,6 +621,11 @@ void TfwcSndr::dupack_action() {
 
 	// generate weight factors
 	gen_weight();
+
+	// finally, record the very first lost packet's timestamp
+	ts_ = tsvec_[first_lost_pkt_%TSZ];
+	// then, turn on TFWC algo
+	is_tfwc_on_ = true;
 }
 
 /*
@@ -715,7 +738,7 @@ void TfwcSndr::avg_loss_interval() {
 
 	// this is average loss interval
 	avg_interval_ = I_tot_ / tot_weight_;
-	fprintf(stderr, "\tnow: %f\tALI: %f\n\n", now(), avg_interval_);
+	print_ALI();
 }
 
 /*
@@ -793,4 +816,14 @@ void TfwcSndr::new_rto(double rtt) {
 	double term2 = tmp1 * tmp2;
 
 	rto_ = (term1 + term2) * sqrt(rtt)/sqrtrtt_;
+}
+
+/*
+ * clokcing packet out on re-ordering detection
+ */
+void TfwcSndr::packet_clocking (pktbuf* pb, bool flag) {
+	if (flag)
+		cc_tfwc_trigger();
+	else
+		cc_tfwc_trigger(pb);
 }

@@ -78,15 +78,18 @@ public:
 	TfwcSndr();
 	virtual ~TfwcSndr() {};
 
-	virtual void cc_tfwc_output() = 0;
+	virtual void cc_tfwc_output(bool recv_by_ch=0) = 0;
+	virtual void cc_tfwc_output(pktbuf*) = 0;
+	virtual void cc_tfwc_trigger(pktbuf* pb=0) = 0;
 	virtual double tx_ts_offset() = 0;
+	virtual int tx_buf_size() = 0;
 
 	// parse seqno and timestamp
 	void tfwc_sndr_send(int, double);
 
 	// main reception path (XR packet)
 	void tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
-			u_int16_t *chunk, double so_rtime);
+	u_int16_t *chunk, double so_rtime, bool recv_by_ch, pktbuf* pb);
 
 	// return ackofack
 	inline u_int16_t tfwc_sndr_get_aoa() { return aoa_; }
@@ -123,6 +126,10 @@ public:
 
 	// Rtx timer
 	void expire(int option);
+
+	// packet reordering
+	bool reorder_;
+	inline bool reordering() { return (reorder_); }
 
 protected:
 	// generate sequence numbers
@@ -239,6 +246,9 @@ private:
 	// determine out-of-ordered ack delivery
 	bool out_of_ack (u_int16_t, u_int32_t*, int);
 
+	// keep packet conservation rule
+	void packet_clocking (pktbuf* pb, bool flag);
+
 	// AckVec clone from Vic 
 	inline void clone_ackv(u_int16_t *c, int n) {
 		for (int i = 0; i < n; i++)
@@ -299,6 +309,30 @@ private:
 	// store jack'ed 
 	inline void store (u_int16_t highest) {
 		__jacked_ = highest;
+	}
+
+	// print cwnd for debugging
+	inline void print_cwnd() {
+	fprintf(stderr, "\tnow: %f\tcwnd: %d\n", so_recv_, cwnd_);
+	}
+
+	// print received XR chunk info
+	inline void print_xr_info() {
+	fprintf(stderr, 
+	"    [%s +%d] begins: %d ends: %d jacked: %d\n", 
+	__FILE__, __LINE__, begins_, ends_, jacked_);
+	}
+
+	// print RTT related info for debugging
+	inline void print_rtt_info() {
+	fprintf(stderr, 
+	"\t<< now_: %f tsvec_[%d]: %f rtt: %f srtt: %f\n",
+	so_recv_, jacked_%TSZ, tsvec_[jacked_%TSZ], tao_, srtt_);
+	}
+
+	// print ALI for debugging
+	inline void print_ALI() {
+	fprintf(stderr, "\tnow: %f\tALI: %f\n\n", so_recv_, avg_interval_);
 	}
 
 	int ndtp_;		// number of data packet sent
