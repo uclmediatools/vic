@@ -1379,7 +1379,6 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 
 // receive XR (AckVec)
 void SessionManager::recv_xreport(CtrlHandler *ch, pktbuf* pb) {
-	fprintf(stderr, "    retrieve XR-----------------\n");
 	// timestamp for XR reception
 	recv_ts_ = tx_get_now();
 
@@ -1472,7 +1471,6 @@ void SessionManager::recv_xreport(CtrlHandler *ch, pktbuf* pb) {
 		}
 		rh = (rtcphdr *)ep;
 	}
-	fprintf(stderr, "--------------------------------\n");
 	return;
 }
 
