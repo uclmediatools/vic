@@ -45,12 +45,13 @@ using namespace std;
 int main (int argc, char *argv[]) {
 
 	if (argc < 2) {
-		cout << "Usage: ./asv <desired output filename> <input file>" << endl;
-		exit (0);
+	cout << "Usage: ./asv <desired output filename> <input file> <factor>" << endl;
+	exit (0);
 	}
 
 	string option = argv[1]; 
 	ifstream fin (argv[2]);
+	int scale = atoi(argv[3]);
 	ofstream fout;
 
 	// variables
@@ -68,7 +69,7 @@ int main (int argc, char *argv[]) {
 		while (getline(fin, items)) {
 			istringstream is(items);
 			is >> time >> seqno;
-			fout << time << "\t" << (seqno%100) << endl;
+			fout << time << "\t" << (seqno%scale) << endl;
 		} // while
 
 		fin.close();
