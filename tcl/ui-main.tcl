@@ -703,8 +703,11 @@ proc build.src { w src color } {
 	pack $w.r.ctrl -fill x -side top
 	pack $w.r -side left -expand 1 -fill x
 
-	if {$::tk_version > 8.4} {
+	if {$::tk_version > 8.4 && [windowingsystem] != "aqua"} {
 		bind $stamp <Enter> "%W configure -background [$m cget -activebackground]"
+		bind $stamp <Leave> "%W configure -background [$m cget -background]"
+	} elseif {$::tk_version > 8.4 && [windowingsystem] == "aqua"} {
+		bind $stamp <Enter> "%W configure -background CornflowerBlue"
 		bind $stamp <Leave> "%W configure -background [$m cget -background]"
 	} elseif {[windowingsystem] == "aqua"} {
 		bind $stamp <Enter> "%W configure -background CornflowerBlue"
