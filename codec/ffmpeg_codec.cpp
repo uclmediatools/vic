@@ -273,7 +273,7 @@ void FFMpegCodec::resize(int w, int h)
     width = w;
     height = h;
     frame_size = width * height;
-    assert(frame_size * 3 / 2 < MAX_FRAME_SIZE);
+    assert(frame_size * 3 / 2 <= MAX_FRAME_SIZE);
 }
 
 void FFMpegCodec::set_gop(int gop_)
