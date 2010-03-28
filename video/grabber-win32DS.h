@@ -161,6 +161,7 @@ class DirectShowGrabber : public Grabber {
       bool         have_I420_;  // YUV 4:2:0 planar
       bool         have_UYVY_;  // YUV 4:2:2 packed
       bool         have_YUY2_;  // as for UYVY but with different component ordering
+      bool         have_HDYC_;  // YUV 4:2:2 packed, same as UYVY but using BT709 color space
       bool         have_RGB24_; // RGB 24 bit
       bool         have_DVSD_;  // DV standard definition
 
