@@ -303,6 +303,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	else {
 		control();
 	}
+	print_cwnd();
 
 	// set ackofack (real number)
 	aoa_ = ackofack(); 
@@ -552,8 +553,6 @@ void TfwcSndr::control() {
 	// cwnd should always be greater than 1
 	if (cwnd_ < 1)
 		cwnd_ = 1;
-	
-	print_cwnd();
 }
 
 /*
