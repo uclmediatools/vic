@@ -58,54 +58,80 @@ proc build.bar w {
     global title
 
     frame $w.bar  -borderwidth 0
-    if {[string match [ windowingsystem] "aqua"]} {
+
+    if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
         global V
         set net $V(data-net)
-	label $w.bar.title -text "Address: [$net addr]  Port: [$net port]  TTL: [$net ttl]" -font [smallfont] -justify left
+        label $w.bar.title -text "Address: [$net addr]  Port: [$net port]  TTL: [$net ttl]" -font [smallfont] -justify left
+        ttk::button $w.bar.quit -text Quit \
+            -command adios
+        ttk::button $w.bar.menu -text Menu  \
+            -command "toggle_window .menu"
+        ttk::button $w.bar.help -text Help \
+            -command "toggle_window .help"
+        ttk::button $w.bar.autoplace -text Autoplace \
+            -command "ag_autoplace::show_ui"
+    } elseif {[windowingsystem] == "aqua"} {
+        global V
+        set net $V(data-net)
+        label $w.bar.title -text "Address: [$net addr]  Port: [$net port]  TTL: [$net ttl]" -font [smallfont] -justify left
         button $w.bar.quit -text Quit \
-                -font [smallfont] \
-                -command adios
+            -font [smallfont] \
+            -command adios
         button $w.bar.menu -text Menu  \
-                -font [smallfont] \
-                -command "toggle_window .menu"
+            -font [smallfont] \
+            -command "toggle_window .menu"
         button $w.bar.help -text Help \
-                -font [smallfont] \
-                -command "toggle_window .help"
-    	button $w.bar.autoplace -text Autoplace \
-				-font [smallfont] \
-				-command "ag_autoplace::show_ui"
+            -font [smallfont] \
+            -command "toggle_window .help"
+        button $w.bar.autoplace -text Autoplace \
+            -font [smallfont] \
+            -command "ag_autoplace::show_ui"
     } else {
         global V
         set net $V(data-net)
         label $w.bar.title -text "Address: [$net addr]  Port: [$net port]  TTL: [$net ttl]" -font [smallfont] -relief flat -justify left
         button $w.bar.quit -text Quit -relief raised \
-                -font [smallfont] -command adios \
-                -highlightthickness 1
+            -font [smallfont] -command adios \
+            -highlightthickness 1
         button $w.bar.menu -text Menu -relief raised \
-                -font [smallfont] -highlightthickness 1 \
-                -command "toggle_window .menu"
+            -font [smallfont] -highlightthickness 1 \
+            -command "toggle_window .menu"
         button $w.bar.help -text Help -relief raised \
-                -font [smallfont] -highlightthickness 1 \
-                -command "toggle_window .help"
-	    button $w.bar.autoplace -text Autoplace -relief raised  \
-				-font [smallfont] -highlightthickness 1 \
-				-command "ag_autoplace::show_ui"
-    }                                
+            -font [smallfont] -highlightthickness 1 \
+            -command "toggle_window .help"
+        button $w.bar.autoplace -text Autoplace -relief raised  \
+            -font [smallfont] -highlightthickness 1 \
+            -command "ag_autoplace::show_ui"
+    }
+
     pack $w.bar.title -side left -fill both -expand 1
     pack $w.bar.menu $w.bar.autoplace $w.bar.help $w.bar.quit -side left -padx 1 -pady 1 
+
+    if {[windowingsystem] == "aqua"} {
+        label $w.bar.gap -text " "
+        pack $w.bar.gap -side left -padx 1 -pady 1
+
+    }
 }
 
 proc build.bar2 w {
 
 	frame $w.bar2 -relief ridge -borderwidth 0
 
-        button $w.bar2.autoplace -text Autoplace -relief raised  \
-		-font [smallfont] -highlightthickness 1 \
-		-command "ag_autoplace::show_ui"
-       button $w.bar2.pixrate -text Pixrate -relief raised \
-		-font [smallfont] -highlightthickness 1 \
-		-command "create_pixrate_stats_window"
-
+    if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
+        ttk::button $w.bar2.autoplace -text Autoplace \
+            -command "ag_autoplace::show_ui"
+        ttk::button $w.bar2.pixrate -text Pixrate \
+            -command "create_pixrate_stats_window"
+    } else {
+        button $w.bar2.autoplace -text Autoplace -relief raised \
+            -font [smallfont] -highlightthickness 1 \
+            -command "ag_autoplace::show_ui"
+        button $w.bar2.pixrate -text Pixrate -relief raised \
+            -font [smallfont] -highlightthickness 1 \
+            -command "create_pixrate_stats_window"
+    }
 
 	pack $w.bar2.autoplace $w.bar2.pixrate -side right -padx 1 -pady 1
 }
@@ -251,17 +277,17 @@ proc init_gui {} {
 		bind . <Key-$i> "redecorate $i"
 	}
 
-        frame .top.barholder -relief ridge -borderwidth 2
+	frame .top.barholder -relief ridge -borderwidth 2
 
-        build.bar .top.barholder
-#       build.bar2 .top.barholder
+	build.bar .top.barholder
+#	build.bar2 .top.barholder
 
-        pack .top.barholder.bar -fill x -side bottom
-#       pack .top.barholder.bar2 -fill x -side bottom
-        pack .top.barholder -side bottom -fill x
+	pack .top.barholder.bar -fill x -side bottom
+#	pack .top.barholder.bar2 -fill x -side bottom
+	pack .top.barholder -side bottom -fill x
 	pack .top -expand 1 -fill both
 
-        label .top.label -text "Waiting for video..."
+	label .top.label -text "Waiting for video..."
 	pack .top.label -before .top.barholder -anchor c -expand 1
 
 	#
@@ -542,29 +568,27 @@ proc build.src { w src color } {
 	set f [smallfont]
 	set stamp $w.stamp
 	frame $stamp -relief ridge -borderwidth 2
-	bind $stamp <Enter> "%W configure -background gray90"
-        if {[string match [ windowingsystem] "aqua"]} {
-                bind $stamp <Enter> "%W configure -background CornflowerBlue"
-        } else {
-                bind $stamp <Enter> "%W configure -background gray90"
-        }   
-	bind $stamp <Leave> "%W configure -background [resource background]"
+
 	create_video_widget $stamp.video 80 60
 	global win_is_slow
 	set win_is_slow($stamp.video) 1
 
 	# disable xvideo fro stamp video
 	attach_window $src $stamp.video false 
-        
-	if {[string match [ windowingsystem] "aqua"]} {
-                pack $stamp.video -side left -padx 2 -pady 2
-                pack $stamp -side left -anchor nw -padx {4 2} -pady 2
-                frame $w.r -padx 2
-        } else {
-                pack $stamp.video -side left -anchor c -padx 2
-                pack $stamp -side left -fill y
-                frame $w.r
-        }
+
+    if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
+        pack $stamp.video -side left -padx 2 -pady 2
+        pack $stamp -side left -anchor nw -padx {4 2} -pady 2
+        frame $w.r -padx 2
+    } elseif {[windowingsystem] == "aqua"} {
+        pack $stamp.video -side left -padx 2 -pady 2
+        pack $stamp -side left -anchor nw -padx {4 2} -pady 2
+        frame $w.r -padx 2
+    } else {
+        pack $stamp.video -side left -anchor c -padx 2
+        pack $stamp -side left -fill y
+        frame $w.r
+    }
         
 	global V	
 # Show sender window as raised
@@ -576,19 +600,22 @@ proc build.src { w src color } {
 
 	pack $w.r.cw -side left -expand 1 -fill both -anchor w -padx 0
 
-
-        if {[string match [ windowingsystem] "aqua"]} {
-                label $w.r.cw.name -textvariable src_nickname($src) -font $f \
-                        -padx 2 -pady 1 -borderwidth 0 -anchor w
-                label $w.r.cw.addr -textvariable src_info($src) -font $f \
-                        -padx 2 -pady 1 -borderwidth 0 -anchor w
-        } else {
-                label $w.r.cw.name -textvariable src_nickname($src) -font $f \
-                        -pady 1 -borderwidth 0 -anchor w
-                label $w.r.cw.addr -textvariable src_info($src) -font $f \
-                        -pady 1 -borderwidth 0 -anchor w
-        }          
-
+    if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
+        label $w.r.cw.name -textvariable src_nickname($src) -font $f \
+            -padx 2 -pady 1 -borderwidth 0 -anchor w
+        label $w.r.cw.addr -textvariable src_info($src) -font $f \
+            -padx 2 -pady 1 -borderwidth 0 -anchor w
+    } elseif {[windowingsystem] == "aqua"} {
+        label $w.r.cw.name -textvariable src_nickname($src) -font $f \
+            -padx 2 -pady 1 -borderwidth 0 -anchor w
+        label $w.r.cw.addr -textvariable src_info($src) -font $f \
+            -padx 2 -pady 1 -borderwidth 0 -anchor w
+    } else {
+        label $w.r.cw.name -textvariable src_nickname($src) -font $f \
+            -pady 1 -borderwidth 0 -anchor w
+        label $w.r.cw.addr -textvariable src_info($src) -font $f \
+            -pady 1 -borderwidth 0 -anchor w
+    }
 
 	global ftext btext ltext
 	set ftext($src) "0.0 f/s"
@@ -609,52 +636,66 @@ proc build.src { w src color } {
 	set mutebutton($src) $V(muteNewSources)
 	$src mute $mutebutton($src)
 
-        if {[string match [ windowingsystem] "aqua"]} {
-                checkbutton $w.r.ctrl.mute -text mute -borderwidth 2 \
-                        -font $f -width 4 \
-                        -command "$src mute \$mutebutton($src)" \
-                        -variable mutebutton($src)
+    if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
+        ttk::checkbutton $w.r.ctrl.mute -text mute -width 4 \
+            -command "$src mute \$mutebutton($src)" \
+            -variable mutebutton($src)
 
-                checkbutton $w.r.ctrl.color -text color -borderwidth 2 \
-                        -font $f -width 4 \
-                        -command "\[$src handler\] color \$colorbutton($src)" \
-                        -variable colorbutton($src)
-        } else {
-                checkbutton $w.r.ctrl.mute -text mute -borderwidth 2 \
-                        -highlightthickness 1 \
-                        -relief groove -font $f -width 4 \
-                        -command "$src mute \$mutebutton($src)" \
-                        -variable mutebutton($src)
+        ttk::checkbutton $w.r.ctrl.color -text color -width 4 \
+            -command "\[$src handler\] color \$colorbutton($src)" \
+            -variable colorbutton($src)
+    } elseif {[windowingsystem] == "aqua"} {
+        checkbutton $w.r.ctrl.mute -text mute -borderwidth 2 \
+            -font $f -width 4 \
+            -command "$src mute \$mutebutton($src)" \
+            -variable mutebutton($src)
 
-                checkbutton $w.r.ctrl.color -text color -borderwidth 2 \
-                        -highlightthickness 1 \
-                        -relief groove -font $f -width 4 \
-                        -command "\[$src handler\] color \$colorbutton($src)" \
-                        -variable colorbutton($src)
-        }
-             
+        checkbutton $w.r.ctrl.color -text color -borderwidth 2 \
+            -font $f -width 4 \
+            -command "\[$src handler\] color \$colorbutton($src)" \
+            -variable colorbutton($src)
+    } else {
+        checkbutton $w.r.ctrl.mute -text mute -borderwidth 2 \
+            -highlightthickness 1 \
+            -relief groove -font $f -width 4 \
+            -command "$src mute \$mutebutton($src)" \
+            -variable mutebutton($src)
+
+        checkbutton $w.r.ctrl.color -text color -borderwidth 2 \
+            -highlightthickness 1 \
+            -relief groove -font $f -width 4 \
+            -command "\[$src handler\] color \$colorbutton($src)" \
+            -variable colorbutton($src)
+    }
+
 	set m $w.r.ctrl.info.menu$src
-        if {[string match [ windowingsystem] "aqua"]} {
-                menubutton $w.r.ctrl.info -text info -borderwidth 2 \
-                        -font $f -pady 4 -menu $m
-        } else {
-                menubutton $w.r.ctrl.info -text info... -borderwidth 2 \
-                        -highlightthickness 1 \
-                        -relief groove -font $f -width 5 \
-                        -menu $m
-        }      
+    if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
+        ttk::menubutton $w.r.ctrl.info -text info -menu $m
+    } elseif {[windowingsystem] == "aqua"} {
+        menubutton $w.r.ctrl.info -text info -borderwidth 2 \
+            -font $f -pady 4 -menu $m
+    } else {
+        menubutton $w.r.ctrl.info -text info -borderwidth 2 \
+            -highlightthickness 1 \
+            -relief groove -font $f -width 5 \
+            -menu $m -indicatoron 1
+    }
 	build_info_menu $src $m
 
-        if {[string match [ windowingsystem] "aqua"]} {
-                pack $w.r.ctrl.mute -side left -expand 1
-                pack $w.r.ctrl.color -side left -expand 1
-                pack $w.r.ctrl.info -side left -fill x -expand 1
-        } else {
-                pack $w.r.ctrl.mute -side left -fill x -expand 1
-                pack $w.r.ctrl.color -side left -fill x -expand 1
-                pack $w.r.ctrl.info -side left -fill x -expand 1
-#               pack $w.r.ctrl.options -side left -fill x -expand 1
-        } 
+    if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
+        pack $w.r.ctrl.mute -side left -expand 1
+        pack $w.r.ctrl.color -side left -expand 1
+        pack $w.r.ctrl.info -side left -fill x -expand 1
+    } elseif {[windowingsystem] == "aqua"} {
+        pack $w.r.ctrl.mute -side left -expand 1
+        pack $w.r.ctrl.color -side left -expand 1
+        pack $w.r.ctrl.info -side left -fill x -expand 1
+    } else {
+        pack $w.r.ctrl.mute -side left -fill x -expand 1
+        pack $w.r.ctrl.color -side left -fill x -expand 1
+        pack $w.r.ctrl.info -side left -fill x -expand 1
+#       pack $w.r.ctrl.options -side left -fill x -expand 1
+    }
 
 	global colorbutton
 	set colorbutton($src) 1
@@ -666,7 +707,21 @@ proc build.src { w src color } {
 	pack $w.r.cw -fill x -side top
 	pack $w.r.ctrl -fill x -side top
 	pack $w.r -side left -expand 1 -fill x
-	
+
+    if {$::tk_version > 8.4 && [windowingsystem] != "aqua"} {
+        bind $stamp <Enter> "%W configure -background [$m cget -activebackground]"
+        bind $stamp <Leave> "%W configure -background [$m cget -background]"
+    } elseif {$::tk_version > 8.4 && [windowingsystem] == "aqua"} {
+        bind $stamp <Enter> "%W configure -background CornflowerBlue"
+        bind $stamp <Leave> "%W configure -background [$m cget -background]"
+    } elseif {[windowingsystem] == "aqua"} {
+        bind $stamp <Enter> "%W configure -background CornflowerBlue"
+        bind $stamp <Leave> "%W configure -background [resource background]"
+    } else {
+        bind $stamp <Enter> "%W configure -background gray90"
+        bind $stamp <Leave> "%W configure -background [resource background]"
+    }
+
 	bind $stamp.video <1> "select_thumbnail $w $src"
 	bind $stamp.video <Enter> { focus %W }
 	bind $stamp.video <d> "$src deactivate"
