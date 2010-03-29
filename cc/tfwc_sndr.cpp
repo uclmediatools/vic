@@ -44,8 +44,8 @@
 #include "tfwc_sndr.h"
 
 // timestamp skew from Vic to Network Device 
-// (approximately 4 usec)
-#define SKEW 0.000004
+// (approximately 10 usec)
+#define SKEW 0.000010
 
 /*
  * retransmission timer
