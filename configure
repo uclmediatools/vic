@@ -4212,7 +4212,7 @@ $as_echo "Tcl ${TCL_VERSION}${TCL_PATCH_LEVEL}" >&6; }
         V_DEFINE="$V_DEFINE -DMAC_OSX_TCL"
     fi
 
-elif test "${TCL_VERSION}" == "8.0" ; then
+elif test "${TCL_VERSION}" = "8.0" ; then
     if test -f "${TCL_SRC_DIR}/generic/tcl2c.c" ; then
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: UCL Tcl ${TCL_VERSION}${TCL_PATCH_LEVEL}" >&5
 $as_echo "UCL Tcl ${TCL_VERSION}${TCL_PATCH_LEVEL}" >&6; }
@@ -4419,7 +4419,7 @@ $as_echo "could not find ${TK_BIN_DIR}/tkConfig.sh" >&6; }
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for a compatible version of Tk" >&5
 $as_echo_n "checking for a compatible version of Tk... " >&6; }
-if test "${TCL_VERSION}" == "${TK_VERSION}"; then
+if test "${TCL_VERSION}" = "${TK_VERSION}"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: Tk ${TK_VERSION}${TK_PATCH_LEVEL}" >&5
 $as_echo "Tk ${TK_VERSION}${TK_PATCH_LEVEL}" >&6; }
 
