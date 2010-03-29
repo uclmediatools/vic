@@ -119,6 +119,7 @@ static const char rcsid[] =
 class H261Encoder : public TransmitterModule {
     public:
 	void setq(int q);
+	int quantizer_;
 
 	// Tx pktbuf size
 	int txq_beg_;
@@ -304,13 +305,15 @@ H261Encoder::~H261Encoder()
 H261PixelEncoder::H261PixelEncoder() : H261Encoder(FT_YUV_CIF)
 {
 	quant_required_ = 0;
-	setq(10);
+	quantizer_ = 10;
+	setq(quantizer_);
 }
 
 H261DCTEncoder::H261DCTEncoder() : H261Encoder(FT_DCT)
 {
 	quant_required_ = 1;
-	setq(10);
+	quantizer_ = 10;
+	setq(quantizer_);
 }
 
 /*
@@ -481,7 +484,8 @@ int
 H261Encoder::command(int argc, const char*const* argv)
 {
 	if (argc == 3 && strcmp(argv[1], "q") == 0) {
-		setq(atoi(argv[2]));
+		quantizer_ = atoi(argv[2]);
+		setq(quantizer_);
 		return (TCL_OK);
 	}
 	return (TransmitterModule::command(argc, argv));

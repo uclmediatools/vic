@@ -151,7 +151,7 @@ void TfwcSndr::tfwc_sndr_send(pktbuf* pb, double now) {
 
 	// timestamp vector for loss history update
 	tsvec_[seqno_%TSZ] = now_-SKEW;
-	print_packet_tsvec();
+	//print_packet_tsvec();
 
 	// sequence number must be greater than zero
 	assert (seqno_ > 0);
