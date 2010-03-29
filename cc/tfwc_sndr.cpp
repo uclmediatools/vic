@@ -43,6 +43,9 @@
 #include "transmitter.h"
 #include "tfwc_sndr.h"
 
+// timestamp skew from Vic to Network Device 
+// (approximately 4 usec)
+#define SKEW 0.000004
 
 /*
  * retransmission timer
@@ -147,7 +150,7 @@ void TfwcSndr::tfwc_sndr_send(pktbuf* pb, double now) {
 	now_	= now;
 
 	// timestamp vector for loss history update
-	tsvec_[seqno_%TSZ] = now_;
+	tsvec_[seqno_%TSZ] = now_-SKEW;
 	print_packet_tsvec();
 
 	// sequence number must be greater than zero
@@ -187,7 +190,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	// i.e.,) head seqno(= highest seqno) of this ackvec
 	jacked_ = ends_ - 1;
 
-	//print_xr_info();
+	//print_xr_info(__FILE__,__LINE__);
 
 	// get the number of AckVec chunks
 	//   use seqno space to work out the num chunks

@@ -78,6 +78,7 @@ public:
 	TfwcSndr();
 	virtual ~TfwcSndr() {};
 
+	// virtual functions
 	virtual void cc_tfwc_output(bool recv_by_ch=0) = 0;
 	virtual void cc_tfwc_output(pktbuf*) = 0;
 	virtual void cc_tfwc_trigger(pktbuf* pb=0) = 0;
@@ -99,13 +100,6 @@ public:
 
 	// return tfwc controlled cwnd value
 	inline u_int32_t tfwc_magic() { return cwnd_; };
-
-	// set timestamp in u_int32_t type (TfwcSndr)
-	inline u_int32_t tfwc_sndr_t_now() {
-		timeval tv;
-		::gettimeofday(&tv, 0);
-		return (tv.tv_sec + tv.tv_usec);
-	}
 
 	// set timestamp in double type (TfwcSndr)
 	inline double tfwc_sndr_now() {
@@ -145,8 +139,7 @@ protected:
 	inline u_int16_t get_head_pos(u_int16_t ackvec) {
 		int l;
 		for (l = 0; l < BITLEN; l++) {
-			if(GET_HEAD_VEC(ackvec, l))
-				break;
+		if(GET_HEAD_VEC(ackvec, l)) break;
 		}
 		return (BITLEN - l);
 	}
@@ -154,40 +147,39 @@ protected:
 	inline u_int16_t get_tail_pos(u_int16_t ackvec) {
 		int l;
 		for (l = 0; l < BITLEN; l++) {
-			if(GET_TAIL_VEC(ackvec, l))
-				break;
+		if(GET_TAIL_VEC(ackvec, l)) break;
 		}
 		return (l + 1);
 	}
 	// generate margin vector
 	inline void marginvec(u_int16_t hseq) {
-		for (int i = 0; i < DUPACKS; i++) 
-			// round up if it is less than zero
-			mvec_[i] = ((hseq - i) < 0) ? 0 : (hseq - i);
+	for (int i = 0; i < DUPACKS; i++) 
+		// round up if it is less than zero
+		mvec_[i] = ((hseq - i) < 0) ? 0 : (hseq - i);
 	}
 	// ackofack
 	inline u_int16_t ackofack () {
-		return ((mvec_[DUPACKS - 1] - 1) <= 0) ?
-			0 : (u_int16_t) (mvec_[DUPACKS - 1] - 1);
+	return ((mvec_[DUPACKS - 1] - 1) <= 0) ?
+		0 : (u_int16_t) (mvec_[DUPACKS - 1] - 1);
 	}
 	// print mvec
 	inline void print_mvec() {
-		fprintf(stderr, "\tmargin numbers: ( %d %d %d )\n", 
-				mvec_[0], mvec_[1], mvec_[2]);
+	fprintf(stderr, "\tmargin numbers: ( %d %d %d )\n", 
+	mvec_[0], mvec_[1], mvec_[2]);
 	}
 	// printf seqvec
 	inline void print_seqvec(int numelm) {
-		fprintf(stderr, "\tsequence numbers: (");
+	fprintf(stderr, "\tsequence numbers: (");
 		for (int i = 0; i < numelm; i++)
-			fprintf(stderr, " %d", seqvec_[i]);
-		fprintf(stderr, " )\n");
+		fprintf(stderr, " %d", seqvec_[i]);
+	fprintf(stderr, " )\n");
 	}
 	// print vec
 	inline void print_vec(u_int16_t *vec, int c) {
-		fprintf(stderr, "\t(");
+	fprintf(stderr, "\t(");
 		for (int i = 0; i < c; i++)
-			fprintf(stderr, " %d", vec[i]);
-		fprintf(stderr, " )\n");
+		fprintf(stderr, " %d", vec[i]);
+	fprintf(stderr, " )\n");
 	}
 
 	// retransmission timer
@@ -252,53 +244,53 @@ private:
 	// AckVec clone from Vic 
 	inline void clone_ackv(u_int16_t *c, int n) {
 		for (int i = 0; i < n; i++)
-			ackv_[i] = ntohs(c[i]);
+		ackv_[i] = ntohs(c[i]);
 	}
 
 	// copy AckVec to store
 	inline void copy_ackv(int n) {
 		for(int i = 0; i < n; i++)
-			pvec_[i] = ackv_[i];
+		pvec_[i] = ackv_[i];
 	}
 
 	// clear timestamp vector
 	inline void clear_tsv (int n) {
 		for (int i = 0; i < n; i++)
-			tsvec_[i] = 0;
+		tsvec_[i] = 0;
 	}
 
 	// clear seqvec
 	inline void clear_sqv (int n) {
 		for (int i = 0; i < n; i++)
-			seqvec_[i] = 0;
+		seqvec_[i] = 0;
 	}
 
 	// clear ackvec
 	inline void clear_ackv (int n) {
 		for (int i = 0; i < n; i++)
-			ackv_[i] = 0;
+		ackv_[i] = 0;
 	}
 
 	// clear ackvec
 	inline void clear_pvec (int n) {
 		for (int i = 0; i < n; i++)
-			pvec_[i] = 0;
+		pvec_[i] = 0;
 	}
 
 	// clear refvec
 	inline void clear_refv (int n) {
 		for (int i = 0; i < n; i++)
-			refvec_[i] = 0;
+		refvec_[i] = 0;
 	}
 
 	// number of ackvec chunks
 	inline int get_numvec(int n) {
-		return (n/BITLEN + (n%BITLEN > 0));	
+	return (n/BITLEN + (n%BITLEN > 0));	
 	}
 
 	// number of ackvec elements
 	inline int get_numelm (int begin, int end) {
-		return (end - begin + 1);
+	return (end - begin + 1);
 	}
 
 	// replace jack'ed 
@@ -317,17 +309,22 @@ private:
 	}
 
 	// print received XR chunk info
-	inline void print_xr_info() {
-	fprintf(stderr, 
-	"    [%s +%d] begins: %d ends: %d jacked: %d\n", 
-	__FILE__, __LINE__, begins_, ends_, jacked_);
+	inline void print_xr_info(const char* str, const int i) {
+	fprintf(stderr,
+	"    [%s +%d] begins: %d ends: %d jacked: %d\n",
+	str, i, begins_, ends_, jacked_);
 	}
 
 	// print RTT related info for debugging
 	inline void print_rtt_info() {
-	fprintf(stderr, 
-	"\t<< now_: %f tsvec_[%d]: %f rtt: %f srtt: %f\n",
+	fprintf(stderr,
+	"\t>> now_: %f tsvec_[%d]: %f rtt: %f srtt: %f\n",
 	so_recv_, jacked_%TSZ, tsvec_[jacked_%TSZ], tao_, srtt_);
+	}
+	inline void print_rtt_info(const char* str) {
+	fprintf(stderr,
+	"\t%s now_: %f tsvec_[%d]: %f rtt: %f srtt: %f\n",
+	str, so_recv_, jacked_%TSZ, tsvec_[jacked_%TSZ], tao_, srtt_);
 	}
 
 	// print ALI for debugging
