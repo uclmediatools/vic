@@ -137,7 +137,7 @@ class DirectShowGrabber : public Grabber {
       virtual void setsize();
       virtual int  grab();
       void         setport(const char *port);
-      int          getCaptureCapabilities(int preferred_max_width=1024);
+      int          getCaptureCapabilities(int preferred_max_height=720);
       virtual void setCaptureOutputFormat();
 
       int          useconfig_;
