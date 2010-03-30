@@ -751,25 +751,21 @@ int DirectShowGrabber::grab() {
        planarYUYV420_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
      else if (have_YUY2_)
        packedYUYV422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
-     else if (have_UYVY_ || have_HDYC_)
+     else if (have_UYVY_ || have_HDYC_ || have_DVSD_)
        packedUYVY422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
-     else if (have_RGB24_)
+     else // if (have_RGB24_)
        converter_->convert((u_int8_t*)last_frame_, width_, height_, frame_, outw_, outh_, TRUE);
-	 else
-       packedUYVY422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
      break;
 
    case CF_422:
      if (have_YUY2_)
        packedYUYV422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
-     else if (have_UYVY_ || have_HDYC_)
+     else if (have_UYVY_ || have_HDYC_ || have_DVSD_)
        packedUYVY422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
      else if (have_I420_)
        planarYUYV420_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
-     else if (have_RGB24_)
+     else // if (have_RGB24_)
        converter_->convert((u_int8_t*)last_frame_, width_, height_, frame_, outw_, outh_, TRUE);
-	 else
-       packedUYVY422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
      break;
    }
 
