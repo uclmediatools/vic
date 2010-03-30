@@ -4,7 +4,7 @@
 RM='rm -f'
 LS='ls'
 
-for i in $( $LS $PWD/*.xg $PWD/*.eps $PWD/trace.r $PWD/trace.s); do
+for i in $( $LS $PWD/*.xg $PWD/*.eps $PWD/trace.r $PWD/trace.s $PWD/*.tr); do
 	echo "deleting: $i"
 	$RM $i
 done 2> /dev/null
