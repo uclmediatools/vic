@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+# Visual C++ Express 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vic", "vic.2008.vcproj", "{85E25224-4C6D-44B5-A88D-44C64834ECF4}"
 	ProjectSection(ProjectDependencies) = postProject
 		{698A5E68-C79E-49DE-9EA8-7C455DEE3EB8} = {698A5E68-C79E-49DE-9EA8-7C455DEE3EB8}
@@ -22,8 +22,8 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{85E25224-4C6D-44B5-A88D-44C64834ECF4}.Debug|Win32.ActiveCfg = Debug (GPL)|Win32
 		{85E25224-4C6D-44B5-A88D-44C64834ECF4}.Debug|Win32.Build.0 = Debug (GPL)|Win32
-		{85E25224-4C6D-44B5-A88D-44C64834ECF4}.Release|Win32.ActiveCfg = Release (nonGPL)|Win32
-		{85E25224-4C6D-44B5-A88D-44C64834ECF4}.Release|Win32.Build.0 = Release (nonGPL)|Win32
+		{85E25224-4C6D-44B5-A88D-44C64834ECF4}.Release|Win32.ActiveCfg = Release (GPL)|Win32
+		{85E25224-4C6D-44B5-A88D-44C64834ECF4}.Release|Win32.Build.0 = Release (GPL)|Win32
 		{273BED90-2525-4E7B-933E-4FC99F1A68B6}.Debug|Win32.ActiveCfg = Debug|Win32
 		{273BED90-2525-4E7B-933E-4FC99F1A68B6}.Debug|Win32.Build.0 = Debug|Win32
 		{273BED90-2525-4E7B-933E-4FC99F1A68B6}.Release|Win32.ActiveCfg = Release|Win32
