@@ -215,7 +215,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	clear_ackv(num_vec_);
 	// clone AckVec from Vic
 	clone_ackv(chunk, num_vec_);
-	//print_vec(ackv_, num_vec_);
+	//print_vec("ackvec", ackv_, num_vec_);
 
 	//---------------------------------------------------------*
 	// detect packet reordering and reordered ack delivery
@@ -226,7 +226,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		//
 		if(jacked_ < aoa_) {
 		  debug_msg("warning: this ack(%d) is older than AoA(%d)!\n", jacked_,aoa_);
-		  // trigger packets out to keep Jacob's packet conservation rule
+		  // trigger a packet out to keep Jacob's packet conservation rule
 		  packet_clocking(pb, recv_by_ch);
 		  return;
 		}
@@ -236,9 +236,10 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		else if(out_of_ack(jacked_, seqvec_, num_seqvec_)) {
 		  debug_msg("warning: this ack(%d) itself is out-of-order!\n",jacked_);
 		  // if the disorder is beyond 3 dupack rule,
-		  // trigger packets out to keep Jacob's packet conservation rule
+		  // revert to the earlier history
 		  if(shift >= DUPACKS)
 		  revert = revert_interval(jacked_);
+		  // then, update cwnd
 		  cwnd_in_packets(revert);
 		  print_cwnd();
 		  return;
@@ -278,7 +279,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	}
 
 	// generate seqno vector
-	//print_vec(ackv_, num_vec_);
+	//print_vec("ackvec", ackv_, num_vec_);
 	gen_seqvec(ackv_, num_vec_);
 
 	// generate margin vector
@@ -297,9 +298,10 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	// finally, we only need to clock packets out.
 	// (i.e., do NOT update cwnd and RTT)
 	if(reorder_) {
-		// triggering only if the disorder is beyond 3 dupack rule,
+		// revert to the earlier history if the disorder is beyond 3 dupack rule
 		if (shift >= DUPACKS)
 		revert = revert_interval(jacked_);
+		// then, update cwnd
 		cwnd_in_packets(revert);
 		print_cwnd();
 		reset_var();
@@ -381,7 +383,7 @@ void TfwcSndr::reset_var() {
 	clear_pvec(num_vec_);
 	// store ackv
 	copy_ackv(num_vec_);
-	//print_vec(pvec_, num_vec_);
+	//print_vec("stored ackvec", pvec_, num_vec_);
 
 	// finally, free ackvec
 	free(ackv_);
@@ -422,7 +424,7 @@ void TfwcSndr::gen_seqvec (u_int16_t *v, int n) {
 	// therefore, the number of seqvec elements is:
 	num_seqvec_ = num_elm_ - num_missing_;
 	// printing retrieved sequence numbers from received AckVec
-	print_seqvec(num_seqvec_);
+	print_vec("sequence numbers", seqvec_, num_seqvec_);
 }
 
 /*
@@ -576,7 +578,7 @@ void TfwcSndr::cwnd_in_packets(bool revert) {
  * core part for congestion window control
  * (cwnd is in bytes)
  */
-void cwnd_in_packets() {
+void cwnd_in_bytes() {
 }
 
 /*
@@ -678,17 +680,9 @@ void TfwcSndr::loss_history() {
 
 	// compare reference with seqvec
 	for (int i = 0; i < num_refvec_; i++) {
-		// is there a loss found?
-		for (int j = 0; j < num_seqvec_; j++) {
-			if (refvec_[i] == seqvec_[j]) {
-				is_loss = false;
-				break;
-			} else 
-				is_loss = true;
-		}
-
-		// is this a new loss event?
-		if (is_loss) {
+		// is there a loss found?? and, is this a new loss event??
+		if (!find_seqno(seqvec_, num_seqvec_, refvec_[i])) {
+			is_loss = true;
 			if (tsvec_[refvec_[i]%TSZ] - ts_ > srtt_)
 			is_new_event = true;
 			else
@@ -821,6 +815,13 @@ bool TfwcSndr::revert_interval(int reseq) {
 bool TfwcSndr::find_seqno (u_int16_t *v, int n, int target) {
 	for (int i = 0; i < n; i++) {
 		if (v[i] == target)
+		return true;
+	}
+	return false;
+}
+bool TfwcSndr::find_seqno(u_int32_t *v, int n, u_int32_t target) {
+	for (int i = 0; i < n; i++) {
+		if(v[i] == target)
 		return true;
 	}
 	return false;

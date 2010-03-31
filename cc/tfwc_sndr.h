@@ -156,25 +156,6 @@ protected:
 	return ((mvec_[DUPACKS - 1] - 1) <= 0) ?
 		0 : (u_int16_t) (mvec_[DUPACKS - 1] - 1);
 	}
-	// print mvec
-	inline void print_mvec() {
-	fprintf(stderr, "\tmargin numbers: ( %d %d %d )\n", 
-	mvec_[0], mvec_[1], mvec_[2]);
-	}
-	// printf seqvec
-	inline void print_seqvec(int numelm) {
-	fprintf(stderr, "\tsequence numbers: (");
-		for (int i = 0; i < numelm; i++)
-		fprintf(stderr, " %d", seqvec_[i]);
-	fprintf(stderr, " )\n");
-	}
-	// print vec
-	inline void print_vec(u_int16_t *vec, int c) {
-	fprintf(stderr, "\t(");
-		for (int i = 0; i < c; i++)
-		fprintf(stderr, " %d", vec[i]);
-	fprintf(stderr, " )\n");
-	}
 
 	// retransmission timer
 	TfwcRtxTimer rtx_timer_;
@@ -317,6 +298,7 @@ private:
 
 	// find seqno
 	bool find_seqno(u_int16_t *v, int n, int target);
+	bool find_seqno(u_int32_t *v, int n, u_int32_t target);
 
 	// print cwnd for debugging
 	inline void print_cwnd() {
@@ -351,6 +333,25 @@ private:
 	inline void print_packet_tsvec() {
 	fprintf(stderr, "\t>> now: %f tsvec_[%d]: %f\n",
 	now_, seqno_%TSZ, tsvec_[seqno_%TSZ]);
+	}
+
+	// print mvec
+	inline void print_mvec() {
+	fprintf(stderr, "\tmargin numbers: ( %d %d %d )\n", 
+	mvec_[0], mvec_[1], mvec_[2]);
+	}
+	// print vec
+	inline void print_vec(const char* str, u_int32_t *vec, int c) {
+	fprintf(stderr, "\t%s: (", str);
+		for (int i = 0; i < c; i++)
+		fprintf(stderr, " %d", vec[i]);
+	fprintf(stderr, " )\n");
+	}
+	inline void print_vec(const char* str, u_int16_t *vec, int c) {
+	fprintf(stderr, "\t%s: (", str);
+		for (int i = 0; i < c; i++)
+		fprintf(stderr, " %d", vec[i]);
+	fprintf(stderr, " )\n");
 	}
 
 	int ndtp_;		// number of data packet sent
