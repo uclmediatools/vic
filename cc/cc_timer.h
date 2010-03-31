@@ -46,6 +46,9 @@ public:
 	void cancel();
 	enum CcTimerStatus {TIMER_IDLE, TIMER_PENDING, TIMER_HANDLING};
 	inline int status() { return status_; };
+	inline void set_timer_idle() { status_ = TIMER_IDLE; };
+	inline void set_timer_pending() { status_ = TIMER_PENDING; };
+	inline void set_timer_handling() { status_ = TIMER_HANDLING; };
 
 protected:
 	int status_;

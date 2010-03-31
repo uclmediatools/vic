@@ -40,21 +40,23 @@ void CcTimerHandler::sched(double delay) {
 		abort();
 
 	msched((int)delay);
-	status_ = TIMER_HANDLING;
+	//status_ = TIMER_HANDLING;
+	set_timer_pending();
 }
 
 void CcTimerHandler::resched(double delay) {
-	fprintf(stderr, "resched by %d\n", (int)delay);
 	if (status_ == TIMER_PENDING)
 		return;
 
 	msched((int)delay);
-	status_ = TIMER_HANDLING;
+	//status_ = TIMER_HANDLING;
+	set_timer_pending();
 }
 
 void CcTimerHandler::cancel() {
 	if (status_ != TIMER_PENDING)
 		abort();
 
-	status_ = TIMER_IDLE;
+	//status_ = TIMER_IDLE;
+	set_timer_idle();
 }
