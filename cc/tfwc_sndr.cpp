@@ -63,9 +63,6 @@ TfwcSndr::TfwcSndr() :
 	cwnd_(1),
 	rtx_timer_(this),
 	aoa_(0),
-	t_now_(0),
-	t_ts_(0),
-	t_ts_echo_(0),
 	now_(0),
 	so_recv_(0),
 	ndtp_(0),
@@ -133,6 +130,12 @@ TfwcSndr::TfwcSndr() :
 	pvec_ = (u_int16_t *)malloc(sizeof(u_int16_t) * num_vec_);
 	clear_pvec(num_vec_);
 	__jacked_ = 0;
+	// previous average loss intervals
+	prev_interval_ = (double *)malloc(sizeof(double) * RSZ);
+	clear_prev_interval(RSZ);
+	new_hist_seqno_ = (u_int16_t *)malloc(sizeof(u_int16_t) * RSZ);
+	clear_new_hist_seqno(RSZ);
+	new_hist_seqno_size_ = 0;
 
 	// packet reordering
 	reorder_ = false;
@@ -186,6 +189,8 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	// reordered ack delivery?
 	bool outofack = false; 
 	UNUSED(outofack);
+	// revert to the previous history?
+	bool revert = false;
 
 	// get start/end seqno that this XR chunk reports
 	begins_ = begin;	// lowest packet seqno
@@ -233,7 +238,9 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		  // if the disorder is beyond 3 dupack rule,
 		  // trigger packets out to keep Jacob's packet conservation rule
 		  if(shift >= DUPACKS)
-		  packet_clocking(pb, recv_by_ch);
+		  revert = revert_interval(jacked_);
+		  cwnd_in_packets(revert);
+		  print_cwnd();
 		  return;
 		}
 		//
@@ -292,7 +299,9 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	if(reorder_) {
 		// triggering only if the disorder is beyond 3 dupack rule,
 		if (shift >= DUPACKS)
-		packet_clocking(pb, recv_by_ch);
+		revert = revert_interval(jacked_);
+		cwnd_in_packets(revert);
+		print_cwnd();
 		reset_var();
 		return;
 	}
@@ -300,13 +309,13 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	// TFWC is not turned on (i.e., no packet loss yet)
 	if(!is_tfwc_on_) {
 		if(detect_loss())
-		dupack_action(); 
+		dupack_action(first_lost_pkt_); 
 		else
 		cwnd_++; // TCP-like AIMD
 	} 
 	// TFWC is turned on, so compute congestion window
 	else {
-		cwnd_in_packets();
+		cwnd_in_packets(revert);
 	}
 	print_cwnd();
 
@@ -532,9 +541,11 @@ void TfwcSndr::update_rtt(double rtt_sample) {
  * core part for congestion window control
  * (cwnd is in packets)
  */
-void TfwcSndr::cwnd_in_packets() {
+void TfwcSndr::cwnd_in_packets(bool revert) {
+	if(!revert) {
 	loss_history();
 	avg_loss_interval();
+	}
 
 	// loss event rate (p)
 	p_ = 1.0 / avg_interval_;
@@ -613,7 +624,7 @@ void TfwcSndr::pseudo_history(double p) {
  *   o  halve cwnd_
  *   o  marking pseudo loss history and loss rate
  */
-void TfwcSndr::dupack_action() {
+void TfwcSndr::dupack_action(int seqno) {
 	// this is the very first packet loss
 	is_first_loss_seen_ = true;
 
@@ -635,7 +646,7 @@ void TfwcSndr::dupack_action() {
 	gen_weight();
 
 	// finally, record the very first lost packet's timestamp
-	ts_ = tsvec_[first_lost_pkt_%TSZ];
+	ts_ = tsvec_[seqno%TSZ];
 	// then, turn on TFWC algo
 	is_tfwc_on_ = true;
 }
@@ -698,6 +709,9 @@ void TfwcSndr::loss_history() {
 		if (is_loss && is_new_event) {
 			// this is a new loss event!
 
+			// store previous ALI before changing history
+			record_history(refvec_[i], avg_interval_, ts_);
+
 			// increase current history size
 			hsz_ = (hsz_ < HSZ) ? ++hsz_ : HSZ;
 
@@ -753,6 +767,63 @@ void TfwcSndr::avg_loss_interval() {
 	// this is average loss interval
 	avg_interval_ = I_tot_ / tot_weight_;
 	print_ALI();
+}
+
+/*
+ * store loss interval and timestamp
+ */
+void TfwcSndr::record_history(int seqno, double interval, double ts) {
+	// store seqno
+	new_hist_seqno_[new_hist_seqno_size_++] = seqno;
+	// store average loss interval
+	prev_interval_[seqno%RSZ] = interval;
+	// store timestamp
+	prev_ts_ = ts;
+	// copy history
+	for(int i = 0; i < hsz_; i++)
+	prev_history_[i] = history_[i];
+}
+
+/*
+ * revert average loss interval on packet re-ordering
+ */
+bool TfwcSndr::revert_interval(int reseq) {
+	// we didn't see the first lost packet yet.
+	if(!is_first_loss_seen_) {
+		dupack_action(reseq);
+		return (false);
+	}
+
+	// check if this re-ordered seqno actually triggered a new loss event
+	// if yes, revert to the previous state
+	if(find_seqno(new_hist_seqno_, new_hist_seqno_size_, reseq)) {
+		// reverting to the previous ALI
+		avg_interval_ = prev_interval_[reseq%RSZ];
+		// reverting to the previous timestamp
+		ts_ = prev_ts_;
+		// reverting to the previous history
+		for (int i = 0; i < hsz_; i++)
+		history_[i] = prev_history_[i];
+
+		print_ALI();
+
+		// finally, clear up the state variables
+		clear_prev_interval(RSZ);
+		clear_new_hist_seqno(new_hist_seqno_size_);
+		return (true);
+	}
+	return (false);
+}
+
+/*
+ * find seqno in the array
+ */
+bool TfwcSndr::find_seqno (u_int16_t *v, int n, int target) {
+	for (int i = 0; i < n; i++) {
+		if (v[i] == target)
+		return true;
+	}
+	return false;
 }
 
 /*

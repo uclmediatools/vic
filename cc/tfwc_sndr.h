@@ -186,14 +186,12 @@ protected:
 	u_int16_t *ackv_;	// received AckVec (from TfwcRcvr)
 	u_int16_t *pvec_;	// previous (stored) AckVec
 	u_int16_t aoa_;		// ack of ack
-	u_int32_t t_now_;	// the time when the data packet sent
-	u_int32_t t_ts_;		// time stamp (u_int32_t type)
-	u_int32_t t_ts_echo_;	// echo time stamp from the receiver
 	double ts_;			// time stamp (double type)
 	double ts_echo_;	// time stamp echo (double type)
 	double now_;		// real-time now
 	double so_recv_;	// SO_TIMESTAMP (XR packet reception)
 	double tao_;		// sampled RTT
+	double prev_ts_;
 
 private:
 	// update RTT
@@ -205,12 +203,14 @@ private:
 
 	// TFWC congestion window
 	void cwnd_in_bytes();
-	void cwnd_in_packets();
+	void cwnd_in_packets(bool revert);
 
 	// calcuate average loss interval
 	void avg_loss_interval();
 	void print_history_item (int);
 	void print_history_item (int, int);
+	bool revert_interval(int reseq);
+	void record_history(int seqno, double interval, double ts);
 
 	// calculate loss history
 	void loss_history();
@@ -223,7 +223,7 @@ private:
 	void gen_weight();
 
 	// dupack action
-	void dupack_action();
+	void dupack_action(int seqno);
 
 	// new RTO
 	void new_rto(double rtt);
@@ -282,6 +282,19 @@ private:
 		record_[i] = 0;
 	}
 
+	// clear seqno that triggered a new loss event
+	inline void clear_prev_interval (int n) {
+		for (int i = 0; i < n; i++)
+		prev_interval_[i] = 0;
+	}
+
+	// clear seqno that triggered a new loss event
+	inline void clear_new_hist_seqno (int n) {
+		for (int i = 0; i < n; i++)
+		new_hist_seqno_[i] = 0;
+		new_hist_seqno_size_ = 0;
+	}
+
 	// number of ackvec chunks
 	inline int get_numvec(int n) {
 	return (n/BITLEN + (n%BITLEN > 0));	
@@ -301,6 +314,9 @@ private:
 	inline void store (u_int16_t highest) {
 		__jacked_ = highest;
 	}
+
+	// find seqno
+	bool find_seqno(u_int16_t *v, int n, int target);
 
 	// print cwnd for debugging
 	inline void print_cwnd() {
@@ -343,7 +359,6 @@ private:
 	int nsve_;		// number of seqvec element
 
 	double ts_off_;		// timestamp offset for gettimeofday
-	u_int32_t ref_t_time_;	// reference time (uint32 format)
 
 	u_int32_t *seqvec_;		// generated seqno vec
 	int	num_seqvec_;		// number of seqvec elements
@@ -359,6 +374,7 @@ private:
 	double t_win_;      // temporal cwin size to get p_ value
 	double avg_interval_;	// average loss interval
 	int history_[HSZ+1];	// loss interval history
+	int prev_history_[HSZ];// previous loss interval history
 	double weight_[HSZ+1];	// weight for calculating avg loss interval
 	double I_tot_;		// total sum
 	double I_tot0_;		// from 0 to n-1
@@ -403,6 +419,9 @@ private:
 	bool reorder_;
 	// highest/lowest packet sequence numbers (prev ackvec)
 	u_int16_t __jacked_;	// previous highest packet sequence number
+	double *prev_interval_; // previous avgerage intervals
+	u_int16_t *new_hist_seqno_;	// seqno that introduced a new loss event
+	int new_hist_seqno_size_;
 
 	// record of packet size in bytes
 	u_int16_t *record_;
