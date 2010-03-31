@@ -41,6 +41,7 @@
 #define TSZ	1000	// tsvec_ size
 #define SSZ 1000	// seqvec_ size
 #define RSZ 1000	// refvec_ size
+#define RECORD 10000
 
 #define SHORT_HISTORY		// history size = 8
 #ifdef  SHORT_HISTORY
@@ -111,19 +112,12 @@ public:
 	// return the current time
 	inline double now() { return (tfwc_sndr_now()-ts_off_); }
 
-	// return timestamp in u_int32_t type
-	inline u_int32_t tfwc_sndr_get_ts() { return t_now_; }
-
 	// variables
 	u_int16_t seqno_;	// packet sequence number
 	u_int32_t cwnd_;	// congestion window
 
 	// Rtx timer
 	void expire(int option);
-
-	// packet reordering
-	bool reorder_;
-	inline bool reordering() { return (reorder_); }
 
 protected:
 	// generate sequence numbers
@@ -201,8 +195,6 @@ protected:
 	double so_recv_;	// SO_TIMESTAMP (XR packet reception)
 	double tao_;		// sampled RTT
 
-	Transmitter *tx_;
-
 private:
 	// update RTT
 	void update_rtt(double tao);
@@ -211,8 +203,9 @@ private:
 	// (to capture the very first lost packet loss)
 	bool detect_loss();
 
-	// control congestion window
-	void control();
+	// TFWC congestion window
+	void cwnd_in_bytes();
+	void cwnd_in_packets();
 
 	// calcuate average loss interval
 	void avg_loss_interval();
@@ -223,8 +216,8 @@ private:
 	void loss_history();
 
 	// estimate loss history and loss probability
-	void pseudo_p();
-	void pseudo_history();
+	double pseudo_p(int cwnd);
+	void pseudo_history(double p);
 
 	// generate weight factors
 	void gen_weight();
@@ -271,7 +264,7 @@ private:
 		ackv_[i] = 0;
 	}
 
-	// clear ackvec
+	// clear previous ackvec
 	inline void clear_pvec (int n) {
 		for (int i = 0; i < n; i++)
 		pvec_[i] = 0;
@@ -281,6 +274,12 @@ private:
 	inline void clear_refv (int n) {
 		for (int i = 0; i < n; i++)
 		refvec_[i] = 0;
+	}
+
+	// clear record for packet size in bytes
+	inline void clear_record (int n) {
+		for (int i = 0; i < n; i++)
+		record_[i] = 0;
 	}
 
 	// number of ackvec chunks
@@ -342,9 +341,7 @@ private:
 	int nakp_;		// number of ackvec packet received
 	int ntep_;		// number of ts echo packet received
 	int nsve_;		// number of seqvec element
-	int epoch_;		// communication epoch
 
-	bool is_running_;	// is TFWC running? 
 	double ts_off_;		// timestamp offset for gettimeofday
 	u_int32_t ref_t_time_;	// reference time (uint32 format)
 
@@ -360,9 +357,6 @@ private:
 	double f_p_;	// f(p) = sqrt(2/3)*p + 12*p*(1+32*p^2)*sqrt(3/8)*p
 	double p_;		// packet loss probability
 	double t_win_;      // temporal cwin size to get p_ value
-	int tmp_cwnd_;      // temporary cwnd value
-	double pseudo_p_;	// faked packet loss probability
-	double pseudo_interval_;// faked loss interval
 	double avg_interval_;	// average loss interval
 	int history_[HSZ+1];	// loss interval history
 	double weight_[HSZ+1];	// weight for calculating avg loss interval
@@ -405,8 +399,13 @@ private:
 	double t0_;		// t0 value at TCP throughput equation
 	double tcp_tick_;
 
+	// packet reordering
+	bool reorder_;
 	// highest/lowest packet sequence numbers (prev ackvec)
 	u_int16_t __jacked_;	// previous highest packet sequence number
+
+	// record of packet size in bytes
+	u_int16_t *record_;
 };
 
 #endif

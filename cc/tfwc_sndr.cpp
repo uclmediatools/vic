@@ -72,7 +72,6 @@ TfwcSndr::TfwcSndr() :
 	nakp_(0),
 	ntep_(0),
 	nsve_(0),
-	epoch_(1),
 	jacked_(0),
 	begins_(0),
 	ends_(0),
@@ -137,6 +136,10 @@ TfwcSndr::TfwcSndr() :
 
 	// packet reordering
 	reorder_ = false;
+
+	// record of packet size in bytes
+	record_ = (u_int16_t *)malloc(sizeof(u_int16_t) * RECORD);
+	clear_record(RECORD);
 }
 
 void TfwcSndr::tfwc_sndr_send(pktbuf* pb, double now) {
@@ -144,6 +147,8 @@ void TfwcSndr::tfwc_sndr_send(pktbuf* pb, double now) {
 	if(seqno_ == 0)
 	ts_off_ = tx_ts_offset();
 
+	// number of bytes for this packet
+	record_[seqno_%RECORD] = pb->len;
 	// parse seqno and mark timestamp for this data packet
 	rtphdr* rh = (rtphdr *) pb->data;
 	seqno_	= ntohs(rh->rh_seqno);
@@ -299,9 +304,9 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		else
 		cwnd_++; // TCP-like AIMD
 	} 
-	// TFWC is turned on, so control that way
+	// TFWC is turned on, so compute congestion window
 	else {
-		control();
+		cwnd_in_packets();
 	}
 	print_cwnd();
 
@@ -525,8 +530,9 @@ void TfwcSndr::update_rtt(double rtt_sample) {
 
 /*
  * core part for congestion window control
+ * (cwnd is in packets)
  */
-void TfwcSndr::control() {
+void TfwcSndr::cwnd_in_packets() {
 	loss_history();
 	avg_loss_interval();
 
@@ -556,6 +562,13 @@ void TfwcSndr::control() {
 }
 
 /*
+ * core part for congestion window control
+ * (cwnd is in bytes)
+ */
+void cwnd_in_packets() {
+}
+
+/*
  * generate weighting factors
  */
 void TfwcSndr::gen_weight() {
@@ -581,8 +594,8 @@ void TfwcSndr::gen_weight() {
 /*
  * compute packet loss history
  */
-void TfwcSndr::pseudo_history() {
-	pseudo_interval_ = 1 / p_;
+void TfwcSndr::pseudo_history(double p) {
+	double pseudo = 1 / p;
 
 	/* bzero for all history information */
 	for(int i = 0; i <= HSZ+1; i++)
@@ -592,7 +605,7 @@ void TfwcSndr::pseudo_history() {
 	history_[0] = 0;
 
 	/* (let) the pseudo interval be the first history information */
-	history_[1] = (int) pseudo_interval_;
+	history_[1] = pseudo;
 }
 
 /*
@@ -614,12 +627,9 @@ void TfwcSndr::dupack_action() {
 	if (cwnd_ < 1)
 		cwnd_ = 1;
 
-	// temp cwnd to compute the pseudo values
-	tmp_cwnd_ = cwnd_;
-
 	// creating simulated loss history and loss rate
-	pseudo_p();
-	pseudo_history();
+	p_ = pseudo_p(cwnd_);
+	pseudo_history(p_);
 
 	// generate weight factors
 	gen_weight();
@@ -633,17 +643,19 @@ void TfwcSndr::dupack_action() {
 /*
  * compute simulated loss rate
  */
-void TfwcSndr::pseudo_p() {
-	for (pseudo_p_ = 0.00001; pseudo_p_ < 1.0; pseudo_p_ += 0.00001) {
-		f_p_ = sqrt((2.0/3.0) * pseudo_p_) + 12.0 * pseudo_p_ *
-			(1.0 + 32.0 * pow(pseudo_p_, 2.0)) * sqrt((3.0/8.0) * pseudo_p_);
+double TfwcSndr::pseudo_p(int cwnd) {
+	double pseudo;
+	for (pseudo = 0.00001; pseudo < 1.0; pseudo += 0.00001) {
+	f_p_ = sqrt((2.0/3.0) * pseudo) + 12.0 * pseudo *
+	(1.0 + 32.0 * pow(pseudo, 2.0)) * sqrt((3.0/8.0) * pseudo);
 
-		t_win_ = 1 / f_p_;
+	t_win_ = 1 / f_p_;
 
-		if(t_win_ < tmp_cwnd_)
-			break;
+	if(t_win_ < cwnd)
+		break;
 	}
-	p_ = pseudo_p_;
+
+	return (pseudo);
 }
 
 /*
