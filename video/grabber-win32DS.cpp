@@ -359,26 +359,22 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
 		   mt_.subtype = MEDIASUBTYPE_I420; // Planar YUV 420
 	   } else if (have_RGB24_) {
 		   mt_.subtype = MEDIASUBTYPE_RGB24; // RGB 24 bit
-	   } else if (have_DVSD_) {
-		   mt_.subtype = MEDIASUBTYPE_UYVY;
 	   } else {
-		   mt_.subtype = MEDIASUBTYPE_RGB24;
+		   mt_.subtype = MEDIASUBTYPE_UYVY;
 	   }
    } else {
-	   if (have_I420_) {
-		   mt_.subtype = MEDIASUBTYPE_I420; // Planar YUV 420
-	   } else if (have_HDYC_) {
+	   if (have_HDYC_) {
 		   mt_.subtype = MEDIASUBTYPE_HDYC; // Blackmagic Packed YUV 422
+	   } else if (have_I420_) {
+		   mt_.subtype = MEDIASUBTYPE_I420; // Planar YUV 420
 	   } else if (have_YUY2_) {
 		   mt_.subtype = MEDIASUBTYPE_YUY2; // Packed YUV 422
 	   } else if (have_UYVY_) {
 		   mt_.subtype = MEDIASUBTYPE_UYVY; // Packed YUV 422
 	   } else if (have_RGB24_) {
 		   mt_.subtype = MEDIASUBTYPE_RGB24; // RGB 24 bit
-	   } else if (have_DVSD_) {
-		   mt_.subtype = MEDIASUBTYPE_UYVY;
 	   } else {
-		   mt_.subtype = MEDIASUBTYPE_RGB24;
+		   mt_.subtype = MEDIASUBTYPE_UYVY;
 	   }
    }
 
@@ -747,25 +743,33 @@ int DirectShowGrabber::grab() {
    switch (cformat_) {
    case CF_420:
    case CF_CIF:
-     if (have_I420_)
+     if (have_HDYC_)
+       packedUYVY422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+     else if (have_I420_)
        planarYUYV420_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
      else if (have_YUY2_)
        packedYUYV422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
-     else if (have_UYVY_ || have_HDYC_ || have_DVSD_)
+     else if (have_UYVY_)
        packedUYVY422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
-     else // if (have_RGB24_)
+     else if (have_RGB24_)
        converter_->convert((u_int8_t*)last_frame_, width_, height_, frame_, outw_, outh_, TRUE);
+     else
+       packedUYVY422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
      break;
 
    case CF_422:
+     if (have_HDYC_)
+       packedUYVY422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
      if (have_YUY2_)
        packedYUYV422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
-     else if (have_UYVY_ || have_HDYC_ || have_DVSD_)
+     else if (have_UYVY_)
        packedUYVY422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
      else if (have_I420_)
        planarYUYV420_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
-     else // if (have_RGB24_)
+     else if (have_RGB24_)
        converter_->convert((u_int8_t*)last_frame_, width_, height_, frame_, outw_, outh_, TRUE);
+	 else
+       packedUYVY422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
      break;
    }
 
@@ -869,7 +873,7 @@ int DirectShowGrabber::getCaptureCapabilities(int preferred_max_height) {
                            min_height_ =  scc.MinOutputSize.cy;
                        }
                        if (pmtConfig->subtype == MEDIASUBTYPE_I420) {
-                         have_I420_ = true; // Planar YUV 420
+                           have_I420_ = true; // Planar YUV 420
                        } else if (pmtConfig->subtype == MEDIASUBTYPE_UYVY) {
                            have_UYVY_ = true; // Packed YUV 422
                        } else if (pmtConfig->subtype == MEDIASUBTYPE_YUY2) {
@@ -952,10 +956,10 @@ void DirectShowGrabber::setCaptureOutputFormat() {
               mediasubtype = MEDIASUBTYPE_HDYC; // Blackmagic Packed YUV 422
 		  else if (have_I420_)
               mediasubtype = MEDIASUBTYPE_I420; // Planar YUV 420
-          else if (have_UYVY_)
-              mediasubtype = MEDIASUBTYPE_UYVY; // Packed YUV 422
           else if (have_YUY2_)
               mediasubtype = MEDIASUBTYPE_YUY2; // Packed YUV 422
+          else if (have_UYVY_)
+              mediasubtype = MEDIASUBTYPE_UYVY; // Packed YUV 422
           else if (have_RGB24_)
               mediasubtype = MEDIASUBTYPE_RGB24; // RGB 24 bit
         break;
@@ -963,12 +967,12 @@ void DirectShowGrabber::setCaptureOutputFormat() {
       case CF_422:
           if (have_HDYC_)
               mediasubtype = MEDIASUBTYPE_HDYC; // Blackmagic Packed YUV 422
-          else if (have_I420_)
-              mediasubtype = MEDIASUBTYPE_I420; // Planar YUV 420
-          else if (have_UYVY_)
-              mediasubtype = MEDIASUBTYPE_UYVY; // Packed YUV 422
           else if (have_YUY2_)
               mediasubtype = MEDIASUBTYPE_YUY2; // Packed YUV 422
+          else if (have_UYVY_)
+              mediasubtype = MEDIASUBTYPE_UYVY; // Packed YUV 422
+          else if (have_I420_)
+              mediasubtype = MEDIASUBTYPE_I420; // Planar YUV 420
           else if (have_RGB24_)
               mediasubtype = MEDIASUBTYPE_RGB24; // RGB 24 bit
           break;
