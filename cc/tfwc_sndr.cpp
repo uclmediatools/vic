@@ -227,7 +227,13 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		if(jacked_ < aoa_) {
 		  debug_msg("warning: this ack(%d) is older than AoA(%d)!\n", jacked_,aoa_);
 		  // trigger a packet out to keep Jacob's packet conservation rule
-		  packet_clocking(pb, recv_by_ch);
+		  //packet_clocking(pb, recv_by_ch);
+		  
+		  // this ack is already too old, 
+		  // so revert to the eariler history
+		  revert = revert_interval(jacked_);
+		  // then, update cwnd
+		  cwnd_in_packets(revert);
 		  return;
 		}
 		//
