@@ -234,6 +234,9 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		  revert = revert_interval(jacked_);
 		  // then, update cwnd
 		  cwnd_in_packets(revert);
+		  print_cwnd();
+		  // finally, reset variables
+		  reset_var(revert);
 		  return;
 		}
 		//
@@ -248,6 +251,8 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		  // then, update cwnd
 		  cwnd_in_packets(revert);
 		  print_cwnd();
+		  // finally, reset variables
+		  reset_var(revert);
 		  return;
 		}
 		//
@@ -310,7 +315,8 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		// then, update cwnd
 		cwnd_in_packets(revert);
 		print_cwnd();
-		reset_var();
+		// finally, reset variables
+		reset_var(revert);
 		return;
 	}
 
@@ -340,7 +346,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		new_rto(tao_);
 	
 	// reset variables for the next pkt reception
-	reset_var();
+	reset_var(revert);
   }
   break;
 
@@ -377,11 +383,12 @@ bool TfwcSndr::out_of_ack(u_int16_t target, u_int32_t *sqv, int n) {
 	return false;
 }
 
-void TfwcSndr::reset_var() {
+void TfwcSndr::reset_var(bool reverted) {
 	// init vars------------*
 	num_missing_ = 0;
 	//----------------------*
 
+	if(!reverted) {
 	// store jack'ed
 	store(jacked_);
 	// declare pvec to store ackv
@@ -390,6 +397,7 @@ void TfwcSndr::reset_var() {
 	// store ackv
 	copy_ackv(num_vec_);
 	//print_vec("stored ackvec", pvec_, num_vec_);
+	}
 
 	// finally, free ackvec
 	free(ackv_);

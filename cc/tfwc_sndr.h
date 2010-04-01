@@ -127,7 +127,7 @@ protected:
 	void gen_refvec(int end, int begin);
 
 	// reset variables
-	void reset_var();
+	void reset_var(bool reverted);
 
 	// get the first position in ackvec where 1 is marked
 	inline u_int16_t get_head_pos(u_int16_t ackvec) {
