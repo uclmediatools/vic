@@ -377,8 +377,9 @@ void H263Decoder::recv(pktbuf* pb)
 			break;
 		case 0:
 		default:
-			fprintf(stderr,"illegal sourceformat %d!\n",newsrcformat);
-			break;
+			debug_msg("H263: illegal sourceformat %d!\n", newsrcformat);
+			pb->release();
+			return;
 		}
 		/* 0000 0000 0000 0000 100000  == 0x00008000 */
 		u_char *p = slot_[l].bp;
