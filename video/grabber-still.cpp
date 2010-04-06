@@ -370,7 +370,7 @@ int StillYuvGrabber::grab()
 
 	// check if Tx queue is growing too much.
 	// if so, we should suspend grabbing more frames.
-	if (target_->suspend_grabbing())
+	if (target_->suspend_grabbing(5))
 	return (frc);
 
 	// time measurement

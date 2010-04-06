@@ -140,7 +140,7 @@ class H261Encoder : public TransmitterModule {
 	int vfno_;
 
 	// should we suspend grabbing?
-	virtual bool suspend_grabbing();
+	virtual bool suspend_grabbing(int m);
 
     protected:
 	H261Encoder(int ft);
@@ -194,6 +194,9 @@ class H261Encoder : public TransmitterModule {
 	u_int coff_[12];	/* where to find U given gob# */
 	u_int loff_[12];	/* where to find Y given gob# */
 	u_int blkno_[12];	/* for CR */
+
+	// average number of packets per frame
+	int avg_packets_per_frame();
 
 	// print Tx queue info
 	inline void print_txq_info() {
@@ -1021,10 +1024,24 @@ H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 }
 
 /*
+ * average number of packets per frame
+ */
+int H261Encoder::avg_packets_per_frame() {
+	int num = 0;
+	int k = (vfno_ < FHSIZE) ? vfno_ : FHSIZE;
+	if (k < 1) return 1;
+
+	for (int i = 0; i < k; i++)
+		num += ppframe_[vfno_%FHSIZE];
+
+	return (num /= k);
+}
+
+/*
  * if Tx queue is building up more than 5 frames, roughly,
  * then we should suspend grabbing to prevent it from growing up forever.
  */
-bool H261Encoder::suspend_grabbing() {
+bool H261Encoder::suspend_grabbing(int m) {
 	// Tx queue len (in packets) at the time of calling this method
 	int txq = tx_->tx_buf_size();
 	// highest watermark
@@ -1033,16 +1050,9 @@ bool H261Encoder::suspend_grabbing() {
 	if (vfno_ < FHSIZE) 
 	return false;
 
-	for (int i = 0; i < FHSIZE; i++)
-		highmark += ppframe_[vfno_%FHSIZE];
-
-	// highmark is the average number of packets per frame
-	// (average window size is equal to FHSIZE)
-	highmark /= FHSIZE;
-
-	// now, highmark is set to "5 * (num packets per frame)",
-	// which roughly represents 5 frames.
-	highmark = 5 * highmark;
+	// now, highmark is set to "m * (num packets per frame)",
+	// which roughly represents "m" frames.
+	highmark = m * avg_packets_per_frame();
 
 	if (txq > highmark)
 		return true;
