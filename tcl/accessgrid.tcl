@@ -642,10 +642,6 @@ proc ag_load_config config_file {
     close $fp
 }
 
-proc user_hook {} {
-#    ag_load_config {/temp/windows.txt}
-}
-
 proc init_ag {} {
 
     ag_stdout_init
