@@ -178,6 +178,10 @@ private:
 	// update RTT
 	void update_rtt(double tao);
 
+	// TCP-like Additive Increase
+	// (until the very first packet loss)
+	void tcp_like_increase();
+
 	// detect packet loss
 	// (to capture the very first lost packet loss)
 	bool detect_loss();

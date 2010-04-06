@@ -308,7 +308,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	// by inserting "jacked" to the previous ackvec.
 	// finally, we only need to clock packets out.
 	// (i.e., do NOT update cwnd and RTT)
-	if(reorder_) {
+	if(reorder_ && is_tfwc_on_) {
 		// revert to the earlier history if the disorder is beyond 3 dupack rule
 		if (shift >= DUPACKS)
 		revert = revert_interval(jacked_);
@@ -321,16 +321,12 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	}
 
 	// TFWC is not turned on (i.e., no packet loss yet)
-	if(!is_tfwc_on_) {
-		if(detect_loss())
-		dupack_action(first_lost_pkt_); 
-		else
-		cwnd_++; // TCP-like AIMD
-	} 
+	if(!is_tfwc_on_) 
+		tcp_like_increase();
 	// TFWC is turned on, so compute congestion window
-	else {
+	else
 		cwnd_in_packets(revert);
-	}
+
 	print_cwnd();
 
 	// set ackofack (real number)
@@ -633,6 +629,18 @@ void TfwcSndr::pseudo_history(double p) {
 
 	/* (let) the pseudo interval be the first history information */
 	history_[1] = pseudo;
+}
+/*
+ * TCP-like Additive Increase
+ * (until the very first packet loss)
+ */
+void TfwcSndr::tcp_like_increase() {
+	// if loss, do dupack action
+	if(detect_loss())
+		dupack_action(first_lost_pkt_);
+	// if no loss, do TCP-like AI
+	else
+		cwnd_++;
 }
 
 /*
