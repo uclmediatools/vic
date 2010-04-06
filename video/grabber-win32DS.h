@@ -86,7 +86,6 @@ class Crossbar {
 //#########################################################################
 
 class Callback;
-
 struct Port {
        int id;
        char name[64];
@@ -127,7 +126,9 @@ class DirectShowGrabber : public Grabber {
 	  Port **	   getInputPorts(){
 		  return inputPorts;
 	  }
-
+	  char *		getInputPort(){
+		  return strdup(input_port_);
+	  }
       int          capturing_;
       HANDLE       cb_mutex_;
    protected:
@@ -254,3 +255,5 @@ class DirectShowScanner {
       IMoniker*     pMoniker_;
 
 };
+
+

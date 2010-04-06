@@ -798,6 +798,30 @@ proc select_device device {
 	}
 }
 
+proc compare {a b} {
+
+	return [string compare [$a nickname] [$b nickname]]
+
+    set a0 [$a nickname]
+
+    set b0 [$b nickname]
+
+    if {$a0 < $b0} {
+
+        return -1
+
+    } elseif {$a0 > $b0} {
+
+        return 1
+
+    }
+
+    return 0
+
+}
+
+
+
 proc build.device w {
 	set f [smallfont]
 
@@ -832,7 +856,9 @@ proc build.device w {
 		$w configure -state disabled
 		return
 	}
-	foreach d $inputDeviceList {
+	
+    set inputDeviceListSorted [lsort -command compare $inputDeviceList]
+	foreach d $inputDeviceListSorted {
 		if { [$d nickname] == "still" && ![yesno stillGrabber] } {
 			set defaultFormat($d) $videoFormat
 			continue
@@ -1086,7 +1112,13 @@ proc attach_ports device {
 			if { $s != "" } {
 				set defaultPort($device) $s
 			} else {
-				set defaultPort($device) [lindex $portnames 0]
+				# use current port setting
+				set s [string trim [attribute_class [$device attributes] selected_port]]
+				if { $s != "" } {
+					set defaultPort($device) $s
+				} else {
+					set defaultPort($device) [lindex $portnames 0]
+				}
 			}
 		}
 	}
@@ -1927,4 +1959,3 @@ proc revert_to_gray {} {
 	set V(dither) gray
 	set_dither
 }
-
