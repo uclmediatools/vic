@@ -6,6 +6,35 @@
 <BODY LINK="#0000ff" VLINK="#800080">
 <P><!-- @(#) $Header$ (LBL)--></P>
 <H1>vic: Change History</H1>
+<H3>v2.8ucl-1.5.0</H3>
+<ul>
+  <li>License normalization in source code files to GPL compatible licenses.
+  <ul>
+    <li>changes were predominately from 4 clause BSD licenses to a 3 clause BSD licenses
+    <li>original authors and/or organizations were contacted for permission
+  </ul>
+  <li>New Visual Studio 2008 solution and project files
+  <li>Tcl ZipVFS support (for GPL VIC builds on Windows)
+  <ul>
+    <li>Tcl file embedding approach where zip file containing the Tcl files is appended to vic.exe.
+  </ul>
+  <li>DirectShow grabber (grabber-win32DS.cpp) changes:
+  <ul>
+    <li>support for more Media Subtypes (4 YUV formats in addition to the existing RGB24) and thus more capture devices.
+    <li>Explicit DV Video Decoder filter support added
+    <ul>
+      <li>Full, half or quarter DV resolutions are now set with DV filter, so non-full size captures now work
+      <li>480i DV vertical flashing line issue has been resolved by avoiding the use of RGB24 which introduces excessive number of colourspace conversions
+    </ul>
+    <li>Add support to allow GraphEdit's connect to remote graphs feature with VIC's DirectShow filter
+    <ul>
+      <li>Windows 7 and Vista, will need to issue "regsvr32 proppage.dll" in the directory where graphedt.exe is located for the connect to remote graph feature to work
+      <li>Can also use the free GraphStudio from <a href="http://blog.monogram.sk/janos/tools/monogram-graphstudio/">http://blog.monogram.sk/janos/tools/monogram-graphstudio/</a>
+    </ul>
+  </ul>
+  <li>New grabber that uses the native API from the Blackmagic Design DeckLink SDK for Windows, MacOS and Linux
+  <li>libv4l support added for the V4L & V4L2 grabbers
+</ul>
 <H3>v2.8ucl-1.4.0beta</H3><UL>
   <li> H.264 decode functionality for IOCOM's IG2 default (non-standard) H.264 streams. Currently required patches ffmpeg h264 decoder.
   <li> New Video window right-click menu {d.kosovic@UQ}
