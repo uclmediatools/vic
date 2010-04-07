@@ -62,7 +62,7 @@ uname(struct utsname *ub)
     
     switch (sysinfo.wProcessorArchitecture) {
     case PROCESSOR_ARCHITECTURE_INTEL:
-		(void)strcpy(ub->machine, "ix86");
+		(void)strcpy(ub->machine, "x86");
 		break;
     case PROCESSOR_ARCHITECTURE_MIPS :
 		(void)strcpy(ub->machine, "mips");
@@ -73,6 +73,11 @@ uname(struct utsname *ub)
     case PROCESSOR_ARCHITECTURE_PPC:
 		(void)strcpy(ub->machine, "ppc");
 		break;
+#ifdef PROCESSOR_ARCHITECTURE_AMD64
+    case PROCESSOR_ARCHITECTURE_AMD64:
+		(void)strcpy(ub->machine, "x86-64");
+		break;
+#endif
     default:
 		(void)strcpy(ub->machine, "unknown");
 		break;
@@ -155,6 +160,14 @@ nice(int pri)
     return 0;
 }
 
+#ifdef PTW32_STATIC_LIB
+void detach_ptw32(void)
+{
+    pthread_win32_process_attach_np();
+    pthread_win32_thread_attach_np();
+}
+#endif
+
 extern void TkWinXInit(HINSTANCE hInstance);
 extern int main(int argc, const char *argv[]);
 
@@ -171,7 +184,14 @@ WinMain(
 {
     char *p;
     WSADATA WSAdata;
-	
+
+#ifdef PTW32_STATIC_LIB
+	/* Necessity when linking with pthreads-win32 static library */
+    pthread_win32_process_attach_np();
+    pthread_win32_thread_attach_np();
+    atexit(detach_ptw32);
+#endif
+
     /* XXX
 	* initialize our socket interface plus the tcl 7.5 socket
 	* interface (since they redefine some routines we call).
