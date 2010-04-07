@@ -484,10 +484,10 @@ void SessionManager::transmit(pktbuf* pb, bool recv_by_ch)
 	}
 }
 
-void SessionManager::tx_data_only(pktbuf* pb, bool flag) 
+void SessionManager::tx_data_only(pktbuf* pb, bool recv_by_ch) 
 {
 	// receive XR before sending
-	if(flag)
+	if(recv_by_ch)
 	recv_xreport(ch_, pb);
 
 	// print RTP seqno
