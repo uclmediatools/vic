@@ -402,7 +402,7 @@ void Transmitter::cc_tfwc_trigger(pktbuf* pb) {
 	}
 
 	// parse pb data
-	rtphdr* rh = (rtphdr *) pb->data;
+	//rtphdr* rh = (rtphdr *) pb->data;
 	// move head pointer
 	head_ = pb->next;
 	// call Transmitter::output_data_only w/o XR reception
