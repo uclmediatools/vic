@@ -371,7 +371,19 @@ void TfwcSndr::window_in_packets(bool revert) {
 	// TFWC is turned on, so compute congestion window
 	else
 		cwnd_in_packets(revert);
-} 
+}
+
+/*
+ * TFWC congestion window in bytes
+ */
+void TfwcSndr::window_in_bytes(bool revert) {
+	// TFWC is not turned on (i.e., no packet loss yet)
+	if(!is_tfwc_on_)
+		tcp_like_increase();
+	// TFWC is turned on, so compute congestion window
+	else
+		cwnd_in_bytes(revert);
+}
 
 /*
  * detect out-of-ordered ack delivery
@@ -596,7 +608,11 @@ void TfwcSndr::cwnd_in_packets(bool revert) {
  * core part for congestion window control
  * (cwnd is in bytes)
  */
-void cwnd_in_bytes() {
+void TfwcSndr::cwnd_in_bytes(bool revert) {
+	if(!revert) {
+	loss_history();
+	avg_loss_interval();
+	}
 }
 
 /*

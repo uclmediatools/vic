@@ -190,7 +190,8 @@ private:
 	void window_in_packets(bool revert);
 	void cwnd_in_packets(bool revert);
 	// TFWC congestion window in bytes
-	void cwnd_in_bytes();
+	void window_in_bytes(bool revert);
+	void cwnd_in_bytes(bool revert);
 
 	// calcuate average loss interval
 	void avg_loss_interval();
