@@ -186,9 +186,11 @@ private:
 	// (to capture the very first lost packet loss)
 	bool detect_loss();
 
-	// TFWC congestion window
-	void cwnd_in_bytes();
+	// TFWC congestion window in packets
+	void window_in_packets(bool revert);
 	void cwnd_in_packets(bool revert);
+	// TFWC congestion window in bytes
+	void cwnd_in_bytes();
 
 	// calcuate average loss interval
 	void avg_loss_interval();

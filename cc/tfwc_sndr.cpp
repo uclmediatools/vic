@@ -233,7 +233,7 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		  // so revert to the eariler history
 		  revert = revert_interval(jacked_);
 		  // then, update cwnd
-		  cwnd_in_packets(revert);
+		  window_in_packets(revert);
 		  print_cwnd();
 		  // finally, reset variables
 		  reset_var(revert);
@@ -244,12 +244,13 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		//
 		else if(out_of_ack(jacked_, seqvec_, num_seqvec_)) {
 		  debug_msg("warning: this ack(%d) itself is out-of-order!\n",jacked_);
+		  if(!is_tfwc_on_)
 		  // if the disorder is beyond 3 dupack rule,
 		  // revert to the earlier history
 		  if(shift >= DUPACKS)
 		  revert = revert_interval(jacked_);
 		  // then, update cwnd
-		  cwnd_in_packets(revert);
+		  window_in_packets(revert);
 		  print_cwnd();
 		  // finally, reset variables
 		  reset_var(revert);
@@ -308,25 +309,20 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	// by inserting "jacked" to the previous ackvec.
 	// finally, we only need to clock packets out.
 	// (i.e., do NOT update cwnd and RTT)
-	if(reorder_ && is_tfwc_on_) {
+	if(reorder_) {
 		// revert to the earlier history if the disorder is beyond 3 dupack rule
 		if (shift >= DUPACKS)
 		revert = revert_interval(jacked_);
 		// then, update cwnd
-		cwnd_in_packets(revert);
+		window_in_packets(revert);
 		print_cwnd();
 		// finally, reset variables
 		reset_var(revert);
 		return;
 	}
 
-	// TFWC is not turned on (i.e., no packet loss yet)
-	if(!is_tfwc_on_) 
-		tcp_like_increase();
-	// TFWC is turned on, so compute congestion window
-	else
-		cwnd_in_packets(revert);
-
+	// TFWC congestion window in packets
+	window_in_packets(revert);
 	print_cwnd();
 
 	// set ackofack (real number)
@@ -364,6 +360,18 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 
   return;
 }
+
+/*
+ * TFWC congestion window in packets
+ */
+void TfwcSndr::window_in_packets(bool revert) {
+	// TFWC is not turned on (i.e., no packet loss yet)
+	if(!is_tfwc_on_) 
+		tcp_like_increase();
+	// TFWC is turned on, so compute congestion window
+	else
+		cwnd_in_packets(revert);
+} 
 
 /*
  * detect out-of-ordered ack delivery
