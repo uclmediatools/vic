@@ -295,7 +295,7 @@ proc open_window src {
 	$m add radiobutton -label "Half size" \
 		-command "resize $v [expr $iw / 2] [expr $ih / 2]" \
 		-font $f -value "half" -variable size$w
-	$m add radiobutton -label "Original size" -command "resize $v $iw $ih" \
+	$m add radiobutton -label "Original size" -command "fit_window $v" \
 		-font $f -value "original" -variable size$w -accelerator "O"
 	$m add radiobutton -label "Double size" \
 		-command "resize $v [expr $iw * 2] [expr $ih * 2]" \
