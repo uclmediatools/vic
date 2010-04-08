@@ -52,16 +52,18 @@ bool x264Encoder::init(int w, int h, int bps, int fps)
     param->rc.i_bitrate = bps;
     param->rc.i_rc_method = X264_RC_ABR;
     
-    param->analyse.inter = X264_ANALYSE_PSUB16x16;
+    //param->analyse.inter = X264_ANALYSE_PSUB16x16;
     //DISALBE PARTITION MODE
     param->analyse.inter = 0;
-    param->analyse.i_direct_mv_pred = X264_DIRECT_PRED_NONE;
+    param->analyse.intra = 0; // try this for intra too
+    //param->analyse.i_direct_mv_pred = X264_DIRECT_PRED_NONE;
 
     //DISABLE CABAC for more frame rate
     param->b_cabac = 0;
     
     //DONOT ENABLE PSNR ANALYSE
-    //param->analyse.b_psnr = 1;
+    param->analyse.b_psnr = 0;
+    param->analyse.b_ssim = 0;
     
     param->i_keyint_max = 50;
     param->i_keyint_min = 20;
@@ -77,24 +79,53 @@ bool x264Encoder::init(int w, int h, int bps, int fps)
 
     // set frame reference to 1 to reduce encoding latency
     param->i_frame_reference = 1;
-    // param->b_interlaced = 1;
+    param->i_scenecut_threshold = 0;
     
     // motion estimation method, using umh if higher quality is essential.
-    param->analyse.i_me_method = X264_ME_HEX;
+    //param->analyse.i_me_method = X264_ME_HEX;
+    param->analyse.i_me_method = X264_ME_DIA; //supposedly DIA is faster
+
+    //other optimization stuff
+    //these seem to add a couple fps in non-threaded mode
+    param->analyse.b_transform_8x8 = 0;
+    param->analyse.i_subpel_refine = 0;
+    param->rc.i_aq_mode = 0;
+    param->analyse.b_mixed_references = 0;
+    param->analyse.i_trellis = 0;
 
     param->i_width = w;
     param->i_height = h;
 
-	x264_picture_alloc(&(enc->pic), X264_CSP_I420, param->i_width,
-	       param->i_height);
+    // attempt to make threads
+    param->i_threads = 0;
+    param->b_deterministic = 1;
+    // sliced threads might be nice for threading on the decoding side but just
+    // seems to be broken
+    //param->b_sliced_threads = 1;
+
+    // make it completely 1-pass only
+    param->rc.b_stat_read = 0;
+    param->rc.b_stat_write = 0;
+
+    // removing lookahead might reduce latency?
+    #if X264_BUILD > 69
+    param->rc.i_lookahead = 0;
+    #endif
+    #if X264_BUILD > 74
+    param->i_sync_lookahead = 0;
+    #endif
+
+    x264_picture_alloc(&(enc->pic), X264_CSP_I420, param->i_width,
+                       param->i_height);
 
     x264_t *handle = x264_encoder_open(param);
+
     if (handle != NULL) {
-	    enc->h = handle;
-	    return true;
+        enc->h = handle;
+        return true;
     }
     else {
-	    return false;
+        return false;
     }
 }
 
@@ -144,10 +175,17 @@ bool x264Encoder::getNALPacket(int idx, DataBuffer * f)
     int data = f->getCapacity();
     int packetSize;
 
+    #if X264_BUILD < 76
     packetSize = x264_nal_encode(pkt, &data, 1, &(enc->nal[idx]));
-   
-    f->setSize(packetSize);
-    // debug_msg("i_nal=%d, idx=%d, size=%d\n", enc->i_nal, idx, packetSize);
+    f->setSize( packetSize );
+    #else
+    // to conform to new x264 API: data within the payload is already
+    // nal-encoded, so we should just be able to grab
+    packetSize = enc->nal[idx].i_payload;
+    f->write( (char*)enc->nal[idx].p_payload, packetSize );
+    #endif
+
+    //printf("i_nal=%d, idx=%d, size=%d\n", enc->i_nal, idx, packetSize);
     
     return isFrameEncoded;
 }
