@@ -363,7 +363,7 @@ private:
 
 	// print packet size
 	inline void print_psize(double now, int size) {
-	fprintf(stderr, "\tnow: %d psize: %d\n", now, size);
+	fprintf(stderr, "\tnow: %f psize: %d\n", now, size);
 	}
 
 	int ndtp_;		// number of data packet sent
