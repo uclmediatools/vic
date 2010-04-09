@@ -41,7 +41,7 @@
 #define TSZ	1000	// tsvec_ size
 #define SSZ 1000	// seqvec_ size
 #define RSZ 1000	// refvec_ size
-#define RECORD 10000
+#define PSR 10000	// packet size record
 
 #define SHORT_HISTORY		// history size = 8
 #ifdef  SHORT_HISTORY
@@ -359,6 +359,11 @@ private:
 		for (int i = 0; i < c; i++)
 		fprintf(stderr, " %d", vec[i]);
 	fprintf(stderr, " )\n");
+	}
+
+	// print packet size
+	inline void print_psize(double now, int size) {
+	fprintf(stderr, "\tnow: %d psize: %d\n", now, size);
 	}
 
 	int ndtp_;		// number of data packet sent

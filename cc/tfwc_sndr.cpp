@@ -141,8 +141,8 @@ TfwcSndr::TfwcSndr() :
 	reorder_ = false;
 
 	// record of packet size in bytes
-	record_ = (u_int16_t *)malloc(sizeof(u_int16_t) * RECORD);
-	clear_record(RECORD);
+	record_ = (u_int16_t *)malloc(sizeof(u_int16_t) * PSR);
+	clear_record(PSR);
 }
 
 void TfwcSndr::tfwc_sndr_send(pktbuf* pb, double now) {
@@ -150,12 +150,13 @@ void TfwcSndr::tfwc_sndr_send(pktbuf* pb, double now) {
 	if(seqno_ == 0)
 	ts_off_ = tx_ts_offset();
 
-	// number of bytes for this packet
-	record_[seqno_%RECORD] = pb->len;
 	// parse seqno and mark timestamp for this data packet
 	rtphdr* rh = (rtphdr *) pb->data;
 	seqno_	= ntohs(rh->rh_seqno);
 	now_	= now;
+	// number of bytes for this packet
+	record_[seqno_%PSR] = pb->len;
+	//print_psize(now_, record_[seqno_%PSR]),
 
 	// timestamp vector for loss history update
 	tsvec_[seqno_%TSZ] = now_-SKEW;
