@@ -245,7 +245,6 @@ void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		//
 		else if(out_of_ack(jacked_, seqvec_, num_seqvec_)) {
 		  debug_msg("warning: this ack(%d) itself is out-of-order!\n",jacked_);
-		  if(!is_tfwc_on_)
 		  // if the disorder is beyond 3 dupack rule,
 		  // revert to the earlier history
 		  if(shift >= DUPACKS)
