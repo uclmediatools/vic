@@ -118,6 +118,7 @@ class IPNetwork : public Network {
 	virtual int dorecv(u_char* buf, int len, Address &from, int fd);
 	int open(const char * host, int port, int ttl);
 	int close();
+	void bufsize(int size = 1024 * 1024);
 	int localname(sockaddr_in*);
 	int openssock(Address & addr, u_short port, int ttl);
 	int disconnect_sock(int fd);
@@ -190,6 +191,11 @@ int IPNetwork::command(int argc, const char*const* argv)
 			return (TCL_OK);
 		}
 	} else if (argc == 3) {
+		if (strcmp(argv[1], "bufsize") == 0) {
+			int size = atoi(argv[2]);
+			bufsize(size);
+			return (TCL_OK);
+		}
 		if (strcmp(argv[1], "loopback") == 0) {
 			char c = atoi(argv[2]);
 			if (setsockopt(ssock_, IPPROTO_IP, IP_MULTICAST_LOOP,
@@ -212,7 +218,7 @@ int IPNetwork::command(int argc, const char*const* argv)
 			if (strlen(tcl.attr("ifAddr"))>1) {
 				(IPAddress&)local_ = tcl.attr("ifAddr");
 				local_preset_=1;
-                        }
+			}
 			if (open(argv[2], port, ttl) < 0)
 				tcl.result("0");
 			else
@@ -285,6 +291,59 @@ int IPNetwork::close()
 		ssock_ = rsock_ = -1;
 	}
 	return (0);
+}
+
+void IPNetwork::bufsize(int bufsize)
+{
+	int min_bufsize = 32;
+	int ret;
+	int s;
+#if defined WIN32 || WIN64 || defined(__APPLE__)
+	int ss = sizeof(s);
+#else
+	u_int ss = sizeof(s);
+#endif
+
+	if (ssock_ < 0 || rsock_ < 0) {
+		return;
+	}
+
+	s = bufsize;
+	do {
+		ret = setsockopt(ssock_, SOL_SOCKET, SO_SNDBUF,
+				 (char *)&s, sizeof(s));
+		s /= 2;
+	} while (ret < 0 && s >= min_bufsize);
+
+	s = bufsize;
+	do {
+		ret = setsockopt(rsock_, SOL_SOCKET, SO_RCVBUF,
+				 (char *)&s, sizeof(s));
+		s /= 2;
+	} while (ret < 0 && s >= min_bufsize);
+
+	s = 0;
+	if (getsockopt(ssock_, SOL_SOCKET, SO_SNDBUF, (char*) &s, &ss) < 0) {
+		perror("getsockopt(SO_SNDBUF)");
+	} else {
+		if (s < min_bufsize) {
+			fprintf(stderr,"Socket send buffer is only %d bytes.\n", s);
+		} else {
+			debug_msg("Socket send buffer is %d bytes.\n", s);
+		}
+	}
+
+
+	if (getsockopt(rsock_, SOL_SOCKET, SO_RCVBUF, (char*) &s, &ss) < 0) {
+		perror("getsockopt(SO_RCVBUF)");
+	} else {
+		if (s < min_bufsize) {
+			fprintf(stderr, "Socket receive buffer is only %d bytes.\n", s);
+		} else {
+			debug_msg("Socket receive buffer is %d bytes.\n", s);
+		}
+	}
+
 }
 
 int IPNetwork::localname(sockaddr_in* p)
@@ -478,16 +537,6 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
 		
 #endif
 	}
-	/*
-	 * XXX don't need this for the session socket.
-	 */
-	for (int bufsize = 1024 * 1024; bufsize >= 32 * 1024; bufsize /= 2) {
-		if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, (char *)&bufsize,
-			       sizeof(bufsize)) >= 0)
-		{
-			break;
-		}
-	}
 	return (fd);
 }
 
@@ -592,16 +641,6 @@ not compiled with support for IP multicast\n\
 you must specify a unicast destination\n");
 		exit(1);
 #endif
-	}
-	/*
-	 * XXX don't need this for the session socket.
-	 */
-	for (int bufsize = 1024 * 1024; bufsize >= 32 * 1024; bufsize /= 2) {
-		if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, (char *)&bufsize,
-			       sizeof(bufsize)) >= 0)
-		{
-			break;
-		}
 	}
 	return (fd);
 }

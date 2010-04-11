@@ -856,6 +856,9 @@ choose the maximum based on the MBONE heuristics that relate ttl scopes
 to maximum transmission rate
 .IP "\fBVic.bandwidth\fI (128)\fP"
 the default initial setting of the bandwidth slider in kb/s
+.IP "\fBVic.netBufferSize\fI (1024*1024)\fP"
+The size in bytes for the send and receive IP data buffers; 0 causes
+vic to use the default size that the operating system sets.
 .IP "\fBVic.iconPrefix\fI (vic:)\fP"
 a string that is prefixed to the vic icon names
 .IP "\fBVic.priority\fI (10)\fP"

@@ -32,7 +32,7 @@
 proc net_open_ip { sessionType session dst } {
 	global V numLayers IPaddrFamily
 
-        set layer 0
+	set layer 0
 	set c $V(class)
 	set dst [split $dst /]
 	set n [llength $dst]
@@ -97,6 +97,14 @@ proc net_open_ip { sessionType session dst } {
 		warn "Problem opening $IPaddrFamily data socket"
 		exit 1
 	}
+
+	# for the data sockets only, set the
+	# size of the send/recv buffers
+	set netBufferSize [resource netBufferSize]
+	if {$netBufferSize > 0 } {
+		$dn bufsize $netBufferSize
+	}
+
 	$session data-net $dn
 	if { $sessionType != "nv" } {
 		if { $sessionType == "ivs" } {
@@ -122,8 +130,8 @@ proc net_open_ip { sessionType session dst } {
 		    set offset [lindex $oct 3]
 		    set separator .
 	    }
-        		
-            while { $numLayers > $layer } {
+
+	    while { $numLayers > $layer } {
 			incr port 
 			incr layer
 			if { [$dn ismulticast] } { incr offset }
@@ -141,7 +149,7 @@ proc net_open_ip { sessionType session dst } {
 				$cn open $base$separator$offset $port $ttl
 				$session ctrl-net $cn $layer
 			}
-            }
+	    }
 	}
 
 	#

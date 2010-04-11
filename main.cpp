@@ -136,7 +136,7 @@ where <address> is machine name, or a multicast IP address, and <port> is\n\
 the connection identifier (an even number between 1024-65536).\n\n\
 For more details see:\n\
 \thttp://www-mice.cs.ucl.ac.uk/multimedia/software/vic/faq.html\n\n\
-Options: vic [-HPs] [-A nv|ivs|rtp] [-B maxbps] [-C conf]\n\
+Options: vic [-HPs] [-A nv|ivs|rtp] [-B maxbps] [-b netBufferSize] [-C conf]\n\
     [-c ed|gray|od|quantize] [-D device] [-d display]\n\
     [-f bvc|cellb|h261|jpeg|nv|mpeg4|h264] [-F maxfps] [-i ifAddr ]\n\
     [-I channel] [-K key ] [-L flowLabel (ip6 only)] [-l (creates log file)]\n\
@@ -525,7 +525,7 @@ int main(int argc, const char** argv)
 
 	// Option list; If letter is followed by ':' then it takes an argument
 	const char* options = 
-		"A:B:C:c:D:d:f:F:HI:i:j:K:lL:M:m:N:n:o:Pq:QrsST:t:U:u:vV:w:x:X:y";
+		"A:B:b:C:c:D:d:f:F:HI:i:j:K:lL:M:m:N:n:o:Pq:QrsST:t:U:u:vV:w:x:X:y";
 	/* process display and window (-use) options before initialising tcl/tk */
 	char buf[256], tmp[256];
 	const char *display=0, *use=0;
@@ -627,6 +627,10 @@ int main(int argc, const char** argv)
 
 		case 'B':
 			tcl.add_option("maxbw", optarg);
+			break;
+
+		case 'b':
+			tcl.add_option("netBufferSize", optarg);
 			break;
 
 		case 'C':

@@ -162,6 +162,7 @@ proc init_resources {} {
 	option add Vic.maxbw -1 startupFile
 	option add Vic.bandwidth 128 startupFile
 	option add Vic.iconPrefix vic: startupFile
+	option add Vic.netBufferSize [expr 1024*1024] startupFile
 	option add Vic.priority 10 startupFile
 	option add Vic.confBusChannel 0 startupFile
 

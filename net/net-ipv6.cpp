@@ -231,6 +231,11 @@ int IP6Network::command(int argc, const char*const* argv)
 			return (TCL_OK);
 		}
 	} else if (argc == 5) {
+		if (strcmp(argv[1], "bufsize") == 0) {
+			int size = atoi(argv[2]);
+			//bufsize(size);
+			return (TCL_OK);
+		}
 		if (strcmp(argv[1], "open") == 0) {
 /* __IPV6 use v6 lookup */
 			const char * host = argv[2];
