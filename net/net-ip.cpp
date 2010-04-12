@@ -298,7 +298,7 @@ void IPNetwork::bufsize(int bufsize)
 	int min_bufsize = 32;
 	int ret;
 	int s;
-#if defined WIN32 || WIN64 || defined(__APPLE__)
+#if defined WIN32 || WIN64
 	int ss = sizeof(s);
 #else
 	u_int ss = sizeof(s);
