@@ -52,14 +52,29 @@ static char rcsid[] =
 int
 uname(struct utsname *ub)
 {
+
+    WSADATA WSAdata;
     char *ptr;
     DWORD version;
     SYSTEM_INFO sysinfo;
     char hostname[4096];
-    
+
+    /* XXX
+	* initialize our socket interface plus the tcl 7.5 socket
+	* interface (since they redefine some routines we call).
+	* eventually we should just call the tcl sockets but at
+	* the moment that's hard to set up since they only support
+	* tcp in the notifier.
+	*/
+    if (WSAStartup(MAKEWORD (1, 1), &WSAdata)) {
+		perror("Windows Sockets init failed");
+		abort();
+    }
+
+
     version = GetVersion();
     GetSystemInfo(&sysinfo);
-    
+
     switch (sysinfo.wProcessorArchitecture) {
     case PROCESSOR_ARCHITECTURE_INTEL:
 		(void)strcpy(ub->machine, "x86");
@@ -82,7 +97,7 @@ uname(struct utsname *ub)
 		(void)strcpy(ub->machine, "unknown");
 		break;
     }
-    
+
     if (version < 0x80000000) {
 		(void)strcpy(ub->version, "NT");
     }
@@ -114,7 +129,7 @@ int gettimeofday(struct timeval *p, struct timezone *z)
     if (p) {
 		extern void TclpGetTime(Tcl_Time*);
 		Tcl_Time tt;
-		
+
 		TclpGetTime(&tt);
         p->tv_sec = tt.sec;
 		p->tv_usec = tt.usec;
@@ -135,10 +150,10 @@ strcasecmp(const char *s1, const char *s2)
 }
 
 uid_t
-getuid(void) 
-{ 
+getuid(void)
+{
     return 0;
-    
+
 }
 
 gid_t
@@ -186,7 +201,7 @@ WinMain(
     WSADATA WSAdata;
 
 #ifdef PTW32_STATIC_LIB
-	/* Necessity when linking with pthreads-win32 static library */
+    /* Necessity when linking with pthreads-win32 static library */
     pthread_win32_process_attach_np();
     pthread_win32_thread_attach_np();
     atexit(detach_ptw32);
@@ -205,10 +220,10 @@ WinMain(
     }
 
 #if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION == 0)
-    TclHasSockets(NULL);	
-	TkWinXInit(hInstance);
+    TclHasSockets(NULL);
+    TkWinXInit(hInstance);
 #endif
-	
+
     /*
 	* Increase the application queue size from default value of 8.
 	* At the default value, cross application SendMessage of WM_KILLFOCUS
@@ -217,7 +232,7 @@ WinMain(
 	* the queue.
 	*/
     SetMessageQueue(64);
-	
+
     GetModuleFileName(NULL, argv0, 255);
     p = argv0;
     __progname = strrchr(p, '/');
@@ -251,14 +266,14 @@ int
 printf(const char *fmt, ...)
 {
     int retval;
-    
+
     va_list ap;
     va_start (ap, fmt);
     retval = vsprintf(szTemp, fmt, ap);
     OutputDebugString(szTemp);
     ShowMessage(MB_ICONINFORMATION, szTemp);
     va_end (ap);
-	
+
     return(retval);
 }
 
@@ -278,7 +293,7 @@ int retval;
   }
   else
   retval = vfprintf(f, fmt, ap);
-  
+
     return(retval);
 }
 
@@ -288,7 +303,7 @@ perror(const char *msg)
     DWORD cMsgLen;
     CHAR *msgBuf;
     DWORD dwError = GetLastError();
-    
+
     cMsgLen = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
 		FORMAT_MESSAGE_ALLOCATE_BUFFER | 40, NULL,
 		dwError,
@@ -325,7 +340,7 @@ WinPutsCmd(ClientData clientData, Tcl_Interp *interp, int argc, const char **arg
     //Tcl_Obj *resultPtr;
     Tcl_Channel chan;			/* The channel to puts on. */
     int result;				/* Result of puts operation. */
-	
+
     i = 1;
     newline = 1;
     if ((argc >= 2) && (strcmp(argv[1], "-nonewline") == 0)) {
@@ -337,12 +352,12 @@ WinPutsCmd(ClientData clientData, Tcl_Interp *interp, int argc, const char **arg
 			" ?-nonewline? ?fileId? string\"", (char *) NULL);
 		return TCL_ERROR;
     }
-	
+
     /*
 	* The code below provides backwards compatibility with an old
 	* form of the command that is no longer recommended or documented.
 	*/
-	
+
     if (i == (argc-3)) {
 		if (strncmp(argv[i+2], "nonewline", strlen(argv[i+2])) != 0) {
 			Tcl_AppendResult(interp, "bad argument \"", argv[i+2],
@@ -351,18 +366,18 @@ WinPutsCmd(ClientData clientData, Tcl_Interp *interp, int argc, const char **arg
 		}
 		newline = 0;
     }
-	
+
     if (i == (argc-1)) {
 		fileId = "stdout";
     } else {
 		fileId = argv[i];
 		i++;
     }
-	
-	
+
+
     if (strcmp(fileId, "stdout") == 0 || strcmp(fileId, "stderr") == 0) {
 		char *buffer;
-		
+
 		if (newline) {
 			int len = strlen(argv[i]);
 			buffer = ckalloc(len+2);
@@ -390,7 +405,7 @@ WinPutsCmd(ClientData clientData, Tcl_Interp *interp, int argc, const char **arg
 			debug_msg("Err:TCL_WRITABLE\n");
 			return TCL_ERROR;
 		}
-		
+
 		length = strlen(argv[i]);
 		result = Tcl_Write(chan, argv[i], length);
 		if (result < 0) {
@@ -428,7 +443,7 @@ char **argv;			/* Argument strings. */
 {
     char user[256];
     int size = sizeof(user);
-    
+
     if (!GetUserName(user, &size)) {
 		Tcl_AppendResult(interp, "GetUserName failed", NULL);
 		return TCL_ERROR;
@@ -454,7 +469,7 @@ char *root;
 }
 
 #if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION == 0)
-int 
+int
 WinReg(ClientData clientdata, Tcl_Interp *interp, int argc, char **argv)
 #else
 WinReg(ClientData clientdata, Tcl_Interp *interp, int argc, const char **argv)
@@ -465,45 +480,45 @@ WinReg(ClientData clientdata, Tcl_Interp *interp, int argc, const char **argv)
 	int cbOutBuf = 255;
 	HKEY hKey, hKeyResult;
 	DWORD dwDisp;
-	
+
 	if (argc < 4 || argc > 5) {
 		Tcl_AppendResult(interp, "wrong number of args\n", szBuf, NULL);
 		return TCL_ERROR;
 	}
-	
+
 	strcpy(szBuf, argv[2]);
 	szValueName = argv[3];
 	szRegRoot   = szBuf;
 	szRegPath   = strchr(szBuf, '\\');
-	
+
 	if (szRegPath == NULL || szValueName == NULL) {
 		Tcl_AppendResult(interp, "registry path is wrongly written\n", szBuf, NULL);
 		return TCL_ERROR;
 	}
-	
+
 	*szRegPath = '\x0';
 	szRegPath++;
-	
+
 	hKey = regroot(szRegRoot);
-	
+
 	if (hKey == (HKEY)-1) {
 		Tcl_AppendResult(interp, "root not found %s", szRegRoot, NULL);
 		return TCL_ERROR;
 	}
-	
+
 	if (ERROR_SUCCESS != RegCreateKeyEx(hKey, szRegPath, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &hKeyResult, &dwDisp)) {
 		Tcl_AppendResult(interp, "Could not open key", szRegRoot, szRegPath, NULL);
 		return TCL_ERROR;
 	}
-	
+
 	if (argc == 4 && !strcmp(argv[1],"get")) {
 		DWORD dwType = REG_SZ;
 		if (ERROR_SUCCESS != RegQueryValueEx(hKeyResult, szValueName, 0, &dwType, szOutBuf, &cbOutBuf)) {
 			RegCloseKey(hKeyResult);
 			Tcl_AppendResult(interp, "Could not set value", szValueName, NULL);
-			return TCL_ERROR;       
+			return TCL_ERROR;
 		}
-		Tcl_SetResult(interp, szOutBuf, TCL_STATIC);	
+		Tcl_SetResult(interp, szOutBuf, TCL_STATIC);
 	} else if (argc == 5 && !strcmp(argv[1], "set")) {
 		if (ERROR_SUCCESS != RegSetValueEx(hKeyResult, szValueName, 0, REG_SZ, argv[4], strlen(argv[4]))) {
 			RegCloseKey(hKeyResult);

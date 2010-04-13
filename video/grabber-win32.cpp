@@ -458,11 +458,11 @@ VfwDevice::VfwDevice(const char* name, int index) :
 		vfwdev_ = index;
 		switch (get_device_type(name)) {
 		case gray_QuickCam_95:
-			attributes_ = "format { 422 420 cif } size { small cif } port { QuickCam } ";
+			attributes_ = "format { 422 420 cif } size { small cif } port { QuickCam } type { ntsc pal }";
 			break;
 		case Generic:
 		default:
-			attributes_ = "format { 422 420 cif } size { large small cif } port { external-in } ";
+			attributes_ = "format { 422 420 cif } size { large small cif } port { external-in } type { ntsc pal }";
 			break;
 		}
 	} else
@@ -1040,6 +1040,15 @@ int VfwGrabber::command(int argc, const char*const* argv)
 		} else if (strcmp(argv[1], "useconfig") ==0) {
 			if (strcmp(argv[2], "1") == 0) useconfig_=1;
 			if (strcmp(argv[2], "0") == 0) useconfig_=0;
+		} else if (strcmp(argv[1], "type") == 0) {
+			if (strcmp(argv[2], "auto") == 0) {
+			} else if (strcmp(argv[2], "pal") == 0) {
+				basewidth_  = CIF_BASE_WIDTH;
+				baseheight_ = CIF_BASE_HEIGHT;
+			} else if (strcmp(argv[2], "ntsc") == 0) {
+				basewidth_  = NTSC_BASE_WIDTH;
+				baseheight_ = NTSC_BASE_HEIGHT;
+			}
 		}
 	}
 	return (Grabber::command(argc, argv));

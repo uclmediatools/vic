@@ -32,9 +32,9 @@
 
 On the implementation of DirectShow frame grabbing
 
-	Mark S. Petrovic
-	EarthLink, Inc.
-	Pasadena, CA  USA
+        Mark S. Petrovic
+        EarthLink, Inc.
+        Pasadena, CA  USA
         petrovic@corp.earthlink.net
 
 I.
@@ -144,6 +144,11 @@ static const GUID MEDIASUBTYPE_I420 =
 static const GUID MEDIASUBTYPE_HDYC =
 {0x43594448, 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}};
 
+static const GUID IUNKNOWN_IID = 
+{0x00000000, 0x0000, 0x0000, {0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}};
+
+static const GUID ISAMPLEGRABBERCB_IID =
+{0x0579154A, 0x2B53, 0x4994, {0xB0, 0xD0, 0xE7, 0x73, 0x14, 0x8E, 0xFF, 0x85}};
 
 #define NAMEBUF_LEN 200
 
@@ -153,32 +158,32 @@ IBaseFilter  *pCaptureFilter[NUM_DEVS];
 // Class Callback, for video framebuffer callback.  See DS Sample Grabber interface docs.
 
 STDMETHODIMP Callback::SampleCB(double sampleTime, IMediaSample *pSample) {
-   return E_NOTIMPL;
+    return E_NOTIMPL;
 }
 
 STDMETHODIMP Callback::BufferCB(double sampleTime, BYTE *pBuffer, long bufferLen) {
 
-   ///debug_msg("Callback::BufferCB:  sampleTime= %f, pbuffer= %p, bufferLen= %ld\n", sampleTime, pBuffer, bufferLen);
+    ///debug_msg("Callback::BufferCB:  sampleTime= %f, pbuffer= %p, bufferLen= %ld\n", sampleTime, pBuffer, bufferLen);
 
-   WaitForSingleObject(grabber->cb_mutex_, INFINITE);
-   grabber->capture(pBuffer, bufferLen);
-   ReleaseMutex(grabber->cb_mutex_);
-   return S_OK;
+    WaitForSingleObject(grabber->cb_mutex_, INFINITE);
+    grabber->capture(pBuffer, bufferLen);
+    ReleaseMutex(grabber->cb_mutex_);
+    return S_OK;
 }
 
 //-----------------
 
 STDMETHODIMP Callback::QueryInterface(REFIID riid, void **ppvObject) {
-   if (NULL == ppvObject)
-      return E_POINTER;
-   if (riid == __uuidof(IUnknown))
-      *ppvObject = static_cast<IUnknown*>(this);
-   else if (riid == __uuidof(ISampleGrabberCB))
-      *ppvObject = static_cast<ISampleGrabberCB*>(this);
-   else
-      return E_NOTIMPL;
-   AddRef();
-   return S_OK;
+    if (NULL == ppvObject)
+        return E_POINTER;
+    if (riid == IUNKNOWN_IID)
+        *ppvObject = static_cast<IUnknown*>(this);
+    else if (riid == ISAMPLEGRABBERCB_IID)
+        *ppvObject = static_cast<ISampleGrabberCB*>(this);
+    else
+        return E_NOTIMPL;
+    AddRef();
+    return S_OK;
 }
 
 //#########################################################################
@@ -260,8 +265,8 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
                          IID_ICaptureGraphBuilder2, (void **)&pBuild_);
    //showErrorMessage(hr);
    if (FAILED(hr)) {
-   		Grabber::status_=-1;
-		return;
+       Grabber::status_=-1;
+       return;
    }
    debug_msg("DirectShowGrabber::DirectShowGrabber():  graph builder interface acquired\n");
 
@@ -269,8 +274,8 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
    hr = CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER,
                          IID_IGraphBuilder, (void **)&pGraph_);
    if (FAILED(hr)) {
-   		Grabber::status_=-1;
-		return;
+       Grabber::status_=-1;
+       return;
    }
    debug_msg("DirectShowGrabber::DirectShowGrabber():  graph instance acquired\n");
 
@@ -278,8 +283,8 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
    hr = pBuild_->SetFiltergraph(pGraph_);
    //showErrorMessage(hr);
    if (FAILED(hr)) {
-   		Grabber::status_=-1;
-		return;
+       Grabber::status_=-1;
+       return;
    }
    debug_msg("DirectShowGrabber::DirectShowGrabber():  graph associated with builder\n");
 
@@ -320,22 +325,22 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
                          IID_IBaseFilter, (LPVOID *)&pNullBaseFilter_);
    //showErrorMessage(hr);
    if (FAILED(hr)) {
-   		Grabber::status_=-1;
-		return;
+      Grabber::status_=-1;
+      return;
    }
    debug_msg("DirectShowGrabber::DirectShowGrabber():  Null Renderer interface acquired\n");
 
    // Finally, add the Null Renderer "sink" to the graph
    hr = pGraph_->AddFilter(pNullBaseFilter_,L"VicNullRenderer");
     if (FAILED(hr)) {
-   		Grabber::status_=-1;
-		return;
+       Grabber::status_=-1;
+       return;
    }
    debug_msg("DirectShowGrabber::DirectShowGrabber():  Null Renderer added to graph\n");
 
    if (!getCaptureCapabilities()) {
-   		Grabber::status_=-1;
-		return;
+      Grabber::status_=-1;
+      return;
    }
    //Not needed as width & height aren't known yet.
    setCaptureOutputFormat();
@@ -384,31 +389,31 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
    hr = pGraph_->QueryInterface(IID_IMediaControl, (void **)&pMediaControl_);
    //showErrorMessage(hr);
    if (FAILED(hr)) {
-   		Grabber::status_=-1;
-		return;
+       Grabber::status_=-1;
+       return;
    }
    debug_msg("DirectShowGrabber::DirectShowGrabber():  graph media control interface acquired\n");
 
    if (have_DVSD_) {
-	   // Get the DV Video Codec DS default filter
-	   hr = CoCreateInstance(CLSID_DVVideoCodec, NULL, CLSCTX_INPROC_SERVER,
-		   IID_IBaseFilter, (LPVOID *)&pDVDecoderBaseFilter_);
-	   if (FAILED(hr)) {
-		   Grabber::status_=-1;
-		   return;
-	   }
-	   debug_msg("DirectShowGrabber::DirectShowGrabber():  DV Video Codec interface acquired\n");
+       // Get the DV Video Codec DS default filter
+       hr = CoCreateInstance(CLSID_DVVideoCodec, NULL, CLSCTX_INPROC_SERVER,
+                             IID_IBaseFilter, (LPVOID *)&pDVDecoderBaseFilter_);
+       if (FAILED(hr)) {
+           Grabber::status_=-1;
+           return;
+       }
+       debug_msg("DirectShowGrabber::DirectShowGrabber():  DV Video Codec interface acquired\n");
 
-	   hr = pDVDecoderBaseFilter_->QueryInterface(IID_IIPDVDec, (void**)&pDVVideoDecoder_);
-	   debug_msg("DirectShowGrabber::DirectShowGrabber():  Sample Grabber interface acquired\n");
+       hr = pDVDecoderBaseFilter_->QueryInterface(IID_IIPDVDec, (void**)&pDVVideoDecoder_);
+       debug_msg("DirectShowGrabber::DirectShowGrabber():  Sample Grabber interface acquired\n");
 
-	   // Add the DV Video Codec to the graph
-	   hr = pGraph_->AddFilter(pDVDecoderBaseFilter_, L"Vic DV Video Decoder");
-	   if (FAILED(hr)) {
-		   Grabber::status_=-1;
-		   return;
-	   }
-	   debug_msg("DirectShowGrabber::DirectShowGrabber():  DV Video Decoder added to graph\n");
+       // Add the DV Video Codec to the graph
+       hr = pGraph_->AddFilter(pDVDecoderBaseFilter_, L"Vic DV Video Decoder");
+       if (FAILED(hr)) {
+           Grabber::status_=-1;
+           return;
+       }
+       debug_msg("DirectShowGrabber::DirectShowGrabber():  DV Video Decoder added to graph\n");
    }
 
    IMoniker * pMoniker = NULL;
@@ -418,17 +423,17 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
    // so can use GraphEdit to view graph, e.g.
    //    in GraphEdit's File menu, click "Connect to Remote Graph..."
    if (SUCCEEDED(GetRunningObjectTable(0, &pROT))) {
-	   const size_t STRING_LENGTH = 256;
+     const size_t STRING_LENGTH = 256;
 
-	   WCHAR wsz[STRING_LENGTH];
-	   swprintf(wsz, STRING_LENGTH, L"FilterGraph %08x pid %08x", (DWORD_PTR)pGraph_, GetCurrentProcessId());
+     WCHAR wsz[STRING_LENGTH];
+     StringCbPrintfW(wsz, STRING_LENGTH, L"FilterGraph %08x pid %08x", (DWORD_PTR)pGraph_, GetCurrentProcessId());
 
-	   HRESULT hr = CreateItemMoniker(L"!", wsz, &pMoniker);
-	   if (SUCCEEDED(hr)) {
-		   hr = pROT->Register(ROTFLAGS_REGISTRATIONKEEPSALIVE, pGraph_, pMoniker, &dwRegister_);
-		   pMoniker->Release();
-	   }
-	   pROT->Release();
+     HRESULT hr = CreateItemMoniker(L"!", wsz, &pMoniker);
+     if (SUCCEEDED(hr)) {
+         hr = pROT->Register(ROTFLAGS_REGISTRATIONKEEPSALIVE, pGraph_, pMoniker, &dwRegister_);
+         pMoniker->Release();
+     }
+     pROT->Release();
    }
 }
 
@@ -456,15 +461,31 @@ DirectShowGrabber::~DirectShowGrabber() {
     callback_->Release();
     //delete callback; - done by above Release() call
     if (have_DVSD_) {
-        pDVVideoDecoder_->Release();
-        pDVDecoderBaseFilter_->Release();
+        if (pDVVideoDecoder_ != 0) {
+            pDVVideoDecoder_->Release();
+        }
+        if (pDVDecoderBaseFilter_ != 0) {
+            pDVDecoderBaseFilter_->Release();
+        }
     }
-    pNullBaseFilter_->Release();
-    pSampleGrabber_->Release();
-    pGrabberBaseFilter_->Release();
-    pMediaControl_->Release();
-    pGraph_->Release();
-    pBuild_->Release();
+    if (pNullBaseFilter_ != 0) {
+        pNullBaseFilter_->Release();
+    }
+    if (pSampleGrabber_ != 0) {
+        pSampleGrabber_->Release();
+    }
+    if (pGrabberBaseFilter_ != 0) {
+        pGrabberBaseFilter_->Release();
+    }
+    if (pMediaControl_ != 0) {
+        pMediaControl_->Release();
+    }
+    if (pGraph_ != 0) {
+        pGraph_->Release();
+    }
+    if (pBuild_ != 0) {
+        pBuild_->Release();
+    }
 }
 
 //--------------------------------
@@ -520,7 +541,7 @@ void DirectShowGrabber::routeCrossbar() {
     long        pinType;
     IAMCrossbar *xb;
 
-	long tmp_input_port;
+    long tmp_input_port;
 
     if( crossbar_ == NULL ) return;
 
@@ -528,82 +549,82 @@ void DirectShowGrabber::routeCrossbar() {
 
 
     hr = xb->get_PinCounts(&output, &input);
-	debug_msg("num input %d num output %d", input, output);
+    debug_msg("num input %d num output %d", input, output);
 
 
-	long selectedPort = -1;
-	long inport = -1;
+    long selectedPort = -1;
+    long inport = -1;
     for( int i = 0; i < output; ++i ) {
-		xb->get_IsRoutedTo(i, &inport);
-		debug_msg("DirectShowGrabber::routeCrossbar():  input pin %d is mapped to output pin %d\n", inport, i);
-		if( inport >= 0 )
-			selectedPort = inport;
+        xb->get_IsRoutedTo(i, &inport);
+        debug_msg("DirectShowGrabber::routeCrossbar():  input pin %d is mapped to output pin %d\n", inport, i);
+        if( inport >= 0 )
+            selectedPort = inport;
     }
 
 
     if(initializedPorts == 0) {
-		initializedPorts=1;
-		svideoPortNum = 1;
-		compositePortNum = 1;
-		numInputPorts = 0;
-		for( int i = 0; i < input; ++i ) {
-			xb->get_CrossbarPinInfo(TRUE, i, &related, &pinType);
-			if( pinType == PhysConn_Video_SVideo ) {
-				debug_msg("Found svideo port %d\n", svideoPortNum);
-				inputPorts[numInputPorts] = new Port();
-				inputPorts[numInputPorts]->id = i;
-				if( svideoPortNum > 1 )
-					sprintf(inputPorts[numInputPorts]->name,"S-Video%d", svideoPortNum );
-				else
-					strcpy(inputPorts[numInputPorts]->name,"S-Video");
-				if( selectedPort == i )
-					strcpy(input_port_, inputPorts[numInputPorts]->name);
-				numInputPorts++;
-				svideoPortNum++;
+        initializedPorts=1;
+        svideoPortNum = 1;
+        compositePortNum = 1;
+        numInputPorts = 0;
+        for( int i = 0; i < input; ++i ) {
+            xb->get_CrossbarPinInfo(TRUE, i, &related, &pinType);
+            if( pinType == PhysConn_Video_SVideo ) {
+                debug_msg("Found svideo port %d\n", svideoPortNum);
+                inputPorts[numInputPorts] = new Port();
+                inputPorts[numInputPorts]->id = i;
+                if( svideoPortNum > 1 )
+                    StringCbPrintf(inputPorts[numInputPorts]->name, 64, "S-Video%d", svideoPortNum );
+                else
+                    StringCbCopy(inputPorts[numInputPorts]->name, 64, "S-Video");
+                if( selectedPort == i )
+                    StringCbCopy(input_port_, 64, inputPorts[numInputPorts]->name);
+                numInputPorts++;
+                svideoPortNum++;
 
-			}
-			if( pinType == PhysConn_Video_Composite ) {
-				debug_msg("Found composite port %d\n", compositePortNum);
-				inputPorts[numInputPorts] = new Port();
-				inputPorts[numInputPorts]->id = i;
-				if(compositePortNum > 1 )
-					sprintf(inputPorts[numInputPorts]->name,"Composite%d", compositePortNum);
-				else
-					strcpy(inputPorts[numInputPorts]->name,"Composite");
-				if( selectedPort == i )
-					strcpy(input_port_, inputPorts[numInputPorts]->name);
-				numInputPorts++;
-				compositePortNum++;
-			}
-		}
-	}
+            }
+            if( pinType == PhysConn_Video_Composite ) {
+                debug_msg("Found composite port %d\n", compositePortNum);
+                inputPorts[numInputPorts] = new Port();
+                inputPorts[numInputPorts]->id = i;
+                if(compositePortNum > 1 )
+                    StringCbPrintf(inputPorts[numInputPorts]->name, 64, "Composite%d", compositePortNum);
+                else
+                    StringCbCopy(inputPorts[numInputPorts]->name, 64, "Composite");
+                if( selectedPort == i )
+                    StringCbCopy(input_port_, 64, inputPorts[numInputPorts]->name);
+                numInputPorts++;
+                compositePortNum++;
+            }
+        }
+    }
 
     for( int i = 0; i < output; ++i ) {
-		xb->get_CrossbarPinInfo(FALSE, i, &related, &pinType);
-		if( pinType == PhysConn_Video_VideoDecoder ) {
-			videoDecoderPort = i;
-			break;
-		}
+        xb->get_CrossbarPinInfo(FALSE, i, &related, &pinType);
+        if( pinType == PhysConn_Video_VideoDecoder ) {
+            videoDecoderPort = i;
+            break;
+        }
     }
 
     port = -1;
     for( int i=0; i<numInputPorts; i++) {
-		if (strcmp(input_port_,inputPorts[i]->name) == 0) {
-			port = inputPorts[i]->id;
-			break;
-		}
+        if (strcmp(input_port_,inputPorts[i]->name) == 0) {
+            port = inputPorts[i]->id;
+            break;
+        }
     }
     if( port == -1 ) { 
-		debug_msg("**** Failed to find port for %s\n", input_port_);
-		return;
+        debug_msg("**** Failed to find port for %s\n", input_port_);
+        return;
     }
 
     if( xb->CanRoute(videoDecoderPort, port) == S_FALSE )
-		debug_msg("DirectShowGrabber::routeCrossbar():  cannot route input pin %d to output pin %d\n", port, videoDecoderPort);
+        debug_msg("DirectShowGrabber::routeCrossbar():  cannot route input pin %d to output pin %d\n", port, videoDecoderPort);
     else {
-		debug_msg("DirectShowGrabber::routeCrossbar() routing pin %d to pin %d\n", port, videoDecoderPort);
-		hr = xb->Route(videoDecoderPort, port);
-		//showErrorMessage(hr);
+        debug_msg("DirectShowGrabber::routeCrossbar() routing pin %d to pin %d\n", port, videoDecoderPort);
+        hr = xb->Route(videoDecoderPort, port);
+        //showErrorMessage(hr);
     }
 
     xb->get_IsRoutedTo(videoDecoderPort, &input);
@@ -646,11 +667,11 @@ void DirectShowGrabber::start() {
    switch (cformat_) {
    case CF_420:
    case CF_CIF:
-	   converter(new RGB_Converter_420(24, (u_int8_t *)NULL, 0));
-	   break;
+       converter(new RGB_Converter_420(24, (u_int8_t *)NULL, 0));
+       break;
    case CF_422:
-	   converter(new RGB_Converter_422(24, (u_int8_t *)NULL, 0));
-	   break;
+       converter(new RGB_Converter_422(24, (u_int8_t *)NULL, 0));
+       break;
    }
 
    Grabber::start();
@@ -672,8 +693,8 @@ void DirectShowGrabber::stop() {
    ReleaseMutex(cb_mutex_);
 
    if (converter_) {
-	   delete converter_;
-	   converter_ = 0;
+       delete converter_;
+       converter_ = 0;
    }
    capturing_  = 0;
    last_frame_ = 0;
@@ -743,65 +764,65 @@ void DirectShowGrabber::capture(BYTE *frameBuf, long bufLen) {
 //--------------------------------
 
 int DirectShowGrabber::grab() {
-   int rval;
+    int rval;
 
 
-   //debug_msg("DirectShowGrabber::grab: thread=%x w=%d h=%d bw=%d bh=%d frame_=%p fsize_=%d in=%dx%d out=%dx%d\n",
+    //debug_msg("DirectShowGrabber::grab: thread=%x w=%d h=%d bw=%d bh=%d frame_=%p fsize_=%d in=%dx%d out=%dx%d\n",
    //          GetCurrentThreadId(),
    //          width_, height_, basewidth_, baseheight_, frame_, framesize_,
    //          inw_, inh_, outw_, outh_);
 
-   WaitForSingleObject(cb_mutex_, INFINITE);
+    WaitForSingleObject(cb_mutex_, INFINITE);
 
-   if( last_frame_ == NULL || capturing_ == 0 ) {
-      ReleaseMutex(cb_mutex_);
-      return FALSE;
-   }
-   switch (cformat_) {
-   case CF_420:
-   case CF_CIF:
-     if (have_HDYC_)
-       packedUYVY422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
-     else if (have_I420_)
-       planarYUYV420_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
-     else if (have_YUY2_)
-       packedYUYV422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
-     else if (have_UYVY_)
-       packedUYVY422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
-     else if (have_RGB24_)
-       converter_->convert((u_int8_t*)last_frame_, width_, height_, frame_, outw_, outh_, TRUE);
-     else
-       packedUYVY422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
-     break;
+    if( last_frame_ == NULL || capturing_ == 0 ) {
+        ReleaseMutex(cb_mutex_);
+        return FALSE;
+    }
+    switch (cformat_) {
+    case CF_420:
+    case CF_CIF:
+        if (have_HDYC_)
+            packedUYVY422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+        else if (have_I420_)
+            planarYUYV420_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+        else if (have_YUY2_)
+            packedYUYV422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+        else if (have_UYVY_)
+            packedUYVY422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+        else if (have_RGB24_)
+            converter_->convert((u_int8_t*)last_frame_, width_, height_, frame_, outw_, outh_, TRUE);
+        else
+            packedUYVY422_to_planarYUYV420((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+        break;
 
-   case CF_422:
-     if (have_HDYC_)
-       packedUYVY422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
-     if (have_YUY2_)
-       packedYUYV422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
-     else if (have_UYVY_)
-       packedUYVY422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
-     else if (have_I420_)
-       planarYUYV420_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
-     else if (have_RGB24_)
-       converter_->convert((u_int8_t*)last_frame_, width_, height_, frame_, outw_, outh_, TRUE);
-	 else
-       packedUYVY422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
-     break;
-   }
+    case CF_422:
+        if (have_HDYC_)
+            packedUYVY422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+        if (have_YUY2_)
+            packedYUYV422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+        else if (have_UYVY_)
+            packedUYVY422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+        else if (have_I420_)
+            planarYUYV420_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+        else if (have_RGB24_)
+            converter_->convert((u_int8_t*)last_frame_, width_, height_, frame_, outw_, outh_, TRUE);
+        else
+            packedUYVY422_to_planarYUYV422((char *)frame_, outw_, outh_, (char *)last_frame_, inw_, inh_);
+        break;
+    }
 
-   last_frame_ = NULL;
+    last_frame_ = NULL;
 
-   suppress(frame_);
-   saveblks(frame_);
-   YuvFrame f(media_ts(), frame_, crvec_, outw_, outh_);
+    suppress(frame_);
+    saveblks(frame_);
+    YuvFrame f(media_ts(), frame_, crvec_, outw_, outh_);
 
-   rval = (target_->consume(&f));
+    rval = (target_->consume(&f));
 
-   // release block so that callback can get new frame
-   ReleaseMutex(cb_mutex_);
+    // release block so that callback can get new frame
+    ReleaseMutex(cb_mutex_);
 
-   return rval;
+    return rval;
 }
 
 //--------------------------------
@@ -809,7 +830,7 @@ int DirectShowGrabber::grab() {
 void DirectShowGrabber::setport(const char *port) {
 
    debug_msg("DirectShowGrabber::setport: %s thread=%x\n", port, GetCurrentThreadId());
-   strcpy(input_port_, port);
+   StringCbCopy(input_port_, 64, port);
    routeCrossbar();
 
 }
@@ -971,7 +992,7 @@ void DirectShowGrabber::setCaptureOutputFormat() {
       case CF_CIF:
           if (have_HDYC_)
               mediasubtype = MEDIASUBTYPE_HDYC; // Blackmagic Packed YUV 422
-		  else if (have_I420_)
+          else if (have_I420_)
               mediasubtype = MEDIASUBTYPE_I420; // Planar YUV 420
           else if (have_YUY2_)
               mediasubtype = MEDIASUBTYPE_YUY2; // Packed YUV 422
@@ -1009,7 +1030,7 @@ void DirectShowGrabber::setCaptureOutputFormat() {
                   (scc.MaxOutputSize.cy <= height_)*/){
 
                if ( (width_ <= scc.MaxOutputSize.cx) && (width_ >= scc.MinOutputSize.cx) &&
-				   (height_ <= scc.MaxOutputSize.cx) && (height_ >= scc.MinOutputSize.cy)) {
+                    (height_ <= scc.MaxOutputSize.cx) && (height_ >= scc.MinOutputSize.cy)) {
 
                     pVih = (VIDEOINFOHEADER *)pmtConfig->pbFormat;
                     //pVih->bmiHeader.biWidth     = width_;
@@ -1085,69 +1106,69 @@ void DirectShowGrabber::setCaptureOutputFormat() {
 
 int DirectShowGrabber::command(int argc, const char* const* argv) {
 
-   if (argc == 3) {
-      if (strcmp(argv[1], "decimate") == 0) {
-         u_int dec = (u_int)atoi(argv[2]);
-         Tcl& tcl = Tcl::instance();
-         if (dec <= 0) {
-            tcl.resultf("%s: divide by zero", argv[0]);
-            return (TCL_ERROR);
-         }
-         debug_msg("DirectShowGrabber::command: decimate=%d (dec)=%d\n", dec, decimate_);
-         if (dec != decimate_) {
-            decimate_ = dec;
+    if (argc == 3) {
+        if (strcmp(argv[1], "decimate") == 0) {
+            u_int dec = (u_int)atoi(argv[2]);
+            Tcl& tcl = Tcl::instance();
+            if (dec <= 0) {
+                tcl.resultf("%s: divide by zero", argv[0]);
+                return (TCL_ERROR);
+            }
+            debug_msg("DirectShowGrabber::command: decimate=%d (dec)=%d\n", dec, decimate_);
+            if (dec != decimate_) {
+                decimate_ = dec;
+                if (running_) {
+                    stop();
+                    setsize();
+                    setCaptureOutputFormat();
+                    start();
+                } else{
+                    setsize();
+                    setCaptureOutputFormat();
+                }
+            }
+            return (TCL_OK);
+        } else if (strcmp(argv[1], "port") == 0) {
+            setport(argv[2]);
+            return (TCL_OK);
+        } else if (strcmp(argv[1], "type") == 0) {
+            if (strcmp(argv[2], "auto") == 0)
+                ;
+            else if (strcmp(argv[2], "pal") == 0) {
+                if (have_DVSD_) { // DV Standard definition
+                    basewidth_  = 720;
+                    baseheight_ = 576;
+                } else {
+                    basewidth_  = CIF_BASE_WIDTH;
+                    baseheight_ = CIF_BASE_HEIGHT;
+                }
+            } else if (strcmp(argv[2], "ntsc") == 0) {
+                if (have_DVSD_) { // DV Standard definition
+                    basewidth_  = 720;
+                    baseheight_ = 480;
+                } else {
+                    basewidth_  = NTSC_BASE_WIDTH;
+                    baseheight_ = NTSC_BASE_HEIGHT;
+                }
+            }
             if (running_) {
-		   stop();
-		   setsize();
-		   setCaptureOutputFormat();
-		   start();
-	    } else{
-		   setsize();
-		   setCaptureOutputFormat();
-	    }
-         }
-         return (TCL_OK);
-      } else if (strcmp(argv[1], "port") == 0) {
-         setport(argv[2]);
-         return (TCL_OK);
-      } else if (strcmp(argv[1], "type") == 0) {
-	 if (strcmp(argv[2], "auto") == 0)
-		   ;
-	 else if (strcmp(argv[2], "pal") == 0) {
-		 if (have_DVSD_) { // DV Standard definition
-			 basewidth_  = 720;
-			 baseheight_ = 576;
-		 } else {
-			 basewidth_  = CIF_BASE_WIDTH;
-			 baseheight_ = CIF_BASE_HEIGHT;
-		 }
-	 } else if (strcmp(argv[2], "ntsc") == 0) {
-		 if (have_DVSD_) { // DV Standard definition
-			 basewidth_  = 720;
-			 baseheight_ = 480;
-		 } else {
-			 basewidth_  = NTSC_BASE_WIDTH;
-			 baseheight_ = NTSC_BASE_HEIGHT;
-		 }
-	 }
-         if (running_) {
-		   stop();
-		   setsize();
-		   setCaptureOutputFormat();
-		   start();
-	 } else {
-		   setsize();
-		   setCaptureOutputFormat();
-	 }
-         return (TCL_OK);
-      } else if (strcmp(argv[1], "useconfig") ==0) {
-         if (strcmp(argv[2], "1") == 0)
-            useconfig_=1;
-         if (strcmp(argv[2], "0") == 0)
-            useconfig_=0;
-      }
-   }
-   return (Grabber::command(argc, argv));
+                stop();
+                setsize();
+                setCaptureOutputFormat();
+                start();
+            } else {
+                setsize();
+                setCaptureOutputFormat();
+            }
+            return (TCL_OK);
+        } else if (strcmp(argv[1], "useconfig") ==0) {
+            if (strcmp(argv[2], "1") == 0)
+                useconfig_=1;
+            if (strcmp(argv[2], "0") == 0)
+                useconfig_=0;
+        }
+    }
+    return (Grabber::command(argc, argv));
 
 }
 
@@ -1157,45 +1178,45 @@ int DirectShowGrabber::command(int argc, const char* const* argv) {
 
 DirectShowDevice::DirectShowDevice(char *friendlyName, IBaseFilter *pCapFilt) : InputDevice(friendlyName) {
 
-   attri_ = new char[255];
-   attri_[0] = 0;
+    attri_ = new char[255];
+    attri_[0] = 0;
 
-   debug_msg("new DirectShowDevice():  friendlyName=%s\n", friendlyName);
-   pDirectShowFilter_  = pCapFilt;
-   DirectShowGrabber o(pDirectShowFilter_, "420", friendlyName);
+    debug_msg("new DirectShowDevice():  friendlyName=%s\n", friendlyName);
+    pDirectShowFilter_  = pCapFilt;
+    DirectShowGrabber o(pDirectShowFilter_, "420", friendlyName);
 
-   strcat(attri_, "format { 420 422 cif } size { ");
+    StringCbCatA(attri_, 255, "format { 420 422 cif } size { ");
 
-   if ((o.minHeight() > (CIF_BASE_HEIGHT / 2)) && !o.hasDV_SD()) {
-     strcat(attri_, "large");
-   } else if (o.maxWidth() < NTSC_BASE_WIDTH) {
-     strcat(attri_, "small cif");
-   } else {
-     strcat(attri_, "small cif large");
-   }
+    if ((o.minHeight() > (CIF_BASE_HEIGHT / 2)) && !o.hasDV_SD()) {
+        StringCbCatA(attri_, 255, "large");
+    } else if (o.maxWidth() < NTSC_BASE_WIDTH) {
+        StringCbCatA(attri_, 255, "small cif");
+    } else {
+        StringCbCatA(attri_, 255, "small cif large");
+    }
 
-   strcat(attri_, " } type { pal ntsc } port { ");
+    StringCbCatA(attri_, 255, " } type { pal ntsc } port { ");
 
-   Port **inputPorts = o.getInputPorts();
-   if(inputPorts[0] != NULL) {
-       int i=0;
-       while( i <  NUM_PORTS && inputPorts[i] != NULL ) {
-           strcat(attri_, inputPorts[i]->name);
-           strcat(attri_, " ");
-           i++;
-       }
-   }else{
-       strcat(attri_, "external-in ");
-   }
-   debug_msg("new DirectShowDevice():  after appending ports\n");
+    Port **inputPorts = o.getInputPorts();
+    if(inputPorts[0] != NULL) {
+        int i=0;
+        while( i <  NUM_PORTS && inputPorts[i] != NULL ) {
+            StringCbCatA(attri_, 255, inputPorts[i]->name);
+            StringCbCatA(attri_, 255, " ");
+            i++;
+        }
+    }else{
+        StringCbCatA(attri_, 255, "external-in ");
+    }
+    debug_msg("new DirectShowDevice():  after appending ports\n");
 
-   strcat(attri_, "} ");
+    StringCbCatA(attri_, 255, "} ");
 
-   char *inport = o.getInputPort();
-   sprintf(attri_, "%s selected_port { %s }", attri_, inport );
-   free(inport);
-   attributes_ = attri_;
-   debug_msg("attributes: %s", attributes_);
+    char *inport = o.getInputPort();
+    StringCbPrintfA(attri_, 255, "%s selected_port { %s }", attri_, inport );
+    free(inport);
+    attributes_ = attri_;
+    debug_msg("attributes: %s", attributes_);
 }
 
 DirectShowDevice::~DirectShowDevice(){
@@ -1206,16 +1227,16 @@ DirectShowDevice::~DirectShowDevice(){
 //--------------------------------
 
 int DirectShowDevice::command(int argc, const char* const* argv) {
-   Tcl& tcl = Tcl::instance();
-   if ((argc == 3) && (strcmp(argv[1], "open") == 0)) {
-      TclObject* o = 0;
+    Tcl& tcl = Tcl::instance();
+    if ((argc == 3) && (strcmp(argv[1], "open") == 0)) {
+        TclObject* o = 0;
 
-      o = directShowGrabber_ = new DirectShowGrabber(pDirectShowFilter_, argv[2]);
-      if (o != 0)
-         Tcl::instance().result(o->name());
-      return (TCL_OK);
-   }
-   return (InputDevice::command(argc, argv));
+        o = directShowGrabber_ = new DirectShowGrabber(pDirectShowFilter_, argv[2]);
+        if (o != 0)
+            Tcl::instance().result(o->name());
+        return (TCL_OK);
+    }
+    return (InputDevice::command(argc, argv));
 }
 
 //#########################################################################
@@ -1250,7 +1271,7 @@ DirectShowScanner::DirectShowScanner():pMoniker_(0)
 	IEnumMoniker *pEnum    = 0;
 	IPropertyBag *pPropBag = 0;
 	VARIANT      varName;
-	CLSID		clsid;
+	CLSID        clsid;
 
 	// Get an enumerator over video capture filters
 	hr = pDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory, &pEnum, 0);
@@ -1269,7 +1290,7 @@ DirectShowScanner::DirectShowScanner():pMoniker_(0)
 			if (FAILED(hr)) {
 				debug_msg("Failed to Get propbag bound to storage on DS dev: %d\n", devNum);
 				continue;
-		    }
+			}
 			//showErrorMessage(hr);
 			debug_msg("propbag bound to storage ok= %d\n", hr);
 
@@ -1280,7 +1301,7 @@ DirectShowScanner::DirectShowScanner():pMoniker_(0)
 				VariantClear(&varName);
 				pPropBag->Release();
 				continue;
-		    }
+			}
 			//showErrorMessage(hr);
 			debug_msg("friendly name read ok= %d\n", hr);
 
@@ -1305,7 +1326,7 @@ DirectShowScanner::DirectShowScanner():pMoniker_(0)
 			debug_msg("capture filter bound ok= [%d} %s\n", hr, nameBuf);
 			pCaptureFilter[devNum]->GetClassID(&clsid);
 			VariantClear(&varName);
-			if (!IsEqualGUID(clsid,CLSID_VfwCapture))	 {
+			if (!IsEqualGUID(clsid,CLSID_VfwCapture)) {
 				pMoniker_->AddRef();
 				debug_msg("Adding capture filter %d\n", hr);
 				devs_[devNum] = new DirectShowDevice(strdup(nameBuf), pCaptureFilter[devNum]);
@@ -1313,7 +1334,7 @@ DirectShowScanner::DirectShowScanner():pMoniker_(0)
 				debug_msg("discarding an apparent VFW device= %s\n", nameBuf);
 				devs_[devNum] = NULL;
 				pMoniker_->Release();
-		    }
+			}
 			pPropBag->Release();
 		}
 	}
