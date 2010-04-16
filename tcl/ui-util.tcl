@@ -358,5 +358,14 @@ proc print_input_device_details {} {
 		}
 	}
 	puts ""
+
+	puts "Available Codec List:"
+	set codecList [list h261 h261as h263 h263+ mpeg4 h264 raw cellbbvc pvh jpeg]
+	foreach codec $codecList {
+		if {[codecexists $codec]} {
+		puts "-  $codec"
+		}
+	}
+	puts ""
 }
 
