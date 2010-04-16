@@ -431,13 +431,13 @@ SimplePutsCmd(ClientData clientData, Tcl_Interp *interp, int argc, const char **
 }
 #endif
 
-void print_input_device_details(Tcl& tcl)
+void print_capabilities_xml(Tcl& tcl)
 {
 #ifdef WIN32
 		tcl.CreateCommand("puts", SimplePutsCmd, NULL);
 #endif
 
-	tcl.evalc("print_input_device_details");
+	tcl.evalc("print_capabilities_xml");
 	exit(0);
 }
 
@@ -717,7 +717,7 @@ int main(int argc, const char** argv)
 			break;
 
 		case 'Q':
-			print_input_device_details(tcl);
+			print_capabilities_xml(tcl);
 			break;
 
 		case 'r':

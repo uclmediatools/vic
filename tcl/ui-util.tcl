@@ -313,72 +313,75 @@ proc updateName { w name } {
 	return -1
 }
 
-proc print_input_device_details {} {
+proc print_capabilities_xml {} {
 	global inputDeviceList
 
 	puts "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"
 	puts ""
+
+	puts "<vic>"
 	if {[llength $inputDeviceList] == 0} {
 		puts "<devices />"
-		return
-	}
-	puts "<devices>"
-	foreach v $inputDeviceList {
-		if {[$v attributes] != "disabled" &&
-			"[$v nickname]" != "still" && "[$v nickname]" != "filedev" } {
+	} else {
+		puts "	<devices>"
+		foreach v $inputDeviceList {
+			if {[$v attributes] != "disabled" &&
+				"[$v nickname]" != "still" && "[$v nickname]" != "filedev" } {
 
-			puts "	<device>"
-			set nickname [string map {"<" "&lt;"  ">" "&gt;"  "&" "&amp;"  "\"" "&quot;"  "'" "&apos;"} [$v nickname]]
-			puts "		<nickname>$nickname</nickname>"
+				puts "		<device>"
+				set nickname [string map {"<" "&lt;"  ">" "&gt;"  "&" "&amp;"  "\"" "&quot;"  "'" "&apos;"} [$v nickname]]
+				puts "			<nickname>$nickname</nickname>"
 
-			set portnames [attribute_class [$v attributes] port]
-			if {[llength $portnames] == 0} {
-			puts "		<ports />"
-			} else {
-				puts "		<ports>"
-				foreach port $portnames {
-					set port [string map {"<" "&lt;"  ">" "&gt;"  "&" "&amp;"  "\"" "&quot;"  "'" "&apos;"} $port]
-					puts "			<port>$port</port>"
+				set portnames [attribute_class [$v attributes] port]
+				if {[llength $portnames] == 0} {
+					puts "			<ports />"
+				} else {
+					puts "			<ports>"
+					foreach port $portnames {
+						set port [string map {"<" "&lt;"  ">" "&gt;"  "&" "&amp;"  "\"" "&quot;"  "'" "&apos;"} $port]
+						puts "				<port>$port</port>"
+					}
+					puts "			</ports>"
 				}
-				puts "		</ports>"
-			}
 
-			set typenames [attribute_class [$v attributes] type]
-			if {[llength $typenames] == 0} {
-				puts "		<types />"
-			} else {
-				puts "		<types>"
-				foreach type $typenames {
-					set type [string map {"<" "&lt;"  ">" "&gt;"  "&" "&amp;" "\""  "&quot;"  "'" "&apos;"} $type]
-					puts "			<type>$type</type>"
+				set typenames [attribute_class [$v attributes] type]
+				if {[llength $typenames] == 0} {
+					puts "			<types />"
+				} else {
+					puts "			<types>"
+					foreach type $typenames {
+						set type [string map {"<" "&lt;"  ">" "&gt;"  "&" "&amp;" "\""  "&quot;"  "'" "&apos;"} $type]
+						puts "				<type>$type</type>"
+					}
+					puts "			</types>"
 				}
-				puts "		</types>"
-			}
 
-			set sizeList [attribute_class [$v attributes] size]
-			if {[llength $sizeList] == 0} {
-				puts "		<sizes />"
-			} else {
-				puts "		<sizes>"
-				foreach size $sizeList {
-					set size [string map {"<" "&lt;"  ">" "&gt;"  "&" "&amp;"  "\"" "&quot;"  "'" "&apos;"} $size]
-					puts "			<size>$size</size>"
+				set sizeList [attribute_class [$v attributes] size]
+				if {[llength $sizeList] == 0} {
+					puts "			<sizes />"
+				} else {
+					puts "			<sizes>"
+					foreach size $sizeList {
+						set size [string map {"<" "&lt;"  ">" "&gt;"  "&" "&amp;"  "\"" "&quot;"  "'" "&apos;"} $size]
+						puts "				<size>$size</size>"
+					}
+					puts "			</sizes>"
 				}
-				puts "		</sizes>"
+				puts "		</device>"
 			}
-			puts "	</device>"
 		}
+		puts "	</devices>"
 	}
-	puts "</devices>"
 
-	puts "<codecs>"
+	puts "	<codecs>"
 	set codecList [list h261 h261as h263 h263+ mpeg4 h264 raw cellbbvc pvh jpeg]
 	foreach codec $codecList {
 		if { [codecexists $codec] } {
-			puts "	<codec>$codec</codec>"
+			puts "		<codec>$codec</codec>"
 		}
 	}
-	puts "</codecs>"
+	puts "	</codecs>"
+	puts "</vic>"
 	puts ""
 }
 
