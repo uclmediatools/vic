@@ -29,7 +29,7 @@
 
 .SUFFIXES: .cpp $(.SUFFIXES)
 
-ALL = @V_ALL@ histtolut
+ALL = @V_PROG@ histtolut
 all:	$(ALL)
 
 .cpp.o:
@@ -55,6 +55,9 @@ LDFLAGS= @V_LDFLAGS@
 INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
+TCLSH = @TCLSH_PROG@ 
+ZIP = @ZIP_PROG@
+RC = @RC_PROG@
 
 INCLUDE_TK = @V_INCLUDE_TK@
 INCLUDE_TCL = @V_INCLUDE_TCL@
@@ -83,6 +86,7 @@ TK_LIBRARY_FILES = \
 		$(LIBRARY_TK)/text.tcl \
 		$(LIBRARY_TK)/optMenu.tcl \
 		$(LIBRARY_TK)/scrlbar.tcl
+TK_BASE_RC = @V_TKBASE_RC@
 
 LIB_GRABBER = @V_LIB_GRABBER@
 INCLUDE_GRABBER = @V_INCLUDE_GRABBER@
@@ -93,7 +97,7 @@ OBJ_CRYPT = net/crypt-rijndael.o @V_OBJ_CRYPT@
 CODEC_LIB = @V_CODEC_LIB@ codec/tmndec/libh263.a codec/tmn-x/libh263coder.a
 
 LIB = $(LIB_GRABBER) @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ $(CODEC_LIB) $(VIDEO_LIB) \
-	-luclmmbase -lm -lz -lpthread @V_LIB_FFMPEG@ @V_LIB_X264@ 
+	-luclmmbase -lm -lz @V_LIB_FFMPEG@ @V_LIB_X264@ @LIBS@
 
 
 INCLUDE = $(INCLUDE_MISC) $(INCLUDE_GRABBER) $(INCLUDE_TK) $(INCLUDE_TCL) \
@@ -106,10 +110,11 @@ CFLAGS = $(CCOPT) $(BFLAGS) -Wno-write-strings
 # Remember to add a dependency if you add any tcl sources here.
 #
 TCL_VIC = ui-ctrlmenu.tcl ui-main.tcl ui-resource.tcl ui-relate.tcl \
-	ui-titlemaker.tcl ui-srclist.tcl ui-stats.tcl ui-util.tcl ui-windows.tcl \
-	ui-switcher.tcl ui-extout.tcl ui-grabber.tcl ui-unix.tcl \
+	ui-titlemaker.tcl ui-srclist.tcl ui-stats.tcl ui-util.tcl \
+	ui-switcher.tcl ui-extout.tcl ui-grabber.tcl \
 	cf-main.tcl cf-tm.tcl cf-confbus.tcl cf-network.tcl cf-util.tcl \
-	tkerror.tcl entry.tcl accessgrid.tcl ag-pixrate.tcl autoplace_ui.tcl
+	tkerror.tcl entry.tcl accessgrid.tcl ag-pixrate.tcl autoplace_ui.tcl \
+	ui-windows.tcl @V_TCL_PLATFORM@
 
 #
 # These modules are broken in libg++.  Rather than fix libg++
@@ -128,7 +133,7 @@ H263_OBJS = codec/h263/h263rtp.o codec/h263/h263dec.o codec/h263/bitIn.o \
 
 # .c objects
 OBJ1 =	net/inet.o net/inet6.o codec/cellb_tables.o tkStripchart.o \
-	md5c.o random.o @V_CPUDETECT_OBJ@ $(H263_OBJS)
+	md5c.o random.o @V_CPUDETECT_OBJ@ $(H263_OBJS) @V_EXTRAC_OBJ@ @V_ZVFS_OBJS@
 
 # .cpp objects
 OBJ2 =	idlecallback.o iohandler.o main.o media-timer.o module.o \
@@ -155,10 +160,10 @@ OBJ2 =	idlecallback.o iohandler.o main.o media-timer.o module.o \
 	render/rgb-converter.o render/vw.o \
 	rtp/pktbuf-rtp.o rtp/session.o rtp/source.o rtp/transmitter.o \
 	video/assistor-list.o video/device.o video/grabber-file.o \
-	video/grabber.o video/grabber-still.o @V_OBJ@
+	video/grabber.o video/grabber-still.o @V_OBJ@ @V_EXTRACPP_OBJ@
 
 OBJ3 =	cm0.o cm1.o huffcode.o version.o bv.o codec/pvh-huff.o \
-	$(TCL_VIC:.tcl=.o) tk.o
+	@V_TCL2CPP_OBJS@
 
 SRC =	$(OBJ1:.o=.c) $(OBJ2:.o=.cpp) $(BROKEN_OBJ:.o=.c) \
 	$(RTIP_OBJ:.o=.c) $(SRC_GRABBER) $(OBJ_XIL:.o=.cpp) $(OBJ_CRYPT:.o=.c)
@@ -172,7 +177,7 @@ OBJ_VDD = vdd.o p64/p64.o p64/p64dump.o \
 	color-x11.o \
 	Tcl.o Tcl2.o vw.o cm0.o cm1.o \
 	dct.o huffcode.o bv.o iohandler.o timer.o \
-	ui-vdd.o tk.o random.o
+	random.o @V_TCL2CPP_VDD_OBJS@
         # color-true.o color-hi.o
 
 OBJ_H261PLAY = h261_play.o p64/p64.o p64/p64dump.o \
@@ -182,7 +187,7 @@ OBJ_H261PLAY = h261_play.o p64/p64.o p64/p64dump.o \
 	color-x11.o \
 	Tcl.o Tcl2.o vw.o cm0.o cm1.o \
 	dct.o huffcode.o bv.o iohandler.o timer.o \
-	ui-h261_play.o tk.o random.o
+	random.o @V_TCL2CPP_H261_PLAY_OBJS@
         # color-true.o color-hi.o
 
 OBJ_JPEGPLAY = jpeg_play.o jpeg/jpeg.o \
@@ -192,8 +197,9 @@ OBJ_JPEGPLAY = jpeg_play.o jpeg/jpeg.o \
 	color-x11.o \
 	Tcl.o Tcl2.o vw.o cm0.o cm1.o \
 	dct.o huffcode.o jpeg_play_tcl.o bv.o iohandler.o timer.o \
-	ui-jpeg_play.o tk.o random.o
+	random.o @V_TCL2CPP_JPEG_PLAY_OBJS@
         # color-true.o color-hi.o
+
 LIB_CB = @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ -lm
 OBJ_CB = net/cbAppInit.o net/cb.o net/confbus.o net/group-ipc.o iohandler.o \
 	render/ppm.o \
@@ -202,14 +208,38 @@ OBJ_CB = net/cbAppInit.o net/cb.o net/confbus.o net/group-ipc.o iohandler.o \
 
 OBJ_H261DUMP = h261_dump.o p64/p64.o p64/p64dump.o huffcode.o dct.o bv.o
 
+vic-zvfs.zip: $(TCL_VIC:%=tcl/%) 
+	rm -f $@ 
+	rm -rf vic-zvfs 
+	mkdir -p vic-zvfs/tcl/encoding vic-zvfs/tk/msgs 
+	if [ -d $(LIBRARY_TK)/ttk ] ; then mkdir -p vic-zvfs/tk/ttk ; fi 
+	mkdir -p vic-zvfs/vic 
+	cp -p $(LIBRARY_TCL)/init.tcl $(LIBRARY_TCL)/auto.tcl vic-zvfs/tcl 
+	cp -p $(LIBRARY_TCL)/encoding/*.enc vic-zvfs/tcl/encoding 
+	cp -p $(LIBRARY_TK)/*.tcl vic-zvfs/tk 
+	if [ -d $(LIBRARY_TK)/ttk ] ; then \
+	    cp -p $(LIBRARY_TK)/ttk/*.tcl vic-zvfs/tk/ttk; \
+	fi 
+	cp -p $(LIBRARY_TK)/msgs/* vic-zvfs/tk/msgs 
+	cp -p $(TCL_VIC:%=tcl/%) vic-zvfs/vic 
+	cd vic-zvfs/tcl; echo "auto_mkindex ." | $(TCLSH) 
+	cd vic-zvfs/tk; echo "auto_mkindex ." | $(TCLSH) 
+	cd vic-zvfs/vic; echo "auto_mkindex ." | $(TCLSH) 
+	cd vic-zvfs; \
+	$(ZIP) ../$@ tcl/* tcl/encoding/* tk/* tk/ttk/* tk/msgs/* vic/* 
+	rm -rf vic-zvfs 
+
 # Don't allow building of the non-DES version...
 #vic:	$(OBJ) $(OBJ_GRABBER) $(JV_LIB)
 #	rm -f $@
 #	$(CXX) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(LIB) $(STATIC)
 
-vic: $(VIDEO_LIB) $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)  $(OBJ_XIL)
+@V_PROG@: $(VIDEO_LIB) $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)  $(OBJ_XIL) @V_ZVFS_ZIP@
 	rm -f $@
 	$(CXX) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(OBJ_CRYPT) $(LIB) $(STATIC)
+	if [ "@V_ZVFS_ZIP@" != "" ] ; then \
+		cat vic-zvfs.zip >> @V_PROG@ ; $(ZIP) -A @V_PROG@ ; \
+	fi
 
 vic.dyn: $(VIDEO_LIB) $(OBJ) $(OBJ_GRABBER) $(JV_LIB)
 	rm -f $@
@@ -296,6 +326,9 @@ ui-h261_play.o: tcl/ui-h261_play.tcl
 ui-relate.o: tcl/ui-relate.tcl
 ui-titlemaker.o: tcl/ui-titlemaker.tcl
 
+tk_base.o:	${TK_BASE_RC}
+	${RC} ${TK_BASE_RC} tk_base.o
+
 version.c: VERSION
 	rm -f version.c
 	echo `cat VERSION`-r`svnversion` | sed 's/.*/char version[] = "&";/' > version.c
@@ -361,7 +394,7 @@ clean:
 		tk.tcl vic_tcl.c h261_play_tcl.c tmp.c \
 		vic vic.dyn vic.xil h261_play h261_dump jpeg_play cb_wish \
 		mkcube rgb-cube.ppm yuv-map.ppm cm0.c cm1.c ppmtolut \
-		config.cache config.log domake.* dotar.*
+		config.cache config.log domake.* dotar.* vic-zvfs.zip
 	rm -rf autom4te.cache
 	cd codec/tmn && $(MAKE) clean
 	cd codec/tmndec && $(MAKE) realclean
@@ -454,3 +487,6 @@ gpllibs: ffmpeg/lib/libavcodec.a ffmpeg/lib/libavutil.a ffmpeg/lib/libswscale.a 
 
 strip:	vic
 	strip vic
+	if [ "@V_ZVFS_ZIP@" != "" ] ; then \
+		cat vic-zvfs.zip >> vic ; zip -A vic ; \
+	fi 

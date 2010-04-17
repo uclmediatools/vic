@@ -1,0 +1,36 @@
+diff -rupN dx9/Extras/DirectShow/Include/strmif.h dx9.patched/Extras/DirectShow/Include/strmif.h
+--- dx9/Extras/DirectShow/Include/strmif.h	2004-09-28 22:59:34.000000000 +0100
++++ dx9.patched/Extras/DirectShow/Include/strmif.h	2010-04-07 16:00:18.906250000 +0100
+@@ -20560,6 +20560,9 @@ void __RPC_STUB IAMGraphBuilderCallback_
+ #ifdef __cplusplus
+ #ifndef _IAMFilterGraphCallback_
+ #define _IAMFilterGraphCallback_
++#ifndef EXTERN_GUID
++#define EXTERN_GUID(g,l1,s1,s2,c1,c2,c3,c4,c5,c6,c7,c8) DEFINE_GUID(g,l1,s1,s2,c1,c2,c3,c4,c5,c6,c7,c8)
++#endif
+ // Note: Because this interface was not defined as a proper interface it is
+ //       supported under C++ only. Methods aren't stdcall.
+ EXTERN_GUID(IID_IAMFilterGraphCallback,0x56a868fd,0x0ad4,0x11ce,0xb0,0xa3,0x0,0x20,0xaf,0x0b,0xa7,0x70);
+@@ -28957,8 +28960,8 @@ void __RPC_STUB IVMRMixerControl_GetMixi
+ 
+ typedef struct tagVMRGUID
+     {
+-    GUID *pGUID;
+-    GUID GUID;
++    ::GUID *pGUID;
++    ::GUID GUID;
+     } 	VMRGUID;
+ 
+ typedef struct tagVMRMONITORINFO
+diff -rupN dx9/Include/dxtrans.h dx9.patched/Include/dxtrans.h
+--- dx9/Include/dxtrans.h	2004-09-27 23:18:32.000000000 +0100
++++ dx9.patched/Include/dxtrans.h	2010-04-08 09:18:27.375000000 +0100
+@@ -277,7 +277,7 @@ void __RPC_USER MIDL_user_free( void * )
+ #include <ddraw.h>
+ #include <d3d.h>
+ #include <d3drm.h>
+-#include <urlmon.h>
++//#include <urlmon.h>
+ #if 0
+ // Bogus definition used to make MIDL compiler happy
+ typedef void DDSURFACEDESC;

@@ -94,7 +94,7 @@ extern const char* intoa(u_int32_t addr);
 
 /* XXX winsock.h should have these !! */
 /* winsock2.h does have these */
-#ifndef _WINSOCK2API_
+#ifndef _WINSOCK2_H
 
 #define	IN_CLASSD(i)		(((u_long)(i) & ((u_long)0xf0000000)) == \
 				  ((u_long)0xe0000000))

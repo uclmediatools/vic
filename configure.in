@@ -6,7 +6,6 @@ AC_INIT(main.cpp)
 AC_PROG_INSTALL
 
 V_PROG="vic"
-V_ALL="$V_PROG"
 V_SHM="-DUSE_SHM"
 V_PATH=`pwd`
 V_OBJ=""
@@ -50,6 +49,7 @@ V_LIB_XIL=""
 V_OBJ_XIL=""
 V_LIB_FFMPEG=""
 V_LIB_X264=""
+V_DDRAW=""
 
 dnl Optimisation in H261 decoder needs to be turned off for GCC 2.96 
 
@@ -359,7 +359,6 @@ for dir in $places; do
 	fi
 done
 
-
 case "$target" in 
 *-dec-*)
 	jv_dir=jv2
@@ -405,7 +404,7 @@ sparc-sun-solaris*)
 	if test -f video/grabber-rtvc.cpp || test -f video/grabber-rtvc.o ; then
 		V_OBJ_GRABBER="video/grabber-rtvc.o $V_OBJ_GRABBER"
 		if test "$have_xil" = yes ; then
-			V_ALL="$V_PROG $V_PROG.xil"
+			V_PROG="vic vic.xil"
 			V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER $SYSINC$xil_dir/include -DSUNXIL_WARNING_DISABLE"
 			V_LIB_XIL="-L$xil_dir/lib -R\"$xil_dir/lib:/opt/SUNWo1kp/lib:/opt/MMACo1k/lib\" -lxil"
 			V_OBJ_XIL="video/grabber-xil.o codec/framer-h261hw.o codec/framer-cellb.o video/assistor-xil.o" 
@@ -551,9 +550,34 @@ dnl If gcc 32bit then we need to set these flags for compilation of ffmpeg and x
         OPSYS=macosx
         V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-macosx.o video/yuv_convert.o"
         ;;
-*-*-mingw*)
-        ffmpeg_conf="$ffmpeg_conf --enable-memalign-hack"
-        ;;
+*mingw*|*mingw32*)
+        V_SHM=""
+		AC_CHECK_LIB(ws2_32, _head_libws2_32_a, ws2="yes", ws2="no")
+		if test "$ws2" == "yes"; then
+		    LIBS="$LIBS -lws2_32"
+		else
+		    AC_CHECK_LIB(wsock32, socket, ws1="yes", ws1="no")
+			if test "$ws1" == "yes"; then
+			    LIBS="$LIBS -lwsock32"
+			else
+			    AC_MSG_ERROR([Winsock library not found!])
+			fi
+		fi
+		LIBS="$LIBS -liphlpapi -lvfw32 -lgdi32 -lole32 -loleaut32 -luuid -lcomctl32 -lcomdlg32 -limm32"
+		V_DEFINE="$V_DEFINE -DSTATIC_BUILD"
+		V_EXTRAC_OBJ="$V_EXTRAC_OBJ win32/win32.o getopt.o"
+		V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-win32.o video/yuv_convert.o"
+		V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-win32DS.o video/crossbar.o"
+		V_LIB_GRABBER="$V_LIB_GRABBER dx9/Lib/x86/ddraw.lib dx9/Lib/x86/dxguid.lib dx9/Extras/DirectShow/Lib/x86/strmiids.lib dx9/Extras/DirectShow/Lib/x86/quartz.lib"
+		V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -Idx9/Include -Idx9/Extras/DirectShow/Include"
+		ffmpeg_conf="$ffmpeg_conf --enable-memalign-hack"
+		AC_ARG_ENABLE(ddraw, --enable-ddraw        Enable or disable DirectDraw, ddraw="yes", ddraw="no")
+		if test "$ddraw" == "yes"; then
+		    V_DDRAW="-DUSE_DDRAW"
+			echo "Using DirectDraw"
+		fi;
+		V_PROG="vic.exe"
+		;;
 esac
 
 case "$target" in
@@ -578,6 +602,7 @@ fi
 AC_CHECK_PROG(DOWNLOAD, wget, [wget -q -O -])
 AC_CHECK_PROG(DOWNLOAD, curl, [curl -s])
 
+havex264="no"
 AC_ARG_WITH(ffmpegver,       --with-ffmpegver=ffmpeg-version     specify the version of ffmpeg to download and build, ffmpegver=$withval, ffmpegver=ffmpeg)
 AC_ARG_ENABLE(ffmpeg-co,	--disable-ffmpeg-co	Enable or disable ffmpeg download, ffmpegco="no", ffmpegco="yes")
 if test "$ffmpegco" = "yes" ; then
@@ -617,6 +642,7 @@ if test "$x264co" = "yes" ; then
    cd x264 && eval ${V_CCLDFLAGS32} ./configure --prefix=$V_PATH/x264; cd ..
    V_INCLUDE="$V_INCLUDE -Ix264/include"
    V_CODEC_LIB="$V_CODEC_LIB -Lx264/lib -lx264"
+   havex264="yes"
   else 
    echo "x264 not available without --enable-gpl"
   fi
@@ -629,13 +655,13 @@ if test "$gpl" = "yes" ; then
   if test "$ffmpegco" != "yes"; then
 
 	if test "$ffmpeginc" != "" ; then
-	   if test ! -r $ffmpeginc/ffmpeg/avcodec.h ; then
+	   if test ! -r $ffmpeginc/libavcodec/avcodec.h ; then
 	        echo "Error! you need to have $ffmpeginc/ffmpeg/avcodec.h around"
 	        exit 1
-	   elif test ! -r $ffmpeginc/ffmpeg/avutil.h ; then
+	   elif test ! -r $ffmpeginc/libavutil/avutil.h ; then
 	        echo "Error! you need to have $ffmpeginc/ffmpeg/avutil.h around"
 	        exit 1
-	   elif test ! -r $ffmpeginc/ffmpeg/swscale.h ; then
+	   elif test ! -r $ffmpeginc/libswscale/swscale.h ; then
 	        echo "Error! you need to have $ffmpeginc/ffmpeg/swscale.h around"
 	        exit 1
 	   fi
@@ -644,15 +670,15 @@ if test "$gpl" = "yes" ; then
 	
 	else
 
-	   AC_CHECK_HEADER(ffmpeg/avcodec.h, [], [
+	   AC_CHECK_HEADER(libavcodec/avcodec.h, [], [
         	echo "Error! you need to have avcodec.h around."
 	        exit -1
 	   ])
-	   AC_CHECK_HEADER(ffmpeg/avutil.h, [], [
+	   AC_CHECK_HEADER(libavutil/avutil.h, [], [
 	        echo "Error! you need to have avutil.h around."
 	        exit -1
 	   ])
-	   AC_CHECK_HEADER(ffmpeg/swscale.h, [], [
+	   AC_CHECK_HEADER(libswscale/swscale.h, [], [
 	        echo "Error! you need to have swscale.h around."
 	        exit -1
 	   ])
@@ -660,16 +686,16 @@ if test "$gpl" = "yes" ; then
 
 	if test "$ffmpeglib" != "" ; then
 	   if test ! -r $ffmpeglib/libavcodec.a ; then
-		echo "Error! you need to have $ffmpeglib/libavcodec.a around"
+		    echo "Error! you need to have $ffmpeglib/libavcodec.a around"
 	   elif test ! -r $ffmpeglib/libavutil.a ; then
 	        echo "Error! you need to have $ffmpeglib/libavutil.a around"
 	   elif test ! -r $ffmpeglib/libswscale.a ; then
 	        echo "Error! you need to have $ffmpeglib/libswscale.a around"
-           elif test ! -r $ffmpeglib/libpostproc.a ; then
-                echo "Error! you need to have $ffmpeglib/libpostproc.a around"
-           fi
+       elif test ! -r $ffmpeglib/libpostproc.a ; then
+            echo "Error! you need to have $ffmpeglib/libpostproc.a around"
+       fi
 	   
-	   V_LIB_FFMPEG="-L$ffmpeglib -lavcodec -lavutil -lswscale -lpostproc"
+	   V_CODEC_LIB="$V_CODEC_LIB -L$ffmpeglib -lavcodec -lavutil -lswscale -lpostproc"
 	else
 	   AC_CHECK_LIB(avcodec, main, [], [
 	        echo "Error! you need to have libavcodec around."
@@ -684,12 +710,12 @@ if test "$gpl" = "yes" ; then
 	        exit -1
 	   ])
 
-           AC_CHECK_LIB(postproc, main, [], [
-                echo "Error! you need to have libpostproc around."
-                exit -1
-           ])
+	   AC_CHECK_LIB(postproc, main, [], [
+			echo "Error! you need to have libpostproc around."
+			exit -1
+	   ])
 
-	   V_LIB_FFMPEG="-lavcodec -lavutil -lswscale -lpostproc"
+	   V_CODEC_LIB="$V_CODEC_LIB -lavcodec -lavutil -lswscale -lpostproc"
 	fi
   fi 
 fi
@@ -716,15 +742,28 @@ if test "$gpl" = "yes" ; then
 	        echo "Error! you need to have $x264lib/libx264.a around"
 		exit 1
 	   fi
-	   V_LIB_X264="-L$x264lib -lx264"
+	   V_CODEC_LIB="$V_CODEC_LIB -L$x264lib -lx264"
 	else
 	   AC_CHECK_LIB(x264, main, [], [
 	        echo "Error! you need to have libx264 around."
 	        exit -1
 	   ])
-	   V_LIB_X264="-lx264"
+	   V_CODEC_LIB="$V_CODEC_LIB -lx264"
 	fi
+	havex264="yes"
  fi
+fi
+
+if test "$havex264" == "yes"; then
+    AC_CHECK_LIB(pthread, pthread_create, pthread="yes", pthread="no")
+	if test "$pthread" == "yes"; then
+	    V_CODEC_LIB="$V_CODEC_LIB -lpthread"
+	else
+	    AC_CHECK_LIB(pthreadGC2, pthread_create, pthreadGC2="yes", pthreadGC2="no")
+		if test "$pthreadGC2" == "yes"; then
+		    V_CODEC_LIB="$V_CODEC_LIB -lpthreadGC2"
+		fi
+	fi
 fi
 
 V_CPUDETECT=""
@@ -750,7 +789,8 @@ AC_SUBST(V_OBJ)
 AC_SUBST(V_LIB)
 AC_SUBST(V_CODEC_LIB)
 AC_SUBST(V_CPUDETECT_OBJ)
+AC_SUBST(V_PROG)
 
-V_DEFINE="$V_DEFINE $V_SHM $V_DV $V_XV $V_CPUDETECT -D$V_ARCH"
+V_DEFINE="$V_DEFINE $V_SHM $V_ZVFS $V_DDRAW $V_DV $V_XV $V_CPUDETECT -D$V_ARCH "
 
 builtin(include, configure.in.tail)
