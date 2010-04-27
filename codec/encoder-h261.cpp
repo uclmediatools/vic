@@ -141,6 +141,8 @@ class H261Encoder : public TransmitterModule {
 
 	// should we suspend grabbing?
 	virtual bool suspend_grabbing(int m);
+	// adjust quantizer
+	void adjust_quantizer(int txq, int avg);
 
     protected:
 	H261Encoder(int ft);
@@ -226,6 +228,11 @@ class H261Encoder : public TransmitterModule {
 	inline void print_ppframe() {
 	fprintf(stderr, "\tnow: %f\tppframe[%d]: %d\n",
 	get_now(), vfno_%FHSIZE, ppframe_[vfno_%FHSIZE]);
+	}
+	// print setq time
+	inline void print_time_setq(int quant, double time) {
+	fprintf(stderr, "now: %f duration: %f quant: %d\n", 
+	get_now(), get_now() - time, quant);
 	}
 
 private:
@@ -888,6 +895,9 @@ int H261PixelEncoder::consume(const VideoFrame *vf)
 	}
 	// ---------------------------------------------------------------*
 
+	// adjust quantizer
+	adjust_quantizer(txq_beg_, avg_packets_per_frame());
+
 	// increment frame number
 	if (vfno_++%FHSIZE == 0) 
 	init_ppframe();
@@ -913,7 +923,35 @@ int H261PixelEncoder::consume(const VideoFrame *vf)
 
 	return(cc);
 }
-		
+
+/*
+ * adjust quantizer depending on the current tx queue size by comparing the
+ * average number of packets per frame
+ * @txq: tx queue size
+ * @avg: average number of packets per frame 
+ *       (most recent 10 frames only)
+ */
+void
+H261Encoder::adjust_quantizer(int txq, int avg) 
+{
+	double time = get_now();
+
+	if (txq < avg) {
+		quantizer_ = (--quantizer_ < 3) ? 3 : quantizer_;
+		setq(quantizer_);
+		//print_time_setq(quantizer_, time);
+	}
+	else if (txq >= avg && txq < 3.5 * avg) {
+		quantizer_++;
+		setq(quantizer_);
+		//print_time_setq(quantizer_, time);
+	}
+	else {
+		quantizer_ += 2;
+		setq(quantizer_);
+		//print_time_setq(quantizer_, time);
+	}
+}
 
 int
 H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
