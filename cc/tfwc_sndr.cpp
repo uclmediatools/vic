@@ -143,6 +143,8 @@ TfwcSndr::TfwcSndr() :
 	// record of packet size in bytes
 	record_ = (u_int16_t *)malloc(sizeof(u_int16_t) * PSR);
 	clear_record(PSR);
+	psize_ = 0;
+	lambda_ = .75;
 }
 
 void TfwcSndr::tfwc_sndr_send(pktbuf* pb, double now) {
@@ -156,7 +158,10 @@ void TfwcSndr::tfwc_sndr_send(pktbuf* pb, double now) {
 	now_	= now;
 	// number of bytes for this packet
 	record_[seqno_%PSR] = pb->len;
-	//print_psize(now_, record_[seqno_%PSR]),
+	//print_psize(now_, record_[seqno_%PSR]);
+	
+	// EWMA'd packet size
+	psize_ = lambda_ * pb->len + (1 - lambda_) * psize_;	
 
 	// timestamp vector for loss history update
 	tsvec_[seqno_%TSZ] = now_-SKEW;

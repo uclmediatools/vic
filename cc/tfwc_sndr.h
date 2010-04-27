@@ -174,6 +174,10 @@ protected:
 	double tao_;		// sampled RTT
 	double prev_ts_;
 
+	// packet size
+	int psize_;
+	double lambda_;
+
 private:
 	// update RTT
 	void update_rtt(double tao);
