@@ -29,7 +29,7 @@ grep grab_time trace.s | awk '{print $2"\t"$4}' > grt.xg
 grep incomingXR trace.s | awk '{print $3" "100}' > inXR.xg
 
 # cwnd
-grep cwnd trace.s | awk '{print $2" "$4}' > cwnd.xg
+grep "\<cwnd\>" trace.s | awk '{print $2" "$4}' > cwnd.xg
 
 # ALI
 grep ALI trace.s | awk '{print $2" "$4}' > ALI.xg
