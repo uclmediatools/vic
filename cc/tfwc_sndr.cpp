@@ -147,7 +147,8 @@ TfwcSndr::TfwcSndr() :
 	asize_ = 0;
 	pcnt_ = 0;
 	psize_ = 0;
-	lambda_ = .75;
+	lambda1_ = .75;
+	lambda2_ = .15;
 }
 
 void TfwcSndr::tfwc_sndr_send(pktbuf* pb, double now) {
@@ -163,16 +164,22 @@ void TfwcSndr::tfwc_sndr_send(pktbuf* pb, double now) {
 	record_[seqno_%PSR] = pb->len;
 	//print_psize(now_, record_[seqno_%PSR]);
 
-	// arithmetic average
+	// arithmetic average packet size (per frame)
 	asize_ += pb->len;
-	asize_ /= ++pcnt_;
+	pcnt_++;
 
 	// tag finished (end of frame)
 	if (!(pb->tag)) {
+		asize_ /= pcnt_;
 		// EWMA'd packet size
-		psize_ = lambda_ * asize_ + (1 - lambda_) * psize_;	
-		pcnt_ = 0;
+		if (pcnt_ != 1)
+		psize_ = lambda1_ * asize_ + (1 - lambda1_) * psize_;
+		else
+		psize_ = lambda2_ * asize_ + (1 - lambda2_) * psize_;
+
+		asize_ = 0; pcnt_ = 0;
 	}
+	//print_psize(now_, psize_, pb->len);
 
 	// timestamp vector for loss history update
 	tsvec_[seqno_%TSZ] = now_-SKEW;

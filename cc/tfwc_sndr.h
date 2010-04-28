@@ -178,7 +178,8 @@ protected:
 	int asize_;		// average packet size per frame
 	int pcnt_;		// packet counter per frame
 	int psize_;		// EWMA packet size 
-	double lambda_;	// EWMA coeff
+	double lambda1_;	// EWMA coeff
+	double lambda2_;	// EWMA coeff
 
 private:
 	// update RTT
@@ -318,6 +319,11 @@ private:
 	fprintf(stderr, "\tnow: %f\tcwnd: %d\n", so_recv_, cwnd_);
 	}
 
+	// print bcwnd for debugging
+	inline void print_bcwnd (double now, int w) {
+	fprintf(stderr, "\tnow: %f\tbcwnd: %d\n", now, w);
+	}
+
 	// print received XR chunk info
 	inline void print_xr_info(const char* str, const int i) {
 	fprintf(stderr,
@@ -368,8 +374,8 @@ private:
 	}
 
 	// print packet size
-	inline void print_psize(double now, int size) {
-	fprintf(stderr, "\tnow: %f psize: %d\n", now, size);
+	inline void print_psize(double now, int size, int len) {
+	fprintf(stderr, "\tnow: %f psize: %d real: %d\n", now, size, len);
 	}
 
 	int ndtp_;		// number of data packet sent
