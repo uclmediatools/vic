@@ -963,6 +963,7 @@ H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 	tx_->flush();
 
 	pktbuf* pb = pool_->alloc(vf->ts_, RTP_PT_H261);
+	pb->tag = true;
 	bs_ = &pb->data[HDRSIZE];
 	bc_ = bs_;
 	u_int ec = (tx_->mtu() - HDRSIZE) << 3;
@@ -1052,6 +1053,7 @@ H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 
 		}
 	}
+	pb->tag = false;
 	cc += flush(pb, ((bc_ - bs_) << 3) + nbb_, 0);
 
 	// time measurement

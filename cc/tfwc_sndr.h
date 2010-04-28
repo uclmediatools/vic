@@ -175,8 +175,10 @@ protected:
 	double prev_ts_;
 
 	// packet size
-	int psize_;
-	double lambda_;
+	int asize_;		// average packet size per frame
+	int pcnt_;		// packet counter per frame
+	int psize_;		// EWMA packet size 
+	double lambda_;	// EWMA coeff
 
 private:
 	// update RTT

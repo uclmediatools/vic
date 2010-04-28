@@ -91,6 +91,7 @@ public:
 	int layer;
 	int len;
 	int ref;
+	bool tag;
 	u_int8_t* dp;
 	u_int8_t data[PKTBUF_SIZE];
 	BufferPool* manager;
