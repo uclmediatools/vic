@@ -77,7 +77,7 @@ set ylabel "cwnd"
 
 set mxtics 5
 set mytics 2
-set xrange [0:]
+set xrange [$1:$2]
 set yrange [0:]
 set grid xtics ytics mytics
 
