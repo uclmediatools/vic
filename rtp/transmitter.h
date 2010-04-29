@@ -56,6 +56,10 @@
 #define WBCC	101
 #define RBCC	102
 
+// cwnd mode
+#define PKM		1	// PacKet Mode
+#define BYM		2	// BYtes Mode
+
 /*
  * The base object for performing the outbound path of
  * the application level protocol.
@@ -150,6 +154,7 @@ protected:
 	bool is_cc_active_;	/* is Cc module activated?		*/
 	bool is_buf_empty_;		/* is pktbuf empty?	*/
 	int cc_type_;
+	int cwnd_mode_;	/* byte-mode? or packet-mode */
 	int epc_;		/* experimental packet counter */
 
     private:

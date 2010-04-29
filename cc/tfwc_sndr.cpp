@@ -60,7 +60,8 @@ void TfwcRtxTimer::timeout() {
  */
 TfwcSndr::TfwcSndr() :
 	seqno_(0),
-	cwnd_(1),
+	cwnd_(1),		// initial cwnd in packet
+	bcwnd_(1500),	// initial cwnd in byte
 	rtx_timer_(this),
 	aoa_(0),
 	now_(0),
@@ -146,7 +147,7 @@ TfwcSndr::TfwcSndr() :
 	// EWMA packet size
 	asize_ = 0;
 	pcnt_ = 0;
-	psize_ = 0;
+	psize_ = 1000;// initial EWMA estimated packet size
 	lambda1_ = .75;
 	lambda2_ = .15;
 }
@@ -160,9 +161,6 @@ void TfwcSndr::tfwc_sndr_send(pktbuf* pb, double now) {
 	rtphdr* rh = (rtphdr *) pb->data;
 	seqno_	= ntohs(rh->rh_seqno);
 	now_	= now;
-	// number of bytes for this packet
-	record_[seqno_%PSR] = pb->len;
-	//print_psize(now_, record_[seqno_%PSR]);
 
 	// arithmetic average packet size (per frame)
 	asize_ += pb->len;
@@ -179,6 +177,10 @@ void TfwcSndr::tfwc_sndr_send(pktbuf* pb, double now) {
 
 		asize_ = 0; pcnt_ = 0;
 	}
+	// number of the actual bytes for this packet
+	//record_[seqno_%PSR] = pb->len;
+	// number of *estimated* bytes for this packet
+	record_[seqno_%PSR] = psize_;
 	//print_psize(now_, psize_, pb->len);
 
 	// timestamp vector for loss history update
@@ -394,18 +396,9 @@ void TfwcSndr::window_in_packets(bool revert) {
 	// TFWC is turned on, so compute congestion window
 	else
 		cwnd_in_packets(revert);
-}
 
-/*
- * TFWC congestion window in bytes
- */
-void TfwcSndr::window_in_bytes(bool revert) {
-	// TFWC is not turned on (i.e., no packet loss yet)
-	if(!is_tfwc_on_)
-		tcp_like_increase();
-	// TFWC is turned on, so compute congestion window
-	else
-		cwnd_in_bytes(revert);
+	// finally, cwnd in bytes
+	window_in_bytes();
 }
 
 /*
@@ -625,17 +618,6 @@ void TfwcSndr::cwnd_in_packets(bool revert) {
 	// cwnd should always be greater than 1
 	if (cwnd_ < 1)
 		cwnd_ = 1;
-}
-
-/*
- * core part for congestion window control
- * (cwnd is in bytes)
- */
-void TfwcSndr::cwnd_in_bytes(bool revert) {
-	if(!revert) {
-	loss_history();
-	avg_loss_interval();
-	}
 }
 
 /*

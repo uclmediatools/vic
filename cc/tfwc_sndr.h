@@ -96,11 +96,13 @@ public:
 	// return ackofack
 	inline u_int16_t tfwc_sndr_get_aoa() { return aoa_; }
 
-	// return just acked seqno
+	// just acked seqno in packets and in bytes
 	inline u_int16_t tfwc_sndr_jacked() { return jacked_; }
+	inline int tfwc_sndr_bjacked() { return record_[bjacked_%PSR]; }
 
-	// return tfwc controlled cwnd value
-	inline u_int32_t tfwc_magic() { return cwnd_; };
+	// tfwc controlled cwnd value in packets and in bytes
+	inline u_int32_t tfwc_magic() { return cwnd_; }
+	inline int tfwc_bmagic() { return bcwnd_; }
 
 	// set timestamp in double type (TfwcSndr)
 	inline double tfwc_sndr_now() {
@@ -115,6 +117,8 @@ public:
 	// variables
 	u_int16_t seqno_;	// packet sequence number
 	u_int32_t cwnd_;	// congestion window
+	int bcwnd_;			// congestion window in bytes
+	int bjacked_;		// just ack'd in bytes
 
 	// Rtx timer
 	void expire(int option);
@@ -197,8 +201,9 @@ private:
 	void window_in_packets(bool revert);
 	void cwnd_in_packets(bool revert);
 	// TFWC congestion window in bytes
-	void window_in_bytes(bool revert);
-	void cwnd_in_bytes(bool revert);
+	inline void window_in_bytes() { 
+		bcwnd_ = psize_ * cwnd_;
+	}
 
 	// calcuate average loss interval
 	void avg_loss_interval();
@@ -373,9 +378,9 @@ private:
 	fprintf(stderr, " )\n");
 	}
 
-	// print packet size
+	// print the actual packet size and EWMA estimated one
 	inline void print_psize(double now, int size, int len) {
-	fprintf(stderr, "\tnow: %f psize: %d real: %d\n", now, size, len);
+	fprintf(stderr, "\tnow: %f psize: %d actual: %d\n", now, size, len);
 	}
 
 	int ndtp_;		// number of data packet sent

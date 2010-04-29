@@ -96,7 +96,8 @@ Transmitter::Transmitter() :
 	loopback_(0),
 	is_cc_active_(1),
 	is_buf_empty_(1),
-	cc_type_(WBCC)
+	cc_type_(WBCC),
+	cwnd_mode_(BYM)
 {
 	memset((char*)&mh_, 0, sizeof(mh_));
 	mh_.msg_iovlen = 2;
@@ -317,20 +318,38 @@ void Transmitter::send(pktbuf* pb)
 void Transmitter::cc_tfwc_output(pktbuf* pb) 
 {
 	//cc_output_banner_top();
-	// pb is not null, hence parse it.
-	rtphdr* rh = (rtphdr *) pb->data;
-
-	int magic = (int) tfwc_magic();
-	//debug_msg("cwnd: %d\n", magic);
-	int jack = (int) tfwc_sndr_jacked();
-	//debug_msg("jack: %d\n", jack);
 	
-	if (ntohs(rh->rh_seqno) <= magic + jack) {
-		// move head pointer
-		head_ = pb->next;
-		// call Transmitter::output_data_only w/ XR reception
-		output_data_only(pb, XR_RECV);
+	// byte mode? or packet mode?
+	switch (cwnd_mode_) {
+	case BYM:
+	{
+		int len = 0;
+		if(pb->len < tfwc_bmagic() - len) {
+			len = pb->len;
+			// move head pointer
+			head_ = pb->next;
+			// call Transmitter::output_data_only w/ XR reception
+			output_data_only(pb, XR_RECV);
+		}
 	}
+	break;
+	case PKM:
+	{
+		// pb is not null, hence parse it.
+		rtphdr* rh = (rtphdr *) pb->data;
+
+		if (ntohs(rh->rh_seqno) <= tfwc_magic() + tfwc_sndr_jacked()) {
+			//debug_msg("cwnd: %d\n", tfwc_magic());
+			//debug_msg("jack: %d\n", tfwc_sndr_jacked());
+			
+			// move head pointer
+			head_ = pb->next;
+			// call Transmitter::output_data_only w/ XR reception
+			output_data_only(pb, XR_RECV);
+		}
+	}
+	break;
+	} // switch (cwnd_mode_)
 	//cc_output_banner_bottom();
 }
 
@@ -352,36 +371,52 @@ void Transmitter::cc_tfwc_output(bool recv_by_ch)
 		return;
 	}
 
-	// pb is not null, hence parse it.
-	rtphdr* rh = (rtphdr *) pb->data;
+	// byte mode? or packet mode?
+	switch (cwnd_mode_) {
+	case BYM:
+	{
+		int len = 0;
+		while(pb->len < tfwc_bmagic() - len) {
+			len = pb->len;
+			// move head pointer
+			head_ = pb->next;
+			// call Transmitter::output(pb)
+			output(pb, XR_RECV);
 
-	// cwnd value
-	int magic = (int) tfwc_magic();
-//	debug_msg("cwnd: %d\n", magic);
-
-	// just acked seqno
-	int jack = (int) tfwc_sndr_jacked();
-//	debug_msg("jack: %d\n", jack);
-
-	//fprintf(stderr, "\tXXX now: %f\tnum: %d\tcwnd: %d\tjack: %d\n",
-	//tx_get_now(), ntohs(rh->rh_seqno), magic, jack);
-
-	// while packet seqno is within "cwnd + jack", send that packet
-	while (ntohs(rh->rh_seqno) <= magic + jack) {
-		// move head pointer
-		head_ = pb->next;
-		// call Transmitter::output(pb)
-		output(pb, recv_by_ch);
-
-		// if the moved head pointer is not null, parse packet buffer.
-		// otherwise, break while statement.
-		if (head_ != 0) {
-			pb = head_;
-			rh = (rtphdr *) pb->data;
-		} else {
-			break;
+			if (head_ != 0)
+				pb = head_;
+			else
+				break;
 		}
-	} // end while ()
+	}
+	break;
+	case PKM:
+	{
+		// pb is not null, hence parse it.
+		rtphdr* rh = (rtphdr *) pb->data;
+
+		// while packet seqno is within "cwnd + jack", send that packet
+		while (ntohs(rh->rh_seqno) <= tfwc_magic() + tfwc_sndr_jacked()) {
+			//debug_msg("cwnd: %d\n", tfwc_magic());
+			//debug_msg("jack: %d\n", tfwc_sndr_jacked());
+
+			// move head pointer
+			head_ = pb->next;
+			// call Transmitter::output(pb)
+			output(pb, recv_by_ch);
+
+			// if the moved head pointer is not null, parse packet buffer.
+			// otherwise, break while statement.
+			if (head_ != 0) {
+				pb = head_;
+				rh = (rtphdr *) pb->data;
+			} else {
+				break;
+			}
+		} // end while ()
+	}
+	break;
+	} // switch (cwnd_mode_)
 	//cc_output_banner_bottom();
 }
 

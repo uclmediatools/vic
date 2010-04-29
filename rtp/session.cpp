@@ -726,7 +726,7 @@ void SessionManager::build_xreport(CtrlHandler* ch, int bt)
 				//	fprintf(stderr, "[%d:%x] ", i, chunks[i]);
 				} 
 				//fprintf(stderr, "...........%s +%d\n",__FILE__,__LINE__);
-					break;
+				break;
 
 			case RBCC:
 				break;
