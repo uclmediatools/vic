@@ -325,7 +325,7 @@ void Transmitter::cc_tfwc_output(pktbuf* pb)
 	{
 		int len = 0;
 		if(pb->len < tfwc_bmagic() - len) {
-			len = pb->len;
+			len += pb->len;
 			// move head pointer
 			head_ = pb->next;
 			// call Transmitter::output_data_only w/ XR reception
@@ -377,7 +377,7 @@ void Transmitter::cc_tfwc_output(bool recv_by_ch)
 	{
 		int len = 0;
 		while(pb->len < tfwc_bmagic() - len) {
-			len = pb->len;
+			len += pb->len;
 			// move head pointer
 			head_ = pb->next;
 			// call Transmitter::output(pb)
