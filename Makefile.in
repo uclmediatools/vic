@@ -358,7 +358,7 @@ clean:
 		vic vic.dyn vic.xil h261_play h261_dump jpeg_play cb_wish \
 		mkcube rgb-cube.ppm yuv-map.ppm cm0.c cm1.c ppmtolut \
 		config.cache config.log domake.* dotar.* \
-		cc/*.o
+		cc/*.o .*ppmlogo*
 	cd codec/tmn && $(MAKE) clean
 	cd codec/tmndec && $(MAKE) realclean
 	rm -f codec/tmn-x/*.o codec/tmn-x/*.a
@@ -366,6 +366,9 @@ clean:
 realclean:
 	$(MAKE) clean
 	rm -f config.log config.cache config.status
+	rm -rf autom4te.cache
+	rm -f version.c 
+	rm -f Makefile
 
 tags:	force
 	ctags -tdwC $(SRC) *.h $(TKSRC)/*.c $(TKSRC)/*.h \
