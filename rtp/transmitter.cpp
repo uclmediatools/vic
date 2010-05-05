@@ -381,7 +381,7 @@ void Transmitter::cc_tfwc_output(bool recv_by_ch)
 			// move head pointer
 			head_ = pb->next;
 			// call Transmitter::output(pb)
-			output(pb, XR_RECV);
+			output(pb, recv_by_ch);
 
 			if (head_ != 0)
 				pb = head_;
