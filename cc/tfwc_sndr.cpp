@@ -55,6 +55,9 @@ void TfwcRtxTimer::timeout() {
 	s_ -> expire(TFWC_TIMER_RTX);
 }
 
+// TfwcSndr instance
+TfwcSndr TfwcSndr::instance_;
+
 /* 
  * TFWC sender definition
  */
@@ -152,7 +155,7 @@ TfwcSndr::TfwcSndr() :
 	lambda2_ = .15;
 }
 
-void TfwcSndr::tfwc_sndr_send(pktbuf* pb, double now) {
+void TfwcSndr::send(pktbuf* pb, double now) {
 	// the very first data packet
 	if(seqno_ == 0)
 	ts_off_ = tx_ts_offset();
@@ -199,7 +202,7 @@ void TfwcSndr::tfwc_sndr_send(pktbuf* pb, double now) {
 /*
  * main TFWC reception path
  */
-void TfwcSndr::tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
+void TfwcSndr::recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		u_int16_t *chunk, double so_rtime, bool recv_by_ch, pktbuf* pb)
 {
   switch (type) {

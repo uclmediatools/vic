@@ -42,6 +42,9 @@
 #include "transmitter.h"
 #include "tfwc_rcvr.h"
 
+// TfwcRcvr instance
+TfwcRcvr TfwcRcvr::instance_;
+
 TfwcRcvr::TfwcRcvr() :
 	ackofack_(0),
 	begins_(1),
@@ -57,7 +60,7 @@ TfwcRcvr::TfwcRcvr() :
 }
 
 // retrive ackofack from RTCP control channel
-void TfwcRcvr::tfwc_rcvr_recv_aoa(u_int16_t type, u_int16_t *chunk)
+void TfwcRcvr::recv_aoa(u_int16_t type, u_int16_t *chunk)
 {
 	int num_chunks = 1;
 	__ackofack_ = ackofack_;
@@ -83,7 +86,7 @@ void TfwcRcvr::tfwc_rcvr_recv_aoa(u_int16_t type, u_int16_t *chunk)
 }
 
 // retrieve data packet sequence number from RTP data channel
-void TfwcRcvr::tfwc_rcvr_recv_seqno(u_int16_t seqno)
+void TfwcRcvr::recv_seqno(u_int16_t seqno)
 {
 	// out-of-order packet reception
 	// (use previous ackofack)

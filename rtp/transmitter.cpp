@@ -104,6 +104,8 @@ Transmitter::Transmitter() :
 
 	// CC related...
 	epc_ = 0;	// experimental packet counter
+	tfwc_sndr_ = TfwcSndr::instance();
+	tfwc_rcvr_ = TfwcRcvr::instance();
 }
 
 /* Return time of day in seconds */
@@ -324,7 +326,7 @@ void Transmitter::cc_tfwc_output(pktbuf* pb)
 	case BYM:
 	{
 		int len = 0;
-		if(pb->len < tfwc_bmagic() - len) {
+		if(pb->len < tfwc_sndr_.b_magic() - len) {
 			len += pb->len;
 			// move head pointer
 			head_ = pb->next;
@@ -338,9 +340,9 @@ void Transmitter::cc_tfwc_output(pktbuf* pb)
 		// pb is not null, hence parse it.
 		rtphdr* rh = (rtphdr *) pb->data;
 
-		if (ntohs(rh->rh_seqno) <= tfwc_magic() + tfwc_sndr_jacked()) {
-			//debug_msg("cwnd: %d\n", tfwc_magic());
-			//debug_msg("jack: %d\n", tfwc_sndr_jacked());
+		if (ntohs(rh->rh_seqno) <= tfwc_sndr_.magic() + tfwc_sndr_.jacked()) {
+			//debug_msg("cwnd: %d\n", tfwc_sndr_.magic());
+			//debug_msg("jack: %d\n", tfwc_sndr_.jacked());
 			
 			// move head pointer
 			head_ = pb->next;
@@ -376,7 +378,7 @@ void Transmitter::cc_tfwc_output(bool recv_by_ch)
 	case BYM:
 	{
 		int len = 0;
-		while(pb->len < tfwc_bmagic() - len) {
+		while(pb->len < tfwc_sndr_.b_magic() - len) {
 			len += pb->len;
 			// move head pointer
 			head_ = pb->next;
@@ -396,9 +398,9 @@ void Transmitter::cc_tfwc_output(bool recv_by_ch)
 		rtphdr* rh = (rtphdr *) pb->data;
 
 		// while packet seqno is within "cwnd + jack", send that packet
-		while (ntohs(rh->rh_seqno) <= tfwc_magic() + tfwc_sndr_jacked()) {
-			//debug_msg("cwnd: %d\n", tfwc_magic());
-			//debug_msg("jack: %d\n", tfwc_sndr_jacked());
+		while (ntohs(rh->rh_seqno) <= tfwc_sndr_.magic() + tfwc_sndr_.jacked()) {
+			//debug_msg("cwnd: %d\n", tfwc_sndr_.magic());
+			//debug_msg("jack: %d\n", tfwc_sndr_.jacked());
 
 			// move head pointer
 			head_ = pb->next;

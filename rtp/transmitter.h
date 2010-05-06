@@ -60,12 +60,14 @@
 #define PKM		1	// PacKet Mode
 #define BYM		2	// BYtes Mode
 
+class TfwcSndr;
+class TfwcRcvr;
+
 /*
  * The base object for performing the outbound path of
  * the application level protocol.
  */
-class Transmitter : public TclObject, public Timer, 
-	public TfwcSndr, public TfwcRcvr {
+class Transmitter : public TclObject, public Timer {
     public:
 	Transmitter();
 	virtual void timeout();
@@ -117,6 +119,9 @@ class Transmitter : public TclObject, public Timer,
 
 	// Tx pktbuf size
 	virtual int tx_buf_size();
+
+	TfwcSndr tfwc_sndr_;
+	TfwcRcvr tfwc_rcvr_;
 
 protected:
 	void update(int nbytes);

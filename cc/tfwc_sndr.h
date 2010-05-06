@@ -80,29 +80,29 @@ public:
 	virtual ~TfwcSndr() {};
 
 	// virtual functions
-	virtual void cc_tfwc_output(bool recv_by_ch=0) = 0;
-	virtual void cc_tfwc_output(pktbuf*) = 0;
-	virtual void cc_tfwc_trigger(pktbuf* pb=0) = 0;
-	virtual double tx_ts_offset() = 0;
-	virtual int tx_buf_size() = 0;
+	virtual void cc_tfwc_output(bool recv_by_ch=0) {};
+	virtual void cc_tfwc_output(pktbuf*) {};
+	virtual void cc_tfwc_trigger(pktbuf* pb=0) {};
+	virtual double tx_ts_offset() {};
+	virtual int tx_buf_size() {};
 
 	// parse seqno and timestamp
-	void tfwc_sndr_send(pktbuf*, double);
+	void send(pktbuf*, double);
 
 	// main reception path (XR packet)
-	void tfwc_sndr_recv(u_int16_t type, u_int16_t begin, u_int16_t end,
+	void recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	u_int16_t *chunk, double so_rtime, bool recv_by_ch, pktbuf* pb);
 
 	// return ackofack
-	inline u_int16_t tfwc_sndr_get_aoa() { return aoa_; }
+	inline u_int16_t get_aoa() { return aoa_; }
 
 	// just acked seqno in packets and in bytes
-	inline u_int16_t tfwc_sndr_jacked() { return jacked_; }
-	inline int tfwc_sndr_bjacked() { return record_[bjacked_%PSR]; }
+	inline u_int16_t jacked() { return jacked_; }
+	inline int b_jacked() { return record_[bjacked_%PSR]; }
 
 	// tfwc controlled cwnd value in packets and in bytes
-	inline u_int32_t tfwc_magic() { return cwnd_; }
-	inline int tfwc_bmagic() { return bcwnd_; }
+	inline u_int32_t magic() { return cwnd_; }
+	inline int b_magic() { return bcwnd_; }
 
 	// set timestamp in double type (TfwcSndr)
 	inline double tfwc_sndr_now() {
@@ -123,7 +123,13 @@ public:
 	// Rtx timer
 	void expire(int option);
 
+	// TfwcSndr instance
+	static inline TfwcSndr& instance() { return instance_; }
+
 protected:
+
+	static TfwcSndr instance_;
+
 	// generate sequence numbers
 	void gen_seqvec(u_int16_t *v, int n);
 
@@ -163,6 +169,7 @@ protected:
 
 	// retransmission timer
 	TfwcRtxTimer rtx_timer_;
+
 	void set_rtx_timer();
 	void reset_rtx_timer(int backoff);
 	void backoff_timer();

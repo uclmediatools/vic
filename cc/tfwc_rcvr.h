@@ -41,21 +41,25 @@
 class TfwcRcvr {
 public:
 	TfwcRcvr();
-	void tfwc_rcvr_recv_aoa(u_int16_t type, u_int16_t *chunk);
-	void tfwc_rcvr_recv_seqno(u_int16_t seqno);
+	void recv_aoa(u_int16_t type, u_int16_t *chunk);
+	void recv_seqno(u_int16_t seqno);
+	// AckVec clone
+	inline u_int16_t getvec(int i) { return tfwcAV[i]; }
+	// ts echo
+	inline u_int32_t ts_echo() { return ts_echo_; }
+	// AckVec begin seqno
+	inline u_int16_t begins() { return begins_; }
+	// AckVec end seqno plus one
+	inline u_int16_t ends() { return ends_; }
+	// number of AckVec array
+	inline u_int16_t numvec() { return numVec_; }
+
+	// TfwcRcvr instance
+	static inline TfwcRcvr& instance() { return instance_; }
 
 protected:
-	// AckVec clone
-	inline u_int16_t tfwc_rcvr_getvec(int i) { return tfwcAV[i]; }
-	// ts echo
-	inline u_int32_t tfwc_rcvr_ts_echo() { return ts_echo_; }
 
-	// AckVec begin seqno
-	inline u_int16_t tfwc_rcvr_begins() { return begins_; }
-	// AckVec end seqno plus one
-	inline u_int16_t tfwc_rcvr_ends() { return ends_; }
-	// number of AckVec array
-	inline u_int16_t tfwc_rcvr_numvec() { return numVec_; }
+	static TfwcRcvr instance_;
 
 	/*
 	 * Variables
