@@ -31,6 +31,15 @@
  * $Id$
  */
 
+#include "assert.h"
+#include "config.h"
+#include "timer.h"
+#include "rtp.h"
+#include "inet.h"
+#include "pktbuf-rtp.h"
+#include "vic_tcl.h"
+#include "module.h"
+#include "transmitter.h"
 #include "tfrc_rcvr.h"
 
 // TfrcRcvr instance

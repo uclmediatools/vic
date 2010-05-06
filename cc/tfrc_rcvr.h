@@ -34,6 +34,8 @@
 #ifndef vic_tfrc_rcvr_h
 #define vic_tfrc_rcvr_h
 
+#include <vector>
+#include <algorithm>
 #include "tfrc_sndr.h"
 
 class TfrcRcvr {

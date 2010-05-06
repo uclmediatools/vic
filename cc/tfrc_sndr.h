@@ -34,6 +34,7 @@
 #ifndef vic_tfrc_sndr_h
 #define vic_tfrc_sndr_h
 
+#include "config.h"
 #include "bitmap.h"
 #include "cc_common.h"
 #include "cc_timer.h"

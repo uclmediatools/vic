@@ -100,8 +100,8 @@ class Transmitter : public TclObject, public Timer {
 	void flush();
 	void send(pktbuf*);
 	inline bool is_cc_on() { return is_cc_active_; }
-	virtual void cc_tfwc_output(bool recv_by_ch=0);
-	virtual void cc_tfwc_output(pktbuf*);
+	virtual void tfwc_output(bool recv_by_ch=0);
+	virtual void tfwc_output(pktbuf*);
 	virtual void cc_tfwc_trigger(pktbuf*);
 	void cc_tfrc_output();
 
@@ -175,8 +175,8 @@ protected:
 	static int nhdrs_;
 
 	// print banner
-	inline void cc_output_banner_top() {
-	fprintf(stderr,"\t--------entering cc_tfwc_output()-----------\n");
+	inline void cc_output_banner_top(const char* str) {
+	fprintf(stderr,"\t-------- entering %s_output() -----------\n", str);
 	fprintf(stderr,"\t|                                          |\n");
 	fprintf(stderr,"\tV                                          V\n");
 	}

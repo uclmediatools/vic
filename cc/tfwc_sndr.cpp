@@ -908,7 +908,7 @@ void TfwcSndr::expire(int option) {
 			jacked_++;
 
 		// trigger packet sending
-		cc_tfwc_output();
+		tfwc_output();
 	}
 }
 

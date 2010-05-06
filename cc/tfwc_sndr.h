@@ -64,8 +64,8 @@ public:
 	virtual ~TfwcSndr() {};
 
 	// virtual functions
-	virtual void cc_tfwc_output(bool recv_by_ch=0) {UNUSED(recv_by_ch);};
-	virtual void cc_tfwc_output(pktbuf*) {};
+	virtual void tfwc_output(bool recv_by_ch=0) {UNUSED(recv_by_ch);};
+	virtual void tfwc_output(pktbuf*) {};
 	virtual void cc_tfwc_trigger(pktbuf* pb=0) {UNUSED(pb);};
 	virtual double tx_ts_offset() {};
 	virtual int tx_buf_size() {};

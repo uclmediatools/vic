@@ -35,7 +35,12 @@
 #include <stdlib.h>
 #include <math.h>
 #include <sys/types.h>
-
+#include "assert.h"
+#include "rtp.h"
+#include "pktbuf-rtp.h"
+#include "vic_tcl.h"
+#include "module.h"
+#include "transmitter.h"
 #include "tfrc_sndr.h"
 #include "formula.h"
 

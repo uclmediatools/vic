@@ -252,7 +252,7 @@ void Transmitter::send(pktbuf* pb)
 			} else
 				tail_ = head_ = pb;
 			pb->next = 0;
-			cc_tfwc_output();
+			tfwc_output();
 			is_buf_empty_ = false;
 		} 
 		// if not, check if cwnd allows send this packet
@@ -263,7 +263,7 @@ void Transmitter::send(pktbuf* pb)
 			} else
 				tail_ = head_ = pb;
 			pb->next = 0;
-			cc_tfwc_output(pb);
+			tfwc_output(pb);
 		}
 		break;
 
@@ -320,7 +320,7 @@ void Transmitter::send(pktbuf* pb)
 	} // switch (cc_type)
 }
 
-void Transmitter::cc_tfwc_output(pktbuf* pb) 
+void Transmitter::tfwc_output(pktbuf* pb) 
 {
 	//cc_output_banner_top();
 	
@@ -361,9 +361,9 @@ void Transmitter::cc_tfwc_output(pktbuf* pb)
 /*
  * main TFWC CC output routines
  */
-void Transmitter::cc_tfwc_output(bool recv_by_ch)
+void Transmitter::tfwc_output(bool recv_by_ch)
 {
-	//cc_output_banner_top();
+	//cc_output_banner_top("tfwc");
 	// head of the RTP data packet buffer (pb)
 	pktbuf* pb = head_;
 

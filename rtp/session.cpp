@@ -50,8 +50,6 @@ extern "C" int getpid();
 #include "timer.h"
 #include "ntp-time.h"
 #include "session.h"
-#include "cc/tfwc_sndr.h"
-#include "cc/tfwc_rcvr.h"
 
 /* added to support the mbus 
 #include "mbus_handler.h"*/
@@ -1353,7 +1351,7 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 
 				// we need to call Transmitter::output(pb) to make Ack driven
 				if(recv_by_ch)
-				cc_tfwc_output(recv_by_ch);
+				tfwc_output(recv_by_ch);
 				break;
 
 			case RBCC:
