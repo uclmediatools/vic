@@ -31,7 +31,10 @@
  * $Id$
  */
 
-#ifndef vic_tfrc_sndr_h
-#define vic_tfrc_sndr_h
+#include "tfrc_rcvr.h"
 
-#endif
+// TfrcRcvr instance
+TfrcRcvr TfrcRcvr::instance_;
+
+TfrcRcvr::TfrcRcvr() {
+}

@@ -34,4 +34,29 @@
 #ifndef vic_tfrc_sndr_h
 #define vic_tfrc_sndr_h
 
+#include "bitmap.h"
+#include "cc_common.h"
+#include "cc_timer.h"
+
+class TfrcSndr;
+class Transmitter;
+
+// TFRC sender class
+class TfrcSndr {
+public:
+	// constructor
+	TfrcSndr();
+	virtual ~TfrcSndr() {};
+
+	// TfrcSndr instance
+	static inline TfrcSndr& instance() { return instance_; }
+
+protected:
+
+	static TfrcSndr instance_;
+
+private:
+
+};
+
 #endif

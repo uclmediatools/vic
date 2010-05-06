@@ -34,4 +34,21 @@
 #ifndef vic_tfrc_rcvr_h
 #define vic_tfrc_rcvr_h
 
+#include "tfrc_sndr.h"
+
+class TfrcRcvr {
+public:
+	TfrcRcvr();
+
+	// TfrcRcvr instance
+	static inline TfrcRcvr& instance() { return instance_; }
+
+protected:
+
+	static TfrcRcvr instance_;
+
+private:
+
+};
+
 #endif

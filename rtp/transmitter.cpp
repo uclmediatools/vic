@@ -103,9 +103,12 @@ Transmitter::Transmitter() :
 	mh_.msg_iovlen = 2;
 
 	// CC related...
-	epc_ = 0;	// experimental packet counter
 	tfwc_sndr_ = TfwcSndr::instance();
 	tfwc_rcvr_ = TfwcRcvr::instance();
+	tfrc_sndr_ = TfrcSndr::instance();
+	tfrc_rcvr_ = TfrcRcvr::instance();
+	
+	epc_ = 0;	// experimental packet counter
 }
 
 /* Return time of day in seconds */

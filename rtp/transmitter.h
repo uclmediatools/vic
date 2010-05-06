@@ -51,6 +51,8 @@
 #include "pktbuf-rtp.h"
 #include "cc/tfwc_sndr.h"
 #include "cc/tfwc_rcvr.h"
+#include "cc/tfrc_sndr.h"
+#include "cc/tfrc_rcvr.h"
 
 #define NOCC	100
 #define WBCC	101
@@ -62,6 +64,8 @@
 
 class TfwcSndr;
 class TfwcRcvr;
+class TfrcSndr;
+class TfrcRcvr;
 
 /*
  * The base object for performing the outbound path of
@@ -122,6 +126,8 @@ class Transmitter : public TclObject, public Timer {
 
 	TfwcSndr tfwc_sndr_;
 	TfwcRcvr tfwc_rcvr_;
+	TfrcSndr tfrc_sndr_;
+	TfrcRcvr tfrc_rcvr_;
 
 protected:
 	void update(int nbytes);

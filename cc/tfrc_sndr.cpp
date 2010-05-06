@@ -38,3 +38,9 @@
 
 #include "tfrc_sndr.h"
 #include "formula.h"
+
+// TfrcSndr instance
+TfrcSndr TfrcSndr::instance_;
+
+TfrcSndr::TfrcSndr() {
+}
