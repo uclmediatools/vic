@@ -43,10 +43,6 @@
 #include "transmitter.h"
 #include "tfwc_sndr.h"
 
-// timestamp skew from Vic to Network Device 
-// (approximately 10 usec)
-#define SKEW 0.000010
-
 /*
  * retransmission timer
  */
@@ -205,6 +201,9 @@ void TfwcSndr::send(pktbuf* pb, double now) {
 void TfwcSndr::recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		u_int16_t *chunk, double so_rtime, bool recv_by_ch, pktbuf* pb)
 {
+  UNUSED(recv_by_ch);
+  UNUSED(pb);
+
   switch (type) {
   // retrieve ackvec
   case XR_BT_1: 

@@ -52,4 +52,8 @@
 
 #define BITLEN  16
 
+// timestamp skew from Vic to Network Device 
+// (approximately 10 usec)
+#define SKEW 0.000010
+
 #endif /* vic_cc_common_h */

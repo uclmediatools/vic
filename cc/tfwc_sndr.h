@@ -34,6 +34,7 @@
 #ifndef vic_tfwc_sndr_h
 #define vic_tfwc_sndr_h
 
+#include "config.h"
 #include "bitmap.h"	// bitmap operations
 #include "cc_common.h"
 #include "cc_timer.h"
@@ -63,9 +64,9 @@ public:
 	virtual ~TfwcSndr() {};
 
 	// virtual functions
-	virtual void cc_tfwc_output(bool recv_by_ch=0) {};
+	virtual void cc_tfwc_output(bool recv_by_ch=0) {UNUSED(recv_by_ch);};
 	virtual void cc_tfwc_output(pktbuf*) {};
-	virtual void cc_tfwc_trigger(pktbuf* pb=0) {};
+	virtual void cc_tfwc_trigger(pktbuf* pb=0) {UNUSED(pb);};
 	virtual double tx_ts_offset() {};
 	virtual int tx_buf_size() {};
 
