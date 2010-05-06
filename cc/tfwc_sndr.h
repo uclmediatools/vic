@@ -35,25 +35,8 @@
 #define vic_tfwc_sndr_h
 
 #include "bitmap.h"	// bitmap operations
+#include "cc_common.h"
 #include "cc_timer.h"
-
-#define DUPACKS 3   // simulating TCP's 3 dupacks
-#define TSZ	1000	// tsvec_ size
-#define SSZ 1000	// seqvec_ size
-#define RSZ 1000	// refvec_ size
-#define PSR 10000	// packet size record
-
-#define SHORT_HISTORY		// history size = 8
-#ifdef  SHORT_HISTORY
-#define HSZ 8   // history size for avg loss history
-#else
-#define HSZ 16  // history size for avg loss history
-#endif
-
-#define T_RTTVAR_BITS	2
-#define T_SRTT_BITS		3
-
-#define BITLEN	16
 
 // timer related
 #define TFWC_TIMER_RTX		0
