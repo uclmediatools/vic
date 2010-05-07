@@ -49,6 +49,22 @@ public:
 	TfrcSndr();
 	virtual ~TfrcSndr() {};
 
+	// virtual functions
+	virtual void tfrc_output(bool recv_by_ch=0) {UNUSED(recv_by_ch);};
+	virtual void tfrc_output(pktbuf*) {};
+	virtual double tx_ts_offset() {};
+	virtual int tx_buf_size() {};
+
+	// parse seqno and timestamp
+	void send(pktbuf*, double);
+
+	// main reception path
+	void recv(u_int16_t, u_int16_t, u_int16_t,
+		u_int16_t*, double, bool, pktbuf*);
+
+	u_int16_t seqno_;	// packet sequence number
+	double x_rate_;		// send rate
+
 	// TfrcSndr instance
 	static inline TfrcSndr& instance() { return instance_; }
 
@@ -56,8 +72,90 @@ protected:
 
 	static TfrcSndr instance_;
 
-private:
+	// generate sequence numbers
+	void gen_seqvec(u_int16_t *v, int n);
+	// generate reference seqno
+	void gen_refvec(int end, int begin);
 
+	u_int16_t *ackv_;	// received AckVec
+	u_int16_t aoa_;	// ack of ack
+	double ts_;			// timestamp
+	double now_;		// real-time now
+	double so_recv_;	// SO_TIMESTAMP
+	double tao_;		// sampled RTT
+
+	// packet size
+	int asize_;		// average packet size per frame
+	int pcnt_;		// packet counter per frame
+	int psize_;		// EWMA packet size
+	double lambda1_;	// EWMA coeff
+	double lambda2_;	// EWMA coeff
+
+private:
+	// update RTT
+	void update_rtt(double tao);
+
+	// TFRC congestion control
+	void calc_rate();
+	// average loss interval
+	void avg_loss_interval();
+	// loss history
+	void loss_history();
+
+	// AckVec clone from Vic
+	inline void clone_ackv(u_int16_t *c, int n) {
+		for (int i = 0; i < n; i++)
+		ackv_[i] = ntohs(c[i]);
+	}
+	// number of ackvec elements
+	inline int get_numvec(int n) {
+	return (n/BITLEN + (n%BITLEN > 0));
+	}
+	// number of ackvec elements
+	inline int get_numelm (int begin, int end) {
+	return (end - begin + 1);
+	}
+	// clear timestamp vector
+	inline void clear_tsv (int n) {
+		for (int i = 0; i < n; i++)
+		tsvec_[i] = 0;
+	}
+	// clear seqvec
+	inline void clear_sqv (int n) {
+		for (int i = 0; i < n; i++)
+		seqvec_[i] = 0;
+	}
+	// clear ackvec
+	inline void clear_ackv (int n) {
+		for (int i = 0; i < n; i++)
+		ackv_[i] = 0;
+	}
+	// clear refvec
+	inline void clear_refv(int n) {
+		for (int i = 0; i < n; i++)
+		refvec_[i] = 0;
+	}
+
+	int ndtp_;	// number of data packet sent
+	int nakp_;	// number of ackvec packet received
+	int ntep_;	// number of ts_echo packet received
+	int nsve_;	// number of seqvec element
+
+	double ts_off_;	// timestamp offset for gettimeofday
+
+	u_int32_t *seqvec_;	// generated seqno vec
+	int num_seqvec_;	// number of seqvec elements
+	u_int32_t *refvec_;	// reference seqno vec
+	int num_refvec_;	// number of refvec elements
+	double *tsvec_;		// timestamp vector
+	u_int16_t jacked_;	// just acked seqno (head of ackvec)
+	int num_missing_;	// number of missing seqno
+
+	// XR chunk begin/end
+	u_int16_t begins_;	// start seqno that this XR chunk reports
+	u_int16_t ends_;	// end seqno + 1 that this XR chunk reports
+	int num_elm_;		// number of ackvec elements
+	int num_vec_;		// number of ackvec chunks
 };
 
 #endif

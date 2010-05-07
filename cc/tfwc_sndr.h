@@ -420,7 +420,7 @@ private:
 	u_int16_t begins_;	// start seqno that this XR chunk reports
 	u_int16_t ends_;	// end seqno + 1 that this XR chunk reports
 	int	num_elm_;		// number of ackvec elements
-	int num_vec_;		// numver of ackvec chunks
+	int num_vec_;		// number of ackvec chunks
 
 	// TCP's RTO calculation
 	double alpha_;	// smoothing factor for RTT/RTO calculation
