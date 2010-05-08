@@ -1054,11 +1054,11 @@ void SessionManager::recv(DataHandler* dh)
 			fprintf(stderr, "\n\treceived seqno: %d\n\n", seqno);
 
 			// send receiver side XR report (AckVec)
-			ch_[0].send_ackv();
+			ch_->send_ackv();
 			//ch_[0].send_ts_echo();
 			break;
 		case RBCC:
-			ch_[0].send_p();
+			ch_->send_p();
 			break;
 		}
 	}
