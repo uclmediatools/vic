@@ -30,7 +30,9 @@
 #ifndef vic_config_h
 #define vic_config_h
 
+#ifdef HAVE_CONFIG_H
 #include "uclconf.h"
+#endif
 
 #if defined(sgi) || defined(__bsdi__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__)
 #include <sys/types.h>
