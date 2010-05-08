@@ -72,7 +72,7 @@ TfrcSndr::TfrcSndr() :
 	clear_sqv(SSZ);
 	num_seqvec_ = 0;
 	// allocate refvec in memory
-	refvec_ = (u_int32_t *) malloc(sizeof(u_int32_t) + RSZ);
+	refvec_ = (u_int32_t *) malloc(sizeof(u_int32_t) * RSZ);
 	clear_refv(RSZ);
 	num_refvec_ = 0;
 
