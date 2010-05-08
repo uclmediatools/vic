@@ -143,6 +143,8 @@ void TfrcSndr::recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	nakp_++;
 	// so_timestamp
 	so_recv_ = so_rtime;
+	// revert to the previous history?
+	bool revert = false;
 
 	// get start/end seqno that this XR chunk reports
 	begins_ = begin;	// lowest packet seqno
@@ -165,9 +167,11 @@ void TfrcSndr::recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	clear_ackv(num_vec_);
 	// clone AckVec from Vic
 	clone_ackv(chunk, num_vec_);
+	print_vec("ackvec", ackv_, num_vec_);
 
 	// generate seqno vector
 	gen_seqvec(ackv_, num_vec_);
+
 	// generate reference vector
 	// (it represents seqvec when no losses)
 	// @begin: aoa_+1 (lowest seqno)
@@ -184,6 +188,9 @@ void TfrcSndr::recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	tao_ = so_recv_ - tsvec_[jacked_%TSZ];
 	// update RTT with the sampled RTT
 	update_rtt(tao_);
+
+	// reset variables for the next pkt reception
+	reset_var(revert);
   }
   break;
 
@@ -248,6 +255,18 @@ void TfrcSndr::gen_refvec(int end, int begin) {
 		refvec_[i] = begin + i;
 		fprintf(stderr, " %d", refvec_[i]);
 	} fprintf(stderr, " )\n");
+}
+
+void TfrcSndr::reset_var(bool reverted) {
+	// init vars------------*
+	num_missing_ = 0;
+	//----------------------*
+
+	if(!reverted) {
+	}
+
+	// finally, free ackvec
+	free(ackv_);
 }
 
 /*

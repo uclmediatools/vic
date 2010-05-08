@@ -76,6 +76,8 @@ protected:
 	void gen_seqvec(u_int16_t *v, int n);
 	// generate reference seqno
 	void gen_refvec(int end, int begin);
+	// reset variables
+	void reset_var(bool reverted);
 
 	u_int16_t *ackv_;	// received AckVec
 	u_int16_t aoa_;	// ack of ack
@@ -156,6 +158,25 @@ private:
 	u_int16_t ends_;	// end seqno + 1 that this XR chunk reports
 	int num_elm_;		// number of ackvec elements
 	int num_vec_;		// number of ackvec chunks
+
+	// print vec
+	inline void print_vec(const char* str, u_int32_t *vec, int c) {
+	fprintf(stderr, "\t%s: (", str);
+		for (int i = 0; i < c; i++)
+		fprintf(stderr, " %d", vec[i]);
+	fprintf(stderr, " )\n");
+	}
+	inline void print_vec(const char* str, u_int16_t *vec, int c) {
+	fprintf(stderr, "\t%s: (", str);
+		for (int i = 0; i < c; i++)
+		fprintf(stderr, " %d", vec[i]);
+	fprintf(stderr, " )\n");
+	}
+
+	// print the actual packet size and EWMA estimated one
+	inline void print_psize(double now, int size, int len) {
+	fprintf(stderr, "\tnow: %f psize: %d actual: %d\n", now, size, len);
+	}
 };
 
 #endif

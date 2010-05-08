@@ -45,5 +45,136 @@
 // TfrcRcvr instance
 TfrcRcvr TfrcRcvr::instance_;
 
-TfrcRcvr::TfrcRcvr() {
+TfrcRcvr::TfrcRcvr() :
+	ackofack_(0),
+	begins_(1),
+	ends_(1),
+	numElm_(1),
+	numVec_(1)
+{
+	// tfrcAV (bit vector)
+	tfrcAV = (u_int16_t *) malloc(sizeof(u_int16_t *));
+	clear_avec(numVec_);
 }
+
+// retrive ackofack from RTCP control channel
+void TfrcRcvr::recv_aoa(u_int16_t type, u_int16_t *chunk)
+{
+  int num_chunks = 1;
+
+  switch (type) {
+  case XR_BT_1:
+  {
+	  // received ackofack
+	  ackofack_ = ntohs(chunk[num_chunks-1]);
+  }
+	break;
+
+  case XR_BT_3:
+	break;
+
+  default:
+	break;
+  } // end switch (type)
+}
+
+// retrieve data packet sequence number from RTP data channel
+void TfrcRcvr::recv_seqno(u_int16_t seqno)
+{
+    // required number of AckVec elements
+    numElm_ = seqno - ackofack_;
+
+    // required number of AckVec chunks
+    numVec_ = numElm_/BITLEN + (numElm_%BITLEN > 0);
+
+    // reset necessary variables before start
+    reset();
+
+    // reference vector
+    for (int i = 1; i <= numElm_; i++)
+        rvec_.push_back(ackofack_ + i);
+
+    // push back the current seqno
+    // (if this is duplicate seqno, skip adding it)
+    if (find(avec_.begin(), avec_.end(), seqno) == avec_.end())
+        avec_.push_back(seqno);
+    sort(avec_.begin(), avec_.end());
+
+    // then, trim upto ackofack (inclusive)
+    avit_ = find(avec_.begin(), avec_.end(), ackofack_);
+    if (avit_ != avec_.end())
+        avec_.erase(avec_.begin(), ++avit_);
+
+    // now, build tfrcAV chunks
+    tfrc_ackvec();
+
+    // set 'start seqno' that this AckVec reports
+    begins_ = ackofack_ + 1;
+    // set 'end seqno plus one' that this AckVec report
+    ends_ = seqno + 1;
+
+    // print refvec, actual vec, and bitvec
+    //print_vec(rvec_);
+    //print_vec(avec_);
+    //print_tfrcAV();
+
+}
+
+// build tfrcAV chunks
+void TfrcRcvr::tfrc_ackvec() {
+    int cv = 0; // vector counter
+    int cb = 0; // bit counter
+
+    // find reference vector elements from the actual sequence vector
+    for (rvit_ = rvec_.begin(); rvit_ != rvec_.end(); rvit_++) {
+        // find rvec_ elements in avec_
+        avit_ = find(avec_.begin(), avec_.end(), *rvit_);
+
+        // found
+        if (avit_ != avec_.end()) {
+            if (cb < BITLEN) {
+                tfrcAV[cv] = (tfrcAV[cv] << 1) | 1;
+                cb++;
+            }
+            if (cb == BITLEN) {
+                cb = 0;
+                cv++;
+            }
+        }
+        // not found
+        else {
+            if (cb < BITLEN) {
+                tfrcAV[cv] = (tfrcAV[cv] << 1) | 0;
+                cb++;
+            }
+            if (cb == BITLEN) {
+                cb = 0;
+                cv++;
+            }
+        }
+    } // end for(;;)
+}
+
+// print vector elements
+void TfrcRcvr::print_vec(std::vector<int> v) {
+    std::vector<int>::iterator iter;
+    fprintf(stderr, "\t>> vec: ");
+    for (iter = v.begin(); iter != v.end(); iter++)
+        fprintf(stderr, "%d ", *iter);
+    fprintf(stderr, "\n");
+}
+
+// print bit vectors (in decimal format)
+void TfrcRcvr::print_tfrcAV() {
+    fprintf(stderr, "\t>> tfrcAV: ");
+    for (int i = 0; i < numVec_; i++)
+        fprintf(stderr, "[%d:%d] ", i, tfrcAV[i]);
+    fprintf(stderr, "\n");
+}
+
+// reset
+void TfrcRcvr::reset() {
+    rvec_.clear();
+    clear_avec(numVec_);
+}
+

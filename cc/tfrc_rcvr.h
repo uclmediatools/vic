@@ -42,6 +42,9 @@ class TfrcRcvr {
 public:
 	TfrcRcvr();
 
+	void recv_aoa(u_int16_t type, u_int16_t *chunk);
+	void recv_seqno(u_int16_t seqno);
+
 	// TfrcRcvr instance
 	static inline TfrcRcvr& instance() { return instance_; }
 
@@ -49,8 +52,48 @@ protected:
 
 	static TfrcRcvr instance_;
 
-private:
+	/*
+	 * Variables
+	 */
+	u_int16_t *tfrcAV;		// AckVec array (bit vector array)
+	u_int16_t ackofack_;	// ackofack
+	u_int16_t begins_;		// begin seqno that XR chunk is reporting
+	u_int16_t ends_;		// end seqno + 1 that XR chunk is reporting
+	int numElm_;			// number of tfrcAV elements
+	int numVec_;			// number of tfrcAV chunks
 
+private:
+	// TFRC sender's AckVec Routine
+	void tfrc_ackvec();
+	void reset();
+
+	// calculate the number of AckVec chunks
+	// (based on the number of given elements, i.e, numelm)
+	inline int getNumVec (int numelm) {
+		int num = numelm/BITLEN + 1;
+		if (numelm%BITLEN == 0) num--;
+		return num;
+	}
+
+	// returning AckOfAck
+	inline u_int16_t ackofack() { return ackofack_; }
+
+	// clear tfrcAV
+	inline void clear_avec(int num) {
+		for (int i = 0; i < num; i++)
+		tfrcAV[i] = 0;
+	}
+
+	// print built AckVec
+	void print_tfrcAV();
+	void print_vec(std::vector<int> v);
+
+	// actual AckVec and its iterator
+	std::vector<int> avec_;
+	std::vector<int>::iterator avit_;
+	// reference vector and its iterator
+	std::vector<int> rvec_;
+	std::vector<int>::iterator rvit_;
 };
 
 #endif
