@@ -77,8 +77,32 @@ TfrcSndr::TfrcSndr() :
 	num_refvec_ = 0;
 
 	// initialize variables
+	minrto_ = 0.0;
+	maxrto_ = 100000.0;
+	srtt_ = -1.0;
+	rto_ = 3.0;     // RFC 1122
+	rttvar_ = 0.0;
+	df_ = 0.95;
+	sqrtrtt_ = 1.0;
+	t0_ = 6.0;
+	alpha_ = 0.125;
+	beta_ = 0.25;
+	g_ = 0.01;
+	k_ = 4;
 	ts_ = 0.0;
+
 	num_missing_ = 0;
+
+	avg_interval_ = 0.0;
+	I_tot0_ = 0.0;
+	I_tot1_ = 0.0;
+	tot_weight_ = 0.0;
+
+	tcp_tick_ = 0.01;
+	srtt_init_ = 12;
+	rttvar_exp_ = 2;
+	t_srtt_ = int(srtt_init_/tcp_tick_) << T_SRTT_BITS;
+	t_rttvar_ = int(rttvar_init_/tcp_tick_) << T_RTTVAR_BITS;
 
 	// EWMA packet size
 	asize_ = 0;
@@ -278,5 +302,52 @@ void TfrcSndr::calc_rate() {
 /*
  * update RTT using sampled RTT value
  */
-void TfrcSndr::update_rtt(double tao) {
+void TfrcSndr::update_rtt(double rtt_sample) {
+	// calculate t0_ 
+	t_rtt_ = int(rtt_sample/tcp_tick_ + .5);
+	if(t_rtt_ == 0) t_rtt_ = 1;
+
+	if(t_srtt_ != 0) {
+		register short rtt_delta;
+		rtt_delta = t_rtt_ - (t_srtt_ >> T_SRTT_BITS);
+
+		if ((t_srtt_ += rtt_delta) <= 0)
+		t_srtt_ = 1;
+
+		if (rtt_delta < 0)
+		rtt_delta = -rtt_delta;
+
+		rtt_delta -= (t_rttvar_ >> T_RTTVAR_BITS);
+		if((t_rttvar_ += rtt_delta) <= 0)
+		t_rttvar_ = 1;
+	}
+	else {
+		t_srtt_ = t_rtt_ << T_SRTT_BITS;
+		t_rttvar_ = t_rtt_ << (T_RTTVAR_BITS-1);
+	}
+
+	// finally, t0_ = (smoothed RTT) + 4 * (rtt variance)
+	t0_ = (((t_rttvar_ << (rttvar_exp_ + (T_SRTT_BITS - T_RTTVAR_BITS)))
+		+ t_srtt_)  >> T_SRTT_BITS ) * tcp_tick_;
+
+	if (t0_ < minrto_)
+		t0_ = minrto_;
+
+	// calculate smoothed RTT
+	if (srtt_ < 0) {
+		// the first RTT observation
+		srtt_ = rtt_sample;
+		rttvar_ = rtt_sample/2.0;
+		sqrtrtt_ = sqrt(rtt_sample);
+	} else {
+		srtt_ = df_ * srtt_ + (1 - df_) * rtt_sample;
+		rttvar_ = rttvar_ + beta_ * (fabs(srtt_ - rtt_sample) - rttvar_);
+		sqrtrtt_ = df_ * sqrtrtt_ + (1 - df_) * sqrt(rtt_sample);
+	}
+
+	// 'rto' could be rounded by 'maxrto'
+	if (rto_ > maxrto_)
+		rto_ = maxrto_;
+
+	print_rtt_info();
 }

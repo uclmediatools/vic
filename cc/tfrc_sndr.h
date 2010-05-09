@@ -154,6 +154,38 @@ private:
 	double *tsvec_;		// timestamp vector
 	u_int16_t jacked_;	// just acked seqno (head of ackvec)
 	int num_missing_;	// number of missing seqno
+	double p_;			// packet loss probability
+	double avg_interval_;	// average loss interval
+	int history_[HSZ+1];	// loss interval history
+	double weight_[HSZ+1];	// weight for calculating avg loss interval
+	double I_tot_;		// total sum
+	double I_tot0_;		// from 0 to n-1
+	double I_tot1_;		// from 1 to n
+	double tot_weight_;	// total weight
+	int hsz_;		// current history size
+
+	// RTT related variables
+	double srtt_;	// smoothed RTT
+	double rttvar_;	// RTT variation
+	double rto_;	// retransmission timeout
+	double minrto_;	// min RTO allowed
+	double maxrto_;	// max RTO
+	double df_;		// decay factor
+	double sqrtrtt_;	// the mean of the sqrt of RTT
+
+	// TCP's RTO calculation
+	double alpha_;  // smoothing factor for RTT/RTO calculation
+	double beta_;   // smoothing factor for RTT/RTO calculation
+	double g_;      // timer granularity
+	int k_;         // k value
+	int t_rtt_;     // RTT
+	int t_rttvar_;  // RTT variance
+	int t_srtt_;    // smoothed RTT
+	int srtt_init_; // initial val for t_srtt_
+	int rttvar_init_;   // initial val for t_rttvar_
+	int rttvar_exp_;    // exponent of multiple for t0_
+	double t0_;     // t0 value at TCP throughput equation
+	double tcp_tick_;
 
 	// XR chunk begin/end
 	u_int16_t begins_;	// start seqno that this XR chunk reports
@@ -174,7 +206,17 @@ private:
 		fprintf(stderr, " %d", vec[i]);
 	fprintf(stderr, " )\n");
 	}
-
+	// print RTT related info for debugging
+	inline void print_rtt_info() {
+	fprintf(stderr,
+	"\t>> now_: %f tsvec_[%d]: %f rtt: %f srtt: %f\n",
+	so_recv_, jacked_%TSZ, tsvec_[jacked_%TSZ], tao_, srtt_);
+	}
+	inline void print_rtt_info(const char* str) {
+	fprintf(stderr,
+	"\t%s now_: %f tsvec_[%d]: %f rtt: %f srtt: %f\n",
+	str, so_recv_, jacked_%TSZ, tsvec_[jacked_%TSZ], tao_, srtt_);
+	}
 	// print the actual packet size and EWMA estimated one
 	inline void print_psize(double now, int size, int len) {
 	fprintf(stderr, "\tnow: %f psize: %d actual: %d\n", now, size, len);
