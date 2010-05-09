@@ -103,7 +103,7 @@ class Transmitter : public TclObject, public Timer {
 	// TFWC output
 	virtual void tfwc_output(bool recv_by_ch=0);
 	virtual void tfwc_output(pktbuf*);
-	virtual void cc_tfwc_trigger(pktbuf*);
+	virtual void tfwc_trigger(pktbuf*);
 	// TFRC output
 	virtual void tfrc_output(bool recv_by_ch=0);
 	virtual void tfrc_output(pktbuf*);

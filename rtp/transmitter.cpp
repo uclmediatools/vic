@@ -428,7 +428,7 @@ void Transmitter::tfwc_output(bool recv_by_ch)
 /*
  * trigger packet out forcefully
  */
-void Transmitter::cc_tfwc_trigger(pktbuf* pb) {
+void Transmitter::tfwc_trigger(pktbuf* pb) {
 	// if pb is null here, it means this routine was called 
 	// by SessionManager::recv(CtrlHandler* ch).
 	// therefore, assign pktbuf's head to pb.

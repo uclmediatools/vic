@@ -962,7 +962,7 @@ void TfwcSndr::new_rto(double rtt) {
  */
 void TfwcSndr::packet_clocking (pktbuf* pb, bool flag) {
 	if (flag)
-		cc_tfwc_trigger();
+		tfwc_trigger();
 	else
-		cc_tfwc_trigger(pb);
+		tfwc_trigger(pb);
 }
