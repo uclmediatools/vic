@@ -42,8 +42,18 @@ class TfrcRcvr {
 public:
 	TfrcRcvr();
 
+	// receive AoA
 	void recv_aoa(u_int16_t type, u_int16_t *chunk);
+	// receive RTP data 
 	void recv_seqno(u_int16_t seqno);
+    // AckVec clone
+    inline u_int16_t getvec(int i) { return tfrcAV[i]; }
+    // AckVec begin seqno
+    inline u_int16_t begins() { return begins_; }
+    // AckVec end seqno plus one
+    inline u_int16_t ends() { return ends_; }
+    // number of AckVec array
+    inline u_int16_t numvec() { return numVec_; }
 
 	// TfrcRcvr instance
 	static inline TfrcRcvr& instance() { return instance_; }

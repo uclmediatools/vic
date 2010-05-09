@@ -41,8 +41,12 @@
 class TfwcRcvr {
 public:
 	TfwcRcvr();
+
+	// receive AoA
 	void recv_aoa(u_int16_t type, u_int16_t *chunk);
+	// receive RTP data
 	void recv_seqno(u_int16_t seqno);
+
 	// AckVec clone
 	inline u_int16_t getvec(int i) { return tfwcAV[i]; }
 	// ts echo

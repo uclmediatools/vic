@@ -44,7 +44,6 @@
 #define TFWC_TIMER_RESET	1
 
 class TfwcSndr;
-class Transmitter;
 
 // re-transmission timer
 class TfwcRtxTimer : public CcTimerHandler {

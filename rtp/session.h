@@ -244,18 +244,15 @@ private:
 	}
 	inline void print_rtp_seqno(pktbuf* pb) {
 	rtphdr* rh = (rtphdr *) pb->data;
-	fprintf(stderr, "\n\tnow: %f\tseqno: %d\n\n",
-		tx_get_now(),ntohs(rh->rh_seqno));
+	fprintf(stderr, "\n\tnow: %f\tseqno: %d\n\n",tx_get_now(),ntohs(rh->rh_seqno));
 	}
 
 	// print sender's XR info
-	inline void sender_xr_info(u_int16_t b, 
-		u_int16_t e, 
-		rtcp_xr_BT_1_hdr* xrh,
-		u_int16_t l) 
+	inline void sender_xr_info(const char* str, const int i,
+	u_int16_t b, u_int16_t e, rtcp_xr_BT_1_hdr* xrh, u_int16_t l) 
 	{
-		debug_msg("beg:%d, end:%d, xr1len:%d (xrlen:%d)\n",
-		b,e,ntohs(xrh->xr_len),l);
+	fprintf(stderr, "  [%s +%d] beg:%d, end:%d, xr1len:%d (xrlen:%d)\n",
+		str, i, b, e, ntohs(xrh->xr_len),l);
 	}
 	// print sender's XR info
 	inline void sender_xr_ts_info(double ts) {
@@ -263,8 +260,8 @@ private:
 		recv_ts_, ts, recv_ts_-ts);
 	}
 	// print receiver's XR info
-	inline void receiver_xr_info(u_int16_t *c) {
-		debug_msg("chunk[0]:%d\n", ntohs(c[0]));
+	inline void receiver_xr_info(const char* str, const int i, u_int16_t *c) {
+	fprintf(stderr, "  [%s +%d] chunk[0]:%d\n",str, i, ntohs(c[0]));
 	}
 	// print parse XR banner
 	inline void parse_xr_banner_top() {

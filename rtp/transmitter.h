@@ -100,10 +100,13 @@ class Transmitter : public TclObject, public Timer {
 	void flush();
 	void send(pktbuf*);
 	inline bool is_cc_on() { return is_cc_active_; }
+	// TFWC output
 	virtual void tfwc_output(bool recv_by_ch=0);
 	virtual void tfwc_output(pktbuf*);
 	virtual void cc_tfwc_trigger(pktbuf*);
-	void cc_tfrc_output();
+	// TFRC output
+	virtual void tfrc_output(bool recv_by_ch=0);
+	virtual void tfrc_output(pktbuf*);
 
 	/*
 	 * Buffer allocation hooks.

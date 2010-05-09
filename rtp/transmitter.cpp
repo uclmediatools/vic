@@ -244,114 +244,114 @@ void Transmitter::send(pktbuf* pb)
 	// window-based congestion control (TFWC)
 	//
 	case WBCC:
-		// pb is empty - try sending a packet
-		if(is_buf_empty_) {
-			if (head_ != 0) {
-				tail_->next = pb;
-				tail_ = pb;
-			} else
-				tail_ = head_ = pb;
-			pb->next = 0;
-			tfwc_output();
-			is_buf_empty_ = false;
-		} 
-		// if not, check if cwnd allows send this packet
-		else {
-			if (head_ != 0) {
-				tail_->next = pb;
-				tail_ = pb;
-			} else
-				tail_ = head_ = pb;
-			pb->next = 0;
-			tfwc_output(pb);
-		}
-		break;
+	  // pb is empty - try sending a packet
+  	  if(is_buf_empty_) {
+		if (head_ != 0) {
+		  tail_->next = pb;
+		  tail_ = pb;
+		} else
+		  tail_ = head_ = pb;
+		pb->next = 0;
+		tfwc_output();
+		is_buf_empty_ = false;
+	  } 
+	  // if not, check if cwnd allows send this packet
+	  else {
+		if (head_ != 0) {
+		  tail_->next = pb;
+		  tail_ = pb;
+		} else
+		  tail_ = head_ = pb;
+		pb->next = 0;
+		tfwc_output(pb);
+	  }
+	  break;
 
 	//
 	// rate-based congestion control (TFRC)
 	//
 	case RBCC:
-		// pb is empty
-		if(is_buf_empty_) {
-			if (head_ != 0) {
-				tail_->next = pb;
-				tail_ = pb;
-			} else
-				tail_ = head_ = pb;
-			pb->next = 0;
-			cc_tfrc_output();
-			is_buf_empty_ = false;
-		}
-		// pb is not emtpy
-		else {
-			if (head_ != 0) {
-				tail_->next = pb;
-				tail_ = pb;
-			} else
-				tail_ = head_ = pb;
-			pb->next = 0;
-		}
-		break;
+	  // pb is empty
+	  if(is_buf_empty_) {
+		if (head_ != 0) {
+		  tail_->next = pb;
+		  tail_ = pb;
+		} else
+		  tail_ = head_ = pb;
+		pb->next = 0;
+		tfrc_output();
+		is_buf_empty_ = false;
+	  }
+	  // pb is not emtpy
+	  else {
+		if (head_ != 0) {
+		  tail_->next = pb;
+		  tail_ = pb;
+		} else
+		  tail_ = head_ = pb;
+		pb->next = 0;
+		tfrc_output(pb);
+	  }
+	  break;
 
 	//
 	// without congestion control
 	//
 	case NOCC:
 	default:
-		// CC is not active, so just go for the normal operation
-		if (!busy_) {
-			double delay = txtime(pb);
-			nextpkttime_ = gettimeofday_secs() + delay;
-			output(pb);
-			/*
-			 * emulate a transmit interrupt --
-			 * assume we will have more to send.
-			 */
-			msched(int(delay * 1e-3));
-			busy_ = 1;
-		} else {
-			if (head_ != 0) {
-				tail_->next = pb;
-				tail_ = pb;
-			} else
-				tail_ = head_ = pb;
-			pb->next = 0;
-		}
+	  // CC is not active, so just go for the normal operation
+	  if (!busy_) {
+		double delay = txtime(pb);
+		nextpkttime_ = gettimeofday_secs() + delay;
+		output(pb);
+		/*
+		 * emulate a transmit interrupt --
+		 * assume we will have more to send.
+		 */
+		msched(int(delay * 1e-3));
+		busy_ = 1;
+	  } else {
+		if (head_ != 0) {
+		  tail_->next = pb;
+		  tail_ = pb;
+		} else
+		  tail_ = head_ = pb;
+		pb->next = 0;
+	  }
 	} // switch (cc_type)
 }
 
 void Transmitter::tfwc_output(pktbuf* pb) 
 {
-	//cc_output_banner_top();
-	
+	//cc_output_banner_top("tfwc");
 	// byte mode? or packet mode?
 	switch (cwnd_mode_) {
 	case BYM:
 	{
-		int len = 0;
-		if(pb->len < tfwc_sndr_.b_magic() - len) {
-			len += pb->len;
-			// move head pointer
-			head_ = pb->next;
-			// call Transmitter::output_data_only w/ XR reception
-			output_data_only(pb, XR_RECV);
-		}
+	  int len = 0;
+	  if(pb->len < tfwc_sndr_.b_magic() - len) {
+		len += pb->len;
+		// move head pointer
+		head_ = pb->next;
+		// call Transmitter::output_data_only w/ XR reception
+		output_data_only(pb, XR_RECV);
+	  }
 	}
 	break;
 	case PKM:
 	{
-		// pb is not null, hence parse it.
-		rtphdr* rh = (rtphdr *) pb->data;
+	  // pb is not null, hence parse it.
+	  rtphdr* rh = (rtphdr *) pb->data;
 
-		if (ntohs(rh->rh_seqno) <= tfwc_sndr_.magic() + tfwc_sndr_.jacked()) {
-			//debug_msg("cwnd: %d\n", tfwc_sndr_.magic());
-			//debug_msg("jack: %d\n", tfwc_sndr_.jacked());
+	  if (ntohs(rh->rh_seqno) <= tfwc_sndr_.magic() + tfwc_sndr_.jacked()) {
+		//debug_msg("cwnd: %d\n", tfwc_sndr_.magic());
+		//debug_msg("jack: %d\n", tfwc_sndr_.jacked());
 			
-			// move head pointer
-			head_ = pb->next;
-			// call Transmitter::output_data_only w/ XR reception
-			output_data_only(pb, XR_RECV);
-		}
+		// move head pointer
+		head_ = pb->next;
+		// call Transmitter::output_data_only w/ XR reception
+		output_data_only(pb, XR_RECV);
+	  }
 	}
 	break;
 	} // switch (cwnd_mode_)
@@ -380,45 +380,45 @@ void Transmitter::tfwc_output(bool recv_by_ch)
 	switch (cwnd_mode_) {
 	case BYM:
 	{
-		int len = 0;
-		while(pb->len < tfwc_sndr_.b_magic() - len) {
-			len += pb->len;
-			// move head pointer
-			head_ = pb->next;
-			// call Transmitter::output(pb)
-			output(pb, recv_by_ch);
+	  int len = 0;
+	  while(pb->len < tfwc_sndr_.b_magic() - len) {
+		len += pb->len;
+		// move head pointer
+		head_ = pb->next;
+		// call Transmitter::output(pb)
+		output(pb, recv_by_ch);
 
-			if (head_ != 0)
-				pb = head_;
-			else
-				break;
-		}
+		if (head_ != 0)
+			pb = head_;
+		else
+			break;
+	  }
 	}
 	break;
 	case PKM:
 	{
-		// pb is not null, hence parse it.
-		rtphdr* rh = (rtphdr *) pb->data;
+	  // pb is not null, hence parse it.
+	  rtphdr* rh = (rtphdr *) pb->data;
 
-		// while packet seqno is within "cwnd + jack", send that packet
-		while (ntohs(rh->rh_seqno) <= tfwc_sndr_.magic() + tfwc_sndr_.jacked()) {
-			//debug_msg("cwnd: %d\n", tfwc_sndr_.magic());
-			//debug_msg("jack: %d\n", tfwc_sndr_.jacked());
+	  // while packet seqno is within "cwnd + jack", send that packet
+	  while (ntohs(rh->rh_seqno) <= tfwc_sndr_.magic() + tfwc_sndr_.jacked()) {
+		//debug_msg("cwnd: %d\n", tfwc_sndr_.magic());
+		//debug_msg("jack: %d\n", tfwc_sndr_.jacked());
 
-			// move head pointer
-			head_ = pb->next;
-			// call Transmitter::output(pb)
-			output(pb, recv_by_ch);
+		// move head pointer
+		head_ = pb->next;
+		// call Transmitter::output(pb)
+		output(pb, recv_by_ch);
 
-			// if the moved head pointer is not null, parse packet buffer.
-			// otherwise, break while statement.
-			if (head_ != 0) {
-				pb = head_;
-				rh = (rtphdr *) pb->data;
-			} else {
-				break;
-			}
-		} // end while ()
+		// if the moved head pointer is not null, parse packet buffer.
+		// otherwise, break while statement.
+		if (head_ != 0) {
+			pb = head_;
+			rh = (rtphdr *) pb->data;
+		} else {
+			break;
+		}
+	  } // end while ()
 	}
 	break;
 	} // switch (cwnd_mode_)
@@ -452,8 +452,40 @@ void Transmitter::cc_tfwc_trigger(pktbuf* pb) {
 /*
  * main TFRC CC output
  */
-void Transmitter::cc_tfrc_output() {
-	// TBA
+void Transmitter::tfrc_output(pktbuf* pb) {
+	cc_output_banner_top("tfrc");
+	// move head pointer
+	head_ = pb->next;
+	// call Transmitter::output_data_only w/ XR reception
+	output_data_only(pb, XR_RECV);
+	cc_output_banner_bottom();
+}
+
+void Transmitter::tfrc_output(bool recv_by_ch) {
+	cc_output_banner_top("tfrc");
+	// head of the RTP data packet buffer
+	pktbuf* pb = head_;
+
+	// if pb is null, then set the next available packet as the first packet of
+	// the packet buffer. and then, return - i.e., do not try sending packets.
+	if (pb == 0) {
+		is_buf_empty_ = true;
+		return;
+	}
+
+	while ( pb != 0) {
+		// move head pointer
+		head_ = pb->next;
+		// call Transmitter::output(pb)
+		output(pb, recv_by_ch);
+
+		if (head_ != 0) {
+			pb = head_;
+		} else {
+			break;
+		}
+	}
+	cc_output_banner_bottom();
 }
 
 void Transmitter::timeout()

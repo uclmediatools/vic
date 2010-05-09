@@ -40,7 +40,6 @@
 #include "cc_timer.h"
 
 class TfrcSndr;
-class Transmitter;
 
 // TFRC sender class
 class TfrcSndr {
@@ -61,6 +60,9 @@ public:
 	// main reception path
 	void recv(u_int16_t, u_int16_t, u_int16_t,
 		u_int16_t*, double, bool, pktbuf*);
+
+	// return ackofack
+	inline u_int16_t get_aoa() { return aoa_; }
 
 	u_int16_t seqno_;	// packet sequence number
 	double x_rate_;		// send rate
