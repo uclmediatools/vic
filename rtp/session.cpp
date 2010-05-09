@@ -460,8 +460,16 @@ void SessionManager::transmit(pktbuf* pb, bool recv_by_ch)
 
 	// print RTP seqno
 	print_rtp_seqno(pb);
-	// record seqno and timestamp at TfwcSndr side
-	tfwc_sndr_.send(pb, tx_get_now());
+
+	// record seqno and timestamp at CC sender
+	switch (cc_type_) {
+	  case WBCC:
+	    tfwc_sndr_.send(pb, tx_get_now());
+	    break;
+	  case RBCC:
+	    tfrc_sndr_.send(pb, tx_get_now());
+	    break;
+	}
 
 	// Using loop_layer for now to restrict transmission as well
 	if (pb->layer < loop_layer_) {
@@ -470,15 +478,14 @@ void SessionManager::transmit(pktbuf* pb, bool recv_by_ch)
 		if (n != 0)
 			n->send(pb);
 
-		// if window-based CC is on, send an RTCP XR (aoa) packet 
-		// upon every RTP data packet transmission.
+		// send an RTCP XR (aoa) packet 
 		switch (cc_type_) {
 		case WBCC:
-			ch_->send_aoa();	// send ack of ack
-			break;
+		  ch_->send_aoa();
+		  break;
 		case RBCC:
-			ch_->send_aoa();	// send ack of ack
-			break;
+		  ch_->send_aoa();
+		  break;
 		}
 	}
 }
@@ -491,8 +498,16 @@ void SessionManager::tx_data_only(pktbuf* pb, bool recv_by_ch)
 
 	// print RTP seqno
 	print_rtp_seqno(pb);
-	// record seqno and timestamp at TfwcSndr side
-	tfwc_sndr_.send(pb, tx_get_now());
+
+	// record seqno and timestamp at CC sender
+	switch (cc_type_) {
+	  case WBCC:
+	    tfwc_sndr_.send(pb, tx_get_now());
+	    break;
+	  case RBCC:
+	    tfrc_sndr_.send(pb, tx_get_now());
+	    break;
+	}
 
 	if (pb->layer < loop_layer_) {
 		Network* n = dh_[pb->layer].net();
@@ -680,6 +695,9 @@ void SessionManager::build_xreport(CtrlHandler* ch, int bt)
 	// declare chunks
 	u_int16_t *chunks = NULL;
 	u_int16_t num_chunks = 0;
+	// begin and end
+	u_int16_t b = 0;
+	u_int16_t e = 0;
 
 	// -----------------------------------------------------------------*
 	// i am an RTP data sender                                          *
@@ -693,8 +711,7 @@ void SessionManager::build_xreport(CtrlHandler* ch, int bt)
 		  case WBCC:
 			// this block is used for giving ackofack
 			chunks[num_chunks-1] = tfwc_sndr_.get_aoa();
-		  break;
-
+		    break;
 		  case RBCC:
 			// this block is used for giving ackofack
 			chunks[num_chunks-1] = tfrc_sndr_.get_aoa();
@@ -715,46 +732,46 @@ void SessionManager::build_xreport(CtrlHandler* ch, int bt)
 	else {
 		// this block is used for giving ackvec
 		if (bt == XR_BT_1) {
-		switch (cc_type_) {
+		  switch (cc_type_) {
 		  case WBCC:
-		  // get the number of required chunks for giving AckVec
-		  num_chunks = tfwc_rcvr_.numvec();
-		  chunks = (u_int16_t *)malloc(num_chunks * sizeof(u_int16_t));
+		    // get the number of required chunks for giving AckVec
+		    num_chunks = tfwc_rcvr_.numvec();
+		    chunks = (u_int16_t *)malloc(num_chunks * sizeof(u_int16_t));
 			
-		  // set/printing chunks
-		  //fprintf(stderr, "\t   printing chunks: ");
-		  for (int i = 0; i < num_chunks; i++) {
+		    // set/printing chunks
+		    //fprintf(stderr, "\t   printing chunks: ");
+		    for (int i = 0; i < num_chunks; i++) {
 		  	chunks[i] = tfwc_rcvr_.getvec(i);
 			//	fprintf(stderr, "[%d:%x] ", i, chunks[i]);
-		  } 
-		  //fprintf(stderr, "...........%s +%d\n",__FILE__,__LINE__);
-
-		  // send_xreport (receiver's report)
-		  // - sending AckVec
-		  send_xreport(ch, XR_BT_1, 0, 0, tfwc_rcvr_.begins(), 
-		  tfwc_rcvr_.ends(), chunks, num_chunks, 0);
-		  break;
+		    } 
+		    //fprintf(stderr, "...........%s +%d\n",__FILE__,__LINE__);
+		    b = tfwc_rcvr_.begins();
+		    e = tfwc_rcvr_.ends();
+		    break;
 
 		  case RBCC:
-		  // get the number of required chunks for giving AckVec
-		  num_chunks = tfrc_rcvr_.numvec();
-		  chunks = (u_int16_t *)malloc(num_chunks * sizeof(u_int16_t));
+		    // get the number of required chunks for giving AckVec
+		    num_chunks = tfrc_rcvr_.numvec();
+		    chunks = (u_int16_t *)malloc(num_chunks * sizeof(u_int16_t));
 
-		  // set/printing chunks
-		  //fprintf(stderr, "\t   printing chunks: ");
-		  for (int i = 0; i < num_chunks; i++) {
+		    // set/printing chunks
+		    //fprintf(stderr, "\t   printing chunks: ");
+		    for (int i = 0; i < num_chunks; i++) {
 			chunks[i] = tfrc_rcvr_.getvec(i);
 			//	fprintf(stderr, "[%d:%x] ", i, chunks[i]);
-		  }
-		  //fprintf(stderr, "...........%s +%d\n",__FILE__,__LINE__);
+		    }
+		    //fprintf(stderr, "...........%s +%d\n",__FILE__,__LINE__);
+		    b = tfrc_rcvr_.begins();
+		    e = tfrc_rcvr_.ends();
+		    break;
+		  } // switch (cc_type_)
 
 		  // send_xreport (receiver's report)
 		  // - sending AckVec
-		  send_xreport(ch, XR_BT_1, 0, 0, tfrc_rcvr_.begins(), 
-		  tfrc_rcvr_.ends(), chunks, num_chunks, 0);
-		  break;
-		  } // switch (cc_type_)
+		  send_xreport(ch,XR_BT_1,0,0,b,e,chunks,num_chunks,0);
 		}
+
+		// XR block type 3 - TBD
 		else if (bt == XR_BT_3) {
 			/*XXX*/
 		} 
@@ -1365,15 +1382,14 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
   		  fprintf(stderr, ">>> parse_xr - i_am_sender\n");
 		  fprintf(stderr, "\tincomingXR\tnow: %f\n", recv_ts_);
 		  //sender_xr_info(__FILE__,__LINE__,begin, end, xr1, xrlen);
+
+		  // SO_TIMESTAMP
+		  //so_rtime = ch_[0].net()->recv_so_time();
+		  //sender_xr_ts_info(so_rtime);
 		  switch (cc_type_) {
 			case WBCC:
-			// SO_TIMESTAMP
-			//so_rtime = ch_[0].net()->recv_so_time();
-			//sender_xr_ts_info(so_rtime);
-
 			// TFWC sender (getting AckVec)
 			tfwc_sndr_.recv(xr->BT,begin,end,chunk,recv_ts_,recv_by_ch,pb);
-
 			// we need to call Transmitter::output(pb) to make Ack driven
 			if(recv_by_ch)
 			tfwc_output(recv_by_ch);
@@ -1382,7 +1398,7 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 			case RBCC:
 			// TFRC sender (getting AckVec)
 			tfrc_sndr_.recv(xr->BT,begin,end,chunk,recv_ts_,recv_by_ch,pb);
-
+			// XXX
 			if(recv_by_ch)
 			tfrc_output(recv_by_ch);
 			break;
