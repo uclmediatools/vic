@@ -191,7 +191,7 @@ void TfrcSndr::recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	clear_ackv(num_vec_);
 	// clone AckVec from Vic
 	clone_ackv(chunk, num_vec_);
-	print_vec("ackvec", ackv_, num_vec_);
+	//print_vec("ackvec", ackv_, num_vec_);
 
 	// generate seqno vector
 	gen_seqvec(ackv_, num_vec_);
