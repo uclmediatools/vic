@@ -259,6 +259,8 @@ void TfrcSndr::gen_seqvec(u_int16_t *v, int n) {
 
 	// therefore, the number of seqvec elements is:
 	num_seqvec_ = num_elm_ - num_missing_;
+	// printing retrieved sequence numbers from received AckVec
+	print_vec("sequence numbers", seqvec_, num_seqvec_);
 }
 
 /*
