@@ -222,7 +222,8 @@ rtcp_avg_size_(128.),
 confid_(-1),
 seqno_(0),		// RTP data packet seqno (from RTP header)
 lastseq_(0),	// last received packet's seqno
-ackvec_(0)		// bit vector (AckVec)
+ackvec_(0),		// bit vector (AckVec)
+new_ack_(0)
 {
 	/*XXX For adios() to send bye*/
 	manager = this;

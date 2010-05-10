@@ -157,6 +157,9 @@ public:
 
 	// am i a data sender?
 	inline bool am_i_sender() { return is_sender_; }
+	// was there a new ack?
+	inline virtual bool new_ack() { return new_ack_; }
+	inline virtual void set_new_ack() { new_ack_ = false; }
 
 protected:
 //	void demux(rtphdr* rh, u_char* bp, int cc, Address & addr, int layer);
@@ -236,6 +239,8 @@ protected:
 	u_int16_t ackvec_;	// this is a bit vector
 	// timestamp
 	double recv_ts_;	// receive timestamp
+	// was there a new ack?
+	bool new_ack_;
 
 private:
 	// print RTP data packet's seqno

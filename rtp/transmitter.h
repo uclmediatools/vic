@@ -143,6 +143,10 @@ protected:
 	double gettimeofday_secs() const;
 	double txtime(pktbuf* pb);
 
+	// new ack arrived?
+	virtual bool new_ack() = 0;
+	virtual void set_new_ack() = 0;
+
 	int mtu_;		/* mtu of wire (as seen by application) */
 	msghdr mh_;
 
