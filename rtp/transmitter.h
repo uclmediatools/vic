@@ -146,6 +146,7 @@ protected:
 	// new ack arrived?
 	virtual bool new_ack() = 0;
 	virtual void set_new_ack() = 0;
+	virtual void reset_new_ack() = 0;
 
 	int mtu_;		/* mtu of wire (as seen by application) */
 	msghdr mh_;

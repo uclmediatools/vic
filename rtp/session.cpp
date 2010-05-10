@@ -1377,7 +1377,7 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 		u_int16_t *chunk = (u_int16_t *) ++xr1;
 
 		// -----------------------------------------------------------------*
-		// i am an RTP data sender (AoA)                                    *
+		// i am an RTP data sender (receive ackvec)                         *
 		// -----------------------------------------------------------------*
 		if (am_i_sender()) {
   		  fprintf(stderr, ">>> parse_xr - i_am_sender\n");
@@ -1387,6 +1387,7 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 		  // SO_TIMESTAMP
 		  //so_rtime = ch_[0].net()->recv_so_time();
 		  //sender_xr_ts_info(so_rtime);
+		  set_new_ack();
 		  switch (cc_type_) {
 			case WBCC:
 			// TFWC sender (getting AckVec)

@@ -330,7 +330,9 @@ void Transmitter::tfwc_output(pktbuf* pb)
 	{
 	  int len = 0;
 	  int num_acked = 0;
-	  set_new_ack();
+	  // number of acked bytes
+ 	  if (new_ack())
+	  num_acked += tfwc_sndr_.b_jacked();
 
 	  if(pb->len < tfwc_sndr_.b_magic() + num_acked - len) {
 		len += pb->len;
@@ -339,11 +341,8 @@ void Transmitter::tfwc_output(pktbuf* pb)
 		// call Transmitter::output_data_only w/ XR reception
 		output_data_only(pb, XR_RECV);
 
-		// number of acked bytes
-		if (new_ack())
-		num_acked += tfwc_sndr_.b_jacked();
 		// and, reset status
-		set_new_ack();
+		reset_new_ack();
 	  }
 	}
 	break;
@@ -403,7 +402,7 @@ void Transmitter::tfwc_output(bool recv_by_ch)
 		if (new_ack())
 		num_acked += tfwc_sndr_.b_jacked();
 		// and, reset status
-		set_new_ack();
+		reset_new_ack();
 
 		if (head_ != 0)
 			pb = head_;
