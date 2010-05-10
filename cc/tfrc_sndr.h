@@ -139,6 +139,11 @@ private:
 		for (int i = 0; i < n; i++)
 		refvec_[i] = 0;
 	}
+	// clear record for packet size in bytes
+	inline void clear_record (int n) {
+		for (int i = 0; i < n; i++)
+		record_[i] = 0;
+	}
 
 	int ndtp_;	// number of data packet sent
 	int nakp_;	// number of ackvec packet received
@@ -193,6 +198,10 @@ private:
 	int num_elm_;		// number of ackvec elements
 	int num_vec_;		// number of ackvec chunks
 
+	// record packet size in bytes
+	u_int16_t *record_;
+
+
 	// print vec
 	inline void print_vec(const char* str, u_int32_t *vec, int c) {
 	fprintf(stderr, "\t%s: (", str);
@@ -220,6 +229,15 @@ private:
 	// print the actual packet size and EWMA estimated one
 	inline void print_psize(double now, int size, int len) {
 	fprintf(stderr, "\tnow: %f psize: %d actual: %d\n", now, size, len);
+	}
+	// print the actual packet size and EWMA estimated one
+	inline void print_psize(double now, int size, int len) {
+	fprintf(stderr, "\tnow: %f psize: %d actual: %d\n", now, size, len);
+	}
+	// print packet's timestamp record
+	inline void print_packet_tsvec() {
+	fprintf(stderr, "\t>> now: %f tsvec_[%d]: %f\n",
+	now_, seqno_%TSZ, tsvec_[seqno_%TSZ]);
 	}
 };
 

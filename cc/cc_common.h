@@ -56,4 +56,6 @@
 // (approximately 10 usec)
 #define SKEW 0.000010
 
+#define MAX_RTP 1460
+
 #endif /* vic_cc_common_h */

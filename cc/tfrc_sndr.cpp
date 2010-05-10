@@ -104,6 +104,9 @@ TfrcSndr::TfrcSndr() :
 	t_srtt_ = int(srtt_init_/tcp_tick_) << T_SRTT_BITS;
 	t_rttvar_ = int(rttvar_init_/tcp_tick_) << T_RTTVAR_BITS;
 
+	// record packet size in bytes
+	record_ = (u_int16_t *)malloc(sizeof(u_int16_t) * PSR);
+	clear_record(PSR);
 	// EWMA packet size
 	asize_ = 0;
 	pcnt_ = 0;
@@ -140,9 +143,13 @@ void TfrcSndr::send(pktbuf* pb, double now) {
 
 		asize_ = 0; pcnt_ = 0;
 	}
+	// number of *estimated* bytes for this packet
+	record_[seqno_%PSR] = psize_;
+	//print_psize(now_, psize_, pb->len);
 
 	// timestamp vector for loss history update
 	tsvec_[seqno_%TSZ]  = now_-SKEW;
+	//print_packet_tsvec();
 
 	// sequence number must be greater than zero
 	assert (seqno_ > 0);

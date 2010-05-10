@@ -60,7 +60,7 @@ TfwcSndr TfwcSndr::instance_;
 TfwcSndr::TfwcSndr() :
 	seqno_(0),
 	cwnd_(1),		// initial cwnd in packet
-	bcwnd_(1500),	// initial cwnd in byte
+	bcwnd_(MAX_RTP),// initial cwnd in byte
 	rtx_timer_(this),
 	aoa_(0),
 	now_(0),
