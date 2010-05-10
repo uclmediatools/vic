@@ -230,10 +230,6 @@ private:
 	inline void print_psize(double now, int size, int len) {
 	fprintf(stderr, "\tnow: %f psize: %d actual: %d\n", now, size, len);
 	}
-	// print the actual packet size and EWMA estimated one
-	inline void print_psize(double now, int size, int len) {
-	fprintf(stderr, "\tnow: %f psize: %d actual: %d\n", now, size, len);
-	}
 	// print packet's timestamp record
 	inline void print_packet_tsvec() {
 	fprintf(stderr, "\t>> now: %f tsvec_[%d]: %f\n",
