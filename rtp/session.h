@@ -147,7 +147,7 @@ public:
 		u_int32_t xrssrc);
 
 	// receive XR
-	void recv_xreport(CtrlHandler*, pktbuf*);
+	void recv_xreport(CtrlHandler*, pktbuf*, bool);
 
 	void build_aoa_pkt(CtrlHandler* ch);
 	void build_ts_pkt(CtrlHandler* ch);

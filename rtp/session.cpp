@@ -456,9 +456,7 @@ void SessionManager::transmit(pktbuf* pb, bool recv_by_ch)
 	// debug_msg("L %d,",pb->layer);
 
 	// receive XR before sending
-	if(!recv_by_ch)
-	recv_xreport(ch_, pb);
-
+	recv_xreport(ch_, pb, recv_by_ch);
 	// print RTP seqno
 	print_rtp_seqno(pb);
 
@@ -474,29 +472,26 @@ void SessionManager::transmit(pktbuf* pb, bool recv_by_ch)
 
 	// Using loop_layer for now to restrict transmission as well
 	if (pb->layer < loop_layer_) {
-	//	if ( pb->layer <0 ) exit(1);
-		Network* n = dh_[pb->layer].net();
-		if (n != 0)
-			n->send(pb);
+	  Network* n = dh_[pb->layer].net();
+	  if (n != 0)
+		n->send(pb);
 
-		// send an RTCP XR (aoa) packet 
-		switch (cc_type_) {
+	  // send an RTCP XR (aoa) packet 
+	  switch (cc_type_) {
 		case WBCC:
 		  ch_->send_aoa();
 		  break;
 		case RBCC:
 		  ch_->send_aoa();
 		  break;
-		}
+	  }
 	}
 }
 
 void SessionManager::tx_data_only(pktbuf* pb, bool recv_by_ch) 
 {
 	// receive XR before sending
-	if(recv_by_ch)
-	recv_xreport(ch_, pb);
-
+	recv_xreport(ch_, pb, recv_by_ch);
 	// print RTP seqno
 	print_rtp_seqno(pb);
 
@@ -1387,7 +1382,13 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 		  // SO_TIMESTAMP
 		  //so_rtime = ch_[0].net()->recv_so_time();
 		  //sender_xr_ts_info(so_rtime);
+
+		  // if this XR reception is called not because of ack clock,
+		  // then this XR reception is called just before sending packet,
+		  // hence, mark it that we have retrieved a new ack
+		  if(!recv_by_ch)
 		  set_new_ack();
+
 		  switch (cc_type_) {
 			case WBCC:
 			// TFWC sender (getting AckVec)
@@ -1432,7 +1433,7 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 }
 
 // receive XR (AckVec)
-void SessionManager::recv_xreport(CtrlHandler *ch, pktbuf* pb) {
+void SessionManager::recv_xreport(CtrlHandler *ch, pktbuf* pb, bool recv_by_ch) {
 	// timestamp for XR reception
 	recv_ts_ = tx_get_now();
 
@@ -1507,7 +1508,7 @@ void SessionManager::recv_xreport(CtrlHandler *ch, pktbuf* pb) {
 		switch (flags & 0xff) {
 		case RTCP_PT_XR:
 			rtcp_pkt_id = RTCP_PT_XR;
-			parse_xr(rh, flags, ep, ps, addr, layer, 0, pb);
+			parse_xr(rh, flags, ep, ps, addr, layer, !(recv_by_ch), pb);
 			break;
 		case RTCP_PT_SR:
 			rtcp_pkt_id = RTCP_PT_SR;

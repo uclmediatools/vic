@@ -328,21 +328,11 @@ void Transmitter::tfwc_output(pktbuf* pb)
 	switch (cwnd_mode_) {
 	case BYM:
 	{
-	  int len = 0;
-	  int num_acked = 0;
-	  // number of acked bytes
- 	  if (new_ack())
-	  num_acked += tfwc_sndr_.b_jacked();
-
-	  if(pb->len < tfwc_sndr_.b_magic() + num_acked - len) {
-		len += pb->len;
+	  if(pb->len < tfwc_sndr_.b_magic()) {
 		// move head pointer
 		head_ = pb->next;
 		// call Transmitter::output_data_only w/ XR reception
 		output_data_only(pb, XR_RECV);
-
-		// and, reset status
-		reset_new_ack();
 	  }
 	}
 	break;
@@ -391,6 +381,10 @@ void Transmitter::tfwc_output(bool recv_by_ch)
 	  int len = 0;
 	  int num_acked = 0;
 
+	  // this output called upon ack clock
+	  if(recv_by_ch)
+	  num_acked = tfwc_sndr_.b_jacked();
+
 	  while(pb->len < tfwc_sndr_.b_magic() + num_acked - len) {
 		len += pb->len;
 		// move head pointer
@@ -401,7 +395,6 @@ void Transmitter::tfwc_output(bool recv_by_ch)
 		// number of acked bytes
 		if (new_ack())
 		num_acked += tfwc_sndr_.b_jacked();
-		// and, reset status
 		reset_new_ack();
 
 		if (head_ != 0)
@@ -555,7 +548,7 @@ void Transmitter::output(pktbuf* pb, bool recv_by_ch)
 //	pb->release() is called by decoder in loopback;
 }
 
-void Transmitter::output_data_only(pktbuf* pb, bool flag) 
+void Transmitter::output_data_only(pktbuf* pb, bool flag)
 {
 	tx_data_only(pb, flag);
 	loopback(pb);
