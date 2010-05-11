@@ -57,13 +57,12 @@ set title "encoding time"
 set xlabel "num encoding"
 set ylabel "time (sec)"
 
-set yrange [0:0.005]
 set mxtics 2
 set mytics 2
 
 plot \
-"enct.xg" with lines title "encoding time", \
-"grt.xg" with lines lt 1 lc 3 title "grabbing time"
+"enct.xg" with lp title "encoding time", \
+"grt.xg" with lp lt 1 lc 3 title "grabbing time"
 
 EOF
 
