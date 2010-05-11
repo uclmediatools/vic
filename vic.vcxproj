@@ -425,10 +425,6 @@
     </ClCompile>
     <ClCompile Include="$(OutDir)version.c" />
     <ClCompile Include="$(OutDir)bv.c" />
-    <ClCompile Include="DeckLinkAPI_i.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="getopt.c" />
     <ClCompile Include="idlecallback.cpp" />
     <ClCompile Include="iohandler.cpp" />
@@ -482,6 +478,7 @@
     <ClCompile Include="tkWinColor.c" />
     <ClCompile Include="video\assistor-list.cpp" />
     <ClCompile Include="video\crossbar.cpp" />
+    <ClCompile Include="video\DeckLinkAPI_i.c" />
     <ClCompile Include="video\deinterlace.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">true</ExcludedFromBuild>
@@ -551,6 +548,7 @@
     <ClInclude Include="rtp\transmitter.h" />
     <ClInclude Include="video\assistor-list.h" />
     <ClInclude Include="video\crossbar.h" />
+    <ClInclude Include="video\DeckLinkAPI_h.h" />
     <ClInclude Include="video\deinterlace.h" />
     <ClInclude Include="video\grabber-win32DS.h" />
     <ClInclude Include="video\grabber.h" />
@@ -564,6 +562,14 @@
     <Midl Include="video\DeckLinkAPI.idl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">true</ExcludedFromBuild>
+      <OutputDirectory Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">video</OutputDirectory>
+      <OutputDirectory Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">video</OutputDirectory>
+      <GenerateTypeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">false</GenerateTypeLibrary>
+      <OutputDirectory Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">video</OutputDirectory>
+      <GenerateTypeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">false</GenerateTypeLibrary>
+      <OutputDirectory Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">video</OutputDirectory>
+      <GenerateTypeLibrary Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">false</GenerateTypeLibrary>
+      <GenerateTypeLibrary Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">false</GenerateTypeLibrary>
     </Midl>
   </ItemGroup>
   <PropertyGroup Label="Globals">

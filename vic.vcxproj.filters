@@ -409,14 +409,14 @@
     <ClCompile Include="$(OutDir)ui-windows.cpp">
       <Filter>tcl\Generated Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DeckLinkAPI_i.c">
-      <Filter>video</Filter>
-    </ClCompile>
     <ClCompile Include="$(OutDir)version.c">
       <Filter>vic common</Filter>
     </ClCompile>
     <ClCompile Include="$(OutDir)bv.c">
       <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="video\DeckLinkAPI_i.c">
+      <Filter>video</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -566,6 +566,9 @@
     </ClInclude>
     <ClInclude Include="zvfs.h">
       <Filter>vic common\VIC Common Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="video\DeckLinkAPI_h.h">
+      <Filter>video\Video Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

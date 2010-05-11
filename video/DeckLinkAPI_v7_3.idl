@@ -71,7 +71,7 @@ interface IDeckLinkVideoInputFrame_v7_3;
 
     HRESULT SetVideoOutputFrameMemoryAllocator([in] IDeckLinkMemoryAllocator *theAllocator);
     HRESULT CreateVideoFrame(long width, long height, long rowBytes, BMDPixelFormat pixelFormat, BMDFrameFlags flags, [out] IDeckLinkMutableVideoFrame **outFrame);
-    HRESULT CreateAncillaryData(BMDDisplayMode displayMode, BMDPixelFormat pixelFormat, [out] IDeckLinkVideoFrameAncillary **outBuffer);
+    HRESULT CreateAncillaryData(BMDPixelFormat pixelFormat, [out] IDeckLinkVideoFrameAncillary **outBuffer);
 
     HRESULT DisplayVideoFrameSync([in] IDeckLinkVideoFrame *theFrame);
     HRESULT ScheduleVideoFrame([in] IDeckLinkVideoFrame *theFrame, BMDTimeValue displayTime, BMDTimeValue displayDuration, BMDTimeScale timeScale);
