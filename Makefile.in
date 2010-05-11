@@ -404,6 +404,8 @@ realclean:
 	$(MAKE) clean
 	rm -f config.log config.cache config.status
 	rm -rf autom4te.cache
+	rm -f uclconf.h version.c
+	rm -f Makefile
 
 tags:	force
 	ctags -tdwC $(SRC) *.h $(TKSRC)/*.c $(TKSRC)/*.h \
