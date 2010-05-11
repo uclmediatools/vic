@@ -30,22 +30,47 @@
 
 // grabber-win32DS.h
 
-//warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. 
-// To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-#define _CRT_SECURE_NO_WARNINGS
-#define _CRT_SECURE_NO_DEPRECATE
-
 #include <dshow.h>   // DirectShow
 #include <amstream.h>   // DirectShow
 
+#ifdef HAVE_QEDIT_H
 #pragma include_alias("dxtrans.h", "qedit.h")
 #define __IDxtCompositor_INTERFACE_DEFINED__
 #define __IDxtAlphaSetter_INTERFACE_DEFINED__
 #define __IDxtJpeg_INTERFACE_DEFINED__
 #define __IDxtKey_INTERFACE_DEFINED__
-// dxtrans.h is missing with some DirectX SDKs and VisualStudio versions - broken M$ setup?!
+// dxtrans.h is missing with later DirectX SDKs and VisualStudio 2008 - broken M$ setup?!
 // the above #pragma and #define's make sure it's contents is not needed
 #include <qedit.h>   // DirectShow
+
+#else
+// qedit.h no longer ships with VisualStudio 2010 and the Windows 7 SDK
+extern "C" {
+	extern const IID IID_ISampleGrabber;
+	extern const CLSID CLSID_SampleGrabber;
+	extern const CLSID CLSID_NullRenderer;
+}
+
+MIDL_INTERFACE("0579154A-2B53-4994-B0D0-E773148EFF85")
+ISampleGrabberCB : public IUnknown {
+public:
+	virtual HRESULT STDMETHODCALLTYPE SampleCB(double SampleTime, IMediaSample *pSample) = 0;
+	virtual HRESULT STDMETHODCALLTYPE BufferCB(double SampleTime, BYTE *pBuffer, long BufferLen) = 0;
+};
+typedef interface ISampleGrabberCB ISampleGrabberCB;
+
+MIDL_INTERFACE("6B652FFF-11FE-4fce-92AD-0266B5D7C78F")
+ISampleGrabber : public IUnknown {
+public:
+	virtual HRESULT STDMETHODCALLTYPE SetOneShot(BOOL OneShot) = 0;
+	virtual HRESULT STDMETHODCALLTYPE SetMediaType(const AM_MEDIA_TYPE *pType) = 0;
+    virtual HRESULT STDMETHODCALLTYPE GetConnectedMediaType(AM_MEDIA_TYPE *pType) = 0;
+    virtual HRESULT STDMETHODCALLTYPE SetBufferSamples(BOOL BufferThem) = 0;
+	virtual HRESULT STDMETHODCALLTYPE GetCurrentBuffer(long *pBufferSize, long *pBuffer) = 0;
+    virtual HRESULT STDMETHODCALLTYPE GetCurrentSample(IMediaSample **ppSample) = 0;
+    virtual HRESULT STDMETHODCALLTYPE SetCallback(ISampleGrabberCB *pCallback, long WhichMethodToCallback) = 0;
+};
+#endif
 
 #include "crossbar.h"
 

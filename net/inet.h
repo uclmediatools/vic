@@ -93,8 +93,8 @@ extern const char* intoa(u_int32_t addr);
 #if defined(WIN32)
 
 /* XXX winsock.h should have these !! */
-/* winsock2.h does have these */
-#ifndef _WINSOCK2_H
+/* winsock2.h or ws2def.h does have these */
+#if !defined(_WINSOCK2_H) && !defined(_WS2DEF_)
 
 #define	IN_CLASSD(i)		(((u_long)(i) & ((u_long)0xf0000000)) == \
 				  ((u_long)0xe0000000))

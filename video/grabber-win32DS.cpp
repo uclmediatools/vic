@@ -541,8 +541,6 @@ void DirectShowGrabber::routeCrossbar() {
     long        pinType;
     IAMCrossbar *xb;
 
-    long tmp_input_port;
-
     if( crossbar_ == NULL ) return;
 
     xb = crossbar_->getXBar();

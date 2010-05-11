@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup
+    Condition="'$(tcl2cppBeforeTargets)' == '' and '$(tcl2cppAfterTargets)' == '' and '$(ConfigurationType)' != 'Makefile'">
+    <tcl2cppBeforeTargets>Midl</tcl2cppBeforeTargets>
+    <tcl2cppAfterTargets>CustomBuild</tcl2cppAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup>
+    <tcl2cppDependsOn
+      Condition="'$(ConfigurationType)' != 'Makefile'">_SelectedFiles;$(tcl2cppDependsOn)</tcl2cppDependsOn>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <tcl2cpp>
+      <OutputFileName>"$(OutDir)%(Filename).cpp"</OutputFileName>
+      <Pass>2</Pass>
+      <CommandLineTemplate>"$(OutDir)tcl2cpp" [Pass]  [Inputs] &gt; [OutputFileName]</CommandLineTemplate>
+      <Outputs>$(OutDir)%(Filename).cpp</Outputs>
+      <ExecutionDescription>tcl2cpp generating "%(Filename).cpp".</ExecutionDescription>
+    </tcl2cpp>
+  </ItemDefinitionGroup>
+</Project>
