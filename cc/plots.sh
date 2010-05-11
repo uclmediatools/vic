@@ -59,6 +59,8 @@ set ylabel "time (sec)"
 
 set mxtics 2
 set mytics 2
+set xrange [$1:$2]
+set yrange [0:]
 
 plot \
 "enct.xg" with lp title "encoding time", \

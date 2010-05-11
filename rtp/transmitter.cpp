@@ -381,11 +381,14 @@ void Transmitter::tfwc_output(bool recv_by_ch)
 	  int len = 0;
 	  int num_acked = 0;
 
+	  // cwnd (in bytes)
+	  int b_magic = tfwc_sndr_.b_magic();
+
 	  // this output called upon ack clock
 	  if(recv_by_ch)
 	  num_acked = tfwc_sndr_.b_jacked();
 
-	  while(pb->len < tfwc_sndr_.b_magic() + num_acked - len) {
+	  while(pb->len < b_magic + num_acked - len) {
 		len += pb->len;
 		// move head pointer
 		head_ = pb->next;
