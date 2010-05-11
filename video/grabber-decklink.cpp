@@ -47,7 +47,6 @@
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <objbase.h>
-#include <comutil.h>
 #include "DeckLinkAPI_h.h"
 #include "inttypes.h"
 #else
@@ -386,8 +385,7 @@ DeckLinkScanner::DeckLinkScanner(int maxNumDevices)
 
         result = deckLink->GetModelName(&cardNameBSTR);
         if (result == S_OK) {
-            _bstr_t tmpstr1(cardNameBSTR);
-            strncpy_s(deviceNameString, sizeof(deviceNameString), tmpstr1, _TRUNCATE);
+            wcstombs(deviceNameString, cardNameBSTR, 63);
         }
 #elif __APPLE__
         char deviceNameString[64] = {};
@@ -504,8 +502,7 @@ DeckLinkDevice::DeckLinkDevice(const char* name, IDeckLink* deckLink) : InputDev
 
         result = displayMode->GetName(&displayModeNameBSTR);
         if (result == S_OK) {
-            _bstr_t tmpstr1(displayModeNameBSTR);
-            strncpy_s(displayModeString, sizeof(displayModeString), tmpstr1, _TRUNCATE);
+            wcstombs(displayModeString, displayModeNameBSTR, 63);
         }
 #elif __APPLE__
         char displayModeString[64] = {};
@@ -678,8 +675,7 @@ int DeckLinkGrabber::command(int argc, const char*const* argv)
 
                 result = displayMode->GetName(&displayModeNameBSTR);
                 if (result == S_OK) {
-                    _bstr_t tmpstr1(displayModeNameBSTR);
-                    strncpy_s(displayModeString, sizeof(displayModeString), tmpstr1, _TRUNCATE);
+                    wcstombs(displayModeString, displayModeNameBSTR, 63);
                 }
 #elif __APPLE__
                 char displayModeString[64] = {};

@@ -20,12 +20,11 @@
 
 #pragma warning( disable: 4049 )  /* more than 64k source lines */
 
-
 #ifdef __cplusplus
 extern "C"{
 #endif 
 
-
+#include "DeckLinkAPI_h.h"
 #include <rpc.h>
 #include <rpcndr.h>
 
