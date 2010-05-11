@@ -132,7 +132,7 @@ public:
 	SessionManager();
 	virtual ~SessionManager();
 	virtual int command(int argc, const char*const* argv);
-	virtual void recv(CtrlHandler*);
+	virtual int recv(CtrlHandler*);
 	virtual void recv(DataHandler*);
 	virtual void announce(CtrlHandler*); //LLL
 //	virtual void send_bye();
@@ -147,7 +147,7 @@ public:
 		u_int32_t xrssrc);
 
 	// receive XR
-	void recv_xreport(CtrlHandler*, pktbuf*, bool);
+	int recv_xreport(CtrlHandler*, pktbuf*, bool);
 
 	void build_aoa_pkt(CtrlHandler* ch);
 	void build_ts_pkt(CtrlHandler* ch);

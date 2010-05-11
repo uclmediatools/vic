@@ -130,7 +130,11 @@ void DataHandler::dispatch(int)
 
 void CtrlHandler::dispatch(int)
 {
-	sm_->recv(this);
+	int i = 0; int cc = 0;
+	while((cc = sm_->recv(this)) > 0) {
+	//fprintf(stderr, "\tackvec reception: now: %f cc[%d]: %d\n", 
+	//sm_->tx_get_now(), ++i, cc);
+	}
 }
 
 CtrlHandler::CtrlHandler()
@@ -455,8 +459,13 @@ void SessionManager::transmit(pktbuf* pb, bool recv_by_ch)
 	// dh_[.net()->send(mh_);
 	// debug_msg("L %d,",pb->layer);
 
+	int i = 0; int cc = 0;
+
 	// receive XR before sending
-	recv_xreport(ch_, pb, recv_by_ch);
+	while ((cc = recv_xreport(ch_, pb, recv_by_ch)) > 0) {
+	//fprintf(stderr, "\tackvec reception: now: %f cc[%d]: %d\n", 
+	//tx_get_now(), ++i, cc);
+	}
 	// print RTP seqno
 	print_rtp_seqno(pb);
 
@@ -490,8 +499,13 @@ void SessionManager::transmit(pktbuf* pb, bool recv_by_ch)
 
 void SessionManager::tx_data_only(pktbuf* pb, bool recv_by_ch) 
 {
+	int i = 0; int cc = 0;
+
 	// receive XR before sending
-	recv_xreport(ch_, pb, recv_by_ch);
+	while ((cc = recv_xreport(ch_, pb, recv_by_ch)) > 0) {
+	//fprintf(stderr, "\tackvec reception: now: %f cc[%d]: %d\n",
+	//tx_get_now(), ++i, cc);
+	}
 	// print RTP seqno
 	print_rtp_seqno(pb);
 
@@ -1433,7 +1447,7 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 }
 
 // receive XR (AckVec)
-void SessionManager::recv_xreport(CtrlHandler *ch, pktbuf* pb, bool recv_by_ch) {
+int SessionManager::recv_xreport(CtrlHandler *ch, pktbuf* pb, bool recv_by_ch) {
 	// timestamp for XR reception
 	recv_ts_ = tx_get_now();
 
@@ -1442,18 +1456,18 @@ void SessionManager::recv_xreport(CtrlHandler *ch, pktbuf* pb, bool recv_by_ch) 
 
 	// return when no RTCP arrived in the socket buffer
 	if (cc <= 0)
-		return;
+		return cc;
 
 	rtcphdr* rh = (rtcphdr *)pktbuf_;
 	// ignore loopback packets
 	if (!loopback_) {
 		SourceManager& sm = SourceManager::instance();
 		if (rh->rh_ssrc == (*sm.localsrc()).srcid())
-		return;
+		return 0;
 	}
 	if (cc < int(sizeof(*rh))) {
 		++nrunt_;
-		return;
+		return 0;
 	}
 
 	// filter out junk report and other types of RTCP packet.
@@ -1465,10 +1479,10 @@ void SessionManager::recv_xreport(CtrlHandler *ch, pktbuf* pb, bool recv_by_ch) 
 	case RTP_VERSION << 14 | RTCP_PT_RR:
 	case RTP_VERSION << 14 | RTCP_PT_BYE:
 		debug_msg("warning: detected wrong RTCP packet types!\n");
-		return;
+		return 0;
 	default:
 		++badversion_;
-		return;
+		return 0;
 	}
 
 	// we're safe to assume that this is XR packet.
@@ -1482,7 +1496,7 @@ void SessionManager::recv_xreport(CtrlHandler *ch, pktbuf* pb, bool recv_by_ch) 
 	// -- note: sdes record does not contain the ssrc of the sender.
 	u_int32_t ssrc = rh->rh_ssrc;
 	Source* ps = SourceManager::instance().lookup(ssrc, ssrc, addr);
-	if (ps == 0) return;
+	if (ps == 0) return 0;
 
 	int layer = ch - ch_;
 	int rtcp_pkt_id;
@@ -1496,13 +1510,13 @@ void SessionManager::recv_xreport(CtrlHandler *ch, pktbuf* pb, bool recv_by_ch) 
 		// bad length
 		if (ep > epack) {
 			ps->badsesslen(1);
-			return;
+			return 0;
 		}
 		// bad version
 		u_int flags = ntohs(rh->rh_flags);
 		if (flags >> 14 != RTP_VERSION) {
 			ps->badsessver(1);
-			return;
+			return 0;
 		}
 
 		switch (flags & 0xff) {
@@ -1519,14 +1533,14 @@ void SessionManager::recv_xreport(CtrlHandler *ch, pktbuf* pb, bool recv_by_ch) 
 		case RTCP_PT_SDES:
 			rtcp_pkt_id = RTCP_PT_SDES;
 			debug_msg("warning: wrong RTCP packet type! %d\n", rtcp_pkt_id);
-			return;
+			return 0;
 		default:
 			ps->badsessopt(1);
 			break;
 		}
 		rh = (rtcphdr *)ep;
 	}
-	return;
+	return (cc);
 }
 
 // send AckVec 
@@ -1658,7 +1672,7 @@ void SessionManager::parse_bye(rtcphdr* rh, int flags, u_char* ep, Source* ps)
 /*
  * Receive an rtcp packet (from the control port).
  */
-void SessionManager::recv(CtrlHandler* ch)
+int SessionManager::recv(CtrlHandler* ch)
 {
 	// timestamp for XR reception 
 	recv_ts_ = tx_get_now();
@@ -1666,7 +1680,7 @@ void SessionManager::recv(CtrlHandler* ch)
 	Address * srcp;
 	int cc = ch->recv(pktbuf_, 2 * RTP_MTU, srcp);
 	if (cc <= 0)
-		return;
+		return (cc);
 
 	rtcphdr* rh = (rtcphdr*)pktbuf_;
 
@@ -1674,12 +1688,12 @@ void SessionManager::recv(CtrlHandler* ch)
 	if (!loopback_) {
 		SourceManager& sm = SourceManager::instance();
 		if (rh->rh_ssrc == (*sm.localsrc()).srcid())
-			return;
+			return 0;
 	}
 
 	if (cc < int(sizeof(*rh))) {
 		++nrunt_;
-		return;
+		return 0;
 	}
 
 	/*
@@ -1699,7 +1713,7 @@ void SessionManager::recv(CtrlHandler* ch)
 		 * don't put something other than SR,RR,XR,BYE first.
 		 */
 		++badversion_;
-		return;
+		return 0;
 	}
 	/*
 	 * at this point we think the packet's valid.  Update our average
@@ -1717,7 +1731,7 @@ void SessionManager::recv(CtrlHandler* ch)
 	u_int32_t ssrc = rh->rh_ssrc;
 	Source* ps = SourceManager::instance().lookup(ssrc, ssrc, addr);
 	if (ps == 0)
-		return;
+		return 0;
 	
 	int layer = ch - ch_;
 	/*
@@ -1731,12 +1745,12 @@ void SessionManager::recv(CtrlHandler* ch)
 		u_char* ep = (u_char*)rh + len;
 		if (ep > epack) {
 			ps->badsesslen(1);
-			return;
+			return 0;
 		}
 		u_int flags = ntohs(rh->rh_flags);
 		if (flags >> 14 != RTP_VERSION) {
 			ps->badsessver(1);
-			return;
+			return 0;
 		}
 		switch (flags & 0xff) {
 
@@ -1766,5 +1780,5 @@ void SessionManager::recv(CtrlHandler* ch)
 		}
 		rh = (rtcphdr*)ep;
 	}
-	return;
+	return (cc);
 }
