@@ -4,4 +4,16 @@
     <LocalDebuggerCommandArguments>234.5.6.7/16000</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">
+    <LocalDebuggerCommandArguments>234.5.6.7/16000</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">
+    <LocalDebuggerCommandArguments>234.5.6.7/16000</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">
+    <LocalDebuggerCommandArguments>234.5.6.7/16000</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
 </Project>

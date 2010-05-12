@@ -418,6 +418,9 @@
     <ClCompile Include="video\DeckLinkAPI_i.c">
       <Filter>video</Filter>
     </ClCompile>
+    <ClCompile Include="render\color.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="codec\databuffer.h">

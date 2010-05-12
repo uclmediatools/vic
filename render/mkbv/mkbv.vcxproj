@@ -59,6 +59,18 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <CustomBuildStep>
+      <Command>"$(OutDir)mkbv" &gt; "$(OutDir)bv.c"</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>Generating "$(OutDir)bv.c"</Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>$(OutDir)bv.c</Outputs>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Inputs>mkbv.c</Inputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -80,6 +92,18 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
+    <CustomBuildStep>
+      <Command>"$(OutDir)mkbv" &gt; "$(OutDir)bv.c"</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>Generating "$(OutDir)bv.c"</Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>$(OutDir)bv.c</Outputs>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Inputs>mkbv.c</Inputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="mkbv.c" />

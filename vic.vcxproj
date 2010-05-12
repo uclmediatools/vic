@@ -463,6 +463,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="render\color.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="render\renderer-window.cpp" />
     <ClCompile Include="render\renderer.cpp" />
     <ClCompile Include="render\rgb-converter.cpp" />
@@ -570,6 +574,7 @@
       <OutputDirectory Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">video</OutputDirectory>
       <GenerateTypeLibrary Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">false</GenerateTypeLibrary>
       <GenerateTypeLibrary Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">false</GenerateTypeLibrary>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
     </Midl>
   </ItemGroup>
   <PropertyGroup Label="Globals">
