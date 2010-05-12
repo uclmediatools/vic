@@ -132,8 +132,7 @@ void CtrlHandler::dispatch(int)
 {
 	int i = 0; int cc = 0;
 	while((cc = sm_->recv(this)) > 0) {
-	//fprintf(stderr, "\tackvec reception: now: %f cc[%d]: %d\n", 
-	//sm_->tx_get_now(), ++i, cc);
+	i++; //dispatch_info(sm_->tx_get_now(), cc, i);
 	}
 }
 
@@ -226,8 +225,7 @@ rtcp_avg_size_(128.),
 confid_(-1),
 seqno_(0),		// RTP data packet seqno (from RTP header)
 lastseq_(0),	// last received packet's seqno
-ackvec_(0),		// bit vector (AckVec)
-new_ack_(0)
+ackvec_(0)		// bit vector (AckVec)
 {
 	/*XXX For adios() to send bye*/
 	manager = this;
@@ -453,19 +451,14 @@ int SessionManager::command(int argc, const char*const* argv)
 	return (TCL_ERROR);
 }
 
-void SessionManager::transmit(pktbuf* pb, bool recv_by_ch)
+void SessionManager::transmit(pktbuf* pb, bool ack_clock)
 {
 	// mh_.msg_iov = pb->iov;
 	// dh_[.net()->send(mh_);
 	// debug_msg("L %d,",pb->layer);
 
-	int i = 0; int cc = 0;
-
 	// receive XR before sending
-	while ((cc = recv_xreport(ch_, pb, recv_by_ch)) > 0) {
-	//fprintf(stderr, "\tackvec reception: now: %f cc[%d]: %d\n", 
-	//tx_get_now(), ++i, cc);
-	}
+	tot_num_acked_ = check_xr_arrival(pb, 1);
 	// print RTP seqno
 	print_rtp_seqno(pb);
 
@@ -497,15 +490,10 @@ void SessionManager::transmit(pktbuf* pb, bool recv_by_ch)
 	}
 }
 
-void SessionManager::tx_data_only(pktbuf* pb, bool recv_by_ch) 
+void SessionManager::tx_data_only(pktbuf* pb, bool ack_clock) 
 {
-	int i = 0; int cc = 0;
-
 	// receive XR before sending
-	while ((cc = recv_xreport(ch_, pb, recv_by_ch)) > 0) {
-	//fprintf(stderr, "\tackvec reception: now: %f cc[%d]: %d\n",
-	//tx_get_now(), ++i, cc);
-	}
+	tot_num_acked_ = check_xr_arrival(pb, 1);
 	// print RTP seqno
 	print_rtp_seqno(pb);
 
@@ -1341,7 +1329,7 @@ void SessionManager::parse_rr(rtcphdr* rh, int flags, u_char* ep,
 }
 
 void SessionManager::parse_xr(rtcphdr* rh, int flags, u_char* ep,
-		Source* ps, Address & addr, int layer, bool recv_by_ch, pktbuf* pb)
+		Source* ps, Address & addr, int layer, bool ack_clock, pktbuf* pb)
 {
 	Source* s;
 	u_int32_t ssrc = rh->rh_ssrc;	// RTCP's ssrc
@@ -1352,11 +1340,11 @@ void SessionManager::parse_xr(rtcphdr* rh, int flags, u_char* ep,
 
 	s->layer(layer).lts_ctrl(unixtime());
 	int cnt = flags >> 8 & 0x1f;	// reception report count
-	parse_xr_records(ssrc, (rtcp_xr*)(rh + 1), cnt, ep, addr, recv_by_ch, pb);
+	parse_xr_records(ssrc, (rtcp_xr*)(rh + 1), cnt, ep, addr, ack_clock, pb);
 }
 
 void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
-		const u_char* ep, Address & addr, bool recv_by_ch, pktbuf* pb)
+		const u_char* ep, Address & addr, bool ack_clock, pktbuf* pb)
 {
 	parse_xr_banner_top();
 	UNUSED(ssrc);
@@ -1397,27 +1385,21 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 		  //so_rtime = ch_[0].net()->recv_so_time();
 		  //sender_xr_ts_info(so_rtime);
 
-		  // if this XR reception is called not because of ack clock,
-		  // then this XR reception is called just before sending packet,
-		  // hence, mark it that we have retrieved a new ack
-		  if(!recv_by_ch)
-		  set_new_ack();
-
 		  switch (cc_type_) {
 			case WBCC:
 			// TFWC sender (getting AckVec)
-			tfwc_sndr_.recv(xr->BT,begin,end,chunk,recv_ts_,recv_by_ch,pb);
+			tfwc_sndr_.recv(xr->BT,begin,end,chunk,recv_ts_,ack_clock,pb);
 			// we need to call Transmitter::output(pb) to make Ack driven
-			if(recv_by_ch)
-			tfwc_output(recv_by_ch);
+			if(ack_clock)
+			tfwc_output(ack_clock);
 			break;
 
 			case RBCC:
 			// TFRC sender (getting AckVec)
-			tfrc_sndr_.recv(xr->BT,begin,end,chunk,recv_ts_,recv_by_ch,pb);
+			tfrc_sndr_.recv(xr->BT,begin,end,chunk,recv_ts_,ack_clock,pb);
 			// XXX
-			if(recv_by_ch)
-			tfrc_output(recv_by_ch);
+			if(ack_clock)
+			tfrc_output(ack_clock);
 			break;
 		  } // switch (cc_type_)
 		}
@@ -1446,8 +1428,26 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 	parse_xr_banner_bottom();
 }
 
+/*
+ * check if XR has arrived
+ * @pb: RTP data packet
+ * @ack_clock: this SHOULD be always set to 1, 
+ *             although it is not an ack-clocking actually
+ *             (i.e., check XR reception ONLY)
+ * return: total number of bytes that the retrieved Acks have given
+ */
+int SessionManager::check_xr_arrival(pktbuf* pb, bool ack_clock){
+	int i = 0; int cc = 0;
+	// receive XR before sending
+	while (recv_xreport(ch_, pb, ack_clock) > 0) {
+	cc += tfwc_sndr_.b_jacked(); i++;
+	//	xr_arrival_info(cc, i);
+	}
+	return (cc);
+}
+
 // receive XR (AckVec)
-int SessionManager::recv_xreport(CtrlHandler *ch, pktbuf* pb, bool recv_by_ch) {
+int SessionManager::recv_xreport(CtrlHandler *ch, pktbuf* pb, bool ack_clock) {
 	// timestamp for XR reception
 	recv_ts_ = tx_get_now();
 
@@ -1522,7 +1522,7 @@ int SessionManager::recv_xreport(CtrlHandler *ch, pktbuf* pb, bool recv_by_ch) {
 		switch (flags & 0xff) {
 		case RTCP_PT_XR:
 			rtcp_pkt_id = RTCP_PT_XR;
-			parse_xr(rh, flags, ep, ps, addr, layer, !(recv_by_ch), pb);
+			parse_xr(rh, flags, ep, ps, addr, layer, !(ack_clock), pb);
 			break;
 		case RTCP_PT_SR:
 			rtcp_pkt_id = RTCP_PT_SR;

@@ -161,9 +161,9 @@ void TfrcSndr::send(pktbuf* pb, double now) {
  * main TFRC reception path
  */
 void TfrcSndr::recv(u_int16_t type, u_int16_t begin, u_int16_t end,
-	u_int16_t *chunk, double so_rtime, bool recv_by_ch, pktbuf* pb) 
+	u_int16_t *chunk, double so_rtime, bool ack_clock, pktbuf* pb) 
 {
-  UNUSED(recv_by_ch);
+  UNUSED(ack_clock);
   UNUSED(pb);
 
   switch(type) {

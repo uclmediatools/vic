@@ -199,9 +199,9 @@ void TfwcSndr::send(pktbuf* pb, double now) {
  * main TFWC reception path
  */
 void TfwcSndr::recv(u_int16_t type, u_int16_t begin, u_int16_t end,
-		u_int16_t *chunk, double so_rtime, bool recv_by_ch, pktbuf* pb)
+		u_int16_t *chunk, double so_rtime, bool ack_clock, pktbuf* pb)
 {
-  UNUSED(recv_by_ch);
+  UNUSED(ack_clock);
   UNUSED(pb);
 
   switch (type) {
@@ -255,7 +255,7 @@ void TfwcSndr::recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 		if(jacked_ < aoa_) {
 		  debug_msg("warning: this ack(%d) is older than AoA(%d)!\n", jacked_,aoa_);
 		  // trigger a packet out to keep Jacob's packet conservation rule
-		  //packet_clocking(pb, recv_by_ch);
+		  //packet_clocking(pb, ack_clock);
 		  
 		  // this ack is already too old, 
 		  // so revert to the eariler history

@@ -117,6 +117,11 @@ class CtrlHandler : public DataHandler, public Timer {
 	double ctrl_inv_bw_;
 	double ctrl_avg_size_;	/* (estimated) average size of ctrl packets */
 	double rint_;		/* current session report rate (in ms) */
+
+	// control channel dispatch debug info
+	inline void dispatch_info(double now, int nbytes, int i) {
+	fprintf(stderr, "  \tnow: %f\tdispatched[%d]: %d\n",now,i,nbytes);
+	}
 };
 
 class ReportTimer : public Timer {
@@ -157,17 +162,15 @@ public:
 
 	// am i a data sender?
 	inline bool am_i_sender() { return is_sender_; }
-	// was there a new ack?
-	inline virtual bool new_ack() { return new_ack_; }
-	inline virtual void set_new_ack() { new_ack_ = true; }
-	inline virtual void reset_new_ack() { new_ack_ = false; }
+	// see if any XR has arrived
+	virtual int check_xr_arrival(pktbuf*, bool);
 
 protected:
 //	void demux(rtphdr* rh, u_char* bp, int cc, Address & addr, int layer);
 	void demux(pktbuf* pb, Address & addr);
 	virtual int check_format(int fmt) const = 0;
-	virtual void transmit(pktbuf* pb, bool recv_by_ch=0);
-	virtual void tx_data_only(pktbuf* pb, bool recv_by_ch);
+	virtual void transmit(pktbuf* pb, bool ack_clock=0);
+	virtual void tx_data_only(pktbuf* pb, bool ack_clock);
 	void send_report(int bye);
 	void send_ECNXreport(CtrlHandler* ch, u_int8_t tos, u_int16_t begin_seq);
 	int build_bye(rtcphdr* rh, Source& local);
@@ -181,11 +184,11 @@ protected:
 	void parse_rr(rtcphdr* rh, int flags, u_char* ep,
 		      Source* ps, Address & addr, int layer);
 	void parse_xr(rtcphdr* rh, int flags, u_char* ep,
-		      Source* ps, Address & addr, int layer, bool recv_by_ch, pktbuf* pb=0);
+		      Source* ps, Address & addr, int layer, bool ack_clock, pktbuf* pb=0);
 	void parse_rr_records(u_int32_t ssrc, rtcp_rr* r, int cnt,
 			      const u_char* ep, Address & addr);
 	void parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
-			      const u_char* ep, Address & addr, bool recv_by_ch, pktbuf* pb);
+			      const u_char* ep, Address & addr, bool ack_clock, pktbuf* pb);
 	int sdesbody(u_int32_t* p, u_char* ep, Source* ps,
 		     Address & addr, u_int32_t ssrc, int layer);
 	void parse_sdes(rtcphdr* rh, int flags, u_char* ep, Source* ps,
@@ -240,8 +243,6 @@ protected:
 	u_int16_t ackvec_;	// this is a bit vector
 	// timestamp
 	double recv_ts_;	// receive timestamp
-	// was there a new ack?
-	bool new_ack_;
 
 private:
 	// print RTP data packet's seqno
@@ -250,13 +251,12 @@ private:
 	}
 	inline void print_rtp_seqno(pktbuf* pb) {
 	rtphdr* rh = (rtphdr *) pb->data;
-	fprintf(stderr, "\n\tnow: %f\tseqno: %d\n\n",tx_get_now(),ntohs(rh->rh_seqno));
+	fprintf(stderr, "\n\tnow: %f\tseqno: %d\n\n",
+	    tx_get_now(),ntohs(rh->rh_seqno));
 	}
-
 	// print sender's XR info
 	inline void sender_xr_info(const char* str, const int i,
-	u_int16_t b, u_int16_t e, rtcp_xr_BT_1_hdr* xrh, u_int16_t l) 
-	{
+	u_int16_t b, u_int16_t e, rtcp_xr_BT_1_hdr* xrh, u_int16_t l) {
 	fprintf(stderr, "  [%s +%d] beg:%d, end:%d, xr1len:%d (xrlen:%d)\n",
 		str, i, b, e, ntohs(xrh->xr_len),l);
 	}
@@ -277,6 +277,9 @@ private:
 	inline void parse_xr_banner_bottom() {
 	fprintf(stderr,
 	"-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\n");
+	}
+	inline void xr_arrival_info(int nbytes, int i) {
+	fprintf(stderr, "  \tnow: %f\tnbytes[%d]: %d\n",tx_get_now(),i,nbytes);
 	}
 };
 

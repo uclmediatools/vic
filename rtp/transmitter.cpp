@@ -252,7 +252,7 @@ void Transmitter::send(pktbuf* pb)
 		} else
 		  tail_ = head_ = pb;
 		pb->next = 0;
-		tfwc_output();
+		tfwc_output(0);
 		is_buf_empty_ = false;
 	  } 
 	  // if not, check if cwnd allows send this packet
@@ -263,7 +263,7 @@ void Transmitter::send(pktbuf* pb)
 		} else
 		  tail_ = head_ = pb;
 		pb->next = 0;
-		tfwc_output(pb);
+		tfwc_output(pb, 0);
 	  }
 	  break;
 
@@ -321,18 +321,26 @@ void Transmitter::send(pktbuf* pb)
 	} // switch (cc_type)
 }
 
-void Transmitter::tfwc_output(pktbuf* pb) 
+void Transmitter::tfwc_output(pktbuf* pb, bool ack_clock) 
 {
 	//cc_output_banner_top("tfwc");
 	// byte mode? or packet mode?
 	switch (cwnd_mode_) {
 	case BYM:
 	{
-	  if(pb->len < tfwc_sndr_.b_magic()) {
+	  // see if any XR has arrived to pick up
+	  int cc = check_xr_arrival(pb, 1);
+
+	  while(pb->len <= tfwc_sndr_.b_magic() + cc) {
 		// move head pointer
 		head_ = pb->next;
 		// call Transmitter::output_data_only w/ XR reception
-		output_data_only(pb, XR_RECV);
+		output_data_only(pb, ack_clock);
+
+		if (head_ != 0)
+			pb = head_;
+		else
+			break;
 	  }
 	}
 	break;
@@ -340,15 +348,22 @@ void Transmitter::tfwc_output(pktbuf* pb)
 	{
 	  // pb is not null, hence parse it.
 	  rtphdr* rh = (rtphdr *) pb->data;
+	  // see if any XR has arrived to pick up
+	  check_xr_arrival(pb, 1);
 
-	  if (ntohs(rh->rh_seqno) <= tfwc_sndr_.magic() + tfwc_sndr_.jacked()) {
+	  while (ntohs(rh->rh_seqno) <= tfwc_sndr_.magic() + tfwc_sndr_.jacked()) {
 		//debug_msg("cwnd: %d\n", tfwc_sndr_.magic());
 		//debug_msg("jack: %d\n", tfwc_sndr_.jacked());
 			
 		// move head pointer
 		head_ = pb->next;
 		// call Transmitter::output_data_only w/ XR reception
-		output_data_only(pb, XR_RECV);
+		output_data_only(pb, ack_clock);
+
+		if (head_ != 0)
+			pb = head_;
+		else
+			break;
 	  }
 	}
 	break;
@@ -359,7 +374,7 @@ void Transmitter::tfwc_output(pktbuf* pb)
 /*
  * main TFWC CC output routines
  */
-void Transmitter::tfwc_output(bool recv_by_ch)
+void Transmitter::tfwc_output(bool ack_clock)
 {
 	//cc_output_banner_top("tfwc");
 	// head of the RTP data packet buffer (pb)
@@ -379,26 +394,19 @@ void Transmitter::tfwc_output(bool recv_by_ch)
 	case BYM:
 	{
 	  int len = 0;
-	  int num_acked = 0;
-
 	  // cwnd (in bytes)
 	  int b_magic = tfwc_sndr_.b_magic();
+	  // see if any XR has arrived to pick up
+	  int cc = check_xr_arrival(pb, 1);
 
-	  // this output called upon ack clock
-	  if(recv_by_ch)
-	  num_acked = tfwc_sndr_.b_jacked();
-
-	  while(pb->len < b_magic + num_acked - len) {
+	  while(pb->len <= b_magic + cc - len) {
 		len += pb->len;
 		// move head pointer
 		head_ = pb->next;
 		// call Transmitter::output(pb)
-		output(pb, recv_by_ch);
-
-		// number of acked bytes
-		if (new_ack())
-		num_acked += tfwc_sndr_.b_jacked();
-		reset_new_ack();
+		output(pb, ack_clock);
+		// inflate nbytes as we receive ack
+		cc += tot_num_acked_;
 
 		if (head_ != 0)
 			pb = head_;
@@ -411,6 +419,8 @@ void Transmitter::tfwc_output(bool recv_by_ch)
 	{
 	  // pb is not null, hence parse it.
 	  rtphdr* rh = (rtphdr *) pb->data;
+	  // see if any XR has arrived to pick up
+	  check_xr_arrival(pb, 1);
 
 	  // while packet seqno is within "cwnd + jack", send that packet
 	  while (ntohs(rh->rh_seqno) <= tfwc_sndr_.magic() + tfwc_sndr_.jacked()) {
@@ -420,7 +430,7 @@ void Transmitter::tfwc_output(bool recv_by_ch)
 		// move head pointer
 		head_ = pb->next;
 		// call Transmitter::output(pb)
-		output(pb, recv_by_ch);
+		output(pb, ack_clock);
 
 		// if the moved head pointer is not null, parse packet buffer.
 		// otherwise, break while statement.
@@ -453,6 +463,9 @@ void Transmitter::tfwc_trigger(pktbuf* pb) {
 		return;
 	}
 
+	// see if any XR has arrived in the mean time
+	check_xr_arrival(pb, 1);
+
 	// parse pb data
 	//rtphdr* rh = (rtphdr *) pb->data;
 	// move head pointer
@@ -473,7 +486,7 @@ void Transmitter::tfrc_output(pktbuf* pb) {
 	cc_output_banner_bottom();
 }
 
-void Transmitter::tfrc_output(bool recv_by_ch) {
+void Transmitter::tfrc_output(bool ack_clock) {
 	cc_output_banner_top("tfrc");
 	// head of the RTP data packet buffer
 	pktbuf* pb = head_;
@@ -489,7 +502,7 @@ void Transmitter::tfrc_output(bool recv_by_ch) {
 		// move head pointer
 		head_ = pb->next;
 		// call Transmitter::output(pb)
-		output(pb, recv_by_ch);
+		output(pb, ack_clock);
 
 		if (head_ != 0) {
 			pb = head_;
@@ -540,13 +553,13 @@ void Transmitter::flush()
 	}
 }
 
-void Transmitter::output(pktbuf* pb, bool recv_by_ch)
+void Transmitter::output(pktbuf* pb, bool ack_clock)
 {
 	//fprintf(stderr, "\n\tTransmitter::output()\n");
 	//if (dumpfd_ >= 0)
 	//	dump(dumpfd_, pb->iov, mh_.msg_iovlen);
 //dprintf("layer: %d \n",pb->layer);
-	transmit(pb, recv_by_ch);
+	transmit(pb, ack_clock);
 	loopback(pb);
 //	pb->release() is called by decoder in loopback;
 }

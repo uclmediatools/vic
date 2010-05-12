@@ -101,11 +101,11 @@ class Transmitter : public TclObject, public Timer {
 	void send(pktbuf*);
 	inline bool is_cc_on() { return is_cc_active_; }
 	// TFWC output
-	virtual void tfwc_output(bool recv_by_ch=0);
-	virtual void tfwc_output(pktbuf*);
+	virtual void tfwc_output(bool ack_clock=0);
+	virtual void tfwc_output(pktbuf*, bool ack_clock);
 	virtual void tfwc_trigger(pktbuf*);
 	// TFRC output
-	virtual void tfrc_output(bool recv_by_ch=0);
+	virtual void tfrc_output(bool ack_clock=0);
 	virtual void tfrc_output(pktbuf*);
 
 	/*
@@ -136,17 +136,16 @@ protected:
 	void update(int nbytes);
 	void dump(int fd, iovec*, int iovel) const;
 	void loopback(pktbuf*);
-	void output(pktbuf* pb, bool recv_by_ch=0);
+	void output(pktbuf* pb, bool ack_clock=0);
 	void output_data_only(pktbuf* pb, bool flag);
-	virtual void transmit(pktbuf* pb, bool recv_by_ch=0) = 0;
+	virtual void transmit(pktbuf* pb, bool ack_clock=0) = 0;
 	virtual void tx_data_only(pktbuf* pb, bool flag) = 0;
 	double gettimeofday_secs() const;
 	double txtime(pktbuf* pb);
 
-	// new ack arrived?
-	virtual bool new_ack() = 0;
-	virtual void set_new_ack() = 0;
-	virtual void reset_new_ack() = 0;
+	// check if new XR(s) have arrived
+	virtual int check_xr_arrival(pktbuf*, bool) = 0;
+	int tot_num_acked_;
 
 	int mtu_;		/* mtu of wire (as seen by application) */
 	msghdr mh_;

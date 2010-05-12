@@ -49,7 +49,7 @@ public:
 	virtual ~TfrcSndr() {};
 
 	// virtual functions
-	virtual void tfrc_output(bool recv_by_ch=0) {UNUSED(recv_by_ch);};
+	virtual void tfrc_output(bool ack_clock=0) {UNUSED(ack_clock);};
 	virtual void tfrc_output(pktbuf*) {};
 	virtual double tx_ts_offset() {};
 	virtual int tx_buf_size() {};

@@ -847,7 +847,7 @@ H261Encoder::flush(pktbuf* pb, int nbit, pktbuf* npb)
 	}
 	// increment the number of packets for this frame
 	ppframe_[vfno_%FHSIZE]++;
-	print_ppframe();
+	//print_ppframe();
 
 	tx_->send(pb);
 

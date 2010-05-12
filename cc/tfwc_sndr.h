@@ -63,8 +63,8 @@ public:
 	virtual ~TfwcSndr() {};
 
 	// virtual functions
-	virtual void tfwc_output(bool recv_by_ch=0) {UNUSED(recv_by_ch);};
-	virtual void tfwc_output(pktbuf*) {};
+	virtual void tfwc_output(bool ack_clock=0) {UNUSED(ack_clock);};
+	virtual void tfwc_output(pktbuf*, bool) {};
 	virtual void tfwc_trigger(pktbuf* pb=0) {UNUSED(pb);};
 	virtual double tx_ts_offset() {};
 	virtual int tx_buf_size() {};
@@ -74,14 +74,14 @@ public:
 
 	// main reception path (XR packet)
 	void recv(u_int16_t type, u_int16_t begin, u_int16_t end,
-	u_int16_t *chunk, double so_rtime, bool recv_by_ch, pktbuf* pb);
+	u_int16_t *chunk, double so_rtime, bool ack_clock, pktbuf* pb);
 
 	// return ackofack
 	inline u_int16_t get_aoa() { return aoa_; }
 
 	// just acked seqno in packets and in bytes
 	inline u_int16_t jacked() { return jacked_; }
-	inline int b_jacked() { return record_[bjacked_%PSR]; }
+	inline int b_jacked() { return record_[jacked_%PSR]; }
 
 	// tfwc controlled cwnd value in packets and in bytes
 	inline u_int32_t magic() { return cwnd_; }
