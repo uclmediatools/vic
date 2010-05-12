@@ -22,6 +22,6 @@ gnuplot -persist << EOF
 	#	font "Helvetica,24"
 
 	plot "rtt.xg" using 1:2 with lp lt 1 pt 6 ps .9 lc 18 title "sampled rtt", \
-	     "rtt.xg" using 1:3 with lp lt 1 pt 7 ps .7 lc 1 lw 3 title "smoothed rtt"
+	     "rtt.xg" using 1:3 with lp lt 1 pt 4 ps .9 lc 1 lw 3 title "smoothed rtt"
 	
 EOF
