@@ -57,7 +57,7 @@ int main (int argc, char *argv[]) {
 	// variables
 	string items, stat;
 	double time;
-	double offset;
+	double offset = 0.;
 	int b, e;  // begin and end of XR fields
 	bool vf = false;  // the very first line
 
