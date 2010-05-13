@@ -103,10 +103,16 @@ Transmitter::Transmitter() :
 	mh_.msg_iovlen = 2;
 
 	// CC related...
-	tfwc_sndr_ = TfwcSndr::instance();
-	tfwc_rcvr_ = TfwcRcvr::instance();
-	tfrc_sndr_ = TfrcSndr::instance();
-	tfrc_rcvr_ = TfrcRcvr::instance();
+	switch(cc_type_) {
+	  case WBCC:
+		tfwc_sndr_ = TfwcSndr::instance();
+		tfwc_rcvr_ = TfwcRcvr::instance();
+	  break;
+	  case RBCC:
+		tfrc_sndr_ = TfrcSndr::instance();
+		tfrc_rcvr_ = TfrcRcvr::instance();
+	  break;
+	}
 	
 	epc_ = 0;	// experimental packet counter
 }
