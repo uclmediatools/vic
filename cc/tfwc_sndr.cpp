@@ -99,7 +99,7 @@ TfwcSndr::TfwcSndr() :
 	srtt_ = -1.0;
 	rto_ = 3.0;		// RFC 1122
 	rttvar_ = 0.0;
-	df_ = 0.95;
+	df_ = 0.99;
 	sqrtrtt_ = 1.0;
 	t0_ = 6.0;
 	alpha_ = 0.125;
