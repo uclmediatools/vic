@@ -36,7 +36,7 @@
 
 .SUFFIXES: .cpp $(.SUFFIXES)
 
-ALL = @V_ALL@ histtolut
+ALL = @V_ALL@ histtolut cc_tools
 all:	$(ALL)
 
 # Special case for H261 encoder - no optimisation if using linux gcc 2.96
@@ -362,6 +362,7 @@ clean:
 	cd codec/tmn && $(MAKE) clean
 	cd codec/tmndec && $(MAKE) realclean
 	rm -f codec/tmn-x/*.o codec/tmn-x/*.a
+	cd cc/tools && $(MAKE) clean
 
 realclean:
 	$(MAKE) clean
@@ -445,3 +446,6 @@ codec/tmndec/libh263.a:
 	(cd codec/tmndec; $(MAKE) CC=$(CC) CCOPT="$(CCOPT)" -f Makefile.lib)
 strip:	vic
 	strip vic
+cc_tools: cc/tools/asv.cc cc/tools/xr_send.cc
+	rm -f $@
+	(cd cc/tools; $(MAKE))
