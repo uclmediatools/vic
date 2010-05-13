@@ -56,7 +56,7 @@ class SessionManager;
 bool is_sender_ = false;
 
 class DataHandler : public IOHandler {
-    public:
+public:
 	DataHandler* next;
 	inline DataHandler() : next(0), sm_(0), net_(0), addrp_(0) {}
 //	inline DataHandler(SessionManager& sm) : sm_(sm), net_(0), addrp_(0) {}
@@ -76,10 +76,13 @@ class DataHandler : public IOHandler {
 		net_->send(bp, len);
 	}
 	inline void manager(SessionManager* sm) { sm_ = sm; }
-    protected:
+
+protected:
 	SessionManager *sm_;
 	Network* net_;
 	Address *addrp_;
+
+private:
 };
 /*
  * Parameters controling the RTCP report rate timer.
@@ -280,6 +283,10 @@ private:
 	}
 	inline void xr_arrival_info(int nbytes, int i) {
 	fprintf(stderr, "  \tnow: %f\tnbytes[%d]: %d\n",tx_get_now(),i,nbytes);
+	}
+	inline void send_xr_info(int bt, u_int16_t b, u_int16_t e){
+	fprintf(stderr, "\tBT: %d\tnow: %f begin: %d end: %d\n",
+	bt, tx_get_now(), b, e);
 	}
 };
 

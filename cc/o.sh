@@ -1,4 +1,5 @@
 #!/bin/sh
+# $Id$
 
 SCALE=100
 

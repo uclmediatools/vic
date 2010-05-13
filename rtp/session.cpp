@@ -822,8 +822,8 @@ void SessionManager::send_xreport(CtrlHandler* ch, u_int8_t bt,
 	xr->begin_seq = htons(begin_seq);
 	xr->end_seq = htons(end_seq);
 
-	fprintf(stderr, "\t>> sending RTCP XR: BT:%d, begin:%d, end:%d\n",
-			bt, ntohs(xr->begin_seq), ntohs(xr->end_seq));
+	//fprintf(stderr, "\t>> sending RTCP XR: BT:%d, begin:%d, end:%d\n",
+	//		bt, ntohs(xr->begin_seq), ntohs(xr->end_seq));
 
 	// declare XR report chunks
 	u_int16_t *xrchunks = (u_int16_t *) (xr + 1);
@@ -858,6 +858,7 @@ void SessionManager::send_xreport(CtrlHandler* ch, u_int8_t bt,
 	rh->rh_len = htons((len >> 2) - 1);
 
 	// send XR report block
+	send_xr_info(bt, begin_seq, end_seq);
 	ch->send(pktbuf_, len);
 }
 
