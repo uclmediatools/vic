@@ -446,5 +446,5 @@ codec/tmndec/libh263.a:
 	(cd codec/tmndec; $(MAKE) CC=$(CC) CCOPT="$(CCOPT)" -f Makefile.lib)
 strip:	vic
 	strip vic
-cc_tools: cc/tools/asv.cc cc/tools/xr_send.cc
+cc_tools: $(wildcard *.cc)
 	@(cd cc/tools; $(MAKE))
