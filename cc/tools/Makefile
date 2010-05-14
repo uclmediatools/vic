@@ -6,12 +6,17 @@ OBJS	:= $(SRCS:.cc=.o)
 CFLAGS	:= -Wall -g -O2
 RM	:= rm -f
 
-.PHONY:	clean distclean
+.PHONY: all clean distclean
 
-all: $(SRCS)
-	$(CPP) $(CFLAGS) asv.cc -o asv
-	$(CPP) $(CFLAGS) xr_send.cc -o xr_send
+ALL = asv xr_send
+all: $(ALL)
+
+asv: asv.cc
+	$(CPP) $(CFLAS) $< -o $@
+
+xr_send: xr_send.cc
+	$(CPP) $(CFLAS) $< -o $@
 
 clean:
-	$(RM) asv xr_send
+	$(RM) $(ALL)
 
