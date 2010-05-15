@@ -2189,7 +2189,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\video\DeckLinkAPI_i.c"
+				RelativePath=".\video\DeckLinkAPI_i.cpp"
 				>
 			</File>
 			<File

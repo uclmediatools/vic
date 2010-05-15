@@ -564,19 +564,22 @@ dnl If gcc 32bit then we need to set these flags for compilation of ffmpeg and x
 			fi
 		fi
 		LIBS="$LIBS -liphlpapi -lvfw32 -lgdi32 -lole32 -loleaut32 -luuid -lcomctl32 -lcomdlg32 -limm32"
-		V_DEFINE="$V_DEFINE -DSTATIC_BUILD"
+		V_DEFINE="$V_DEFINE -DSTATIC_BUILD -DWIN32 -D_WINDOWS -DHAVE_SWSCALE -DHAVE_STDLIB_H -DSASR -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -D_WIN32_WINNT=_WIN32_WINNT_WINXP"
 		V_EXTRAC_OBJ="$V_EXTRAC_OBJ win32/win32.o getopt.o"
 		V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-win32.o video/yuv_convert.o"
 		V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-win32DS.o video/crossbar.o"
+		V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-decklink.o video/DeckLinkAPI_i.o"
 		V_LIB_GRABBER="$V_LIB_GRABBER dx9/Lib/x86/ddraw.lib dx9/Lib/x86/dxguid.lib dx9/Extras/DirectShow/Lib/x86/strmiids.lib dx9/Extras/DirectShow/Lib/x86/quartz.lib"
 		V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -Idx9/Include -Idx9/Extras/DirectShow/Include"
-		ffmpeg_conf="$ffmpeg_conf --enable-memalign-hack"
+		ffmpeg_conf="$ffmpeg_conf --enable-memalign-hack --enable-w32threads"
+		x264_conf="$x264_conf --disable-avis-input --disable-pthread"
 		AC_ARG_ENABLE(ddraw, --enable-ddraw        Enable or disable DirectDraw, ddraw="yes", ddraw="no")
 		if test "$ddraw" == "yes"; then
 		    V_DDRAW="-DUSE_DDRAW"
 			echo "Using DirectDraw"
 		fi;
 		V_PROG="vic.exe"
+		V_CCOPT="$V_CCOPT -Wl,-subsystem,windows"
 		;;
 esac
 
@@ -639,7 +642,7 @@ if test "$x264co" = "yes" ; then
    fi
    echo;echo "Configuring x264..."
    echo "${V_CCLDFLAGS32} ./configure --prefix=$V_PATH/x264"
-   cd x264 && eval ${V_CCLDFLAGS32} ./configure --prefix=$V_PATH/x264; cd ..
+   cd x264 && eval ${V_CCLDFLAGS32} ./configure --prefix=$V_PATH/x264 $x264_conf; cd ..
    V_INCLUDE="$V_INCLUDE -Ix264/include"
    V_CODEC_LIB="$V_CODEC_LIB -Lx264/lib -lx264"
    havex264="yes"
@@ -762,6 +765,7 @@ if test "$havex264" == "yes"; then
 	    AC_CHECK_LIB(pthreadGC2, pthread_create, pthreadGC2="yes", pthreadGC2="no")
 		if test "$pthreadGC2" == "yes"; then
 		    V_CODEC_LIB="$V_CODEC_LIB -lpthreadGC2"
+			V_DEFINE="$V_DEFINE -DPTW32_STATIC_LIB"
 		fi
 	fi
 fi

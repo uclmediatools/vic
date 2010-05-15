@@ -482,7 +482,7 @@
     <ClCompile Include="tkWinColor.c" />
     <ClCompile Include="video\assistor-list.cpp" />
     <ClCompile Include="video\crossbar.cpp" />
-    <ClCompile Include="video\DeckLinkAPI_i.c" />
+    <ClCompile Include="video\DeckLinkAPI_i.cpp" />
     <ClCompile Include="video\deinterlace.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">true</ExcludedFromBuild>
