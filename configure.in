@@ -51,7 +51,7 @@ V_LIB_FFMPEG=""
 V_LIB_X264=""
 V_DDRAW=""
 
-dnl Optimisation in H261 decoder needs to be turned off for GCC 2.96 
+dnl Optimisation in H261 decoder needs to be turned off for GCC 2.96
 
 AC_MSG_CHECKING([for buggy version of GCC-2.96])
 if test $CC = gcc ; then
@@ -252,7 +252,7 @@ if test -r /usr/lib/libvl.so ; then
 	if test -r /usr/include/dmedia/cl_cosmo.h  ; then
 		V_LIB_GRABBER="$V_LIB_GRABBER -lcl"
 		V_OBJ_GRABBER="video/grabber-cosmo.o $V_OBJ_GRABBER"
-	fi		
+	fi
 fi
 if test -r /usr/lib/libsvideo.a ; then
 	V_LIB_GRABBER="$V_LIB_GRABBER -lsvideo"
@@ -359,7 +359,7 @@ for dir in $places; do
 	fi
 done
 
-case "$target" in 
+case "$target" in
 *-dec-*)
 	jv_dir=jv2
 	V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER -I$jv_dir"
@@ -372,7 +372,7 @@ case "$target" in
 		#V_INCLUDE="$V_INCLUDE -Ircap-include"
 		#XXX
 		#V_OBJ_GRABBER="$V_OBJ_GRABBER net-rtip.o"
-		echo no rtip support 
+		echo no rtip support
 	fi
 	;;
 sparc-sun-solaris*)
@@ -407,7 +407,7 @@ sparc-sun-solaris*)
 			V_PROG="vic vic.xil"
 			V_INCLUDE_GRABBER="$V_INCLUDE_GRABBER $SYSINC$xil_dir/include -DSUNXIL_WARNING_DISABLE"
 			V_LIB_XIL="-L$xil_dir/lib -R\"$xil_dir/lib:/opt/SUNWo1kp/lib:/opt/MMACo1k/lib\" -lxil"
-			V_OBJ_XIL="video/grabber-xil.o codec/framer-h261hw.o codec/framer-cellb.o video/assistor-xil.o" 
+			V_OBJ_XIL="video/grabber-xil.o codec/framer-h261hw.o codec/framer-cellb.o video/assistor-xil.o"
 		fi
 	elif test "$have_xil" = yes ; then
 		V_OBJ_XIL="video/grabber-xil.o codec/framer-h261hw.o codec/framer-cellb.o video/assistor-xil.o"
@@ -434,7 +434,7 @@ sparc-sun-sunos*)
 		fi
 		CXX="CC +p -float -woff 3262 -DSGI_COMPAT"
 	else
-		CXX=$CC	
+		CXX=$CC
 	fi
 	V_STATIC=""
 	;;
@@ -627,7 +627,7 @@ if test "$ffmpegco" = "yes" ; then
    cd ffmpeg && eval ${V_CCLDFLAGS32} ./configure --prefix=$V_PATH/ffmpeg $ffmpeg_conf --enable-gpl --enable-postproc; cd ..
    V_INCLUDE="$V_INCLUDE -Iffmpeg/include -Iffmpeg"
    V_CODEC_LIB="$V_CODEC_LIB -Lffmpeg/lib -lavcodec -lavutil -lswscale -lpostproc "
-  else 
+  else
    echo "ffmpeg not available without --enable-gpl"
   fi
 fi
@@ -646,7 +646,7 @@ if test "$x264co" = "yes" ; then
    V_INCLUDE="$V_INCLUDE -Ix264/include"
    V_CODEC_LIB="$V_CODEC_LIB -Lx264/lib -lx264"
    havex264="yes"
-  else 
+  else
    echo "x264 not available without --enable-gpl"
   fi
 fi
@@ -670,7 +670,7 @@ if test "$gpl" = "yes" ; then
 	   fi
 	   echo "checking for FFmpeg headers...yes"
 	   V_INCLUDE="$V_INCLUDE -I$ffmpeginc"
-	
+
 	else
 
 	   AC_CHECK_HEADER(libavcodec/avcodec.h, [], [
@@ -697,7 +697,7 @@ if test "$gpl" = "yes" ; then
        elif test ! -r $ffmpeglib/libpostproc.a ; then
             echo "Error! you need to have $ffmpeglib/libpostproc.a around"
        fi
-	   
+
 	   V_CODEC_LIB="$V_CODEC_LIB -L$ffmpeglib -lavcodec -lavutil -lswscale -lpostproc"
 	else
 	   AC_CHECK_LIB(avcodec, main, [], [
@@ -720,7 +720,7 @@ if test "$gpl" = "yes" ; then
 
 	   V_CODEC_LIB="$V_CODEC_LIB -lavcodec -lavutil -lswscale -lpostproc"
 	fi
-  fi 
+  fi
 fi
 
 AC_ARG_WITH(x264inc,       --with-x264inc=dir     specify the directory of x264 header, x264inc=$withval, x264inc="")
@@ -778,7 +778,7 @@ if test "$gpl" = "yes" ; then
     V_CPUDETECT="-DRUNTIME_CPUDETECT"
     V_CPUDETECT_OBJ="cpu/cpudetect.o cpu/cpuid.o"
  fi
- else 
+ else
    echo "No runtime cputect without --enable-gpl"
 fi
 

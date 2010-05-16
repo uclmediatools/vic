@@ -4459,10 +4459,10 @@ Use --with-tcl= option to indicate location of tclConfig.sh file for Tcl." "$LIN
 fi
 
 if test "$zvfs" == "no" ; then
-	V_TCL2CPP_OBJS="\$(TCL_VIC:.tcl=.o) tk.o"
-	V_TCL2CPP_VDD_OBJS="ui-vdd.o tk.o"
-	V_TCL2CPP_H261_PLAY_OBJS="ui-h261_play.o tk.o"
-	V_TCL2CPP_JPEG_PLAY_OBJS="ui-jpeg_play.o tk.o"
+	V_TCL2CPP_OBJS="\$(TCL_VIC:.tcl=.o)"
+	V_TCL2CPP_VDD_OBJS="ui-vdd.o"
+	V_TCL2CPP_H261_PLAY_OBJS="ui-h261_play.o"
+	V_TCL2CPP_JPEG_PLAY_OBJS="ui-jpeg_play.o"
 fi
 
 
