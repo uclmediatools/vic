@@ -71,21 +71,6 @@ MKDEP = ./mkdep
 
 LIBRARY_TK = @V_LIBRARY_TK@
 LIBRARY_TCL = @V_LIBRARY_TCL@
-TK_LIBRARY_FILES = \
-		$(LIBRARY_TCL)/init.tcl \
-		$(LIBRARY_TK)/tk.tcl \
-		$(LIBRARY_TK)/button.tcl \
-		$(LIBRARY_TK)/dialog.tcl \
-		$(LIBRARY_TK)/entry.tcl \
-		$(LIBRARY_TK)/focus.tcl \
-		$(LIBRARY_TK)/listbox.tcl \
-		$(LIBRARY_TK)/menu.tcl \
-		$(LIBRARY_TK)/palette.tcl \
-		$(LIBRARY_TK)/scale.tcl \
-		$(LIBRARY_TK)/tearoff.tcl \
-		$(LIBRARY_TK)/text.tcl \
-		$(LIBRARY_TK)/optMenu.tcl \
-		$(LIBRARY_TK)/scrlbar.tcl
 TK_BASE_RC = @V_TKBASE_RC@
 
 LIB_GRABBER = @V_LIB_GRABBER@
@@ -282,14 +267,6 @@ h261tortp: h261tortp.cpp
 tcl2c++: tcl/tcl2cpp/tcl2cpp.c
 	rm -f $@
 	$(CXX) -o $@ $(CFLAGS) tcl/tcl2cpp/tcl2cpp.c
-
-#
-# pass-1 embedded tcl files
-#
-tk.o: $(TK_LIBRARY_FILES) tcl2c++
-	base=tk; rm -f $@ $$base.cpp ; \
-		./tcl2c++ 1 $(TK_LIBRARY_FILES) > $$base.cpp ; \
-		$(CXX) -o $@ -c $(CFLAGS) $$base.cpp ; rm -f $$base.cpp
 
 #
 # pass-2 embedded tcl files
