@@ -3,8 +3,9 @@ VIC on Windows platforms
 
 Please see win32\build_install.txt for building instructions.
 
-The VIC distribution contains a Visual Studio 2008 solution
-file (vic.2008.sln) for building various releases.
+The VIC distribution contains a Visual Studio 2010 solution
+file (vic.sln) or Visual Studio 2008 solution file
+(vic.2008.sln) for building various releases.
 
 The following Solutions Configurations are available from
 the Build->'Configuration Manger...' menu item: 

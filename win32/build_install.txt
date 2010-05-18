@@ -1,4 +1,4 @@
-Win32 build instructions for Visual Studio 2008
+Win32 build instructions for Visual Studio 2008 & 2010
 
 
 ~~~~
@@ -14,7 +14,7 @@ Non-GPL VIC (Release or Debug) version pre-requisites:
 - A recent ActiveTcl 8.5 install
     http://www.activestate.com/activetcl/downloads/
 
-To build Non-GPL VIC with VS2008, select Release or Debug in the "Solutions Configuration" drop down menu, then click "Configuration Manger..." in the same menu and select Debug (nonGPL) or Release (nonGPL).
+To build Non-GPL VIC with VS2008 or VS2010, select Release or Debug in the "Solutions Configuration" drop down menu, then click "Configuration Manger..." in the same menu and select Debug (nonGPL) or Release (nonGPL).
 
 
 ~~~~
@@ -50,7 +50,7 @@ Note: ZIP 3.0 must not be used as it has a bug which prevents it from adjusting 
 
 
 
-Please see “Preparing the MSys+MinGW system” and "Building FFmpeg SVN statically" links on the following page for instructions on how to setup MSys and MinGW for building FFmpeg :
+Please see "Preparing the MSys+MinGW system” and "Building FFmpeg SVN statically" links on the following page for instructions on how to setup MSys and MinGW for building FFmpeg :
   http://ffmpeg.arrozcru.org/wiki/index.php
 
 
@@ -80,7 +80,7 @@ VIC has an additional dependency on the MinGW zlib package which can be download
   http://sourceforge.net/projects/mingw/files/
 
 
-The Release GPL version of VIC will fail to link in VS2008 if the following isn't performed on the "Visual Studio 2008 Command Prompt" console:
+The Release GPL version of VIC will fail to link in VS2008 or VS2010 if the following isn't performed in the "Visual Studio 2008 (or 2010) Command Prompt" console:
 
 cd C:\MinGW\lib
 lib -remove:mbrtowc.o libmingwex.a
@@ -97,4 +97,4 @@ cd /usr/local/lib/
 strip -x *.a
 
 
-To build GPL VIC with VS2008, select Release or Debug in the "Solutions Configuration" drop down menu, then click 'Configuration Manger..." in the same menu and select Debug (GPL) or Release (GPL).
+To build GPL VIC with VS2008 or VS2010, select Release or Debug in the "Solutions Configuration" drop down menu, then click "Configuration Manger..." in the same menu and select Debug (GPL) or Release (GPL).
