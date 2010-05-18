@@ -1378,13 +1378,13 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 		// i am an RTP data sender (receive ackvec)                         *
 		// -----------------------------------------------------------------*
 		if (am_i_sender()) {
+		  // get SO_TIMESTAMP
+		  so_rtime = ch_->net()->recv_so_time() - tx_ts_offset();
+		  //sender_xr_ts_info(so_rtime);
+
   		  fprintf(stderr, ">>> parse_xr - i_am_sender\n");
 		  fprintf(stderr, "\tincomingXR\tnow: %f\n", recv_ts_);
 		  //sender_xr_info(__FILE__,__LINE__,begin, end, xr1, xrlen);
-
-		  // SO_TIMESTAMP
-		  //so_rtime = ch_[0].net()->recv_so_time();
-		  //sender_xr_ts_info(so_rtime);
 
 		  switch (cc_type_) {
 			case WBCC:
