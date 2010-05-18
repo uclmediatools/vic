@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug (GPL)|Win32">
@@ -575,6 +575,7 @@
       <GenerateTypeLibrary Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">false</GenerateTypeLibrary>
       <GenerateTypeLibrary Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">false</GenerateTypeLibrary>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
     </Midl>
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -791,7 +792,7 @@ rmdir /S /Q vic-zvfs
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>tcl85.lib;tk85.lib;uclmm.lib;ws2_32.lib;comsuppwd.lib;iphlpapi.lib;vfw32.lib;ddraw.lib;dxguid.lib;strmiids.lib;quartz.lib;libgcc.a;libmingwex.lib;libavcodec.a;libavutil.a;libpostproc.a;libswscale.a;libx264.a;libpthreadGC2.a;libz.a;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>tcl85.lib;tk85.lib;uclmm.lib;ws2_32.lib;comsuppwd.lib;iphlpapi.lib;vfw32.lib;ddraw.lib;dxguid.lib;strmiids.lib;quartz.lib;libgcc.a;libmingwex.a;libavcodec.a;libavutil.a;libpostproc.a;libswscale.a;libx264.a;libpthreadGC2.a;libz.a;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>C:\Tcl\lib;x264\lib;ffmpeg\lib;"$(DXSDK_DIR)\Lib\x86";C:\msys\1.0\lib;"C:\mingw\lib\gcc\mingw32\4.2.1-sjlj";c:\mingw\local\lib;c:\mingw\local\bin;c:\mingw\lib;C:\msys\lib;"$(SolutionDir)Release";C:\msys\1.0\local\lib;C:\msys\local\lib;C:\msys\1.0\lib\gcc\mingw32\4.4.0;C:\msys\1.0\lib\gcc\mingw32\4.2.0;C:\msys\lib\gcc\mingw32\4.4.0;C:\msys\lib\gcc\mingw32\4.2.0</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>

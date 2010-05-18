@@ -415,7 +415,7 @@
     <ClCompile Include="$(OutDir)bv.c">
       <Filter>codec</Filter>
     </ClCompile>
-    <ClCompile Include="video\DeckLinkAPI_i.c">
+    <ClCompile Include="video\DeckLinkAPI_i.cpp">
       <Filter>video</Filter>
     </ClCompile>
     <ClCompile Include="render\color.cpp">
