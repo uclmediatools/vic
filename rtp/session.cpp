@@ -1383,13 +1383,13 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 		  //sender_xr_ts_info(so_rtime);
 
   		  fprintf(stderr, ">>> parse_xr - i_am_sender\n");
-		  fprintf(stderr, "\tincomingXR\tnow: %f\n", recv_ts_);
+		  fprintf(stderr, "\tincomingXR\tnow: %f\n", so_rtime);
 		  //sender_xr_info(__FILE__,__LINE__,begin, end, xr1, xrlen);
 
 		  switch (cc_type_) {
 			case WBCC:
 			// TFWC sender (getting AckVec)
-			tfwc_sndr_.recv(xr->BT,begin,end,chunk,recv_ts_,ack_clock,pb);
+			tfwc_sndr_.recv(xr->BT,begin,end,chunk,so_rtime,ack_clock,pb);
 			// we need to call Transmitter::output(pb) to make Ack driven
 			if(ack_clock)
 			tfwc_output(ack_clock);
@@ -1397,7 +1397,7 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 
 			case RBCC:
 			// TFRC sender (getting AckVec)
-			tfrc_sndr_.recv(xr->BT,begin,end,chunk,recv_ts_,ack_clock,pb);
+			tfrc_sndr_.recv(xr->BT,begin,end,chunk,so_rtime,ack_clock,pb);
 			// XXX
 			if(ack_clock)
 			tfrc_output(ack_clock);
