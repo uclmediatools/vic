@@ -58,4 +58,7 @@
 
 #define MAX_RTP 1460
 
+// customized debug statement
+#define dbug _dprintf("    [%s +%d] ",__FILE__,__LINE__), _dprintf
+
 #endif /* vic_cc_common_h */
