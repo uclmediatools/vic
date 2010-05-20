@@ -58,6 +58,9 @@
 
 #define MAX_RTP 1460
 
+// number of packets for small frames
+#define SMALL_FRAME 2
+
 // customized debug statement
 #define dbug _dprintf("    [%s +%d] ",__FILE__,__LINE__), _dprintf
 

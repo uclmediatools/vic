@@ -56,8 +56,6 @@ static double p_to_b(double p, double rtt, double tzero, int psize, int bval)
 	tmp2 = tzero * p * (1.0+32.0 * p * p);
 	res += tmp1 * tmp2;
 
-	double temp = res;  // res val (packets per second)
-
 	// At this point, 1/res gives the sending rate in pps:
 	// 1/(rtt*sqrt(2*bval*p/3) + 3*sqrt(3*bval*p/8)*tzero*p*(1+32*p*p))
 	if (res < SAMLLFLOAT) {
@@ -70,11 +68,8 @@ static double p_to_b(double p, double rtt, double tzero, int psize, int bval)
 		res = MAXRATE ;
 	}
 
-	double now;
-	double Tx = 8.0 * res;  // unit of Tx is "bits" per second
-	fprintf (stderr, 
-		" %f tfrcTx: %f temp: %f rtt: %f tzero: %f p: %f\n",
-		now, Tx, temp, rtt, tzero, p);
+	// the unit of rate is (bits/sec)
+	//double brate = 8.0 * res;
 
 	return res;
 }

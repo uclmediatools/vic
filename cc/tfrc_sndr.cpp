@@ -48,9 +48,15 @@
 // TfrcSndr instance
 TfrcSndr TfrcSndr::instance_;
 
+// initial TFRC send rate (bytes/sec)
+#define INIT_RATE MAX_RTP
+
+/*
+ * TFRC Sender Constructor
+ */
 TfrcSndr::TfrcSndr() :
 	seqno_(0),
-	x_rate_(0),
+	x_rate_(INIT_RATE),
 	aoa_(0),
 	now_(0),
 	so_recv_(0),
@@ -91,6 +97,9 @@ TfrcSndr::TfrcSndr() :
 	k_ = 4;
 	ts_ = 0.0;
 
+	is_tfrc_on_ = false;
+	is_first_loss_seen_ = false;
+	first_lost_pkt_ = -1;
 	num_missing_ = 0;
 
 	avg_interval_ = 0.0;
@@ -136,7 +145,7 @@ void TfrcSndr::send(pktbuf* pb, double now) {
 	if (!(pb->tag)) {
 		asize_ /= pcnt_;
 		// EWMA'd packet size
-		if (pcnt_ != 1)
+		if (pcnt_ > SMALL_FRAME)
 		psize_ = lambda1_ * asize_ + (1 - lambda1_) * psize_;
 		else
 		psize_ = lambda2_ * asize_ + (1 - lambda2_) * psize_;
@@ -210,7 +219,7 @@ void TfrcSndr::recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	gen_refvec(jacked_, aoa_+1);
 
 	// TFRC congestioin control
-	calc_rate();
+	update_xrate();
 
 	// set ackofack (real number)
 	aoa_ = jacked_;
@@ -303,9 +312,163 @@ void TfrcSndr::reset_var(bool reverted) {
 }
 
 /*
- * calculate sending rate
+ * detect the very first packet loss
+ * @ret: true if there is a loss
  */
-void TfrcSndr::calc_rate() {
+bool TfrcSndr::detect_loss() {
+	bool ret;	// true if there is a loss
+	bool is_there = false;
+	int count = 0;	// packet loss counter
+
+	// compare refvec and seqvec
+	for (int i = 0; i < num_refvec_; i++) {
+	  for (int j = num_seqvec_-1; j >= 0; j--) {
+	    if(refvec_[i] == seqvec_[j]) {
+		  is_there = true;
+		  // we found it, so reset and break
+		  count = 0; break;
+		} else {
+		  is_there = false;
+		  count++;
+		}
+	  } // packet loss should be captured by now
+
+	  // record the very first lost packet seqno
+	  if(!is_there) {
+	    if(!is_first_loss_seen_)
+		first_lost_pkt_ = refvec_[i];
+	  }
+	}
+	return ret = (count > 0) ? true : false;
+}
+
+/*
+ *
+ */
+void TfrcSndr::dupack_action(int seqno) {
+	// this is the very first packet loss
+	is_first_loss_seen_ = true;
+
+	// we now have just one meaningful history information
+	hsz_ = 1;
+
+	// cut rate in half
+	x_rate_ /= 2.0;
+
+	// creating simulated loss history and loss rate
+	p_ = pseudo_p(x_rate_);
+	pseudo_history(p_);
+
+	// generate weight factors
+	gen_weight();
+
+	// finally, record the very first lost packet's timestamp
+	ts_ = tsvec_[seqno%TSZ];
+	//then, turn on TFRC algo
+	is_tfrc_on_ = true;
+}
+
+/*
+ * TCP-like slow start
+ */
+void TfrcSndr::slow_start() {
+	double m = 2.0;
+	x_rate_ = m * x_rate_;
+}
+
+/*
+ * TCP-like Additive Increase
+ * (until the very first packet loss)
+ */
+void TfrcSndr::tcp_like_increase() {
+	// if loss, do TCP's dupack-like action
+	if(detect_loss())
+		dupack_action(first_lost_pkt_);
+	// if no loss, do TCP-like AI
+	else
+		slow_start();
+}
+
+/*
+ * generate weighting factors
+ */
+void TfrcSndr::gen_weight() {
+#ifdef SHORT_HISTORY
+	// this is just weighted moving average (WMA)
+	for(int i = 0; i <= HSZ; i++){
+	  if(i < HSZ/2)
+		weight_[i] = 1.0;
+	  else
+		weight_[i] = 1.0 - (i-(HSZ/2 - 1.0)) / (HSZ/2 + 1.0);
+	}
+#else
+	// this is exponentially weighted moving average (EWMA)
+	for (int i=0; i <= HSZ; i++) {
+	  if (i < HSZ/4)
+		weight_[i] = 1.0;
+	  else
+		weight_[i] = 2.0 / (i - 1.0);
+	}
+#endif
+}
+
+/*
+ * compute simulated loss rate
+ */
+double TfrcSndr::pseudo_p(double rate) {
+	double pseudo;
+	double f, x;
+	for (pseudo = 0.00001; pseudo < 1.0; pseudo += 0.00001) {
+	  f = sqrt((2.0/3.0) * pseudo) + 12.0 * pseudo * 
+	    (1.0 + 32.0 * pow(pseudo, 2.0)) * sqrt((3.0/8.0) * pseudo);
+
+	  x = 1./(srtt_ * f);
+
+	  if (x < rate)
+		break;
+	}
+	return (pseudo);
+}
+
+/*
+ * compute simulated loss history
+ */
+void TfrcSndr::pseudo_history(double p) {
+	double pseudo_interval = 1.0 / p;
+
+	// bzero for all history information
+	for (int i = 0; i <= HSZ+1; i++)
+		history_[i] = 0;
+	// let most recent history information be 0
+	history_[0] = 0;
+	// put the pseudo interval in the first history bucket
+	history_[1] = pseudo_interval;
+}
+
+/*
+ * update sending rate
+ */
+void TfrcSndr::update_xrate() {
+	// TFRC is not in action yet (i.e., no packet loss yet)
+	if(!is_tfrc_on_)
+	  tcp_like_increase();
+	// TFRC is turned on, so compute send rate
+	else
+	  calc_xrate();
+}
+
+/*
+ * calculate send rate
+ */
+void TfrcSndr::calc_xrate() {
+	loss_history();
+	avg_loss_interval();
+
+	// loss event rate (p)
+	p_ = 1.0 / avg_interval_;
+
+	// sending rate (bytes/sec)
+	x_rate_ = p_to_b(p_, srtt_, t0_, psize_, 1);
 }
 
 /*
@@ -360,3 +523,127 @@ void TfrcSndr::update_rtt(double rtt_sample) {
 
 	print_rtt_info();
 }
+
+/*
+ * compute loss history
+ */
+void TfrcSndr::loss_history() {
+	bool is_loss = false;       // is there a loss found in seqvec?
+	bool is_new_event = false;  // is this a new loss event?
+
+	// compare reference with seqvec
+	for (int i = 0; i < num_refvec_; i++) {
+	  // is there a loss found?? and, is this a new loss event??
+	  if (!find_seqno(seqvec_, num_seqvec_, refvec_[i])) {
+		is_loss = true;
+		if (tsvec_[refvec_[i]%TSZ] - ts_ > srtt_)
+		  is_new_event = true;
+		else
+		  is_new_event = false;
+	  }
+
+	  // compute loss history (compare refvec and seqvec)
+	  // o  everytime it sees a loss
+	  //    it will compare the timestamp with smoothed RTT
+	  //
+	  // o  if the time difference is greater than RTT,
+	  //    then this loss starts a new loss event
+	  // o  if the time difference is less than RTT,
+	  //    then we do nothing
+	  //
+	  // o  if there is no loss, 
+	  //    simply increment the loss interval by one
+	  if (is_loss && is_new_event) {
+		// this is a new loss event!
+
+		// store previous ALI before changing history
+		//record_history(refvec_[i], avg_interval_, ts_);
+
+		// increase current history size
+		hsz_ = (hsz_ < HSZ) ? ++hsz_ : HSZ;
+
+		// shift history information
+		for (int k = HSZ; k > 0; k--)
+			history_[k] = history_[k-1];
+
+		// record lost packet's timestamp
+		ts_ = tsvec_[refvec_[i]%TSZ];
+
+		// let the most recent history information be one
+		history_[0] = 1;
+	  }
+	  else {
+		// this is not a new loss event
+		// increase the current history information
+		history_[0]++;
+	  }
+	} // end for(;;) statement
+}
+
+/*
+ * average loss interval
+ */
+void TfrcSndr::avg_loss_interval() {
+
+	I_tot0_ = 0;
+	I_tot1_ = 0;
+	tot_weight_ = 0;
+	int i = 0, j = 0;
+
+	// make a decision whether to include the most recent loss interval
+	//fprintf(stderr, "\n\tHIST_0 [");
+	for (i = 0; i < hsz_; i++) {
+		I_tot0_ += weight_[i] * history_[i];
+		tot_weight_ += weight_[i];
+	//  print_history_item(i);
+	}
+	//fprintf(stderr, "]\n");
+	//fprintf(stderr, "\tHIST_1 [");
+	for (i = 1, j = 0; i < hsz_ + 1; i++, j++) {
+		I_tot1_ += weight_[i-1] * history_[i];
+	//  print_history_item(i, j);
+	}
+	//fprintf(stderr, "]\n");
+
+	// compare I_tot0_ and I_tot1_ and use larger value
+	if (I_tot0_ < I_tot1_)
+		I_tot_ = I_tot1_;
+	else
+		I_tot_ = I_tot0_;
+
+	// this is average loss interval
+	avg_interval_ = I_tot_ / tot_weight_;
+	print_ALI();
+}
+
+/*
+ * find seqno in the array
+ */
+bool TfrcSndr::find_seqno (u_int16_t *v, int n, int target) {
+	for (int i = 0; i < n; i++) {
+	  if (v[i] == target)
+		return true;
+	}
+	return false;
+}
+bool TfrcSndr::find_seqno(u_int32_t *v, int n, u_int32_t target) {
+	for (int i = 0; i < n; i++) {
+	  if(v[i] == target)
+		return true;
+	}
+	return false;
+}
+
+/*
+ * print history item
+ */
+void TfrcSndr::print_history_item (int i) {
+	fprintf(stderr, "%d", history_[i]);
+	if (i < hsz_ - 1) fprintf(stderr, ", ");
+}
+
+void TfrcSndr::print_history_item (int i, int j) {
+	fprintf(stderr, "%d", history_[i]);
+	if (j < hsz_ - 1) fprintf(stderr, ", ");
+}
+

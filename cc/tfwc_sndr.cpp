@@ -169,7 +169,7 @@ void TfwcSndr::send(pktbuf* pb, double now) {
 	if (!(pb->tag)) {
 		asize_ /= pcnt_;
 		// EWMA'd packet size
-		if (pcnt_ != 1)
+		if (pcnt_ > SMALL_FRAME)
 		psize_ = lambda1_ * asize_ + (1 - lambda1_) * psize_;
 		else
 		psize_ = lambda2_ * asize_ + (1 - lambda2_) * psize_;
@@ -725,7 +725,7 @@ double TfwcSndr::pseudo_p(int cwnd) {
 }
 
 /*
- * compute simulated loss history
+ * compute loss history
  */
 void TfwcSndr::loss_history() {
 	bool is_loss = false;		// is there a loss found in seqvec?

@@ -65,7 +65,7 @@ public:
 	inline u_int16_t get_aoa() { return aoa_; }
 
 	u_int16_t seqno_;	// packet sequence number
-	double x_rate_;		// send rate
+	double x_rate_;		// send rate (bytes/sec)
 
 	// TfrcSndr instance
 	static inline TfrcSndr& instance() { return instance_; }
@@ -100,11 +100,35 @@ private:
 	void update_rtt(double tao);
 
 	// TFRC congestion control
-	void calc_rate();
+	void update_xrate();
+	// calculate send rate
+	void calc_xrate();
 	// average loss interval
 	void avg_loss_interval();
+	void print_history_item (int);
+	void print_history_item (int, int);
 	// loss history
 	void loss_history();
+
+	// TCP-like increase function
+	void tcp_like_increase();
+	// detect the first loss
+	bool detect_loss();
+	// TCP-like dupack action
+	void dupack_action(int seqno);
+	// TC_like slow start
+	void slow_start();
+
+	// generate weight factors
+	void gen_weight();
+
+	// estimated loss history/loss probability
+	double pseudo_p(double rate);
+	void pseudo_history(double p);
+
+	// find seqno
+	bool find_seqno(u_int16_t *v, int n, int target);
+	bool find_seqno(u_int32_t *v, int n, u_int32_t target);
 
 	// AckVec clone from Vic
 	inline void clone_ackv(u_int16_t *c, int n) {
@@ -158,6 +182,9 @@ private:
 	int num_refvec_;	// number of refvec elements
 	double *tsvec_;		// timestamp vector
 	u_int16_t jacked_;	// just acked seqno (head of ackvec)
+	bool is_first_loss_seen_;
+	bool is_tfrc_on_;
+	int first_lost_pkt_;// very first lost pkt seqno
 	int num_missing_;	// number of missing seqno
 	double p_;			// packet loss probability
 	double avg_interval_;	// average loss interval
@@ -234,6 +261,10 @@ private:
 	inline void print_packet_tsvec() {
 	fprintf(stderr, "\t>> now: %f tsvec_[%d]: %f\n",
 	now_, seqno_%TSZ, tsvec_[seqno_%TSZ]);
+	}
+	// print ALI for debugging
+	inline void print_ALI() {
+	fprintf(stderr, "\tnow: %f\tALI: %f\n\n", so_recv_, avg_interval_);
 	}
 };
 
