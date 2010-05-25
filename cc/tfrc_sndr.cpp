@@ -212,17 +212,21 @@ void TfrcSndr::recv(u_int16_t type, u_int16_t begin, u_int16_t end,
 	// generate seqno vector
 	gen_seqvec(ackv_, num_vec_);
 
+	// generate margin vector
+	marginvec(jacked_);
+	print_mvec();
+
 	// generate reference vector
 	// (it represents seqvec when no losses)
 	// @begin: aoa_+1 (lowest seqno)
 	// @end: jacked_
-	gen_refvec(jacked_, aoa_+1);
+	gen_refvec(mvec_[DUPACKS-1]-1, aoa_+1);
 
 	// TFRC congestioin control
 	update_xrate();
 
 	// set ackofack (real number)
-	aoa_ = jacked_;
+	aoa_ = ackofack();
 
 	// sampled RTT
 	tao_ = so_recv_ - tsvec_[jacked_%TSZ];

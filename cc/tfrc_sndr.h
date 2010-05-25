@@ -130,6 +130,17 @@ private:
 	bool find_seqno(u_int16_t *v, int n, int target);
 	bool find_seqno(u_int32_t *v, int n, u_int32_t target);
 
+	// generate margin vector
+	inline void marginvec(u_int16_t hseq) {
+	for (int i = 0; i < DUPACKS; i++)
+		// round up if it is less than zero
+		mvec_[i] = ((hseq - i) < 0) ? 0 : (hseq -i);
+	}
+	// ackofack
+	inline u_int16_t ackofack() {
+	return ((mvec_[DUPACKS - 1] - 1) <= 0) ?
+		0 : (u_int16_t) (mvec_[DUPACKS - 1] - 1);
+	}
 	// AckVec clone from Vic
 	inline void clone_ackv(u_int16_t *c, int n) {
 		for (int i = 0; i < n; i++)
@@ -176,6 +187,7 @@ private:
 
 	double ts_off_;	// timestamp offset for gettimeofday
 
+	int mvec_[DUPACKS];	// margin vec (simulating TCP 3 dupacks)
 	u_int32_t *seqvec_;	// generated seqno vec
 	int num_seqvec_;	// number of seqvec elements
 	u_int32_t *refvec_;	// reference seqno vec
@@ -228,7 +240,11 @@ private:
 	// record packet size in bytes
 	u_int16_t *record_;
 
-
+	// print mvec
+	inline void print_mvec() {
+	fprintf(stderr, "\tmargin numbers: ( %d %d %d )\n",
+	mvec_[0], mvec_[1], mvec_[2]);
+	}
 	// print vec
 	inline void print_vec(const char* str, u_int32_t *vec, int c) {
 	fprintf(stderr, "\t%s: (", str);
