@@ -459,6 +459,8 @@ void TfrcSndr::update_xrate() {
 	// TFRC is turned on, so compute send rate
 	else
 	  calc_xrate();
+
+	print_xrate();
 }
 
 /*

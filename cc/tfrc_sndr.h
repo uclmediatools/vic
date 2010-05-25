@@ -282,6 +282,10 @@ private:
 	inline void print_ALI() {
 	fprintf(stderr, "\tnow: %f\tALI: %f\n\n", so_recv_, avg_interval_);
 	}
+	// print send rate
+	inline void print_xrate() {
+	fprintf(stderr, "\tnow: %f\txrate: %f\n", so_recv_, x_rate_);
+	}
 };
 
 #endif
