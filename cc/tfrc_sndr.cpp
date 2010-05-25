@@ -378,6 +378,9 @@ void TfrcSndr::dupack_action(int seqno) {
 void TfrcSndr::slow_start() {
 	double m = 2.0;
 	x_rate_ = m * x_rate_;
+
+	if (x_rate_ > MAXRATE)
+	  x_rate_ = MAXRATE;
 }
 
 /*

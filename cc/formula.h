@@ -34,7 +34,7 @@
 #ifndef vic_cc_formula_h
 #define vic_cc_formula_h
 
-#define MAXRATE 25000000.0 
+#define MAXRATE 50000000.0 
 #define SAMLLFLOAT 0.0000001
 
 /*
