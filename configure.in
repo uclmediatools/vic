@@ -244,6 +244,8 @@ else
 	AC_MSG_RESULT([found ${ac_cv_c_decklinkapidispatch}/DeckLinkAPIDispatch.cpp])
 	V_INCLUDE="$V_INCLUDE -I\"${ac_cv_c_decklinkapidispatch}\""
 	V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-decklink.o"
+
+	AC_CHECK_LIB(dl, dlsym, [V_LIB="$V_LIB -ldl"])
 fi
 
 if test -r /usr/lib/libvl.so ; then
