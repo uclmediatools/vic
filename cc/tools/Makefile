@@ -12,10 +12,10 @@ ALL = asv xr_send
 all: $(ALL)
 
 asv: asv.cc
-	$(CPP) $(CFLAS) $< -o $@
+	$(CPP) $(CFLAGS) $< -o $@
 
 xr_send: xr_send.cc
-	$(CPP) $(CFLAS) $< -o $@
+	$(CPP) $(CFLAGS) $< -o $@
 
 clean:
 	$(RM) $(ALL)
