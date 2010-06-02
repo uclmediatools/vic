@@ -61,6 +61,10 @@ public:
 	void recv(u_int16_t, u_int16_t, u_int16_t,
 		u_int16_t*, double, bool, pktbuf*);
 
+	// return TFRC send rate
+	inline double xrate() { return x_rate_; }
+	// return packet size
+	inline int psize() { return psize_; }
 	// return ackofack
 	inline u_int16_t get_aoa() { return aoa_; }
 
