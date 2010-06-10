@@ -57,10 +57,13 @@ public:
 
 	// TfrcRcvr instance
 	static inline TfrcRcvr& instance() { return instance_; }
+	// Transmitter 
+	inline void manager(Transmitter* tm) { tm_ = tm; }
 
 protected:
 
 	static TfrcRcvr instance_;
+	Transmitter *tm_;
 
 	/*
 	 * Variables

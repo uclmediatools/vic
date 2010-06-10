@@ -42,17 +42,14 @@
 class TfrcSndr;
 
 // TFRC sender class
-class TfrcSndr {
+class TfrcSndr : public CcTimerHandler {
 public:
 	// constructor
 	TfrcSndr();
 	virtual ~TfrcSndr() {};
 
 	// virtual functions
-	virtual void tfrc_output(bool ack_clock=0) {UNUSED(ack_clock);};
-	virtual void tfrc_output(pktbuf*) {};
-	virtual double tx_ts_offset() {};
-	virtual int tx_buf_size() {};
+	virtual void timeout();
 
 	// parse seqno and timestamp
 	void send(pktbuf*, double);
@@ -71,12 +68,19 @@ public:
 	u_int16_t seqno_;	// packet sequence number
 	double x_rate_;		// send rate (bytes/sec)
 
+	// Rtx timer
+	void expire(int option);
+
 	// TfrcSndr instance
 	static inline TfrcSndr& instance() { return instance_; }
+
+    // Transmitter 
+	inline void manager(Transmitter* tm) { tm_ = tm; }
 
 protected:
 
 	static TfrcSndr instance_;
+	Transmitter *tm_;
 
 	// generate sequence numbers
 	void gen_seqvec(u_int16_t *v, int n);
@@ -85,12 +89,20 @@ protected:
 	// reset variables
 	void reset_var(bool reverted);
 
+    // return the current time
+	inline double now() { return (cc_now()-ts_off_); }
+
+	void set_rtx_timer();
+	void reset_rtx_timer(int backoff);
+	void backoff_timer();
+
 	u_int16_t *ackv_;	// received AckVec
 	u_int16_t aoa_;	// ack of ack
 	double ts_;			// timestamp
 	double now_;		// real-time now
 	double so_recv_;	// SO_TIMESTAMP
 	double tao_;		// sampled RTT
+	double set_time_;	// set time for rtx_timer
 
 	// packet size
 	int asize_;		// average packet size per frame

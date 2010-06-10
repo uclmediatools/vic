@@ -52,6 +52,14 @@ TfrcSndr TfrcSndr::instance_;
 #define INIT_RATE MAX_RTP
 
 /*
+ * retransmission timer
+ */
+void TfrcSndr::timeout() {
+    if((now() - set_time_) > rto_)
+    expire(CC_TIMER_RTX);
+}
+
+/*
  * TFRC Sender Constructor
  */
 TfrcSndr::TfrcSndr() :
@@ -83,8 +91,8 @@ TfrcSndr::TfrcSndr() :
 	num_refvec_ = 0;
 
 	// initialize variables
-	minrto_ = 0.0;
-	maxrto_ = 100000.0;
+	minrto_ = 0.2;	// Linux TCP implementation
+	maxrto_ = 60.0;	// RFC 2988
 	srtt_ = -1.0;
 	rto_ = 3.0;     // RFC 1122
 	rttvar_ = 0.0;
@@ -96,6 +104,7 @@ TfrcSndr::TfrcSndr() :
 	g_ = 0.01;
 	k_ = 4;
 	ts_ = 0.0;
+	set_time_ = 0.0;
 
 	is_tfrc_on_ = false;
 	is_first_loss_seen_ = false;
@@ -130,7 +139,7 @@ TfrcSndr::TfrcSndr() :
 void TfrcSndr::send(pktbuf* pb, double now) {
 	// the very first data packet
 	if(seqno_ == 0)
-	ts_off_ = tx_ts_offset();
+	ts_off_ = tm_->tx_ts_offset();
 
 	// parse seqno and mark timestamp for this data packet
 	rtphdr* rh = (rtphdr *) pb->data;
@@ -526,9 +535,11 @@ void TfrcSndr::update_rtt(double rtt_sample) {
 		sqrtrtt_ = df_ * sqrtrtt_ + (1 - df_) * sqrt(rtt_sample);
 	}
 
-	// 'rto' could be rounded by 'maxrto'
+	// 'rto' could be rounded by "min/maxrto"
 	if (rto_ > maxrto_)
 		rto_ = maxrto_;
+	if (rto_ < minrto_)
+		rto_ = minrto_;
 
 	print_rtt_info();
 }
@@ -656,3 +667,46 @@ void TfrcSndr::print_history_item (int i, int j) {
 	if (j < hsz_ - 1) fprintf(stderr, ", ");
 }
 
+/*
+ * retransmission timer-out
+ */
+void TfrcSndr::expire(int option) {
+	if (option == CC_TIMER_RTX) {
+		// reset timer
+		reset_rtx_timer(1);
+		// send packets
+		tm_->tfrc_output();
+	}
+}
+
+void TfrcSndr::reset_rtx_timer (int backoff) {
+	if(backoff)
+	backoff_timer();
+
+	set_rtx_timer();
+}
+
+/*
+ * backoff Rtx Timer
+ */
+void TfrcSndr::backoff_timer() {
+	if (srtt_ < 0) srtt_ = 1.0;
+	rto_ = 2.0 * rto_;
+
+	if (rto_ > maxrto_)
+		rto_ = maxrto_;
+	if (rto_ < minrto_)
+		rto_ = minrto_;
+}
+
+/*
+ * set Rtx Timer
+ */
+void TfrcSndr::set_rtx_timer() {
+	//print_rto_info();
+	
+	// mark time when setting timer
+	set_time_ = now_;
+	// resched() is basically msched(miliseconds)
+	resched(rto_ * 1000.);
+}

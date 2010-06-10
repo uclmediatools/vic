@@ -43,16 +43,16 @@
 #include "transmitter.h"
 #include "tfwc_sndr.h"
 
+// TfwcSndr instance
+TfwcSndr TfwcSndr::instance_;
+
 /*
  * retransmission timer
  */
-void TfwcRtxTimer::timeout() {
-	debug_msg("\t*------ TIMEOUT! ------*\n");
-	s_ -> expire(TFWC_TIMER_RTX);
+void TfwcSndr::timeout() {
+	if((now() - set_time_) > rto_)
+	expire(CC_TIMER_RTX);
 }
-
-// TfwcSndr instance
-TfwcSndr TfwcSndr::instance_;
 
 /* 
  * TFWC sender definition
@@ -61,7 +61,6 @@ TfwcSndr::TfwcSndr() :
 	seqno_(0),
 	cwnd_(1),		// initial cwnd in packet
 	bcwnd_(MAX_RTP),// initial cwnd in byte
-	rtx_timer_(this),
 	aoa_(0),
 	now_(0),
 	so_recv_(0),
@@ -94,8 +93,8 @@ TfwcSndr::TfwcSndr() :
 	for (int i = 0; i < DUPACKS; i++)
 		mvec_[i] = 0;
 
-	minrto_ = 0.0;
-	maxrto_ = 100000.0;
+	minrto_ = 0.2;	// Linux TCP implementation
+	maxrto_ = 60.0;	// RFC 2988
 	srtt_ = -1.0;
 	rto_ = 3.0;		// RFC 1122
 	rttvar_ = 0.0;
@@ -108,6 +107,7 @@ TfwcSndr::TfwcSndr() :
 	k_ = 4;
 	ts_ = 0.0;
 	ts_echo_ = 0.0;
+	set_time_ = 0.0;
 
 	is_tfwc_on_ = false;
 	is_first_loss_seen_ = false;
@@ -153,8 +153,8 @@ TfwcSndr::TfwcSndr() :
 
 void TfwcSndr::send(pktbuf* pb, double now) {
 	// the very first data packet
-	if(seqno_ == 0)
-	ts_off_ = tx_ts_offset();
+	if(seqno_ < 1)
+	ts_off_ = tm_->tx_ts_offset();
 
 	// parse seqno and mark timestamp for this data packet
 	rtphdr* rh = (rtphdr *) pb->data;
@@ -580,9 +580,11 @@ void TfwcSndr::update_rtt(double rtt_sample) {
 		rto_ = srtt_ + g_;
 	}
 
-	// 'rto' could be rounded by 'maxrto'
+	// 'rto' could be rounded by "min/maxrto"
 	if (rto_ > maxrto_)
 		rto_ = maxrto_;
+	if (rto_ < minrto_)
+		rto_ = minrto_;
 
 	print_rtt_info();
 }
@@ -897,7 +899,7 @@ void TfwcSndr::print_history_item (int i, int j) {
  * retransmission timer-out
  */
 void TfwcSndr::expire(int option) {
-	if (option == TFWC_TIMER_RTX) {
+	if (option == CC_TIMER_RTX) {
 		if(!to_driven_)
 		reset_rtx_timer(1);
 		else
@@ -908,7 +910,7 @@ void TfwcSndr::expire(int option) {
 			jacked_++;
 
 		// trigger packet sending
-		tfwc_output();
+		tm_->tfwc_output();
 	}
 }
 
@@ -917,7 +919,7 @@ void TfwcSndr::expire(int option) {
  */
 void TfwcSndr::reset_rtx_timer (int backoff) {
 	if(backoff)
-		backoff_timer();
+	backoff_timer();
 
 	set_rtx_timer();
 }
@@ -927,18 +929,24 @@ void TfwcSndr::reset_rtx_timer (int backoff) {
  */
 void TfwcSndr::backoff_timer() {
 	if (srtt_ < 0) srtt_ = 1.0;
-	rto_ = 2.0 * srtt_;
-
+	rto_ = 2.0 * rto_;
+	
 	if (rto_ > maxrto_)
 		rto_ = maxrto_;
+	if (rto_ < minrto_)
+		rto_ = minrto_;
 }
 
 /*
  * set Rtx Timer
  */
 void TfwcSndr::set_rtx_timer() {
+	//print_rto_info();
+
+	// mark time when setting timer
+	set_time_ = now_;
 	// resched() is basically msched(miliseconds)
-	rtx_timer_.resched(rto_ * 1000.);
+	resched(rto_ * 1000.);
 }
 
 /*
@@ -962,7 +970,7 @@ void TfwcSndr::new_rto(double rtt) {
  */
 void TfwcSndr::packet_clocking (pktbuf* pb, bool flag) {
 	if (flag)
-		tfwc_trigger();
+		tm_->tfwc_trigger();
 	else
-		tfwc_trigger(pb);
+		tm_->tfwc_trigger(pb);
 }

@@ -107,10 +107,18 @@ Transmitter::Transmitter() :
 	  case WBCC:
 		tfwc_sndr_ = TfwcSndr::instance();
 		tfwc_rcvr_ = TfwcRcvr::instance();
+
+		tfwc_sndr_.manager(this);
+		tfwc_rcvr_.manager(this);
+
 	  break;
 	  case RBCC:
 		tfrc_sndr_ = TfrcSndr::instance();
 		tfrc_rcvr_ = TfrcRcvr::instance();
+
+		tfrc_sndr_.manager(this);
+		tfrc_rcvr_.manager(this);
+
 	  break;
 	}
 	

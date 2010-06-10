@@ -38,36 +38,20 @@
 #include "bitmap.h"	// bitmap operations
 #include "cc_common.h"
 #include "cc_timer.h"
-
-// timer related
-#define TFWC_TIMER_RTX		0
-#define TFWC_TIMER_RESET	1
+#include "transmitter.h"
 
 class TfwcSndr;
-
-// re-transmission timer
-class TfwcRtxTimer : public CcTimerHandler {
-public:
-	TfwcRtxTimer(TfwcSndr *s) : CcTimerHandler() { s_ = s;}
-	virtual void timeout();
-
-protected:
-	TfwcSndr *s_;
-};
+class Transmitter;
 
 // TFWC sender class
-class TfwcSndr {
+class TfwcSndr : public CcTimerHandler {
 public:
 	// constructor
 	TfwcSndr();
 	virtual ~TfwcSndr() {};
 
 	// virtual functions
-	virtual void tfwc_output(bool ack_clock=0) {UNUSED(ack_clock);};
-	virtual void tfwc_output(pktbuf*, bool) {};
-	virtual void tfwc_trigger(pktbuf* pb=0) {UNUSED(pb);};
-	virtual double tx_ts_offset() {};
-	virtual int tx_buf_size() {};
+	virtual void timeout();
 
 	// parse seqno and timestamp
 	void send(pktbuf*, double);
@@ -87,15 +71,8 @@ public:
 	inline u_int32_t magic() { return cwnd_; }
 	inline int b_magic() { return bcwnd_; }
 
-	// set timestamp in double type (TfwcSndr)
-	inline double tfwc_sndr_now() {
-		timeval tv;
-		::gettimeofday(&tv, NULL);
-		return ((double) tv.tv_sec + 1e-6 * (double) tv.tv_usec);
-	}
-
 	// return the current time
-	inline double now() { return (tfwc_sndr_now()-ts_off_); }
+	inline double now() { return (cc_now()-ts_off_); }
 
 	// variables
 	u_int16_t seqno_;	// packet sequence number
@@ -109,9 +86,13 @@ public:
 	// TfwcSndr instance
 	static inline TfwcSndr& instance() { return instance_; }
 
+	// Transmitter 
+	inline void manager(Transmitter* tm) { tm_ = tm; }
+
 protected:
 
 	static TfwcSndr instance_;
+	Transmitter *tm_;
 
 	// generate sequence numbers
 	void gen_seqvec(u_int16_t *v, int n);
@@ -150,9 +131,6 @@ protected:
 		0 : (u_int16_t) (mvec_[DUPACKS - 1] - 1);
 	}
 
-	// retransmission timer
-	TfwcRtxTimer rtx_timer_;
-
 	void set_rtx_timer();
 	void reset_rtx_timer(int backoff);
 	void backoff_timer();
@@ -167,6 +145,7 @@ protected:
 	double so_recv_;	// SO_TIMESTAMP (XR packet reception)
 	double tao_;		// sampled RTT
 	double prev_ts_;
+	double set_time_;	// set time for rtx_timer
 
 	// packet size
 	int asize_;		// average packet size per frame
@@ -336,6 +315,11 @@ private:
 	fprintf(stderr,
 	"\t%s now_: %f tsvec_[%d]: %f rtt: %f srtt: %f\n",
 	str, so_recv_, jacked_%TSZ, tsvec_[jacked_%TSZ], tao_, srtt_);
+	}
+	// print RTO info
+	inline void print_rto_info() {
+	fprintf(stderr,
+	"\t>> now_: %f rto: %f\n", now(), rto_);
 	}
 
 	// print ALI for debugging
