@@ -3,7 +3,7 @@
 #---------------------------------------------------------------------#
 # inter-active plots
 #---------------------------------------------------------------------#
-if [ -e xr_send.xg ] && [ -z cwnd.xg ]
+if [ -e xr_send.xg ] && [ -s cwnd.xg ]
 then
 gnuplot -persist << EOF
   set style line 1 lt 1 pt 4 lw 1.5
@@ -28,7 +28,7 @@ gnuplot -persist << EOF
 	"seqno.xg" ls 3 title "packet", \
 	"xr_send.xg" using 1:4 with impulses lt 1 lc 0 title "XR sent"
 EOF
-elif [ -e xr_send.xg ] && [ ! -z cwnd.xg ]
+elif [ -e xr_send.xg ] && [ ! -s cwnd.xg ]
 then
 gnuplot -persist << EOF
   set style line 1 lt 1 pt 4 lw 1.5
@@ -52,7 +52,7 @@ gnuplot -persist << EOF
     "seqno.xg" ls 3 title "packet", \
     "xr_send.xg" using 1:4 with impulses lt 1 lc 0 title "XR sent"
 EOF
-elif [ ! -z cwnd.xg ]
+elif [ ! -s cwnd.xg ]
 then
 gnuplot -persist << EOF
   set style line 1 lt 1 pt 4 lw 1.5
@@ -75,7 +75,8 @@ gnuplot -persist << EOF
     "txq.xg"  with linespoints lw 2.5 pt 5 title "tx queue", \
     "seqno.xg" ls 3 title "packet"
 EOF
-else
+elif [ -s cwnd.xg ]
+then
 gnuplot -persist << EOF
   set style line 1 lt 1 pt 4 lw 1.5
   set style line 2 lt 2 pt 4 lw 1.5
@@ -103,7 +104,7 @@ fi
 #---------------------------------------------------------------------#
 # eps plot
 #---------------------------------------------------------------------#
-if [ -e xr_send.xg ] && [ -z cwnd.xg ]
+if [ -e xr_send.xg ] && [ -s cwnd.xg ]
 then
 gnuplot -persist << EOF
   set terminal postscript eps enhanced color
@@ -128,7 +129,7 @@ gnuplot -persist << EOF
 	"seqno.xg" pt 4 lc 3 title "packet", \
 	"xr_send.xg" using 1:4 with impulses lt 1 lc 0 title "XR sent"
 EOF
-elif [ -e xr_send.xg ] && [ ! -z cwnd.xg ]
+elif [ -e xr_send.xg ] && [ ! -s cwnd.xg ]
 then
 gnuplot -persist << EOF
   set terminal postscript eps enhanced color
@@ -152,7 +153,7 @@ gnuplot -persist << EOF
     "seqno.xg" pt 4 lc 3 title "packet", \
     "xr_send.xg" using 1:4 with impulses lt 1 lc 0 title "XR sent"
 EOF
-elif [ ! -z cwnd.xg ]
+elif [ ! -s cwnd.xg ]
 then
 gnuplot -persist << EOF
   set terminal postscript eps enhanced color
@@ -175,7 +176,8 @@ gnuplot -persist << EOF
     "txq.xg"  with linespoints lw 2.5 lc 0 lt 1 pt 5 title "tx queue", \
     "seqno.xg" pt 4 lc 3 title "packet"
 EOF
-else
+elif [ -s cwnd.xg ]
+then
 gnuplot -persist << EOF
   set terminal postscript eps enhanced color
   set output "seqno.eps"
@@ -225,7 +227,7 @@ EOF
 #---------------------------------------------------------------------#
 # cwnd
 #---------------------------------------------------------------------#
-if [ -z cwnd.xg ]
+if [ -s cwnd.xg ]
 then
 gnuplot -persist << EOF
   set terminal postscript eps enhanced color
@@ -248,7 +250,7 @@ fi
 #---------------------------------------------------------------------#
 # ALI
 #---------------------------------------------------------------------#
-if [ -z ALI.xg ]
+if [ -s ALI.xg ]
 then
 gnuplot -persist << EOF
   set terminal postscript eps enhanced color
