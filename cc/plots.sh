@@ -3,7 +3,7 @@
 #---------------------------------------------------------------------#
 # inter-active plots
 #---------------------------------------------------------------------#
-if [ -e xr_send.xg ]
+if [ -e xr_send.xg ] && [ -z cwnd.xg ]
 then
 gnuplot -persist << EOF
   set style line 1 lt 1 pt 4 lw 1.5
@@ -27,6 +27,53 @@ gnuplot -persist << EOF
 	"cwnd.xg" with linespoints lw 2.5 lc 9 pt 6 title "cwnd", \
 	"seqno.xg" ls 3 title "packet", \
 	"xr_send.xg" using 1:4 with impulses lt 1 lc 0 title "XR sent"
+EOF
+elif [ -e xr_send.xg ] && [ ! -z cwnd.xg ]
+then
+gnuplot -persist << EOF
+  set style line 1 lt 1 pt 4 lw 1.5
+  set style line 2 lt 2 pt 4 lw 1.5
+  set style line 3 lt 3 pt 4 lw 1.5
+  set style line 4 lt 4 pt 4 lw 1.5
+  set style line 5 lt 5 pt 4 lw 1.5
+
+  set mxtics 2
+  set mytics 4
+  set grid
+
+  set xrange [$1:$2]
+  set yrange [$3:$4]
+
+  plot \
+    "encs.xg" with impulses title "start encoding", \
+    "ence.xg" with impulses title "end encoding", \
+    "inXR.xg" with impulses title "ackvec arrival", \
+    "txq.xg"  with linespoints lw 2.5 pt 5 title "tx queue", \
+    "seqno.xg" ls 3 title "packet", \
+    "xr_send.xg" using 1:4 with impulses lt 1 lc 0 title "XR sent"
+EOF
+elif [ ! -z cwnd.xg ]
+then
+gnuplot -persist << EOF
+  set style line 1 lt 1 pt 4 lw 1.5
+  set style line 2 lt 2 pt 4 lw 1.5
+  set style line 3 lt 3 pt 4 lw 1.5
+  set style line 4 lt 4 pt 4 lw 1.5
+  set style line 5 lt 5 pt 4 lw 1.5
+
+  set mxtics 2
+  set mytics 4
+  set grid
+
+  set xrange [$1:$2]
+  set yrange [$3:$4]
+
+  plot \
+    "encs.xg" with impulses title "start encoding", \
+    "ence.xg" with impulses title "end encoding", \
+    "inXR.xg" with impulses title "ackvec arrival", \
+    "txq.xg"  with linespoints lw 2.5 pt 5 title "tx queue", \
+    "seqno.xg" ls 3 title "packet"
 EOF
 else
 gnuplot -persist << EOF
@@ -56,7 +103,7 @@ fi
 #---------------------------------------------------------------------#
 # eps plot
 #---------------------------------------------------------------------#
-if [ -e xr_send.xg ]
+if [ -e xr_send.xg ] && [ -z cwnd.xg ]
 then
 gnuplot -persist << EOF
   set terminal postscript eps enhanced color
@@ -80,6 +127,53 @@ gnuplot -persist << EOF
 	"cwnd.xg" with linespoints lw 2.5 lc 9 lt 1 pt 6 title "cwnd", \
 	"seqno.xg" pt 4 lc 3 title "packet", \
 	"xr_send.xg" using 1:4 with impulses lt 1 lc 0 title "XR sent"
+EOF
+elif [ -e xr_send.xg ] && [ ! -z cwnd.xg ]
+then
+gnuplot -persist << EOF
+  set terminal postscript eps enhanced color
+  set output "seqno.eps"
+
+  set title "time-seqno plot"
+  set xlabel "time (sec)"
+  set ylabel "seqno"
+
+  set mxtics 2
+  set mytics 4
+
+  set xrange [$1:$2]
+  set yrange [$3:$4]
+
+  plot \
+    "encs.xg" with impulses title "start encoding", \
+    "ence.xg" with impulses title "end encoding" lc 4 lt 1, \
+    "inXR.xg" with impulses title "ackvec arrival" lt 1 lc 2, \
+    "txq.xg"  with linespoints lw 2.5 lc 0 lt 1 pt 5 title "tx queue", \
+    "seqno.xg" pt 4 lc 3 title "packet", \
+    "xr_send.xg" using 1:4 with impulses lt 1 lc 0 title "XR sent"
+EOF
+elif [ ! -z cwnd.xg ]
+then
+gnuplot -persist << EOF
+  set terminal postscript eps enhanced color
+  set output "seqno.eps"
+
+  set title "time-seqno plot"
+  set xlabel "time (sec)"
+  set ylabel "seqno"
+
+  set mxtics 2
+  set mytics 4
+
+  set xrange [$1:$2]
+  set yrange [$3:$4]
+
+  plot \
+    "encs.xg" with impulses title "start encoding", \
+    "ence.xg" with impulses title "end encoding" lc 4 lt 1, \
+    "inXR.xg" with impulses title "ackvec arrival" lt 1 lc 2, \
+    "txq.xg"  with linespoints lw 2.5 lc 0 lt 1 pt 5 title "tx queue", \
+    "seqno.xg" pt 4 lc 3 title "packet"
 EOF
 else
 gnuplot -persist << EOF
@@ -131,6 +225,8 @@ EOF
 #---------------------------------------------------------------------#
 # cwnd
 #---------------------------------------------------------------------#
+if [ -z cwnd.xg ]
+then
 gnuplot -persist << EOF
   set terminal postscript eps enhanced color
   set output "cwnd.eps"
@@ -147,10 +243,13 @@ gnuplot -persist << EOF
 
   plot "cwnd.xg" w lp lc 3 pt 4 ps .4 title "cwnd"
 EOF
+fi
 
 #---------------------------------------------------------------------#
 # ALI
 #---------------------------------------------------------------------#
+if [ -z ALI.xg ]
+then
 gnuplot -persist << EOF
   set terminal postscript eps enhanced color
   set output "ALI.eps"
@@ -167,3 +266,4 @@ gnuplot -persist << EOF
 
   plot "ALI.xg" w lp lc 1 pt 5 ps .4 title "ALI"
 EOF
+fi
