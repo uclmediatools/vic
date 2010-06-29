@@ -319,7 +319,7 @@ disparg(int argc, const char** argv, const char* optstr)
  * decoder frame
  */
 int
-cmd_decoder(ClientData , Tcl_Interp*, int argc, char** argv)
+cmd_decoder(ClientData , Tcl_Interp*, int argc, const char** argv)
 {
 	Tcl& tcl = Tcl::instance();
 	if (argc == 2) {
