@@ -58,8 +58,8 @@ int shmctl(int, int, struct shmid_ds*);
 
 #ifdef WIN32
 #include <stdlib.h>
-#else
-#include <osfcn.h>
+//#else
+//#include <osfcn.h>
 #endif
 
 #include "p64.h"
