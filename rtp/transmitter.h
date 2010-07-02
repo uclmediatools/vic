@@ -100,6 +100,12 @@ class Transmitter : public TclObject, public Timer {
 	void flush();
 	void send(pktbuf*);
 	inline bool is_cc_on() { return is_cc_active_; }
+	inline bool is_tfrc() {
+		if(is_cc_on() && (cc_type_ == RBCC))
+		return true;
+		else
+		return false;
+	}
 	// TFWC output
 	void tfwc_output(bool ack_clock=0);
 	void tfwc_output(pktbuf*, bool ack_clock);
