@@ -54,11 +54,11 @@
 #include "cc/tfrc_sndr.h"
 #include "cc/tfrc_rcvr.h"
 
-#define NOCC	100
-#define WBCC	101
-#define RBCC	102
+#define NOCC	100 // No Congestion Control
+#define WBCC	101 // Window Based - TFWC
+#define RBCC	102 // Rate Based - TFRC
 
-// cwnd mode
+// cwnd mode for TFWC
 #define PKM		1	// PacKet Mode
 #define BYM		2	// BYtes Mode
 
