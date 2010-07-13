@@ -857,9 +857,10 @@ void SessionManager::send_xreport(CtrlHandler* ch, u_int8_t bt,
 	len = sizeof(rtcphdr) + sizeof(rtcp_xr_BT_1_hdr) + (num_chunks * 2);
 	rh->rh_len = htons((len >> 2) - 1);
 
-	// send XR report block
-	send_xr_info(bt, begin_seq, end_seq);
-	ch->send(pktbuf_, len);
+    // send XR report block
+    if(am_i_sender())
+      send_xr_info(bt, begin_seq, end_seq);
+    ch->send(pktbuf_, len);
 }
 
 /*XXX check for buffer overflow*/
