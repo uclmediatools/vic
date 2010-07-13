@@ -235,6 +235,10 @@ double Transmitter::txtime(pktbuf* pb)
 {
 //	int cc = pb->iov[0].iov_len + pb->iov[1].iov_len;
 	int cc = pb->len;
+
+	if (is_tfrc())
+	return ( cc/tfrc_sndr_.xrate() );
+	else
 	return (8 * cc / (1000. * kbps_));
 }
 
@@ -307,7 +311,6 @@ void Transmitter::send(pktbuf* pb)
 		tfrc_output(pb);
 	  }
 	  break;
-
 	//
 	// without congestion control
 	//
@@ -495,6 +498,7 @@ void Transmitter::tfrc_output(pktbuf* pb) {
 	cc_output_banner_top("tfrc");
 	// move head pointer
 	head_ = pb->next;
+
 	// call Transmitter::output_data_only w/ XR reception
 	output_data_only(pb, XR_RECV);
 	cc_output_banner_bottom();
@@ -512,26 +516,37 @@ void Transmitter::tfrc_output(bool ack_clock) {
 		return;
 	}
 
-	while ( pb != 0) {
-		// move head pointer
-		head_ = pb->next;
-		// call Transmitter::output(pb)
-		output(pb, ack_clock);
-
-		if (head_ != 0) {
-			pb = head_;
-		} else {
-			break;
-		}
-	}
+    // move head pointer
+    head_ = pb->next;
+    // call Transmitter::output(pb)
+    output(pb, ack_clock);
 	cc_output_banner_bottom();
 }
 
 void Transmitter::timeout()
 {
 	double now = gettimeofday_secs();
-	for (;;) {
-		pktbuf* p = head_;
+    pktbuf* p = head_;
+
+	switch (cc_type_) {
+	case RBCC:
+      for (;;) {
+        if(p != 0) {
+          nextpkttime_ += txtime(p);
+          // call send(pktbuf *) here
+          send(p);
+          // goto sleep
+          int ms = int(1e-3 * (nextpkttime_ - now));
+          msched(ms);
+        }
+      }
+	  break;
+	case WBCC:
+      // nothing to do when WBCC mode
+      break;
+	case NOCC:
+	default:
+	  for (;;) {
 		if (p != 0) {
 			head_ = p->next;
 			nextpkttime_ += txtime(p);
@@ -546,7 +561,8 @@ void Transmitter::timeout()
 			busy_ = 0;
 			break;
 		}
-	}
+	  }
+	} // switch (cc_type_)
 }
 
 void Transmitter::flush()
