@@ -757,7 +757,7 @@ proc redecorate n {
 }
 
 proc create_decoder src {
-	global numLayers
+	global numLayers V
 
 	set format [rtp_format $src]
 	set decoder [new decoder $format]
@@ -769,6 +769,9 @@ proc create_decoder src {
 	if { $format == "pvh" } {
 		$decoder maxChannel $numLayers
 	}
+       	# Inform decoder obj of grabber to enable PSNR calculation
+        $decoder grabber $V(grabber)
+
 	$src handler $decoder
 	return $decoder
 }
@@ -814,6 +817,7 @@ proc really_activate src {
 	grid columnconfigure $V(grid) $V(curcol) -weight 1
 
 	update_decoder $src
+        $V(decoder) grabber $V(grabber)
 	after 1000 "update_src $src"
 
 	bump

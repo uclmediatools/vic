@@ -896,7 +896,7 @@ int H261PixelEncoder::consume(const VideoFrame *vf)
 	// ---------------------------------------------------------------*
 
 	// adjust quantizer
-	adjust_quantizer(txq_beg_, avg_packets_per_frame());
+	//adjust_quantizer(txq_beg_, avg_packets_per_frame());
 
 	// increment frame number
 	if (vfno_++%FHSIZE == 0) 
@@ -971,6 +971,8 @@ H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 	sbit_ = 0;
 	/* RTP/H.261 header */
 	rtphdr* rh = (rtphdr*)pb->data;
+	// Set frame_no in MOD RTP hdr
+	rh->frame_no=vf->frame_no_;
 	*(u_int*)(rh + 1) = 1 << 25 | lq_ << 10;
 
 	/* PSC */
@@ -1019,6 +1021,9 @@ H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 					pktbuf* npb;
 					npb = pool_->alloc(vf->ts_, RTP_PT_H261);
 					pb->tag = true;	// turn on tag (start new frame)
+					rtphdr* rh = (rtphdr*)pb->data;
+					// Add frame_no to RTP hdr
+					rh->frame_no=vf->frame_no_;
 					cc += flush(pb, nbit, npb);
 					cbits -= nbit;
 					pb = npb;
@@ -1054,6 +1059,9 @@ H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 		}
 		pb->tag = false; // turn off tag (end of frame)
 	}
+        rh = (rtphdr*)pb->data;
+        // Add frame_no to RTP hdr
+        rh->frame_no=vf->frame_no_;
 	cc += flush(pb, ((bc_ - bs_) << 3) + nbb_, 0);
 
 	// time measurement

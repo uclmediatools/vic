@@ -36,6 +36,7 @@ static const char rcsid[] =
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #ifndef WIN32
 #include <sys/param.h>
 #endif
@@ -58,6 +59,7 @@ int shmctl(int, int, struct shmid_ds*);
 #endif
 #endif
 }
+
 
 //SV-XXX: rearranged intialistaion order to shut upp gcc4
 Decoder::Decoder(int hdrlen) : PacketHandler(hdrlen),
@@ -146,6 +148,11 @@ int Decoder::command(int argc, const char*const* argv)
 			if (ch == 0)
 				abort();
 			colorhist(ch->histogram());
+			return (TCL_OK);
+		}
+		if (strcmp(argv[1], "grabber") == 0) {
+			grabber_ = (Grabber*)TclObject::lookup(argv[2]);
+			fprintf(stderr,"Setting this %d grabber_:%d\n", this,grabber_);
 			return (TCL_OK);
 		}
 	}
@@ -270,7 +277,54 @@ void Decoder::colorhist_411_556(u_int* hist, const u_char* yp,
 	}
 }
 
-void Decoder::render_frame(const u_char* frm)
+
+static inline unsigned long long int
+sqr (unsigned long long int x)
+{
+        return (x*x);
+}
+
+static inline double
+psnr_equ (unsigned long long int ssd, unsigned long long int pixels) {
+        double mse = (double)ssd / (double)pixels;
+        double psnr = 10.0 * log10 (sqr(255.0)/mse);
+
+        return psnr;
+}
+
+double
+calc_psnr(u_int8_t *recv_frame, u_int8_t *orig_frame, int width, int height) {
+  double psnr, psnr_y, psnr_u, psnr_v;
+  unsigned long long int total_ssd_y, total_ssd_u, total_ssd_v;
+  unsigned long long int ssd, local_ssd_y = 0, local_ssd_u = 0, local_ssd_v = 0;
+  //  *ssd_y, *ssd_u, *ssd_v, 
+  //int    image1_u0, image1_y0, image1_v0, image1_y1, i, 
+  //       image2_u0, image2_y0, image2_v0, image2_y1;
+  int i;
+
+  for (i=0; i<width*height; i++) 
+     local_ssd_y += sqr( abs( *recv_frame++ - *orig_frame++ ));
+  for (i=0; i<width/2*height/2; i++) 
+     local_ssd_v += sqr( abs( *recv_frame++ - *orig_frame++ ));
+  for (i=0; i<width/2*height/2; i++) 
+     local_ssd_u += sqr( abs( *recv_frame++ - *orig_frame++ ));
+  
+  ssd            = local_ssd_y + local_ssd_u + local_ssd_v;
+  total_ssd_y    += local_ssd_y;
+  total_ssd_u    += local_ssd_u;
+  total_ssd_v    += local_ssd_v;
+
+  psnr           = psnr_equ (ssd,        width * height * 2);
+  psnr_y         = psnr_equ (local_ssd_y, width * height);
+  psnr_u         = psnr_equ (local_ssd_u, (width * height) / 2);
+  psnr_v         = psnr_equ (local_ssd_v, (width * height) / 2);
+ 
+  return psnr;
+}
+
+extern Grabber *ggrabber;
+
+void Decoder::render_frame(const u_char* frm, int frame_no)
 {
 	/*
 	 * Go through all the timestamps and smash the time that
@@ -282,6 +336,7 @@ void Decoder::render_frame(const u_char* frm)
 	 * an unchanging block, this approach renders it 2 times out of 256,
 	 * rather than 128 out of 256.
 	 */
+        double psnr;
 	int wraptime = now_ ^ 0x80;
 	u_char* ts = rvts_;
 	for (int k = nblk_; --k >= 0; ++ts) {
@@ -289,7 +344,11 @@ void Decoder::render_frame(const u_char* frm)
 			*ts = now_;
 	}
 
-	YuvFrame f(now_, (u_int8_t*)frm, rvts_, inw_, inh_);
+	YuvFrame f(now_, (u_int8_t*)frm, rvts_, inw_, inh_,0, frame_no);
+	if (inw_*inh_ == grabber_->framesize_) {
+           psnr = calc_psnr((u_int8_t*)frm, (u_int8_t*)grabber_->frame_+frame_no*(grabber_->framesize_+(grabber_->framesize_>>1)), inw_, inh_);
+  	   fprintf(stderr,"Frame (%dx%d;fsz:%d,%d): %d, PSNR: %f\n",inw_,inh_, grabber_,grabber_->framesize_, frame_no, psnr);
+	}
 	for (Renderer* p = engines_; p != 0; p = p->next_)
 		if ((p->ft() & FT_HW) == 0)
 			p->consume(&f);

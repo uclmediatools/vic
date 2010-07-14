@@ -1081,9 +1081,9 @@ void SessionManager::recv(DataHandler* dh)
 
 	// RTP data receiver need to extract seqno
 	// and send XR report back to the sender.
+	rtphdr* rh = (rtphdr*)pb->data;
 	if (!am_i_sender()) {
 		// retrieve RTP seqno
-		rtphdr* rh = (rtphdr*)pb->data;
 		seqno = ntohs(rh->rh_seqno);
 
 		switch (cc_type_) {
@@ -1103,6 +1103,7 @@ void SessionManager::recv(DataHandler* dh)
 		ch_->send_ackv();
 	}
 	
+        fprintf(stderr, "\n\treceived frame_no: %d\n\n", rh->frame_no);
 	//bp += sizeof(*rh);
 	//cc -= sizeof(*rh);
 	demux(pb, *addrp);

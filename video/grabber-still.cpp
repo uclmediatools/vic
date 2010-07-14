@@ -103,9 +103,9 @@ public:
     virtual Grabber* yuv_grabber();
 
     void load_file(const char * const file);
-    char *frame_;
+    u_char *frame_;
     int len_;
-	int devstat_;	// device status
+    int devstat_;	// device status
 private:
 };
 
@@ -137,7 +137,7 @@ int StillDevice::command(int argc, const char*const* argv)
 	    const char* fmt = argv[2];
 	    TclObject* o = 0;
 	    if (strcmp(fmt, "cif") == 0)
-			o = yuv_grabber();
+	    		o = yuv_grabber();
 	    if (strcmp(fmt, "jpeg") == 0)
 			o = jpeg_grabber();
 	    if (o != 0)
@@ -186,7 +186,7 @@ void StillDevice::load_file(const char * const f)
     if (frame_)
 		delete[] frame_; //SV-XXX: Debian
     
-    frame_ = new char[len_ + 1];
+    frame_ = new u_char[len_ + 1];
 	r = fread(frame_, len_, 1, fp);
 	debug_msg("Successfully loaded %s\n", f);
 
@@ -334,6 +334,8 @@ void StillYuvGrabber::fps(int v) {
 void StillYuvGrabber::start()
 {
 	target_->offset_ = grabber_ts_off_;
+	frame_=still_device.frame_;
+	fprintf(stderr,"frame_:%x\n",frame_);
 	Grabber::start();
 }
 
@@ -379,10 +381,14 @@ int StillYuvGrabber::grab()
 
 	// "framesize_" is just the number of pixels, 
 	// so the number of bytes becomes "3 * framesize_ / 2"
-	memcpy (frame_, still_device.frame_ + nbytes_, 
-			framesize_ + (framesize_ >> 1));
 
-	if ((nbytes_ += framesize_+(framesize_ >> 1)) < still_device.len_) {
+	int stride= framesize_ + (framesize_ >> 1);
+	int frame_no=nbytes_/stride;
+	fprintf(stderr,"Frame_no %d, number of bytes: %d (fsz:%d)\n",frame_no,  nbytes_, framesize_);
+	memcpy (frame_, still_device.frame_ + nbytes_, 
+			stride);
+
+	if ((nbytes_ += stride) < still_device.len_) {
 	} else {
 		nbytes_=0;
 	}
@@ -393,7 +399,7 @@ int StillYuvGrabber::grab()
 
 	suppress(frame_);
 	saveblks(frame_);
-	YuvFrame f(media_ts(), (u_int8_t *) frame_, crvec_, outw_, outh_);
+	YuvFrame f(media_ts(), (u_int8_t *) frame_, crvec_, outw_, outh_,0,frame_no);
 
 	// time measurement
 	end_grab_ = grabber_now() - grabber_ts_off_;

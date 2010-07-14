@@ -50,23 +50,24 @@ class pktbuf;
 class VideoFrame {
     public:
 	inline VideoFrame(u_int32_t ts, u_int8_t* bp, int w, int h,
-			  int layer) :
-		ts_(ts), bp_(bp), width_(w), height_(h), layer_(layer) { }
+			  int layer, int frame_no=0) :
+		ts_(ts), bp_(bp), width_(w), height_(h), layer_(layer),frame_no_(frame_no) { }
 
 	u_int32_t ts_;
 	u_int8_t* bp_;
 	int width_;
 	int height_;
 	int layer_;
+	int frame_no_;
 };
 
 class YuvFrame : public VideoFrame {
     public:
 	    inline YuvFrame(u_int32_t ts, u_int8_t* bp, u_int8_t* crvec,
-			int w, int h, int layer=0) :
-			VideoFrame(ts, bp, w, h, layer), crvec_(crvec) {}
+			int w, int h, int layer=0, int frame_no=-1) :
+			VideoFrame(ts, bp, w, h, layer, frame_no), crvec_(crvec) {}
 
-	    const u_int8_t* crvec_;
+	const u_int8_t* crvec_;
 };
 
 class JpegFrame : public VideoFrame {

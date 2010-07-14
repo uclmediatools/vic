@@ -96,7 +96,7 @@ Transmitter::Transmitter() :
 	loopback_(0),
 	is_cc_active_(1),
 	is_buf_empty_(1),
-	cc_type_(WBCC),
+	cc_type_(NOCC),
 	cwnd_mode_(BYM)
 {
 	memset((char*)&mh_, 0, sizeof(mh_));
@@ -137,6 +137,7 @@ void Transmitter::loopback(pktbuf* pb)
 {
 	int layer = pb->layer;
 	rtphdr* rh = (rtphdr*)pb->data;
+        fprintf(stderr, "loopback received frame_no: %d\n", rh->frame_no);
 	int cc = pb->len;
 	/*
 	 * Update statistics.
@@ -526,27 +527,29 @@ void Transmitter::tfrc_output(bool ack_clock) {
 void Transmitter::timeout()
 {
 	double now = gettimeofday_secs();
-    pktbuf* p = head_;
+        pktbuf* p = head_;
 
 	switch (cc_type_) {
 	case RBCC:
-      for (;;) {
-        if(p != 0) {
-          nextpkttime_ += txtime(p);
-          // call send(pktbuf *) here
-          send(p);
-          // goto sleep
-          int ms = int(1e-3 * (nextpkttime_ - now));
-          msched(ms);
-        }
-      }
+          for (;;) {
+            pktbuf* p = head_;
+            if(p != 0) {
+              nextpkttime_ += txtime(p);
+              // call send(pktbuf *) here
+              send(p);
+              // goto sleep
+              int ms = int(1e-3 * (nextpkttime_ - now));
+              msched(ms);
+            }
+          }
 	  break;
 	case WBCC:
-      // nothing to do when WBCC mode
-      break;
+          // nothing to do when WBCC mode
+          break;
 	case NOCC:
 	default:
 	  for (;;) {
+                pktbuf* p = head_;
 		if (p != 0) {
 			head_ = p->next;
 			nextpkttime_ += txtime(p);

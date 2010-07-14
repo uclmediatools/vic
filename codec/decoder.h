@@ -49,6 +49,7 @@ extern "C" {
 #include "vic_tcl.h"
 #include "source.h"
 #include "ntp-time.h"
+#include "grabber.h"
 
 /*
  * Rendering vector.  We keep a vector of timestamps of when each individual
@@ -110,6 +111,7 @@ class Decoder : public PacketHandler {
 	int decimation_;	/* 422 or 411 */
 	int inw_;		/* native image width */
 	int inh_;		/* native image height */
+        Grabber* grabber_;
 
  public:
 	/*
@@ -123,7 +125,7 @@ class Decoder : public PacketHandler {
 	virtual void redraw() = 0;
 	Renderer* engines_;
 
-	void render_frame(const u_char* frm);
+	void render_frame(const u_char* frm, int frame_no=0);
 	int now_;
 	u_char* rvts_;
 	int nblk_;		/* number of 8x8 blocks */

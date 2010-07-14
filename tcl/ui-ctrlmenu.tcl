@@ -830,8 +830,8 @@ proc build.device w {
 	}
 	foreach d $inputDeviceList {
 		if { [$d nickname] == "still" && ![yesno stillGrabber] } {
-			set defaultFormat($d) $videoFormat
-			continue
+		#	set defaultFormat($d) $videoFormat
+		#	continue
 		}
 		# this is fragile
 		$m add radiobutton -label [$d nickname] \

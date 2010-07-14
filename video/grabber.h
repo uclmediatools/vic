@@ -87,6 +87,8 @@ class Grabber : public TclObject, public Timer, public MediaTimer {
 	double start_grab_;
 	double end_grab_;
 
+	u_int framesize_;
+	u_char* frame_;
  protected:
 	/* hooks for conditional replenishment algorithm */
 	void suppress(const u_char* devbuf);
@@ -106,9 +108,7 @@ class Grabber : public TclObject, public Timer, public MediaTimer {
 	int hstop_;
 	int threshold_ ; // when a block is changed ? (was constant 48)
 
-	u_int framesize_;
 	u_char* framebase_;
-	u_char* frame_;
 	u_char* crvec_;
 	u_char* ref_;/*XXX*/
 	int inw_;

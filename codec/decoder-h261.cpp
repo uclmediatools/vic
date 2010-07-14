@@ -232,7 +232,7 @@ void H261Decoder::recv(pktbuf* pb)
 	if (ntohs(rh->rh_flags) & RTP_M) {
 		codec_->sync();
 		ndblk_ = codec_->ndblk();
-		render_frame(codec_->frame());
+		render_frame(codec_->frame(),rh->frame_no);
 		codec_->resetndblk();
 	}
 	pb->release();

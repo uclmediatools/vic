@@ -91,6 +91,7 @@ struct rtphdr {
 	u_int16_t rh_seqno;	/* sequence number */
 	u_int32_t rh_ts;	/* media-specific time stamp */
 	u_int32_t rh_ssrc;	/* synchronization src id */
+	u_int32_t frame_no;	/* frame_no */
 	/* data sources follow per cc */
 };
 
