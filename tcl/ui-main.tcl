@@ -757,7 +757,7 @@ proc redecorate n {
 }
 
 proc create_decoder src {
-	global numLayers V
+	global numLayers videoDevice V
 
 	set format [rtp_format $src]
 	set decoder [new decoder $format]
@@ -770,7 +770,18 @@ proc create_decoder src {
 		$decoder maxChannel $numLayers
 	}
        	# Inform decoder obj of grabber to enable PSNR calculation
-        $decoder grabber $V(grabber)
+	if { [$videoDevice nickname] == "still" } {
+	    if ![have grabber] {
+		    set V(grabber) [$videoDevice open cif]
+		    if { $V(grabber) != "" } {
+	      puts "ssspam"
+		       $decoder grabber $V(grabber)
+		    }
+	    } else {
+	      puts "spam"
+		    $decoder grabber $V(grabber)
+	    }
+        }
 
 	$src handler $decoder
 	return $decoder
@@ -817,7 +828,6 @@ proc really_activate src {
 	grid columnconfigure $V(grid) $V(curcol) -weight 1
 
 	update_decoder $src
-        $V(decoder) grabber $V(grabber)
 	after 1000 "update_src $src"
 
 	bump

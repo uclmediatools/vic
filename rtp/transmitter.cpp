@@ -527,7 +527,6 @@ void Transmitter::tfrc_output(bool ack_clock) {
 void Transmitter::timeout()
 {
 	double now = gettimeofday_secs();
-        pktbuf* p = head_;
 
 	switch (cc_type_) {
 	case RBCC:

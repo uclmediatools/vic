@@ -106,6 +106,7 @@ public:
     u_char *frame_;
     int len_;
     int devstat_;	// device status
+    Grabber* grabber_;
 private:
 };
 
@@ -134,14 +135,18 @@ int StillDevice::command(int argc, const char*const* argv)
     {
 	if (strcmp(argv[1], "open") == 0)
 	{
-	    const char* fmt = argv[2];
-	    TclObject* o = 0;
-	    if (strcmp(fmt, "cif") == 0)
-	    		o = yuv_grabber();
-	    if (strcmp(fmt, "jpeg") == 0)
-			o = jpeg_grabber();
-	    if (o != 0)
-			Tcl::instance().result(o->name());
+	    if (frame_ != 0) {
+		const char* fmt = argv[2];
+		TclObject* o = 0;
+		if (strcmp(fmt, "cif") == 0)
+			    o = yuv_grabber();
+		if (strcmp(fmt, "jpeg") == 0)
+			    o = jpeg_grabber();
+		if (o != 0) {
+			    Tcl::instance().result(o->name());
+			    grabber_=(Grabber*)o;
+		}
+	    }
 	    return (TCL_OK);
 	}
 	else if (strcmp(argv[1], "file") == 0)
@@ -184,12 +189,11 @@ void StillDevice::load_file(const char * const f)
     
     len_ = s.st_size;
     if (frame_)
-		delete[] frame_; //SV-XXX: Debian
+	delete[] frame_; //SV-XXX: Debian
     
-    frame_ = new u_char[len_ + 1];
+        frame_ = new u_char[len_ + 1];
 	r = fread(frame_, len_, 1, fp);
-	debug_msg("Successfully loaded %s\n", f);
-
+	fprintf(stderr,"Successfully loaded %s\n", f);
 	devstat_ = 0;	// device is now ready
     fclose(fp);
 }
@@ -317,6 +321,8 @@ StillYuvGrabber::StillYuvGrabber() :
 	width_(0), height_(0), nbytes_(0)
 {
 	grabber_ts_off_ = grabber_now();
+	frame_=still_device.frame_;
+	fprintf(stderr,"StillYuvGrabber::StillYuvGrabber:frame_:%x\n",frame_);
 }
 
 StillYuvGrabber::~StillYuvGrabber()
@@ -334,8 +340,9 @@ void StillYuvGrabber::fps(int v) {
 void StillYuvGrabber::start()
 {
 	target_->offset_ = grabber_ts_off_;
+	// XXX Need to change frame_ - it used for storage of video frame and (re)allocated elsewhere
 	frame_=still_device.frame_;
-	fprintf(stderr,"frame_:%x\n",frame_);
+	fprintf(stderr,"StillYuvGrabber::start:frame_:%x\n",frame_);
 	Grabber::start();
 }
 
