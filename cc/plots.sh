@@ -269,3 +269,23 @@ gnuplot -persist << EOF
   plot "ALI.xg" w lp lc 1 pt 5 ps .4 title "ALI"
 EOF
 fi
+
+#---------------------------------------------------------------------#
+# PSNR
+#---------------------------------------------------------------------#
+if [ -s psnr.xg ]
+then
+gnuplot -persist << EOF
+  set terminal postscript eps enhanced color
+  set output "psnr.eps"
+
+  set title "PSNR"
+  set xlabel "frame number"
+  set ylabel "PSNR [dB]"
+
+  set mxtics 2
+  set yrange [0:45]
+  set grid
+  plot "psnr.xg" w lp lc 1 pt 5 ps .65 title "PSNR"
+EOF
+fi
