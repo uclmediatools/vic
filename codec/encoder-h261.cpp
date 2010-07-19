@@ -896,7 +896,7 @@ int H261PixelEncoder::consume(const VideoFrame *vf)
 	// ---------------------------------------------------------------*
 
 	// adjust quantizer
-	//adjust_quantizer(txq_beg_, avg_packets_per_frame());
+	adjust_quantizer(txq_beg_, avg_packets_per_frame());
 
 	// increment frame number
 	if (vfno_++%FHSIZE == 0) 
