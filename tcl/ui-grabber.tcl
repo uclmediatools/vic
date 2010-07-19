@@ -702,7 +702,7 @@ proc build.stilldev w {
     frame $w.f -relief sunken -borderwidth 2
     label $w.f.label  -font $f -anchor e -text "File"
 
-    mk.entry $w.f set.still.frame "foreman.yuv"
+    mk.entry $w.f set.still.frame "frame"
 
     pack $w.title $w.f -fill x -expand 1
 
