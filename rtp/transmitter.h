@@ -106,6 +106,10 @@ class Transmitter : public TclObject, public Timer {
 		else
 		return false;
 	}
+    inline double packet_interval() {
+        return ( tfrc_sndr_.psize()/tfrc_sndr_.xrate() );
+    }
+
 	// TFWC output
 	void tfwc_output(bool ack_clock=0);
 	void tfwc_output(pktbuf*, bool ack_clock);
