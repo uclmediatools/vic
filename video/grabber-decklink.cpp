@@ -336,20 +336,21 @@ protected:
 
 class DeckLinkScanner {
 public:
-    DeckLinkScanner(int maxNumDevices);
+    DeckLinkScanner();
     ~DeckLinkScanner();
 protected:
     DeckLinkDevice *devs_[NUM_DEVS];
 
 };
 
-static DeckLinkScanner find_decklink_devices(NUM_DEVS);
+static DeckLinkScanner find_decklink_devices;
 
-DeckLinkScanner::DeckLinkScanner(int maxNumDevices)
+DeckLinkScanner::DeckLinkScanner()
 {
     IDeckLink* deckLink;
     int n = 0;
     HRESULT result;
+    char *nick_name[NUM_DEVS];
 
 #if defined(_WIN32) || defined(_WIN64) 
     // Initialize COM on this thread
@@ -377,7 +378,7 @@ DeckLinkScanner::DeckLinkScanner(int maxNumDevices)
 
     memset(devs_, 0, sizeof(devs_));
     // Enumerate all DeckLink cards on this system
-    while (deckLinkIterator->Next(&deckLink) == S_OK && n < maxNumDevices) {
+    while (deckLinkIterator->Next(&deckLink) == S_OK && n < NUM_DEVS) {
 
 #if defined(_WIN32) || defined(_WIN64) 
         char deviceNameString[64] = {};
@@ -405,8 +406,21 @@ DeckLinkScanner::DeckLinkScanner(int maxNumDevices)
         if (result == S_OK) {
             debug_msg("Adding device %s\n", deviceNameString);
 
-            char *nick = new char[strlen(deviceNameString) + 10];
-            sprintf(nick,"DeckLink-%s", deviceNameString);
+            int dev_count_suffix = 1;
+            for (int i = 0; i < n; i++) {
+                if (strncmp(deviceNameString, (char *)(nick_name[i] + 11), strlen(deviceNameString)) == 0) {
+                    dev_count_suffix++;
+                }
+            }
+            char *nick;
+            if (dev_count_suffix == 1) {
+                nick = new char[strlen(deviceNameString) + 12];
+                sprintf(nick,"Blackmagic-%s", deviceNameString);
+            } else {
+                nick = new char[strlen(deviceNameString) + 16];
+                sprintf(nick,"Blackmagic-%s #%i", deviceNameString, dev_count_suffix);
+            }
+            nick_name[n] = nick;
 
             devs_[n] = new DeckLinkDevice(nick, deckLink);
             n++;

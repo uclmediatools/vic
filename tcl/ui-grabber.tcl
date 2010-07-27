@@ -193,7 +193,7 @@ proc build.v4l2 w {
     pack $w.f -expand 1 -fill x
 }
 
-proc build.decklink w {
+proc build.blackmagic w {
     global setSoftwareScale softwareScaleButtons
 
     label $w.title -text "Blackmagic DeckLink-Grabber"
