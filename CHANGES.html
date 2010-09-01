@@ -32,8 +32,11 @@
       <li>Can also use the free GraphStudio from <a href="http://blog.monogram.sk/janos/tools/monogram-graphstudio/">http://blog.monogram.sk/janos/tools/monogram-graphstudio/</a>
     </ul>
   </ul>
-  <li>New grabber that uses the native API from the Blackmagic Design DeckLink SDK for Windows, MacOS and Linux
-  <li>libv4l support added for the V4L & V4L2 grabbers
+  <li>OSX now Leopard support (ie Activates 32bit build (-arch i386) as VIC uses deprecated Quicktime Capture interface which are only available in 32bit)
+  <li>New grabber-file - which supports raw YUV video files as video source
+  <li>New grabber that uses the native API from the Blackmagic Design DeckLink SDK for Windows, MacOS and Linux from HitLabNZ, integrated by Doug
+  <li>libv4l support added for the V4L and V4L2 grabbers
+  <li>Added iocom patches to repository against svn ffmpeg
 </ul>
 <H3>v2.8ucl-1.4.0beta</H3><UL>
   <li> H.264 decode functionality for IOCOM's IG2 default (non-standard) H.264 streams. Currently required patches ffmpeg h264 decoder.
