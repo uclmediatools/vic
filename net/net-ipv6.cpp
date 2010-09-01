@@ -215,6 +215,11 @@ int IP6Network::command(int argc, const char*const* argv)
 /* __IPV6 user IPV6_MULTICAST_LOOP */
 		}
 	} else if (argc == 3) {
+		if (strcmp(argv[1], "bufsize") == 0) {
+			int size = atoi(argv[2]);
+			//bufsize(size);
+			return (TCL_OK);
+		}
 		if (strcmp(argv[1], "loopback") == 0) {
 			char c = atoi(argv[2]);
 			if (setsockopt(ssock_, IPPROTO_IPV6, 
@@ -231,11 +236,6 @@ int IP6Network::command(int argc, const char*const* argv)
 			return (TCL_OK);
 		}
 	} else if (argc == 5) {
-		if (strcmp(argv[1], "bufsize") == 0) {
-			int size = atoi(argv[2]);
-			//bufsize(size);
-			return (TCL_OK);
-		}
 		if (strcmp(argv[1], "open") == 0) {
 /* __IPV6 use v6 lookup */
 			const char * host = argv[2];
