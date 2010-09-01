@@ -681,7 +681,6 @@ int main(int argc, const char** argv)
 			tcl.add_option("logFrameRate", "true");
 			// Uses auto generated filename of the form:
 			// {UNIX seconds}{host IP}{username}
-			//tcl.add_option("logFrameFile", optarg);
 			break;
 
 		case 'L':

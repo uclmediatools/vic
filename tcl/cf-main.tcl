@@ -67,6 +67,7 @@ proc vic_main {} {
 		global logFrameChannel
 		set logFrameFile "vic-[clock seconds]-[gethostname]-[user_heuristic].log"
 		set logFrameChannel [open "$logFrameFile" "w" ]
+		puts $logFrameChannel "#\[src sdes cname] \[clock seconds] fps bps loss"
 		#set logFrameChannel [open [resource logFrameFile] w ]
 	}
 
