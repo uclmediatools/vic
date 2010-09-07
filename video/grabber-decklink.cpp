@@ -285,7 +285,7 @@ private:
     volatile int32_t mWriteIndex;
     static const int32_t mBufferSize = 4;
     volatile uint8_t *mBuffer[mBufferSize];
-    volatile int32_t mLastReadFrameNum;
+    volatile uint32_t mLastReadFrameNum;
     volatile int32_t mLastWriteFrameNum;
     volatile uint32_t mBufferFrameNum[mBufferSize];
 #ifdef HAVE_SWSCALE
@@ -445,24 +445,24 @@ DeckLinkScanner::~DeckLinkScanner() {
 DeckLinkDevice::DeckLinkDevice(const char* name, IDeckLink* deckLink) : InputDevice(name), grabber_(0), deckLink_(deckLink)
 {
     char *attr = new char[512];
-    IDeckLinkConfiguration *deckLinkConfiguration = NULL;
-    IDeckLinkConfiguration *deckLinkValidator = NULL;
+    IDeckLinkAttributes *deckLinkAttributes = NULL;
     IDeckLinkInput *deckLinkInput = NULL;
     IDeckLinkDisplayModeIterator *displayModeIterator = NULL;
     IDeckLinkDisplayMode *displayMode = NULL;
+    int64_t ports;
 
     HRESULT result;
 
-    result = deckLink->QueryInterface(IID_IDeckLinkConfiguration, (void**)&deckLinkConfiguration);
+    result = deckLink->QueryInterface(IID_IDeckLinkAttributes, (void**)&deckLinkAttributes);
     if (result != S_OK) {
-        debug_msg("DecLinkDevice: Could not obtain the IDeckLinkConfiguration interface - %08x\n", result);
+        debug_msg("DeckLinkDevice: Could not obtain the IID_IDeckLinkAttributes interface - %08x\n", result);
         strcpy(attr,"disabled");
         return;
     }
 
-    result = deckLinkConfiguration->GetConfigurationValidator(&deckLinkValidator);
+    result = deckLinkAttributes->GetInt(BMDDeckLinkVideoInputConnections, &ports);
     if (result != S_OK) {
-        debug_msg("DecLinkDevice: Could not obtain the configuration validator interface\n");
+        debug_msg("DeckLinkDevice: Could not obtain the video input connection attributes\n");
         strcpy(attr,"disabled");
         return;
     }
@@ -472,36 +472,36 @@ DeckLinkDevice::DeckLinkDevice(const char* name, IDeckLink* deckLink) : InputDev
 
     strcat(attr,"port { ");
 
-    if (deckLinkValidator->SetVideoInputFormat(bmdVideoConnectionSDI) == S_OK) {
+    if (ports & bmdVideoConnectionSDI) {
         strcat(attr,"SDI ");
     }
-    if (deckLinkValidator->SetVideoInputFormat(bmdVideoConnectionHDMI) == S_OK) {
+    if (ports & bmdVideoConnectionHDMI) {
         strcat(attr,"HDMI ");
     }
-    if (deckLinkValidator->SetVideoInputFormat(bmdVideoConnectionComponent) == S_OK) {
+    if (ports & bmdVideoConnectionComponent) {
         strcat(attr,"Component ");
     }
-    if (deckLinkValidator->SetVideoInputFormat(bmdVideoConnectionComposite) == S_OK) {
+    if (ports & bmdVideoConnectionComposite) {
         strcat(attr,"Composite ");
     }
-    if (deckLinkValidator->SetVideoInputFormat(bmdVideoConnectionSVideo) == S_OK) {
+    if (ports & bmdVideoConnectionSVideo) {
         strcat(attr,"S-Video ");
     }
-    if (deckLinkValidator->SetVideoInputFormat(bmdVideoConnectionOpticalSDI) == S_OK) {
+    if (ports & bmdVideoConnectionOpticalSDI) {
         strcat(attr,"Optical-SDI ");
     }
     strcat(attr,"} ");
 
     result = deckLink->QueryInterface(IID_IDeckLinkInput, (void**)&deckLinkInput);
     if (result != S_OK) {
-        debug_msg("DecLinkDevice: Could not obtain the IDeckLinkInput interface\n");
+        debug_msg("DeckLinkDevice: Could not obtain the IDeckLinkInput interface\n");
         strcpy(attr, "disabled");
         return;
     }
 
     result = deckLinkInput->GetDisplayModeIterator(&displayModeIterator);
     if (result != S_OK) {
-        debug_msg("DecLinkDevice: Could not obtain the video input display mode iterator\n");
+        debug_msg("DeckLinkDevice: Could not obtain the video input display mode iterator\n");
         strcpy(attr, "disabled");
         return;
     }
@@ -559,13 +559,10 @@ DeckLinkDevice::DeckLinkDevice(const char* name, IDeckLink* deckLink) : InputDev
         deckLinkInput->Release();
     }
 
-    if (deckLinkValidator != NULL) {
-        deckLinkValidator->Release();
+    if (deckLinkAttributes != NULL) {
+        deckLinkAttributes->Release();
     }
 
-    if (deckLinkConfiguration != NULL) {
-        deckLinkConfiguration->Release();
-    }
 }
 
 int DeckLinkDevice::command(int argc, const char*const* argv)
@@ -601,7 +598,7 @@ DeckLinkGrabber::DeckLinkGrabber(const char *cformat, IDeckLink* deckLink) :
 
     result = deckLink->QueryInterface(IID_IDeckLinkInput, (void**)&deckLinkInput_);
     if (result != S_OK) {
-        debug_msg("DecLinkDevice: Could not obtain the IDeckLinkInput interface\n");
+        debug_msg("DeckLinkDevice: Could not obtain the IDeckLinkInput interface\n");
     }
     running_  = 0;
     delegate_ = NULL;
@@ -626,7 +623,7 @@ int DeckLinkGrabber::command(int argc, const char*const* argv)
             result = deckLink_->QueryInterface(IID_IDeckLinkConfiguration, (void**)&deckLinkConfiguration);
 
             if (result != S_OK) {
-                debug_msg("DecLinkGrabber: Could not obtain the IDeckLinkConfiguration interface\n");
+                debug_msg("DeckLinkGrabber: Could not obtain the IDeckLinkConfiguration interface\n");
                 return TCL_ERROR;
             }
 
@@ -649,10 +646,10 @@ int DeckLinkGrabber::command(int argc, const char*const* argv)
                 bmdVideoConnection = bmdVideoConnectionOpticalSDI;
             }
 
-            result = deckLinkConfiguration->SetVideoInputFormat(bmdVideoConnection);
+            result = deckLinkConfiguration->SetInt(bmdDeckLinkConfigVideoInputConnection, bmdVideoConnection);
 
             if (result != S_OK) {
-                debug_msg("DecLinkGrabber: Could not set input video connection\n");
+                debug_msg("DeckLinkGrabber: Could not set video input connection\n");
                 return TCL_ERROR;
             }
 
@@ -667,7 +664,7 @@ int DeckLinkGrabber::command(int argc, const char*const* argv)
             return (TCL_OK);
 
         } else if (strcmp(argv[1], "fps") == 0) {
-            debug_msg("DecLinkGrabber: fps %s\n",argv[2]);
+            debug_msg("DeckLinkGrabber: fps %s\n",argv[2]);
 
         } else if (strcmp(argv[1], "type") == 0 || strcmp(argv[1], "format") == 0) {
 
@@ -676,7 +673,7 @@ int DeckLinkGrabber::command(int argc, const char*const* argv)
 
             result = deckLinkInput_->GetDisplayModeIterator(&displayModeIterator);
             if (result != S_OK) {
-                debug_msg("DecLinkDevice: Could not obtain the video input display mode iterator\n");
+                debug_msg("DeckLinkDevice: Could not obtain the video input display mode iterator\n");
                 return TCL_ERROR;
             }
 
@@ -808,7 +805,7 @@ void DeckLinkGrabber::start()
 
     result = deckLinkInput_->EnableVideoInput(displayMode_, bmdFormat8BitYUV, 0);
     if (result != S_OK) {
-        debug_msg("DecLinkGrabber: Could not enable video input\n");
+        debug_msg("DeckLinkGrabber: Could not enable video input\n");
         return;
     }
 
