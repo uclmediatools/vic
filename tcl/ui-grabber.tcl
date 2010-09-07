@@ -194,7 +194,7 @@ proc build.v4l2 w {
 }
 
 proc build.blackmagic w {
-    global setSoftwareScale softwareScaleButtons
+    global scalerResolution scalerButtons
 
     label $w.title -text "Blackmagic DeckLink-Grabber"
     frame $w.f -relief sunken -borderwidth 2
@@ -203,40 +203,42 @@ proc build.blackmagic w {
 
     if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
         ttk::radiobutton $w.f.b0 -text "none" -command "restart" \
-           -variable setSoftwareScale -value "none"
+           -variable scalerResolution -value "none"
         ttk::radiobutton $w.f.b1 -text "960p" -command "restart" \
-            -variable setSoftwareScale -value "960p"
+            -variable scalerResolution -value "960p"
         ttk::radiobutton $w.f.b2 -text "720p" -command "restart" \
-            -variable setSoftwareScale -value "720p"
+            -variable scalerResolution -value "720p"
         ttk::radiobutton $w.f.b3 -text "576p" -command "restart" \
-            -variable setSoftwareScale -value "576p"
+            -variable scalerResolution -value "576p"
         ttk::radiobutton $w.f.b4 -text "480p" -command "restart" \
-            -variable setSoftwareScale -value "480p"
+            -variable scalerResolution -value "480p"
     } else {
         set f [smallfont]
         radiobutton $w.f.b0 -text "none" -command "restart" \
             -padx 0 -pady 0 \
-            -anchor w -variable setSoftwareScale -font $f -relief flat -value "none"
+            -anchor w -variable scalerResolution -font $f -relief flat -value "none"
         radiobutton $w.f.b1 -text "960p" -command "restart" \
             -padx 0 -pady 0 \
-            -anchor w -variable setSoftwareScale -font $f -relief flat -value "960p"
+            -anchor w -variable scalerResolution -font $f -relief flat -value "960p"
         radiobutton $w.f.b2 -text "720p" -command "restart" \
             -padx 0 -pady 0 \
-            -anchor w -variable setSoftwareScale -font $f -relief flat -value "720p"
+            -anchor w -variable scalerResolution -font $f -relief flat -value "720p"
         radiobutton $w.f.b3 -text "576p" -command "restart" \
             -padx 0 -pady 0 \
-            -anchor w -variable setSoftwareScale -font $f -relief flat -value "576p"
+            -anchor w -variable scalerResolution -font $f -relief flat -value "576p"
         radiobutton $w.f.b4 -text "480p" -command "restart" \
             -padx 0 -pady 0 \
-            -anchor w -variable setSoftwareScale -font $f -relief flat -value "480p"
+            -anchor w -variable scalerResolution -font $f -relief flat -value "480p"
     }
     pack $w.f.scaling $w.f.b0 $w.f.b1 $w.f.b2 $w.f.b3 $w.f.b4 -fill x -side left
 
     pack $w.title $w.f -fill x -expand 1
 
-    set setSoftwareScale "none"
-    set softwareScaleButtons $w.f
-    set_software_scale_buttons_state
+    if { ! [info exists scalerResolution] } {
+        set scalerResolution "none"
+    }
+    set scalerButtons $w.f
+    set_scaler_buttons_state
 }
 
 proc build.meteor w {

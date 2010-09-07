@@ -367,6 +367,18 @@ proc print_capabilities_xml {} {
 					}
 					puts "			</sizes>"
 				}
+
+				# for the moment only the Blackmagick DeckLink grabber has a scaler
+				if { [string first "Blackmagic-" "[$v nickname]"] == -1 } {
+					puts "			<scaler />"
+				} else {
+					set scaleList [list none 960p 720p 576p 480p]
+					puts "			<scaler>"
+					foreach scale  $scaleList {
+						puts "				<scale>$scale</scale>"
+					}
+					puts "			</scaler>"
+				}
 				puts "		</device>"
 			}
 		}

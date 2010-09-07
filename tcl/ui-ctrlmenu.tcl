@@ -1649,7 +1649,7 @@ proc restart { } {
 			close_device
 		}
 	}
-	set_software_scale_buttons_state
+	set_scaler_buttons_state
 }
 
 proc disable_large_button { } {
@@ -1668,21 +1668,21 @@ proc enable_large_button { } {
 	}
 }
 
-proc set_software_scale_buttons_state { } {
-	global inputSize softwareScaleButtons
-	if { [info exists softwareScaleButtons] } {
+proc set_scaler_buttons_state { } {
+	global inputSize scalerButtons
+	if { [info exists scalerButtons] } {
 		if { $inputSize == 1 } {
-			$softwareScaleButtons.b0 configure -state normal
-			$softwareScaleButtons.b1 configure -state normal
-			$softwareScaleButtons.b2 configure -state normal
-			$softwareScaleButtons.b3 configure -state normal
-			$softwareScaleButtons.b4 configure -state normal
+			$scalerButtons.b0 configure -state normal
+			$scalerButtons.b1 configure -state normal
+			$scalerButtons.b2 configure -state normal
+			$scalerButtons.b3 configure -state normal
+			$scalerButtons.b4 configure -state normal
 		} else {
-			$softwareScaleButtons.b0 configure -state disabled
-			$softwareScaleButtons.b1 configure -state disabled
-			$softwareScaleButtons.b2 configure -state disabled
-			$softwareScaleButtons.b3 configure -state disabled
-			$softwareScaleButtons.b4 configure -state disabled
+			$scalerButtons.b0 configure -state disabled
+			$scalerButtons.b1 configure -state disabled
+			$scalerButtons.b2 configure -state disabled
+			$scalerButtons.b3 configure -state disabled
+			$scalerButtons.b4 configure -state disabled
 		}
 	}
 }
