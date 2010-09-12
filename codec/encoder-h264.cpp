@@ -47,6 +47,7 @@ class H264Encoder:public TransmitterModule
     x264Encoder *enc;
     DataBuffer *fOut;
     Deinterlace deinterlacer;
+    bool use_deinterlacer;
 
     FILE *fptr;
 };
@@ -77,6 +78,7 @@ H264Encoder::H264Encoder():TransmitterModule(FT_YUV_420)
     kbps = 512;
     gop = 20;
     fOut=NULL;
+    use_deinterlacer=false; 
 }
 
 H264Encoder::~H264Encoder()
@@ -109,6 +111,10 @@ int H264Encoder::command(int argc, const char *const *argv)
 	    if (kbps < 64)
 		kbps = 64;
 	    //std::cout << "H264: kbps " << kbps << "\n";
+	    return (TCL_OK);
+	}
+	else if (strcmp(argv[1], "useDeinterlacer") == 0) {
+	    use_deinterlacer = atoi(argv[2]);
 	    return (TCL_OK);
 	}
 	else if (strcmp(argv[1], "hq") == 0) {
@@ -149,7 +155,9 @@ int H264Encoder::consume(const VideoFrame * vf)
     }
 
     frame_size = vf->width_ * vf->height_;
-    deinterlacer.render(vf->bp_, vf->width_, vf->height_);
+    if (use_deinterlacer) {
+	    deinterlacer.render(vf->bp_, vf->width_, vf->height_);
+    }
     enc->encodeFrame(vf->bp_);
     numNAL = enc->numNAL();
 

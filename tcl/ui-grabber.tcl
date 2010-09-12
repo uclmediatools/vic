@@ -194,7 +194,7 @@ proc build.v4l2 w {
 }
 
 proc build.blackmagic w {
-    global scalerResolution scalerButtons
+    global scalerCompResolution scalerButtons
 
     label $w.title -text "Blackmagic DeckLink-Grabber"
     frame $w.f -relief sunken -borderwidth 2
@@ -203,40 +203,38 @@ proc build.blackmagic w {
 
     if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
         ttk::radiobutton $w.f.b0 -text "none" -command "restart" \
-           -variable scalerResolution -value "none"
+           -variable scalerCompResolution -value "none"
         ttk::radiobutton $w.f.b1 -text "960p" -command "restart" \
-            -variable scalerResolution -value "960p"
+            -variable scalerCompResolution -value "960p"
         ttk::radiobutton $w.f.b2 -text "720p" -command "restart" \
-            -variable scalerResolution -value "720p"
+            -variable scalerCompResolution -value "720p"
         ttk::radiobutton $w.f.b3 -text "576p" -command "restart" \
-            -variable scalerResolution -value "576p"
+            -variable scalerCompResolution -value "576p"
         ttk::radiobutton $w.f.b4 -text "480p" -command "restart" \
-            -variable scalerResolution -value "480p"
+            -variable scalerCompResolution -value "480p"
     } else {
         set f [smallfont]
         radiobutton $w.f.b0 -text "none" -command "restart" \
             -padx 0 -pady 0 \
-            -anchor w -variable scalerResolution -font $f -relief flat -value "none"
+            -anchor w -variable scalerCompResolution -font $f -relief flat -value "none"
         radiobutton $w.f.b1 -text "960p" -command "restart" \
             -padx 0 -pady 0 \
-            -anchor w -variable scalerResolution -font $f -relief flat -value "960p"
+            -anchor w -variable scalerCompResolution -font $f -relief flat -value "960p"
         radiobutton $w.f.b2 -text "720p" -command "restart" \
             -padx 0 -pady 0 \
-            -anchor w -variable scalerResolution -font $f -relief flat -value "720p"
+            -anchor w -variable scalerCompResolution -font $f -relief flat -value "720p"
         radiobutton $w.f.b3 -text "576p" -command "restart" \
             -padx 0 -pady 0 \
-            -anchor w -variable scalerResolution -font $f -relief flat -value "576p"
+            -anchor w -variable scalerCompResolution -font $f -relief flat -value "576p"
         radiobutton $w.f.b4 -text "480p" -command "restart" \
             -padx 0 -pady 0 \
-            -anchor w -variable scalerResolution -font $f -relief flat -value "480p"
+            -anchor w -variable scalerCompResolution -font $f -relief flat -value "480p"
     }
     pack $w.f.scaling $w.f.b0 $w.f.b1 $w.f.b2 $w.f.b3 $w.f.b4 -fill x -side left
 
     pack $w.title $w.f -fill x -expand 1
 
-    if { ! [info exists scalerResolution] } {
-        set scalerResolution "none"
-    }
+    set scalerCompResolution [resource scalerCompResolution]
     set scalerButtons $w.f
     set_scaler_buttons_state
 }

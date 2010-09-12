@@ -523,10 +523,11 @@ proc doNothing { args } {
 }
 
 proc update_encoder_param {  } {
-	global videoFormat fps_slider bps_slider
+	global videoFormat fps_slider bps_slider useDeinterlacerComp
 	if {$videoFormat == "mpeg4" || $videoFormat == "h264"} {
 		encoder kbps [expr round([$bps_slider get])]
 		encoder fps [expr round([$fps_slider get])]
+		encoder useDeinterlacer $useDeinterlacerComp
 	}
 }
 
@@ -1192,9 +1193,10 @@ proc build.encoder_buttons w {
 }
 
 proc build.encoder_options w {
-	global useJPEGforH261 tcl_platform useHardwareComp
+	global useJPEGforH261 tcl_platform useHardwareComp useDeinterlacerComp
 	set useJPEGforH261 [yesno useJPEGforH261]
 	set useHardwareComp [yesno useHardwareComp]
+	set useDeinterlacerComp [yesno useDeinterlacerComp]
 	set f [smallfont]
 	set m $w.menu
 
@@ -1213,6 +1215,8 @@ proc build.encoder_options w {
 		-variable useJPEGforH261 -font $f -command restart
 	$m add checkbutton -label "Use Hardware Encode" \
 		-variable useHardwareComp -font $f -command restart
+	$m add checkbutton -label "Use Deinterlacer" \
+		-variable useDeinterlacerComp -font $f -command restart
 	if { $tcl_platform(platform) == "windows" || [windowingsystem] == "aqua"} {
 		$m add checkbutton -label "Configure on Transmit" \
 			-variable configOnTransmit -font $f \

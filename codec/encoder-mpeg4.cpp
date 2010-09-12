@@ -44,6 +44,7 @@ class MPEG4Encoder:public TransmitterModule
     FFMpegCodec mpeg4;
     UCHAR *bitstream;
     Deinterlace deinterlacer;
+    bool use_deinterlacer;
 };
 
 static class MPEG4EncoderMatcher:public Matcher
@@ -106,6 +107,10 @@ int MPEG4Encoder::command(int argc, const char *const *argv)
 	    kbps = atoi(argv[2]);
 	    return (TCL_OK);
 	}
+	else if (strcmp(argv[1], "useDeinterlacer") == 0) {
+	    use_deinterlacer = atoi(argv[2]);
+	    return (TCL_OK);
+	}
 	else if (strcmp(argv[1], "hq") == 0) {
 	    int enable_hq = atoi(argv[2]);
 	    //printf("enable mpeg4 high quality encoding\n", enable_hq);
@@ -164,8 +169,10 @@ int MPEG4Encoder::consume(const VideoFrame * vf)
 	// std::cout << "kbps:" << kbps << " fps:" << fps << "\n";
 	mpeg4.init_encoder(vf->width_, vf->height_, kbps * 1024, fps, gop);
     }
-    
-    deinterlacer.render(vf->bp_, vf->width_, vf->height_);    
+
+    if (use_deinterlacer) {
+	deinterlacer.render(vf->bp_, vf->width_, vf->height_);
+    }
     bitstream = mpeg4.encode(vf->bp_, len);
     //    std::cout << "MPEG4 ENC: packet length " << len << endl;
     
