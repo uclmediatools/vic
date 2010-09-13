@@ -759,21 +759,21 @@ void DeckLinkGrabber::start()
     HRESULT result;
     int flags = TCL_GLOBAL_ONLY;
     Tcl& tcl = Tcl::instance();
-    const char* setSoftwareScale = Tcl_GetVar(tcl.interp(), "setSoftwareScale", flags);
+    const char* scalerCompResolution = Tcl_GetVar(tcl.interp(), "scalerCompResolution", flags);
 
     // Set the image size.
     switch (decimate_) {
     case 1: // large-size
-        if (strcmp(setSoftwareScale, "960p") == 0) {
+        if (strcmp(scalerCompResolution, "960p") == 0) {
             width_ = int(960 * displayModeWidth_ / displayModeHeight_);
             height_ = 960;
-        } else if (strcmp(setSoftwareScale, "720p") == 0) {
+        } else if (strcmp(scalerCompResolution, "720p") == 0) {
             width_ = int(720 * displayModeWidth_ / displayModeHeight_);
             height_ = 720;
-        } else if (strcmp(setSoftwareScale, "576p") == 0) {
+        } else if (strcmp(scalerCompResolution, "576p") == 0) {
           width_ = int(576 * displayModeWidth_ / displayModeHeight_);
           height_ = 576;
-        } else if (strcmp(setSoftwareScale, "480p") == 0) {
+        } else if (strcmp(scalerCompResolution, "480p") == 0) {
           width_ = int(480 * displayModeWidth_ / displayModeHeight_);
           height_ = 480;
         } else {
@@ -821,14 +821,14 @@ void DeckLinkGrabber::start()
     result = deckLinkInput_->SetCallback(delegate_);
 
     if (result != S_OK) {
-        debug_msg("DecStartStreams();LinkGrabber: Could not set callback\n");
+        debug_msg("DeckLinkGrabber::start();LinkGrabber: Could not set callback\n");
         return;
     }
 
     result = deckLinkInput_->StartStreams();
 
     if (result != S_OK) {
-        debug_msg("DecStartStreams();LinkGrabber: Could not start streams\n");
+        debug_msg("DeckLinkGrabber::start();LinkGrabber: Could not start streams\n");
         return;
     }
 
