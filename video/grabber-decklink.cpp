@@ -577,7 +577,7 @@ int DeckLinkDevice::command(int argc, const char*const* argv)
             return (TCL_OK);
         }
     } else if (argc == 2) {
-        tcl.evalc("set_software_scale_buttons_state");
+        tcl.evalc("set_scaler_buttons_state");
     }
     return (InputDevice::command(argc, argv));
 }
