@@ -426,9 +426,7 @@ void Grabber::set_size_420(int w, int h)
 	inw_ = w;
 	inh_ = h;
 	w &=~ 0xf;
-	if (h != 1080) {
-		h &=~ 0xf;
-	}
+	h &=~ 0xf;
 	outw_ = w;
 	outh_ = h;
 
