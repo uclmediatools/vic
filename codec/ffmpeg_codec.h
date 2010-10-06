@@ -42,7 +42,7 @@ enum Motion_Est_ID {
 
 typedef unsigned char UCHAR;
 const int MAX_FRAME_SIZE = 1920*1080*3/2;
-const int MAX_CODED_SIZE = 200000;
+const int MAX_CODED_SIZE = 400000;
 
 
 class FFMpegCodec
