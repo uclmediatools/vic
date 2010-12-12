@@ -36,8 +36,8 @@ static const char rcsid[] =
 #include "device-input.h"
 #include "device-output.h"
 
-InputDevice::InputDevice(const char* nickname) 
-	: nickname_(nickname), attributes_("")
+InputDevice::InputDevice(const char* nickname, const char* api) 
+	: nickname_(nickname), api_(api), attributes_("")
 {
 }
 
@@ -54,6 +54,10 @@ int InputDevice::command(int argc, const char*const* argv)
 			tcl.result(nickname_);
 			return (TCL_OK);
 		}
+		if (strcmp(argv[1], "api") == 0) {
+			tcl.result(api_);
+			return (TCL_OK);
+		}
 		if (strcmp(argv[1], "attributes") == 0) {
 			tcl.result(attributes_);
 			return (TCL_OK);
@@ -62,8 +66,8 @@ int InputDevice::command(int argc, const char*const* argv)
 	return (TclObject::command(argc, argv));
 }
 
-OutputDevice::OutputDevice(const char* nickname)
-	: nickname_(nickname), attributes_("")
+OutputDevice::OutputDevice(const char* nickname, const char* api)
+	: nickname_(nickname), api_(api), attributes_("")
 {
 }
 
@@ -78,6 +82,10 @@ int OutputDevice::command(int argc, const char*const* argv)
 	if (argc == 2) {
 		if (strcmp(argv[1], "nickname") == 0) {
 			tcl.result(nickname_);
+			return (TCL_OK);
+		}
+		if (strcmp(argv[1], "api") == 0) {
+			tcl.result(api_);
 			return (TCL_OK);
 		}
 		if (strcmp(argv[1], "attributes") == 0) {

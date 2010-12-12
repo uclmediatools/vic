@@ -730,7 +730,8 @@ proc insert_grabber_panel devname {
 proc select_device device {
 	global transmitButton logoButton sizeButtons portButton formatButtons \
 		videoFormat defaultFormat lastDevice defaultPort inputPort \
-		defaultType inputType transmitButtonState logoButtonState typeButton
+		defaultType inputType transmitButtonState logoButtonState typeButton \
+		capResolutionButton
 
 	#
 	# Remember settings of various controls for previous device
@@ -765,7 +766,7 @@ proc select_device device {
 	} else {
 		$sizeButtons.b0 configure -state disabled
 	}
-        if { [device_supports $device size normal] || [device_supports $device size cif] } {
+	if { [device_supports $device size normal] || [device_supports $device size cif] } {
 		$sizeButtons.b1 configure -state normal
 	} else {
 		$sizeButtons.b1 configure -state disabled
@@ -787,8 +788,17 @@ proc select_device device {
 	} else {
 		$typeButton configure -state disabled
 	}
-	insert_grabber_panel [$device nickname]
-
+	if {[$device api] != ""} {
+		insert_grabber_panel [$device api]
+	} else {
+		insert_grabber_panel [$device nickname]
+	}
+	if [device_supports $device capture_resolution *] {
+		$capResolutionButton configure -state normal
+		attach_capture_resolutions $device
+	} else {
+		$capResolutionButton configure -state disabled
+	}
 	#set videoFormat $defaultFormat($device)
 	select_format $videoFormat
 	if $wasOverlaying {
@@ -801,7 +811,7 @@ proc select_device device {
 
 proc compare {a b} {
 
-	return [string compare [$a nickname] [$b nickname]]
+    return [string compare [$a nickname] [$b nickname]]
 
     set a0 [$a nickname]
 
@@ -857,8 +867,8 @@ proc build.device w {
 		$w configure -state disabled
 		return
 	}
-	
-    set inputDeviceListSorted [lsort -command compare $inputDeviceList]
+
+	set inputDeviceListSorted [lsort -command compare $inputDeviceList]
 	foreach d $inputDeviceListSorted {
 		if { [$d nickname] == "still" && ![yesno stillGrabber] } {
 			set defaultFormat($d) $videoFormat
@@ -1181,6 +1191,41 @@ proc attach_types device {
 		}
 	}
 	set inputType $defaultType($device)
+}
+
+proc attach_capture_resolutions device {
+	global capResolutionButton capResolution defaultCapResolution
+	catch "destroy $capResolutionButton.menu"
+	set resolutions [attribute_class [$device attributes] capture_resolution]
+	set f [smallfont]
+	set m $capResolutionButton.menu
+	menu $m
+
+	foreach resolution $resolutions {
+		$m add radiobutton -label $resolution \
+			-command "restart" \
+			-value $resolution -variable capResolution -font $f
+	}
+	if ![info exists defaultCapResolution($device)] {
+		set nn [$device nickname]
+		if [info exists defaultCapResolution($nn)] {
+			set defaultCapResolution($device) $defaultCapResolution($nn)
+		} else {
+			set s [resource defaultCapResolution($nn)]
+			if { $s != "" } {
+				set defaultCapResolution($device) $s
+			} else {
+				# use current resolution setting
+				set s [string trim [attribute_class [$device attributes] selected_resolution]]
+				if { $s != "" } {
+					set defaultCapResolution($device) $s
+				} else {
+					set defaultCapResolution($device) [lindex $resolutions 0]
+				}
+			}
+		}
+	}
+	set capResolution $defaultCapResolution($device)
 }
 
 proc build.encoder_buttons w {
@@ -1654,6 +1699,7 @@ proc restart { } {
 		}
 	}
 	set_scaler_buttons_state
+	set_capture_resolution_button_state
 }
 
 proc disable_large_button { } {
@@ -1669,6 +1715,17 @@ proc enable_large_button { } {
 	if { [info exists videoDevice] && \
 		[device_supports $videoDevice size large] } {
 		$sizeButtons.b2 configure -state normal
+	}
+}
+
+proc set_capture_resolution_button_state { } {
+	global inputSize capResolutionButton
+	if { [info exists capResolutionButton] } {
+		if { $inputSize == 1 } {
+			$capResolutionButton configure -state normal
+		} else {
+			$capResolutionButton configure -state disabled
+		}
 	}
 }
 
@@ -1711,6 +1768,7 @@ proc select_format fmt {
 	} else {
 		enable_large_button
 	}
+	set_capture_resolution_button_state
 
 	if { $fmt == "pvh"} {
 		set w .menu.encoder.f.encoderLayer

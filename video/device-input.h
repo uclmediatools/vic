@@ -48,11 +48,12 @@ class YuvEncoder;
  */
 class InputDevice : public TclObject {
  public:
-	InputDevice(const char* name);
+	InputDevice(const char* name, const char* api="");
 	virtual int command(int argc, const char*const* argv);
  protected:
 	void inception();
 	const char* nickname_;
+	const char* api_;
 	const char* attributes_;
 };
 

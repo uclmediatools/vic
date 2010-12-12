@@ -38,11 +38,12 @@
  */
 class OutputDevice : public TclObject {
  public:
-	OutputDevice(const char* nickname);
+	OutputDevice(const char* nickname, const char *api="");
 	virtual int command(int argc, const char*const* argv);
  protected:
 	void inception();
 	const char* nickname_;
+	const char* api_;
 	const char* attributes_;
 };
 

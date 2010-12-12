@@ -31,6 +31,39 @@
 proc init_grabber_panel {} {
 }
 
+proc build.directshow w {
+    global capResolutionButton capResolution videoDevice
+
+    label $w.title -text "DirectShow grabber controls"
+    frame $w.f -relief sunken -borderwidth 2
+
+    set f [smallfont]
+    # create the menubutton but don't defer the menu creation until later
+    if {$::tk_version > 8.4 } {
+        ttk::menubutton $w.f.resolution -text "Capture Resolution" \
+            -menu $w.f.resolution.menu -width 18
+    } else {
+        menubutton $w.f.resolution -text "Capture Resolution" \
+            -menu $w.f.resolution.menu -relief raised -width 20 \
+            -font $f -indicatoron 1
+    }
+
+    if {$::tk_version > 8.4 } {
+        ttk::button $w.f.properties -text "Properties" -width 18 \
+            -command "$videoDevice properties"
+    } else {
+        menubutton $w.f.properties -text "Properties" -width 20 \
+            -relief raised -command "$videoDevice properties"
+    }
+
+    pack $w.f.resolution -fill x -side left
+    pack $w.f.properties -fill x -side right
+    pack $w.title $w.f -fill x -expand 1
+    set capResolutionButton $w.f.resolution
+    set capResolution undefined
+    set_capture_resolution_button_state
+}
+
 proc build.dc10 w {
     build.v4l $w
 }
@@ -194,7 +227,7 @@ proc build.v4l2 w {
 }
 
 proc build.blackmagic w {
-    global scalerCompResolution scalerButtons
+    global scalerCapResolution scalerButtons
 
     label $w.title -text "Blackmagic DeckLink-Grabber"
     frame $w.f -relief sunken -borderwidth 2
@@ -203,38 +236,38 @@ proc build.blackmagic w {
 
     if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
         ttk::radiobutton $w.f.b0 -text "none" -command "restart" \
-           -variable scalerCompResolution -value "none"
+           -variable scalerCapResolution -value "none"
         ttk::radiobutton $w.f.b1 -text "960p" -command "restart" \
-            -variable scalerCompResolution -value "960p"
+            -variable scalerCapResolution -value "960p"
         ttk::radiobutton $w.f.b2 -text "720p" -command "restart" \
-            -variable scalerCompResolution -value "720p"
+            -variable scalerCapResolution -value "720p"
         ttk::radiobutton $w.f.b3 -text "576p" -command "restart" \
-            -variable scalerCompResolution -value "576p"
+            -variable scalerCapResolution -value "576p"
         ttk::radiobutton $w.f.b4 -text "480p" -command "restart" \
-            -variable scalerCompResolution -value "480p"
+            -variable scalerCapResolution -value "480p"
     } else {
         set f [smallfont]
         radiobutton $w.f.b0 -text "none" -command "restart" \
             -padx 0 -pady 0 \
-            -anchor w -variable scalerCompResolution -font $f -relief flat -value "none"
+            -anchor w -variable scalerCapResolution -font $f -relief flat -value "none"
         radiobutton $w.f.b1 -text "960p" -command "restart" \
             -padx 0 -pady 0 \
-            -anchor w -variable scalerCompResolution -font $f -relief flat -value "960p"
+            -anchor w -variable scalerCapResolution -font $f -relief flat -value "960p"
         radiobutton $w.f.b2 -text "720p" -command "restart" \
             -padx 0 -pady 0 \
-            -anchor w -variable scalerCompResolution -font $f -relief flat -value "720p"
+            -anchor w -variable scalerCapResolution -font $f -relief flat -value "720p"
         radiobutton $w.f.b3 -text "576p" -command "restart" \
             -padx 0 -pady 0 \
-            -anchor w -variable scalerCompResolution -font $f -relief flat -value "576p"
+            -anchor w -variable scalerCapResolution -font $f -relief flat -value "576p"
         radiobutton $w.f.b4 -text "480p" -command "restart" \
             -padx 0 -pady 0 \
-            -anchor w -variable scalerCompResolution -font $f -relief flat -value "480p"
+            -anchor w -variable scalerCapResolution -font $f -relief flat -value "480p"
     }
     pack $w.f.scaling $w.f.b0 $w.f.b1 $w.f.b2 $w.f.b3 $w.f.b4 -fill x -side left
 
     pack $w.title $w.f -fill x -expand 1
 
-    set scalerCompResolution [resource scalerCompResolution]
+    set scalerCapResolution [resource scalerCapResolution]
     set scalerButtons $w.f
     set_scaler_buttons_state
 }

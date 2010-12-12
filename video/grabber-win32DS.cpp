@@ -124,6 +124,8 @@ input devices are created.  Probably not a good approach, but it is one possibil
 #include <stdlib.h>
 #include "config.h"
 #include <windows.h>
+#include <set>
+using namespace std;
 
 #include "debug.h"
 #include "grabber.h"
@@ -218,6 +220,7 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
    capturing_=0;
    max_fps_ = 30;
    memset(inputPorts, 0, NUM_PORTS);
+   memset(captureResolutions, 0, NUM_CAPTURE_RESOLUTIONS * sizeof(SIZE));
        
    numInputPorts = 0;
    initializedPorts = 0;
@@ -714,8 +717,15 @@ void DirectShowGrabber::fps(int f) {
 void DirectShowGrabber::setsize() {
 
    if (decimate_ == 1 && !have_DVSD_){  //i.e. Large
-       width_ = max_width_;
-       height_ = max_height_;
+	   int flags = TCL_GLOBAL_ONLY;
+	   Tcl& tcl = Tcl::instance();
+	   const char* capResolution = Tcl_GetVar(tcl.interp(), "capResolution", flags);
+	   if (capResolution) {
+		   sscanf(capResolution, "%ix%i", &width_, &height_);
+	   } else {
+		   width_  = 640;
+		   height_ = 480;
+	   }
    } else {
        width_ = basewidth_  / decimate_;
        height_ = baseheight_ / decimate_;
@@ -866,7 +876,9 @@ void  DeleteMediaType( AM_MEDIA_TYPE *pmt)
 }
 //--------------------------------
 
-int DirectShowGrabber::getCaptureCapabilities(int preferred_max_height) {
+static bool sizeComp(SIZE lhs, SIZE rhs) {return ((lhs.cy << 16) + lhs.cx) < ((rhs.cy << 16) + rhs.cx);}
+
+int DirectShowGrabber::getCaptureCapabilities() {
    IAMStreamConfig          *pConfig;
    AM_MEDIA_TYPE            *pmtConfig;
    int                      iCount;
@@ -874,6 +886,9 @@ int DirectShowGrabber::getCaptureCapabilities(int preferred_max_height) {
    VIDEO_STREAM_CONFIG_CAPS scc;
    HRESULT                  hr;
    VIDEOINFOHEADER          *pVih;
+
+   bool(*fn_pt)(SIZE, SIZE) = sizeComp;
+   set<SIZE,bool(*)(SIZE, SIZE)> resolutionSet(fn_pt);
 
    pConfig   = NULL;
    hr        = pBuild_->FindInterface(&PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video,
@@ -900,7 +915,8 @@ int DirectShowGrabber::getCaptureCapabilities(int preferred_max_height) {
                    (pmtConfig->formattype == FORMAT_VideoInfo)         &&
                    (pmtConfig->cbFormat   >= sizeof (VIDEOINFOHEADER)) &&
                    (pmtConfig->pbFormat   != NULL)) {
-                       if(scc.MaxOutputSize.cy > max_height_ && scc.MaxOutputSize.cy <= preferred_max_height){
+					   resolutionSet.insert(scc.InputSize);
+                       if(scc.MaxOutputSize.cy > max_height_){
                            max_width_  = scc.MaxOutputSize.cx;
                            max_height_ =  scc.MaxOutputSize.cy;
                        }
@@ -938,10 +954,15 @@ int DirectShowGrabber::getCaptureCapabilities(int preferred_max_height) {
            }
        }
    }
+   int i=0;
+   set<SIZE, bool(*)(SIZE, SIZE)>::iterator it;
+   for (it=resolutionSet.begin() ; it != resolutionSet.end() && i < NUM_CAPTURE_RESOLUTIONS; it++) {
+	  if (it->cy < NTSC_BASE_HEIGHT) continue; // ignore resolutions < 640p for Large capture
+	  captureResolutions[i].cx = it->cx;
+	  captureResolutions[i].cy = it->cy;
+	  i++;
+   }
    pConfig->Release();
-
-   if (min_height_>=NTSC_BASE_HEIGHT && preferred_max_height != 1080)
-       getCaptureCapabilities(1080);
 
    if (max_width_>0)
        return TRUE;
@@ -1092,6 +1113,17 @@ void DirectShowGrabber::setCaptureOutputFormat() {
       if ( (curr_w != width_) || (curr_h != height_ )) {
            width_  = curr_w;
            height_ = curr_h;
+		   switch (cformat_) {
+		   case CF_CIF:
+			   set_size_cif(width_, height_);
+			   break;
+		   case CF_420:
+			   set_size_420(width_, height_);
+			   break;
+		   case CF_422:
+			   set_size_422(width_, height_);
+			   break;
+		   }
            debug_msg("DirectShowGrabber::setCaptureOutputFormat:  format set to near res: %dx%d\n",width_,height_);
       } else
            debug_msg("DirectShowGrabber::setCaptureOutputFormat:  format set\n");
@@ -1174,7 +1206,7 @@ int DirectShowGrabber::command(int argc, const char* const* argv) {
 //#########################################################################
 // DirectShowDevice class
 
-DirectShowDevice::DirectShowDevice(char *friendlyName, IBaseFilter *pCapFilt) : InputDevice(friendlyName) {
+DirectShowDevice::DirectShowDevice(char *friendlyName, IBaseFilter *pCapFilt) : InputDevice(friendlyName, "directshow") {
 
     attri_ = new char[255];
     attri_[0] = 0;
@@ -1206,13 +1238,24 @@ DirectShowDevice::DirectShowDevice(char *friendlyName, IBaseFilter *pCapFilt) : 
     }else{
         StringCbCatA(attri_, 255, "external-in ");
     }
+	StringCbCatA(attri_, 255, "} ");
     debug_msg("new DirectShowDevice():  after appending ports\n");
 
-    StringCbCatA(attri_, 255, "} ");
+	SIZE *captureResolutions = o.getCaptureResolutions();
+    if(captureResolutions[0].cx != 0) {
+		StringCbCatA(attri_, 255, "capture_resolution {");
+        int i=0;
+        while( i <  NUM_CAPTURE_RESOLUTIONS && captureResolutions[i].cx != 0 ) {
+			StringCbPrintfA(attri_, 255, "%s %ix%i", attri_, captureResolutions[i].cx, captureResolutions[i].cy);
+            i++;
+        }
+		StringCbCatA(attri_, 255, "} ");
+    }
 
     char *inport = o.getInputPort();
     StringCbPrintfA(attri_, 255, "%s selected_port { %s }", attri_, inport );
     free(inport);
+
     attributes_ = attri_;
     debug_msg("attributes: %s", attributes_);
 }
@@ -1233,8 +1276,50 @@ int DirectShowDevice::command(int argc, const char* const* argv) {
         if (o != 0)
             Tcl::instance().result(o->name());
         return (TCL_OK);
-    }
+    } else if (argc == 2) {
+		if (strcmp(argv[1], "api") == 0) {
+			tcl.result(api_);
+			return (TCL_OK);
+		} else if (strcmp(argv[1], "properties") == 0) {
+			DisplayPropertyPage();
+            return TCL_OK;
+		}
+	}
     return (InputDevice::command(argc, argv));
+}
+
+// This fn displays the custom Property page to set something
+bool DirectShowDevice::DisplayPropertyPage() {
+	bool Done = false;
+
+	ISpecifyPropertyPages *pProp;
+	HRESULT hr = pDirectShowFilter_->QueryInterface(IID_ISpecifyPropertyPages, (void **)&pProp);
+	if (SUCCEEDED(hr))  {
+		IUnknown *pFilterUnk;
+		pDirectShowFilter_->QueryInterface(IID_IUnknown, (void **)&pFilterUnk);
+
+		// Show the page.
+		CAUUID caGUID;
+		pProp->GetPages(&caGUID);
+		pProp->Release();
+		OleCreatePropertyFrame(
+			NULL,                   // Parent window
+			0, 0,                   // Reserved
+			NULL,                   // Caption for the dialog box
+			1,                      // Number of objects (just the filter)
+			&pFilterUnk,            // Array of object pointers.
+			caGUID.cElems,          // Number of property pages
+			caGUID.pElems,          // Array of property page CLSIDs
+			0,                      // Locale identifier
+			0, NULL                 // Reserved
+		);
+
+		// Clean up.
+		pFilterUnk->Release();
+		CoTaskMemFree(caGUID.pElems);
+		Done = true;
+	}
+	return Done;
 }
 
 //#########################################################################

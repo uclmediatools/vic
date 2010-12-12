@@ -759,21 +759,21 @@ void DeckLinkGrabber::start()
     HRESULT result;
     int flags = TCL_GLOBAL_ONLY;
     Tcl& tcl = Tcl::instance();
-    const char* scalerCompResolution = Tcl_GetVar(tcl.interp(), "scalerCompResolution", flags);
+    const char* scalerCapResolution = Tcl_GetVar(tcl.interp(), "scalerCapResolution", flags);
 
     // Set the image size.
     switch (decimate_) {
     case 1: // large-size
-        if (strcmp(scalerCompResolution, "960p") == 0) {
+        if (strcmp(scalerCapResolution, "960p") == 0) {
             width_ = int(960 * displayModeWidth_ / displayModeHeight_);
             height_ = 960;
-        } else if (strcmp(scalerCompResolution, "720p") == 0) {
+        } else if (strcmp(scalerCapResolution, "720p") == 0) {
             width_ = int(720 * displayModeWidth_ / displayModeHeight_);
             height_ = 720;
-        } else if (strcmp(scalerCompResolution, "576p") == 0) {
+        } else if (strcmp(scalerCapResolution, "576p") == 0) {
           width_ = int(576 * displayModeWidth_ / displayModeHeight_);
           height_ = 576;
-        } else if (strcmp(scalerCompResolution, "480p") == 0) {
+        } else if (strcmp(scalerCapResolution, "480p") == 0) {
           width_ = int(480 * displayModeWidth_ / displayModeHeight_);
           height_ = 480;
         } else {

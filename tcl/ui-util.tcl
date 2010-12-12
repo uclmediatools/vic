@@ -368,6 +368,22 @@ proc print_capabilities_xml {} {
 					puts "			</sizes>"
 				}
 
+				if [device_supports $v capture_resolution *] {
+					set resolutionList [attribute_class [$v attributes] capture_resolution]
+					if {[llength $resolutionList] == 0} {
+						puts "			<capture_resolutions />"
+					} else {
+						puts "			<capture_resolutions>"
+						foreach resolution $resolutionList {
+							set resolution [string map {"<" "&lt;"  ">" "&gt;"  "&" "&amp;"  "\"" "&quot;"  "'" "&apos;"} $resolution]
+							puts "				<capture_resolution>$resolution</capture_resolution>"
+						}
+						puts "			</capture_resolutions>"
+					}
+				} else {
+						puts "			<capture_resolutions />"
+				}
+
 				# for the moment only the Blackmagick DeckLink grabber has a scaler
 				if { [string first "Blackmagic-" "[$v nickname]"] == -1 } {
 					puts "			<scaler />"

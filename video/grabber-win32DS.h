@@ -76,6 +76,7 @@ public:
 
 #define NUM_DEVS 20   // max number of capture devices we'll support
 #define NUM_PORTS 20  // max number of ports on a capture device
+#define NUM_CAPTURE_RESOLUTIONS 20 // max number of capture resolutions of a capture device
 
 //#define showErrorMessage(x)   ShowErrorMessage(x, __LINE__, __FILE__)
 
@@ -148,6 +149,12 @@ class DirectShowGrabber : public Grabber {
 		  return min_height_;
 	  }
 
+	  SIZE *	   getCaptureResolutions(){
+		  return captureResolutions;
+	  }
+	  char *		getInputResolution(){
+		  return strdup(capture_resolution_);
+	  }
 	  Port **	   getInputPorts(){
 		  return inputPorts;
 	  }
@@ -163,7 +170,7 @@ class DirectShowGrabber : public Grabber {
       virtual void setsize();
       virtual int  grab();
       void         setport(const char *port);
-      int          getCaptureCapabilities(int preferred_max_height=720);
+      int          getCaptureCapabilities();
       virtual void setCaptureOutputFormat();
 
       int          useconfig_;
@@ -177,6 +184,9 @@ class DirectShowGrabber : public Grabber {
       int          width_;
       int          height_;
       int          cformat_;
+
+      SIZE         captureResolutions[NUM_CAPTURE_RESOLUTIONS];
+      int          numCaptureResolutions;
 
       Port *       inputPorts[NUM_PORTS];
       int          numInputPorts;
@@ -214,6 +224,7 @@ class DirectShowGrabber : public Grabber {
       IAMCrossbar            *pXBar_;
       Crossbar               *crossbar_;
       Crossbar               *crossbarCursor_;
+      char                   capture_resolution_[20];
       char                   input_port_[20];
       bool                   findCrossbar(IBaseFilter *);
       void                   addCrossbar(IAMCrossbar *);
@@ -262,6 +273,8 @@ class DirectShowDevice : public InputDevice {
       virtual int command(int argc, const char* const* argv);     
 
    protected:
+      bool DisplayPropertyPage();
+
       IBaseFilter*           pDirectShowFilter_;
 
       //IBaseFilter       *directShowFilter_;
