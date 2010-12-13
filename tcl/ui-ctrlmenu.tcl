@@ -796,8 +796,6 @@ proc select_device device {
 	if [device_supports $device capture_resolution *] {
 		$capResolutionButton configure -state normal
 		attach_capture_resolutions $device
-	} else {
-		$capResolutionButton configure -state disabled
 	}
 	#set videoFormat $defaultFormat($device)
 	select_format $videoFormat

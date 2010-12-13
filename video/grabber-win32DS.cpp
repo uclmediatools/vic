@@ -1409,14 +1409,18 @@ DirectShowScanner::DirectShowScanner():pMoniker_(0)
 			debug_msg("capture filter bound ok= [%d} %s\n", hr, nameBuf);
 			pCaptureFilter[devNum]->GetClassID(&clsid);
 			VariantClear(&varName);
-			if (!IsEqualGUID(clsid,CLSID_VfwCapture)) {
-				pMoniker_->AddRef();
-				debug_msg("Adding capture filter %d\n", hr);
-				devs_[devNum] = new DirectShowDevice(strdup(nameBuf), pCaptureFilter[devNum]);
-			} else {
+			if (IsEqualGUID(clsid,CLSID_VfwCapture)) {
 				debug_msg("discarding an apparent VFW device= %s\n", nameBuf);
 				devs_[devNum] = NULL;
 				pMoniker_->Release();
+			} else if (strcmp(nameBuf, "Decklink Video Capture") == 0) {
+				debug_msg("discarding an DirectShow based Decklink Video Capture\n");
+				devs_[devNum] = NULL;
+				pMoniker_->Release();
+			} else {
+				pMoniker_->AddRef();
+				debug_msg("Adding capture filter %d\n", hr);
+				devs_[devNum] = new DirectShowDevice(strdup(nameBuf), pCaptureFilter[devNum]);
 			}
 			pPropBag->Release();
 		}
