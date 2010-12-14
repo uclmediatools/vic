@@ -60,7 +60,7 @@ proc build.directshow w {
     pack $w.f.properties -fill x -side right
     pack $w.title $w.f -fill x -expand 1
     set capResolutionButton $w.f.resolution
-    set capResolution undefined
+    set capResolution  [resource capResolution]
     set_capture_resolution_button_state
 }
 
