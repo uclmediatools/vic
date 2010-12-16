@@ -76,7 +76,7 @@ public:
 
 #define NUM_DEVS 20   // max number of capture devices we'll support
 #define NUM_PORTS 20  // max number of ports on a capture device
-#define NUM_CAPTURE_RESOLUTIONS 20 // max number of capture resolutions of a capture device
+#define NUM_LARGE_SIZE_RESOLUTIONS 20 // max number of capture resolutions of a capture device
 
 //#define showErrorMessage(x)   ShowErrorMessage(x, __LINE__, __FILE__)
 
@@ -149,11 +149,11 @@ class DirectShowGrabber : public Grabber {
 		  return min_height_;
 	  }
 
-	  SIZE *	   getCaptureResolutions(){
-		  return captureResolutions;
+	  SIZE *	   getLargeSizeResolutions(){
+		  return largeSizeResolutions;
 	  }
 	  char *		getInputResolution(){
-		  return strdup(capture_resolution_);
+		  return strdup(large_size_resolution_);
 	  }
 	  Port **	   getInputPorts(){
 		  return inputPorts;
@@ -185,8 +185,8 @@ class DirectShowGrabber : public Grabber {
       int          height_;
       int          cformat_;
 
-      SIZE         captureResolutions[NUM_CAPTURE_RESOLUTIONS];
-      int          numCaptureResolutions;
+      SIZE         largeSizeResolutions[NUM_LARGE_SIZE_RESOLUTIONS];
+      int          numlargeSizeResolutions;
 
       Port *       inputPorts[NUM_PORTS];
       int          numInputPorts;
@@ -224,7 +224,7 @@ class DirectShowGrabber : public Grabber {
       IAMCrossbar            *pXBar_;
       Crossbar               *crossbar_;
       Crossbar               *crossbarCursor_;
-      char                   capture_resolution_[20];
+      char                   large_size_resolution_[20];
       char                   input_port_[20];
       bool                   findCrossbar(IBaseFilter *);
       void                   addCrossbar(IAMCrossbar *);

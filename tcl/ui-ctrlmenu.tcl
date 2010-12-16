@@ -793,7 +793,7 @@ proc select_device device {
 	} else {
 		insert_grabber_panel [$device nickname]
 	}
-	if [device_supports $device capture_resolution *] {
+	if [device_supports $device large_size_resolution *] {
 		$capResolutionButton configure -state normal
 		attach_capture_resolutions $device
 	}
@@ -1192,9 +1192,9 @@ proc attach_types device {
 }
 
 proc attach_capture_resolutions device {
-	global capResolutionButton capResolution defaultCapResolution
+	global capResolutionButton defaultLargeSizeResolution largeSizeResolution
 	catch "destroy $capResolutionButton.menu"
-	set resolutions [attribute_class [$device attributes] capture_resolution]
+	set resolutions [attribute_class [$device attributes] large_size_resolution]
 	set f [smallfont]
 	set m $capResolutionButton.menu
 	menu $m
@@ -1202,28 +1202,28 @@ proc attach_capture_resolutions device {
 	foreach resolution $resolutions {
 		$m add radiobutton -label $resolution \
 			-command "restart" \
-			-value $resolution -variable capResolution -font $f
+			-value $resolution -variable largeSizeResolution -font $f
 	}
-	if ![info exists defaultCapResolution($device)] {
+	if ![info exists defaultLargeSizeResolution($device)] {
 		set nn [$device nickname]
-		if [info exists defaultCapResolution($nn)] {
-			set defaultCapResolution($device) $defaultCapResolution($nn)
+		if [info exists defaultLargeSizeResolution($nn)] {
+			set defaultLargeSizeResolution($device) $defaultLargeSizeResolution($nn)
 		} else {
-			set s [resource defaultCapResolution($nn)]
+			set s [resource largeSizeResolution]
 			if { $s != "" } {
-				set defaultCapResolution($device) $s
+				set defaultLargeSizeResolution($device) $s
 			} else {
 				# use current resolution setting
 				set s [string trim [attribute_class [$device attributes] selected_resolution]]
 				if { $s != "" } {
-					set defaultCapResolution($device) $s
+					set defaultLargeSizeResolution($device) $s
 				} else {
-					set defaultCapResolution($device) [lindex $resolutions 0]
+					set defaultLargeSizeResolution($device) [lindex $resolutions 0]
 				}
 			}
 		}
 	}
-	set capResolution $defaultCapResolution($device)
+	set largeSizeResolution $defaultLargeSizeResolution($device)
 }
 
 proc build.encoder_buttons w {

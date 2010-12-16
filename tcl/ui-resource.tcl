@@ -185,8 +185,7 @@ proc init_resources {} {
 	option add Vic.siteDropTime "300" startupFile
 	option add Vic.quality "0" startupFile
 	option add Vic.inputType "ntsc" startupFile
-	option add Vic.capResolution "0" startupFile
-	option add Vic.scalerCapResolution "none" startupFile
+	option add Vic.largeSizeResolution "none" startupFile
 
 	option add Vic.brightness "128" startupFile
 	option add Vic.contrast "128" startupFile

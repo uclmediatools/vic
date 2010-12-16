@@ -220,7 +220,7 @@ DirectShowGrabber::DirectShowGrabber(IBaseFilter *filt, const char * cformat, co
    capturing_=0;
    max_fps_ = 30;
    memset(inputPorts, 0, NUM_PORTS);
-   memset(captureResolutions, 0, NUM_CAPTURE_RESOLUTIONS * sizeof(SIZE));
+   memset(largeSizeResolutions, 0, NUM_LARGE_SIZE_RESOLUTIONS * sizeof(SIZE));
        
    numInputPorts = 0;
    initializedPorts = 0;
@@ -719,9 +719,9 @@ void DirectShowGrabber::setsize() {
    if (decimate_ == 1 && !have_DVSD_){  //i.e. Large
 	   int flags = TCL_GLOBAL_ONLY;
 	   Tcl& tcl = Tcl::instance();
-	   const char* capResolution = Tcl_GetVar(tcl.interp(), "capResolution", flags);
-	   if (capResolution) {
-		   sscanf(capResolution, "%ix%i", &width_, &height_);
+	   const char* largeSizeResolution = Tcl_GetVar(tcl.interp(), "largeSizeResolution", flags);
+	   if (largeSizeResolution) {
+		   sscanf(largeSizeResolution, "%ix%i", &width_, &height_);
 	   } else {
 		   width_  = 640;
 		   height_ = 480;
@@ -956,10 +956,10 @@ int DirectShowGrabber::getCaptureCapabilities() {
    }
    int i=0;
    set<SIZE, bool(*)(SIZE, SIZE)>::iterator it;
-   for (it=resolutionSet.begin() ; it != resolutionSet.end() && i < NUM_CAPTURE_RESOLUTIONS; it++) {
+   for (it=resolutionSet.begin() ; it != resolutionSet.end() && i < NUM_LARGE_SIZE_RESOLUTIONS; it++) {
 	  if (it->cy < NTSC_BASE_HEIGHT) continue; // ignore resolutions < 640p for Large capture
-	  captureResolutions[i].cx = it->cx;
-	  captureResolutions[i].cy = it->cy;
+	  largeSizeResolutions[i].cx = it->cx;
+	  largeSizeResolutions[i].cy = it->cy;
 	  i++;
    }
    pConfig->Release();
@@ -1208,52 +1208,52 @@ int DirectShowGrabber::command(int argc, const char* const* argv) {
 
 DirectShowDevice::DirectShowDevice(char *friendlyName, IBaseFilter *pCapFilt) : InputDevice(friendlyName, "directshow") {
 
-    attri_ = new char[255];
+    attri_ = new char[512];
     attri_[0] = 0;
 
     debug_msg("new DirectShowDevice():  friendlyName=%s\n", friendlyName);
     pDirectShowFilter_  = pCapFilt;
     DirectShowGrabber o(pDirectShowFilter_, "420", friendlyName);
 
-    StringCbCatA(attri_, 255, "format { 420 422 cif } size { ");
+    StringCbCatA(attri_, 511, "format { 420 422 cif } size { ");
 
     if ((o.minHeight() > (CIF_BASE_HEIGHT / 2)) && !o.hasDV_SD()) {
-        StringCbCatA(attri_, 255, "large");
+        StringCbCatA(attri_, 511, "large");
     } else if (o.maxWidth() < NTSC_BASE_WIDTH) {
-        StringCbCatA(attri_, 255, "small cif");
+        StringCbCatA(attri_, 511, "small cif");
     } else {
-        StringCbCatA(attri_, 255, "small cif large");
+        StringCbCatA(attri_, 511, "small cif large");
     }
 
-    StringCbCatA(attri_, 255, " } type { pal ntsc } port { ");
+    StringCbCatA(attri_, 511, " } type { pal ntsc } port { ");
 
     Port **inputPorts = o.getInputPorts();
     if(inputPorts[0] != NULL) {
         int i=0;
         while( i <  NUM_PORTS && inputPorts[i] != NULL ) {
-            StringCbCatA(attri_, 255, inputPorts[i]->name);
-            StringCbCatA(attri_, 255, " ");
+            StringCbCatA(attri_, 511, inputPorts[i]->name);
+            StringCbCatA(attri_, 511, " ");
             i++;
         }
     }else{
-        StringCbCatA(attri_, 255, "external-in ");
+        StringCbCatA(attri_, 511, "external-in ");
     }
-	StringCbCatA(attri_, 255, "} ");
+	StringCbCatA(attri_, 511, "} ");
     debug_msg("new DirectShowDevice():  after appending ports\n");
 
-	SIZE *captureResolutions = o.getCaptureResolutions();
-    if(captureResolutions[0].cx != 0) {
-		StringCbCatA(attri_, 255, "capture_resolution {");
+	SIZE *largeSizeResolutions = o.getLargeSizeResolutions();
+    if(largeSizeResolutions[0].cx != 0) {
+		StringCbCatA(attri_, 511, "large_size_resolution {");
         int i=0;
-        while( i <  NUM_CAPTURE_RESOLUTIONS && captureResolutions[i].cx != 0 ) {
-			StringCbPrintfA(attri_, 255, "%s %ix%i", attri_, captureResolutions[i].cx, captureResolutions[i].cy);
+        while( i <  NUM_LARGE_SIZE_RESOLUTIONS && largeSizeResolutions[i].cx != 0 ) {
+			StringCbPrintfA(attri_, 511, "%s %ix%i", attri_, largeSizeResolutions[i].cx, largeSizeResolutions[i].cy);
             i++;
         }
-		StringCbCatA(attri_, 255, "} ");
+		StringCbCatA(attri_, 511, "} ");
     }
 
     char *inport = o.getInputPort();
-    StringCbPrintfA(attri_, 255, "%s selected_port { %s }", attri_, inport );
+    StringCbPrintfA(attri_, 511, "%s selected_port { %s }", attri_, inport );
     free(inport);
 
     attributes_ = attri_;
