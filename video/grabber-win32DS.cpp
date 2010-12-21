@@ -1284,6 +1284,7 @@ int DirectShowDevice::command(int argc, const char* const* argv) {
 			DisplayPropertyPage();
             return TCL_OK;
 		}
+		tcl.evalc("set_capture_resolution_button_state");
 	}
     return (InputDevice::command(argc, argv));
 }

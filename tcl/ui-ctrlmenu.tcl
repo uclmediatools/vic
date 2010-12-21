@@ -794,8 +794,10 @@ proc select_device device {
 		insert_grabber_panel [$device nickname]
 	}
 	if [device_supports $device large_size_resolution *] {
-		$capResolutionButton configure -state normal
-		attach_capture_resolutions $device
+		if { [info exists capResolutionButton] } {
+			$capResolutionButton configure -state normal
+			attach_capture_resolutions $device
+		}
 	}
 	#set videoFormat $defaultFormat($device)
 	select_format $videoFormat
@@ -1766,7 +1768,6 @@ proc select_format fmt {
 	} else {
 		enable_large_button
 	}
-	set_capture_resolution_button_state
 
 	if { $fmt == "pvh"} {
 		set w .menu.encoder.f.encoderLayer

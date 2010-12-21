@@ -32,7 +32,7 @@ proc init_grabber_panel {} {
 }
 
 proc build.directshow w {
-    global capResolutionButton largeSizeResolution videoDevice
+    global capResolutionButton videoDevice
 
     label $w.title -text "DirectShow grabber controls"
     frame $w.f -relief sunken -borderwidth 2
@@ -59,7 +59,6 @@ proc build.directshow w {
     pack $w.f.resolution -fill x -side left
     pack $w.f.properties -fill x -side right
     pack $w.title $w.f -fill x -expand 1
-	set largeSizeResolution  [resource largeSizeResolution]
     set capResolutionButton $w.f.resolution
     set_capture_resolution_button_state
 }
