@@ -230,6 +230,9 @@ int IPNetwork::command(int argc, const char*const* argv)
 int IPNetwork::open(const char * host, int port, int ttl)
 {
 	char *g_addr;
+	sockaddr_in local;
+	int on;
+
 	// Check for SSM src address: Src,Group
 	if ((g_addr=(char*)strchr(host,(int)','))!=NULL) {
 		char s_addr_ssm[MAXHOSTNAMELEN];
@@ -257,7 +260,6 @@ int IPNetwork::open(const char * host, int port, int ttl)
 	 * On a multihomed host we need to bind the receive socket
 	 * to the same local address the kernel has chosen to send on.
 	 */
-	sockaddr_in local;
 	if (localname(&local) < 0) {
 #ifdef WIN32
 		(IPAddress&)local_ = find_win32_interface(g_addr_, ttl);
@@ -275,7 +277,19 @@ int IPNetwork::open(const char * host, int port, int ttl)
 	if (rsock_ < 0) {
 		rsock_ = ssock_;
 	}
-
+	/*
+	 * Enable the TOS value from received packets to be
+	 * returned along with the payload.
+	 */
+#ifdef IP_RECVTOS
+	on = 1;
+	debug_msg("Enabling IP_RECVTOS on recv socket\n");
+	if (setsockopt(rsock_, IPPROTO_IP, IP_RECVTOS, (char *)&on, 
+		sizeof(on)) < 0) {
+		perror("IP_RECVTOS");
+		exit(1);
+	}
+#endif
 	lport_ = local.sin_port;
 	last_reset_ = 0;
 	return (0);
@@ -308,6 +322,7 @@ int IPNetwork::localname(sockaddr_in* p)
 	}
 	// Use Local interface name if already set via command line
 	if (local_preset_) {
+		printf("localname:Using manually assigned src address: %s\n", (const char*)local_);
 		p->sin_addr.s_addr=(IPAddress&)local_;
 		return (0);
 	}
@@ -376,18 +391,6 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
 	if (setsockopt(fd, SOL_SOCKET, SO_TIMESTAMP, (char *)&on, 
 			sizeof(on)) < 0) {
 		perror("SO_TIMESTAMP");
-		exit(1);
-	}
-#endif
-/*
- * Enable the TOS value from received packets to be
- * returned along with the payload.
- */
-#ifdef IP_RECVTOS
-	on = 1;
-	if (setsockopt(fd, IPPROTO_IP, IP_RECVTOS, (char *)&on, 
-		sizeof(on)) < 0) {
-		perror("IP_RECVTOS");
 		exit(1);
 	}
 #endif
@@ -510,6 +513,7 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
 				sizeof(bufsize)) < 0)
 			perror("SO_RCVBUF");
 	}
+
 	return (fd);
 }
 
@@ -547,13 +551,18 @@ int IPNetwork::openssock(Address & addr, u_short port, int ttl)
 	memset((char *)&sin_, 0, sizeof(sin_));
 	sin_.sin_family = AF_INET;
 	sin_.sin_port = port;
-	sin_.sin_addr.s_addr = INADDR_ANY;
+	// Use Local interface name if already set via command line
+	if (local_preset_) {
+		printf("Openssock:Using manually assigned src address: %s\n", (const char*)local_);
+		sin_.sin_addr.s_addr=(IPAddress&)local_;
+	} else 
+		sin_.sin_addr.s_addr = INADDR_ANY;
 	if (bind(fd, (struct sockaddr *)&sin_, sizeof(sin_)) < 0) {
-        sin_.sin_port = 0;
-        if (bind(fd, (struct sockaddr *)&sin_, sizeof(sin_)) < 0) {
-            perror("bind");
-            exit(1);
-        }
+		sin_.sin_port = 0;
+		if (bind(fd, (struct sockaddr *)&sin_, sizeof(sin_)) < 0) {
+		  perror("bind");
+		  exit(1);
+		}
 	}
 
 #ifdef SO_TIMESTAMP
@@ -565,15 +574,15 @@ int IPNetwork::openssock(Address & addr, u_short port, int ttl)
 	}
 #endif
 
-#ifdef IP_RECVTOS
-    on = 1;
+#ifdef IP_TOS // This can work unidirectionally with Sender ECT only
+        on = 2; //Preferred ECT(0) = 10(binary)  Whilst ECT(1) = 01
+	debug_msg("Setting IP_TOS on send socket:%d\n",on);
 	if(setsockopt(fd, IPPROTO_IP, IP_TOS, (char *)&on,
 		sizeof(on)) < 0) {
-		perror("IP_RECVTOS");
+		perror("IP_TOS");
 		exit(1);
 	}
 #endif
-
 	memset((char *)&sin_, 0, sizeof(sin_));
 	sin_.sin_family = AF_INET;
 	sin_.sin_port = port;
@@ -672,9 +681,19 @@ int IPNetwork::dorecv(u_char* buf, int len, Address & from, int fd)
 
 	struct msghdr mh;
 	struct iovec iov;
-	//unsigned char cbuf[128];
-	unsigned char cbuf[CMSG_SPACE(tvlen)];
+	unsigned char cbuf[1024];
+	//unsigned char cbuf[CMSG_SPACE(tvlen)];
 	struct cmsghdr *cm = (struct cmsghdr *)&cbuf;
+
+#ifdef NORECVMSG 
+	cc = ::recvfrom(fd, (char*)buf, len, 0, (sockaddr*)&sfrom, &fromlen);
+	//debug_msg("recvfrom successful: %d\n", cc);
+	if (cc < 0) {
+		if (errno != EWOULDBLOCK)
+			perror("recvfrom");
+		return (-1);
+	}
+#else
 
 	(void)memset(&mh, 0, sizeof(mh));
 	(void)memset(&iov, 0, sizeof(iov));
@@ -688,60 +707,44 @@ int IPNetwork::dorecv(u_char* buf, int len, Address & from, int fd)
 	mh.msg_iovlen = 1;
 	mh.msg_control = (caddr_t)cbuf;
 	mh.msg_controllen = sizeof(cbuf);
-	mh.msg_flags = 0;
+	//mh.msg_flags = 0;
 
-#ifdef SO_TIMESTAMP
 	// receive SO_TIMESTAMP
 	if ((cc = ::recvmsg(fd, &mh, 0)) == -1) {
-		//debug_msg("recvmsg unsuccessful: %d\n", cc);
-		return (cc);
-	}
-	//debug_msg("recvmsg successful: %d\n", cc);
-
-	for (cm = CMSG_FIRSTHDR(&mh); cm != NULL; cm = CMSG_NXTHDR(&mh, cm)) {
-	  if(cm->cmsg_level == SOL_SOCKET 
-	      && cm->cmsg_type == SCM_TIMESTAMP 
-	      && cm->cmsg_len   == CMSG_LEN(tvlen)) {
-		found = true;
-	    memcpy(&tvrecv, CMSG_DATA(cm), tvlen);
-	    break;
-	  }
-  	}
-	//if ( (cm == NULL) || !found )
-	//debug_msg("recvmsg problem: cmsg or msghdr is NULL\n");
-
-#elif IP_RECVTOS
-	if ((cc = ::recvmsg(fd, &mh, 0)) == -1) {
-		//debug_msg("recvmsg unsuccessful: %d\n", cc);
+		//printf("recvmsg unsuccessful: %d\n", cc);
 		return (cc);
 	}
 
 	for (cm = CMSG_FIRSTHDR(&mh); cm != NULL; cm = CMSG_NXTHDR(&mh, cm)) {
-	  if (cm->cmsg_level == IPPROTO_IP 
-		  && cm->cmsg_type == IP_TOS &&
-			//cm->cmsg_len == CMSG_LEN(sizeof(struct in_addr))) {
-		  cm->cmsg_len ) {
-		found = true;
-		(void)printf("recvopts limit: %d\n", *(uint8_t *)CMSG_DATA(cm));
-		recv_tos_ = *(uint8_t *)CMSG_DATA(cm);
-		break;
-	  } 
-	  else 
-		debug_msg("recvmsg problem: no IP_TOS (type:%d,len:%d)\n", 
-		cm->cmsg_type, cm->cmsg_len);
-	}
-	//if (cm == NULL && !found)
-	//debug_msg("recvmsg problem: no cm\n");
-
-#else
-	cc = ::recvfrom(fd, (char*)buf, len, 0, (sockaddr*)&sfrom, &fromlen);
-	//debug_msg("recvfrom successful: %d\n", cc);
-	if (cc < 0) {
-		if (errno != EWOULDBLOCK)
-			perror("recvfrom");
-		return (-1);
-	}
+	    switch (cm->cmsg_level) {
+#ifdef SO_TIMESTAMP
+		case SOL_SOCKET:
+		    if (cm->cmsg_type == SCM_TIMESTAMP
+			    && cm->cmsg_len == CMSG_LEN(tvlen)) {
+			found = true;
+			memcpy(&tvrecv, CMSG_DATA(cm), tvlen);
+			printf("FOUND TIMESTAMP : %f\n",
+				(double) tvrecv.tv_sec + 1e-6 * (double) tvrecv.tv_usec);
+			break;
+		    }
 #endif
+#ifdef IP_RECVTOS
+		case IPPROTO_IP:
+		    if (cm->cmsg_type == IP_TOS ) {
+			//cm->cmsg_len == CMSG_LEN(sizeof(struct in_addr))) {
+			found = true;
+			recv_tos_ = *(uint8_t *)CMSG_DATA(cm);
+			printf("FOUND TOS: %d\n", recv_tos_);
+			break;
+		    } 
+#endif /* RECVTOS */
+		default:
+		    debug_msg("recvmsg problem: no IP_TOS nor TIMESTAMP found (type:%d,len:%d, Level:%d)\n", cm->cmsg_type, cm->cmsg_len, cm->cmsg_level);
+	    }
+	}
+	if (cm == NULL && !found)
+		debug_msg("recvmsg problem: no cm\n");
+#endif /* NORECVMSG */
 
 	(IPAddress&)from = sfrom.sin_addr;
 
