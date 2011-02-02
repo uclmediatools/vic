@@ -64,7 +64,7 @@ int shmctl(int, int, struct shmid_ds*);
 //SV-XXX: rearranged intialistaion order to shut upp gcc4
 Decoder::Decoder(int hdrlen) : PacketHandler(hdrlen),
 	nstat_(0), color_(1), decimation_(422), inw_(0), inh_(0), 
-	engines_(0), rvts_(0), nblk_(0), ndblk_(0)
+	engines_(0), rvts_(0), nblk_(0), ndblk_(0), grabber_(0)
 {
 	/*XXX*/
 	now_ = 1;
@@ -343,7 +343,7 @@ void Decoder::render_frame(const u_char* frm, int frame_no)
 	}
 
 	YuvFrame f(now_, (u_int8_t*)frm, rvts_, inw_, inh_,0, frame_no);
-	if (grabber_!=0) {
+	if (grabber_!=0 && frame_no != -1) {
 	     int framesize=inw_*inh_;
 	     psnr = calc_psnr((u_int8_t*)frm, (u_int8_t*)grabber_->frame_+frame_no*(framesize+(framesize>>1)), inw_, inh_);
 	     //psnr = calc_psnr((u_int8_t*)frm, (u_int8_t*)grabber_->frame_+frame_no*(grabber_->framesize_+(grabber_->framesize_>>1)), inw_, inh_);
