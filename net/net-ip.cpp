@@ -113,7 +113,6 @@ class IPNetwork : public Network {
     		}
     		return (result);
   	}
-	u_int8_t recv_tos() { return recv_tos_;}
     protected:
 	struct sockaddr_in sin_; // sockaddr setup in ssock, used by sendto in dosend
 	time_t last_reset_;
@@ -126,7 +125,6 @@ class IPNetwork : public Network {
 	int disconnect_sock(int fd);
 	int openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, Address & local);
 	void dosend(u_char* buf, int len, int fd);
-	u_int8_t recv_tos_;
 };
 
 static class IPNetworkMatcher : public Matcher {
@@ -723,7 +721,7 @@ int IPNetwork::dorecv(u_char* buf, int len, Address & from, int fd)
 			    && cm->cmsg_len == CMSG_LEN(tvlen)) {
 			found = true;
 			memcpy(&tvrecv, CMSG_DATA(cm), tvlen);
-			printf("FOUND TIMESTAMP : %f\n",
+			debug_msg("FOUND TIMESTAMP : %f\n",
 				(double) tvrecv.tv_sec + 1e-6 * (double) tvrecv.tv_usec);
 			break;
 		    }
@@ -734,7 +732,7 @@ int IPNetwork::dorecv(u_char* buf, int len, Address & from, int fd)
 			//cm->cmsg_len == CMSG_LEN(sizeof(struct in_addr))) {
 			found = true;
 			recv_tos_ = *(uint8_t *)CMSG_DATA(cm);
-			printf("FOUND TOS: %d\n", recv_tos_);
+			debug_msg("FOUND TOS: %d\n", recv_tos_);
 			break;
 		    } 
 #endif /* RECVTOS */

@@ -884,14 +884,13 @@ void SessionManager::send_fb_ecn(CtrlHandler* ch, Source::Layer& sl, u_int32_t s
 
         fb_ecn->media_ssrc = htonl(media_ssrc);
         // loss is the lower portion but not including that yet
-        fb_ecn->seq_n_loss = htonl(seqno) << 12;
-        fb_ecn->not_ect = htonl(sl.not_ect());
-        fb_ecn->ect0 = htonl(sl.ect0());
-        fb_ecn->ect1 = htonl(sl.ect1());
-        fb_ecn->ecn_ce = htonl(sl.ecn_ce());
+        fb_ecn->seq_n_loss = htonl(seqno << 12);
+        fb_ecn->ecn_ce = htons(sl.ecn_ce());
+        fb_ecn->not_ect = htons(sl.not_ect());
+        fb_ecn->ect0 = htons(sl.ect0());
+        fb_ecn->ect1 = htons(sl.ect1());
 
-	//fprintf(stderr, "\t>> sending RTCP XR: BT:%d, begin:%d, end:%d\n",
-	//		bt, ntohs(xr->begin_seq), ntohs(xr->end_seq));
+	fprintf(stderr, "\t>> sending RTCP FB: seq_n_loss:%d(seq=%d), ecn_ecn:%d, not_ect:%d, ect0:%d,     ect1:%d\n", ntohl(fb_ecn->seq_n_loss), seqno,ntohs(fb_ecn->ecn_ce), ntohs(fb_ecn->not_ect), ntohs(fb_ecn->ect0), ntohs(fb_ecn->ect1)); 
 
 	// FB packet length in bytes
 	int len = sizeof(rtcp_fb_ecn) + sizeof(rtcphdr);
@@ -1164,6 +1163,7 @@ void SessionManager::demux(pktbuf* pb, Address & addr)
 
 	Source::Layer& sl = s->layer(pb->layer);
 	timeval now = unixtime();
+        debug_msg("TOS byte:%d\n",dh_[0].net()->recvd_tos());
         switch (dh_[0].net()->recvd_tos() & 0x03) {
           case NOT_ECT: 
 		sl.not_ect(1);
