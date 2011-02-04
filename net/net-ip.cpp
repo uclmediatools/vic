@@ -575,7 +575,7 @@ int IPNetwork::openssock(Address & addr, u_short port, int ttl)
 #endif
 
 #ifdef IP_TOS // This can work unidirectionally with Sender ECT only
-        on = 2; //Preferred ECT(0) = 10(binary)  Whilst ECT(1) = 01
+        on = ECT0; //Preferred ECT(0) = 10(binary)  Whilst ECT(1) = 01
 	debug_msg("Setting IP_TOS on send socket:%d\n",on);
 	if(setsockopt(fd, IPPROTO_IP, IP_TOS, (char *)&on,
 		sizeof(on)) < 0) {

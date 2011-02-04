@@ -219,6 +219,11 @@ class Source : public TclObject, public Timer {
 		inline u_int32_t sns() const { return (sns_); }
 		inline u_int32_t runt() const { return (nrunt_); }
 		inline u_int32_t dups() const { return (ndup_); }
+                inline u_int32_t ecn_ce() const { return (ecn_ce_); }
+                inline u_int32_t not_ect() const { return (not_ect_); }
+                inline u_int32_t ect0() const { return (ect0_); }
+                inline u_int32_t ect1() const { return (ect1_); }
+
 		inline void nb(int v) { nb_ += v; }
 		inline void nf(int v) { nf_ += v; }
 		inline void np(int v) { np_ += v; }
@@ -229,6 +234,12 @@ class Source : public TclObject, public Timer {
 		inline void runt(int v) { nrunt_ += v; }
 		int cs(u_int16_t v, Source*);
 		int checkseq(u_int16_t v);
+
+                /* ECN reporting */
+                inline void ecn_ce(int v) { ecn_ce_ += v; }
+                inline void not_ect(int v) { not_ect_ += v; }
+                inline void ect0(int v) { ect0_ += v; }
+                inline void ect1(int v) { ect1_ += v; }
 
 		inline const timeval& lts_ctrl() const { return (lts_ctrl_); }
 		inline const timeval& lts_data() const { return (lts_data_); }
@@ -254,6 +265,12 @@ class Source : public TclObject, public Timer {
 		u_int32_t sts_ctrl_; /* sndr ts from last control packet */
 		timeval lts_data_; /* local unix time for last data packet */
 		timeval lts_ctrl_; /* local unix time for last ctrl packet */
+
+                /* ECN reporting */
+                u_int32_t ecn_ce_; /* Number of ECN-CE marked packets */
+                u_int32_t not_ect_;
+                u_int32_t ect0_;
+                u_int32_t ect1_;
 #define SOURCE_NSEQ 64
 		u_int16_t seqno_[SOURCE_NSEQ];
 	} *layer_[NLAYER];
@@ -294,6 +311,12 @@ class Source : public TclObject, public Timer {
 	int runt() const;
 	int dups() const;
 	int missing() const;
+
+        /* ECN reporting */
+	int ecn_ce() const;
+	int not_ect() const;
+	int ect0() const;
+	int ect1() const;
 
 	inline void sync(int v) { sync_ = v; }
 	inline int sync() const { return (sync_); }

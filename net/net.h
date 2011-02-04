@@ -52,6 +52,11 @@ class Crypt;
 #undef interface
 #endif
 
+#define NOT_ECT 0x00
+#define ECT0    0x02
+#define ECT1    0x01
+#define ECN_CE  0x03
+
 
 /* Generic Address class */
 class Address {
@@ -98,9 +103,9 @@ public:
 	virtual Address* alloc(const char* name) { UNUSED(name); return (0);}
 
 	// IP_TOS
-	inline u_int8_t recv_tos() const { return (recv_tos_); }
+	inline u_int8_t recvd_tos() const { return (recv_tos_); }
 	// SO_TIMESTAMP
-	inline double recv_so_time() const {
+	inline double recvd_so_time() const {
 	return ((double) tvrecv.tv_sec + 1e-6 * (double) tvrecv.tv_usec);
 	}
 

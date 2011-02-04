@@ -109,18 +109,8 @@ static class SourceLayerMatcher : public Matcher {
 
 //SV-XXX: rearranged initialisation order to shut up gcc4
 Source::Layer::Layer()
-: fs_(0),
-cs_(0),
-np_(0),
-nf_(0),
-nb_(0),
-nm_(0),
-snp_(0),
-sns_(0),
-ndup_(0),
-nrunt_(0),
-sts_data_(0),
-sts_ctrl_(0)
+: fs_(0), cs_(0), np_(0), nf_(0), nb_(0), nm_(0), snp_(0), sns_(0), ndup_(0),
+nrunt_(0), sts_data_(0), sts_ctrl_(0), ecn_ce_(0), not_ect_(0), ect0_(0), ect1_(0)
 {
 	
 /*
@@ -150,6 +140,10 @@ void Source::Layer::clear_counters()
 	sns_ = 0;
 	ndup_ = 0;
 	nrunt_ = 0;
+        ecn_ce_ = 0;
+        not_ect_ = 0;
+        ect0_ = 0;
+        ect1_ = 0;
 	
 	lts_data_.tv_sec = 0;
 	lts_data_.tv_usec = 0;
@@ -167,20 +161,8 @@ srcid_(srcid),
 ssrc_(ssrc),
 addr_(*(addr.copy())),
 rtp2ntp_(0),
-//	  sts_data_(0),
-//	  sts_ctrl_(0),
 map_rtp_time_(0), map_ntp_time_(0),	
-/*	  fs_(0),
-cs_(0),
-np_(0),
-nf_(0),
-nb_(0),
-nm_(0),
-snp_(0),
-sns_(0),
-ndup_(0),
-nrunt_(0),
-*/	  badsesslen_(0),
+badsesslen_(0),
 badsessver_(0),
 badsessopt_(0),
 badsdes_(0),
@@ -199,11 +181,7 @@ pdelay_(0), apdelay_(0), adapt_init_(0), late_(0),
 count_(0), pending_(0), sync_(0),
 mbus_(0)
 {
-/*	lts_data_.tv_sec = 0;
-lts_data_.tv_usec = 0;
-lts_ctrl_.tv_sec = 0;
-lts_ctrl_.tv_usec = 0;
-	*/	lts_done_.tv_sec = 0;
+	lts_done_.tv_sec = 0;
 	lts_done_.tv_usec = 0;
 	/*
 	* Put an invalid seqno in each slot to guarantee that
@@ -1076,11 +1054,9 @@ Source* SourceManager::demux(u_int32_t srcid,
 			enter(s);
 		}
 		/* it takes two in-seq packets to activate source */
-		//		s->fs(seq);
 		s->layer(layer).fs(seq);
-		//		s->cs(seq);
 		s->layer(layer).cs(seq, s);
-		return (0);
+		//return (0);
 	} else {
 		Source::Layer& sl = s->layer(layer);
 		/*
@@ -1111,15 +1087,12 @@ Source* SourceManager::demux(u_int32_t srcid,
 		if (sl.np() == 0 && sl.nb() == 0) {
 		/*
 		 * make sure we get 2 in-seq packets before
-		 * accepting source.
+		 * accepting source. If not then reset start seq nos and return.
 		 */
-			//			if ((u_int32_t)((u_int32_t)seq - s->cs() + 31) > 63) {
 			if ((u_int32_t)((u_int32_t)seq - sl.cs() + 31) > 63) {
-				//				s->fs(seq);
 				sl.fs(seq);
-				//				s->cs(seq);
 				sl.cs(seq, s);
-				//				return (0);
+		                //return (0);
 			}
 		}
 	}

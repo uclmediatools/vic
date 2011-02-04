@@ -655,13 +655,13 @@ int SessionManager::build_app(rtcphdr* rh, Source& ls, const char *name,
   return (len);
 }
 
-void SessionManager::send_ECNXreport(CtrlHandler* ch, 
+/*void SessionManager::send_ECN_FB(CtrlHandler* ch, 
 					u_int8_t tos, u_int16_t begin_seq)
 {
 	u_int16_t chunk = (tos & 0x03) << 14;
 	send_xreport(ch, XR_BT_1, XR_BT_ECN, 0, 
 				 begin_seq, begin_seq, &chunk, 1, 0);
-}
+}*/
 
 /*
 void SessionManager::send_report()
@@ -789,10 +789,10 @@ void SessionManager::send_xreport(CtrlHandler* ch, u_int8_t bt,
 	rtcphdr* rh = (rtcphdr*)pktbuf_;
 	rh->rh_ssrc = s.srcid();
 	int flags = RTP_VERSION << 14;	// RTCP flags
-	int layer = ch - ch_; //LLL
-	Source::Layer& sl = s.layer(layer);
-	timeval now = unixtime();
-	sl.lts_ctrl(now);
+	//int layer = ch - ch_; //LLL
+	//Source::Layer& sl = s.layer(layer);
+	//timeval now = unixtime();
+	//sl.lts_ctrl(now);
 	int i;
 
 	// set RTCP flag to XR packet
@@ -863,6 +863,50 @@ void SessionManager::send_xreport(CtrlHandler* ch, u_int8_t bt,
     ch->send(pktbuf_, len);
 }
 
+// ECN FB
+void SessionManager::send_fb_ecn(CtrlHandler* ch, Source::Layer& sl, u_int32_t seqno, u_int32_t media_ssrc)
+{
+	SourceManager& sm = SourceManager::instance();
+	Source& s = *sm.localsrc();
+	rtcphdr* rh = (rtcphdr*)pktbuf_;
+	rh->rh_ssrc = s.srcid();
+	int flags = RTP_VERSION << 14;	// RTCP flags
+	//int layer = ch - ch_; //LLL
+	//Source::Layer& sl = s.layer(layer);
+	//timeval now = unixtime();
+	//sl.lts_ctrl(now);
+
+	// set RTCP PT to RTPFB packet and FMT to RTPFB_FMT_ECN
+	flags |= RTCP_PT_RTPFB | RTPFB_FMT_ECN << 8;
+
+        //Set fb_ecn pointer to FB packet
+        struct rtcp_fb_ecn *fb_ecn = (rtcp_fb_ecn*)(rh + 1);
+
+        fb_ecn->media_ssrc = htonl(media_ssrc);
+        // loss is the lower portion but not including that yet
+        fb_ecn->seq_n_loss = htonl(seqno) << 12;
+        fb_ecn->not_ect = htonl(sl.not_ect());
+        fb_ecn->ect0 = htonl(sl.ect0());
+        fb_ecn->ect1 = htonl(sl.ect1());
+        fb_ecn->ecn_ce = htonl(sl.ecn_ce());
+
+	//fprintf(stderr, "\t>> sending RTCP XR: BT:%d, begin:%d, end:%d\n",
+	//		bt, ntohs(xr->begin_seq), ntohs(xr->end_seq));
+
+	// FB packet length in bytes
+	int len = sizeof(rtcp_fb_ecn) + sizeof(rtcphdr);
+
+	// Convert FB length to multiples of 32 bit-words minus 1
+	rh->rh_len = htons((len >> 2) - 1);
+
+	// Set RTCP header flags 
+	rh->rh_flags = htons(flags);
+
+    //if(am_i_sender())
+      //send_xr_info(bt, begin_seq, end_seq);
+    ch->send(pktbuf_, len);
+}
+
 /*XXX check for buffer overflow*/
 /*
 * Send an RTPv2 report packet.
@@ -916,27 +960,21 @@ void SessionManager::send_report(CtrlHandler* ch, int bye, int app)
 	* consider sources 'inactive' if we haven't heard a control
 	* msg from them for ~32 reporting intervals.
 	*/
-	//LLL	u_int inactive = u_int(rint_ * (32./1000.));
 	u_int inactive = u_int(ch->rint() * (32./1000.));
 	if (inactive < 2)
 		inactive = 2;
 	for (Source* sp = sm.sources(); sp != 0; sp = sp->next_) {
 		++nsrc;
 		Source::Layer& sl = sp->layer(layer);
-		//		int received = sp->np() - sp->snp();
 		int received = sl.np() - sl.snp();
 		if (received == 0) {
-			//		if (u_int(now.tv_sec - sp->lts_ctrl().tv_sec) > inactive)
 			if (u_int(now.tv_sec - sl.lts_ctrl().tv_sec) > inactive)
 				--nsrc;
 			continue;
 		}
-		//		sp->snp(sp->np());
 		sl.snp(sl.np());
 		rr->rr_srcid = sp->srcid();
-		//		int expected = sp->ns() - sp->sns();
 		int expected = sl.ns() - sl.sns();
-		//		sp->sns(sp->ns());
 		sl.sns(sl.ns());
 		u_int32_t v;
 		int lost = expected - received;
@@ -946,20 +984,15 @@ void SessionManager::send_report(CtrlHandler* ch, int bye, int app)
 			/* expected != 0 if lost > 0 */
 			v = ((lost << 8) / expected) << 24;
 		/* XXX should saturate on over/underflow */
-		//		v |= (sp->ns() - sp->np()) & 0xffffff;
 		v |= (sl.ns() - sl.np()) & 0xffffff;
 		rr->rr_loss = htonl(v);
-		//		rr->rr_ehsr = htonl(sp->ehs());
 		rr->rr_ehsr = htonl(sl.ehs());
 		rr->rr_dv = (sp->handler() != 0) ? sp->handler()->delvar() : 0;
-		//		rr->rr_lsr = htonl(sp->sts_ctrl());
 		rr->rr_lsr = htonl(sl.sts_ctrl());
-		//		if (sp->lts_ctrl().tv_sec == 0)
 		if (sl.lts_ctrl().tv_sec == 0)
 			rr->rr_dlsr = 0;
 		else {
 			u_int32_t ntp_now = ntptime(now);
-			//			u_int32_t ntp_then = ntptime(sp->lts_ctrl());
 			u_int32_t ntp_then = ntptime(sl.lts_ctrl());
 			rr->rr_dlsr = htonl(ntp_now - ntp_then);
 		}
@@ -1040,7 +1073,6 @@ int SessionManager::build_bye(rtcphdr* rh, Source& ls)
 void SessionManager::recv(DataHandler* dh)
 {
 	int layer = dh - dh_;
-	u_int16_t seqno;	// received RTP data packet seqno
 	pktbuf* pb = pool_->alloc(layer);
 	Address * addrp;
 	/* leave room in case we need to expand rtpv1 into an rtpv2 header */
@@ -1079,31 +1111,6 @@ void SessionManager::recv(DataHandler* dh)
 	}
 	pb->len = cc;
 
-	// RTP data receiver need to extract seqno
-	// and send XR report back to the sender.
-	rtphdr* rh = (rtphdr*)pb->data;
-	if (!am_i_sender()) {
-		// retrieve RTP seqno
-		seqno = ntohs(rh->rh_seqno);
-
-		switch (cc_type_) {
-		case WBCC:
-		  // pass seqno to tfwc receiver to build up AckVec
-		  fprintf(stderr, "\n\treceived seqno: %d\n\n", seqno);
-		  tfwc_rcvr_.recv_seqno(seqno);
-		  break;
-		case RBCC:
-		  // pass seqno to tfrc receiver to build up AckVec
-		  fprintf(stderr, "\n\treceived seqno: %d\n\n", seqno);
-		  tfrc_rcvr_.recv_seqno(seqno);
-		  break;
-		}
-
-		// send receiver side XR report (AckVec)
-		ch_->send_ackv();
-	}
-	
-        fprintf(stderr, "\n\treceived frame_no: %d\n\n", rh->frame_no);
 	//bp += sizeof(*rh);
 	//cc -= sizeof(*rh);
 	demux(pb, *addrp);
@@ -1147,20 +1154,62 @@ void SessionManager::demux(pktbuf* pb, Address & addr)
 	* believe the source.  This prevents a runaway
 	* allocation of Source data structures for a
 	* stream of garbage packets.
+        *
+        * NOTE: This check is disabled for now in demux as it interferes
+        * with the congestion control - e.g. 1st packet always missing
 		*/
 		pb->release();
 		return;
 	}
-	//send_ECNXreport(ch_,dh_[0].net()->recv_tos(),rh->rh_seqno);	
+
+	Source::Layer& sl = s->layer(pb->layer);
+	timeval now = unixtime();
+        switch (dh_[0].net()->recvd_tos() & 0x03) {
+          case NOT_ECT: 
+		sl.not_ect(1);
+                break;
+          case ECT0: 
+		sl.ect0(1);
+                break;
+          case ECT1: 
+		sl.ect1(1);
+                break;
+          case ECN_CE: 
+		sl.ecn_ce(1);
+                break;
+          default:
+                debug_msg("Bizarre TOS byte:%d\n",dh_[0].net()->recvd_tos());
+        }
+	// RTP data receiver need to extract seqno
+	// and send XR report back to the sender.
+	if (!am_i_sender()) {
+		// retrieve RTP seqno
+		seqno = ntohs(rh->rh_seqno);
+
+		switch (cc_type_) {
+		case WBCC:
+		  // pass seqno to tfwc receiver to build up AckVec
+		  fprintf(stderr, "\n\treceived seqno: %d\n\n", seqno);
+		  tfwc_rcvr_.recv_seqno(seqno);
+		  break;
+		case RBCC:
+		  // pass seqno to tfrc receiver to build up AckVec
+		  fprintf(stderr, "\n\treceived seqno: %d\n\n", seqno);
+		  tfrc_rcvr_.recv_seqno(seqno);
+		  break;
+		}
+
+		// send receiver side XR report (AckVec)
+		ch_->send_ackv();
+                send_fb_ecn(ch_, sl, rh->rh_seqno, rh->rh_ssrc);
+	}
+	
+        fprintf(stderr, "\n\treceived frame_no: %d\n\n", rh->frame_no);
 
 	/* inform this source of the mbus */
 	s->mbus(&mb_);
 	
-	Source::Layer& sl = s->layer(pb->layer);
-	timeval now = unixtime();
-	//	s->lts_data(now);
 	sl.lts_data(now);
-	//	s->sts_data(rh->rh_ts);
 	sl.sts_data(rh->rh_ts);
 	
 	// extract CSRC count (CC field); increment pb->dp data pointer & adjust length accordingly
@@ -1175,7 +1224,6 @@ void SessionManager::demux(pktbuf* pb, Address & addr)
 			u_int32_t csrc = *(u_int32_t*)bp;
 			bp += 4;
 			Source* cs = sm.lookup(csrc, srcid, addr);
-			//			cs->lts_data(now);
 			cs->layer(pb->layer).lts_data(now);
 			cs->action();
 		}
@@ -1210,7 +1258,6 @@ void SessionManager::demux(pktbuf* pb, Address & addr)
 			return;
 		}
 		if (flags & RTP_M) // check if reach frame boundaries
-			//			s->nf(1);
 			sl.nf(1);
 		
 		//s->recv(pkt, rh, pb, pb->len); // this should invoke Source::recv and buffer
@@ -1249,7 +1296,6 @@ void SessionManager::demux(pktbuf* pb, Address & addr)
 			return;
 		}
 		if (flags & RTP_M)
-			//	            s->nf(1);
 			sl.nf(1);
 #ifdef notdef
 	/* This should move to the handler */
@@ -1258,7 +1304,6 @@ void SessionManager::demux(pktbuf* pb, Address & addr)
 		int hlen = h->hdrlen();
 		cc -= hlen;
 		if (cc < 0) {
-			//	            s->runt(1);
 			sl.runt(1);
 			pb->release();
 			return;
@@ -1355,9 +1400,6 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 	UNUSED(ep);
 	UNUSED(addr);
 
-	// XR block length
-	u_int16_t xrlen	= ntohs(xr->xr_len);
-
 	// XR repport block
 	rtcp_xr_BT_1_hdr *xr1;
 
@@ -1381,7 +1423,7 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 		// -----------------------------------------------------------------*
 		if (am_i_sender()) {
 		  // get SO_TIMESTAMP
-		  so_rtime = ch_->net()->recv_so_time() - tx_ts_offset();
+		  so_rtime = ch_->net()->recvd_so_time() - tx_ts_offset();
 		  //sender_xr_ts_info(so_rtime);
 
   		  fprintf(stderr, ">>> parse_xr - i_am_sender\n");

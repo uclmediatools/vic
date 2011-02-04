@@ -175,7 +175,7 @@ protected:
 	virtual void transmit(pktbuf* pb, bool ack_clock=0);
 	virtual void tx_data_only(pktbuf* pb, bool ack_clock);
 	void send_report(int bye);
-	void send_ECNXreport(CtrlHandler* ch, u_int8_t tos, u_int16_t begin_seq);
+        void send_fb_ecn(CtrlHandler* ch, Source::Layer& sl, u_int32_t seqno, u_int32_t media_ssrc);
 	int build_bye(rtcphdr* rh, Source& local);
 	u_char* build_sdes_item(u_char* p, int code, Source&);
 	int build_sdes(rtcphdr* rh, Source& s);

@@ -95,13 +95,14 @@ struct rtphdr {
 	/* data sources follow per cc */
 };
 
+/* RTCP based header */
 struct rtcphdr {
 	u_int16_t rh_flags;	/* T:2 P:1 CNT:5 PT:8 */
 	u_int16_t rh_len;	/* length of the message is the number of 
 				   32-bit words in the extension, excluding the
 				   four-octet extension header, therefore zero
 				   is a valid length*/
-	u_int32_t rh_ssrc;	/* synchronization src id */
+	u_int32_t rh_ssrc;	/* synchronization src id of packet sender */
 };
 
 typedef struct {
@@ -133,6 +134,22 @@ struct rtcp_rr {
 };
 
 /*
+ * ECN for RTP - Feedback packet (AVPF [rfc4585])
+ * http://tools.ietf.org/html/draft-ietf-avt-ecn-for-rtp
+ *
+ */
+#define RTPFB_FMT_ECN	0x06	// ECN Feedback Packet - temp from rev-03
+
+struct rtcp_fb_ecn {
+	u_int32_t media_ssrc;    /* SSRC of media source */
+	u_int32_t seq_n_loss;    /* loss stats (20:Ext Highest Seq No, 12:Lost pkts)*/
+	u_int16_t not_ect;       /* Not ECT counter */
+	u_int16_t ect0;          /* ECT(0) counter */
+	u_int16_t ect1;          /* ECT(1) counter */
+	u_int16_t ecn_ce;        /* CE Counter */
+};
+
+/*
  * RTCP Extended Report.
  * (RFC 3611)
  *
@@ -156,6 +173,7 @@ struct rtcp_xr {
 	u_int8_t xr_flag;	/* xr_flag */
 	u_int16_t xr_len;	/* XR report block length (in bytes)*/
 };
+
 // extended report block 1 header
 struct rtcp_xr_BT_1_hdr {
 	// Block Type
@@ -187,6 +205,7 @@ struct rtcp_xr_BT_1_hdr {
 #define 	RTCP_SDES_PRIV	8	/* private SDES extensions */
 #define RTCP_PT_BYE	203	/* end of participation */
 #define RTCP_PT_APP	204	/* application specific functions */
+#define RTCP_PT_RTPFB	205	/* Transport layer FB message RFC4585 */
 #define RTCP_PT_XR	207	/* extended report */
 
 #define		RTCP_SDES_MIN	1
