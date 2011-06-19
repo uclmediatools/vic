@@ -34,7 +34,12 @@
 
 #ifdef HAVE_LIBV4L
 #include <libv4l1.h>
+#ifndef __LINUX_VIDEODEV_H
+#include <linux/videodev.h>
+#endif
+
 #else
+#include <linux/videodev.h>
 #define v4l1_open open
 #define v4l1_close close
 #define v4l1_ioctl ioctl
@@ -42,11 +47,6 @@
 #define v4l1_mmap mmap
 #define v4l1_munmap munmap
 #endif
-
-extern "C"
-{
-#include <linux/videodev.h>
-}
 
 #include "grabber.h"
 #include "vic_tcl.h"
