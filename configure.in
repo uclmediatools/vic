@@ -167,7 +167,7 @@ elif test x$have_sys_videodev2_h = xyes; then
         V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-v4l2.o"
         have_V4L2=yes
 
-elif test x$have_sys_videodev2_h = xyes; then
+elif test x$have_sys_videoio_h = xyes; then
         AC_MSG_NOTICE([suitable V4L2 support found... using sys/videoio.h])
         V_DEFINE="$V_DEFINE -DHAVE_SYS_VIDEOIO_H"
         V_OBJ_GRABBER="$V_OBJ_GRABBER video/grabber-v4l2.o"
@@ -465,6 +465,15 @@ sparc-sun-sunos*)
 	V_STATIC=""
 	V_TARCMD="tar -h -c -f"
 	OPSYS=netbsd
+	;;
+*-*-openbsd*)
+	if test "$gpl" = "yes" ; then
+		V_OBJ_GRABBER="video/grabber-ov511.o $V_OBJ_GRABBER"
+	fi
+	V_DEFINE="$V_DEFINE -DOpenBSD"
+	V_STATIC=""
+	V_TARCMD="tar -h -c -f"
+	OPSYS=openbsd
 	;;
 *-*-freebsd*)
 	if test "$gpl" = "yes" ; then

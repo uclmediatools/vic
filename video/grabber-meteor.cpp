@@ -60,7 +60,7 @@
 #if defined(__FreeBSD__)
  #include <machine/ioctl_meteor.h>
  #include <machine/ioctl_bt848.h>
-#elif defined(__NetBSD__)
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
  #include <dev/ic/bt8xx.h>
 #endif
 

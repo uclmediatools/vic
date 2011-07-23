@@ -116,6 +116,9 @@ else
             elif test -r "${dir}/tcl${TCL_VERSION}/init.tcl" ; then
                 V_LIBRARY_TCL="${dir}/tcl${TCL_VERSION}"
                 break
+            elif test -r "${dir}/tcl/tcl${TCL_VERSION}/init.tcl" ; then
+                V_LIBRARY_TCL="${dir}/tcl${TCL_VERSION}"
+                break
             fi
         done
         if test $V_LIBRARY_TCL = FAIL ; then
@@ -181,6 +184,9 @@ which comes with the PrivateHeaders folder.])
                 V_LIBRARY_TK=$dir
                 break
             elif test -r "${dir}/tk${TK_VERSION}/tk.tcl" ; then
+                V_LIBRARY_TK="${dir}/tk${TK_VERSION}"
+                break
+            elif test -r "${dir}/tcl/tk${TK_VERSION}/tk.tcl" ; then
                 V_LIBRARY_TK="${dir}/tk${TK_VERSION}"
                 break
             fi

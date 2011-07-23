@@ -94,6 +94,7 @@ void MBusHandler::timeout()
 	timeout.tv_sec  = 0;
 	timeout.tv_usec = 0;
 
+	if (mbusp_ == NULL) return;
 	mbus_send(mbusp_);
 	mbus_recv(mbusp_, (void *) this, &timeout);
 	mbus_retransmit(mbusp_);

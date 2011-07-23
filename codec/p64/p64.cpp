@@ -31,9 +31,11 @@ static const char rcsid[] =
 #include "../config.h"
 
 #ifdef WIN32
-//#include <winsock.h>
 typedef int intptr_t;
+#elif defined(WIN64)
+typedef __int64 intptr_t;
 #else
+#include <stdint.h>
 #include <sys/param.h>
 #include <sys/file.h>
 #endif
