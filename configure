@@ -4788,7 +4788,7 @@ else
                 V_LIBRARY_TCL="${dir}/tcl${TCL_VERSION}"
                 break
             elif test -r "${dir}/tcl/tcl${TCL_VERSION}/init.tcl" ; then
-                V_LIBRARY_TCL="${dir}/tcl${TCL_VERSION}"
+                V_LIBRARY_TCL="${dir}/tcl/tcl${TCL_VERSION}"
                 break
             fi
         done
@@ -4858,7 +4858,7 @@ which comes with the PrivateHeaders folder." "$LINENO" 5
                 V_LIBRARY_TK="${dir}/tk${TK_VERSION}"
                 break
             elif test -r "${dir}/tcl/tk${TK_VERSION}/tk.tcl" ; then
-                V_LIBRARY_TK="${dir}/tk${TK_VERSION}"
+                V_LIBRARY_TK="${dir}/tcl/tk${TK_VERSION}"
                 break
             fi
         done
