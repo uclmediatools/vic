@@ -42,6 +42,7 @@
 #include "module.h"
 #include "transmitter.h"
 #include "tfwc_sndr.h"
+#include "formula.h"
 
 // TfwcSndr instance
 TfwcSndr TfwcSndr::instance_;
@@ -188,11 +189,13 @@ void TfwcSndr::send(pktbuf* pb, double now) {
 
 	// sequence number must be greater than zero
 	assert (seqno_ > 0);
+	if (seqno_ <= 0) debug_msg("WARNING: assert (seqno_(%d) > 0)",seqno_);
 	// number of total data packet sent
 	ndtp_++;
 	
 	// set retransmission timer
 	set_rtx_timer();
+
 }
 
 /*
@@ -401,6 +404,11 @@ void TfwcSndr::window_in_packets(bool revert) {
 
 	// finally, cwnd in bytes
 	window_in_bytes();
+
+	// calculate sending rate (bytes/sec) using same approach as TFRC - Piers
+	x_rate_ = p_to_b(p_, srtt_, t0_, psize_, 1);
+	debug_msg( "x_rate_ = %f (p_:%f srtt_:%f t0_:%f psize_:%d\n",
+            x_rate_ , p_, srtt_, t0_, psize_);
 }
 
 /*
@@ -488,11 +496,12 @@ void TfwcSndr::gen_refvec(int end, int begin) {
 	num_refvec_ = end - begin + 1;
 
 	// generate refvec elements
-	fprintf(stderr, "\tcomparing numbers: (");
+	//fprintf(stderr, "\tcomparing numbers: (");
 	for (int i = 0; i < num_refvec_; i++) {
 		refvec_[i] = begin + i;
-		fprintf(stderr, " %d", refvec_[i]);
-	} fprintf(stderr, " )\n");
+		//fprintf(stderr, " %d", refvec_[i]);
+	}
+        //fprintf(stderr, " )\n");
 }
 
 /*
@@ -622,6 +631,7 @@ void TfwcSndr::cwnd_in_packets(bool revert) {
 	// cwnd should always be greater than 1
 	if (cwnd_ < 1)
 		cwnd_ = 1;
+        
 }
 
 /*
@@ -654,7 +664,7 @@ void TfwcSndr::pseudo_history(double p) {
 	double pseudo = 1 / p;
 
 	/* bzero for all history information */
-	for(int i = 0; i <= HSZ+1; i++)
+	for(int i = 0; i <= HSZ; i++)
 		history_[i] = 0;
 
 	/* (let) most recent history information be 0 */
@@ -793,17 +803,18 @@ void TfwcSndr::avg_loss_interval() {
 	int i = 0, j = 0;
 
 	// make a decision whether to include the most recent loss interval
-	//fprintf(stderr, "\n\tHIST_0 [");
+	//fprintf(stderr, "\n\tHIST: hsz_ %d\n", hsz_);
+	//fprintf(stderr, "\tHIST_0 [");
 	for (i = 0; i < hsz_; i++) {
 		I_tot0_ += weight_[i] * history_[i];
 		tot_weight_ += weight_[i];
-	//	print_history_item(i);
+		print_history_item(i);
 	}
 	//fprintf(stderr, "]\n");
 	//fprintf(stderr, "\tHIST_1 [");
 	for (i = 1, j = 0; i < hsz_ + 1; i++, j++) {
 		I_tot1_ += weight_[i-1] * history_[i];
-	//	print_history_item(i, j);
+		print_history_item(i, j);
 	}
 	//fprintf(stderr, "]\n");
 
@@ -829,8 +840,8 @@ void TfwcSndr::record_history(int seqno, double interval, double ts) {
 	// store timestamp
 	prev_ts_ = ts;
 	// copy history
-	for(int i = 0; i < hsz_; i++)
-	prev_history_[i] = history_[i];
+	for(int i = 0; i <= hsz_; i++)
+	        prev_history_[i] = history_[i];
 }
 
 /*
@@ -851,7 +862,7 @@ bool TfwcSndr::revert_interval(int reseq) {
 		// reverting to the previous timestamp
 		ts_ = prev_ts_;
 		// reverting to the previous history
-		for (int i = 0; i < hsz_; i++)
+		for (int i = 0; i <= hsz_; i++)
 		history_[i] = prev_history_[i];
 
 		print_ALI();
@@ -886,13 +897,13 @@ bool TfwcSndr::find_seqno(u_int32_t *v, int n, u_int32_t target) {
  * print history item
  */
 void TfwcSndr::print_history_item (int i) {
-	fprintf(stderr, "%d", history_[i]);
-	if (i < hsz_ - 1) fprintf(stderr, ", ");
+	//fprintf(stderr, "%d", history_[i]);
+	if (i < hsz_ - 1) ;//fprintf(stderr, ", ");
 }
 
 void TfwcSndr::print_history_item (int i, int j) {
-	fprintf(stderr, "%d", history_[i]);
-	if (j < hsz_ - 1) fprintf(stderr, ", ");
+	//fprintf(stderr, "%d", history_[i]);
+	if (j < hsz_ - 1) ;//fprintf(stderr, ", ");
 }
 
 /*

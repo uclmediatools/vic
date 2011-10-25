@@ -77,9 +77,13 @@ public:
 	// variables
 	u_int16_t seqno_;	// packet sequence number
 	u_int32_t cwnd_;	// congestion window
+	double x_rate_;		// send rate (bytes/sec) - Piers
 	int bcwnd_;			// congestion window in bytes
 	int bjacked_;		// just ack'd in bytes
 
+	// return TFWC equivaent send rate - piers
+	inline double xrate() { return x_rate_; }
+        
 	// Rtx timer
 	void expire(int option);
 
@@ -290,71 +294,71 @@ private:
 
 	// print cwnd for debugging
 	inline void print_cwnd() {
-	fprintf(stderr, "\tnow: %f\tcwnd: %d\n", so_recv_, cwnd_);
+	debug_msg( "\tnow: %f\tcwnd: %d\n", so_recv_, cwnd_);
 	}
 
 	// print bcwnd for debugging
 	inline void print_bcwnd (double now, int w) {
-	fprintf(stderr, "\tnow: %f\tbcwnd: %d\n", now, w);
+	debug_msg( "\tnow: %f\tbcwnd: %d\n", now, w);
 	}
 
 	// print received XR chunk info
 	inline void print_xr_info(const char* str, const int i) {
-	fprintf(stderr,
+	debug_msg(
 	"    [%s +%d] begins: %d ends: %d jacked: %d\n",
 	str, i, begins_, ends_, jacked_);
 	}
 
 	// print RTT related info for debugging
 	inline void print_rtt_info() {
-	fprintf(stderr,
+	debug_msg(
 	"\t>> now_: %f tsvec_[%d]: %f rtt: %f srtt: %f\n",
 	so_recv_, jacked_%TSZ, tsvec_[jacked_%TSZ], tao_, srtt_);
 	}
 	inline void print_rtt_info(const char* str) {
-	fprintf(stderr,
+	debug_msg(
 	"\t%s now_: %f tsvec_[%d]: %f rtt: %f srtt: %f\n",
 	str, so_recv_, jacked_%TSZ, tsvec_[jacked_%TSZ], tao_, srtt_);
 	}
 	// print RTO info
 	inline void print_rto_info() {
-	fprintf(stderr,
+	debug_msg(
 	"\t>> now_: %f rto: %f\n", now(), rto_);
 	}
 
 	// print ALI for debugging
 	inline void print_ALI() {
-	fprintf(stderr, "\tnow: %f\tALI: %f\n\n", so_recv_, avg_interval_);
+	debug_msg( "\tnow: %f\tALI: %f\n\n", so_recv_, avg_interval_);
 	}
 
 	// print packet's timestamp record
 	inline void print_packet_tsvec() {
-	fprintf(stderr, "\t>> now: %f tsvec_[%d]: %f\n",
+	debug_msg( "\t>> now: %f tsvec_[%d]: %f\n",
 	now_, seqno_%TSZ, tsvec_[seqno_%TSZ]);
 	}
 
 	// print mvec
 	inline void print_mvec() {
-	fprintf(stderr, "\tmargin numbers: ( %d %d %d )\n", 
+	debug_msg( "\tmargin numbers: ( %d %d %d )\n", 
 	mvec_[0], mvec_[1], mvec_[2]);
 	}
 	// print vec
 	inline void print_vec(const char* str, u_int32_t *vec, int c) {
-	fprintf(stderr, "\t%s: (", str);
+	debug_msg( "\t%s: (", str);
 		for (int i = 0; i < c; i++)
-		fprintf(stderr, " %d", vec[i]);
-	fprintf(stderr, " )\n");
+		debug_msg( " %d", vec[i]);
+	debug_msg( " )\n");
 	}
 	inline void print_vec(const char* str, u_int16_t *vec, int c) {
-	fprintf(stderr, "\t%s: (", str);
+	debug_msg( "\t%s: (", str);
 		for (int i = 0; i < c; i++)
-		fprintf(stderr, " %d", vec[i]);
-	fprintf(stderr, " )\n");
+		debug_msg( " %d", vec[i]);
+	debug_msg( " )\n");
 	}
 
 	// print the actual packet size and EWMA estimated one
 	inline void print_psize(double now, int size, int len) {
-	fprintf(stderr, "\tnow: %f psize: %d actual: %d\n", now, size, len);
+	debug_msg( "\tnow: %f psize: %d actual: %d\n", now, size, len);
 	}
 
 	int ndtp_;		// number of data packet sent
@@ -378,7 +382,7 @@ private:
 	double t_win_;      // temporal cwin size to get p_ value
 	double avg_interval_;	// average loss interval
 	int history_[HSZ+1];	// loss interval history
-	int prev_history_[HSZ];// previous loss interval history
+	int prev_history_[HSZ+1];// previous loss interval history
 	double weight_[HSZ+1];	// weight for calculating avg loss interval
 	double I_tot_;		// total sum
 	double I_tot0_;		// from 0 to n-1

@@ -170,6 +170,22 @@ proc build.menu { } {
 	if [have_transmit_permission] {
 		selectInitialDevice
 	}
+
+	set f [resource stillFile]
+	if { $f != "" } {
+                global lastDevice 
+                if { [$lastDevice nickname] == "still" } {
+                     $lastDevice file $f
+                }
+        }
+
+	set f [resource fileGrabberFile]
+	if { $f != "" } {
+                global lastDevice 
+                if { [$lastDevice nickname] == "filegrab" } {
+                     $lastDevice file $f
+                }
+        }
 }
 
 proc defaultDevice {} {
@@ -218,8 +234,7 @@ proc selectInitialDevice {} {
 		}
 	}
 	foreach v $inputDeviceList {
-		if { "[$v attributes]" != "disabled" &&
-			"[$v nickname]" != "still" } {
+		if { "[$v attributes]" != "disabled" } {
 			set videoDevice $v
 			select_device $v
 			return
@@ -430,6 +445,10 @@ proc transmit { } {
 			$V(grabber) q $grabq
 		}
 	}
+
+        # Inform sessionmanager of grabber so it can control grabber bps - piers
+        session grabber $V(grabber)
+
 	if [have capwin] {
 		set w [winfo toplevel $V(capwin)]
 		if $transmitButtonState {
@@ -546,7 +565,7 @@ proc set_bps { w value } {
 	#XXX
 	    session data-bandwidth $value
 	}
-	$w configure -text "$value bps"
+	$w configure -text "$value Kbps"
 }
 
 proc set_fps { w value } {
@@ -829,10 +848,6 @@ proc build.device w {
 		return
 	}
 	foreach d $inputDeviceList {
-		if { [$d nickname] == "still" && ![yesno stillGrabber] } {
-		#	set defaultFormat($d) $videoFormat
-		#	continue
-		}
 		# this is fragile
 		$m add radiobutton -label [$d nickname] \
 			-command "select_device $d" \

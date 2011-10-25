@@ -82,6 +82,8 @@ int Transmitter::nhdrs_;
  */
 u_int16_t Transmitter::seqno_ = 1;
 
+extern int cc_type__;
+
 Transmitter::Transmitter() :
 	mtu_(1024),
 	nf_(0),
@@ -96,8 +98,8 @@ Transmitter::Transmitter() :
 	loopback_(0),
 	is_cc_active_(1),
 	is_buf_empty_(1),
-	cc_type_(NOCC),
-	cwnd_mode_(BYM)
+	cc_type_(cc_type__),
+	cwnd_mode_(PKM)
 {
 	memset((char*)&mh_, 0, sizeof(mh_));
 	mh_.msg_iovlen = 2;
@@ -110,6 +112,7 @@ Transmitter::Transmitter() :
 
 		tfwc_sndr_.manager(this);
 		tfwc_rcvr_.manager(this);
+	        debug_msg("CC type: WBCC\n");
 
 	  break;
 	  case RBCC:
@@ -118,15 +121,18 @@ Transmitter::Transmitter() :
 
 		tfrc_sndr_.manager(this);
 		tfrc_rcvr_.manager(this);
+	        debug_msg("CC type: RBCC\n");
 
 	  break;
+	  default:
+	        debug_msg("CC type: NOCC\n");
 	}
 	
 	epc_ = 0;	// experimental packet counter
 }
 
 /* Return time of day in seconds */
-inline double Transmitter::gettimeofday_secs() const
+double Transmitter::gettimeofday_secs() const
 {
 	timeval tv;
 	::gettimeofday(&tv, 0);
@@ -137,7 +143,7 @@ void Transmitter::loopback(pktbuf* pb)
 {
 	int layer = pb->layer;
 	rtphdr* rh = (rtphdr*)pb->data;
-        fprintf(stderr, "loopback received frame_no: %d\n", rh->frame_no);
+        debug_msg( "loopback received frame_no: %d\n", rh->frame_no);
 	int cc = pb->len;
 	/*
 	 * Update statistics.
@@ -166,6 +172,7 @@ void Transmitter::loopback(pktbuf* pb)
 	if (flags & RTP_M) {
 		++nf_;
 		sl.nf(1);
+                debug_msg("now: %f loopback received last packet of frame_no: %d ",tx_get_now(), rh->frame_no);
 	}
 	int fmt = flags & 0x7f;
 	/*
@@ -234,12 +241,17 @@ void Transmitter::dump(int fd, iovec* iov, int iovlen) const
  */
 double Transmitter::txtime(pktbuf* pb)
 {
-//	int cc = pb->iov[0].iov_len + pb->iov[1].iov_len;
 	int cc = pb->len;
 
-	if (is_tfrc())
+	/* Commented out this with change setting bps(xrate)
+        fprintf(stderr,"TFRC txtime: %f, (cc: %d / xrate: %f) \n", cc/tfrc_sndr_.xrate(),
+            cc,tfrc_sndr_.xrate());
+	if (is_tfrc()){
+	fprintf(stderr,"txtime: %f, (cc: %d / xrate: %f) \n", cc/tfrc_sndr_.xrate(),
+            cc,tfrc_sndr_.xrate());
 	return ( cc/tfrc_sndr_.xrate() );
-	else
+        }else */
+	debug_msg("txtime: psize: %d, kbps_: %d\n", cc ,kbps_);
 	return (8 * cc / (1000. * kbps_));
 }
 
@@ -248,14 +260,16 @@ double Transmitter::txtime(pktbuf* pb)
  */
 int Transmitter::tx_buf_size() {
 	int size = 0;
-	pktbuf* pb = head_;
+	pktbuf *pb = head_, *pbnext;
 	while (pb) {
+		pbnext = pb->next;
+		pb = pbnext;
 		size++;
-		pb = pb->next;
-	}	
+	}
 	return size;
 }
 
+// Entry point from codec
 void Transmitter::send(pktbuf* pb)
 {
 	switch (cc_type_) {
@@ -289,7 +303,8 @@ void Transmitter::send(pktbuf* pb)
 	//
 	// rate-based congestion control (TFRC)
 	//
-	case RBCC:
+          // Disable this version as I don't think it works - Piers
+	/*case RBCC:
 	  // pb is empty
 	  if(is_buf_empty_) {
 		if (head_ != 0) {
@@ -311,24 +326,31 @@ void Transmitter::send(pktbuf* pb)
 		pb->next = 0;
 		tfrc_output(pb);
 	  }
-	  break;
+	  break;*/
 	//
 	// without congestion control
 	//
+	case RBCC:
 	case NOCC:
 	default:
 	  // CC is not active, so just go for the normal operation
 	  if (!busy_) {
 		double delay = txtime(pb);
 		nextpkttime_ = gettimeofday_secs() + delay;
+                int intdelay = int(delay * 1e3);
 		output(pb);
 		/*
 		 * emulate a transmit interrupt --
 		 * assume we will have more to send.
 		 */
-		msched(int(delay * 1e-3));
-		busy_ = 1;
+                debug_msg("Send:ing packet, delay till next send: %f(%d)\n",delay,intdelay);
+
+		if (intdelay) {
+                  msched(intdelay);
+		  busy_ = 1;
+                } 
 	  } else {
+                debug_msg("Send: Adding packet to txq (time: %f)\n", gettimeofday_secs());
 		if (head_ != 0) {
 		  tail_->next = pb;
 		  tail_ = pb;
@@ -338,9 +360,13 @@ void Transmitter::send(pktbuf* pb)
 	  }
 	} // switch (cc_type)
 }
+ 
+// main TFWC CC output routines (called when NOT buff_is_empty)
 
-void Transmitter::tfwc_output(pktbuf* pb, bool ack_clock) 
+void Transmitter::tfwc_output(pktbuf* _pb, bool ack_clock) 
 {
+        // Set pb to head_ of list (the arg pb is at the tail - Piers)
+	pktbuf *pb = head_;
 	//cc_output_banner_top("tfwc");
 	// byte mode? or packet mode?
 	switch (cwnd_mode_) {
@@ -348,18 +374,23 @@ void Transmitter::tfwc_output(pktbuf* pb, bool ack_clock)
 	{
 	  // see if any XR has arrived to pick up
 	  int cc = check_xr_arrival(pb, 1);
+          int i=0;
 
+	  debug_msg("B4 tfwc_output: %d cc:%d, pblen: %d\n", tfwc_sndr_.b_magic(), cc, pb->len);
 	  while(pb->len <= tfwc_sndr_.b_magic() + cc) {
 		// move head pointer
 		head_ = pb->next;
 		// call Transmitter::output_data_only w/ XR reception
+		debug_msg("tfwc_output: %d cc:%d, pblen: %d\n", tfwc_sndr_.b_magic(), cc, pb->len);
 		output_data_only(pb, ack_clock);
+                i++;
 
 		if (head_ != 0)
 			pb = head_;
 		else
 			break;
 	  }
+	  debug_msg("tfwc_outputed: %d (txq: %d)\n", i, tx_buf_size());
 	}
 	break;
 	case PKM:
@@ -370,17 +401,18 @@ void Transmitter::tfwc_output(pktbuf* pb, bool ack_clock)
 	  check_xr_arrival(pb, 1);
 
 	  while (ntohs(rh->rh_seqno) <= tfwc_sndr_.magic() + tfwc_sndr_.jacked()) {
-		//debug_msg("cwnd: %d\n", tfwc_sndr_.magic());
-		//debug_msg("jack: %d\n", tfwc_sndr_.jacked());
+		debug_msg("cwnd: %d\n", tfwc_sndr_.magic());
+		debug_msg("jack: %d\n", tfwc_sndr_.jacked());
 			
 		// move head pointer
 		head_ = pb->next;
 		// call Transmitter::output_data_only w/ XR reception
 		output_data_only(pb, ack_clock);
 
-		if (head_ != 0)
+		if (head_ != 0) {
 			pb = head_;
-		else
+			rh = (rtphdr *) pb->data;
+                } else
 			break;
 	  }
 	}
@@ -390,7 +422,7 @@ void Transmitter::tfwc_output(pktbuf* pb, bool ack_clock)
 }
 
 /*
- * main TFWC CC output routines
+ * main TFWC CC output routines (called when buff_is_empty)
  */
 void Transmitter::tfwc_output(bool ack_clock)
 {
@@ -413,11 +445,11 @@ void Transmitter::tfwc_output(bool ack_clock)
 	{
 	  int len = 0;
 	  // cwnd (in bytes)
-	  int b_magic = tfwc_sndr_.b_magic();
+	  //int b_magic = tfwc_sndr_.b_magic();
 	  // see if any XR has arrived to pick up
 	  int cc = check_xr_arrival(pb, 1);
 
-	  while(pb->len <= b_magic + cc - len) {
+	  while(pb->len <= tfwc_sndr_.b_magic() + cc - len) {
 		len += pb->len;
 		// move head pointer
 		head_ = pb->next;
@@ -442,8 +474,8 @@ void Transmitter::tfwc_output(bool ack_clock)
 
 	  // while packet seqno is within "cwnd + jack", send that packet
 	  while (ntohs(rh->rh_seqno) <= tfwc_sndr_.magic() + tfwc_sndr_.jacked()) {
-		//debug_msg("cwnd: %d\n", tfwc_sndr_.magic());
-		//debug_msg("jack: %d\n", tfwc_sndr_.jacked());
+		debug_msg("cwnd: %d\n", tfwc_sndr_.magic());
+		debug_msg("jack: %d\n", tfwc_sndr_.jacked());
 
 		// move head pointer
 		head_ = pb->next;
@@ -473,7 +505,7 @@ void Transmitter::tfwc_trigger(pktbuf* pb) {
 	// by SessionManager::recv(CtrlHandler* ch).
 	// therefore, assign pktbuf's head to pb.
 	if (pb == 0)
-	pb = head_;
+	        pb = head_;
 
 	// if pb is null here, it means the actual pkbuf is empty!
 	if (pb == 0) {
@@ -493,8 +525,10 @@ void Transmitter::tfwc_trigger(pktbuf* pb) {
 }
 
 /*
- * main TFRC CC output
+ * main TFRC CC output NOT USED - pkts sent in timeout()
+ *                     ~~~~~~~~
  */
+// main TFRC CC output routine (called when NOT buff_is_empty)
 void Transmitter::tfrc_output(pktbuf* pb) {
 	cc_output_banner_top("tfrc");
 	// move head pointer
@@ -505,6 +539,7 @@ void Transmitter::tfrc_output(pktbuf* pb) {
 	cc_output_banner_bottom();
 }
 
+// main TFRC CC output routine (called when buff_is_empty)
 void Transmitter::tfrc_output(bool ack_clock) {
 	cc_output_banner_top("tfrc");
 	// head of the RTP data packet buffer
@@ -520,7 +555,7 @@ void Transmitter::tfrc_output(bool ack_clock) {
     // move head pointer
     head_ = pb->next;
     // call Transmitter::output(pb)
-    output(pb, ack_clock);
+    output(pb, ack_clock);  // BUG? This just calls net->send()....??? Piers
 	cc_output_banner_bottom();
 }
 
@@ -528,24 +563,28 @@ void Transmitter::timeout()
 {
 	double now = gettimeofday_secs();
 
+        debug_msg("Timeout: nextpkttime_: %f, now: %f \n",nextpkttime_, now);
 	switch (cc_type_) {
-	case RBCC:
+	/*case RBCC:
           for (;;) {
             pktbuf* p = head_;
             if(p != 0) {
+	      head_ = p->next;
               nextpkttime_ += txtime(p);
               // call send(pktbuf *) here
-              send(p);
+              //send(p);
+              output(p);
               // goto sleep
               int ms = int(1e-3 * (nextpkttime_ - now));
               msched(ms);
             }
           }
-	  break;
+	  break;*/
 	case WBCC:
           // nothing to do when WBCC mode
           break;
 	case NOCC:
+	case RBCC:
 	default:
 	  for (;;) {
                 pktbuf* p = head_;
@@ -553,13 +592,15 @@ void Transmitter::timeout()
 			head_ = p->next;
 			nextpkttime_ += txtime(p);
 			output(p);
-			int ms = int(1e-3 * (nextpkttime_ - now));
+			int ms = int(1e3 * (nextpkttime_ - gettimeofday_secs()));
+                        debug_msg("Timeout: Sent packet, delay till next send: %d, nextpkttime_: %f, now: %f\n",ms,nextpkttime_, now);
 			/* make sure we will wait more than 10ms */
 			if (ms > 1000) {
 				msched(ms);
 				return;
 			}
 		} else {
+                        debug_msg("Timeout: Send Q empty\n");
 			busy_ = 0;
 			break;
 		}
@@ -585,17 +626,20 @@ void Transmitter::flush()
 	}
 }
 
+// Transmit RTP and DO send AoA
 void Transmitter::output(pktbuf* pb, bool ack_clock)
 {
 	//fprintf(stderr, "\n\tTransmitter::output()\n");
 	//if (dumpfd_ >= 0)
 	//	dump(dumpfd_, pb->iov, mh_.msg_iovlen);
 //dprintf("layer: %d \n",pb->layer);
+//SessionManager::transmit()
 	transmit(pb, ack_clock);
 	loopback(pb);
 //	pb->release() is called by decoder in loopback;
 }
 
+// Transmit RTP and DO NOT send AoA
 void Transmitter::output_data_only(pktbuf* pb, bool flag)
 {
 	tx_data_only(pb, flag);

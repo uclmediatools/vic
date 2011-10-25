@@ -127,7 +127,7 @@ class Grabber : public TclObject, public Timer, public MediaTimer {
 	int idle_low_;
 	int idle_high_;
 
-	double frametime_;	/* 1 / fps */
+	double frametime_;	/* 1 / fps_ */
 	double frameclock_;	/* logical clock for pumping out frames */
 
 	int fps_;		/* desired frames per second */

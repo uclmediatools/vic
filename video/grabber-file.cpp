@@ -1,5 +1,9 @@
 /*
- * Copyright (c) 1993-1995 Regents of the University of California.
+ * FILE:	grabber-file.cpp
+ * AUTHOR:	Soo-Hyun Choi <s.choi@cs.ucl.ac.uk>
+ * 		Piers O'Hanlon <p.ohanlon@cs.ucl.ac.uk>
+ *
+ * Copyright (c) 2011 University College London
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,31 +14,22 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by the University of
- *      California, Berkeley and the Network Research Group at
- *      Lawrence Berkeley Laboratory.
- * 4. Neither the name of the University nor of the Laboratory may be used
- *    to endorse or promote products derived from this software without
- *    specific prior written permission.
+ * 3. Neither the names of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+ * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  *
- * Contributed by Bob Olson (olson@mcs.anl.gov) September 1995.
- */
-
-/*
  * $Id$
  */
 
@@ -60,13 +55,10 @@ static const char rcsid[] =
 #include "transmitter.h"
 #include "module.h"
 
-//#define DEBUG 1
-#undef DEBUG
-
-class StillGrabber : public Grabber {
+class FileGrabber : public Grabber {
 public:
-	StillGrabber();
-	virtual ~StillGrabber();
+	FileGrabber();
+	virtual ~FileGrabber();
 	virtual int command(int argc, const char* const * argv);
 protected:
 	void start();
@@ -74,10 +66,10 @@ protected:
 	int	grab();
 };
 
-class StillYuvGrabber : public StillGrabber {
+class FileYuvGrabber : public FileGrabber {
 public:
-	StillYuvGrabber();
-	virtual ~StillYuvGrabber();
+	FileYuvGrabber();
+	virtual ~FileYuvGrabber();
 	virtual int command(int argc, const char* const* argv);
 	
 protected:
@@ -95,9 +87,9 @@ private:
 	double ini_ftime_;	// initial frametime
 };
 
-class StillDevice : public InputDevice {
+class FileDevice : public InputDevice {
 public:
-    StillDevice(const char* s);
+    FileDevice(const char* s);
     virtual int command(int argc, const char * const * argv);
     virtual Grabber* jpeg_grabber();
     virtual Grabber* yuv_grabber();
@@ -110,26 +102,26 @@ public:
 private:
 };
 
-static StillDevice still_device("still");
+static FileDevice filegrab_device("filegrab");
 
-StillDevice::StillDevice(const char* s) : InputDevice(s),
+FileDevice::FileDevice(const char* s) : InputDevice(s),
 		frame_(NULL), len_(0), devstat_(-1)
 {
-    attributes_ = "format { 411 422 jpeg cif } size { small large cif }";
+    attributes_ = "format { 411 cif } size { small large cif }";
     
 #ifdef DEBUG
-    debug_msg("StillDevice::StillDevice name=%s\n", s);
+    debug_msg("FileDevice::FileDevice name=%s\n", s);
 #endif /* DEBUG */
 }
 
 /*
- * StillDevice
+ * FileDevice
  */
-int StillDevice::command(int argc, const char*const* argv)
+int FileDevice::command(int argc, const char*const* argv)
 {
 #ifdef DEBUG
 	for (int i = 0; i < argc; i++)
-		debug_msg("StillDevice\t%s\n", argv[i]);
+		debug_msg("FileDevice\t%s\n", argv[i]);
 #endif
     if (argc == 3)
     {
@@ -153,22 +145,23 @@ int StillDevice::command(int argc, const char*const* argv)
 	{
 	    debug_msg("Loading %s\n", argv[2]);
 	    load_file(argv[2]);
+	    return (TCL_OK);
 	}
     }
     return (InputDevice::command(argc, argv));
 }
 
-Grabber* StillDevice::jpeg_grabber()
+Grabber* FileDevice::jpeg_grabber()
 {
-    return (new StillGrabber());
+    return (new FileGrabber());
 }
 
-Grabber* StillDevice::yuv_grabber()
+Grabber* FileDevice::yuv_grabber()
 {
-	return (new StillYuvGrabber());
+	return (new FileYuvGrabber());
 }
 
-void StillDevice::load_file(const char * const f)
+void FileDevice::load_file(const char * const f)
 {
     FILE *fp;
     struct stat s;
@@ -187,26 +180,29 @@ void StillDevice::load_file(const char * const f)
 	return;
     }
     
-    len_ = s.st_size;
+    len_ = s.st_size;	// file length
+	if (len_ == 0) return;
+
     if (frame_)
 	delete[] frame_; //SV-XXX: Debian
     
-        frame_ = new u_char[len_ + 1];
-	r = fread(frame_, len_, 1, fp);
-	fprintf(stderr,"Successfully loaded %s\n", f);
-	devstat_ = 0;	// device is now ready
+    frame_ = new u_char[len_ + 1];
+    fread(frame_, len_, 1, fp);
+
+    debug_msg("Successfully loaded %s\n", f);
+    devstat_ = 0;	// device is now ready
     fclose(fp);
 }
 
 /*
- * StillGrabber
+ * FileGrabber
  */
-int StillGrabber::command(int argc, const char * const * argv)
+int FileGrabber::command(int argc, const char * const * argv)
 {
     //SV-XXX: unused: Tcl& tcl = Tcl::instance();
     
 #ifdef DEBUG
-    debug_msg("StillGrabber::command argc=%d\n", argc);
+    debug_msg("FileGrabber::command argc=%d\n", argc);
     int i;
     for (i = 0; i < argc; i++)
 	debug_msg("\"%s\"\n", argv[i]);
@@ -221,38 +217,38 @@ int StillGrabber::command(int argc, const char * const * argv)
     return (Grabber::command(argc, argv));
 }
 
-StillGrabber::StillGrabber() 
+FileGrabber::FileGrabber() 
 {
 	// set device status
-	status_ = still_device.devstat_;
+	status_ = filegrab_device.devstat_;
 }
 
-StillGrabber::~StillGrabber()
+FileGrabber::~FileGrabber()
 {
 #ifdef DEBUG
-    debug_msg("Destroy StillGrabber\n");
+    debug_msg("Destroy FileGrabber\n");
 #endif
 }
 
-void StillGrabber::start()
+void FileGrabber::start()
 {
 	Grabber::start();
 }
 
-void StillGrabber::stop()
+void FileGrabber::stop()
 {
     cancel();
 }
 
-int StillGrabber::grab()
+int FileGrabber::grab()
 {
 #ifdef DEBUG
-	debug_msg("StillGrabber::grab() called\n");
+	debug_msg("FileGrabber::grab() called\n");
 #endif
     int frc=0; //SV-XXX: gcc4 warns for initialisation
-    if (still_device.frame_) {
-	JpegFrame f(media_ts(), (u_int8_t *) still_device.frame_,
-		    still_device.len_,
+    if (filegrab_device.frame_) {
+	JpegFrame f(media_ts(), (u_int8_t *) filegrab_device.frame_,
+		    filegrab_device.len_,
 		    80, 0, 320, 240);
 	frc = target_->consume(&f);
 	}
@@ -261,12 +257,12 @@ int StillGrabber::grab()
 }
 
 /*
- * StillYuvGraber
+ * FileYuvGraber
  */
-int StillYuvGrabber::command(int argc, const char* const* argv)
+int FileYuvGrabber::command(int argc, const char* const* argv)
 {
 #ifdef DEBUG
-	debug_msg("StillYuvGrabber::command argc=%d\n", argc);
+	debug_msg("FileYuvGrabber::command argc=%d\n", argc);
 	for (int i = 0; i < argc; i++)
 		debug_msg("\"%s\"\n", argv[i]);
 #endif
@@ -317,44 +313,44 @@ int StillYuvGrabber::command(int argc, const char* const* argv)
 	return (Grabber::command(argc, argv));
 }
 
-StillYuvGrabber::StillYuvGrabber() :
+FileYuvGrabber::FileYuvGrabber() :
 	width_(0), height_(0), nbytes_(0)
 {
 	grabber_ts_off_ = grabber_now();
-	frame_=still_device.frame_;
-	fprintf(stderr,"StillYuvGrabber::StillYuvGrabber:frame_:%x\n",frame_);
+	frame_=filegrab_device.frame_;
+	fprintf(stderr,"FileYuvGrabber::FileYuvGrabber:frame_:%x\n",frame_);
 }
 
-StillYuvGrabber::~StillYuvGrabber()
+FileYuvGrabber::~FileYuvGrabber()
 {
 #ifdef DEBUG
-    debug_msg("Destroy StillYuvGrabber\n");
+    debug_msg("Destroy FileYuvGrabber\n");
 #endif
 }
 
-void StillYuvGrabber::fps(int v) {
+void FileYuvGrabber::fps(int v) {
 	Grabber::fps(v);
 	ini_ftime_ = 1e6 / double(v);
 }
 
-void StillYuvGrabber::start()
+void FileYuvGrabber::start()
 {
 	target_->offset_ = grabber_ts_off_;
 	// XXX Need to change frame_ - it used for storage of video frame and (re)allocated elsewhere
-	frame_=still_device.frame_;
-	fprintf(stderr,"StillYuvGrabber::start:frame_:%x\n",frame_);
+	frame_=filegrab_device.frame_;
+	fprintf(stderr,"FileYuvGrabber::start:frame_:%x\n",frame_);
 	Grabber::start();
 }
 
-void StillYuvGrabber::stop()
+void FileYuvGrabber::stop()
 {
     cancel();
 }
 
-void StillYuvGrabber::setsize()
+void FileYuvGrabber::setsize()
 {
 #ifdef DEBUG
-	debug_msg("StillYuvGrabber::setsize()\n");
+	debug_msg("FileYuvGrabber::setsize()\n");
 #endif
 
 	if(running_)
@@ -369,20 +365,26 @@ void StillYuvGrabber::setsize()
 	allocref();
 }
 
-int StillYuvGrabber::grab()
+int FileYuvGrabber::grab()
 {
 #ifdef DEBUG
-	debug_msg("StillYuvGrabber::grab() called\n");
+	debug_msg("FileYuvGrabber::grab() called\n");
 #endif
 
-    int frc=0; //SV-XXX: gcc4 warns for initialisation
+        int frc=0; //SV-XXX: gcc4 warns for initialisation
 
+#ifdef SUSPEND_GRAB
 	// check if Tx queue is growing too much.
 	// if so, we should suspend grabbing more frames.
-	if (target_->suspend_grabbing(5))
-	return (frc);
+	if (target_->suspend_grabbing(5)){
+          if (fps_ > 0) fps(--fps_);
+        } else if (fps_ < 30) fps(++fps_);
+          //return (frc);
+	debug_msg("now: %f, fps_: %d\n", fps_);
+#endif
 
 	// time measurement
+	debug_msg("grab: fps %d, bps: %d\n", fps_, bps_);
 	start_grab_ = grabber_now() - grabber_ts_off_;
 	fprintf(stderr, "start_grab\tnow: %f\n", start_grab_);
 
@@ -392,11 +394,9 @@ int StillYuvGrabber::grab()
 	int stride= framesize_ + (framesize_ >> 1);
 	int frame_no=nbytes_/stride;
 	fprintf(stderr,"Frame_no %d, number of bytes: %d (fsz:%d)\n",frame_no,  nbytes_, framesize_);
-	memcpy (frame_, still_device.frame_ + nbytes_, 
-			stride);
+	memcpy (frame_, filegrab_device.frame_ + nbytes_, stride);
 
-	if ((nbytes_ += stride) < still_device.len_) {
-	} else {
+	if ((nbytes_ += stride) >= filegrab_device.len_) {
 		nbytes_=0;
 	}
  	
@@ -415,5 +415,5 @@ int StillYuvGrabber::grab()
 		end_grab_, end_grab_ - start_grab_);
 
 	frc = target_->consume(&f);
-    return frc;
+        return frc;
 }

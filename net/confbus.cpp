@@ -121,6 +121,7 @@ void ConfBus::ipc_input(int, int, u_char* msg, int cc)
 		if (!isascii(msg[i]) && !isprint(msg[i]))
 			return;
 	}
+	debug_msg("%s %s {%s}\n", callback_, name(), (char*)msg);
 	tcl.evalf("%s %s {%s}", callback_, name(), (char*)msg);
 }
 

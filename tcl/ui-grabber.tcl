@@ -681,13 +681,13 @@ proc build.slicvideo w {
 proc build.still w {
 
     set f [smallfont]
-    label $w.title -text "Grabber"
+    label $w.title -text "Still Grabber"
 
     frame $w.f -relief sunken -borderwidth 2
     
     label $w.f.label  -font $f -anchor e -text "File"
     
-    mk.entry $w.f set.still.frame "frame"
+    mk.entry $w.f set.file.frame [resource stillFile]
 
     pack $w.title $w.f -fill x -expand 1
     
@@ -695,14 +695,14 @@ proc build.still w {
     pack $w.f.entry -side left -fill x -expand 1
 }
 
-proc build.stilldev w {
+proc build.filegrab w {
     set f [smallfont]
-    label $w.title -text "FileGrabber"
+    label $w.title -text "File Grabber"
 
     frame $w.f -relief sunken -borderwidth 2
     label $w.f.label  -font $f -anchor e -text "File"
 
-    mk.entry $w.f set.still.frame "frame"
+    mk.entry $w.f set.file.frame [resource fileGrabberFile]
 
     pack $w.title $w.f -fill x -expand 1
 
@@ -710,7 +710,7 @@ proc build.stilldev w {
     pack $w.f.entry -side left -fill x -expand 1
 }
 
-proc set.still.frame {w s } {
+proc set.file.frame {w s } {
     global lastDevice
     $lastDevice file $s
 }

@@ -146,7 +146,7 @@ Options: vic [-HPs] [-A nv|ivs|rtp] [-B maxbps] [-C conf]\n\
 	\t[-f bvc|cellb|h261|jpeg|nv|mpeg4|h264] [-F maxfps] [-i ifAddr ] [-I channel]\n\
 	\t[-K key ] [-L flowLabel (ip6 only)] [-l (creates log file)]\n\
 	\t[-M colormap] [-m mtu] [-N session] [-n atm|ip|ip6|rtip]\n\
-	\t[-o clipfile] [-Q (queries and lists input devices)] [-t ttl]\n\ 
+	\t[-o clipfile] [-Q (queries and lists input devices)] [-t ttl]\n\
 	\t[-U interval] [-u script] [-v version] [-V visual]\n\
 	\t[-x ifIndex (ip6 only)] [-X resource=value] [-j numlayers] dest/port[/fmt/ttl]\n";
 
@@ -326,6 +326,9 @@ extern "C" int optind;
 #ifndef WIN32
 extern "C" int opterr;
 #endif
+
+int cc_type__;
+int ecn_mode__;
 
 const char*
 parse_assignment(char* cp)
@@ -529,7 +532,7 @@ int main(int argc, const char** argv)
 
 	// Option list; If letter is followed by ':' then it takes an argument
 	const char* options = 
-		"A:B:C:c:D:d:f:F:HI:i:j:K:lL:M:m:N:n:o:Pq:QrsST:t:U:u:vV:w:x:X:y";
+		"A:B:C:c:D:d:e:E:f:F:HI:i:j:K:lL:M:m:N:n:o:Pq:QrsST:t:U:u:vV:w:x:X:y";
 	/* process display and window (-use) options before initialising tcl/tk */
 	char buf[256], tmp[256];
 	const char *display=0, *use=0;
@@ -645,6 +648,17 @@ int main(int argc, const char** argv)
 			break;
 
 		case 'd':
+			break;
+
+		case 'e': 
+			if (!strcasecmp(optarg,"RBCC")) cc_type__=RBCC;
+			else if (!strcasecmp(optarg,"WBCC")) cc_type__=WBCC;
+			else cc_type__=NOCC;
+			break;
+		case 'E': 
+			if (!strcasecmp(optarg,"LOSS")) ecn_mode__=ECN_AS_LOSS;
+			else if (!strcmp(optarg,"ACT")) ecn_mode__=ECN_ACTION;
+			else ecn_mode__=ECN_AS_LOSS;
 			break;
 
 		case 'f':
@@ -885,4 +899,3 @@ int main(int argc, const char** argv)
 	adios();
 	return (0);
 }
-

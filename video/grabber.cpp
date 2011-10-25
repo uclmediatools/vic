@@ -208,21 +208,21 @@ void Grabber::bps(int kbps)
  */
 double Grabber::tick(int frameSize)
 {
-	double frametime = 8e6 * double(frameSize) / double(bps_); // uSecs
-	if (frametime < frametime_) {
-		if (frametime * 2. < frametime_)
-			delta_ += (frametime - delta_) * .25;
+	double bpsframetime = 8e6 * double(frameSize) / double(bps_); // uSecs
+	if (bpsframetime < frametime_) {
+		if (bpsframetime * 2. < frametime_)
+			delta_ += (bpsframetime - delta_) * .25;
 		else
-			delta_ = frametime;
-		frametime = frametime_;
+			delta_ = bpsframetime;
+		bpsframetime = frametime_;
 	} else
-		delta_ = frametime;
+		delta_ = bpsframetime;
 
-	frameclock_ += frametime;
+	frameclock_ += bpsframetime;
 	double now = gettimeofday_usecs();
 	double delta = frameclock_ - now;
 	if (delta < -0.2e6) {
-		delta = frametime;
+		delta = bpsframetime;
 		frameclock_ = now;
 	} else if (delta < 0)
 		/*
@@ -231,6 +231,7 @@ double Grabber::tick(int frameSize)
 		 */
 		delta = 0.;
 
+        debug_msg("tick(): now: %f delta: %f (delta_ %f) frametime_ %f frametime %f frameclock_ %f, frameSize :%d\n",now, delta, delta_, frametime_, bpsframetime, frameclock_, frameSize);
 	return (delta);
 }
 

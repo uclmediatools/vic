@@ -347,7 +347,7 @@ void Decoder::render_frame(const u_char* frm, int frame_no)
 	     int framesize=inw_*inh_;
 	     psnr = calc_psnr((u_int8_t*)frm, (u_int8_t*)grabber_->frame_+frame_no*(framesize+(framesize>>1)), inw_, inh_);
 	     //psnr = calc_psnr((u_int8_t*)frm, (u_int8_t*)grabber_->frame_+frame_no*(grabber_->framesize_+(grabber_->framesize_>>1)), inw_, inh_);
-	     fprintf(stderr,"Frame (%dx%d;fsz:%d(%d),Grabber:%x): #%d, PSNR: %f\n",inw_,inh_,inw_*inh_, grabber_->framesize_,grabber_, frame_no, psnr);
+	     debug_msg("Frame (%dx%d;fsz:%d(%d),Grabber:%x): #%d, PSNR: %f\n",inw_,inh_,inw_*inh_, grabber_->framesize_,grabber_, frame_no, psnr);
 	}
 	for (Renderer* p = engines_; p != 0; p = p->next_)
 		if ((p->ft() & FT_HW) == 0)

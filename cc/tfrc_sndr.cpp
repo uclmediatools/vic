@@ -453,7 +453,7 @@ void TfrcSndr::pseudo_history(double p) {
 	double pseudo_interval = 1.0 / p;
 
 	// bzero for all history information
-	for (int i = 0; i <= HSZ+1; i++)
+	for (int i = 0; i <= HSZ; i++)
 		history_[i] = 0;
 	// let most recent history information be 0
 	history_[0] = 0;

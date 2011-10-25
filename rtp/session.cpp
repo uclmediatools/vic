@@ -225,7 +225,8 @@ rtcp_avg_size_(128.),
 confid_(-1),
 seqno_(0),		// RTP data packet seqno (from RTP header)
 lastseq_(0),	// last received packet's seqno
-ackvec_(0)		// bit vector (AckVec)
+ackvec_(0),		// bit vector (AckVec)
+grabber_(0)
 {
 	/*XXX For adios() to send bye*/
 	manager = this;
@@ -399,8 +400,17 @@ int SessionManager::command(int argc, const char*const* argv)
 			loopback_ = atoi(argv[2]);
 			return (TCL_OK);
 		}
+		if (strcmp(argv[1], "ecn-mode") == 0) {
+			ecn_mode_ = atoi(argv[2]);
+			return (TCL_OK);
+		}
 		if (strcmp(argv[1], "lip-sync") == 0) {
 			lipSyncEnabled_ = atoi(argv[2]);
+			return (TCL_OK);
+		}
+		if (strcmp(argv[1], "grabber") == 0) {
+			grabber_ = (Grabber*)TclObject::lookup(argv[2]);
+			fprintf(stderr,"Session:Setting this %d grabber_:%d\n", (int)this, (int)grabber_);
 			return (TCL_OK);
 		}
 
@@ -451,6 +461,7 @@ int SessionManager::command(int argc, const char*const* argv)
 	return (TCL_ERROR);
 }
 
+// Transmit RTP and DO send AoA
 void SessionManager::transmit(pktbuf* pb, bool ack_clock)
 {
 	// mh_.msg_iov = pb->iov;
@@ -490,6 +501,7 @@ void SessionManager::transmit(pktbuf* pb, bool ack_clock)
 	}
 }
 
+// Transmit RTP but DO NOT send AoA
 void SessionManager::tx_data_only(pktbuf* pb, bool ack_clock) 
 {
 	// receive XR before sending
@@ -655,7 +667,7 @@ int SessionManager::build_app(rtcphdr* rh, Source& ls, const char *name,
   return (len);
 }
 
-/*void SessionManager::send_ECN_FB(CtrlHandler* ch, 
+/*void SessionManager::send_ECN_XR(CtrlHandler* ch, 
 					u_int8_t tos, u_int16_t begin_seq)
 {
 	u_int16_t chunk = (tos & 0x03) << 14;
@@ -890,7 +902,7 @@ void SessionManager::send_fb_ecn(CtrlHandler* ch, Source::Layer& sl, u_int32_t s
         fb_ecn->ect0 = htons(sl.ect0());
         fb_ecn->ect1 = htons(sl.ect1());
 
-	fprintf(stderr, "\t>> sending RTCP FB: seq_n_loss:%d(seq=%d), ecn_ecn:%d, not_ect:%d, ect0:%d,     ect1:%d\n", ntohl(fb_ecn->seq_n_loss), seqno,ntohs(fb_ecn->ecn_ce), ntohs(fb_ecn->not_ect), ntohs(fb_ecn->ect0), ntohs(fb_ecn->ect1)); 
+	fprintf(stderr, "\t>> sending RTCP FB: seq_n_loss:%d(seq=%d), ecn_ecn:%d, not_ect:%d, ect0:%d,ect1:%d\n", ntohl(fb_ecn->seq_n_loss), seqno,ntohs(fb_ecn->ecn_ce), ntohs(fb_ecn->not_ect), ntohs(fb_ecn->ect0), ntohs(fb_ecn->ect1)); 
 
 	// FB packet length in bytes
 	int len = sizeof(rtcp_fb_ecn) + sizeof(rtcphdr);
@@ -1163,8 +1175,9 @@ void SessionManager::demux(pktbuf* pb, Address & addr)
 
 	Source::Layer& sl = s->layer(pb->layer);
 	timeval now = unixtime();
+        int ecn = dh_[0].net()->recvd_tos() & 0x03;
         debug_msg("TOS byte:%d\n",dh_[0].net()->recvd_tos());
-        switch (dh_[0].net()->recvd_tos() & 0x03) {
+        switch (ecn) {
           case NOT_ECT: 
 		sl.not_ect(1);
                 break;
@@ -1184,24 +1197,29 @@ void SessionManager::demux(pktbuf* pb, Address & addr)
 	// and send XR report back to the sender.
 	if (!am_i_sender()) {
 		// retrieve RTP seqno
+                extern int ecn_mode__;
 		seqno = ntohs(rh->rh_seqno);
 
-		switch (cc_type_) {
-		case WBCC:
-		  // pass seqno to tfwc receiver to build up AckVec
-		  fprintf(stderr, "\n\treceived seqno: %d\n\n", seqno);
-		  tfwc_rcvr_.recv_seqno(seqno);
-		  break;
-		case RBCC:
-		  // pass seqno to tfrc receiver to build up AckVec
-		  fprintf(stderr, "\n\treceived seqno: %d\n\n", seqno);
-		  tfrc_rcvr_.recv_seqno(seqno);
-		  break;
-		}
-
-		// send receiver side XR report (AckVec)
-		ch_->send_ackv();
-                send_fb_ecn(ch_, sl, rh->rh_seqno, rh->rh_ssrc);
+                // if ECN_CE & ECN_AS_LOSS then act like packet is lost
+                if (!(ecn == ECN_CE && ecn_mode__ == ECN_AS_LOSS) ) {
+                    switch (cc_type_) {
+                    case WBCC:
+                      // pass seqno to tfwc receiver to build up AckVec
+                      fprintf(stderr, "\n\treceived seqno: %d", seqno);
+                      tfwc_rcvr_.recv_seqno(seqno);
+                      break;
+                    case RBCC:
+                      // pass seqno to tfrc receiver to build up AckVec
+                      fprintf(stderr, "\n\treceived seqno: %d", seqno);
+                      tfrc_rcvr_.recv_seqno(seqno);
+                      break;
+                    }
+		    // Only send receiver side XR report (AckVec) when pkt not 'lost'
+		    ch_->send_ackv();
+                    debug_msg("NOT Treating ECN as LOSS (ecn:%d, mode:%d)\n",ecn,ecn_mode__);
+                } else
+                    debug_msg("Treating ECN as LOSS (ecn:%d, mode:%d)\n",ecn,ecn_mode__);
+                send_fb_ecn(ch_, sl, seqno, ntohl(rh->rh_ssrc));
 	}
 	
         fprintf(stderr, "\n\treceived frame_no: %d\n\n", rh->frame_no);
@@ -1344,13 +1362,6 @@ void SessionManager::parse_sr(rtcphdr* rh, int flags, u_char*ep,
 	sl.sts_ctrl(ntohl(sr->sr_ntp.upper) << 16 |
 		ntohl(sr->sr_ntp.lower) >> 16);
 	
-	//int cnt = flags >> 8 & 0x1f;
-	//parse_rr_records(ssrc, (rtcp_rr*)(sr + 1), cnt, ep, addr);
-	
-	/*s->lts_ctrl(now);
-	s->sts_ctrl(ntohl(sr->sr_ntp.upper) << 16 |
-	ntohl(sr->sr_ntp.lower) >> 16);*/
-	
 	s->rtp_ctrl(ntohl(sr->sr_ts));
 	u_int32_t t = ntptime(now);
 	s->map_ntp_time(t);
@@ -1374,6 +1385,37 @@ void SessionManager::parse_rr(rtcphdr* rh, int flags, u_char* ep,
 	s->layer(layer).lts_ctrl(unixtime());
 	int cnt = flags >> 8 & 0x1f;	// reception report count
 	parse_rr_records(ssrc, (rtcp_rr*)(rh + 1), cnt, ep, addr);
+}
+
+void SessionManager::parse_fb(rtcphdr* rh, int flags, u_char* ep,
+							  Source* ps, Address & addr, int layer)
+{
+	Source* s;
+	u_int32_t ssrc = rh->rh_ssrc;
+	int fb_fmt = flags >>8 & 0x1f;	// FB Format(FMT)
+
+	if (ps->srcid() != ssrc)
+		s = SourceManager::instance().lookup(ssrc, ssrc, addr);
+	else
+		s = ps;
+	
+	Source::Layer& sl = s->layer(layer);
+        
+        switch (fb_fmt) {
+         case RTPFB_FMT_ECN: {
+                struct rtcp_fb_ecn *fb_ecn = (rtcp_fb_ecn*)(rh + 1);
+                sl.lts_ctrl(unixtime());
+                sl.set_ecn_ce(ntohs(fb_ecn->ecn_ce));
+                sl.set_ect0(ntohs(fb_ecn->ect0));
+                sl.set_ect1(ntohs(fb_ecn->ect1));
+                sl.set_not_ect(ntohs(fb_ecn->not_ect));
+	        debug_msg("Received RTCP ECN FB: seq_n_loss:%d, ecn_ecn:%d, not_ect:%d, ect0:%d, ect1:%d\n", ntohl(fb_ecn->seq_n_loss),ntohs(fb_ecn->ecn_ce), ntohs(fb_ecn->not_ect), ntohs(fb_ecn->ect0), ntohs(fb_ecn->ect1)); 
+                break;
+                             }
+         default:
+	        fprintf(stderr, "\t>> Received  UNRECOGNISED RTCP FB packet FMT: %d\n", fb_fmt); 
+                break;
+        }
 }
 
 void SessionManager::parse_xr(rtcphdr* rh, int flags, u_char* ep,
@@ -1425,6 +1467,7 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 		  // get SO_TIMESTAMP
 		  so_rtime = ch_->net()->recvd_so_time() - tx_ts_offset();
 		  //sender_xr_ts_info(so_rtime);
+                  int xrate;
 
   		  fprintf(stderr, ">>> parse_xr - i_am_sender\n");
 		  fprintf(stderr, "\tincomingXR\tnow: %f\n", so_rtime);
@@ -1435,16 +1478,26 @@ void SessionManager::parse_xr_records(u_int32_t ssrc, rtcp_xr* xr, int cnt,
 			// TFWC sender (getting AckVec)
 			tfwc_sndr_.recv(xr->BT,begin,end,chunk,so_rtime,ack_clock,pb);
 			// we need to call Transmitter::output(pb) to make Ack driven
+                        xrate=(tfwc_sndr_.xrate()*8)/1000;
+                        if (!xrate) xrate = 1;
+                        bps(xrate); 
+                        if (grabber_) grabber_->bps(xrate);
+                        debug_msg("now: %f Setting kbps: %d\n",so_rtime, kbps_);
 			if(ack_clock)
-			tfwc_output(ack_clock);
+			        tfwc_output(ack_clock);
 			break;
 
 			case RBCC:
 			// TFRC sender (getting AckVec)
 			tfrc_sndr_.recv(xr->BT,begin,end,chunk,so_rtime,ack_clock,pb);
+                        xrate=(tfrc_sndr_.xrate()*8)/1000;
+                        if (!xrate) xrate = 1;
+                        bps(xrate);
+                        if (grabber_) grabber_->bps(xrate);
+                        debug_msg("now: %f Setting kbps: %d\n",so_rtime, kbps_);
 			// XXX
 			if(ack_clock)
-			tfrc_output(ack_clock);
+			        tfrc_output(ack_clock);
 			break;
 		  } // switch (cc_type_)
 		}
@@ -1519,6 +1572,7 @@ int SessionManager::recv_xreport(CtrlHandler *ch, pktbuf* pb, bool ack_clock) {
 	// here, we expect it to be XR only.
 	switch(ntohs(rh->rh_flags) & 0xc0ff) {
 	case RTP_VERSION << 14 | RTCP_PT_XR:
+	case RTP_VERSION << 14 | RTCP_PT_RTPFB:
 		break;
 	case RTP_VERSION << 14 | RTCP_PT_SR:
 	case RTP_VERSION << 14 | RTCP_PT_RR:
@@ -1568,6 +1622,7 @@ int SessionManager::recv_xreport(CtrlHandler *ch, pktbuf* pb, bool ack_clock) {
 		case RTCP_PT_XR:
 			rtcp_pkt_id = RTCP_PT_XR;
 			parse_xr(rh, flags, ep, ps, addr, layer, !(ack_clock), pb);
+			debug_msg("SessionManager::recv_xreport: parsed RTCP XR packet %d\n", rtcp_pkt_id);
 			break;
 		case RTCP_PT_SR:
 			rtcp_pkt_id = RTCP_PT_SR;
@@ -1579,7 +1634,13 @@ int SessionManager::recv_xreport(CtrlHandler *ch, pktbuf* pb, bool ack_clock) {
 			rtcp_pkt_id = RTCP_PT_SDES;
 			debug_msg("warning: wrong RTCP packet type! %d\n", rtcp_pkt_id);
 			return 0;
+		case RTCP_PT_RTPFB:
+			debug_msg("Received: RTCP FB packet type %d\n", flags & 0xff);
+			parse_fb(rh, flags, ep, ps, addr, layer);
+			break;
+
 		default:
+			debug_msg("warning: Unrecognised RTCP packet type! %d\n", flags & 0xff);
 			ps->badsessopt(1);
 			break;
 		}
@@ -1749,6 +1810,7 @@ int SessionManager::recv(CtrlHandler* ch)
 	case RTP_VERSION << 14 | RTCP_PT_SR:
 	case RTP_VERSION << 14 | RTCP_PT_RR:
 	case RTP_VERSION << 14 | RTCP_PT_XR:
+	case RTP_VERSION << 14 | RTCP_PT_RTPFB:
 	case RTP_VERSION << 14 | RTCP_PT_BYE:
 		break;
 	default:
@@ -1768,7 +1830,7 @@ int SessionManager::recv(CtrlHandler* ch)
 	Address & addr = *srcp;
 
 	/*
-	 * First record in compount packet must be the ssrc of the
+	 * First record in compound packet must be the ssrc of the
 	 * sender of the packet.  Pull it out here so we can use
 	 * it in the sdes parsing, since the sdes record doesn't
 	 * contain the ssrc of the sender (in the case of mixers).
@@ -1800,15 +1862,23 @@ int SessionManager::recv(CtrlHandler* ch)
 		switch (flags & 0xff) {
 
 		case RTCP_PT_SR:
+			debug_msg("Received: RTCP SR packet type %d\n", flags & 0xff);
 			parse_sr(rh, flags, ep, ps, addr, layer);
 			break;
 
 		case RTCP_PT_RR:
+			debug_msg("Received: RTCP RR packet type %d\n", flags & 0xff);
 			parse_rr(rh, flags, ep, ps, addr, layer);
 			break;
 
 		case RTCP_PT_XR:
+			debug_msg("Received: RTCP XR packet type %d\n", flags & 0xff);
 			parse_xr(rh, flags, ep, ps, addr, layer, 1);
+			break;
+
+		case RTCP_PT_RTPFB:
+			debug_msg("Received: RTCP FB packet type %d\n", flags & 0xff);
+			parse_fb(rh, flags, ep, ps, addr, layer);
 			break;
 
 		case RTCP_PT_SDES:

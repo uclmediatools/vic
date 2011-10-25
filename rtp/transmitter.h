@@ -62,6 +62,11 @@
 #define PKM		1	// PacKet Mode
 #define BYM		2	// BYtes Mode
 
+//ecn_mode settings
+#define ECN_AS_LOSS 0
+#define ECN_IGNORE 1
+#define ECN_ACTION 2
+
 class TfwcSndr;
 class TfwcRcvr;
 class TfrcSndr;
@@ -93,7 +98,7 @@ class Transmitter : public TclObject, public Timer {
 	};*/
 	static void dump(int fd);
 	static inline void seqno(u_int16_t s) { seqno_ = s; }
-	inline void bps(int kbps) { kbps = kbps_; }
+	inline void bps(int kbps) { kbps_ = kbps; }
 	inline void loop_layer(int loop_layer) { loop_layer_ = loop_layer; }
 	inline int loop_layer() { return loop_layer_; }
 	inline int mtu() { return (mtu_); }
@@ -175,6 +180,7 @@ protected:
 	int loop_layer_;	/* # of layers to loop back (for testing) */
 
 	int loopback_;		/* true to loopback data packets */
+	int ecn_mode_;		/* true to loopback data packets */
 	static int dumpfd_;	/* fd to dump packet stream to */
 	static u_int16_t seqno_;
 

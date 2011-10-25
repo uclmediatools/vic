@@ -201,39 +201,39 @@ class H261Encoder : public TransmitterModule {
 	int avg_packets_per_frame();
 
 	// print Tx queue info
-	inline void print_txq_info() {
-	fprintf(stderr, "   now: %f\ttxq_now: %d\n", 
-	get_now(), tx_->tx_buf_size());
-	}
-	inline void print_txq_info(int len) {
-	fprintf(stderr, "   now: %f\ttxq_now: %d\n", 
-	get_now(), len);
-	}
-	inline void print_txq_info(int len, int dif) {
-	fprintf(stderr, "   now: %f\ttxq_now: %d\tdif: %d\n",
-	get_now(), len, dif);
-	}
-	// print Tx queue sent more
-	inline void print_sent_more() {
-	fprintf(stderr, "\tnow: %f\tsent: %d more: %d vf[%d]: %d\n",
-	get_now(), num_sent_, sent_more_,
-	vfno_%FHSIZE, ppframe_[vfno_%FHSIZE]);
-	}
-	// print encoding time
-	inline void print_enc_time() {
-	fprintf(stderr, "   now: %f\tenc_time: %f\n\n",
-	get_now(), (enc_end_ - enc_start_));
-	}
-	// print packers per frame
-	inline void print_ppframe() {
-	fprintf(stderr, "\tnow: %f\tppframe[%d]: %d\n",
-	get_now(), vfno_%FHSIZE, ppframe_[vfno_%FHSIZE]);
-	}
-	// print setq time
-	inline void print_time_setq(int quant, double time) {
-	fprintf(stderr, "now: %f duration: %f quant: %d\n", 
-	get_now(), get_now() - time, quant);
-	}
+        inline void print_txq_info() {
+              debug_msg( "   now: %f\ttxq_now: %d\n", 
+              get_now(), tx_->tx_buf_size());
+        }
+        inline void print_txq_info(int len) {
+              debug_msg( "   now: %f\ttxq_now: %d\n", 
+              get_now(), len);
+        }
+        inline void print_txq_info(int len, int dif) {
+              debug_msg( "   now: %f\ttxq_now: %d\tdif: %d\n",
+              get_now(), len, dif);
+        }
+        // print Tx queue sent more
+        inline void print_sent_more() {
+              debug_msg( "\tnow: %f\tsent: %d more: %d vf[%d]: %d\n",
+              get_now(), num_sent_, sent_more_,
+              vfno_%FHSIZE, ppframe_[vfno_%FHSIZE]);
+        }
+        // print encoding time
+        inline void print_enc_time() {
+              debug_msg( "   now: %f\tenc_time: %f\n\n",
+              get_now(), (enc_end_ - enc_start_));
+        }
+        // print packers per frame
+        inline void print_ppframe() {
+              debug_msg( "\tnow: %f\tppframe[%d]: %d\n",
+              get_now(), vfno_%FHSIZE, ppframe_[vfno_%FHSIZE]);
+        }
+        // print setq time
+        inline void print_time_setq(int quant, double time) {
+              debug_msg( "now: %f duration: %f quant: %d\n", 
+              get_now(), get_now() - time, quant);
+        }
 
 private:
 };
@@ -412,7 +412,7 @@ H261PixelEncoder::size(int w, int h)
 		bloffsize_ = 1;
 	} else {
 		/*XXX*/
-		fprintf(stderr, "H261PixelEncoder: H.261 bad geometry: %dx%d\n",
+		debug_msg( "H261PixelEncoder: H.261 bad geometry: %dx%d\n",
 			w, h);
 		exit(1);
 	}
@@ -462,7 +462,7 @@ H261DCTEncoder::size(int w, int h)
 		bloffsize_ = 1;
 	} else {
 		/*XXX*/
-		fprintf(stderr, "H261DCTEncoder: H.261 bad geometry: %dx%d\n",
+		debug_msg( "H261DCTEncoder: H.261 bad geometry: %dx%d\n",
 			w, h);
 		exit(1);
 	}
@@ -895,16 +895,16 @@ int H261PixelEncoder::consume(const VideoFrame *vf)
 	}
 	// ---------------------------------------------------------------*
 
-	// adjust quantizer
+#ifdef ADJUST_QUANT
+	// adjust quantizer 
 	adjust_quantizer(txq_beg_, avg_packets_per_frame());
+#endif
 
 	// increment frame number
-	if (vfno_++%FHSIZE == 0) 
-	init_ppframe();
+        if (vfno_++%FHSIZE == 0) init_ppframe();
 
 	// check size
-	if (!samesize(vf))
-		size(vf->width_, vf->height_);
+	if (!samesize(vf)) size(vf->width_, vf->height_);
 
 	// main encoding loop
 	// (send packets while encoding)
@@ -918,6 +918,7 @@ int H261PixelEncoder::consume(const VideoFrame *vf)
 	// (these Tx'd packets may include the previous frame(s).)
 	num_sent_ = ppframe_[vfno_%FHSIZE] - txq_dif_;
 
+        debug_msg( "   now: %f\t compressed frame size: %d\n", get_now(), cc);
 	print_txq_info(txq_end_, txq_dif_);
 	print_enc_time();
 
@@ -942,15 +943,16 @@ H261Encoder::adjust_quantizer(int txq, int avg)
 		//print_time_setq(quantizer_, time);
 	}
 	else if (txq >= avg && txq < 3.5 * avg) {
-		quantizer_++;
+		quantizer_ = (quantizer_ < 29) ? quantizer_ += 1 : quantizer_;
 		setq(quantizer_);
 		//print_time_setq(quantizer_, time);
 	}
 	else {
-		quantizer_ += 2;
+		quantizer_ = (quantizer_ < 28) ? quantizer_ += 2 : quantizer_;
 		setq(quantizer_);
 		//print_time_setq(quantizer_, time);
 	}
+	print_time_setq(quantizer_, time);
 }
 
 int
@@ -958,7 +960,7 @@ H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 {
 	// time measurement
 	enc_start_ = get_now();
-	fprintf(stderr,">>>h261_encode_start\tnow: %f\n", enc_start_);
+	//fprintf(stderr,">>>h261_encode_start\tnow: %f\n", enc_start_);
 
 	tx_->flush();
 
@@ -1066,7 +1068,7 @@ H261Encoder::encode(const VideoFrame* vf, const u_int8_t *crvec)
 
 	// time measurement
 	enc_end_ = get_now();
-	fprintf(stderr,"\n>>>h261_encode_end\tnow: %f\n", enc_end_);
+	//fprintf(stderr,"\n>>>h261_encode_end\tnow: %f\n", enc_end_);
 
 	return (cc);
 }
@@ -1080,7 +1082,7 @@ int H261Encoder::avg_packets_per_frame() {
 	if (k < 1) return 1;
 
 	for (int i = 0; i < k; i++)
-		num += ppframe_[vfno_%FHSIZE];
+		num += ppframe_[(vfno_-i)%FHSIZE];
 
 	return (num /= k);
 }
@@ -1095,15 +1097,14 @@ bool H261Encoder::suspend_grabbing(int m) {
 	// highest watermark
 	int highmark = 0;
 
-	if (vfno_ < FHSIZE) 
-	return false;
+	if (vfno_ < FHSIZE) return false;
 
 	// now, highmark is set to "m * (num packets per frame)",
 	// which roughly represents "m" frames.
 	highmark = m * avg_packets_per_frame();
+        debug_msg("TxQueue: %d, highmark: %d, vfno_: %d\n", txq, highmark, vfno_);
 
-	if (txq > highmark)
-		return true;
+	if (txq > highmark) return true;
 
 	return false;
 }

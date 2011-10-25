@@ -43,6 +43,7 @@
 #include "iohandler.h"
 #include "source.h"
 #include "mbus_handler.h"
+#include "grabber.h"
 
 class Source;
 class SessionManager;
@@ -123,7 +124,7 @@ class CtrlHandler : public DataHandler, public Timer {
 
 	// control channel dispatch debug info
 	inline void dispatch_info(double now, int nbytes, int i) {
-	fprintf(stderr, "  \tnow: %f\tdispatched[%d]: %d\n",now,i,nbytes);
+	debug_msg( "  \tnow: %f\tdispatched[%d]: %d\n",now,i,nbytes);
 	}
 };
 
@@ -186,6 +187,8 @@ protected:
 		      Source* ps, Address & addr, int layer);
 	void parse_rr(rtcphdr* rh, int flags, u_char* ep,
 		      Source* ps, Address & addr, int layer);
+        void parse_fb(rtcphdr* rh, int flags, u_char* ep,
+                        Source* ps, Address & addr, int layer);
 	void parse_xr(rtcphdr* rh, int flags, u_char* ep,
 		      Source* ps, Address & addr, int layer, bool ack_clock, pktbuf* pb=0);
 	void parse_rr_records(u_int32_t ssrc, rtcp_rr* r, int cnt,
@@ -246,46 +249,47 @@ protected:
 	u_int16_t ackvec_;	// this is a bit vector
 	// timestamp
 	double recv_ts_;	// receive timestamp
+	Grabber *grabber_;	// grabber pointer - set by a tcl command piers
 
 private:
 	// print RTP data packet's seqno
 	inline void print_rtp_seqno(u_int16_t seqno) {
-	fprintf(stderr, "\n\tnow: %f\tseqno: %d\n\n",tx_get_now(),seqno);
+	debug_msg( "\n\tnow: %f\tseqno: %d\n\n",tx_get_now(),seqno);
 	}
 	inline void print_rtp_seqno(pktbuf* pb) {
 	rtphdr* rh = (rtphdr *) pb->data;
-	fprintf(stderr, "\n\tnow: %f\tseqno: %d\n\n",
+	debug_msg( "\n\tnow: %f\tseqno: %d\n\n",
 	    tx_get_now(),ntohs(rh->rh_seqno));
 	}
 	// print sender's XR info
 	inline void sender_xr_info(const char* str, const int i,
 	u_int16_t b, u_int16_t e, rtcp_xr_BT_1_hdr* xrh, u_int16_t l) {
-	fprintf(stderr, "  [%s +%d] beg:%d, end:%d, xr1len:%d (xrlen:%d)\n",
+	debug_msg( "  [%s +%d] beg:%d, end:%d, xr1len:%d (xrlen:%d)\n",
 		str, i, b, e, ntohs(xrh->xr_len),l);
 	}
 	// print sender's XR info
 	inline void sender_xr_ts_info(double ts) {
-	fprintf(stderr, "*** recv_ts: %f so_rtime: %f diff: %f\n",
+	debug_msg( "*** recv_ts: %f so_rtime: %f diff: %f\n",
 		recv_ts_, ts, recv_ts_-ts);
 	}
 	// print receiver's XR info
 	inline void receiver_xr_info(const char* str, const int i, u_int16_t *c) {
-	fprintf(stderr, "  [%s +%d] chunk[0]:%d\n",str, i, ntohs(c[0]));
+	debug_msg( "  [%s +%d] chunk[0]:%d\n",str, i, ntohs(c[0]));
 	}
 	// print parse XR banner
 	inline void parse_xr_banner_top() {
-	fprintf(stderr,
+	debug_msg(
 	"~~~~~~~~~~~~~~~~~~entering parse_xr_records()~~~~~~~~~~~~~~~~~~\n");
 	}
 	inline void parse_xr_banner_bottom() {
-	fprintf(stderr,
+	debug_msg(
 	"-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\n");
 	}
 	inline void xr_arrival_info(int nbytes, int i) {
-	fprintf(stderr, "  \tnow: %f\tnbytes[%d]: %d\n",tx_get_now(),i,nbytes);
+	debug_msg( "  \tnow: %f\tnbytes[%d]: %d\n",tx_get_now(),i,nbytes);
 	}
 	inline void send_xr_info(int bt, u_int16_t b, u_int16_t e){
-	fprintf(stderr, "\tBT: %d\tnow: %f begin: %d end: %d\n",
+	debug_msg( "\tBT: %d\tnow: %f begin: %d end: %d\n",
 	bt, tx_get_now(), b, e);
 	}
 };

@@ -240,6 +240,10 @@ class Source : public TclObject, public Timer {
                 inline void not_ect(int v) { not_ect_ += v; }
                 inline void ect0(int v) { ect0_ += v; }
                 inline void ect1(int v) { ect1_ += v; }
+                inline void set_ecn_ce(int v) { ecn_ce_ = v; }
+                inline void set_not_ect(int v) { not_ect_ = v; }
+                inline void set_ect0(int v) { ect0_ = v; }
+                inline void set_ect1(int v) { ect1_ = v; }
 
 		inline const timeval& lts_ctrl() const { return (lts_ctrl_); }
 		inline const timeval& lts_data() const { return (lts_data_); }

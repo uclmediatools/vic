@@ -105,8 +105,8 @@ proc build.bar w {
             -command "ag_autoplace::show_ui"
     }
 
-    pack $w.bar.title -side left -fill both -expand 1
-    pack $w.bar.menu $w.bar.autoplace $w.bar.help $w.bar.quit -side left -padx 1 -pady 1 
+    pack $w.bar.title -side top -fill both -expand 1 -anchor center
+    pack $w.bar.menu $w.bar.autoplace $w.bar.help $w.bar.quit -side left -padx 1 -pady 1 -anchor center
 
     if {[windowingsystem] == "aqua"} {
         label $w.bar.gap -text " "
@@ -770,15 +770,14 @@ proc create_decoder src {
 		$decoder maxChannel $numLayers
 	}
        	# Inform decoder obj of grabber to enable PSNR calculation
-	if { [$videoDevice nickname] == "still" } {
+	if { [$videoDevice nickname] == "filegrab" } {
 	    if ![have grabber] {
+	            #Create filedev grabber obj so decoder can be informed of it
 		    set V(grabber) [$videoDevice open cif]
 		    if { $V(grabber) != "" } {
-	      puts "ssspam"
 		       $decoder grabber $V(grabber)
 		    }
 	    } else {
-	      puts "spam"
 		    $decoder grabber $V(grabber)
 	    }
         }

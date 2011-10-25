@@ -70,8 +70,12 @@ MBusHandler::MBusHandler(void (*cmd_handler)(char *src, char *cmd, char *arg, vo
 	mbusp_ = mbus_init(cmd_handler, err_handler, mbus_vic_addr);
 	//unlink();
 
-	// Schedule a heartbeat
-	msched(50);
+        if (mbusp_) {
+          debug_msg("Mbus enabled\n");
+	  // Schedule a heartbeat
+          msched(50);
+        } else
+          debug_msg("Mbus DISABLED - Probably due to multicast/Network problem\n");
 }
 
 void MBusHandler::listen_audio() {

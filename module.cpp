@@ -103,7 +103,7 @@ int Module::command(int argc, const char*const* argv)
 	return (TclObject::command(argc, argv));
 }
 
-TransmitterModule::TransmitterModule(int ft) : Module(ft)
+TransmitterModule::TransmitterModule(int ft) : Module(ft), tx_(0)
 {
 	pool_ = new RTP_BufferPool;
 }
@@ -122,8 +122,10 @@ int TransmitterModule::command(int argc, const char*const* argv)
 			return (TCL_OK);
 		}
 		if (strcmp(argv[1], "loop_layer") == 0) {
-			tx_->loop_layer(atoi(argv[2]));
-			return (TCL_OK);
+                        if (tx_) {
+                          tx_->loop_layer(atoi(argv[2]));
+			  return (TCL_OK);
+                        }
 		}
 	}
 	return (Module::command(argc, argv));
