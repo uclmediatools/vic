@@ -140,15 +140,16 @@ int H264Encoder::consume(const VideoFrame * vf)
     //unsigned char f_total_pkt = 0;
     int RTP_HDR_LEN = sizeof(rtphdr);
     int NAL_FRAG_THRESH = tx->mtu() - RTP_HDR_LEN; /* payload max in one packet */
-    //debug_msg( "MTU=%d, RTP_HDR_LEN=%d\n", NAL_FRAG_THRESH, RTP_HDR_LEN);
-
+#ifdef H264DEBUG
+    debug_msg( "MTU=%d, RTP_HDR_LEN=%d\n", NAL_FRAG_THRESH, RTP_HDR_LEN);
+#endif
 
     tx->flush();
 
     if (!state) {
 	    state = true;
 	    size(vf->width_, vf->height_);
-	    debug_msg("init x264 encoder with kbps:%d, fps:%d", kbps, fps);
+	    debug_msg("init x264 encoder with kbps:%d, fps:%d\n", kbps, fps);
 	    enc->setGOP(gop);
 	    enc->init(vf->width_, vf->height_, kbps, fps);
 	    frame_size = vf->width_ * vf->height_;
@@ -175,7 +176,9 @@ int H264Encoder::consume(const VideoFrame * vf)
 	char *data = fOut->getData();
  	uint8_t NALhdr = data1[4]; //SV-XXX why does our x.264 provide 4-byte StartSync in the NALU?
 	uint8_t NALtype = NALhdr & 0x1f;
-	//debug_msg( "Got NALhdr=0x%02x, NALtype=0x%02x from encoded frame.\n", NALhdr, NALtype);
+#ifdef H264DEBUG
+	debug_msg( "Got NALhdr=0x%02x, NALtype=0x%02x, nal size %i from encoded frame.\n", NALhdr, NALtype, nalSize );
+#endif
 	memcpy(data, &data1[5], nalSize);
 
 	sent_size += nalSize;
@@ -190,7 +193,9 @@ int H264Encoder::consume(const VideoFrame * vf)
 		//Single NAL or last fragment of FU-A
 		//==============================================
 
-		rh->rh_flags |= htons(RTP_M);	// set M bit
+		if ( i == numNAL - 1 )
+			rh->rh_flags |= htons(RTP_M);	// set M bit - ONLY if last NAL of frame
+
 		pb->len = nalSize + RTP_HDR_LEN + FU_HDR_LEN;
 
 #ifdef H264DEBUG

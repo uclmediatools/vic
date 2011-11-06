@@ -30,6 +30,9 @@ void Deinterlace::init(int width, int height)
 	context = NULL;
     }
 
+    width_ = width;
+    height_ = height;
+
     int flags = 0;
     flags |= (cpu_flags & FF_CPU_MMX ? PP_CPU_CAPS_MMX : 0);
     flags |= (cpu_flags & FF_CPU_MMXEXT ? PP_CPU_CAPS_MMX2 : 0);

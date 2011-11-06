@@ -83,37 +83,36 @@ void FFMpegCodec::init_encoder(int width_, int height_,
     // put sample parameters */
     c->bit_rate = bit_rate;
     //c->bit_rate_tolerance = 2000*1000;
-    // resolution must be a multiple of two 
+    // resolution must be a multiple of two
     c->width = width;
     c->height = height;
 
     // frames per second */
     // OLD FFMPEG ver
-    //c->frame_rate = frame_rate * FRAME_RATE_BASE; 
+    //c->frame_rate = frame_rate * FRAME_RATE_BASE;
     // New FFMPEG ver
     c->time_base.den = frame_rate;
     c->time_base.num = 1;
 
-    // emit one intra frame every ten frames 
+    // emit one intra frame every ten frames
     c->gop_size = iframe_gap;
     //c->flags |= CODEC_FLAG_EMU_EDGE;
     //c->flags |= CODEC_FLAG_LOW_DELAY;
     //c->flags |= CODEC_FLAG_PART;
-    //c->flags |= CODEC_FLAG_ALT_SCAN;       
+    //c->flags |= CODEC_FLAG_ALT_SCAN;
     //c->flags |= CODEC_FLAG_PSNR;
     //c->flags |= CODEC_FLAG_AC_PRED;
 
     // in loop filter for low bitrate compression
     c->flags |= CODEC_FLAG_LOOP_FILTER;
 
-
     if (enable_hq_encoding) {
 	c->flags |= CODEC_FLAG_QPEL;
 	//c->flags |= CODEC_FLAG_GMC;
 	c->flags |= CODEC_FLAG_AC_PRED;
 	c->flags |= CODEC_FLAG_4MV;
-	//c->flags |= CODEC_FLAG_QP_RD;      
-	//c->mb_decision = FF_MB_DECISION_RD;                     
+	//c->flags |= CODEC_FLAG_QP_RD;
+	//c->mb_decision = FF_MB_DECISION_RD;
     }
 
     c->me_method = ME_EPZS;
@@ -153,13 +152,14 @@ void FFMpegCodec::init_decoder()
     picture = avcodec_alloc_frame();
     c = avcodec_alloc_context();
     c->flags |= CODEC_FLAG_EMU_EDGE | CODEC_FLAG_PART;
-    // c->flags |= CODEC_FLAG_ALT_SCAN;  
+    // c->flags |= CODEC_FLAG_ALT_SCAN;
 
     codec = avcodec_find_decoder(codecid);
     if (!codec) {
 	//fprintf(stderr, "codec not found\n");
 	exit(1);
     }
+
     /* open it */
     if (avcodec_open(c, codec) < 0) {
 	//fprintf(stderr, "could not open codec\n");
@@ -240,13 +240,13 @@ int FFMpegCodec::decode(UCHAR * codedstream, int size, UCHAR * vf)
     if (!got_picture || len < 0) {
 		return -1;
     }
-    
+
     if (state) {
       //H264Context *h = c->priv_data;
       //printf("h->sps.ref_frame_count: %d",h->sps.ref_frame_count);
     }
 	if (c->width != width || c->height != height) {
-		debug_msg("ffmpegcodec: resize from %dx%d (framesize:%d) to %dx%d, (size: %d) got_picture: %d, len: %d\n", width, height, 
+		debug_msg("ffmpegcodec: resize from %dx%d (framesize:%d) to %dx%d, (size: %d) got_picture: %d, len: %d\n", width, height,
 			frame_size, c->width, c->height, size, got_picture, len);
 		resize(c->width, c->height);
     }
@@ -254,7 +254,7 @@ int FFMpegCodec::decode(UCHAR * codedstream, int size, UCHAR * vf)
     if(avpicture_deinterlace((AVPicture *)picture, (AVPicture *)picture,
                                     c->pix_fmt, c->width, c->height) < 0) {
           printf("deinterlace error\n");
-    }      	    
+    }
 */
     pict_type = picture->pict_type;
     memcpy(vf, picture->data[0], frame_size);
@@ -300,6 +300,6 @@ void FFMpegCodec::set_max_quantizer(int q)
     quality = q;
     if (state) {
 //    MpegEncContext *s = (MpegEncContext*)c->priv_data;
-//    s->qmax = c->qmax = c->mb_qmax = q;       
+//    s->qmax = c->qmax = c->mb_qmax = q;
     }
 }

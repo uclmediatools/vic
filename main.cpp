@@ -543,7 +543,7 @@ int main(int argc, const char** argv)
 			usage(NULL);
 	}
 #ifdef USE_ZVFS
-	Tcl_FindExecutable(argv[0]);
+	Tcl_FindExecutable((char*)argv[0]);
 #endif
 	Tcl::init("vic");
 	Tcl& tcl = Tcl::instance();

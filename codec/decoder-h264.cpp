@@ -52,7 +52,7 @@ class H264Decoder:public Decoder
     int last_iframe;
     bool startPkt;
 
-    int aggregate_pkt; // Count of mbits for decoding IOCOM H.264 
+    int aggregate_pkt; // Count of mbits for decoding IOCOM H.264
 
     /* image */
     UCHAR xxx_frame[MAX_FRAME_SIZE];
@@ -73,7 +73,7 @@ static class H264DecoderMatcher:public Matcher
     }
     TclObject *match(const char *id)
     {
-	if ((strcasecmp(id, "h264") == 0 ) || 
+	if ((strcasecmp(id, "h264") == 0 ) ||
 	    (strcasecmp(id, "h264_IOCOM") == 0))
 	    return (new H264Decoder());
 	return (0);
@@ -96,7 +96,7 @@ H264Decoder::H264Decoder():Decoder(0 /* 0 byte extra header */)
     inw_ = 352;
     inh_ = 288;
 
-     /*XXX*/ 
+     /*XXX*/
     resize(inw_, inh_);
 
     // libavcodec
@@ -123,7 +123,7 @@ H264Decoder::H264Decoder():Decoder(0 /* 0 byte extra header */)
 
     //256 packets, each 1600 byte (default will not exceed 1600 byte)
     //cout << "new PacketBuffer..\n";
-    stream = new PacketBuffer(1024, 1600); //SV: 1024 = ??? 
+    stream = new PacketBuffer(1024, 1600); //SV: 1024 = ???
     startPkt = false;
 }
 
@@ -209,7 +209,7 @@ void H264Decoder::recv(pktbuf * pb)
        idx = seq;
        last_seq = seq - 1;
     }
-	  
+
     int pktIdx = seq - idx;
     if (pktIdx < 0) {
         pktIdx = (0xFFFF - idx) + seq;
@@ -262,11 +262,11 @@ void H264Decoder::recv(pktbuf * pb)
 		    f = stream->getStream();
 		    decodeLen =  h264.decode((UCHAR *) f->getData(), f->getDataSize(), xxx_frame);
 	    }
-	    
+
 	    if (decodeLen < 0) {
 		  debug_msg("H264_RTP: frame error\n");
 	    }
-	   
+
 	    if (inw_ != h264.width || inh_ != h264.height) {
 			inw_ = h264.width;
 			inh_ = h264.height;
