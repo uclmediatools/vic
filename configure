@@ -5676,11 +5676,12 @@ armv4l-*-linux)
 $as_echo_n "checking for 64-bit gcc on OSX... " >&6; }
 	if gcc -v 2>&1 | grep host=x86_64 >& /dev/null ; then
 	   if ! file -L  /System/Library/Frameworks/QuickTime.framework/QuickTime 2>&1 | grep x86_64 >&/dev/null; then
-              { $as_echo "$as_me:${as_lineno-$LINENO}: result: Yes but forcing 32-bit due to QT" >&5
-$as_echo "Yes but forcing 32-bit due to QT" >&6; }
+              { $as_echo "$as_me:${as_lineno-$LINENO}: result: Yes but forcing 32-bit due to QuickTime" >&5
+$as_echo "Yes but forcing 32-bit due to QuickTime" >&6; }
               V_CCOPT="$V_CCOPT -arch i386"
               V_LDFLAGS="$V_LDFLAGS -arch i386  -mmacosx-version-min=10.4"
               V_CCLDFLAGS32="LDFLAGS='-arch i386 -mmacosx-version-min=10.4' CFLAGS='-arch i386'"
+              x264_conf="$x264_conf --host=i686-apple-darwin"
 	   fi
 	else
               { $as_echo "$as_me:${as_lineno-$LINENO}: result: No - using 32-bit" >&5
@@ -5916,7 +5917,7 @@ havex264="no"
 if test "${with_ffmpegver+set}" = set; then :
   withval=$with_ffmpegver; ffmpegver=$withval
 else
-  ffmpegver=ffmpeg
+  ffmpegver=ffmpeg-0.5.8
 fi
 
 # Check whether --enable-ffmpeg-co was given.
@@ -5929,9 +5930,8 @@ fi
 if test "$ffmpegco" = "yes" ; then
   if test "$gpl" = "yes" ; then
    if test ! -d ${ffmpegver} ; then
-      echo "Checking out r20462 (and 29824 of libswscale) of ffmpeg from svn://svn.ffmpeg.org/ffmpeg/trunk..."
-      svn checkout -q -r 20462 svn://svn.ffmpeg.org/ffmpeg/trunk ffmpeg
-      svn checkout -q -r 29824 svn://svn.ffmpeg.org/mplayer/trunk/libswscale  ffmpeg/libswscale
+      echo "Downloading ${ffmpegver} of ffmpeg from ffmpeg.org ..."
+      ${DOWNLOAD} http://ffmpeg.org/releases/${ffmpegver}.tar.bz2 | tar xjf - && ln -sf ${ffmpegver} ffmpeg
    fi
    patch --dry-run -sf -p0 < ffmpeg.iocom.patch >& /dev/null
    if test $? = 0; then
@@ -5941,8 +5941,8 @@ if test "$ffmpegco" = "yes" ; then
       echo "ffmpeg has already been patched for IOCOM decode compatibility"
    fi
    echo "Configuring ffmpeg..."
-   echo "${V_CCLDFLAGS32} ./configure --prefix=$V_PATH/ffmpeg $ffmpeg_conf --enable-gpl --enable-postproc"
-   cd ffmpeg && eval ${V_CCLDFLAGS32} ./configure --prefix=$V_PATH/ffmpeg $ffmpeg_conf --enable-gpl --enable-postproc; cd ..
+   echo "${V_CCLDFLAGS32} ./configure --prefix=$V_PATH/ffmpeg $ffmpeg_conf --enable-gpl --enable-swscale --enable-postproc"
+   cd ffmpeg && eval ${V_CCLDFLAGS32} ./configure --prefix=$V_PATH/ffmpeg $ffmpeg_conf --enable-gpl --enable-swscale --enable-postproc; cd ..
    V_INCLUDE="$V_INCLUDE -Iffmpeg/include -Iffmpeg"
    V_CODEC_LIB="$V_CODEC_LIB -Lffmpeg/lib -lavcodec -lavutil -lswscale -lpostproc "
   else
@@ -5955,7 +5955,7 @@ fi
 if test "${with_x264ver+set}" = set; then :
   withval=$with_x264ver; x264ver=$withval
 else
-  x264ver=x264-snapshot-20090708-2245
+  x264ver=x264-snapshot-20100805-2245
 fi
 
 # Check whether --enable-x264-co was given.
@@ -5972,7 +5972,7 @@ if test "$x264co" = "yes" ; then
      ${DOWNLOAD} http://downloads.videolan.org/pub/videolan/x264/snapshots/${x264ver}.tar.bz2 | tar xjf - && ln -sf ${x264ver} x264
    fi
    echo;echo "Configuring x264..."
-   echo "${V_CCLDFLAGS32} ./configure --prefix=$V_PATH/x264"
+   echo "${V_CCLDFLAGS32} ./configure --prefix=$V_PATH/x264 $x264_conf"
    cd x264 && eval ${V_CCLDFLAGS32} ./configure --prefix=$V_PATH/x264 $x264_conf; cd ..
    V_INCLUDE="$V_INCLUDE -Ix264/include"
    V_CODEC_LIB="$V_CODEC_LIB -Lx264/lib -lx264"
