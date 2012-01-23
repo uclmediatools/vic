@@ -550,11 +550,24 @@ dnl Check for 64-bit host gcc - in Snow Leopard+
 dnl Check for lack of 64-bit support in QuickTime - an issue in Snow Leopard+
 	   if ! file -L  /System/Library/Frameworks/QuickTime.framework/QuickTime 2>&1 | grep x86_64 >&/dev/null; then
               AC_MSG_RESULT([Yes but forcing 32-bit due to QuickTime])
-              V_CCOPT="$V_CCOPT -arch i386"
-              V_LDFLAGS="$V_LDFLAGS -arch i386  -mmacosx-version-min=10.4"
-dnl If gcc 32bit then we need to set these flags for compilation of ffmpeg and x264
-              V_CCLDFLAGS32="LDFLAGS='-arch i386 -mmacosx-version-min=10.4' CFLAGS='-arch i386'"
+dnl If gcc 32bit then we need to set following flags for compilation of ffmpeg and x264
+dnl The MacOSX10.6 SDK is the last SDK that contain QuickTime header files capable of building video/grabber-macosx.cpp
               x264_conf="$x264_conf --host=i686-apple-darwin"
+              if [[ -d /Developer/SDKs/MacOSX10.4u.sdk ]] ; then
+                 V_LDFLAGS="$V_LDFLAGS -arch i386  -mmacosx-version-min=10.4"
+                 V_CCLDFLAGS32="LDFLAGS='-arch i386 -mmacosx-version-min=10.4' CFLAGS='-arch i386'"
+                 V_CCOPT="$V_CCOPT -arch i386 -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
+              elif [[ -d /Developer/SDKs/MacOSX10.5.sdk ]] ; then
+                 V_LDFLAGS="$V_LDFLAGS -arch i386  -mmacosx-version-min=10.5"
+                 V_CCLDFLAGS32="LDFLAGS='-arch i386 -mmacosx-version-min=10.5' CFLAGS='-arch i386'"
+                 V_CCOPT="$V_CCOPT -arch i386 -isysroot /Developer/SDKs/MacOSX10.5.sdk"
+              elif [[ -d /Developer/SDKs/MacOSX10.6.sdk ]] ; then
+                 V_LDFLAGS="$V_LDFLAGS -arch i386  -mmacosx-version-min=10.6"
+                 V_CCLDFLAGS32="LDFLAGS='-arch i386 -mmacosx-version-min=10.6' CFLAGS='-arch i386'"
+                 V_CCOPT="$V_CCOPT -arch i386 -isysroot /Developer/SDKs/MacOSX10.6.sdk"
+              else
+                 AC_MSG_RESULT([No suitable SDK under /Developer/SDKs/ found for building with QuickTime framework])
+              fi
 	   fi
 	else
               AC_MSG_RESULT([No - using 32-bit])
