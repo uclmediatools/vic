@@ -556,11 +556,11 @@ dnl The MacOSX10.6 SDK is the last SDK that contain QuickTime header files capab
               if [[ -d /Developer/SDKs/MacOSX10.4u.sdk ]] ; then
                  V_LDFLAGS="$V_LDFLAGS -arch i386  -mmacosx-version-min=10.4"
                  V_CCLDFLAGS32="LDFLAGS='-arch i386 -mmacosx-version-min=10.4' CFLAGS='-arch i386'"
-                 V_CCOPT="$V_CCOPT -arch i386 -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
+                 V_CCOPT="$V_CCOPT -arch i386"
               elif [[ -d /Developer/SDKs/MacOSX10.5.sdk ]] ; then
                  V_LDFLAGS="$V_LDFLAGS -arch i386  -mmacosx-version-min=10.5"
                  V_CCLDFLAGS32="LDFLAGS='-arch i386 -mmacosx-version-min=10.5' CFLAGS='-arch i386'"
-                 V_CCOPT="$V_CCOPT -arch i386 -isysroot /Developer/SDKs/MacOSX10.5.sdk"
+                 V_CCOPT="$V_CCOPT -arch i386"
               elif [[ -d /Developer/SDKs/MacOSX10.6.sdk ]] ; then
                  V_LDFLAGS="$V_LDFLAGS -arch i386  -mmacosx-version-min=10.6"
                  V_CCLDFLAGS32="LDFLAGS='-arch i386 -mmacosx-version-min=10.6' CFLAGS='-arch i386'"
