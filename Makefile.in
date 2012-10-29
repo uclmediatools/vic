@@ -96,7 +96,7 @@ INCLUDE = $(INCLUDE_MISC) $(INCLUDE_GRABBER) $(INCLUDE_TK) $(INCLUDE_TCL) \
 	$(INCLUDE_X11) $(MD_INC) -Icodec/jpeg -Icodec/p64 -I. 
 DEFINE = @DEFS@ @V_DEFINE@ -DED_YBITS=$(ED_YBITS) -DSIGRET=@V_SIGRET@ -DNLAYER=8 -D_GNU_SOURCE
 BFLAGS = $(DEFINE) $(INCLUDE)
-CFLAGS = $(CCOPT) $(BFLAGS) -Wno-write-strings 
+CFLAGS = $(CCOPT) $(BFLAGS) -Wno-write-strings -fpermissive
 
 #
 # Remember to add a dependency if you add any tcl sources here.
