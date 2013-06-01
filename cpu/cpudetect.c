@@ -406,8 +406,8 @@ static void check_os_katmai_support( void )
       exc_fil = SetUnhandledExceptionFilter(win32_sig_handler_sse);
       __asm __volatile ("xorps %xmm0, %xmm0");
       SetUnhandledExceptionFilter(exc_fil);
-      if ( gCpuCaps.hasSSE ) // mp_msg(MSGT_CPUDETECT,MSGL_V, "yes.\n" );
-      else // mp_msg(MSGT_CPUDETECT,MSGL_V, "no!\n" );
+      /*if ( gCpuCaps.hasSSE ) // mp_msg(MSGT_CPUDETECT,MSGL_V, "yes.\n" );
+      //else mp_msg(MSGT_CPUDETECT,MSGL_V, "no!\n" );*/
    }
 #elif defined(__linux__)
 #if defined(_POSIX_SOURCE) && defined(X86_FXSR_MAGIC)

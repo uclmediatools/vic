@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1993-1994 Regents of the University of California.
+ * Copyright (c) 1993-1994 The Regents of the University of California.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,27 +10,23 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by the University of
- *      California, Berkeley and the Network Research Group at
- *      Lawrence Berkeley Laboratory.
- * 4. Neither the name of the University nor of the Laboratory may be used
- *    to endorse or promote products derived from this software without
- *    specific prior written permission.
+ * 3. Neither the names of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+ * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
+
 static const char rcsid[] =
     "@(#) $Header$ (LBL)";
 
@@ -108,9 +104,9 @@ int XShmPutImage(Display*, Drawable, GC, XImage*, int, int, int, int,
 
 #include <dvp.h>
 
-char *ddrawErrorString(HRESULT rc);
+const char *ddrawErrorString(HRESULT rc);
 
-static totalPixelsDrawn = 0.0;
+static double totalPixelsDrawn = 0.0;
 
 DDrawVideoImage::MonitorList DDrawVideoImage::monitors_;
 HWND DDrawVideoImage::appMainWindow_;
@@ -996,12 +992,16 @@ static DWORD exceptionFilter(LPEXCEPTION_POINTERS p)
 
 void DDrawImageMonitor::releaseSurface()
 {
+#ifdef _MSC_VER
     __try {
+#endif
 	ULONG oldRefCount = imageSurface_->Release();
 //	debug_msg("oldRefCount=%d\n", oldRefCount);
+#ifdef _MSC_VER
     } 
     __except(exceptionFilter(GetExceptionInformation())) {
     }
+#endif
     imageSurface_ = 0;
 }
 
@@ -1313,12 +1313,7 @@ void DDrawVideoImage::putimage(Display* dpy, Window window, GC gc,
     {
 	DDrawImageMonitor *m = *it;
 
-	__try {
-	    
-	    m->putimage(hWnd, sx, sy, x, y, w, h);
-	} 
-	__except(exceptionFilter(GetExceptionInformation())) {
-	}	    
+	m->putimage(hWnd, sx, sy, x, y, w, h);
     }
 }
 
@@ -1679,16 +1674,16 @@ void CaptureWindow::capture(u_int8_t* frm)
 
 #ifdef USE_DDRAW
 
-char *ddrawErrorString(HRESULT rc)
+const char *ddrawErrorString(HRESULT rc)
 {
-	char *mesg;
+	const char *mesg;
 	switch (rc)
 	{
     case DD_OK:
         mesg = "DD_OK";
         break;
     case DDERR_ALREADYINITIALIZED:
-        mesg = "DDERR_ALREADYINITIALIZED";
+        return( "DDERR_ALREADYINITIALIZED");
         break;
     case DDERR_BLTFASTCANTCLIP:
         mesg = "DDERR_BLTFASTCANTCLIP";

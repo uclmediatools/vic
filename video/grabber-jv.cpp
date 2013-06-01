@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1993-1994 Regents of the University of California.
+ * Copyright (c) 1993-1994 The Regents of the University of California.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,26 +10,21 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by the University of
- *      California, Berkeley and the Network Research Group at
- *      Lawrence Berkeley Laboratory.
- * 4. Neither the name of the University nor of the Laboratory may be used
- *    to endorse or promote products derived from this software without
- *    specific prior written permission.
+ * 3. Neither the names of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+ * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef lint
@@ -141,7 +136,7 @@ protected:
 	void setsize(int w, int h);
 };
 
-class Jv411Grabber : public JvCIFGrabber {
+class Jv420Grabber : public JvCIFGrabber {
     protected:
 	virtual void setsize(int xsize, int ysize);
 };
@@ -164,7 +159,7 @@ JvDevice::JvDevice(const char* s) : InputDevice(s)
 void JvDevice::j300(int v)
 {
 	attributes_ = (v == 0) ? "format { jpeg } size { small large }" :
-		"format { 411 422 jpeg } size { small large cif }";
+		"format { 420 422 jpeg } size { small large cif }";
 }
 
 int JvDevice::command(int argc, const char*const* argv)
@@ -176,8 +171,8 @@ int JvDevice::command(int argc, const char*const* argv)
 			o = new JvJpegGrabber;
 		else if (strcmp(fmt, "422") == 0)
 			o = new Jv422Grabber;
-		else if (strcmp(fmt, "411") == 0)
-			o = new Jv411Grabber;
+		else if (strcmp(fmt, "420") == 0)
+			o = new Jv420Grabber;
 		else if (strcmp(fmt, "cif") == 0)
 			o = new JvCIFGrabber;
 		if (o != 0)
@@ -631,9 +626,9 @@ void JvCIFGrabber::saveblks(const u_char* in)
 	}
 }
 
-void Jv411Grabber::setsize(int w, int h)
+void Jv420Grabber::setsize(int w, int h)
 {
-	set_size_411(w, h);
+	set_size_420(w, h);
 }
 JvJpegGrabber::JvJpegGrabber() : q_(50)
 {

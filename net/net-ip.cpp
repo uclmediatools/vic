@@ -10,27 +10,23 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by the University of
- *      California, Berkeley and the Network Research Group at
- *      Lawrence Berkeley Laboratory.
- * 4. Neither the name of the University nor of the Laboratory may be used
- *    to endorse or promote products derived from this software without
- *    specific prior written permission.
+ * 3. Neither the names of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+ * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
+
 static const char rcsid[] =
     "@(#) $Header$ (LBL)";
 
@@ -40,6 +36,9 @@ static const char rcsid[] =
 #ifdef WIN32
 #include <io.h>
 #define close closesocket
+extern "C" {
+char *find_win32_interface(const char *addr, int ttl);
+}
 #else
 #include <sys/param.h>
 #include <sys/socket.h>
@@ -120,6 +119,7 @@ class IPNetwork : public Network {
 	virtual int dorecv(u_char* buf, int len, Address &from, int fd);
 	int open(const char * host, int port, int ttl);
 	int close();
+	void bufsize(int size = 1024 * 1024);
 	int localname(sockaddr_in*);
 	int openssock(Address & addr, u_short port, int ttl);
 	int disconnect_sock(int fd);
@@ -192,6 +192,11 @@ int IPNetwork::command(int argc, const char*const* argv)
 			return (TCL_OK);
 		}
 	} else if (argc == 3) {
+		if (strcmp(argv[1], "bufsize") == 0) {
+			int size = atoi(argv[2]);
+			bufsize(size);
+			return (TCL_OK);
+		}
 		if (strcmp(argv[1], "loopback") == 0) {
 			char c = atoi(argv[2]);
 			if (setsockopt(ssock_, IPPROTO_IP, IP_MULTICAST_LOOP,
@@ -303,6 +308,59 @@ int IPNetwork::close()
 	return (0);
 }
 
+void IPNetwork::bufsize(int bufsize)
+{
+	int min_bufsize = 32;
+	int ret;
+	int s;
+#if defined WIN32 || WIN64
+	int ss = sizeof(s);
+#else
+	u_int ss = sizeof(s);
+#endif
+
+	if (ssock_ < 0 || rsock_ < 0) {
+		return;
+	}
+
+	s = bufsize;
+	do {
+		ret = setsockopt(ssock_, SOL_SOCKET, SO_SNDBUF,
+				 (char *)&s, sizeof(s));
+		s /= 2;
+	} while (ret < 0 && s >= min_bufsize);
+
+	s = bufsize;
+	do {
+		ret = setsockopt(rsock_, SOL_SOCKET, SO_RCVBUF,
+				 (char *)&s, sizeof(s));
+		s /= 2;
+	} while (ret < 0 && s >= min_bufsize);
+
+	s = 0;
+	if (getsockopt(ssock_, SOL_SOCKET, SO_SNDBUF, (char*) &s, &ss) < 0) {
+		perror("getsockopt(SO_SNDBUF)");
+	} else {
+		if (s < min_bufsize) {
+			fprintf(stderr,"Socket send buffer is only %d bytes.\n", s);
+		} else {
+			debug_msg("Socket send buffer is %d bytes.\n", s);
+		}
+	}
+
+
+	if (getsockopt(rsock_, SOL_SOCKET, SO_RCVBUF, (char*) &s, &ss) < 0) {
+		perror("getsockopt(SO_RCVBUF)");
+	} else {
+		if (s < min_bufsize) {
+			fprintf(stderr, "Socket receive buffer is only %d bytes.\n", s);
+		} else {
+			debug_msg("Socket receive buffer is %d bytes.\n", s);
+		}
+	}
+
+}
+
 int IPNetwork::localname(sockaddr_in* p)
 {
 	memset((char *)p, 0, sizeof(*p));
@@ -313,19 +371,24 @@ int IPNetwork::localname(sockaddr_in* p)
 	int len = sizeof(*p), result =0;
 #endif
 
-	if ((result = getsockname(ssock_, (struct sockaddr *)p, &len)) < 0) {
-		perror("getsockname");
-		p->sin_addr.s_addr = 0;
-		p->sin_port = 0;
-	}
 	// Use Local interface name if already set via command line
 	if (local_preset_) {
 		printf("localname:Using manually assigned src address: %s\n", (const char*)local_);
 		p->sin_addr.s_addr=(IPAddress&)local_;
+		debug_msg("Setting localname from cmd line:%s\n",(const char*)local_);
 		return (0);
 	}
 
+	if ((result = getsockname(ssock_, (struct sockaddr *)p, &len)) < 0) {
+	        debug_msg("getsockname failed, perror following:");
+		perror("getsockname");
+		p->sin_addr.s_addr = 0;
+		p->sin_port = 0;
+	} else 
+	        debug_msg("getsockname succeeded sin_addr.s_addr:%x(%s)\n",p->sin_addr.s_addr,inet_ntoa(p->sin_addr));
+
 	if (p->sin_addr.s_addr == 0) {
+		debug_msg("getsockname returned 0 so resorting to gethostname()\n");
 		p->sin_addr.s_addr = LookupLocalAddr();
 		result = ((p->sin_addr.s_addr != 0) ? (0) : (-1));
 	}
@@ -348,7 +411,7 @@ void IPNetwork::reset()
 int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, Address & local)
 {
 	int fd;
-	struct sockaddr_in sin;
+        struct sockaddr_in sin;
 
 	u_int32_t g_addri = (IPAddress&)g_addr;
 	u_int32_t g_addri_ssm = (IPAddress&)s_addr_ssm;
@@ -409,6 +472,7 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
 		if (bind(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
 			sin.sin_addr.s_addr = INADDR_ANY;
 			if (bind(fd, (struct sockaddr*)&sin, sizeof(sin)) < 0) {
+                                debug_msg("Error binding Recv mcast socket\n");
 				perror("bind");
 				exit(1);
 			}
@@ -436,7 +500,6 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
                         exit (1);
                 }
         } else
-                        
 #endif /* IP_ADD_SOURCE_MEMBERSHIP */
 		{
 				/* 
@@ -477,9 +540,10 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
 		 */
 		sin.sin_addr.s_addr = locali;
 		if (bind(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
+                        debug_msg("Error binding Recv ucast socket\n");
 			perror("bind");
-            ::close(fd);
-            return (-1);
+                        ::close(fd);
+                        return (-1);
 		}
 		/*
 		 * Despite several attempts on our part to get this fixed,
@@ -498,27 +562,16 @@ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, A
 		sin.sin_port = 0;
 		sin.sin_addr.s_addr = g_addri;
 		connect(fd, (struct sockaddr *)&sin, sizeof(sin));
+		
+		
 #endif
 	}
-	/*
-	 * XXX don't need this for the session socket.
-	 */	
-	int bufsize = 80 * 1024;
-	if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, (char *)&bufsize,
-			sizeof(bufsize)) < 0) {
-		bufsize = 32 * 1024;
-		if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, (char *)&bufsize,
-				sizeof(bufsize)) < 0)
-			perror("SO_RCVBUF");
-	}
-
 	return (fd);
 }
 
 int IPNetwork::openssock(Address & addr, u_short port, int ttl)
 {
 	int fd;
-//	struct sockaddr_in sin;
 
 	u_int32_t addri = (IPAddress&)addr;
 
@@ -558,6 +611,7 @@ int IPNetwork::openssock(Address & addr, u_short port, int ttl)
 	if (bind(fd, (struct sockaddr *)&sin_, sizeof(sin_)) < 0) {
 		sin_.sin_port = 0;
 		if (bind(fd, (struct sockaddr *)&sin_, sizeof(sin_)) < 0) {
+          debug_msg("Error binding send socket\n");
 		  perror("bind");
 		  exit(1);
 		}
@@ -581,19 +635,6 @@ int IPNetwork::openssock(Address & addr, u_short port, int ttl)
 		exit(1);
 	}
 #endif
-	memset((char *)&sin_, 0, sizeof(sin_));
-	sin_.sin_family = AF_INET;
-	sin_.sin_port = port;
-	sin_.sin_addr.s_addr = addri;
-
-    /* Connect() is useful for localname() to find the interface addr
-	 * being used. Also because of a problem with OSX we disconnect
-	 * this socket once localname() has found out the ip addr of the iface 
-	 */
-	if (connect(fd, (struct sockaddr *)&sin_, sizeof(sin_)) < 0) {
-		perror("connect");
-		exit(1);
-	}
 	if (IN_CLASSD(ntohl(addri))) {
 #ifdef IP_ADD_MEMBERSHIP
 		char c;
@@ -640,17 +681,6 @@ not compiled with support for IP multicast\n\
 you must specify a unicast destination\n");
 		exit(1);
 #endif
-	}
-	/*
-	 * XXX don't need this for the session socket.
-	 */
-	int bufsize = 80 * 1024;
-	if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, (char *)&bufsize,
-		       sizeof(bufsize)) < 0) {
-		bufsize = 48 * 1024;
-		if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, (char *)&bufsize,
-			       sizeof(bufsize)) < 0)
-			perror("SO_SNDBUF");
 	}
 	return (fd);
 }

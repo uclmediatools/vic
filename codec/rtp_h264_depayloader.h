@@ -24,9 +24,9 @@
 
 extern "C"
 {
-#include "avcodec.h"
-#include "avformat.h"
-#include "base64.h"
+#include "libavcodec/avcodec.h"
+#include "libavformat/avformat.h"
+#include "libavutil/base64.h"
 #include "packetbuffer.h"
 //#include "rtp_internal.h"
 //#include "mpegts.h"
@@ -86,6 +86,8 @@ class H264Depayloader
     RTP/H264 specific private data.
 */
   private:
+    int aggregate_pkt; // Count of mbits for decoding IOCOM H.264 
+
     void h264_free_extradata(void *d);
     void *h264_new_extradata();
     void sdp_parse_fmtp_config_h264(AVCodecContext *codec, /*AVStream * stream,*/

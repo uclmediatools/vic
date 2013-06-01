@@ -1,5 +1,5 @@
 #
-# Copyright (c) 1993-1995 Regents of the University of California.
+# Copyright (c) 1993-1995 The Regents of the University of California.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -10,27 +10,21 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. All advertising materials mentioning features or use of this software
-#    must display the following acknowledgement:
-#	This product includes software developed by the Computer Systems
-#	Engineering Group at Lawrence Berkeley Laboratory.
-# 4. Neither the name of the University nor of the Laboratory may be used
-#    to endorse or promote products derived from this software without
-#    specific prior written permission.
+# 3. Neither the names of the copyright holders nor the names of its
+#    contributors may be used to endorse or promote products derived from
+#    this software without specific prior written permission.
 #
-# THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-# SUCH DAMAGE.
-#
-# @(#) $Header$ (LBL)
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+# IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
 #
 
 proc get-playout src {
@@ -215,7 +209,7 @@ proc info_update { w src } {
 	if { $note != "" } {
 		set bg [resource infoHighlightColor]
 	} else {
-		set bg [resource background]
+		set bg [$w.title.srcid cget -bg]
 	}
 	$w.title.note configure -background $bg
 }
@@ -601,8 +595,8 @@ proc create_info_window src {
 	frame $p
 
 	set m $p.mb.menu
-	menubutton $p.mb -text Stats... -menu $m -relief raised -width 8 \
-		-font $f
+	menubutton $p.mb -text Stats -menu $m -relief raised -width 8 \
+		-font $f -indicatoron 1
 	menu $m
 	$m add command -label RTP -command "create_rtp_window $src" -font $f
 	$m add command -label Decoder \
@@ -697,10 +691,15 @@ proc create_mtrace_window {src dir} {
 	}
 
 	global V
-	if {$dir=="to"} {
-		set cmd "|mtrace [$V(data-net) interface] [$src addr] [$V(data-net) addr]"
+	if [file executable /usr/sbin/mtrace] {
+		set mtrace_prog /usr/sbin/mtrace
 	} else {
-		set cmd "|mtrace [$src addr] [$V(data-net) addr]"
+		set mtrace_prog mtrace
+	}
+	if {$dir=="to"} {
+		set cmd "|$mtrace_prog [$V(data-net) interface] [$src addr] [$V(data-net) addr]"
+	} else {
+		set cmd "|$mtrace_prog [$src addr] [$V(data-net) addr]"
 	}
 	if [catch "open {$cmd} r" fd] {
 		$w.t.text insert end "mtrace error: $fd"

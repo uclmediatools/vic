@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1993-1994 Regents of the University of California.
+ * Copyright (c) 1993-1994 The Regents of the University of California.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,26 +10,21 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by the University of
- *      California, Berkeley and the Network Research Group at
- *      Lawrence Berkeley Laboratory.
- * 4. Neither the name of the University nor of the Laboratory may be used
- *    to endorse or promote products derived from this software without
- *    specific prior written permission.
+ * 3. Neither the names of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+ * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef lint
@@ -98,9 +93,9 @@ class VLCIFGrabber : public VLGrabber {
 	virtual void saveblks(const u_char* in);
 };
 
-class VL411Grabber : public VLCIFGrabber {
+class VL420Grabber : public VLCIFGrabber {
     public:
-	VL411Grabber(vlDevice&);
+	VL420Grabber(vlDevice&);
     protected:
 	virtual void setsize(int xsize, int ysize);
 };
@@ -134,7 +129,7 @@ vlDevice::vlDevice(const char* name, VLDev device,
 	}
 	char* cp = new char[80 + nport * (VL_NAME_SIZE + 1)];
 	attributes_ = cp;
-	strcpy(cp, "format { 411 422 } size { small cif } port { ");
+	strcpy(cp, "format { 420 422 } size { small cif } port { ");
 	cp += strlen(cp);
 	*cp++ = ' ';
 	for (int i = 0; i < nport; ++i) {
@@ -163,8 +158,8 @@ int vlDevice::command(int argc, const char*const* argv)
 			TclObject* o = 0;
 			if (strcmp(argv[2], "422") == 0)
 				o = new VLGrabber(*this);
-			else if (strcmp(argv[2], "411") == 0)
-				o = new VL411Grabber(*this);
+			else if (strcmp(argv[2], "420") == 0)
+				o = new VL420Grabber(*this);
 			else if (strcmp(argv[2], "cif") == 0)
 				o = new VLCIFGrabber(*this);
 			if (o != 0)
@@ -562,7 +557,7 @@ void VLCIFGrabber::setsize(int w, int h)
 	set_size_cif(w, h);
 }
 
-/* 411 */
+/* 420 */
 inline void 
 VLCIFGrabber::saveblk(const u_char* in, u_char* yp, u_char* up,
 		      u_char* vp, int stride, int is)
@@ -647,12 +642,12 @@ void VLCIFGrabber::saveblks(const u_char* in)
 	}
 }
 
-VL411Grabber::VL411Grabber(vlDevice& device)
+VL420Grabber::VL420Grabber(vlDevice& device)
 	: VLCIFGrabber(device)
 {
 }
 
-void VL411Grabber::setsize(int w, int h)
+void VL420Grabber::setsize(int w, int h)
 {
-	set_size_411(w, h);
+	set_size_420(w, h);
 }

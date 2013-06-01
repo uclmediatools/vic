@@ -1,5 +1,6 @@
 /*
- * Copyright (c) Jim Lowe, 1995, All rights reserved.
+ * Copyright (c) 1995 Jim Lowe
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -9,22 +10,20 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by Jim Lowe
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
+ * 3. Neither the names of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+ * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
@@ -76,7 +75,7 @@ class SpigotGrabber : public Grabber {
 
 	int video_format_;	/* video input format: NTSC or PAL */
 	int port_;		/* video input port */
-	int coder_format_;	/* 411, 422, or cif */
+	int coder_format_;	/* 420, 422, or cif */
 	int vtof_;		/* Vertical top of frame (lines to skip) */
 	int secam_;		/* secam mode ? */
 	u_int basewidth_;	/* Height of frame to be captured */
@@ -89,7 +88,7 @@ class SpigotGrabber : public Grabber {
 	int	hskip_;		/* amount of input to toss on each line */
 };
 
-static const int	f_411 = 0;	/* coder_format_s */
+static const int	f_420 = 0;	/* coder_format_s */
 static const int	f_422 = 1;
 static const int	f_cif = 2;
 
@@ -118,7 +117,7 @@ SpigotDevice::SpigotDevice(const char* nickname, const char *devname):
 {
 	if(access(devname, R_OK) == 0)
 		attributes_ = "\
-format {422 411} \
+format {422 420} \
 size {normal small cif} \
 port {RCA S-Video}";
 	else
@@ -141,7 +140,7 @@ int SpigotDevice::command(int argc, const char*const* argv)
 SpigotGrabber::SpigotGrabber(const char* name, const char* format)
 {
 	coder_format_ = -1;
-	if(!strcmp(format, "411")) coder_format_ = f_411;
+	if(!strcmp(format, "420")) coder_format_ = f_420;
 	if(!strcmp(format, "422")) coder_format_ = f_422;
 	if(!strcmp(format, "cif")) coder_format_ = f_cif;
 	if(coder_format_ == -1) {
@@ -212,8 +211,8 @@ void SpigotGrabber::setsize()
 		}
 		hskip_ = 0;
 		break;
-	case f_411:
-		set_size_411(w, h);
+	case f_420:
+		set_size_420(w, h);
 		hwrap_ = 0;
 		loff_ = 0;
 		coff_ = 0;

@@ -1,27 +1,80 @@
 <HTML>
 <HEAD>
-<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=windows-1252">
-<META NAME="Generator" CONTENT="Microsoft Word 97">
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html">
 <TITLE>vic Change Log</TITLE>
-<META NAME="Template" CONTENT="D:\Program Files\Microsoft Office\Office\html.dot">
 </HEAD>
 <BODY LINK="#0000ff" VLINK="#800080">
-
 <P><!-- @(#) $Header$ (LBL)--></P>
 <H1>vic: Change History</H1>
+<H3>v2.8ucl-1.5.0</H3>
+<ul>
+  <li>License normalization in source code files to GPL compatible licenses.
+  <ul>
+    <li>changes were predominately from 4 clause BSD licenses to a 3 clause BSD licenses
+    <li>original authors and/or organizations were contacted for permission
+  </ul>
+  <li>New Visual Studio 2008 solution and project files
+  <li>Tcl ZipVFS support (for GPL VIC builds on Windows)
+  <ul>
+    <li>Tcl file embedding approach where zip file containing the Tcl files is appended to vic.exe.
+  </ul>
+  <li>DirectShow grabber (grabber-win32DS.cpp) changes:
+  <ul>
+    <li>support for more Media Subtypes (4 YUV formats in addition to the existing RGB24) and thus more capture devices.
+    <li>Explicit DV Video Decoder filter support added
+    <ul>
+      <li>Full, half or quarter DV resolutions are now set with DV filter, so non-full size captures now work
+      <li>480i DV vertical flashing line issue has been resolved by avoiding the use of RGB24 which introduces excessive number of colourspace conversions
+    </ul>
+    <li>Add support to allow GraphEdit's connect to remote graphs feature with VIC's DirectShow filter
+    <ul>
+      <li>Windows 7 and Vista, will need to issue "regsvr32 proppage.dll" in the directory where graphedt.exe is located for the connect to remote graph feature to work
+      <li>Can also use the free GraphStudio from <a href="http://blog.monogram.sk/janos/tools/monogram-graphstudio/">http://blog.monogram.sk/janos/tools/monogram-graphstudio/</a>
+    </ul>
+  </ul>
+  <li>OSX now Leopard support (ie Activates 32bit build (-arch i386) as VIC uses deprecated Quicktime Capture interface which are only available in 32bit)
+  <li>New grabber-file - which supports raw YUV video files as video source
+  <li>New grabber that uses the native API from the Blackmagic Design DeckLink SDK for Windows, MacOS and Linux
+  <li>libv4l support added for the V4L and V4L2 grabbers
+  <li>Added iocom patches to repository against svn ffmpeg
+</ul>
+<H3>v2.8ucl-1.4.0beta</H3><UL>
+  <li> H.264 decode functionality for IOCOM's IG2 default (non-standard) H.264 streams. Currently required patches ffmpeg h264 decoder.
+  <li> New Video window right-click menu {d.kosovic@UQ}
+  <li> Added tcl.m4 for support of Tcl/Tk 8.5 {d.kosovic@UQ)
+</ul>
+<H3>v2.8ucl-1.3.1</H3><UL>
+  <li> New Codecs: <ul>
+    <li>H.264 compliant with RFC3640 {NCHC, UCL}
+    <li>MPEG4 compliant with RFC3894 {NCHC}
+   </ul>
+   <li>Advanced rendering {NCHC}
+   <ul><li>Full-Screen mode, Video window scaling in software 
+     <li>X11 XVideo - hardware scaling/colourspace conversion
+     <li>Windows DirectDraw rendering {ANL}
+     <li>Windows Direct Show Grabber {Mark Petrovick}</ul>
+   <li>Source-Specific Multicast (SSM) support
+   <li>MacOSX<ul>
+     <li>Aqua Tcl/Tk support {NCHC}
+     <li>Mac video capture support {MASH}</ul>
+   <li>AccessGrid features {ANL}<ul>
+     <li>Autoplace controls
+     <li>Optional window menus/border - use z/Z key
+     <li>Site identifier signalling</ul>
+</ul>
 <H3>v2.8ucl-1.2.1</H3><UL>
 <li> Critical Windows fix for DirectX grabber - it was crashing on startup when no devices present.
 </ul>
 
 <H3>v2.8ucl-1.2.0</H3><UL>
-<li> New codec h261as - contributed by Rhys Hawkins (Rhys.Hawkins@anu.edu.au) at Australian National University (ANU). This codec enables interoperability with Rhys’ VP tool available to the AccessGrid community.  Use “configure –disable-h261as” to disable it. Built also for Windows. 
+<li> New codec h261as - contributed by Rhys Hawkins (Rhys.Hawkins@anu.edu.au) at Australian National University (ANU). This codec enables interoperability with Rhys' VP tool available to the AccessGrid community.  Use <b>configure --disable-h261as</b> to disable it. 
 <li>Removed win32/vergen.bat from repository as it is auto-generated. 
 <li>Added NSIS installer script to auto-generate installer (requires NSIS installed on Windows, http://nsis.sourceforge.net). 
 <li>Added image overlay support. This allows a PPM image to be used as an institutional logo, (for example, added sample UCL logo file: ucl_logo.ppm), which can be placed and moved over the video window. Overlays work with all grabbers and codecs. The logo image can also be specified as a vic resource (in .vic.tcl) so that it is made available at startup. Also, tweaked error return values from oTcl to C++, so that all errors relating to overlays are handled gracefully. 
 <li>Added STATIC_BUILD to preprocessor to get rid of nuisance MS Linker warnings (tcl/tk libraries are statically built and linked). 
-<li>Got rid of 422 format in the Windows DirectX/WDM grabber. 422 was crashing vic as it doesn’t return any grabber (not implemented). Maybe we should write one. 
+<li>Got rid of 422 format in the Windows DirectX/WDM grabber. 422 was crashing vic as it doesn't return any grabber (not implemented). Maybe we should write one. 
 <li>Added a LICENSE file. 
-<li>Added “focus” property in the generic tcl mk.entry() function that builds text entry widgets. 
+<li>Added focus property in the generic tcl mk.entry() function that builds text entry widgets. 
 <li>Fixed isset call to is_set() - isset is defined elsewhere in Linux 
 <li>Added more graceful error handling so Vic will bring up a warning dialogue instead of crashing. 
 <li>Added Source-Specific Multicast (SSM) support - tested IPv4 on WinXP. IPv6 on Linux not fully tested. 
@@ -431,7 +484,7 @@ unless it receives a lbl message from rat to say you are sending audio.
 </I><LI>Fixed bug that caused first value of a plotted statistic to be way too large so that the autoscaling left all the other data unreadable. </LI>
 <LI>[internal] Don't include <I>osfcn.h</I> anywhere. </LI>
 <LI>Added PAL selectors to window size menu. Suggested by Toerless Eckert (Toerless.Eckert@Informatik.Uni-Erlangen.de). </LI>
-<LI>[internal] Factored out code shared among grabbers for capturing input video to an onscreen window. In the new model, tcl creates the capture window and installs it in the grabber. Revamped parallax and xv grabbers to use this approach. Added supported to xv grabber for CIF and 411 capture. </LI>
+<LI>[internal] Factored out code shared among grabbers for capturing input video to an onscreen window. In the new model, tcl creates the capture window and installs it in the grabber. Revamped parallax and xv grabbers to use this approach. Added supported to xv grabber for CIF and 420 capture. </LI>
 <LI>Improved configure search scheme for locating X libraries and includes. Thanks to input from Toerless Eckert (Toerless.Eckert@Informatik.Uni-Erlangen.de). </LI>
 <LI>[internal] Added RGB_Converter class to be shared among grabbers that capture from the frame buffer in RGB format and convert to YUV. </LI>
 <LI>[internal] Removed grabber-tx.cc from distribution since it's been superseded by grabber-xv.cc. </LI>
@@ -444,7 +497,7 @@ unless it receives a lbl message from rat to say you are sending audio.
 <UL>
 </I><LI>Fixed bug where failure to connect to jvdriver on decode-side resulted in a core dump. </LI>
 <LI>Added Vic.sdesList so you can specify which RTP SDES items you want to see in the info window. Default is "cname tool email mesg". Also, display srcid in the info window. </LI>
-<LI>[internal] Added tcl hook so that decoder can assert that stream parameters have changed in a way that might affect the rendering modules. For example, the RTP/JPEG type might change causing the output format to change from YUV-422 to YUV-411. In this case, we might have disable hardware decoding (because the hardware doesn't support 411) or reallocate the software renderers because they depend on the decimation factor. </LI>
+<LI>[internal] Added tcl hook so that decoder can assert that stream parameters have changed in a way that might affect the rendering modules. For example, the RTP/JPEG type might change causing the output format to change from YUV-422 to YUV-420. In this case, we might have disable hardware decoding (because the hardware doesn't support 420) or reallocate the software renderers because they depend on the decimation factor. </LI>
 <LI>[internal] Changed interface between vic and jpeg/h.261 decoders with respect to bookkeeping blocks that changed. Now pass in a table that is filled in by the decoder, instead of using "render" call backs. </LI>
 <LI>Fixed bugs with -A. "-A rtp" didn't work; added back "-A vic" for backward compatibility. Reported by Toerless Eckert (Toerless.Eckert@Informatik.Uni-Erlangen). </LI>
 <LI>Added Use-Hardware button (in display panel) to control whether we use hardware decoding when possible. Created Vic.useHardwareDecode resource to set initial disposition of Use-Hardware button. </LI>

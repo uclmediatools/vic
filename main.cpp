@@ -10,26 +10,21 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- 	California, Berkeley and the Network Research Group at
- *	Lawrence Berkeley Laboratory.
- * 4. Neither the name of the University nor of the Laboratory may be used
- *    to endorse or promote products derived from this software without
- *    specific prior written permission.
+ * 3. Neither the names of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+ * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 static const char rcsid[] =
@@ -141,7 +136,7 @@ usage(char *szOffending)
     the connection identifier (an even number between 1024-65536).\n\n\
     For more details see:\n\
     http://www-mice.cs.ucl.ac.uk/multimedia/software/vic/faq.html\n\n\
-Options: vic [-HPs] [-A nv|ivs|rtp] [-B maxbps] [-C conf]\n\
+Options: vic [-HPs] [-A nv|ivs|rtp] [-B maxbps] [-b netBufferSize] [-C conf]\n\
 	\t[-c ed|gray|od|quantize] [-D device] [-d display]\n\
 	\t[-f bvc|cellb|h261|jpeg|nv|mpeg4|h264] [-F maxfps] [-i ifAddr ] [-I channel]\n\
 	\t[-K key ] [-L flowLabel (ip6 only)] [-l (creates log file)]\n\
@@ -438,13 +433,13 @@ SimplePutsCmd(ClientData clientData, Tcl_Interp *interp, int argc, const char **
 }
 #endif
 
-void print_input_device_details(Tcl& tcl)
+void print_capabilities_xml(Tcl& tcl)
 {
 #ifdef WIN32
-	tcl.CreateCommand("puts", SimplePutsCmd, NULL);
+		tcl.CreateCommand("puts", SimplePutsCmd, NULL);
 #endif
 
-	tcl.evalc("print_input_device_details");
+	tcl.evalc("print_capabilities_xml");
 	exit(0);
 }
 
@@ -532,7 +527,7 @@ int main(int argc, const char** argv)
 
 	// Option list; If letter is followed by ':' then it takes an argument
 	const char* options = 
-		"A:B:C:c:D:d:e:E:f:F:HI:i:j:K:lL:M:m:N:n:o:Pq:QrsST:t:U:u:vV:w:x:X:y";
+		"A:B:b:C:c:D:d:e:E:f:F:HI:i:j:K:lL:M:m:N:n:o:Pq:QrsST:t:U:u:vV:w:x:X:y";
 	/* process display and window (-use) options before initialising tcl/tk */
 	char buf[256], tmp[256];
 	const char *display=0, *use=0;
@@ -549,8 +544,9 @@ int main(int argc, const char** argv)
 		else if (op == '?')
 			usage(NULL);
 	}
-
-
+#ifdef USE_ZVFS
+	Tcl_FindExecutable((char*)argv[0]);
+#endif
 	Tcl::init("vic");
 	Tcl& tcl = Tcl::instance();
 
@@ -566,7 +562,7 @@ int main(int argc, const char** argv)
 		   then set display to localhost:0.0
 		*/
 		if (XOpenDisplay(display)==NULL) {
-      			if ((display != NULL) && (strcmp(display,":0.0") == 0)) {
+			if ((display != NULL) && (strcmp(display,":0.0") == 0)) {
 				strcpy(buf,"-name vic -display ");
 				gethostname(&buf[19],sizeof(buf)-19);
 				strcat(buf,":0");
@@ -574,7 +570,7 @@ int main(int argc, const char** argv)
 		} else sprintf (buf, "-name vic");
 	} else sprintf (buf, "-name vic -dispay %s", display);
 #else
-   	sprintf(buf,display?
+	sprintf(buf,display?
 		    "-name vic -display %s" :
 		    "-name vic",
 		  display);
@@ -633,6 +629,10 @@ int main(int argc, const char** argv)
 
 		case 'B':
 			tcl.add_option("maxbw", optarg);
+			break;
+
+		case 'b':
+			tcl.add_option("netBufferSize", optarg);
 			break;
 
 		case 'C':
@@ -694,7 +694,6 @@ int main(int argc, const char** argv)
 			tcl.add_option("logFrameRate", "true");
 			// Uses auto generated filename of the form:
 			// {UNIX seconds}{host IP}{username}
-			//tcl.add_option("logFrameFile", optarg);
 			break;
 
 		case 'L':
@@ -729,9 +728,9 @@ int main(int argc, const char** argv)
 			tcl.add_option("jpegQfactor", optarg);
 			break;
 
-        case 'Q':
-            print_input_device_details(tcl);
-            break;
+		case 'Q':
+			print_capabilities_xml(tcl);
+			break;
 
 		case 'r':
 			tcl.add_option("relateInterface","true");

@@ -73,6 +73,15 @@ int PacketBuffer::getTotalPkts()
 }
 
 //return bitstream , corrupted packets will be ignored
+char *PacketBuffer::getPacket(int n)
+{
+  if (isDataRecv[n]) 
+    return packets[n]->getData();
+  else
+    debug_msg("packet %d\n", n);	
+    
+}
+
 DataBuffer *PacketBuffer::getStream()
 {
     if (totalPkts == 0)

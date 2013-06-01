@@ -1,5 +1,5 @@
 #
-# Copyright (c) 1995 Regents of the University of California.
+# Copyright (c) 1995 The Regents of the University of California.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -10,25 +10,21 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. All advertising materials mentioning features or use of this software
-#    must display the following acknowledgement:
-#	This product includes software developed by the Network Research
-#	Group at Lawrence Berkeley National Laboratory.
-# 4. Neither the name of the University nor of the Laboratory may be used
-#    to endorse or promote products derived from this software without
-#    specific prior written permission.
+# 3. Neither the names of the copyright holders nor the names of its
+#    contributors may be used to endorse or promote products derived from
+#    this software without specific prior written permission.
 #
-# THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-# SUCH DAMAGE.
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+# IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
 #
 
 # $dst has form addr/port/fmt/ttl (last two optional)
@@ -36,7 +32,7 @@
 proc net_open_ip { sessionType session dst } {
 	global V numLayers IPaddrFamily
 
-        set layer 0
+	set layer 0
 	set c $V(class)
 	set dst [split $dst /]
 	set n [llength $dst]
@@ -101,6 +97,14 @@ proc net_open_ip { sessionType session dst } {
 		warn "Problem opening $IPaddrFamily data socket"
 		exit 1
 	}
+
+	# for the data sockets only, set the
+	# size of the send/recv buffers
+	set netBufferSize [resource netBufferSize]
+	if {$netBufferSize > 0 } {
+		$dn bufsize $netBufferSize
+	}
+
 	$session data-net $dn
 	if { $sessionType != "nv" } {
 		if { $sessionType == "ivs" } {
@@ -126,14 +130,14 @@ proc net_open_ip { sessionType session dst } {
 		    set offset [lindex $oct 3]
 		    set separator .
 	    }
-        		
-        while { $numLayers > $layer } {
+
+	    while { $numLayers > $layer } {
 			incr port 
 			incr layer
-			incr offset
-			set dn [new network $IPaddrFamily]
-			$dn open $base$separator$offset $port $ttl
-			$session data-net $dn $layer
+			if { [$dn ismulticast] } { incr offset }
+			set dnl [new network $IPaddrFamily]
+			$dnl open $base$separator$offset $port $ttl
+			$session data-net $dnl $layer
 
 			if { $sessionType != "nv" } {
 				if { $sessionType == "ivs" } {
@@ -145,7 +149,7 @@ proc net_open_ip { sessionType session dst } {
 				$cn open $base$separator$offset $port $ttl
 				$session ctrl-net $cn $layer
 			}
-		}
+	    }
 	}
 
 	#

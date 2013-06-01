@@ -22,6 +22,7 @@
  * used in advertising or otherwise to promote the sale, use or other dealings
  * in this Software without prior written authorization from Apple Computer.
  */
+
 /*
  * Copyright (c) 1995 The Regents of the University of California.
  * All rights reserved.
@@ -34,25 +35,21 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- * 	This product includes software developed by the Network Research
- * 	Group at Lawrence Berkeley National Laboratory.
- * 4. Neither the name of the University nor of the Laboratory may be used
- *    to endorse or promote products derived from this software without
- *    specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * 3. Neither the names of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+ * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef lint
@@ -172,7 +169,7 @@ protected:
 	RGB_Converter* converter_;
 };
 
-class Plx411Grabber : public Plx422Grabber {
+class Plx420Grabber : public Plx422Grabber {
 public:
 	virtual void setsize();
 };
@@ -204,7 +201,7 @@ static class PlxDevice : public InputDevice {
 PlxDevice::PlxDevice(const char *s) : InputDevice(s) 
 {
 	attributes_ = "\
-format { 422 411 jpeg } \
+format { 422 420 jpeg } \
 size { small large cif } \
 port { Input-1 Input-2 }";
 }
@@ -219,8 +216,8 @@ int PlxDevice::command(int argc, const char*const* argv)
 			o = new PlxJpegGrabber;
 		else if (strcmp(fmt, "422") == 0)
 			o = new Plx422Grabber;
-		else if (strcmp(fmt, "411") == 0)
-			o = new Plx411Grabber;
+		else if (strcmp(fmt, "420") == 0)
+			o = new Plx420Grabber;
 		else if (strcmp(fmt, "cif") == 0)
 			o = new PlxCIFGrabber;
 		if (o != 0)
@@ -498,14 +495,14 @@ int Plx422Grabber::grab()
 	return (target_->consume(&f));
 }
 
-void Plx411Grabber::setsize()
+void Plx420Grabber::setsize()
 {
 	int w = capwin_->basewidth() / decimate_;
 	int h = capwin_->baseheight() / decimate_;
 	capwin_->setsize(w, h);
-	converter_ = RGB_Converter_411::instance();
+	converter_ = RGB_Converter_420::instance();
 	image_ = StandardVideoImage::allocate(capwin_->tkwin(), w, h);
-	set_size_411(w, h);
+	set_size_420(w, h);
 	allocref();
 }
 
@@ -514,9 +511,9 @@ void PlxCIFGrabber::setsize()
 	int w = 2 * 352 / decimate_;
 	int h = 2 * 288 / decimate_;
 	capwin_->setsize(w, h);
-	converter_ = RGB_Converter_411::instance();
+	converter_ = RGB_Converter_420::instance();
 	image_ = StandardVideoImage::allocate(capwin_->tkwin(), w, h);
-	set_size_411(w, h);
+	set_size_cif(w, h);
 	allocref();
 }
 

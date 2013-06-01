@@ -30,6 +30,9 @@ void Deinterlace::init(int width, int height)
 	context = NULL;
     }
 
+    width_ = width;
+    height_ = height;
+
     int flags = 0;
     flags |= (cpu_flags & FF_CPU_MMX ? PP_CPU_CAPS_MMX : 0);
     flags |= (cpu_flags & FF_CPU_MMXEXT ? PP_CPU_CAPS_MMX2 : 0);
@@ -57,7 +60,7 @@ void Deinterlace::render(void *buf, int width, int height)
 	src[2] = src[1] + framesize/4;
 
 
-        pp_postprocess(src, srcStride,
+        pp_postprocess((const uint8_t**)src, srcStride,
                    src, srcStride,
                    width, height,
                    NULL,  0,

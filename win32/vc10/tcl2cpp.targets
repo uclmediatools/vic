@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PropertyPageSchema
+      Include="$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml" />
+    <AvailableItemName
+      Include="tcl2cpp">
+      <Targets>_tcl2cpp</Targets>
+    </AvailableItemName>
+  </ItemGroup>
+  <UsingTask
+    TaskName="tcl2cpp"
+    TaskFactory="XamlTaskFactory"
+    AssemblyName="Microsoft.Build.Tasks.v4.0">
+    <Task>$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml</Task>
+  </UsingTask>
+  <Target
+    Name="_tcl2cpp"
+    BeforeTargets="$(tcl2cppBeforeTargets)"
+    AfterTargets="$(tcl2cppAfterTargets)"
+    Condition="'@(tcl2cpp)' != ''"
+    DependsOnTargets="$(tcl2cppDependsOn);Computetcl2cppOutput"
+    Outputs="%(tcl2cpp.Outputs)"
+    Inputs="%(tcl2cpp.Identity);%(tcl2cpp.AdditionalDependencies);$(MSBuildProjectFile)">
+    <ItemGroup
+      Condition="'@(SelectedFiles)' != ''">
+      <tcl2cpp
+        Remove="@(tcl2cpp)"
+        Condition="'%(Identity)' != '@(SelectedFiles)'" />
+    </ItemGroup>
+    <ItemGroup>
+      <tcl2cpp_tlog
+        Include="%(tcl2cpp.Outputs)"
+        Condition="'%(tcl2cpp.Outputs)' != '' and '%(tcl2cpp.ExcludedFromBuild)' != 'true'">
+        <Source>@(tcl2cpp, '|')</Source>
+      </tcl2cpp_tlog>
+    </ItemGroup>
+    <Message
+      Importance="High"
+      Text="%(tcl2cpp.ExecutionDescription)" />
+    <WriteLinesToFile
+      Condition="'@(tcl2cpp_tlog)' != '' and '%(tcl2cpp_tlog.ExcludedFromBuild)' != 'true'"
+      File="$(IntDir)$(ProjectName).write.1.tlog"
+      Lines="^%(tcl2cpp_tlog.Source);@(tcl2cpp_tlog-&gt;'%(Fullpath)')" />
+    <tcl2cpp
+      Condition="'@(tcl2cpp)' != '' and '%(tcl2cpp.ExcludedFromBuild)' != 'true'"
+      CommandLineTemplate="%(tcl2cpp.CommandLineTemplate)"
+      OutputFileName="%(tcl2cpp.OutputFileName)"
+      Pass="%(tcl2cpp.Pass)"
+      AdditionalOptions="%(tcl2cpp.AdditionalOptions)"
+      Inputs="%(tcl2cpp.Identity)" />
+  </Target>
+  <PropertyGroup>
+    <ComputeLinkInputsTargets>
+            $(ComputeLinkInputsTargets);
+            Computetcl2cppOutput;
+          </ComputeLinkInputsTargets>
+    <ComputeLibInputsTargets>
+            $(ComputeLibInputsTargets);
+            Computetcl2cppOutput;
+          </ComputeLibInputsTargets>
+  </PropertyGroup>
+  <Target
+    Name="Computetcl2cppOutput"
+    Condition="'@(tcl2cpp)' != ''">
+    <ItemGroup>
+      <tcl2cppDirsToMake
+        Condition="'@(tcl2cpp)' != '' and '%(tcl2cpp.ExcludedFromBuild)' != 'true'"
+        Include="%(tcl2cpp.Outputs)" />
+      <Link
+        Include="%(tcl2cppDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <Lib
+        Include="%(tcl2cppDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <ImpLib
+        Include="%(tcl2cppDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+    </ItemGroup>
+    <MakeDir
+      Directories="@(tcl2cppDirsToMake-&gt;'%(RootDir)%(Directory)')" />
+  </Target>
+</Project>

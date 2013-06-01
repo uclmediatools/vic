@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1993-1994 Regents of the University of California.
+ * Copyright (c) 1993-1994 The Regents of the University of California.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,26 +10,21 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by the University of
- *      California, Berkeley and the Network Research Group at
- *      Lawrence Berkeley Laboratory.
- * 4. Neither the name of the University nor of the Laboratory may be used
- *    to endorse or promote products derived from this software without
- *    specific prior written permission.
+ * 3. Neither the names of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+ * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef lint
@@ -106,9 +101,9 @@ protected:
 	void blankrow(u_char* bp) const;
 };
 
-class VLOutboard_411 : public VLOutboard {
+class VLOutboard_420 : public VLOutboard {
 public:
-	VLOutboard_411(VLOutputDevice& d) : VLOutboard(d, FT_YUV_411) {}
+	VLOutboard_420(VLOutputDevice& d) : VLOutboard(d, FT_YUV_420) {}
 protected:
 	virtual void scaleframe(u_char* bp, const u_char* frm) const;
 	virtual void upscaleframe(u_char* bp, const u_char* frm) const;
@@ -167,8 +162,8 @@ int VLOutputDevice::command(int argc, const char*const* argv)
 				tcl.result(p->name());
 				return (TCL_OK);
 			}
-			if (strcmp(argv[2], "411") == 0) {
-				VLOutboard* p = new VLOutboard_411(*this);
+			if (strcmp(argv[2], "420") == 0) {
+				VLOutboard* p = new VLOutboard_420(*this);
 				tcl.result(p->name());
 				return (TCL_OK);
 			}
@@ -491,7 +486,7 @@ void VLOutboard_422::upscaleframe(u_char* bp, const u_char* frm) const
 	}
 }
 
-void VLOutboard_411::fill_two_rows(u_char* bp, const u_char* yp,
+void VLOutboard_420::fill_two_rows(u_char* bp, const u_char* yp,
 				   const u_char* up, const u_char* vp,
 				   int skip0, int skip1, int os) const
 {
@@ -520,7 +515,7 @@ void VLOutboard_411::fill_two_rows(u_char* bp, const u_char* yp,
 	}
 }
 
-void VLOutboard_411::scaleframe(u_char* bp, const u_char* frm) const
+void VLOutboard_420::scaleframe(u_char* bp, const u_char* frm) const
 {
 	int voff = iv0_ * width_;
 	register const u_char* yp = frm + ih0_ + voff;
@@ -547,7 +542,7 @@ void VLOutboard_411::scaleframe(u_char* bp, const u_char* frm) const
 	}
 }
 
-void VLOutboard_411::fill_four_rows(u_char* bp, const u_char* yp,
+void VLOutboard_420::fill_four_rows(u_char* bp, const u_char* yp,
 				    const u_char* up, const u_char* vp,
 				    int skip0, int skip1, int os) const
 {
@@ -596,7 +591,7 @@ void VLOutboard_411::fill_four_rows(u_char* bp, const u_char* yp,
 	}
 }
 
-void VLOutboard_411::upscaleframe(u_char* bp, const u_char* frm) const
+void VLOutboard_420::upscaleframe(u_char* bp, const u_char* frm) const
 {
 	int voff = iv0_ * width_;
 	register const u_char* yp = frm + ih0_ + voff;

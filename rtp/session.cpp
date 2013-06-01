@@ -1,4 +1,4 @@
-/*-
+/*
  * Copyright (c) 1993-1994 The Regents of the University of California.
  * All rights reserved.
  *
@@ -10,14 +10,9 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by the University of
- *      California, Berkeley and the Network Research Group at
- *      Lawrence Berkeley Laboratory.
- * 4. Neither the name of the University nor of the Laboratory may be used
- *    to endorse or promote products derived from this software without
- *    specific prior written permission.
+ * 3. Neither the names of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -33,6 +28,7 @@
  *
  * $Id$
  */
+
 static const char rcsid[] =
     "@(#) $Header$ (LBL)";
 
@@ -41,7 +37,7 @@ static const char rcsid[] =
 #include <errno.h>
 #include <string.h>
 #ifdef WIN32
-extern "C" int getpid();
+#include <process.h>
 #endif
 #include "source.h"
 #include "vic_tcl.h"
@@ -82,13 +78,12 @@ int VideoSessionManager::check_format(int fmt) const
 		case RTP_PT_H263:
 		case RTP_PT_MPEG4:
 		case RTP_PT_H264:
+		case RTP_PT_H264_IOCOM:
 		case RTP_PT_H263P:
 		case RTP_PT_LDCT:
 		case RTP_PT_PVH:
 	        case RTP_PT_DV:
-#ifdef USE_H261AS
 		case RTP_PT_H261AS:
-#endif 
 		return (1);
 	}
 	return (0);
@@ -599,7 +594,14 @@ int SessionManager::build_sdes(rtcphdr* rh, Source& ls)
 		nameslot = RTCP_SDES_NAME;
 		noteslot = RTCP_SDES_NAME;
 	}
+
 	u_int seq = (++sdes_seq_) & 0x7;
+	// if loc is set as a tcl resource, change to use 10 different packets
+	// with loc on the last even one
+	const char* loc = ls.sdes(RTCP_SDES_LOC);
+	if ( loc && *loc )
+		seq = sdes_seq_ % 10;
+
 	switch (seq) {
 
 	case 0:  case 4:
@@ -611,6 +613,9 @@ int SessionManager::build_sdes(rtcphdr* rh, Source& ls)
 		break;
 	case 6:
 		p = build_sdes_item(p, RTCP_SDES_TOOL, ls);
+		break;
+	case 8:
+		p = build_sdes_item(p, RTCP_SDES_LOC, ls);
 		break;
 	default:
 		p = build_sdes_item(p, nameslot, ls);

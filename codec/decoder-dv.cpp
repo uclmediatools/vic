@@ -95,7 +95,7 @@ DVDecoder::DVDecoder() : Decoder(0),
 	stat_[STAT_BAD_HEADER].name = "H261-Bad-Header";
 	nstat_ = 6;
 
-	decimation_ = 411;
+	decimation_ = 420;
 
 	/*
 	 * Assume PAL. 

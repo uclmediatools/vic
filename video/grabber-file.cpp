@@ -360,7 +360,7 @@ void FileYuvGrabber::setsize()
 	width_ = 352;
 	height_ = 288;
 
-	set_size_411(width_, height_);
+	set_size_420(width_, height_);
 	//crinit(width_, height_);
 	allocref();
 }

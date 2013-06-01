@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1993-1995 Regents of the University of California.
+ * Copyright (c) 1993-1995 The Regents of the University of California.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,27 +10,23 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by the University of
- *      California, Berkeley and the Network Research Group at
- *      Lawrence Berkeley Laboratory.
- * 4. Neither the name of the University nor of the Laboratory may be used
- *    to endorse or promote products derived from this software without
- *    specific prior written permission.
+ * 3. Neither the names of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+ * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
+
 static const char rcsid[] =
     "@(#) $Header$ (LBL)";
 
@@ -46,6 +42,12 @@ static const char rcsid[] =
 #undef Status
 #include "vic_tcl.h"
 #include <sys/types.h>
+#ifdef USE_ZVFS
+#include "zvfs.h"
+extern "C" {
+	char *TclSetPreInitScript(char *string);
+}
+#endif
 
 Tcl Tcl::instance_;
 
@@ -66,7 +68,42 @@ void Tcl::init(Tcl_Interp* tcl, const char* application)
 {
 	instance_.tcl_ = tcl;
 	instance_.application_ = application;
-	Tcl_Init(tcl); //SV-XXX: FreeBSD
+
+#ifdef USE_ZVFS
+	Zvfs_Init(tcl);
+	Zvfs_Mount(tcl, (char *)Tcl_GetNameOfExecutable(), "/zvfs");
+	Tcl_SetVar2(tcl, "env", "TCL_LIBRARY", "/zvfs/tcl", TCL_GLOBAL_ONLY);
+	Tcl_SetVar2(tcl, "env", "TK_LIBRARY", "/zvfs/tk", TCL_GLOBAL_ONLY);
+
+	Tcl_SetVar(tcl, "auto_path", "/zvfs/tcl /zvfs/tk /zvfs/vic", TCL_GLOBAL_ONLY);
+	Tcl_SetVar(tcl, "tcl_libPath", "/zvfs/tcl /zvfs/tk /zvfs/vic", TCL_GLOBAL_ONLY);
+	TclSetPreInitScript("\n"
+"proc tclInit {} {\n"
+"  global tcl_libPath tcl_library env\n"
+"  rename tclInit {}\n"
+"  set tcl_library [set env(TCL_LIBRARY)]\n"
+"  set tclfile [file join $tcl_library init.tcl]\n"
+"  if {[file exists $tclfile]} {\n"
+"    set errors {}\n"
+"    if {[catch {uplevel #0 [list source $tclfile]} msg opts]} {\n"
+"      append errors \"$tclfile: $msg\n\"\n"
+"      append errors \"[dict get $opts -errorinfo]\n\"\n"
+"      set msg \"Can't find a usable init.tcl in the following location: \n\"\n"
+"      append msg \"$errors\n\n\"\n"
+"      append msg \"This probably means that VIC wasn't built properly.\n\"\n"
+"      error $msg\n"
+"    }\n"
+"  }\n"
+"}\n"
+"tclInit");
+#endif
+	//Tk_InitConsoleChannels(tcl);
+	Tcl_Init(tcl);
+
+#ifdef USE_ZVFS
+	Tcl_SetVar(tcl, "auto_path", "/zvfs/tcl /zvfs/tk /zvfs/vic", TCL_GLOBAL_ONLY);
+	Tcl_SetVar(tcl, "tcl_libPath", "/zvfs/tcl /zvfs/tk /zvfs/vic", TCL_GLOBAL_ONLY);
+#endif
 }
 
 void Tcl::evalc(const char* s)
@@ -92,7 +129,11 @@ void Tcl::eval(char* s)
 	if (st != TCL_OK) {
 		int n = strlen(application_) + strlen(s);
 		char* wrk = new char[n + 80];
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION < 5)
 		sprintf(wrk, "tkerror \"%s: %s\"", application_, s);
+#else
+		sprintf(wrk, "bgerror \"%s: %s\"", application_, s);
+#endif
 		Tcl_GlobalEval(tcl_, wrk);
 		delete[] wrk; //SV-XXX: Debian
 		//exit(1);

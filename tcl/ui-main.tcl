@@ -1,5 +1,5 @@
 #
-# Copyright (c) 1993-1995 Regents of the University of California.
+# Copyright (c) 1993-1995 The Regents of the University of California.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -10,27 +10,21 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. All advertising materials mentioning features or use of this software
-#    must display the following acknowledgement:
-#	This product includes software developed by the Network Research
-#	Group at Lawrence Berkeley National Laboratory.
-# 4. Neither the name of the University nor of the Laboratory may be used
-#    to endorse or promote products derived from this software without
-#    specific prior written permission.
+# 3. Neither the names of the copyright holders nor the names of its
+#    contributors may be used to endorse or promote products derived from
+#    this software without specific prior written permission.
 #
-# THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-# SUCH DAMAGE.
-#
-# @(#) $Header$ (LBL)
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+# IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
 #
 
 set updated 0
@@ -174,7 +168,7 @@ proc init_visual w {
 	set dither [option get . dither Vic]
 	if { $dither == "best" } {
 		set dither ed
-	}    
+	}
 	set V(gamma) [option get . gamma Vic]
 	if { $dither == "dither" } {
 		set dither od
@@ -252,14 +246,14 @@ proc init_gui {} {
 		}
 		puts stderr \
 		    "vic: warning: ran out of colors; using private colormap"
-                destroy .top
+		destroy .top
 		frame .top -visual $V(visual) -colormap new
 		if ![init_color] {
 			puts stderr "vic: internal error: no colors"
 			exit 2
 		}
 	}
-    
+
 	build.srclist
 
 	set_rate_vars $V(session)
@@ -267,7 +261,7 @@ proc init_gui {} {
 	#
 	# emulate implicit keyboard focus
 	#
-	bind . <Enter> { focus %W }
+	#bind . <Enter> { focus %W }
 	#wm focusmodel . active
 	bind . <q> { adios }
 	bind . <Control-c> { adios }
@@ -339,7 +333,7 @@ proc add_active src {
 proc rm_active src {
 	global active V
 	unset active($src)
-        invoke_source_callback deactivate $src
+	invoke_source_callback deactivate $src
 	if { ![yesno relateInterface] && [array size active] == 0 } {
 		pack forget $V(grid)
 		destroy $V(grid)
@@ -376,7 +370,7 @@ proc set_rate_vars src {
 
 #XXX set guys in stat window too!
 }
-	
+
 #
 # Called when use clicks on thumbnail video window.
 # Create a new window only if the window already
@@ -441,7 +435,7 @@ proc update_source_info src {
 		set info $msg
 	}
 	set src_info($src) $info
-	
+
 	# only call change_name when name really changes
 	if { ![info exists src_name($src)] || "$src_name($src)" != "$name" } {
 		set src_name($src) $name
@@ -574,7 +568,7 @@ proc build.src { w src color } {
 	set win_is_slow($stamp.video) 1
 
 	# disable xvideo fro stamp video
-	attach_window $src $stamp.video false 
+	attach_window $src $stamp.video false
 
     if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
         pack $stamp.video -side left -padx 2 -pady 2
@@ -589,13 +583,13 @@ proc build.src { w src color } {
         pack $stamp -side left -fill y
         frame $w.r
     }
-        
-	global V	
+
+	global V
 # Show sender window as raised
 	if { $src == [srctab local] } {
-	  frame $w.r.cw -relief raised -borderwidth 2
+		frame $w.r.cw -relief groove -borderwidth 2 -bg gray20
 	} else {
-	  frame $w.r.cw -relief groove -borderwidth 2
+		frame $w.r.cw -relief groove -borderwidth 2
 	}
 
 	pack $w.r.cw -side left -expand 1 -fill both -anchor w -padx 0
@@ -839,19 +833,19 @@ proc update_decoder src {
 	# check for Decoder control window
 	set w .decoder_control$src
 	if [winfo exists $w] {
-#		destroy $w	
+#		destroy $w
 
 		#update
 		set fmt [rtp_format $src]
 		if [winfo exists $w.tb] {
 
-			if { $fmt != "pvh" } { 
+			if { $fmt != "pvh" } {
 				pack forget $w.tb
 			} else {
 				pack $w.tb -before $w.dismiss  -fill x
 			}
 		} else {
-			if { $fmt == "pvh" } { 
+			if { $fmt == "pvh" } {
 
 				global numDecoderLayers numLayers decoderLayerValue
 
@@ -894,7 +888,7 @@ proc change_format src {
 		# don't do anything
 		#
 		return
-	}    
+	}
 	set L $win_list($src)
 	detach_renderers $src
 	set extoutList [extout_detach_src $src]
@@ -917,7 +911,7 @@ proc change_format src {
 # affect the choice of renderer.  For example, when a jpeg stream
 # changes from type-0 to type-1 we might have to revert from
 # hardware to software decoding, or we might have to reallocate
-# a 422 renderer as a 411 renderer.  This never needs to happen
+# a 422 renderer as a 420 renderer.  This never needs to happen
 # for most stream types (i.e., because the decimation factor is fixed).
 #
 proc decoder_changed d {
@@ -969,7 +963,7 @@ proc change_name src {
 }
 
 #
-# Remove a src from the active senders list. 
+# Remove a src from the active senders list.
 #
 proc deactivate src {
 	global ftext btext ltext fpshat bpshat lhat shat win_list V
@@ -983,7 +977,7 @@ proc deactivate src {
 				# and if so, bump window
 				destroy_userwin $w
 			} else {
-				# thumbnail - just detach 
+				# thumbnail - just detach
 				detach_window $src $w
 			}
 		}
@@ -1037,7 +1031,7 @@ proc update_rate src {
 
 	set fps $fpshat($key)
 	set bps $bpshat($key)
-	
+
 	# csp
 	catch {
 	if {[resource logFrameRate] == "true"} {

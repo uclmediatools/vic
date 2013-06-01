@@ -19,7 +19,7 @@
 \**************************************************************************/
 
 #ifndef COIN_INTTYPES_H
-#define COIN_INTTYPES_H
+#define _INTTYPES_H
 
 /*
   This file defines the following types:

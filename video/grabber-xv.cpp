@@ -10,25 +10,21 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- * 	This product includes software developed by the Network Research
- * 	Group at Lawrence Berkeley National Laboratory.
- * 4. Neither the name of the University nor of the Laboratory may be used
- *    to endorse or promote products derived from this software without
- *    specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * 3. Neither the names of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+ * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  *
  * Derived from code written by Eric Anderson, UCSD Computer Systems Lab,
  * 4/92 and hacked on by Jon Kay, Vach Kompella, Kevin Fall.
@@ -163,7 +159,7 @@ protected:
 	virtual void setsize();
 };
 
-class Xv411Grabber : public XvGrabber {
+class Xv420Grabber : public XvGrabber {
 protected:
 	virtual void setsize();
 };
@@ -178,8 +174,8 @@ static XvDevice xv_device("xv");
 
 XvDevice::XvDevice(const char* s) : InputDevice(s)
 {
-	/*XXX port & 411*/
-	attributes_ = "format { 422 411 } size { small large cif }";
+	/*XXX port & 420*/
+	attributes_ = "format { 422 420 } size { small large cif }";
 }
 
 int XvDevice::command(int argc, const char*const* argv)
@@ -360,18 +356,18 @@ void XvCIFGrabber::setsize()
 	int w = 2 * 352 / decimate_;
 	int h = 2 * 288 / decimate_;
 	capwin_->setsize(w, h);
-	capwin_->converter(RGB_Converter_411::instance());
-	set_size_411(w, h);
+	capwin_->converter(RGB_Converter_420::instance());
+	set_size_cif(w, h);
 	allocref();
 }
 
-void Xv411Grabber::setsize()
+void Xv420Grabber::setsize()
 {
 	int w = capwin_->basewidth() / decimate_;
 	int h = capwin_->baseheight() / decimate_;
 	capwin_->setsize(w, h);
-	capwin_->converter(RGB_Converter_411::instance());
-	set_size_411(w, h);
+	capwin_->converter(RGB_Converter_420::instance());
+	set_size_420(w, h);
 	allocref();
 }
 

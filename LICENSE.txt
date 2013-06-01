@@ -1,46 +1,259 @@
-The majority of the source is covered by:
+The majority of the source code is covered by a 3 clause BSD license which has been approved by the Open Source Initiative (OSI ) <http://www.opensource.org/> and is GNU GPL compatible. The files under the 3 clause BSD license come with  a number of different copyrights, the most common being by the Regents of the University of California.
 
-Copyright (c) 1995 The Regents of the University of California.
-All rights reserved.
+  Copyright (c) 1997-2009 University College London
+  Copyright (c) 1987-1998 The Regents of the University of California
+  Copyright (c) 2006 Luc Saillard
+  Copyright (c) 2004 EarthLink, Inc.
+  Copyright (c) 1998-1999 Marcus Meissner and
+                          The Regents of the University of Erlangen
+  Copyright (c) 1998 Luigi Rizzo
+  Copyright (c) 1996 John Brezak
+  Copyright (c) 1996 Isidor Kouvelas (University College London)
+  Copyright (c) 1995 Jim Lowe
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
-1. Redistributions of source code must retain the above copyright
-   notice, this list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright
-   notice, this list of conditions and the following disclaimer in the
-   documentation and/or other materials provided with the distribution.
-3. Neither the name of the University nor of the Laboratory may be used
-   to endorse or promote products derived from this software without
-   specific prior written permission.
+  All rights reserved.
 
-THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-SUCH DAMAGE.
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are met:
 
-Note that BSD license from University of California has degreed that clause 3
-be deleted as per;
-ftp://ftp.cs.berkeley.edu/pub/4bsd/README.Impt.License.Change
-However alot of the existing still has the old style license.
+  1. Redistributions of source code must retain the above copyright notice,
+     this list of conditions and the following disclaimer.
+  2. Redistributions in binary form must reproduce the above copyright notice,
+     this list of conditions and the following disclaimer in the documentation
+     and/or other materials provided with the distribution.
+  3. Neither the names of the copyright holders nor the names of its
+     contributors may be used to endorse or promote products derived from this
+     software without specific prior written permission.
 
-For information clause 3:
-3. All advertising materials mentioning features or use of this software
-   must display the following acknowledgement:
-     This product includes software developed by the Network Research
-     Group at Lawrence Berkeley National Laboratory.
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+  IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+  PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  POSSIBILITY OF SUCH DAMAGE.
 
+CellB portions of this source code (codec) are Copyright (c) 1992-1993 Sun
+Microsystems, Inc. All rights reserved. Internet Engineering Task Force(IETF) RFC2029 states:
+  It is the viewpoint of Sun Microsystems, Inc, that CellB is
+  publically available for use without any license.
 
-The remainder of the source code is covered by: 
-BSD style licence from University College London. Other source files are under a new-BSD licence from external institutions including Stichting Mathematisch Centrum, Amsterdam, Sun Microsystems Inc, Xerox Corporation, Apple Computer Inc, University of British Columbia, and WIDE Project. Others files are under the old-BSD license from Argonne National Laboratory/University of Chicago. Some files are freely licensed by the Internet Software Consortium. 
+H.263 portions of this source code (codec) are Copyright (c) 1995-1996 Telenor R&D. All rights reserved.
 
-In addition to the license holders above there copyright holders including; Bell Communications Research, RSA Data Security, Inc. Nortel Networks, University of Sydney, Technische Universitaet Berlin, British Telecommunications Plc, Brook Milligan, Intel Corporation, HEWLETT-PACKARD COMPANY, Luigi Rizzo, University of Sydney Vislab, Software Research Associates, Inc, Telenor Research and Development.
+  Disclaimer of Warranty
+ 
+  These software programs are available to the user without any
+  license fee or royalty on an "as is" basis.  Telenor Research and
+  Development disclaims any and all warranties, whether express,
+  implied, or statuary, including any implied warranties or
+  merchantability or of fitness for a particular purpose.  In no
+  event shall the copyright-holder be liable for any incidental,
+  punitive, or consequential damages of any kind whatsoever arising
+  from the use of these programs.
+ 
+  This disclaimer of warranty extends to the user of these programs
+  and user's customers, employees, agents, transferees, successors,
+  and assigns.
+ 
+  Telenor Research and Development does not represent or warrant that
+  the programs furnished hereunder are free of infringement of any
+  third-party patents.
+ 
+  Commercial implementations of H.263, including shareware, are
+  subject to royalty fees to patent holders.  Many of these patents
+  are general enough such that they are unavoidable regardless of
+  implementation design.
+
+H.263+ portions of this source code (codec) are Copyright (c) 1995-1997 Telenor R&D, Norway and Copyright (C) 1997 University of British Columbia, Canada. All rights reserved.
+
+  Disclaimer of Warranty
+  
+  These software programs are available to the user without any license fee
+  or royalty on an "as is" basis. The University of British Columbia
+  disclaims any and all warranties, whether express, implied, or
+  statuary, including any implied warranties or merchantability or of
+  fitness for a particular purpose. In no event shall the
+  copyright-holder be liable for any incidental, punitive, or
+  consequential damages of any kind whatsoever arising from the use of
+  these programs.
+  
+  This disclaimer of warranty extends to the user of these programs and
+  user's customers, employees, agents, transferees, successors, and
+  assigns.
+  
+  The University of British Columbia does not represent or warrant that the
+  programs furnished hereunder are free of infringement of any
+  third-party patents.
+  
+  Commercial implementations of H.263, including shareware, are subject to
+  royalty fees to patent holders. Many of these patents are general
+  enough such that they are unavoidable regardless of implementation
+  design.
+
+H.263 decoder display routines for Win32 for tmndecode portions of this code are Copyright (c) Intel Corporation. All Rights Reserved
+  Permission is granted to use, copy and distribute the software in this
+  file for any purpose and without fee, provided, that the above
+  copyright notice and this statement appear in all copies.  Intel makes
+  no representations about the suitability of this software for any
+  purpose.  This software is provided "AS IS."
+  
+  Intel specifically disclaims all warranties, express or implied, and all
+  liability, including consequential and other indirect damages, for the
+  use of this software, including liability for infringement of any
+  proprietary rights, and including the warranties of merchantability and
+  fitness for a particular purpose.  Intel does not assume any
+  responsibility for any errors which may appear in this software nor any
+  responsibility to update it.
+
+JPEG portions of this code (codec/jpeg, video/jidctflt.c) are Copyright
+(c) 1991-1998 Thomas G. Lane.  All rights reserved.  This software is based in
+part on the work of the Independent JPEG Group.
+
+libraw1395 video capture portions of this code (video/grabber-linux1394.cpp) is Copyright (c) 2003 University of Sydney Vislab
+
+MD5 portions of this code are Copyright (c) 1991-1992 RSA Data Security,
+Inc.  All rights reserved.  This software is derived in part from the RSA Data
+Security, Inc. MD5 Message-Digest Algorithm.
+
+  License to copy and use this software is granted provided that it
+  is identified as the "RSA Data Security, Inc. MD5 Message-Digest
+  Algorithm" in all material mentioning or referencing this software
+  or this function.
+
+  License is also granted to make and use derivative works provided
+  that such works are identified as "derived from the RSA Data
+  Security, Inc. MD5 Message-Digest Algorithm" in all material
+  mentioning or referencing the derived work.
+
+  RSA Data Security, Inc. makes no representations concerning either
+  the merchantability of this software or the suitability of this
+  software for any particular purpose. It is provided "as is"
+  without express or implied warranty of any kind.
+
+  These notices must be retained in any copies of any part of this
+  documentation and/or software.
+
+Netvideo portions of this code (codec, render) are Copyright (c) 1992 Xerox Corporation. All rights reserved.
+
+    License is granted to copy, to use, and to make and to use derivative
+    works for research and evaluation purposes, provided that Xerox is
+    acknowledged in all documentation pertaining to any such copy or
+    derivative work. Xerox grants no other licenses expressed or implied.
+    The Xerox trade name should not be used in any advertising without its
+    written permission.
+
+    XEROX CORPORATION MAKES NO REPRESENTATIONS CONCERNING EITHER THE
+    MERCHANTABILITY OF THIS SOFTWARE OR THE SUITABILITY OF THIS SOFTWARE FOR
+    ANY PARTICULAR PURPOSE.  The software is provided "as is" without express
+    or implied warranty of any kind.
+
+    These notices must be retained in any copies of any part of this software.
+
+Parallax video portions of this code (video) are Copyright (c) 1995 Apple Computer, Inc.
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+    APPLE COMPUTER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+    IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+    Except as contained in this notice, the name of Apple Computer shall not be
+    used in advertising or otherwise to promote the sale, use or other dealings
+    in this Software without prior written authorization from Apple Computer.
+
+p x 64 portions of this code (codec/p64) are Copyright (c) 1990-1993 Andy C. Hung. All rights reserved.
+
+    PUBLIC DOMAIN LICENSE:  Stanford University Portable Video Research Group.
+    If you use this software, you agree to the following:  This program package
+    is purely experimental, and is licensed "as is".  Permission is granted to
+    use, modify, and distribute this program without charge for any purpose,
+    provided this license/ disclaimer notice appears in the copies.  No
+    warranty or maintenance is given, either expressed or implied.  In no event
+    shall the author(s) be liable to you or a third party for any special,
+    incidental, consequential, or other damages, arising out of the use or
+    inability to use the program for any purpose (or the loss of data), even if
+    we have been advised of such possibilities.  Any public reference or
+    advertisement of this source code should refer to it as the Portable Video
+    Research Group (PVRG) code, and not by any author(s) (or Stanford
+    University) name.
+
+RTP H264 portions of this code (codec) are based in part on FFmpeg which is covered by the GNU Lesser General Public License version 2.1.
+
+Tk portions of this code that provides functions that map color names to system color values (tkWinColor.c) is Copyright (c) 1995 Sun Microsystems, Inc and also Copyright (c) 1994 Software Research Associates, Inc.
+
+Video4Linux and derivative video portions of this code (video) are Copyright (c) 1997 Regents of Koji OKAMURA.  All rights reserved.
+
+Xv video capture portions of this code (video) are Copyright (c) 1994 Hewlett-Packard Company.
+
+YUV portions of this code (render) are Copyright (c) 1994 Hewlett-Packard
+Company.
+
+  To anyone who acknowledges that this file is provided "AS IS" without
+  any express or implied warranty: permission to use, copy, modify, and
+  distribute this  file for any purpose is hereby granted without fee, 
+  provided that the above copyright notice and this notice appears in all
+  copies, and that the name of Hewlett-Packard Company not be used in
+  advertising or publicity pertaining to distribution of the software 
+  without specific, written prior permission. Hewlett- Packard Company
+  makes no representations about the  suitability of this software for
+  any purpose.
+
+ZVFS portion of this code (zvfs.x - ZIP archive virtual filesystem for Tcl) is covered by a Tcl (BSD like) License.
+Copyright (c) 2000 D. Richard Hipp
+Copyright (c) 2007 PDQ Interfaces Inc.
+
+This software is copyrighted by the Regents of the University of
+California, Sun Microsystems, Inc., Scriptics Corporation, ActiveState
+Corporation PDQ Interfaces Inc and other parties.  The following terms
+apply to all files associated with the software unless explicitly
+disclaimed in individual files.
+
+The authors hereby grant permission to use, copy, modify, distribute,
+and license this software and its documentation for any purpose, provided
+that existing copyright notices are retained in all copies and that this
+notice is included verbatim in any distributions. No written agreement,
+license, or royalty fee is required for any of the authorized uses.
+Modifications to this software may be copyrighted by their authors
+and need not follow the licensing terms described here, provided that
+the new terms are clearly indicated on the first page of each file where
+they apply.
+
+IN NO EVENT SHALL THE AUTHORS OR DISTRIBUTORS BE LIABLE TO ANY PARTY
+FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES
+ARISING OUT OF THE USE OF THIS SOFTWARE, ITS DOCUMENTATION, OR ANY
+DERIVATIVES THEREOF, EVEN IF THE AUTHORS HAVE BEEN ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+
+THE AUTHORS AND DISTRIBUTORS SPECIFICALLY DISCLAIM ANY WARRANTIES,
+INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.  THIS SOFTWARE
+IS PROVIDED ON AN "AS IS" BASIS, AND THE AUTHORS AND DISTRIBUTORS HAVE
+NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
+MODIFICATIONS.
+
+GOVERNMENT USE: If you are acquiring this software on behalf of the
+U.S. government, the Government shall have only "Restricted Rights"
+in the software and related documentation as defined in the Federal 
+Acquisition Regulations (FARs) in Clause 52.227.19 (c) (2).  If you
+are acquiring the software on behalf of the Department of Defense, the
+software shall be classified as "Commercial Computer Software" and the
+Government shall have only "Restricted Rights" as defined in Clause
+252.227-7013 (c) (1) of DFARs.  Notwithstanding the foregoing, the
+authors grant the U.S. Government and others acting in its behalf
+permission to use and distribute the software in accordance with the
+terms specified in this license. 
 

@@ -189,7 +189,7 @@ update
 	update 
 
 	#XXX
-	set decimation 411
+	set decimation 420
 	global vicPriv
 	set target [$vicPriv(colorModel) renderer $w $decimation]
 	decoder target $target
@@ -224,7 +224,7 @@ proc init_local {} {
 	}
 }
 
-proc vdd_init_resources {} {
+proc init_resources {} {
 	option add Vdd.dither od startupFile
 }
 

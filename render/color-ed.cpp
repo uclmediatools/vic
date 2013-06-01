@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1993-1995 Regents of the University of California.
+ * Copyright (c) 1993-1995 The Regents of the University of California.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,26 +10,21 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by the University of
- *      California, Berkeley and the Network Research Group at
- *      Lawrence Berkeley Laboratory.
- * 4. Neither the name of the University nor of the Laboratory may be used
- *    to endorse or promote products derived from this software without
- *    specific prior written permission.
+ * 3. Neither the names of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+ * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef lint
@@ -192,15 +187,15 @@ protected:
 			     u_int width, u_int height) const;
 	void dither_up2_422(const u_char* frm, u_int off, u_int x,
 			    u_int width, u_int height) const;
-	void dither_411(const u_char* frm, u_int off, u_int x,
+	void dither_420(const u_char* frm, u_int off, u_int x,
 			u_int width, u_int height) const;
-	void dither_down2_411(const u_char* frm, u_int off, u_int x,
+	void dither_down2_420(const u_char* frm, u_int off, u_int x,
 			      u_int width, u_int height) const;
-	void dither_down4_411(const u_char* frm, u_int off, u_int x,
+	void dither_down4_420(const u_char* frm, u_int off, u_int x,
 			      u_int width, u_int height) const;
-	void dither_down_411(const u_char* frm, u_int off, u_int x,
+	void dither_down_420(const u_char* frm, u_int off, u_int x,
 			     u_int width, u_int height) const;
-	void dither_up2_411(const u_char* frm, u_int off, u_int x,
+	void dither_up2_420(const u_char* frm, u_int off, u_int x,
 			    u_int width, u_int height) const;
 };
 
@@ -220,23 +215,23 @@ int EDColorModel::command(int argc, const char*const* argv)
 void EDWindowRenderer::update()
 {
 	static EDMethod	methods[] = {
-		&EDWindowRenderer::dither_up2_411,
+		&EDWindowRenderer::dither_up2_420,
 		&EDWindowRenderer::dither_up2_422,
 		&EDWindowRenderer::dither_gray_up,
 		&EDWindowRenderer::dither_gray_up,
-		&EDWindowRenderer::dither_411,
+		&EDWindowRenderer::dither_420,
 		&EDWindowRenderer::dither_422,
 		&EDWindowRenderer::dither_gray,
 		&EDWindowRenderer::dither_gray,
-		&EDWindowRenderer::dither_down2_411,
+		&EDWindowRenderer::dither_down2_420,
 		&EDWindowRenderer::dither_down2_422,
 		&EDWindowRenderer::dither_gray_down,
 		&EDWindowRenderer::dither_gray_down,
-		&EDWindowRenderer::dither_down4_411,
+		&EDWindowRenderer::dither_down4_420,
 		&EDWindowRenderer::dither_down4_422,
 		&EDWindowRenderer::dither_gray_down,
 		&EDWindowRenderer::dither_gray_down,
-		&EDWindowRenderer::dither_down_411,
+		&EDWindowRenderer::dither_down_420,
 		&EDWindowRenderer::dither_down_422,
 		&EDWindowRenderer::dither_gray_down,
 		&EDWindowRenderer::dither_gray_down,
@@ -736,7 +731,7 @@ void EDWindowRenderer::dither_up2_422(const u_char* frm,
 #endif
 }
 
-void EDWindowRenderer::dither_411(const u_char* frm,
+void EDWindowRenderer::dither_420(const u_char* frm,
 				  u_int off, u_int x,
 				  u_int width, u_int height) const
 {
@@ -810,7 +805,7 @@ void EDWindowRenderer::dither_411(const u_char* frm,
 #endif
 }
 
-void EDWindowRenderer::dither_down2_411(const u_char* frm, u_int off, u_int x,
+void EDWindowRenderer::dither_down2_420(const u_char* frm, u_int off, u_int x,
 					u_int width, u_int height) const
 {
 #ifndef TESTING
@@ -903,7 +898,7 @@ void EDWindowRenderer::dither_down2_411(const u_char* frm, u_int off, u_int x,
 #endif
 }
 
-void EDWindowRenderer::dither_down4_411(const u_char* frm,
+void EDWindowRenderer::dither_down4_420(const u_char* frm,
 					u_int off, u_int x,
 					u_int width, u_int height) const
 {
@@ -970,7 +965,7 @@ void EDWindowRenderer::dither_down4_411(const u_char* frm,
 #endif
 }
 
-void EDWindowRenderer::dither_down_411(const u_char* frm,
+void EDWindowRenderer::dither_down_420(const u_char* frm,
 				       u_int off, u_int x,
 				       u_int width, u_int height) const
 {
@@ -1041,7 +1036,7 @@ void EDWindowRenderer::dither_down_411(const u_char* frm,
 #endif
 }
 
-void EDWindowRenderer::dither_up2_411(const u_char* frm,
+void EDWindowRenderer::dither_up2_420(const u_char* frm,
 				      u_int off, u_int x,
 				      u_int width, u_int height) const
 {

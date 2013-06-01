@@ -1,44 +1,100 @@
-Win32 build instruction written by Barz Hsu
+Win32 build instructions for Visual Studio 2008 & 2010
 
-Get and install the following:
-- The latest version of mingw from http://www.mingw.org/
-- Get nasm from http://www.kernel.org/pub/software/devel/nasm/binaries/win32/nasm-0.98.39-win32.zip - rename nasmw.exe to nasm.exe install it in the PATH for X264 build (see below).
 
-# Make FFmpeg DLL under Mingw 
-* check out ffmpeg
-svn co -r 7110 svn://svn.mplayerhq.hu/ffmpeg/trunk ffmpeg
+~~~~
+Non-GPL VIC (Release or Debug) version pre-requisites:
+~~~~
 
-./configure  --prefix=/tmp/ffmpeg --enable-mingw32 --enable-memalign-hack --e
-nable-swscaler --enable-gpl --enable-shared --disable-static
+- UCL Common Multimedia Library source code
+    http://mediatools.cs.ucl.ac.uk/nets/mmedia/wiki/SvnDev
 
-# Make X264 DLL under Mingw
-* check out x264
-svn co -r 600 svn://svn.videolan.org/x264/trunk x264 
-./configure --enable-shared
+- A recent Direct X SDK install
+    http://msdn.microsoft.com/en-us/directx/
 
-* patch Makefile for generating DLL
-add the 3-6 lines in SONAME targe
+- A recent ActiveTcl 8.5 install
+    http://www.activestate.com/activetcl/downloads/
 
-1: $(SONAME): .depend $(OBJS) $(OBJASM)
-2:        $(CC) -shared -o $@ $(OBJS) $(OBJASM) -Wl,-soname,$(SONAME) $(LDFLAGS)
-3: ifeq ($(SYS),MINGW)
-4:        $(CC) -shared -Wl,--output-def,libx264.def -o libx264.dll $(OBJS) $(OBJA
-SM)
-5:        lib /machine:i386 /def:libx264.def
-6: endif
+To build Non-GPL VIC with VS2008 or VS2010, select Release or Debug in the "Solutions Configuration" drop down menu, then click "Configuration Manger..." in the same menu and select Debug (nonGPL) or Release (nonGPL).
 
-# Copy DLL and LIB files to win32/lib
-./copy_dll.sh
 
-# Build VIC using Visual studio as normal. 
-~                                                                                                                                           
-~                                                                                                                                           
-~                                                                                                                                           
-~                                                                                                                                           
-~                          
-~
-~                                                                               
-~                                                                               
-~                                                                               
-~                                                                               
-~                    
+~~~~
+VIC GPL (Release or Debug) version pre-requisites:
+~~~~
+
+- All the non-GPL VIC prerequisites
+
+- Yasm assembler
+    http://www.tortall.net/projects/yasm/wiki/Download
+copy it to a directory in your PATH (e.g. C:\Windows) and rename it to yasm.exe
+
+- Info-ZIP 2.21
+   ftp://ftp.info-zip.org/pub/infozip/win32/zip232xn.zip
+
+Extract zip.exe from the above zip file and copy it into a directory in your PATH (e.g. C:\Windows).
+Note: ZIP 3.0 must not be used as it has a bug which prevents it from adjusting the ZIP offset of the zip file that gets appended to vic.exe.
+
+- MinGW and MSYS
+    http://www.mingw.org/
+
+- ffmpeg SVN revision 20462
+    svn checkout -r 20462 svn://svn.ffmpeg.org/ffmpeg/trunk ffmpeg
+
+- libswscale SVN revision 29824
+    svn checkout -r 29824 svn://svn.ffmpeg.org/mplayer/trunk/libswscale  ffmpeg/libswscale
+
+- x264-snapshot-20090708-2245
+    http://downloads.videolan.org/pub/videolan/x264/snapshots/
+
+- pthread-win32 2.8.0
+    http://sourceware.org/pthreads-win32/
+
+
+
+Please see "Preparing the MSys+MinGW system” and "Building FFmpeg SVN statically" links on the following page for instructions on how to setup MSys and MinGW for building FFmpeg :
+  http://ffmpeg.arrozcru.org/wiki/index.php
+
+
+On the MSYS command-line to build ffmpeg in the ffmpeg svn checkout folder, issue:
+
+./configure  --enable-memalign-hack --enable-gpl --enable-postproc --enable-w32threads
+make install
+
+
+On the MSYS command-line to build pthread-win32 2.8.0 in it's unpacked folder, issue:
+
+make clean GC-static
+cp -p pthread.h sched.h /usr/local/include/
+cp -p libpthreadGC2.a /usr/local/lib/
+
+
+On the MSYS command-line to build x264 in it's unpacked folder, issue:
+
+CFLAGS=-I/usr/local/include LDFLAGS=-L/usr/local/lib ./configure --disable-avis-input
+make
+make install
+
+Note: x264 must be built after pthread-win32 so that x264's configure can detect pthread support.
+
+
+VIC has an additional dependency on the MinGW zlib package which can be downloaded from:
+  http://sourceforge.net/projects/mingw/files/
+
+
+The Release GPL version of VIC will fail to link in VS2008 or VS2010 if the following isn't performed in the "Visual Studio 2008 (or 2010) Command Prompt" console:
+
+cd C:\MinGW\lib
+lib -remove:mbrtowc.o libmingwex.a
+lib -remove:wcrtomb.o libmingwex.lib
+
+Note: the last line has libmingwex.lib and the previous libmingwex.a 
+
+
+[Optional] to reduce the size of vic.exe, strip the debugging info from the MinGW, ffmpeg and x264 libraries, on the MSYS command-line issue :
+
+cd /mingw/lib
+strip -x *.a
+cd /usr/local/lib/
+strip -x *.a
+
+
+To build GPL VIC with VS2008 or VS2010, select Release or Debug in the "Solutions Configuration" drop down menu, then click "Configuration Manger..." in the same menu and select Debug (GPL) or Release (GPL).

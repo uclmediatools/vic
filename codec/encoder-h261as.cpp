@@ -150,7 +150,7 @@ static class H261ASEncoderMatcher : public Matcher {
 } encoder_matcher_h261as;
 
 
-H261ASEncoder::H261ASEncoder() : TransmitterModule(FT_YUV_411),
+H261ASEncoder::H261ASEncoder() : TransmitterModule(FT_YUV_420),
 				 frame_buffer(0),
 				 frame_buffer_size(0),
 				 crref(0),

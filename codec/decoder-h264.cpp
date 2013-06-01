@@ -52,6 +52,8 @@ class H264Decoder:public Decoder
     int last_iframe;
     bool startPkt;
 
+    int aggregate_pkt; // Count of mbits for decoding IOCOM H.264
+
     /* image */
     UCHAR xxx_frame[MAX_FRAME_SIZE];
     FFMpegCodec h264;
@@ -71,7 +73,8 @@ static class H264DecoderMatcher:public Matcher
     }
     TclObject *match(const char *id)
     {
-	if (strcasecmp(id, "h264") == 0)
+	if ((strcasecmp(id, "h264") == 0 ) ||
+	    (strcasecmp(id, "h264_IOCOM") == 0))
 	    return (new H264Decoder());
 	return (0);
     }
@@ -85,15 +88,15 @@ H264Decoder::H264Decoder():Decoder(0 /* 0 byte extra header */)
 
 
     //Barz: =============================================
-    decimation_ = 411;
+    decimation_ = 420;
     /*
      * Assume CIF.  Picture header will trigger a resize if
-     * we encounter QCIF instead.
+     * we encounter another size instead.
      */
     inw_ = 352;
     inh_ = 288;
 
-     /*XXX*/ 
+     /*XXX*/
     resize(inw_, inh_);
 
     // libavcodec
@@ -120,7 +123,7 @@ H264Decoder::H264Decoder():Decoder(0 /* 0 byte extra header */)
 
     //256 packets, each 1600 byte (default will not exceed 1600 byte)
     //cout << "new PacketBuffer..\n";
-    stream = new PacketBuffer(1024, 1600); //SV: 1024 = ??? 
+    stream = new PacketBuffer(1024, 1600); //SV: 1024 = ???
     startPkt = false;
 }
 
@@ -187,14 +190,16 @@ void H264Decoder::recv(pktbuf * pb)
 {
     rtphdr *rh = (rtphdr *) pb->dp;
     int hdrsize = sizeof(rtphdr) + hdrlen();
-    u_char *bp = pb->dp + hdrsize;
-    int cc = pb->len - hdrsize;
+    u_char *buf = pb->dp + hdrsize;
+    int len = pb->len - hdrsize;
     //static int iframe_c = 0, pframe_c = 0;
-
-    int mbit = ntohs(rh->rh_flags) >> 7 & 1;
+    int decodeLen=0;
+    int flags = ntohs(rh->rh_flags);
+    int mbit = flags >> 7 & 1;
+    int fmt = flags & 0x7f;
     uint16_t seq = ntohs(rh->rh_seqno);
-    int ts = ntohl(rh->rh_ts);
-
+    int packetStatus;
+    //int ts = ntohl(rh->rh_ts);
 
 
     //Barz: =============================================
@@ -204,57 +209,71 @@ void H264Decoder::recv(pktbuf * pb)
        idx = seq;
        last_seq = seq - 1;
     }
-	  
+
     int pktIdx = seq - idx;
     if (pktIdx < 0) {
         pktIdx = (0xFFFF - idx) + seq;
     }
 
     if (abs(seq - last_seq) > 5) {
-	    //fprintf(stderr, "H264_RTP: sequece interrupt!\n");
+	    debug_msg("H264_RTP: sequece interrupt!\n");
 	    idx = seq;
 	    pktIdx = 0;
 	    stream->clear();
     }else if (last_seq + 1 != seq) {
 	    // oops - missing packet
-	    //fprintf(stderr, "H264_RTP: missing packet\n");
+	    debug_msg("H264_RTP: missing packet\n");
     }
 
     //===================================================
 
+    //fprintf(stderr, "H264_RTP: packet idx:%d, seq: %d\n", pktIdx,seq);
 
-    //copy packet
-    //stream->write(pktIdx, cc, (char *) bp);
-    //fprintf(stderr, "H264_RTP: -------------------------------- seq = %d, m=%d, ts=%d, cc=%d\n", seq, mbit, ts, cc);
-    //fprintf(stderr, "H264_RTP: pktIdx = %d\n", pktIdx);
-    int yo = h264depayloader->h264_handle_packet(h264depayloader->h264_extradata, pktIdx, stream, /*ts,*/ bp, cc);
-    //fprintf(stderr, "H264_RTP: h264_handle_packet = %d\n", yo);
+
+    if (fmt == 107 ){
+      // IOCOM's non-standard H.264 packet format
+      //fprintf(stderr,"IOCOM pkt\n");
+      if (mbit) {
+          if (aggregate_pkt)
+            stream->writeAppend(pktIdx, len-20, (char *)buf+20);
+          else
+            stream->writeAppend(pktIdx, len-21, (char *)buf+21);
+          aggregate_pkt = 0;
+       }  else {
+          if (aggregate_pkt)
+            stream->writeAppend(pktIdx, len-20, (char *)buf+20);
+          else
+            stream->writeAppend(pktIdx, len-21, (char *)buf+21);
+          aggregate_pkt = 1;
+       }
+    } else {
+       packetStatus = h264depayloader->h264_handle_packet(h264depayloader->h264_extradata, pktIdx, stream, buf, len);
+    }
 
 
     //Barz: =============================================
 
     last_seq = seq;
-    int len=0;
     if (mbit) {
 	    stream->setTotalPkts(pktIdx + 1);
 
 	    DataBuffer *f;
 	    if (stream->isComplete()) {
 		    f = stream->getStream();
-		    len =  h264.decode((UCHAR *) f->getData(), f->getDataSize(), xxx_frame);
+		    decodeLen =  h264.decode((UCHAR *) f->getData(), f->getDataSize(), xxx_frame);
 	    }
-	    
-	    if (len < 0) {
-			//fprintf(stderr, "H264_RTP: frame error\n");
-			debug_msg("H264_RTP: frame error\n");
+
+	    if (decodeLen < 0) {
+		  debug_msg("H264_RTP: frame error\n");
 	    }
-	   
+
 	    if (inw_ != h264.width || inh_ != h264.height) {
 			inw_ = h264.width;
 			inh_ = h264.height;
 			resize(inw_, inh_);
 	    } else {
 			Decoder::redraw(xxx_frame);
+                //render_frame(xxx_frame);
 	    }
 	    stream->clear();
 	    idx = seq+1;

@@ -96,7 +96,7 @@ FILEOutputAssistor::FILEOutputAssistor(int type) : Renderer(type) {
 	lasttime_=0;
 	cisname=NULL;
 	switch (type) {
-	case FT_YUV_411:
+	case FT_YUV_420:
 		break;
 	case FT_JPEG|FT_HW:
 		memcpy(jfif_header1,jfif_header1_,sizeof(jfif_header1_));
@@ -153,8 +153,8 @@ void FILEOutputAssistor::reset(int type, int q, int w, int h)
 	sentfirstheader=0;
 	lastjpegtype_ = type;
 	switch (type) {
-	case 1: /* 411 */
-		decimation_ = 411;
+	case 1: /* 420 */
+		decimation_ = 420;
 		break;
 	default:
 		decimation_ = 422;
@@ -192,7 +192,7 @@ void FILEOutputAssistor::reset(int type, int q, int w, int h)
 			jfif_header1[i++] = w&0xff;
 			i++; 	/* components (3) */
 				i++;	/* comp id 0 */
-				if (decimation_ == 411)
+				if (decimation_ == 420)
 					jfif_header1[i++] = 0x22;/* 0x22 for 2 hor/2 vert */
 				else
 					jfif_header1[i++] = 0x21;/* 0x21 for 2 hor/1 vert */
@@ -225,7 +225,7 @@ void FILEOutputAssistor::reset(int type, int q, int w, int h)
 			jfif_header2[i++] = w&0xff;
 			i++; 	/* components (3) */
 				i++;	/* comp id 0 */
-				if (decimation_ == 411)
+				if (decimation_ == 420)
 					jfif_header2[i++] = 0x22;/* 0x22 for 2 hor/2 vert */
 				else
 					jfif_header2[i++] = 0x21;/* 0x21 for 2 hor/1 vert */
@@ -307,7 +307,7 @@ int FILEOutputAssistor::consume(const VideoFrame* vf) {
 //		xil_cis_set_attribute(cis_, "HEIGHT", (void *)hf->height_);
 		break;
 	}
-	case FT_YUV_411:
+	case FT_YUV_420:
 		p=vf->bp_;
 		len=vf->width_*vf->height_*6/4;
 		break;
@@ -348,8 +348,8 @@ int FILEOutputDevice::command(int argc, const char*const* argv) {
 */
 	if (argc == 3 ) {
 		if (!strcmp(argv[1],"renderer")) {
-			if (!strcmp(argv[2],"411")) {
-				FILEOutputAssistor* p = new FILEOutputAssistor(FT_YUV_411);
+			if (!strcmp(argv[2],"420")) {
+				FILEOutputAssistor* p = new FILEOutputAssistor(FT_YUV_420);
 				tcl.result(p->name());
 				return (TCL_OK);
 			}
@@ -367,7 +367,7 @@ int FILEOutputDevice::command(int argc, const char*const* argv) {
 				tcl.result(p->name());
 				return (TCL_OK);
 			}
-			if (!strcmp(argv[2],"jpeg/411") || !strcmp(argv[2],"jpeg/422")) {
+			if (!strcmp(argv[2],"jpeg/420") || !strcmp(argv[2],"jpeg/422")) {
 				//FILEOutputAssistor* p = new FILEOutputAssistor(FT_JPEG|FT_HW,filename_,&deviceattributes_);
 				FILEOutputAssistor* p = new FILEOutputAssistor(FT_JPEG|FT_HW);
 				tcl.result(p->name());

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 1993-1995 Regents of the University of California.
+# Copyright (c) 1993-1995 The Regents of the University of California.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -10,27 +10,22 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. All advertising materials mentioning features or use of this software
-#    must display the following acknowledgement:
-#	This product includes software developed by the Computer Systems
-#	Engineering Group at Lawrence Berkeley Laboratory.
-# 4. Neither the name of the University nor of the Laboratory may be used
-#    to endorse or promote products derived from this software without
-#    specific prior written permission.
+# 3. Neither the names of the copyright holders nor the names of its
+#    contributors may be used to endorse or promote products derived from
+#    this software without specific prior written permission.
 #
-# THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-# SUCH DAMAGE.
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+# IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
 #
-# @(#) $Header$ (LBL)
 
 proc windowingsystem {} {
   if [ catch {set tkws [tk windowingsystem]}] {
@@ -92,7 +87,7 @@ proc uniqueID { } {
 
 proc isCIF fmt {
 	# only supported CIF format is h.261/3/3+
-	if { $fmt =="h264" || $fmt == "mpeg4" || $fmt == "h261" || $fmt == "h263+" || $fmt == "h263" } {
+	if { $fmt == "h261" || $fmt == "h263" || $fmt == "h263+" } {
 		return 1
 	}
 	return 0
@@ -318,54 +313,92 @@ proc updateName { w name } {
 	return -1
 }
 
-proc print_input_device_details {} {
+proc print_capabilities_xml {} {
 	global inputDeviceList
 
+	puts "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"
 	puts ""
-	puts ""
-	foreach v $inputDeviceList {
-		if {[$v attributes] != "disabled" &&
-			"[$v nickname]" != "still" && "[$v nickname]" != "filedev" } {
-			puts -nonewline "inputDevice \{\"[$v nickname]\"\} "
 
-			puts -nonewline "port \{"
-			set i 0
-			set portnames [attribute_class [$v attributes] port]
-			foreach port $portnames {
-				if {$i > 0} {puts -nonewline " "}
-				puts -nonewline "\"$port\""
-				incr i
-			}
+	puts "<vic>"
+	if {[llength $inputDeviceList] == 0} {
+		puts "<devices />"
+	} else {
+		puts "	<devices>"
+		foreach v $inputDeviceList {
+			if {[$v attributes] != "disabled" &&
+				"[$v nickname]" != "still" && "[$v nickname]" != "filedev" } {
 
-			puts -nonewline "\} type \{"
-			set i 0
-			set typenames [attribute_class [$v attributes] type]
-			foreach typename $typenames {
-				if {$i > 0} {puts -nonewline " "}
-				puts -nonewline "\"$typename\""
-				incr i
-			}
+				puts "		<device>"
+				set nickname [string map {"<" "&lt;"  ">" "&gt;"  "&" "&amp;"  "\"" "&quot;"  "'" "&apos;"} [$v nickname]]
+				puts "			<nickname>$nickname</nickname>"
 
-			puts -nonewline "\} size \{"
-			set i 0
-			set sizeList [attribute_class [$v attributes] size]
-			foreach size $sizeList {
-				if {$i > 0} {puts -nonewline " "}
-				puts -nonewline "\"$size\""
-				incr i
+				set portnames [attribute_class [$v attributes] port]
+				if {[llength $portnames] == 0} {
+					puts "			<ports />"
+				} else {
+					puts "			<ports>"
+					foreach port $portnames {
+						set port [string map {"<" "&lt;"  ">" "&gt;"  "&" "&amp;"  "\"" "&quot;"  "'" "&apos;"} $port]
+						puts "				<port>$port</port>"
+					}
+					puts "			</ports>"
+				}
+
+				set typenames [attribute_class [$v attributes] type]
+				if {[llength $typenames] == 0} {
+					puts "			<types />"
+				} else {
+					puts "			<types>"
+					foreach type $typenames {
+						set type [string map {"<" "&lt;"  ">" "&gt;"  "&" "&amp;" "\""  "&quot;"  "'" "&apos;"} $type]
+						puts "				<type>$type</type>"
+					}
+					puts "			</types>"
+				}
+
+				set sizeList [attribute_class [$v attributes] size]
+				if {[llength $sizeList] == 0} {
+					puts "			<sizes />"
+				} else {
+					puts "			<sizes>"
+					foreach size $sizeList {
+						set size [string map {"<" "&lt;"  ">" "&gt;"  "&" "&amp;"  "\"" "&quot;"  "'" "&apos;"} $size]
+						puts "				<size>$size</size>"
+					}
+					puts "			</sizes>"
+				}
+
+				if [device_supports $v large_size_resolution *] {
+					set resolutionList [attribute_class [$v attributes] large_size_resolution]
+					if {[llength $resolutionList] == 0} {
+						puts "			<large_size_resolutions />"
+					} else {
+						puts "			<large_size_resolutions>"
+						foreach resolution $resolutionList {
+							set resolution [string map {"<" "&lt;"  ">" "&gt;"  "&" "&amp;"  "\"" "&quot;"  "'" "&apos;"} $resolution]
+							puts "				<large_size_resolution>$resolution</large_size_resolution>"
+						}
+						puts "			</large_size_resolutions>"
+					}
+				} else {
+						puts "			<large_size_resolutions />"
+				}
+
+				puts "		</device>"
 			}
-			puts "\}"
 		}
+		puts "	</devices>"
 	}
-	puts ""
 
-	puts "Available Codec List:"
+	puts "	<codecs>"
 	set codecList [list h261 h261as h263 h263+ mpeg4 h264 raw cellbbvc pvh jpeg]
 	foreach codec $codecList {
-		if {[codecexists $codec]} {
-		puts "-  $codec"
+		if { [codecexists $codec] } {
+			puts "		<codec>$codec</codec>"
 		}
 	}
+	puts "	</codecs>"
+	puts "</vic>"
 	puts ""
 }
 

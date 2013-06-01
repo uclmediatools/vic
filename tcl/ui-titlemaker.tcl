@@ -1,5 +1,5 @@
 #
-# Copyright (c) 1993-1995 Regents of the University of California.
+# Copyright (c) 1993-1995 The Regents of the University of California.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -10,25 +10,21 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. All advertising materials mentioning features or use of this software
-#    must display the following acknowledgement:
-#	This product includes software developed by the Computer Systems
-#	Engineering Group at Lawrence Berkeley Laboratory.
-# 4. Neither the name of the University nor of the Laboratory may be used
-#    to endorse or promote products derived from this software without
-#    specific prior written permission.
+# 3. Neither the names of the copyright holders nor the names of its
+#    contributors may be used to endorse or promote products derived from
+#    this software without specific prior written permission.
 #
-# THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-# SUCH DAMAGE.
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+# IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
 #
 
 set icons(file_open) [image create photo -format gif  -data { R0lGODlhEgASAPIAAAAAAICAAMDAwPj8APj8+AAAAAAAAAAAACH5BAEAAAIALAAAAAASABIAAAM7KLrc/jAKQCUDC2N7t6JeA2YDMYDoA5hsWYZk28LfjN4b4AJB7/ue1elHDOl4RKAImQzQcDeOdEp1JAAAO///}]
@@ -54,7 +50,7 @@ proc build.titlemaker w {
 	set f [smallfont]
 
 	#bind $w <q> "logo_quit"
-	#bind $w <Enter> "focus %W"	
+	#bind $w <Enter> "focus %W"
 	#bind $w <Enter> "focus $w"
 	
 	frame $w.b 
@@ -64,10 +60,17 @@ proc build.titlemaker w {
 	label $w.b.file.label -text "Overlay Image file:" -font $f -anchor w
 	mk.entry $w.b.file tm.update.filename $selectedFile
 	$w.b.file.entry configure -width 39
-	button $w.b.file.selectfile \
-		-relief raised -command "logo_fileselect $w.b.file.entry" \
-		-font $f -highlightthickness 0 \
-		-image $icons(file_open)
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
+		ttk::button $w.b.file.selectfile \
+			-compound image \
+			-command "logo_fileselect $w.b.file.entry" \
+			-image $icons(file_open)
+	} else {
+		button $w.b.file.selectfile \
+			-relief raised -command "logo_fileselect $w.b.file.entry" \
+			-font $f -highlightthickness 0 \
+			-image $icons(file_open)
+	}
 	pack $w.b.file.label  -side left -anchor w -fill x -expand 1
 	pack $w.b.file.entry $w.b.file.selectfile -side left -padx 2 -anchor w -fill x -expand 1
 	pack $w.b.file -side top

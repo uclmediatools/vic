@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1993-1994 Regents of the University of California.
+ * Copyright (c) 1993-1994 The Regents of the University of California.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,26 +10,21 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by the University of
- *      California, Berkeley and the Network Research Group at
- *      Lawrence Berkeley Laboratory.
- * 4. Neither the name of the University nor of the Laboratory may be used
- *    to endorse or promote products derived from this software without
- *    specific prior written permission.
+ * 3. Neither the names of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+ * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef lint
@@ -414,9 +409,12 @@ void Grabber::set_size_422(int w, int h)
 	outh_ = h;
 
 	framesize_ = w * h;
-	int n = 2 * framesize_ + 2 * GRABBER_VPAD * w;
-	framebase_ = new u_char[n];
-	memset(framebase_, 0x80, n);
+	int ny = framesize_ + GRABBER_VPAD * w; // Y size
+	int nuv = ny;  // U + V size
+	framebase_ = new u_char[ny + nuv];
+	/* initialize to black */
+	memset(framebase_, 0, ny);
+	memset(framebase_ + ny, 0x80, nuv);
 	frame_ = framebase_ + GRABBER_VPAD * w;
 	crinit(w, h);
 
@@ -426,7 +424,7 @@ void Grabber::set_size_422(int w, int h)
 	hstop_ = blkw_;
 }
 
-void Grabber::set_size_411(int w, int h)
+void Grabber::set_size_420(int w, int h)
 {
 	delete[] framebase_; //SV-XXX: Debian
 
@@ -462,50 +460,30 @@ void Grabber::set_size_cif(int w, int h)
 	inh_ = h;
 
 	int ispal;
-	switch (w) {
-	case 640:
-		/* for qcam */
-		ispal = 0;
-		outw_ = 640;
-		outh_ = 480;
-		break;
-	case 320:
-		/* 1/2 NTSC */
+	switch (h) {
+	case 240:
+		/* 1/4 NTSC */
 		ispal = 0;
 		outw_ = 352;
 		outh_ = 288;
 		break;
 
-	case 160:
+	case 120:
 		/* 1/8 NTSC */
 		ispal = 0;
 		outw_ = 176;
 		outh_ = 144;
 		break;
 
-	case 352:
-		/* 1/2 CIF */
+	case 288:
+		/* 1/4 CIF */
 		ispal = 1;
 		outw_ = 352;
 		outh_ = 288;
 		break;
 
-	case 176:
+	case 144:
 		/* 1/8 CIF */
-		ispal = 1;
-		outw_ = 176;
-		outh_ = 144;
-		break;
-
-	case 384:
-		/* 1/2 PAL */
-		ispal = 1;
-		outw_ = 352;
-		outh_ = 288;
-		break;
-
-	case 192:
-		/* 1/8 PAL */
 		ispal = 1;
 		outw_ = 176;
 		outh_ = 144;
@@ -513,17 +491,19 @@ void Grabber::set_size_cif(int w, int h)
 
 	default:
 		/* XXX this shouldn't happen */
-		debug_msg("vic: CIF grabber: bad geometry - trying 411\n");
-		set_size_411(w,h);
+		debug_msg("vic: CIF grabber: bad geometry - trying 420\n");
+		set_size_420(w,h);
 		return;
 		//abort();
 	}
 	int s = outw_ * outh_;
 	framesize_ = s;
-	int n = s + (s >> 1) + 2 * GRABBER_VPAD * outw_;
-	framebase_ = new u_char[n];
-	/* initialize to gray */
-	memset(framebase_, 0x80, n);
+	int ny = s + GRABBER_VPAD * outw_;  // Y size
+	int nuv = (s >> 1) + GRABBER_VPAD * outw_; //U + V size
+	framebase_ = new u_char[ny + nuv];
+	/* initialize to black */
+	memset(framebase_, 0, ny);
+	memset(framebase_ + ny, 0x80, nuv);
 	frame_ = framebase_ + GRABBER_VPAD * outw_;
 	crinit(outw_, outh_);
 

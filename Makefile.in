@@ -10,28 +10,21 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. All advertising materials mentioning features or use of this software
-#    must display the following acknowledgement:
-#	This product includes software developed by the University of
-#	California, Berkeley and the Network Research Group at
-#	Lawrence Berkeley Laboratory.
-# 4. Neither the name of the University nor of the Laboratory may be used
-#    to endorse or promote products derived from this software without
-#    specific prior written permission.
+# 3. Neither the names of the copyright holders nor the names of its
+#    contributors may be used to endorse or promote products derived from this
+#    software without specific prior written permission.
 #
-# THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-# SUCH DAMAGE.
-#
-# @(#) $Header$ (LBL)
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+# IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
 #
 
 .SUFFIXES: .cpp $(.SUFFIXES)
@@ -41,21 +34,36 @@ all:	$(ALL)
 
 # Special case for H261 encoder - no optimisation if using linux gcc 2.96
 .cpp.o:
-	rm -f $@; $(C++) -o $@ -c $(CFLAGS) $*.cpp
+	rm -f $@; $(CXX) -o $@ -c $(CFLAGS) $*.cpp
 
 .c.o:
 	rm -f $@; $(CC) -o $@ -c $(CFLAGS) $*.c
 
 ED_YBITS = 4
 
+prefix      = @prefix@
+exec_prefix = @exec_prefix@
+datarootdir = @datarootdir@
+bindir      = @bindir@
+mandir      = @mandir@
+
 CC = @CC@
-C++ = @CXX@
+CXX = @CXX@
 CCOPT = @V_CCOPT@
+
+LDFLAGS= @V_LDFLAGS@
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+TCLSH = @TCLSH_PROG@ 
+ZIP = @ZIP_PROG@
+RC = @RC_PROG@
 
 INCLUDE_TK = @V_INCLUDE_TK@
 INCLUDE_TCL = @V_INCLUDE_TCL@
 INCLUDE_X11 = @V_INCLUDE_X11@
-INCLUDE_MISC = -I. -Icodec/tmndec -Icodec/tmn-x -Icodec/h263 -Irtp -Irender -Inet -Ivideo -Icodec -I../common/src @V_INCLUDE@ 
+INCLUDE_MISC = -I. -Icodec/tmndec -Icodec/tmn-x -Icodec/h263 -Irtp -Irender -Inet -Ivideo -Icodec @V_INCLUDE@ 
 
 STATIC = @V_STATIC@
 MKDEP = ./mkdep
@@ -64,21 +72,7 @@ MKDEP = ./mkdep
 
 LIBRARY_TK = @V_LIBRARY_TK@
 LIBRARY_TCL = @V_LIBRARY_TCL@
-TK_LIBRARY_FILES = \
-		$(LIBRARY_TCL)/init.tcl \
-		$(LIBRARY_TK)/tk.tcl \
-		$(LIBRARY_TK)/button.tcl \
-		$(LIBRARY_TK)/dialog.tcl \
-		$(LIBRARY_TK)/entry.tcl \
-		$(LIBRARY_TK)/focus.tcl \
-		$(LIBRARY_TK)/listbox.tcl \
-		$(LIBRARY_TK)/menu.tcl \
-		$(LIBRARY_TK)/palette.tcl \
-		$(LIBRARY_TK)/scale.tcl \
-		$(LIBRARY_TK)/tearoff.tcl \
-		$(LIBRARY_TK)/text.tcl \
-		$(LIBRARY_TK)/optMenu.tcl \
-		$(LIBRARY_TK)/scrlbar.tcl
+TK_BASE_RC = @V_TKBASE_RC@
 
 LIB_GRABBER = @V_LIB_GRABBER@
 INCLUDE_GRABBER = @V_INCLUDE_GRABBER@
@@ -89,7 +83,7 @@ OBJ_CRYPT = net/crypt-rijndael.o @V_OBJ_CRYPT@
 CODEC_LIB = @V_CODEC_LIB@ codec/tmndec/libh263.a codec/tmn-x/libh263coder.a
 
 LIB = $(LIB_GRABBER) @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ $(CODEC_LIB) $(VIDEO_LIB) \
-	../common/src/libuclmmbase.a -lm -lz -lpthread @V_LIB_FFMPEG@ @V_LIB_X264@ 
+	-luclmmbase -lm -lz @V_LIB_FFMPEG@ @V_LIB_X264@ @LIBS@
 
 
 INCLUDE = $(INCLUDE_MISC) $(INCLUDE_GRABBER) $(INCLUDE_TK) $(INCLUDE_TCL) \
@@ -102,10 +96,11 @@ CFLAGS = $(CCOPT) $(BFLAGS) -Wno-write-strings -fpermissive
 # Remember to add a dependency if you add any tcl sources here.
 #
 TCL_VIC = ui-ctrlmenu.tcl ui-main.tcl ui-resource.tcl ui-relate.tcl \
-	ui-titlemaker.tcl ui-srclist.tcl ui-stats.tcl ui-util.tcl ui-windows.tcl \
-	ui-switcher.tcl ui-extout.tcl ui-grabber.tcl ui-unix.tcl \
+	ui-titlemaker.tcl ui-srclist.tcl ui-stats.tcl ui-util.tcl \
+	ui-switcher.tcl ui-extout.tcl ui-grabber.tcl \
 	cf-main.tcl cf-tm.tcl cf-confbus.tcl cf-network.tcl cf-util.tcl \
-	tkerror.tcl entry.tcl accessgrid.tcl ag-pixrate.tcl autoplace_ui.tcl
+	tkerror.tcl entry.tcl accessgrid.tcl ag-pixrate.tcl autoplace_ui.tcl \
+	ui-windows.tcl @V_TCL_PLATFORM@
 
 #
 # These modules are broken in libg++.  Rather than fix libg++
@@ -124,38 +119,39 @@ H263_OBJS = codec/h263/h263rtp.o codec/h263/h263dec.o codec/h263/bitIn.o \
 
 # .c objects
 OBJ1 =	net/inet.o net/inet6.o codec/cellb_tables.o tkStripchart.o \
-	md5c.o random.o @V_CPUDETECT_OBJ@ $(H263_OBJS)
+	md5c.o random.o @V_CPUDETECT_OBJ@ $(H263_OBJS) @V_EXTRAC_OBJ@ @V_ZVFS_OBJS@
 
-#	session-rtpv1.o session-nv.o session-ivs.o # Not supported anymore
 # .cpp objects
-OBJ2 =	main.o iohandler.o timer.o idlecallback.o media-timer.o \
-	rate-variable.o Tcl.o Tcl2.o module.o \
-	net/crypt.o net/crypt-des.o net/pkttbl.o net/pktbuf.o \
-	net/net.o net/net-ip.o net/net-addr.o net/net-ipv6.o \
-	net/mbus_handler.o net/mbus_engine.o net/group-ipc.o net/confbus.o \
-	rtp/session.o rtp/source.o rtp/transmitter.o rtp/pktbuf-rtp.o \
-	video/device.o video/grabber.o \
-       	video/grabber-still.o video/grabber-file.o \
-	codec/encoder-h261.o codec/encoder-jpeg.o codec/encoder-raw.o \
-	codec/encoder-h263.o codec/encoder-h263v2.o codec/encoder-nv.o \
-	codec/encoder-cellb.o codec/encoder-pvh.o codec/compositor.o \
-	codec/jpeg/jpeg.o codec/p64/p64.o codec/dct.o codec/transcoder-jpeg.o \
-	codec/framer-jpeg.o codec/decoder-pvh.o video/assistor-list.o \
-	codec/decoder.o codec/decoder-jpeg.o codec/decoder-nv.o \
-	codec/decoder-h263.o codec/decoder-h263v2.o codec/decoder-cellb.o \
-	codec/decoder-h261.o codec/decoder-h261v1.o codec/decoder-raw.o \
-	render/renderer.o render/renderer-window.o render/color.o \
-	render/color-pseudo.o render/color-dither.o \
-	render/color-ed.o render/color-quant.o \
-	render/color-gray.o render/color-mono.o render/color-hist.o \
-	render/rgb-converter.o render/vw.o render/ppm.o \
-	@V_OBJ@ \
+OBJ2 =	idlecallback.o iohandler.o main.o media-timer.o module.o \
+	rate-variable.o Tcl.o Tcl2.o timer.o \
+	codec/compositor.o codec/dct.o \
+	codec/decoder-cellb.o \
+	codec/decoder-h261.o codec/decoder-h261v1.o codec/decoder-h261as.o \
+	codec/decoder-h263.o codec/decoder-h263v2.o codec/decoder-jpeg.o \
+	codec/decoder-nv.o codec/decoder.o codec/decoder-pvh.o \
+	codec/decoder-raw.o \
+	codec/encoder-cellb.o codec/encoder-h261.o codec/encoder-h261as.o \
+	codec/encoder-h263.o codec/encoder-h263v2.o codec/encoder-jpeg.o \
+	codec/encoder-nv.o codec/encoder-pvh.o codec/encoder-raw.o \
+	codec/framer-jpeg.o \
+	codec/jpeg/jpeg.o \
+	codec/p64/p64.o codec/p64/p64as.o codec/transcoder-jpeg.o \
+	net/confbus.o net/crypt-des.o net/crypt.o net/group-ipc.o \
+	net/mbus_engine.o net/mbus_handler.o net/net-addr.o \
+	net/net-ip.o net/net-ipv6.o net/net.o net/pktbuf.o net/pkttbl.o \
+	render/color-dither.o render/color-ed.o render/color-gray.o \
+	render/color-hist.o render/color-mono.o render/color.o \
+	render/color-pseudo.o render/color-quant.o render/ppm.o \
+	render/renderer.o render/renderer-window.o \
+	render/rgb-converter.o render/vw.o \
+	rtp/pktbuf-rtp.o rtp/session.o rtp/source.o rtp/transmitter.o \
+	video/assistor-list.o video/device.o video/grabber-file.o \
+	video/grabber.o video/grabber-still.o @V_OBJ@ @V_EXTRACPP_OBJ@ \
 	cc/tfwc_sndr.o cc/tfwc_rcvr.o cc/tfrc_sndr.o cc/tfrc_rcvr.o \
 	cc/cc_timer.o
 
-
 OBJ3 =	cm0.o cm1.o huffcode.o version.o bv.o codec/pvh-huff.o \
-	$(TCL_VIC:.tcl=.o) tk.o
+	@V_TCL2CPP_OBJS@
 
 SRC =	$(OBJ1:.o=.c) $(OBJ2:.o=.cpp) $(BROKEN_OBJ:.o=.c) \
 	$(RTIP_OBJ:.o=.c) $(SRC_GRABBER) $(OBJ_XIL:.o=.cpp) $(OBJ_CRYPT:.o=.c)
@@ -169,17 +165,20 @@ OBJ_VDD = vdd.o p64/p64.o p64/p64dump.o \
 	color-x11.o \
 	Tcl.o Tcl2.o vw.o cm0.o cm1.o \
 	dct.o huffcode.o bv.o iohandler.o timer.o \
-	ui-vdd.o tk.o random.o
+	ui-vdd.o tk.o \
+	random.o @V_TCL2CPP_VDD_OBJS@
+        # color-true.o color-hi.o
 
-OBJ_H261PLAY = rtp/h261_play.o codec/p64/p64.o codec/p64/p64dump.o \
-    net/pktbuf.o rtp/pktbuf-rtp.o rtp/source.o net/net.o net/net-addr.o \
-	module.o render/renderer.o render/renderer-window.o render/color.o \
-	render/color-dither.o render/color-gray.o render/color-pseudo.o \
-	render/color-ed.o render/color-quant.o render/color-mono.o \
-	render/color-hist.o \
-	Tcl.o Tcl2.o render/vw.o cm0.o cm1.o \
-	codec/dct.o huffcode.o bv.o iohandler.o timer.o \
-	ui-h261_play.o tk.o random.o
+
+OBJ_H261PLAY = h261_play.o p64/p64.o p64/p64dump.o \
+	module.o renderer.o renderer-window.o color.o \
+	color-dither.o color-gray.o color-pseudo.o color-ed.o \
+	color-quant.o color-mono.o color-hist.o \
+	color-x11.o \
+	Tcl.o Tcl2.o vw.o cm0.o cm1.o \
+	dct.o huffcode.o bv.o iohandler.o timer.o \
+	random.o @V_TCL2CPP_H261_PLAY_OBJS@
+        # color-true.o color-hi.o
 
 OBJ_JPEGPLAY = jpeg_play.o jpeg/jpeg.o \
 	renderer.o renderer-window.o color.o \
@@ -188,8 +187,10 @@ OBJ_JPEGPLAY = jpeg_play.o jpeg/jpeg.o \
 	color-x11.o \
 	Tcl.o Tcl2.o vw.o cm0.o cm1.o \
 	dct.o huffcode.o jpeg_play_tcl.o bv.o iohandler.o timer.o \
-	ui-jpeg_play.o tk.o random.o
-	
+	ui-jpeg_play.o tk.o \
+	random.o @V_TCL2CPP_JPEG_PLAY_OBJS@
+        # color-true.o color-hi.o
+
 LIB_CB = @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ -lm
 OBJ_CB = net/cbAppInit.o net/cb.o net/confbus.o net/group-ipc.o iohandler.o \
 	render/ppm.o \
@@ -198,44 +199,68 @@ OBJ_CB = net/cbAppInit.o net/cb.o net/confbus.o net/group-ipc.o iohandler.o \
 
 OBJ_H261DUMP = h261_dump.o p64/p64.o p64/p64dump.o huffcode.o dct.o bv.o
 
+vic-zvfs.zip: $(TCL_VIC:%=tcl/%) 
+	rm -f $@ 
+	rm -rf vic-zvfs 
+	mkdir -p vic-zvfs/tcl/encoding vic-zvfs/tk/msgs 
+	if [ -d $(LIBRARY_TK)/ttk ] ; then mkdir -p vic-zvfs/tk/ttk ; fi 
+	mkdir -p vic-zvfs/vic 
+	cp -p $(LIBRARY_TCL)/init.tcl $(LIBRARY_TCL)/auto.tcl vic-zvfs/tcl 
+	cp -p $(LIBRARY_TCL)/encoding/*.enc vic-zvfs/tcl/encoding 
+	cp -p $(LIBRARY_TK)/*.tcl vic-zvfs/tk 
+	if [ -d $(LIBRARY_TK)/ttk ] ; then \
+	    cp -p $(LIBRARY_TK)/ttk/*.tcl vic-zvfs/tk/ttk; \
+	fi 
+	cp -p $(LIBRARY_TK)/msgs/* vic-zvfs/tk/msgs 
+	cp -p $(TCL_VIC:%=tcl/%) vic-zvfs/vic 
+	cd vic-zvfs/tcl; echo "auto_mkindex ." | $(TCLSH) 
+	cd vic-zvfs/tk; echo "auto_mkindex ." | $(TCLSH) 
+	cd vic-zvfs/vic; echo "auto_mkindex ." | $(TCLSH) 
+	cd vic-zvfs; \
+	$(ZIP) ../$@ tcl/* tcl/encoding/* tk/* tk/ttk/* tk/msgs/* vic/* 
+	rm -rf vic-zvfs 
+
 # Don't allow building of the non-DES version...
 #vic:	$(OBJ) $(OBJ_GRABBER) $(JV_LIB)
 #	rm -f $@
-#	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(LIB) $(STATIC)
+#	$(CXX) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(LIB) $(STATIC)
 
-vic: $(CODEC_LIB) $(VIDEO_LIB) $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)  $(OBJ_XIL)
+@V_PROG@: $(VIDEO_LIB) $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)  $(OBJ_XIL) @V_ZVFS_ZIP@
 	rm -f $@
-	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(OBJ_CRYPT) $(LIB) $(STATIC)
+	$(CXX) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(OBJ_CRYPT) $(LIB) $(STATIC)
+	if [ "@V_ZVFS_ZIP@" != "" ] ; then \
+		cat vic-zvfs.zip >> @V_PROG@ ; $(ZIP) -A @V_PROG@ ; \
+	fi
 
-vic.dyn: $(CODEC_LIB) $(VIDEO_LIB) $(OBJ) $(OBJ_GRABBER) $(JV_LIB)
+vic.dyn: $(VIDEO_LIB) $(OBJ) $(OBJ_GRABBER) $(JV_LIB)
 	rm -f $@
-	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(LIB)
+	$(CXX) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_GRABBER) $(LIB)
 
 # XIL support 
 #
-vic.xil: $(CODEC_LIB) $(VIDEO_LIB) $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)  $(OBJ_XIL)
+vic.xil: $(VIDEO_LIB) $(OBJ) $(OBJ_GRABBER) $(JV_LIB) $(OBJ_CRYPT)  $(OBJ_XIL)
 	rm -f $@
-	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_XIL) $(OBJ_GRABBER) $(OBJ_CRYPT) $(LIB) $(STATIC) @V_LIB_XIL@
+	$(CXX) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ_XIL) $(OBJ_GRABBER) $(OBJ_CRYPT) $(LIB) $(STATIC) @V_LIB_XIL@
 
 histtolut: render/histtolut/histtolut.cpp render/histtolut/convex_hull.o
 	rm -f $@
-	$(C++) -o $@ $(CFLAGS) render/histtolut/histtolut.cpp render/histtolut/convex_hull.o
+	$(CXX) -o $@ $(CFLAGS) render/histtolut/histtolut.cpp render/histtolut/convex_hull.o
 
 vdd: $(OBJ_VDD)
 	rm -f $@
-	$(C++) -o $@ $(CFLAGS) $(LDFLAGS) $(OBJ_VDD) $(LIB) $(STATIC)
+	$(CXX) -o $@ $(CFLAGS) $(LDFLAGS) $(OBJ_VDD) $(LIB) $(STATIC)
 
 cb_wish: $(OBJ_CB)
 	rm -f $@
-	$(C++) -o $@ $(CFLAGS) $(LDFLAGS) $(OBJ_CB) $(LIB_CB) $(STATIC)
+	$(CXX) -o $@ $(CFLAGS) $(LDFLAGS) $(OBJ_CB) $(LIB_CB) $(STATIC)
 
 jpeg_play: $(OBJ_JPEGPLAY)
 	rm -f $@
-	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ_JPEGPLAY) $(LIB) $(STATIC)
+	$(CXX) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ_JPEGPLAY) $(LIB) $(STATIC)
 
 h261_play: $(OBJ_H261PLAY)
 	rm -f $@
-	$(C++) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ_H261PLAY) $(LIB) $(STATIC)
+	$(CXX) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ_H261PLAY) $(LIB) $(STATIC)
 
 h261_dump: $(OBJ_H261DUMP)
 	rm -f $@
@@ -243,11 +268,11 @@ h261_dump: $(OBJ_H261DUMP)
 
 h261tortp: h261tortp.cpp
 	rm -f $@
-	$(C++) -o $@ $(CFLAGS) h261tortp.cpp
+	$(CXX) -o $@ $(CFLAGS) h261tortp.cpp
 
 tcl2c++: tcl/tcl2cpp/tcl2cpp.c
 	rm -f $@
-	$(C++) -o $@ $(CFLAGS) tcl/tcl2cpp/tcl2cpp.c
+	$(CXX) -o $@ $(CFLAGS) tcl/tcl2cpp/tcl2cpp.c
 
 #
 # pass-1 embedded tcl files
@@ -264,7 +289,7 @@ TCL_VIC_OBJS=$(TCL_VIC:.tcl=.o) ui-vdd.o ui-h261_play.o
 $(TCL_VIC_OBJS): tcl2c++
 	base=$(@:.o=); rm -f $@ $$base.cpp ; \
 		./tcl2c++ 2 tcl/$$base.tcl > tcl/$$base.cpp ; \
-		$(C++) -o $@ -c $(CFLAGS) tcl/$$base.cpp ; rm -f tcl/$$base.cpp
+		$(CXX) -o $@ -c $(CFLAGS) tcl/$$base.cpp ; rm -f tcl/$$base.cpp
 
 accessgrid.o: tcl/accessgrid.tcl
 ag-pixrate.o: tcl/ag-pixrate.tcl 
@@ -292,9 +317,12 @@ ui-h261_play.o: tcl/ui-h261_play.tcl
 ui-relate.o: tcl/ui-relate.tcl
 ui-titlemaker.o: tcl/ui-titlemaker.tcl
 
+tk_base.o:	${TK_BASE_RC}
+	${RC} ${TK_BASE_RC} tk_base.o
+
 version.c: VERSION
 	rm -f version.c
-	cat VERSION | sed 's/.*/char version[] = "&";/' > version.c
+	echo `cat VERSION`-r`svnversion` | sed 's/.*/char version[] = "&";/' > version.c
 
 cm0.o: cm0.c
 cm0.c: rgb-cube.ppm jv-cube-128.ppm ppmtolut
@@ -314,7 +342,7 @@ huffcode.c: mkhuff
 
 mkhuff: codec/p64/mkhuff.cpp 
 	rm -f $@
-	$(C++) -o $@ $(CFLAGS) codec/p64/mkhuff.cpp $(STATIC)
+	$(CXX) -o $@ $(CFLAGS) codec/p64/mkhuff.cpp $(STATIC)
 
 bv.c: mkbv
 	rm -f $@
@@ -322,7 +350,7 @@ bv.c: mkbv
 
 mkbv: render/mkbv/mkbv.c
 	rm -f $@
-	$(C++) -o $@ $(CFLAGS) render/mkbv/mkbv.c $(STATIC)
+	$(CXX) -o $@ $(CFLAGS) render/mkbv/mkbv.c $(STATIC)
 
 rgb-cube.ppm: mkcube
 	rm -f $@
@@ -334,22 +362,20 @@ yuv-map.ppm: mkcube
 
 mkcube: render/mkcube/mkcube.cpp
 	rm -f $@
-	$(C++) -o $@ $(CFLAGS) render/mkcube/mkcube.cpp $(STATIC)
+	$(CXX) -o $@ $(CFLAGS) render/mkcube/mkcube.cpp $(STATIC)
 
 ppmtolut: render/ppmtolut/ppmtolut.c
 	rm -f $@
 	$(CC) -o $@ $(CFLAGS) render/ppmtolut/ppmtolut.c -lm $(STATIC)
 
 install: force
-	 cp vic @prefix@/bin/vic
-	 chown bin @prefix@/bin/vic
-	 chgrp bin @prefix@/bin/vic
-	 chmod 555 @prefix@/bin/vic
-	 cp vic.1 @prefix@/man/vic.1
-	 cp histtolut @prefix@/bin/histtolut
-	 chown bin @prefix@/bin/histtolut
-	 chgrp bin @prefix@/bin/histtolut
-	 chmod 555 @prefix@/bin/histtolut
+	test -d $(DESTDIR)$(bindir) || \
+		$(INSTALL) -d $(DESTDIR)$(bindir)
+	test -d $(DESTDIR)@prefix@/man || \
+		$(INSTALL) -d $(DESTDIR)$(mandir)/man1
+	$(INSTALL_PROGRAM) vic $(DESTDIR)$(bindir)
+	$(INSTALL_PROGRAM) histtolut $(DESTDIR)$(bindir)
+	$(INSTALL_DATA) vic.1 $(DESTDIR)$(mandir)/man1
 
 clean:
 	rm -f *.o codec/jpeg/*.o codec/p64/*.o codec/h263/*.o \
@@ -359,8 +385,9 @@ clean:
 		tk.tcl vic_tcl.c h261_play_tcl.c tmp.c \
 		vic vic.dyn vic.xil h261_play h261_dump jpeg_play cb_wish \
 		mkcube rgb-cube.ppm yuv-map.ppm cm0.c cm1.c ppmtolut \
-		config.cache config.log domake.* dotar.* \
+		config.cache config.log domake.* dotar.* vic-zvfs.zip
 		cc/*.o .*ppmlogo*
+	rm -rf autom4te.cache
 	cd codec/tmn && $(MAKE) clean
 	cd codec/tmndec && $(MAKE) realclean
 	rm -f codec/tmn-x/*.o codec/tmn-x/*.a
@@ -370,7 +397,7 @@ realclean:
 	$(MAKE) clean
 	rm -f config.log config.cache config.status
 	rm -rf autom4te.cache
-	rm -f version.c 
+	rm -f uclconf.h version.c
 	rm -f Makefile
 
 tags:	force
@@ -426,27 +453,38 @@ fulltar: force
 	    "chmod 444 $$name.tar.gz" ; \
 	     chmod 444 $$name.tar.gz
 
-ffmpeg/lib/libavcodec.a:
-	(cd ffmpeg/libavcodec; make; make install )
+ffmpeg/libavutil/libavutil.a: ffmpeg/lib/libavcodec.a
+ffmpeg/libavutil/libavutil.a: ffmpeg/lib/libavutil.a
+ffmpeg/libswscale/libswscale.a: ffmpeg/lib/libswscale.a
+ffmpeg/libpostproc/libpostproc.a: ffmpeg/lib/libpostproc.a
 
-ffmpeg/lib/libavutil.a:
-	(cd ffmpeg/libavutil; make; make install )
+codec/ffmpeg_codec.o: ffmpeg/lib/libavcodec.a ffmpeg/lib/libavutil.a ffmpeg/lib/libswscale.a ffmpeg/lib/libpostproc.a
 
-ffmpeg/lib/libswscale.a:
-	(cd ffmpeg/libswscale; make; make install )
+ffmpeg/lib/libavcodec.a ffmpeg/lib/libavutil.a ffmpeg/lib/libswscale.a ffmpeg/lib/libpostproc.a:
+	(cd ffmpeg; @V_CCLDFLAGS32@ $(MAKE); @V_CCLDFLAGS32@ $(MAKE) install )
 
-ffmpeg/lib/libpostproc.a:
-	(cd ffmpeg/libpostproc; make; make install )
+codec/x264encoder.o: x264/lib/libx264.a x264/include/x264.h
 
-x264/lib/libx264.a:
-	(cd x264; make; make install )
+x264/lib/libx264.a x264/include/x264.h:
+	(cd x264; @V_CCLDFLAGS32@ $(MAKE); @V_CCLDFLAGS32@ $(MAKE) install )
+
+codec/encoder-h263v2.o: codec/tmn-x/libh263coder.a
 
 codec/tmn-x/libh263coder.a:
-	(cd codec/tmn-x; $(MAKE) CC=$(CC) CCOPT="$(CCOPT)" )
+	(cd codec/tmn-x; $(MAKE) CC="$(CC)" CCOPT="$(CCOPT)" )
+
+codec/decoder-h263v2.o: codec/tmndec/libh263.a
 
 codec/tmndec/libh263.a:
-	(cd codec/tmndec; $(MAKE) CC=$(CC) CCOPT="$(CCOPT)" -f Makefile.lib)
+	(cd codec/tmndec; $(MAKE) CC="$(CC)" CCOPT="$(CCOPT)" -f Makefile.lib)
+
+gpllibs: ffmpeg/lib/libavcodec.a ffmpeg/lib/libavutil.a ffmpeg/lib/libswscale.a ffmpeg/lib/libpostproc.a x264/lib/libx264.a
+
 strip:	vic
 	strip vic
+	if [ "@V_ZVFS_ZIP@" != "" ] ; then \
+		cat vic-zvfs.zip >> vic ; zip -A vic ; \
+	fi 
+
 cc_tools: $(wildcard *.cc)
 	@(cd cc/tools; $(MAKE))

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 1993-1996 Regents of the University of California.
+# Copyright (c) 1993-1996 The Regents of the University of California.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -10,27 +10,21 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. All advertising materials mentioning features or use of this software
-#    must display the following acknowledgement:
-#	This product includes software developed by the Computer Systems
-#	Engineering Group at Lawrence Berkeley Laboratory.
-# 4. Neither the name of the University nor of the Laboratory may be used
-#    to endorse or promote products derived from this software without
-#    specific prior written permission.
+# 3. Neither the names of the copyright holders nor the names of its
+#    contributors may be used to endorse or promote products derived from
+#    this software without specific prior written permission.
 #
-# THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-# SUCH DAMAGE.
-#
-# @(#) $Header$ (LBL)
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+# IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
 #
 
 #
@@ -103,7 +97,7 @@ proc resize_window {vw width height} {
 	set w [winfo parent [winfo parent $vw]]	
 	set old_g [split [wm geometry $w] "x+"]
 	set geo [format "%sx%s+%s+%s" $width $height [lindex $old_g 2] [lindex $old_g 3]]	
-	wm geometry $w $geo
+	#wm geometry $w $geo
 	global size$w		
 	set size$w [format "%sx%s" $width $height]
 }
@@ -204,12 +198,20 @@ proc open_window src {
 		wm geometry $w +$userwin_x($src)+$userwin_y($src)
 		wm positionfrom $w user
 		set size$w $userwin_size($src)
-		set d [split $userwin_size($src) x]
-		create_video_widget $w.frame.video [lindex $d 0] [lindex $d 1]
+		if {$userwin_size($src) == "half"} {
+			create_video_widget $w.frame.video [expr $iw / 2] [expr $ih / 2]
+		} elseif {$userwin_size($src) == "original"} {
+			create_video_widget $w.frame.video $iw $ih
+		} elseif {$userwin_size($src) == "double"} {
+			create_video_widget $w.frame.video [expr $iw * 2] [expr $ih * 2]
+		} else {
+			set d [split $userwin_size($src) x]
+			create_video_widget $w.frame.video [lindex $d 0] [lindex $d 1]
+		}
 	} else {
-	   # show the video frame accroding to it's resolution
-	   create_video_widget $w.frame.video $iw $ih
-	   set size$w [format "%sx%s" $iw $ih]
+		# show the video frame according to it's resolution
+		create_video_widget $w.frame.video $iw $ih
+		set size$w [format "%sx%s" $iw $ih]
 	}
 	#elseif [isCIF [rtp_format $src]] {
 	#	create_video_widget $w.frame.video 352 288
@@ -225,8 +227,8 @@ proc open_window src {
 		-highlightthickness 0
 
 	set m $w.bar.mode.menu
-	menubutton $w.bar.mode -text Modes... -menu $m -relief raised \
-		-width 8 -font $f
+	menubutton $w.bar.mode -text Modes -menu $m -relief raised \
+		-width 8 -font $f -indicatoron 1
 	menu $m
 
         if {[string match [ windowingsystem] "aqua"]} { 
@@ -254,8 +256,8 @@ proc open_window src {
 	}
 
 	set m $w.bar.size.menu
-	menubutton $w.bar.size -text Size... -menu $m -relief raised -width 8 \
-		-font $f
+	menubutton $w.bar.size -text Size -menu $m -relief raised -width 8 \
+		-font $f -indicatoron 1
 	menu $m
         if {[string match [ windowingsystem] "aqua"]} {
                 $w.mbar add cascade -label Size -menu $m
@@ -293,15 +295,15 @@ proc open_window src {
 	$m add radiobutton -label "Half size" \
 		-command "resize $v [expr $iw / 2] [expr $ih / 2]" \
 		-font $f -value "half" -variable size$w
-	$m add radiobutton -label "Normal size" -command "resize $v $iw $ih" \
-		-font $f -value "normal" -variable size$w
+	$m add radiobutton -label "Original size" -command "fit_window $v" \
+		-font $f -value "original" -variable size$w -accelerator "O"
 	$m add radiobutton -label "Double size" \
 		-command "resize $v [expr $iw * 2] [expr $ih * 2]" \
 		-font $f -value "double" -variable size$w
 
 # Marcus ... 
 	set m $w.bar.decoder.menu
-	menubutton $w.bar.decoder -text Decoder... -menu $m -relief raised -width 8 -font $f
+	menubutton $w.bar.decoder -text Decoder -menu $m -relief raised -width 8 -font $f -indicatoron 1
         if {[string match [ windowingsystem] "aqua"]} {
                 $w.mbar add cascade -label Decoder -menu $m
         }    	
@@ -355,7 +357,7 @@ proc open_window src {
 		$w.bar.size.menu add cascade -menu $m -label Mode
         }
 
-	bind $w <Enter> { focus %W }
+	#bind $w <Enter> { focus %W }
 	#wm focusmodel $w active
 
 	bind $w <s> "resize $v 176 144; set size$w 176x144"
@@ -367,6 +369,7 @@ proc open_window src {
 	bind $w <e> "resize $v 1000 750; set size$w 1000x750"
 	bind $w <E> "resize $v 1024 768; set size$w 1024x768"
 	bind $w <x> "resize $v 640 240; set size$w 640x240"
+	bind $w <o> "fit_window $v; set size$w original"
 	bind $w <z> "catch { wm overrideredirect $w 1; wm withdraw $w; wm deiconify $w}"
 	bind $w <Z> "catch { wm overrideredirect $w 0; wm withdraw $w; wm deiconify $w}"
 
@@ -396,10 +399,23 @@ proc open_window src {
 	set window_glue($v) 0
 	global button_active vtk_client
 
-	bind $v <Button-3> {
-	    set w [lindex [split %W "."] 1]
-	    set m .$w.bar.size.menu
-	    tk_popup $m %X %Y
+	if {[string match [ windowingsystem] "aqua"]} {
+	    bind $v <Button-2> {
+		set w [lindex [split %W "."] 1]
+		set m .$w.bar.size.menu
+		tk_popup $m %X %Y
+	    }
+	    bind $v <Control-1> {
+		set w [lindex [split %W "."] 1]
+		set m .$w.bar.size.menu
+		tk_popup $m %X %Y
+	    }
+	} else {
+	    bind $v <Button-3> {
+		set w [lindex [split %W "."] 1]
+		set m .$w.bar.size.menu
+		tk_popup $m %X %Y
+	    }
 	}
 
 #	puts "w is $v"
@@ -562,7 +578,7 @@ proc open_full_window src {
 	pack $w.frame.video -anchor c
 	pack $w.frame -expand 1 -fill both
 
-	bind $w <Enter> { focus %W }
+	#bind $w <Enter> { focus %W }
 
 	bind $w <d> "destroy_userwin $v"
 	bind $w <q> "destroy_userwin $v"

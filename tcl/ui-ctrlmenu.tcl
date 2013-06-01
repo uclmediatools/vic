@@ -1,5 +1,5 @@
 #
-# Copyright (c) 1993-1995 Regents of the University of California.
+# Copyright (c) 1993-1995 The Regents of the University of California.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -10,41 +10,38 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. All advertising materials mentioning features or use of this software
-#    must display the following acknowledgement:
-#	This product includes software developed by the Computer Systems
-#	Engineering Group at Lawrence Berkeley Laboratory.
-# 4. Neither the name of the University nor of the Laboratory may be used
-#    to endorse or promote products derived from this software without
-#    specific prior written permission.
+# 3. Neither the names of the copyright holders nor the names of its
+#    contributors may be used to endorse or promote products derived from
+#    this software without specific prior written permission.
 #
-# THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-# SUCH DAMAGE.
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+# IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
 #
+
 proc windowingsystem { } {
-    if { [ catch {set tkws [tk windowingsystem]}] } {
-        # if windowingsystem call fails, determine
-        # based on platform instead (note: windowingsystem
-        # call exists first in tk 8.4, one possible 
-        # reason for failure)
-        global tcl_platform
-        if {$tcl_platform(platform) == "windows"} {
-            set tkws win32
-        } else {
-            # default to x11 otherwise
-            set tkws x11
-        }
-    }
-    return $tkws
+	if { [ catch {set tkws [tk windowingsystem]}] } {
+		# if windowingsystem call fails, determine
+		# based on platform instead (note: windowingsystem
+		# call exists first in tk 8.4, one possible
+		# reason for failure)
+		global tcl_platform
+		if {$tcl_platform(platform) == "windows"} {
+			set tkws win32
+		} else {
+			# default to x11 otherwise
+			set tkws x11
+		}
+	}
+	return $tkws
 }
 
 proc fork_histtolut { } {
@@ -194,7 +191,7 @@ proc defaultDevice {} {
 		set d [resource device]
 	}
 	return $d
-}	
+}
 
 proc selectInitialDevice {} {
 	global videoDevice inputDeviceList
@@ -210,8 +207,8 @@ proc selectInitialDevice {} {
 	if { [string toupper [string range $d 0 4]] == "V4L2:" } {
        	set d [string range $d 5 end]
 		foreach v $inputDeviceList {
-	   		set k [expr [string length [$v nickname]] - [string length $d]]
-	   		if { [string range [$v nickname] 0 4] == "V4L2-" && \
+			set k [expr [string length [$v nickname]] - [string length $d]]
+			if { [string range [$v nickname] 0 4] == "V4L2-" && \
 				[string range [$v nickname] $k end] == "$d" && \
 				[$v attributes] != "disabled" } {
 				set videoDevice $v
@@ -221,10 +218,10 @@ proc selectInitialDevice {} {
 		}
 	}
 	if { [string toupper [string range $d 0 3]] == "V4L:" } {
-        	set d [string range $d 4 end]
+		set d [string range $d 4 end]
 		foreach v $inputDeviceList {
-	   		set k [expr [string length [$v nickname]] - [string length $d]]
-	   		if { [string range [$v nickname] 0 3] == "V4L-" && \
+			set k [expr [string length [$v nickname]] - [string length $d]]
+			if { [string range [$v nickname] 0 3] == "V4L-" && \
 				[string range [$v nickname] $k end] == "$d" && \
 				[$v attributes] != "disabled" } {
 				set videoDevice $v
@@ -360,7 +357,7 @@ set transmitButtonState 0
 set logoButtonState 0
 
 proc transmit { } {
-	global logoButton logoButtonState transmitButtonState videoFormat videoDevice V useJPEGforH261 useHardwareComp numEncoderLayers  
+	global logoButton logoButtonState transmitButtonState videoFormat videoDevice V useJPEGforH261 useHardwareComp numEncoderLayers
 	if ![have grabber] {
 		set DA [$videoDevice attributes]
 		set DF [attribute_class $DA format]
@@ -401,13 +398,13 @@ proc transmit { } {
 		$encoder transmitter $V(session)
 
 		$encoder loop_layer [expr {$numEncoderLayers + 1}]
-		
+
 		set V(encoder) $encoder
 		set ff [$grabtarget frame-format]
 		set V(grabber) [$videoDevice open $ff]
 		# special cases
-		if { $V(grabber) == "" && $ff == "411" } {
-			# try cif instead of 411
+		if { $V(grabber) == "" && $ff == "420" } {
+			# try cif instead of 420
 			set V(grabber) [$videoDevice open cif]
 		}
 		if { $V(grabber) == "" } {
@@ -434,8 +431,8 @@ proc transmit { } {
 			    "can't open [$videoDevice nickname] capture device"
 			return
 		}
-		
-		
+
+
 		init_grabber $V(grabber)
 		if ![tm_init $V(grabber) $grabtarget] {
 			$V(grabber) target $grabtarget
@@ -482,12 +479,12 @@ proc release_device { } {
 	global logoButtonState logoButton
 
 	if [have grabber] {
-	
+
 		if $logoButtonState {
 			$logoButton invoke
 		}
 		logo_quit
-	
+
 		if $transmitButtonState {
 			$transmitButton invoke
 		}
@@ -524,10 +521,10 @@ proc build.buttons w {
 			-relief raised -command transmit \
 			-anchor w -variable transmitButtonState -font $f \
 			-state disabled -highlightthickness 0
-#       checkbutton $w.freeze -text "Freeze" \
-#           -relief raised -command "grabber freeze \$freeze" \
-#           -anchor w -variable freeze -font $f \
-#           -highlightthickness 0
+#		checkbutton $w.freeze -text "Freeze" \
+#			-relief raised -command "grabber freeze \$freeze" \
+#			-anchor w -variable freeze -font $f \
+#			-highlightthickness 0
 		button $w.release -text "Release" \
 			-relief raised -command release_device \
 			-font $f -highlightthickness 0
@@ -545,38 +542,39 @@ proc doNothing { args } {
 }
 
 proc update_encoder_param {  } {
-	global videoFormat fps_slider bps_slider
+	global videoFormat fps_slider bps_slider useDeinterlacerComp
 	if {$videoFormat == "mpeg4" || $videoFormat == "h264"} {
 		encoder kbps [expr round([$bps_slider get])]
 		encoder fps [expr round([$fps_slider get])]
+		encoder useDeinterlacer $useDeinterlacerComp
 	}
 }
 
 proc set_bps { w value } {
-	global videoFormat 
+	global videoFormat
 
 	set value [expr round($value)]
 	if [have grabber] {
-   	    grabber bps $value
-            if {$videoFormat == "mpeg4" || $videoFormat == "h264"} {
-                encoder kbps $value
-            }
+		grabber bps $value
+		if {$videoFormat == "mpeg4" || $videoFormat == "h264"} {
+			encoder kbps $value
+		}
 
-	#XXX
-	    session data-bandwidth $value
+		#XXX
+		session data-bandwidth $value
 	}
 	$w configure -text "$value Kbps"
 }
 
 proc set_fps { w value } {
-	global videoFormat 
+	global videoFormat
 
-    set value [expr round($value)]
-	if [have grabber] {	
-	  grabber fps $value
-          if {$videoFormat == "mpeg4" || $videoFormat == "h264"} {
-                encoder fps $value
-          }
+	set value [expr round($value)]
+	if [have grabber] {
+		grabber fps $value
+		if {$videoFormat == "mpeg4" || $videoFormat == "h264"} {
+			encoder fps $value
+		}
 	}
 	$w configure -text "$value fps"
 }
@@ -594,14 +592,14 @@ proc build.sliders w {
 	label $w.info.label -text "Rate Control" -font $f
 	label $w.info.fps -textvariable ftext($key) -width 6 \
 		-font $f -pady 0 -borderwidth 0
-    label $w.info.bps -textvariable btext($key) -width 8 \
+	label $w.info.bps -textvariable btext($key) -width 8 \
 		-font $f -pady 0 -borderwidth 0
 	pack $w.info.label -side left
 	pack $w.info.bps $w.info.fps -side right
 
 	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		frame $w.bps
-			ttk::scale $w.bps.scale -orient horizontal \
+		ttk::scale $w.bps.scale -orient horizontal \
 			-value 0 -from 1 -to [option get . maxbw Vic] \
 			-command "set_bps $w.bps.value" \
 			-length 20
@@ -634,10 +632,10 @@ proc build.sliders w {
 	pack $w.info -fill x
 	pack $w.bps $w.fps -fill x
 	pack $w.bps.scale -side left -fill x -expand 1
-	pack $w.bps.value -side left -anchor w 
+	pack $w.bps.value -side left -anchor w
 	pack $w.fps.scale -fill x -side left -expand 1
 	pack $w.fps.value -side left -anchor w
-	
+
 	$w.bps.scale set [option get . bandwidth Vic]
 	$w.fps.scale set [option get . framerate Vic]
 
@@ -667,7 +665,7 @@ proc inList { item L } {
 
 #
 # Returns true iff device named by $device has an attribute named
-# $attr in the attribute class $class.  For example, 
+# $attr in the attribute class $class.  For example,
 # "device_supports vl size cif" would return true.
 # if $attr is "*", then returns true iff the indicated $class
 # exists in the attribute list (for example, "device_supports $d port *"
@@ -697,11 +695,11 @@ proc device_formats device {
 	if [inList 422 $formats] {
 		set fmtList "$fmtList nv nvdct cellb jpeg raw"
 	}
-	if [inList 411 $formats] {
-		set fmtList "$fmtList bvc pvh"
+	if [inList 420 $formats] {
+		set fmtList "$fmtList bvc pvh h261as h264 mpeg4"
 	}
 	if [inList cif $sizes] {
-		set fmtList "$fmtList h261 h261as h263+ h263 mpeg4 h264"
+		set fmtList "$fmtList h261 h263 h263+"
 	}
 	if [inList jpeg $formats] {
 		set fmtList "$fmtList jpeg"
@@ -751,7 +749,8 @@ proc insert_grabber_panel devname {
 proc select_device device {
 	global transmitButton logoButton sizeButtons portButton formatButtons \
 		videoFormat defaultFormat lastDevice defaultPort inputPort \
-		transmitButtonState logoButtonState typeButton
+		defaultType inputType transmitButtonState logoButtonState typeButton \
+		capResolutionButton
 
 	#
 	# Remember settings of various controls for previous device
@@ -762,6 +761,7 @@ proc select_device device {
 	if [info exists lastDevice] {
 		set defaultFormat($lastDevice) $videoFormat
 		set defaultPort($lastDevice) $inputPort
+		set defaultType($lastDevice) $inputType
 		release_device
 	}
 	set lastDevice $device
@@ -785,6 +785,11 @@ proc select_device device {
 	} else {
 		$sizeButtons.b0 configure -state disabled
 	}
+	if { [device_supports $device size normal] || [device_supports $device size cif] } {
+		$sizeButtons.b1 configure -state normal
+	} else {
+		$sizeButtons.b1 configure -state disabled
+	}
 	if [device_supports $device size large] {
 		$sizeButtons.b2 configure -state normal
 	} else {
@@ -798,11 +803,21 @@ proc select_device device {
 	}
 	if [device_supports $device type *] {
 		$typeButton configure -state normal
+		attach_types $device
 	} else {
 		$typeButton configure -state disabled
 	}
-	insert_grabber_panel [$device nickname]
-
+	if {[$device api] != ""} {
+		insert_grabber_panel [$device api]
+	} else {
+		insert_grabber_panel [$device nickname]
+	}
+	if [device_supports $device large_size_resolution *] {
+		if { [info exists capResolutionButton] } {
+			$capResolutionButton configure -state normal
+			attach_capture_resolutions $device
+		}
+	}
 	#set videoFormat $defaultFormat($device)
 	select_format $videoFormat
 	if $wasOverlaying {
@@ -812,6 +827,30 @@ proc select_device device {
 		$transmitButton invoke
 	}
 }
+
+proc compare {a b} {
+
+    return [string compare [$a nickname] [$b nickname]]
+
+    set a0 [$a nickname]
+
+    set b0 [$b nickname]
+
+    if {$a0 < $b0} {
+
+        return -1
+
+    } elseif {$a0 > $b0} {
+
+        return 1
+
+    }
+
+    return 0
+
+}
+
+
 
 proc build.device w {
 	set f [smallfont]
@@ -838,7 +877,7 @@ proc build.device w {
 	} elseif { $videoFormat == "h264"} {
 		set videoFormat h264
 	}
-	
+
 
 	# Disabled the device button if we have no devices or
 	# if we don't have transmit persmission.
@@ -847,7 +886,17 @@ proc build.device w {
 		$w configure -state disabled
 		return
 	}
-	foreach d $inputDeviceList {
+
+	set inputDeviceListSorted [lsort -command compare $inputDeviceList]
+	foreach d $inputDeviceListSorted {
+		if { [$d nickname] == "still" && ![yesno stillGrabber] } {
+			set defaultFormat($d) $videoFormat
+			continue
+		}
+		if { [$d nickname] == "filedev" && ![yesno fileGrabber] } {
+			set defaultFormat($d) $videoFormat
+			continue
+		}
 		# this is fragile
 		$m add radiobutton -label [$d nickname] \
 			-command "select_device $d" \
@@ -889,13 +938,12 @@ proc format_col3 { w n0 n1 n2 } {
 			-variable videoFormat -value $n2 -padx 0 -pady 0 \
 			-command "select_format $n2" -state disabled
 	}
-
-	pack $w.b0 $w.b1 $w.b2 -fill x 
+	pack $w.b0 $w.b1 $w.b2 -fill x
 
 	global formatButtons
 	lappend formatButtons $w.b0 $w.b1 $w.b2
 
-	#format_col $w.p0 nv nvdct cellb 
+	#format_col $w.p0 nv nvdct cellb
 	#format_col $w.p1 jpeg h261 bvc
 	#format_col $w.p2 h263+ h263 raw
 }
@@ -903,13 +951,13 @@ proc format_col3 { w n0 n1 n2 } {
 proc format_col { w n0 n1 } {
 	set f [smallfont]
 	frame $w
-	if { [string first : $n0] > 0 } { 
+	if { [string first : $n0] > 0 } {
 		set reliefn0 ridge
 		set n0 [ string range $n0 0 [expr {[string length $n0] -2 }] ]
 	} else {
 		set reliefn0 flat
 	}
-	if { [string first : $n1] > 0 } { 
+	if { [string first : $n1] > 0 } {
 		set reliefn1 ridge
 		set n1 [ string range $n1 0 [expr {[string length $n1] -2 }] ]
 	} else {
@@ -931,12 +979,12 @@ proc format_col { w n0 n1 } {
 			-variable videoFormat -value $n1 -padx 2 -pady 4 \
 			-command "select_format $n1" -state disabled
 	}
-	pack $w.b0 $w.b1 -fill x 
+	pack $w.b0 $w.b1 -fill x
 
 	global formatButtons
 	lappend formatButtons $w.b0 $w.b1
 
-	#format_col $w.p0 nv nvdct 
+	#format_col $w.p0 nv nvdct
 	#format_col $w.p1 jpeg h261
 	#format_col $w.p2 h263+ h263
 	#format_col $w.p3 raw cellb
@@ -947,7 +995,7 @@ proc set_numEncoderLayers { value } {
 	global transmitButtonState numEncoderLayers V encoderLayerScale encoderLayerValue
 
 	$encoderLayerValue configure -text $value
-	
+
 	if $transmitButtonState {
 		$V(encoder) loop_layer [expr {$numEncoderLayers + 1}]
 		#$V(decoder) maxChannel $numEncoderLayers
@@ -991,35 +1039,35 @@ proc build.encoderLayer_scale w {
 proc codecexists c {
 	set encoder [new module $c]
 	if { $encoder == "" }  {
-	  return 0
-    } else {
-	  delete $encoder
-	  return 1
-    }
+		return 0
+	} else {
+		delete $encoder
+		return 1
+	}
 }
 proc build.format w {
 
-	format_col $w.p0 nv nvdct 
-	format_col $w.p1 h261 h261as 
+	format_col $w.p0 nv nvdct
+	format_col $w.p1 h261 h261as
 	if { [codecexists h263] } {
-		format_col $w.p2 h263 h263+ 
+		format_col $w.p2 h263 h263+
 	}
 	if { [codecexists h264] } {
-	  format_col $w.p3 mpeg4 h264
-    }
+		format_col $w.p3 mpeg4 h264
+	}
 	format_col $w.p4 raw cellb
 	format_col $w.p5 bvc pvh:
 	format_col $w.p6 jpeg null
 
-	
+
 	frame $w.glue0
 	frame $w.glue1
 	pack $w.p0 $w.p1 -side left
 	if { [codecexists h263] } {
-	    pack $w.p2 -side left
+		pack $w.p2 -side left
 	}
 	if { [codecexists h264] } {
-	    pack $w.p3 -side left
+		pack $w.p3 -side left
 	}
 	pack $w.p4 $w.p5 $w.p6 -side left
 
@@ -1048,7 +1096,7 @@ proc build.size w {
 			-padx 0 -pady 0 \
 			-anchor w -variable inputSize -font $f -relief flat -value 1
 	}
-	pack $b.b0 $b.b1 $b.b2 -fill x 
+	pack $b.b0 $b.b1 $b.b2 -fill x
 	pack $b -anchor c -side left
 	global inputSize sizeButtons
 	set inputSize 2
@@ -1094,7 +1142,13 @@ proc attach_ports device {
 			if { $s != "" } {
 				set defaultPort($device) $s
 			} else {
-				set defaultPort($device) [lindex $portnames 0]
+				# use current port setting
+				set s [string trim [attribute_class [$device attributes] selected_port]]
+				if { $s != "" } {
+					set defaultPort($device) $s
+				} else {
+					set defaultPort($device) [lindex $portnames 0]
+				}
 			}
 		}
 	}
@@ -1158,6 +1212,41 @@ proc attach_types device {
 	set inputType $defaultType($device)
 }
 
+proc attach_capture_resolutions device {
+	global capResolutionButton defaultLargeSizeResolution largeSizeResolution
+	catch "destroy $capResolutionButton.menu"
+	set resolutions [attribute_class [$device attributes] large_size_resolution]
+	set f [smallfont]
+	set m $capResolutionButton.menu
+	menu $m
+
+	foreach resolution $resolutions {
+		$m add radiobutton -label $resolution \
+			-command "restart" \
+			-value $resolution -variable largeSizeResolution -font $f
+	}
+	if ![info exists defaultLargeSizeResolution($device)] {
+		set nn [$device nickname]
+		if [info exists defaultLargeSizeResolution($nn)] {
+			set defaultLargeSizeResolution($device) $defaultLargeSizeResolution($nn)
+		} else {
+			set s [resource largeSizeResolution]
+			if { $s != "" } {
+				set defaultLargeSizeResolution($device) $s
+			} else {
+				# use current resolution setting
+				set s [string trim [attribute_class [$device attributes] selected_resolution]]
+				if { $s != "" } {
+					set defaultLargeSizeResolution($device) $s
+				} else {
+					set defaultLargeSizeResolution($device) [lindex $resolutions 0]
+				}
+			}
+		}
+	}
+	set largeSizeResolution $defaultLargeSizeResolution($device)
+}
+
 proc build.encoder_buttons w {
 	set f [smallfont]
 	build.encoder_options $w.options
@@ -1168,25 +1257,31 @@ proc build.encoder_buttons w {
 }
 
 proc build.encoder_options w {
-	global useJPEGforH261 tcl_platform useHardwareComp
+	global useJPEGforH261 tcl_platform useHardwareComp useDeinterlacerComp
 	set useJPEGforH261 [yesno useJPEGforH261]
 	set useHardwareComp [yesno useHardwareComp]
+	set useDeinterlacerComp [yesno useDeinterlacerComp]
 	set f [smallfont]
 	set m $w.menu
-	if {[string match [ windowingsystem] "aqua"]} {
-            menubutton $w -text Options -menu $m -width 8 -pady 4
+
+	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
+		ttk::menubutton $w -text Options -menu $m -width 8
+	} elseif {[windowingsystem] == "aqua"} {
+		menubutton $w -text Options -menu $m -width 8 -pady 4
 	} else {
-	    menubutton $w -text Options... -menu $m -relief raised -width 10 \
-		-font $f
- 	}
+		menubutton $w -text Options -menu $m -relief raised -width 10 \
+		-font $f -indicatoron 1
+	}
 	menu $m
-   	$m add checkbutton -label "Sending Slides" \
+	$m add checkbutton -label "Sending Slides" \
 		-variable sendingSlides -font $f -command setFillRate
-    $m add checkbutton -label "Use JPEG for H261" \
+	$m add checkbutton -label "Use JPEG for H261" \
 		-variable useJPEGforH261 -font $f -command restart
 	$m add checkbutton -label "Use Hardware Encode" \
 		-variable useHardwareComp -font $f -command restart
-    if { $tcl_platform(platform) == "windows" || [string match [ windowingsystem] "aqua"] } {
+	$m add checkbutton -label "Use Deinterlacer" \
+		-variable useDeinterlacerComp -font $f -command restart
+	if { $tcl_platform(platform) == "windows" || [windowingsystem] == "aqua"} {
 		$m add checkbutton -label "Configure on Transmit" \
 			-variable configOnTransmit -font $f \
 			-command  "grabber useconfig \$configOnTransmit"
@@ -1244,7 +1339,6 @@ proc build.decoder_options w {
 }
 
 proc build.external w {
-	set f [smallfont]
 	set m $w.menu
 	global outputDeviceList
 	if ![info exists outputDeviceList] {
@@ -1295,7 +1389,6 @@ proc build.dither w {
 	}
 	set v $w.h0
 	frame $v
-
 	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		ttk::radiobutton $v.b0 -text "Ordered" -command set_dither \
 			-variable $var -state $state \
@@ -1354,7 +1447,7 @@ proc update_gamma { w s } {
 	# to update their copy of the image (which has the old colormap
 	# installed).  Instead, go through all the active decoders and
 	# force them to update all the windows.
-	# 
+	#
 	foreach src [session active] {
 		set d [$src handler]
 		if { $d != "" } {
@@ -1402,8 +1495,8 @@ proc build.decoder w {
 	build.gamma $v.bot.gamma
 	label $v.bot.mode -text "\[[winfo depth .top]-bit\]" -font $f
 	pack $v.bot.gamma $v.bot.mode -side left -padx 4
-	pack $v.dither -side left -anchor c -pady 2 
-	pack $v.bot -side left -anchor c -pady 2 
+	pack $v.dither -side left -anchor c -pady 2
+	pack $v.bot -side left -anchor c -pady 2
 
 	pack $w.f.h0 -side left -padx 6 -pady 6
 	pack $w.f.h2 -side left -padx 6 -pady 6 -fill x -expand 1
@@ -1440,6 +1533,7 @@ proc build.encoder w {
 
 proc jpeg_setq value {
 	global useHardwareComp videoDevice
+	set value [expr round($value)]
 	incr value
 	if { $value > 95 } {
 		set value 95
@@ -1453,8 +1547,8 @@ proc jpeg_setq value {
 		grabber q $value
 	} elseif [have grabber] {
 		encoder q $value
-	}	
-	
+	}
+
 	global qvalue
 	$qvalue configure -text $value
 }
@@ -1472,7 +1566,7 @@ proc h261as_setq value {
 	set value [expr int((1 - $value / 100.) * 29) + 1]
 	if [have grabber] {
 		encoder q $value
-  	}
+	}
 	global qvalue
 	$qvalue configure -text $value
 }
@@ -1501,10 +1595,11 @@ proc nv_setq value {
 		encoder q $value
 	}
 	global qvalue
-	$qvalue configure -text $value
+	$qvalue configure -text [expr round($value * 10) / 10]
 }
 
 proc nvdct_setq value {
+	set value [expr round($value)]
 	nv_setq $value
 	global qvalue
 	$qvalue configure -text $value
@@ -1562,7 +1657,7 @@ set pvh_shs {
 # Format specific routine to map generic quality <i>value</i>
 # into actions that program the underlying PVH codec.
 #
-#VideoPipeline instproc 
+#VideoPipeline instproc
 #
 proc pvh_setq value {
 #	$self instvar encoder_
@@ -1590,7 +1685,7 @@ proc pvh_setq value {
 		}
 		global qvalue
 		$qvalue configure -text $value
-		
+
 		return 0
 	}
 	#XXX
@@ -1605,7 +1700,7 @@ proc pvh_setq value {
 proc restart { } {
 	if [have grabber] {
 		global transmitButtonState logoButtonState videoDevice V
-	
+
 		# HANDLE TRANSMIT LOGO
 		if $logoButtonState {
 			logo_quit
@@ -1614,7 +1709,7 @@ proc restart { } {
 			logo_quit
 		}
 
-		# HANDLE TRANSMIT VIDEO	
+		# HANDLE TRANSMIT VIDEO
 		if $transmitButtonState {
 			$V(grabber) send 0
 			close_device
@@ -1623,7 +1718,8 @@ proc restart { } {
 			close_device
 		}
 	}
-    set_software_scale_buttons_state
+	set_scaler_buttons_state
+	set_capture_resolution_button_state
 }
 
 proc disable_large_button { } {
@@ -1642,21 +1738,32 @@ proc enable_large_button { } {
 	}
 }
 
-proc set_software_scale_buttons_state { } {
-	global inputSize softwareScaleButtons
-	if { [info exists softwareScaleButtons] } {
+proc set_capture_resolution_button_state { } {
+	global inputSize capResolutionButton
+	if { [info exists capResolutionButton] } {
 		if { $inputSize == 1 } {
-			$softwareScaleButtons.b0 configure -state normal
-			$softwareScaleButtons.b1 configure -state normal
-			$softwareScaleButtons.b2 configure -state normal
-			$softwareScaleButtons.b3 configure -state normal
-			$softwareScaleButtons.b4 configure -state normal
+			$capResolutionButton configure -state normal
 		} else {
-			$softwareScaleButtons.b0 configure -state disabled
-			$softwareScaleButtons.b1 configure -state disabled
-			$softwareScaleButtons.b2 configure -state disabled
-			$softwareScaleButtons.b3 configure -state disabled
-			$softwareScaleButtons.b4 configure -state disabled
+			$capResolutionButton configure -state disabled
+		}
+	}
+}
+
+proc set_scaler_buttons_state { } {
+	global inputSize scalerButtons
+	if { [info exists scalerButtons] } {
+		if { $inputSize == 1 } {
+			$scalerButtons.b0 configure -state normal
+			$scalerButtons.b1 configure -state normal
+			$scalerButtons.b2 configure -state normal
+			$scalerButtons.b3 configure -state normal
+			$scalerButtons.b4 configure -state normal
+		} else {
+			$scalerButtons.b0 configure -state disabled
+			$scalerButtons.b1 configure -state disabled
+			$scalerButtons.b2 configure -state disabled
+			$scalerButtons.b3 configure -state disabled
+			$scalerButtons.b4 configure -state disabled
 		}
 	}
 }
@@ -1673,7 +1780,7 @@ set qscale_val(raw) 1
 set lastFmt ""
 
 proc select_format fmt {
-	global qscale qlabel videoDevice videoFormat qscale_val lastFmt
+	global qscale qlabel videoDevice videoFormat qscale_val lastFmt inputSize
 
 	if { $fmt == "h261" || $fmt == "pvh"} {
 		# H.261 supports only QCIF/CIF
@@ -1693,16 +1800,26 @@ proc select_format fmt {
 		pack forget .menu.encoder.f.encoderLayer
 	}
 
-	set qscale_val($lastFmt) [$qscale get]
+	set qscale_val($lastFmt) [expr round([$qscale get])]
 	set lastFmt $videoFormat
 
 	set proc $fmt\_setq
+
 	if [inList $proc [info commands *_setq]] {
-		#$qscale configure -state normal -command $proc
-		$qscale configure -command $proc
+		if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
+			$qscale state !disabled
+			$qscale configure -command $proc
+		} else {
+			$qscale configure -state normal -command $proc
+		}
 		$qlabel configure -foreground black
 	} else {
-		$qscale configure -state disabled 
+		if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
+			$qscale state !active
+			$qscale state disabled
+		} else {
+			$qscale configure -state disabled
+		}
 		$qlabel configure -foreground gray40
 	}
 	set qual [resource quality]
@@ -1735,20 +1852,21 @@ proc select_format fmt {
 			# XXX doens't work if title-maker is installed
 			# SV, title-maker fix: see marked code below
 			delete $V(encoder)
+			$V(grabber) decimate $inputSize
 			set V(encoder) $encoder
 
 			update_encoder_param
 
 			$encoder transmitter $V(session)
-			
+
 			# SV ######################
-			global logoButtonState			
+			global logoButtonState
 			if $logoButtonState {
 				logo_quit
 				logo_transmit
 			} else {
 				logo_quit
-			}			
+			}
 			###########################
 		} else {
 			#
@@ -1785,7 +1903,7 @@ proc init_grabber { grabber } {
 		$grabber create-capwin .capture.video
 		set V(capwin) .capture.video
 		pack .capture.video
-	    
+
 		# capture window shouldn't be covered
 		bind .capture <Visibility> "raise .capture"
 	}
@@ -1813,14 +1931,14 @@ proc init_grabber { grabber } {
 		}
 	}
 
-	$grabber fps [$fps_slider get]
-	$grabber bps [$bps_slider get]
+	$grabber fps [expr round([$fps_slider get])]
+	$grabber bps [expr round([$bps_slider get])]
 	$grabber decimate $inputSize
 
 	if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
 		$qscale instate {!disabled} {
 			set cmd [$qscale cget -command]
-				$cmd [expr round([$qscale get])]
+			$cmd [expr round([$qscale get])]
 		}
 		if {[windowingsystem] != "aqua"} {
 			$portButton instate {!disabled} {
@@ -1833,7 +1951,7 @@ proc init_grabber { grabber } {
 	} else {
 		if { [lindex [$qscale configure -state] 4] == "normal" } {
 			set cmd [lindex [$qscale configure -command] 4]
-				$cmd [$qscale get]
+			$cmd [$qscale get]
 		}
 		if {[windowingsystem] != "aqua"} {
 			if { [$portButton cget -state] == "normal" } {
@@ -1881,9 +1999,9 @@ proc build.xmit w {
 	pack $w.frame -fill both -expand 1
 	frame $w.frame.buttons
 	build.buttons $w.frame.buttons
-	
+
 	frame $w.frame.combined
-	
+
 	frame $w.frame.combined.right
 	build.sliders $w.frame.combined.right
 	frame $w.frame.combined.tm
@@ -1891,8 +2009,8 @@ proc build.xmit w {
 
 	pack $w.frame.combined.right -side top -expand 1 -fill x -padx 10 -anchor w
 	pack $w.frame.combined.tm -side bottom -expand 1 -fill y -pady 10 -anchor w
-	
-	pack $w.frame.buttons -side left -padx 6 
+
+	pack $w.frame.buttons -side left -padx 6
 	pack $w.frame.combined -side right -expand 1 -fill x -padx 10 -anchor c
 }
 
@@ -1909,7 +2027,7 @@ proc set_dither {} {
 	foreach w $wlist {
 		attach_window $ws($w) $w
 	}
-}	
+}
 
 proc revert_to_gray {} {
 	global V
@@ -1922,4 +2040,3 @@ proc revert_to_gray {} {
 	set V(dither) gray
 	set_dither
 }
-

@@ -1,0 +1,662 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="codec">
+      <UniqueIdentifier>{6b9cf765-ad32-4955-b6e3-721e61045834}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cpu">
+      <UniqueIdentifier>{739bbd2c-dd5d-4b9a-beb4-c12550dd4e6b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="render">
+      <UniqueIdentifier>{72a31da1-2d65-468c-97f9-dc9daaea3f26}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rtp">
+      <UniqueIdentifier>{eb68c2d5-edf4-441e-9221-7379afa779aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tcl">
+      <UniqueIdentifier>{7e8b4951-6a2c-486d-857b-69408f4d3ad9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vic common">
+      <UniqueIdentifier>{7b85ca7b-74a7-4231-b468-6a3c3b5c4be9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="video">
+      <UniqueIdentifier>{2921b727-0288-4c70-b42e-d495889b99b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="win32">
+      <UniqueIdentifier>{6ad90f95-0fde-433e-abaa-81fe4867a698}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="codec\Codec Header Files">
+      <UniqueIdentifier>{f4200de1-50ae-4d3a-a978-6b2ed5ca5a4a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cpu\CPU Header Files">
+      <UniqueIdentifier>{353f23ba-d999-433f-ac48-b718aa456aab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net">
+      <UniqueIdentifier>{dc48968a-de06-4e19-bcbd-eb30694efa86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net\Net Header Files">
+      <UniqueIdentifier>{f63ecb3e-0099-43c1-952f-8c93c9b89252}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="render\Render Header Files">
+      <UniqueIdentifier>{143f25f9-321b-4cb8-b2f8-c2e8fcbdc61f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rtp\RTP Header Files">
+      <UniqueIdentifier>{76e9dbf4-0853-4138-83eb-e92426751aac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vic common\VIC Common Header Files">
+      <UniqueIdentifier>{ff515350-bb26-4ba7-8c59-d9f6582578eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="video\Video Header Files">
+      <UniqueIdentifier>{0010e11e-0b04-4c27-8f67-bb50f96948a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tcl\Generated Source Files">
+      <UniqueIdentifier>{1b90f207-9fc8-4929-bdfb-2d8fcb2956c3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="win32\build_install.txt" />
+    <None Include="LICENSE.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="codec\cellb_tables.c">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\compositor.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\databuffer.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\dct.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\decoder.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\decoder-bvc.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\decoder-cellb.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\decoder-dv.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\decoder-h261.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\decoder-h261as.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\decoder-h261v1.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\decoder-h264.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\decoder-jpeg.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\decoder-mpeg4.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\decoder-nv.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\decoder-pvh.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\decoder-raw.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\encoder-bvc.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\encoder-cellb.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\encoder-h261.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\encoder-h261as.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\encoder-h264.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\encoder-jpeg.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\encoder-mpeg4.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\encoder-nv.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\encoder-pvh.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\encoder-raw.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\ffmpeg_codec.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\framer-jpeg.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\huffcode.c">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\packetbuffer.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\pvh-huff.c">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\rtp_h264_depayloader.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\x264encoder.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\p64\p64.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\p64\p64as.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="codec\jpeg\jpeg.cpp">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="cpu\cpuid.cpp">
+      <Filter>cpu</Filter>
+    </ClCompile>
+    <ClCompile Include="net\communicator.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\confbus.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\crypt.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\crypt-des.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\crypt-dull.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\crypt-rijndael.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\group-ipc.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\inet.c">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\inet6.c">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\mbus_engine.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\mbus_handler.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\net.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\net-addr.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\net-ip.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\net-ipv6.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\pktbuf.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\pkttbl.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="render\color-hi.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="render\color-swscale.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="render\color-true.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="render\renderer.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="render\renderer-window.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="render\rgb-converter.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="render\vw.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="rtp\pktbuf-rtp.cpp">
+      <Filter>rtp</Filter>
+    </ClCompile>
+    <ClCompile Include="rtp\session.cpp">
+      <Filter>rtp</Filter>
+    </ClCompile>
+    <ClCompile Include="rtp\source.cpp">
+      <Filter>rtp</Filter>
+    </ClCompile>
+    <ClCompile Include="rtp\transmitter.cpp">
+      <Filter>rtp</Filter>
+    </ClCompile>
+    <ClCompile Include="getopt.c">
+      <Filter>vic common</Filter>
+    </ClCompile>
+    <ClCompile Include="idlecallback.cpp">
+      <Filter>vic common</Filter>
+    </ClCompile>
+    <ClCompile Include="iohandler.cpp">
+      <Filter>vic common</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>vic common</Filter>
+    </ClCompile>
+    <ClCompile Include="md5c.c">
+      <Filter>vic common</Filter>
+    </ClCompile>
+    <ClCompile Include="media-timer.cpp">
+      <Filter>vic common</Filter>
+    </ClCompile>
+    <ClCompile Include="module.cpp">
+      <Filter>vic common</Filter>
+    </ClCompile>
+    <ClCompile Include="random.c">
+      <Filter>vic common</Filter>
+    </ClCompile>
+    <ClCompile Include="rate-variable.cpp">
+      <Filter>vic common</Filter>
+    </ClCompile>
+    <ClCompile Include="Tcl.cpp">
+      <Filter>vic common</Filter>
+    </ClCompile>
+    <ClCompile Include="Tcl2.cpp">
+      <Filter>vic common</Filter>
+    </ClCompile>
+    <ClCompile Include="timer.cpp">
+      <Filter>vic common</Filter>
+    </ClCompile>
+    <ClCompile Include="tkStripchart.c">
+      <Filter>vic common</Filter>
+    </ClCompile>
+    <ClCompile Include="tkWinColor.c">
+      <Filter>vic common</Filter>
+    </ClCompile>
+    <ClCompile Include="zvfs.c">
+      <Filter>vic common</Filter>
+    </ClCompile>
+    <ClCompile Include="video\assistor-list.cpp">
+      <Filter>video</Filter>
+    </ClCompile>
+    <ClCompile Include="video\crossbar.cpp">
+      <Filter>video</Filter>
+    </ClCompile>
+    <ClCompile Include="video\deinterlace.cpp">
+      <Filter>video</Filter>
+    </ClCompile>
+    <ClCompile Include="video\device.cpp">
+      <Filter>video</Filter>
+    </ClCompile>
+    <ClCompile Include="video\grabber-decklink.cpp">
+      <Filter>video</Filter>
+    </ClCompile>
+    <ClCompile Include="video\grabber-file.cpp">
+      <Filter>video</Filter>
+    </ClCompile>
+    <ClCompile Include="video\grabber-win32.cpp">
+      <Filter>video</Filter>
+    </ClCompile>
+    <ClCompile Include="video\grabber-win32DS.cpp">
+      <Filter>video</Filter>
+    </ClCompile>
+    <ClCompile Include="video\grabber.cpp">
+      <Filter>video</Filter>
+    </ClCompile>
+    <ClCompile Include="video\yuv_convert.cpp">
+      <Filter>video</Filter>
+    </ClCompile>
+    <ClCompile Include="win32\win32.c">
+      <Filter>win32</Filter>
+    </ClCompile>
+    <ClCompile Include="win32\win32X.c">
+      <Filter>win32</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)accessgrid.cpp">
+      <Filter>tcl\Generated Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ag-pixrate.cpp">
+      <Filter>tcl\Generated Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)autoplace_ui.cpp">
+      <Filter>tcl\Generated Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)cf-confbus.cpp">
+      <Filter>tcl\Generated Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)cf-main.cpp">
+      <Filter>tcl\Generated Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)cf-network.cpp">
+      <Filter>tcl\Generated Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)cf-tm.cpp">
+      <Filter>tcl\Generated Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)cf-util.cpp">
+      <Filter>tcl\Generated Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)entry.cpp">
+      <Filter>tcl\Generated Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-ctrlmenu.cpp">
+      <Filter>tcl\Generated Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-entry.cpp">
+      <Filter>tcl\Generated Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-extout.cpp">
+      <Filter>tcl\Generated Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-grabber.cpp">
+      <Filter>tcl\Generated Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-help.cpp">
+      <Filter>tcl\Generated Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-main.cpp">
+      <Filter>tcl\Generated Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-relate.cpp">
+      <Filter>tcl\Generated Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-resource.cpp">
+      <Filter>tcl\Generated Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-srclist.cpp">
+      <Filter>tcl\Generated Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-stats.cpp">
+      <Filter>tcl\Generated Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-switcher.cpp">
+      <Filter>tcl\Generated Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-titlemaker.cpp">
+      <Filter>tcl\Generated Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-util.cpp">
+      <Filter>tcl\Generated Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-win32.cpp">
+      <Filter>tcl\Generated Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-windows.cpp">
+      <Filter>tcl\Generated Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)version.c">
+      <Filter>vic common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)bv.c">
+      <Filter>codec</Filter>
+    </ClCompile>
+    <ClCompile Include="video\DeckLinkAPI_i.cpp">
+      <Filter>video</Filter>
+    </ClCompile>
+    <ClCompile Include="render\color.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="codec\databuffer.h">
+      <Filter>codec\Codec Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\dct.h">
+      <Filter>codec\Codec Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\decoder.h">
+      <Filter>codec\Codec Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\decoder-jpeg.h">
+      <Filter>codec\Codec Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\encoder-h263.h">
+      <Filter>codec\Codec Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\ffmpeg_codec.h">
+      <Filter>codec\Codec Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\framer-h261.h">
+      <Filter>codec\Codec Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\packetbuffer.h">
+      <Filter>codec\Codec Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\pvh.h">
+      <Filter>codec\Codec Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\pvh-huff.h">
+      <Filter>codec\Codec Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\rtp_h264_depayloader.h">
+      <Filter>codec\Codec Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\x264encoder.h">
+      <Filter>codec\Codec Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\jpeg\jpeg.h">
+      <Filter>codec\Codec Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\p64\p64.h">
+      <Filter>codec\Codec Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\p64\p64as.h">
+      <Filter>codec\Codec Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\tmndec\getvlc.h">
+      <Filter>codec\Codec Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="codec\p64\p64-huff.h">
+      <Filter>codec\Codec Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cpu\cpudetect.h">
+      <Filter>cpu\CPU Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cpu\cputable.h">
+      <Filter>cpu\CPU Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="net\crypt.h">
+      <Filter>net\Net Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="net\group-ipc.h">
+      <Filter>net\Net Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="net\inet.h">
+      <Filter>net\Net Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="net\inet6.h">
+      <Filter>net\Net Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="net\mbus_engine.h">
+      <Filter>net\Net Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="net\mbus_handler.h">
+      <Filter>net\Net Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="net\net.h">
+      <Filter>net\Net Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="net\net-addr.h">
+      <Filter>net\Net Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="net\pktbuf.h">
+      <Filter>net\Net Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="net\pkttbl.h">
+      <Filter>net\Net Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="net\rt.h">
+      <Filter>net\Net Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="render\color.h">
+      <Filter>render\Render Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="render\renderer.h">
+      <Filter>render\Render Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="render\renderer-window.h">
+      <Filter>render\Render Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="render\rgb-converter.h">
+      <Filter>render\Render Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="render\vw.h">
+      <Filter>render\Render Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rtp\ntp-time.h">
+      <Filter>rtp\RTP Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rtp\pktbuf-rtp.h">
+      <Filter>rtp\RTP Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rtp\rtp.h">
+      <Filter>rtp\RTP Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rtp\session.h">
+      <Filter>rtp\RTP Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rtp\source.h">
+      <Filter>rtp\RTP Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rtp\transmitter.h">
+      <Filter>rtp\RTP Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="config.h">
+      <Filter>vic common\VIC Common Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="video\assistor-list.h">
+      <Filter>video\Video Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="video\crossbar.h">
+      <Filter>video\Video Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="video\deinterlace.h">
+      <Filter>video\Video Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="video\grabber.h">
+      <Filter>video\Video Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="video\grabber-win32DS.h">
+      <Filter>video\Video Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="video\yuv_convert.h">
+      <Filter>video\Video Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="zvfs.h">
+      <Filter>vic common\VIC Common Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="video\DeckLinkAPI_h.h">
+      <Filter>video\Video Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="VERSION" />
+    <CustomBuild Include="tcl\ui-win32.tcl">
+      <Filter>tcl</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-util.tcl">
+      <Filter>tcl</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-titlemaker.tcl">
+      <Filter>tcl</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-switcher.tcl">
+      <Filter>tcl</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-stats.tcl">
+      <Filter>tcl</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-srclist.tcl">
+      <Filter>tcl</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-resource.tcl">
+      <Filter>tcl</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-relate.tcl">
+      <Filter>tcl</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-main.tcl">
+      <Filter>tcl</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-help.tcl">
+      <Filter>tcl</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-grabber.tcl">
+      <Filter>tcl</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-extout.tcl">
+      <Filter>tcl</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-entry.tcl">
+      <Filter>tcl</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-ctrlmenu.tcl">
+      <Filter>tcl</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tcl\entry.tcl">
+      <Filter>tcl</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tcl\cf-util.tcl">
+      <Filter>tcl</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tcl\cf-tm.tcl">
+      <Filter>tcl</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tcl\cf-network.tcl">
+      <Filter>tcl</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tcl\cf-main.tcl">
+      <Filter>tcl</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tcl\cf-confbus.tcl">
+      <Filter>tcl</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tcl\autoplace_ui.tcl">
+      <Filter>tcl</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ag-pixrate.tcl">
+      <Filter>tcl</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-windows.tcl">
+      <Filter>tcl</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tcl\accessgrid.tcl">
+      <Filter>tcl</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <YASM Include="cpu\cpuid_win.asm">
+      <Filter>cpu</Filter>
+    </YASM>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="video\DeckLinkAPI.idl">
+      <Filter>video</Filter>
+    </Midl>
+  </ItemGroup>
+</Project>

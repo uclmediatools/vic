@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1993-1995 Regents of the University of California.
+ * Copyright (c) 1993-1995 The Regents of the University of California.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,27 +10,23 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by the University of
- *      California, Berkeley and the Network Research Group at
- *      Lawrence Berkeley Laboratory.
- * 4. Neither the name of the University nor of the Laboratory may be used
- *    to endorse or promote products derived from this software without
- *    specific prior written permission.
+ * 3. Neither the names of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+ * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
+
 static const char rcsid[] =
     "@(#) $Header$ (LBL)";
 
@@ -91,9 +87,9 @@ class VideoPixGrabber : public Grabber {
 	u_int decimate_;
 };
 
-class VideoPix411Grabber : public VideoPixGrabber {
+class VideoPix420Grabber : public VideoPixGrabber {
     public:
-	VideoPix411Grabber();
+	VideoPix420Grabber();
     protected:
 	virtual void NTSCgrabSmall();
 	virtual void NTSCgrabMedium();
@@ -106,7 +102,7 @@ class VideoPix411Grabber : public VideoPixGrabber {
 	int hskip_;		/* amount of input to throw out on each line */
 };
 
-class CIFVideoPixGrabber : public VideoPix411Grabber {
+class CIFVideoPixGrabber : public VideoPix420Grabber {
     protected:
 	virtual void PALgrabSmall();
 	virtual void PALgrabMedium();
@@ -125,7 +121,7 @@ VideoPixDevice::VideoPixDevice(const char* name) : InputDevice(name)
 {
 	if (access("/dev/vfc0", R_OK) == 0)
 		attributes_ = "\
-format { 411 422 } \
+format { 420 422 } \
 size { small cif } \
 port { Composite-1 Composite-2 S-Video}";
 	else
@@ -140,8 +136,8 @@ int VideoPixDevice::command(int argc, const char*const* argv)
 			TclObject* o = 0;
 			if (strcmp(argv[2], "422") == 0)
 				o = new VideoPixGrabber;
-			else if (strcmp(argv[2], "411") == 0)
-				o = new VideoPix411Grabber;
+			else if (strcmp(argv[2], "420") == 0)
+				o = new VideoPix420Grabber;
 			else if (strcmp(argv[2], "cif") == 0)
 				o = new CIFVideoPixGrabber;
 			if (o != 0)
@@ -670,16 +666,16 @@ int VideoPixGrabber::grab()
 	return (target_->consume(&f));
 }
 
-VideoPix411Grabber::VideoPix411Grabber()
+VideoPix420Grabber::VideoPix420Grabber()
 	: loff_(0), coff_(0), hwrap_(0), hskip_(0)
 {
 }
 
-void VideoPix411Grabber::setsize()
+void VideoPix420Grabber::setsize()
 {
 	if (format_ < 0)
 		return;
-	set_size_411(basewidth_ / decimate_, baseheight_ / decimate_);
+	set_size_420(basewidth_ / decimate_, baseheight_ / decimate_);
 	allocref();
 	loff_ = 0;
 	coff_ = 0;
@@ -707,7 +703,7 @@ void CIFVideoPixGrabber::setsize()
 	coff_ = (outw_ >> 1) * (voff >> 1) + (hoff >> 1);
 }
 
-void VideoPix411Grabber::NTSCgrabMedium()
+void VideoPix420Grabber::NTSCgrabMedium()
 {
 	VOLATILE u_int* iochan = (u_int*)vfcdev_->vfc_port1;
 	PRESKIP(VFC_OSKIP_NTSC)
@@ -798,7 +794,7 @@ void VideoPix411Grabber::NTSCgrabMedium()
 	}
 }
 
-void VideoPix411Grabber::NTSCgrabSmall()
+void VideoPix420Grabber::NTSCgrabSmall()
 {
 	VOLATILE u_int* iochan = (u_int*)vfcdev_->vfc_port1;
 	PRESKIP(VFC_OSKIP_NTSC)
@@ -887,7 +883,7 @@ void VideoPix411Grabber::NTSCgrabSmall()
 	}
 }
 
-void VideoPix411Grabber::PALgrabMedium()
+void VideoPix420Grabber::PALgrabMedium()
 {
 	VOLATILE u_int* iochan = (u_int*)vfcdev_->vfc_port1;
 	PRESKIP(VFC_ESKIP_PAL)
@@ -974,7 +970,7 @@ void VideoPix411Grabber::PALgrabMedium()
 	}
 }
 
-void VideoPix411Grabber::PALgrabSmall()
+void VideoPix420Grabber::PALgrabSmall()
 {
 	VOLATILE u_int* iochan = (u_int*)vfcdev_->vfc_port1;
 	PRESKIP(VFC_ESKIP_PAL)

@@ -10,27 +10,21 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- * 	This product includes software developed by the Network Research
- * 	Group at Lawrence Berkeley National Laboratory.
- * 4. Neither the name of the University nor of the Laboratory may be used
- *    to endorse or promote products derived from this software without
- *    specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * 3. Neither the names of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
  *
- * @(#) $Header$ (LBL)
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+ * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef vic_module_h
@@ -61,6 +55,12 @@ class VideoFrame {
 	int frame_no_;
 };
 
+/* YUV Frame uses Planar format I420(fourcc code) representation - Each
+ * frame is stored: Firstly the Y(Intensity) at full resolution - ie WxH
+ * Followed by U(Chrominance Cb) subsampled 2x2 i.e. W/2*H/2
+ * Followed by V(Chrominance Cr) also subsampled 2x2 
+ * Hence 12 bits/pixel and frame size = WxH+2*(W/2*H/2)
+ */
 class YuvFrame : public VideoFrame {
     public:
 	    inline YuvFrame(u_int32_t ts, u_int8_t* bp, u_int8_t* crvec,
@@ -107,7 +107,7 @@ class CellBFrame : public VideoFrame {
 };
 
 #define FT_HW		0x80
-#define FT_YUV_411	1
+#define FT_YUV_420	1
 #define FT_YUV_422	2
 #define FT_YUV_CIF	3
 #define FT_JPEG		(1|FT_HW)
@@ -117,6 +117,8 @@ class CellBFrame : public VideoFrame {
 #define FT_RAW		7
 #define FT_LDCT		8
 #define FT_PVH		9
+#define FT_H264		10
+#define FT_MPEG4	11
 
 class Module : public TclObject {
     public:
@@ -144,7 +146,7 @@ class Module : public TclObject {
 	int width_;
 	int height_;
 	int framesize_;
-	int ft_;		/* stream type: 422/411/cif/jpeg etc. */
+	int ft_;		/* stream type: 422/420/cif/jpeg etc. */
 };
 
 class TransmitterModule : public Module {

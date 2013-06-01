@@ -1,14 +1,16 @@
-Building VIC on Windows platforms
----------------------------------
+VIC on Windows platforms
+------------------------
 
-The VIC distribution contains a MS Visual Studio workspace for building various
-releases.  The following project configurations are available from the
-build->'set active configuration' menu item: 
+Please see win32\build_install.txt for building instructions.
 
-vic win32 release              - Non debug IPv4 build
-vic win32 debug ipv6 musica    - Debug build for use with Musica IPv6 stack
-vic win32 debug                - Debug IPv4 build
-vic win32 debug ipv6 win2000   - Debug IPv6 build for Windows 2000
-vic win32 debug ipv6 msr       - Debug IPv6 build for MS research IPv6 stack
-vic win32 release ipv6 win2000 - Release IPv6 build for Windows 2000
+The VIC distribution contains a Visual Studio 2010 solution
+file (vic.sln) or Visual Studio 2008 solution file
+(vic.2008.sln) for building various releases.
 
+The following Solutions Configurations are available from
+the Build->'Configuration Manger...' menu item: 
+
+vic Release (nonGPL)           - Non-GPL release build
+vic Debug (nonGPL)             - Non-GPL debug build
+vic Release (GPL)              - GPL release build
+vic Debug (GPL)                - GPL debug build

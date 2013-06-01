@@ -1,5 +1,5 @@
 #
-# Copyright (c) 1993-1995 Regents of the University of California.
+# Copyright (c) 1993-1995 The Regents of the University of California.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -10,19 +10,58 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. All advertising materials mentioning features or use of this software
-#    must display the following acknowledgement:
-#	This product includes software developed by the Computer Systems
-#	Engineering Group at Lawrence Berkeley Laboratory.
-# 4. Neither the name of the University nor of the Laboratory may be used
-#    to endorse or promote products derived from this software without
-#    specific prior written permission.
+# 3. Neither the names of the copyright holders nor the names of its
+#    contributors may be used to endorse or promote products derived from
+#    this software without specific prior written permission.
 #
-# THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+# IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+
+# init_grabber_panel if invoked ensures ui-grabber.tcl gets sourced
+proc init_grabber_panel {} {
+}
+
+proc build.directshow w {
+    global capResolutionButton videoDevice
+
+    label $w.title -text "DirectShow grabber controls"
+    frame $w.f -relief sunken -borderwidth 2
+
+    set f [smallfont]
+    # create the menubutton but don't defer the menu creation until later
+    if {$::tk_version > 8.4 } {
+        ttk::menubutton $w.f.resolution -text "Capture Resolution" \
+            -menu $w.f.resolution.menu -width 18
+    } else {
+        menubutton $w.f.resolution -text "Capture Resolution" \
+            -menu $w.f.resolution.menu -relief raised -width 20 \
+            -font $f -indicatoron 1
+    }
+
+    if {$::tk_version > 8.4 } {
+        ttk::button $w.f.properties -text "Properties" -width 18 \
+            -command "$videoDevice properties"
+    } else {
+        menubutton $w.f.properties -text "Properties" -width 20 \
+            -relief raised -command "$videoDevice properties"
+    }
+
+    pack $w.f.resolution -fill x -side left
+    pack $w.f.properties -fill x -side right
+    pack $w.title $w.f -fill x -expand 1
+    set capResolutionButton $w.f.resolution
+    set_capture_resolution_button_state
+}
 
 # init_grabber_panel if invoked ensures ui-grabber.tcl gets sourced
 proc init_grabber_panel {} {
@@ -117,8 +156,8 @@ proc build.v4l2 w {
     frame $w.f.left -relief flat
 
     set m $w.f.left.antiflicker.menu
-    menubutton $w.f.left.antiflicker -menu $m -text "Anti-flicker..." \
-	-relief raised -width 14 -font $f -padx 1 -pady 1
+    menubutton $w.f.left.antiflicker -menu $m -text "Anti-flicker" \
+	-relief raised -width 14 -font $f -padx 1 -pady 1 -indicatoron 1
     menu $m
     $m add radiobutton -label "disabled" -command "grabber antiflicker 0" \
 	-value "disabled" -variable antiflicker -font $f
@@ -190,8 +229,8 @@ proc build.v4l2 w {
     pack $w.f -expand 1 -fill x
 }
 
-proc build.decklink w {
-    global setSoftwareScale softwareScaleButtons
+proc build.blackmagic w {
+    global largeSizeResolution scalerButtons
 
     label $w.title -text "Blackmagic DeckLink-Grabber"
     frame $w.f -relief sunken -borderwidth 2
@@ -200,40 +239,40 @@ proc build.decklink w {
 
     if {$::tk_version > 8.4 && [windowingsystem] != "x11"} {
         ttk::radiobutton $w.f.b0 -text "none" -command "restart" \
-           -variable setSoftwareScale -value "none"
+           -variable largeSizeResolution -value "none"
         ttk::radiobutton $w.f.b1 -text "960p" -command "restart" \
-            -variable setSoftwareScale -value "960p"
+            -variable largeSizeResolution -value "960p"
         ttk::radiobutton $w.f.b2 -text "720p" -command "restart" \
-            -variable setSoftwareScale -value "720p"
+            -variable largeSizeResolution -value "720p"
         ttk::radiobutton $w.f.b3 -text "576p" -command "restart" \
-            -variable setSoftwareScale -value "576p"
+            -variable largeSizeResolution -value "576p"
         ttk::radiobutton $w.f.b4 -text "480p" -command "restart" \
-            -variable setSoftwareScale -value "480p"
+            -variable largeSizeResolution -value "480p"
     } else {
         set f [smallfont]
         radiobutton $w.f.b0 -text "none" -command "restart" \
             -padx 0 -pady 0 \
-            -anchor w -variable setSoftwareScale -font $f -relief flat -value "none"
+            -anchor w -variable largeSizeResolution -font $f -relief flat -value "none"
         radiobutton $w.f.b1 -text "960p" -command "restart" \
             -padx 0 -pady 0 \
-            -anchor w -variable setSoftwareScale -font $f -relief flat -value "960p"
+            -anchor w -variable largeSizeResolution -font $f -relief flat -value "960p"
         radiobutton $w.f.b2 -text "720p" -command "restart" \
             -padx 0 -pady 0 \
-            -anchor w -variable setSoftwareScale -font $f -relief flat -value "720p"
+            -anchor w -variable largeSizeResolution -font $f -relief flat -value "720p"
         radiobutton $w.f.b3 -text "576p" -command "restart" \
             -padx 0 -pady 0 \
-            -anchor w -variable setSoftwareScale -font $f -relief flat -value "576p"
+            -anchor w -variable largeSizeResolution -font $f -relief flat -value "576p"
         radiobutton $w.f.b4 -text "480p" -command "restart" \
             -padx 0 -pady 0 \
-            -anchor w -variable setSoftwareScale -font $f -relief flat -value "480p"
+            -anchor w -variable largeSizeResolution -font $f -relief flat -value "480p"
     }
     pack $w.f.scaling $w.f.b0 $w.f.b1 $w.f.b2 $w.f.b3 $w.f.b4 -fill x -side left
 
     pack $w.title $w.f -fill x -expand 1
 
-    set setSoftwareScale "none"
-    set softwareScaleButtons $w.f
-    set_software_scale_buttons_state
+    set largeSizeResolution [resource largeSizeResolution]
+    set scalerButtons $w.f
+    set_scaler_buttons_state
 }
 
 proc build.meteor w {
@@ -775,6 +814,39 @@ proc build.qcam {w} {
     set qcamwindow(setbpp) "set qcambpp"
 }
 
+proc build.ov511 {w} {
+    global ov511window
+
+    set f [smallfont]
+    label $w.title -text "Grabber"
+
+    frame $w.f -relief sunken -borderwidth 2
+
+    frame $w.f.s -relief flat
+
+    frame $w.f.s.l -relief flat
+    label $w.f.s.l.red   -font $f -anchor w -text "Red balance"
+    label $w.f.s.l.blue   -font $f -anchor w -text "Blue balance"
+    pack $w.f.s.l.red $w.f.s.l.blue -side top -fill x -expand 1
+
+    frame $w.f.s.s -relief flat
+    scale $w.f.s.s.red    -orient horizontal -width 12 \
+		          -relief groove -showvalue 0 -from 0 -to 255 \
+                          -command "grabber set RED"
+    scale $w.f.s.s.blue   -orient horizontal -width 12 \
+		          -relief groove -showvalue 0 -from 0 -to 255 \
+                          -command "grabber set BLUE"
+
+    pack $w.f.s.s.red $w.f.s.s.blue -side top -fill x -expand 1
+    pack $w.f.s.l $w.f.s.s -side left -fill x -expand 1
+
+    pack $w.f.s -fill x -expand 1
+    pack $w.title $w.f -fill x -expand 1
+
+    set ov511window(setred) "$w.f.s.s.red set"
+    set ov511window(setblue) "$w.f.s.s.blue set"
+}
+
 #
 # X11 Grabber controls
 #
@@ -866,7 +938,7 @@ proc build.x11 w {
 	set m $w1.menu
 	set m1 $m.m1
 	menubutton $w1.menu -menu $m1 -text "Source:" \
-		-relief raised -width 7 -font $f
+		-relief raised -width 7 -font $f -indicatoron 1
 	label $w1.label -width 6 -font $f
 	frame $w1.row
 	menu $m1

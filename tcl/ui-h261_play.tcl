@@ -165,7 +165,7 @@ proc build { width height } {
 
 	update 
 	global V showChanges
-	set r [$V(colorModel) renderer $w 411]
+	set r [$V(colorModel) renderer $w 420]
 	$r color 1
 	if {$showChanges} {
 		$r irthresh 2000
@@ -210,7 +210,7 @@ proc init_local {} {
 	}
 }
 
-proc h261_init_resources {} {
+proc init_resources {} {
 	option add H261_play.dither od startupFile
 	option add H261_play.gamma 0.7 startupFile
 	option add H261_play.medianCutColors 150 startupFile

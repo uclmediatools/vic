@@ -10,25 +10,21 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- * 	This product includes software developed by the Network Research
- * 	Group at Lawrence Berkeley National Laboratory.
- * 4. Neither the name of the University nor of the Laboratory may be used
- *    to endorse or promote products derived from this software without
- *    specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * 3. Neither the names of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+ * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef lint
@@ -111,9 +107,9 @@ public:
 	void composite(Overlay* o, int x, int y);
 };
 
-class Compositor411 : public Compositor {
+class Compositor420 : public Compositor {
 public:
-	Compositor411();
+	Compositor420();
 	virtual int consume(const VideoFrame*);
 	void size(int w, int h);
 	void copy_block(u_char* ofrm, u_char* ochm, 
@@ -127,8 +123,8 @@ public:
 	TclObject* match(const char* fmt) {
 		if (strcasecmp(fmt, "compositor/422") == 0)
 			return (new Compositor422);
-		if (strcasecmp(fmt, "compositor/411") == 0)
-			return (new Compositor411);
+		if (strcasecmp(fmt, "compositor/420") == 0)
+			return (new Compositor420);
 		return (0);
 	}
 } compositor;
@@ -474,11 +470,11 @@ void Compositor422::composite(Overlay* o, int x, int y)
 	}
 }
 
-Compositor411::Compositor411() : Compositor(FT_YUV_411)
+Compositor420::Compositor420() : Compositor(FT_YUV_420)
 {
 }
 
-void Compositor411::size(int w, int h)
+void Compositor420::size(int w, int h)
 {
 	Module::size(w, h);
 	int fs = framesize_;
@@ -489,7 +485,7 @@ void Compositor411::size(int w, int h)
 	Compositor::crinit(w, h);
 }
 
-void Compositor411::copy_block(u_char* ofrm, u_char* ochm, 
+void Compositor420::copy_block(u_char* ofrm, u_char* ochm, 
 			    const u_char* frm, const u_char* chm)
 {
 	int stride = width_;
@@ -521,7 +517,7 @@ void Compositor411::copy_block(u_char* ofrm, u_char* ochm,
 	}
 }
 
-int Compositor411::consume(const VideoFrame* vf)
+int Compositor420::consume(const VideoFrame* vf)
 {
 	if (!samesize(vf))
 		size(vf->width_, vf->height_);
@@ -564,7 +560,7 @@ int Compositor411::consume(const VideoFrame* vf)
 	return (cc);
 }
 
-void Compositor411::composite(Overlay* o, int x, int y)
+void Compositor420::composite(Overlay* o, int x, int y)
 {
 	if (x >= width_ || y >= height_)
 		return;

@@ -1,8 +1,11 @@
 /*
  * RTP H264 Protocol (RFC3984)
  * Copyright (c) 2006 Ryan Martell.
+ * Modified by Socrates VaraKliotis and Piers O'Hanlon (c) 2008
+ * - Created H264Depayloader class out of the original C calls
+ * - Added custom handling for IOCOM H.264 
  *
- * This file is part of FFmpeg.
+ * This file was part of FFmpeg.
  *
  * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -54,11 +57,9 @@
 
 #include "rtp_h264_depayloader.h"
 #include "packetbuffer.h"
+#include "rtp.h"
 
 //using namespace std;
-
-
-
 
 /**
  * Return TRUE if val is a prefix of str. If it returns TRUE, ptr is
@@ -187,6 +188,7 @@ H264Depayloader::H264Depayloader()
 {
     h264_extradata = (h264_rtp_extra_data *) h264_new_extradata();
     //fprintf(stderr, "H264_RTP: H264Depayloader Constructor done.\n");
+    aggregate_pkt = 0;
 }
 
 H264Depayloader::~H264Depayloader()
@@ -260,7 +262,7 @@ void H264Depayloader::sdp_parse_fmtp_config_h264(AVCodecContext *codec, /*AVStre
             if (*value == ',')
                 value++;
 
-            packet_size= base64decode((const unsigned char *)base64packet, dst-base64packet-1, decoded_packet, sizeof(decoded_packet));
+	    packet_size=av_base64_decode(decoded_packet, base64packet, sizeof(decoded_packet));
             if (packet_size) {
                 uint8_t *dest= (uint8_t *) av_malloc(packet_size+sizeof(start_sequence)+codec->extradata_size);
                 if(dest)
@@ -288,10 +290,8 @@ void H264Depayloader::sdp_parse_fmtp_config_h264(AVCodecContext *codec, /*AVStre
 
 // return 0 on packet, no more left, 1 on packet, 1 on partial packet...
 int H264Depayloader::h264_handle_packet(h264_rtp_extra_data *data,
-                              /*AVPacket * pkt,*/ int pktIdx, PacketBuffer *pb,
-                              /*uint32_t * timestamp,*/ 
-                              const uint8_t * buf,
-                              int len)
+                              int pktIdx, PacketBuffer *pb,
+                              const uint8_t * buf, int len)
 {
     //h264_rtp_extra_data *data = s->dynamic_protocol_context;
     uint8_t nal = buf[0];
@@ -304,8 +304,13 @@ int H264Depayloader::h264_handle_packet(h264_rtp_extra_data *data,
     assert(data->cookie == MAGIC_COOKIE);
     assert(buf);
 
+    //fprintf(stderr, /*NULL, AV_LOG_ERROR,*/ "H264_RTP: Single NAL type (%d, equiv. to >=1 or <=23), len=%4d\n", type, len);
+
     if (type >= 1 && type <= 23)
-        type = 1;              // simplify the case. (these are all the nal types used internally by the h264 codec)
+        type = 1;              
+    // simplify the case. (these are all the nal types used 
+    // internally by the h264 codec)
+    
     switch (type) {
     case 0:                    // undefined;
         fprintf(stderr, /*NULL, AV_LOG_ERROR,*/ "H.264/RTP: Undefined NAL type (%d)\n", type);
@@ -313,7 +318,6 @@ int H264Depayloader::h264_handle_packet(h264_rtp_extra_data *data,
         break;
 
     case 1:
-	//fprintf(stderr, /*NULL, AV_LOG_ERROR,*/ "H264_RTP: Single NAL type (%d, equiv. to >=1 or <=23), len=%4d\n", type, len);
 
         //av_new_packet(pkt, len+sizeof(start_sequence));
         //memcpy(pkt->data, start_sequence, sizeof(start_sequence));
@@ -329,9 +333,8 @@ int H264Depayloader::h264_handle_packet(h264_rtp_extra_data *data,
 	pb->write(pktIdx, sslen+len, temp); //SV: XXX
 */	
 
-	pb->writeAppend(pktIdx, sslen, start_sequence); //PO: XXX
-	pb->writeAppend(pktIdx, len, (char *)buf); //PO: XXX
-	
+	  pb->writeAppend(pktIdx, sslen, start_sequence); //PO: XXX
+	  pb->writeAppend(pktIdx, len, (char *)buf); //PO: XXX
 
 #ifdef DEBUG
         data->packet_types_received[nal & 0x1f]++;
@@ -427,7 +430,7 @@ int H264Depayloader::h264_handle_packet(h264_rtp_extra_data *data,
             uint8_t fu_indicator = nal;
             uint8_t fu_header = *buf;   // read the fu_header.
             uint8_t start_bit = (fu_header & 0x80) >> 7;
-            uint8_t end_bit = (fu_header & 0x40) >> 6;
+            // non used uint8_t end_bit = (fu_header & 0x40) >> 6;
             uint8_t nal_type = (fu_header & 0x1f);
             uint8_t reconstructed_nal;
 
@@ -480,6 +483,7 @@ int H264Depayloader::h264_handle_packet(h264_rtp_extra_data *data,
         }
         break;
 
+
     case 30:                   // undefined
     case 31:                   // undefined
     default:
@@ -512,7 +516,7 @@ void H264Depayloader::h264_free_extradata(void *d)
 
     for (ii = 0; ii < 32; ii++) {
         if (data->packet_types_received[ii])
-            fprintf(stderr, /*NULL, AV_LOG_DEBUG,*/ "Received %d packets of type %d\n",
+            debug_msg(/*NULL, AV_LOG_DEBUG,*/ "Received %d packets of type %d\n",
                    data->packet_types_received[ii], ii);
     }
 #endif

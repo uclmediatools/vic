@@ -5,9 +5,9 @@
 
 typedef unsigned char uint8_t;
 
-#include "cpu/cpudetect.h"
+//#include "cpu/cpudetect.h"
 extern "C" {
-#include <postproc/postprocess.h>
+#include <libpostproc/postprocess.h>
 }
 
 // only used for YUV420

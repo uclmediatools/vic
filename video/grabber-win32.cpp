@@ -33,6 +33,7 @@
 #include <windows.h>
 //#include <mmsystem.h>
 #include <vfw.h>
+#include <ctype.h>
 
 #include "grabber.h"
 #include "device-input.h"
@@ -62,7 +63,7 @@ enum device_type_e {
 	Miro_dc20_95,
 	Miro_dc20_NT,
 	AV_Master,
-    Intel_SVR3,
+	Intel_SVR3,
 };
 
 static device_type_e
@@ -99,7 +100,8 @@ get_device_type(const char *deviceName)
 	if (!strncmp(deviceName, "ISVR III", 8)) {
 		debug_msg("Device=ISVR III\n");
 		return (Intel_SVR3);
-    }
+	}
+
 	debug_msg("Device=Generic: %s\n", deviceName);
 	return (Generic);
 }
@@ -208,21 +210,21 @@ IC_Converter::convert(u_int8_t *in, int inw, int inh, u_int8_t *frm, int outw, i
 	if (hIC_ == 0)
 		return;
 
-        if (ICDecompress(hIC_, 0, &bihIn_, in, &bihOut_, rgb_) != ICERR_OK)
+	if (ICDecompress(hIC_, 0, &bihIn_, in, &bihOut_, rgb_) != ICERR_OK)
 		debug_msg("ICDecompress failed!\n");
 
 	converter_->convert(rgb_, inw, inh, frm, outw, outh, invert);
 }
 
-class IC_Converter_411 : public IC_Converter {
+class IC_Converter_420 : public IC_Converter {
 public:
-	IC_Converter_411(DWORD comp, int bpp, int inw, int inh);
+	IC_Converter_420(DWORD comp, int bpp, int inw, int inh);
 };
 
-IC_Converter_411::IC_Converter_411(DWORD comp, int bpp, int inw, int inh)
+IC_Converter_420::IC_Converter_420(DWORD comp, int bpp, int inw, int inh)
 	: IC_Converter(comp, bpp, inw, inh)
 {
-	converter_ = new RGB_Converter_411(rgb_bpp_, NULL, 0);
+	converter_ = new RGB_Converter_420(rgb_bpp_, NULL, 0);
 }
 
 class IC_Converter_422 : public IC_Converter {
@@ -236,12 +238,12 @@ IC_Converter_422::IC_Converter_422(DWORD comp, int bpp, int inw, int inh)
 	converter_ = new RGB_Converter_422(rgb_bpp_, NULL, 0);
 }
 
-class YUYV_Converter_411 : public Converter {
+class YUYV_Converter_420 : public Converter {
 public:
 	virtual void convert(u_int8_t *in, int inw, int inh, u_int8_t *frm, int outw, int outh, int invert = 0);
 };
 
-void YUYV_Converter_411::convert(u_int8_t *in, int inw, int inh, u_int8_t *frm, int outw, int outh, int invert)
+void YUYV_Converter_420::convert(u_int8_t *in, int inw, int inh, u_int8_t *frm, int outw, int outh, int invert)
 {
 	u_int8_t *yp = (u_int8_t*)frm;
 	int off = outw * outh;
@@ -358,7 +360,7 @@ class VfwGrabber : public Grabber {
 	u_int			fmtsize_;
 
 	HANDLE			frame_sem_;
-    HANDLE          cb_mutex_;
+	HANDLE			cb_mutex_;
 	LPBYTE			last_frame_;
 	Converter		*converter_;
 	
@@ -372,6 +374,16 @@ class VfwCIFGrabber : public VfwGrabber
  public:
 	VfwCIFGrabber(const int dev);
 	~VfwCIFGrabber();
+ protected:
+	virtual void start();
+	virtual void setsize();
+};
+
+class Vfw420Grabber : public VfwGrabber 
+{
+ public:
+	Vfw420Grabber(const int dev);
+	~Vfw420Grabber();
  protected:
 	virtual void start();
 	virtual void setsize();
@@ -397,7 +409,7 @@ class VfwDevice : public InputDevice {
 	VfwGrabber *grabber_;
 };
 
-#define NUM_DEVS 4
+#define NUM_DEVS 12
 
 class VfwScanner {
  public:
@@ -415,14 +427,14 @@ VfwScanner::VfwScanner(const int n)
 	char deviceVersion[100] ;
 	
 	for (int index = 0 ; index < n; index++) {
-                if (capGetDriverDescription(index,
+		if (capGetDriverDescription(index,
 					    (LPSTR)deviceName,
 					    sizeof(deviceName),
 					    (LPSTR)deviceVersion,
 					    sizeof(deviceVersion))) {
 			debug_msg("Adding device %d\n", index);
 			devs_[index] = new VfwDevice(strdup(deviceName), index);
-                } else
+		} else
 			devs_[index] = NULL;
 	}
 }
@@ -446,11 +458,11 @@ VfwDevice::VfwDevice(const char* name, int index) :
 		vfwdev_ = index;
 		switch (get_device_type(name)) {
 		case gray_QuickCam_95:
-			attributes_ = "format { 422 411 } size { small cif } port { QuickCam } ";
+			attributes_ = "format { 422 420 cif } size { small cif } port { QuickCam } type { ntsc pal }";
 			break;
 		case Generic:
 		default:
-			attributes_ = "format { 422 411 } size { large small cif } port { external-in } ";
+			attributes_ = "format { 422 420 cif } size { large small cif } port { external-in } type { ntsc pal }";
 			break;
 		}
 	} else
@@ -476,6 +488,8 @@ int VfwDevice::command(int argc, const char*const* argv)
 		TclObject* o = 0;
 		if (strcmp(argv[2], "422") == 0)
 			o = grabber_ = new Vfw422Grabber(vfwdev_);
+		if (strcmp(argv[2], "420") == 0)
+			o = grabber_ = new Vfw420Grabber(vfwdev_);
 		else if (strcmp(argv[2], "cif") == 0)
 			o = grabber_ = new VfwCIFGrabber(vfwdev_);
 		if (o != 0)
@@ -540,6 +554,34 @@ VfwCIFGrabber::~VfwCIFGrabber()
 	debug_msg("~VfwCIFGrabber\n");
 }
 
+void VfwCIFGrabber::setsize()
+{
+	int w = basewidth_ / decimate_;
+	int h = baseheight_ / decimate_;
+	debug_msg("VfwCIFGrabber::setsize: %dx%d\n", w, h);
+	set_size_cif(w, h);
+	allocref();
+}
+
+Vfw420Grabber::Vfw420Grabber(const int dev) : VfwGrabber(dev)
+{
+	debug_msg("Vfw420Grabber\n");
+}
+
+Vfw420Grabber::~Vfw420Grabber()
+{
+	debug_msg("~Vfw420Grabber\n");
+}
+
+void Vfw420Grabber::setsize()
+{
+	int w = basewidth_ / decimate_;
+	int h = baseheight_ / decimate_;
+	debug_msg("Vfw420Grabber::setsize: %dx%d\n", w, h);
+	set_size_420(w, h);
+	allocref();
+}
+
 Vfw422Grabber::Vfw422Grabber(const int dev) : VfwGrabber(dev)
 {
 	debug_msg("Vfw422Grabber\n");
@@ -558,15 +600,6 @@ void Vfw422Grabber::setsize()
 	allocref();
 }
 
-void VfwCIFGrabber::setsize()
-{
-	int w = basewidth_ / decimate_;
-	int h = baseheight_ / decimate_;
-	debug_msg("VfwCIFGrabber::setsize: %dx%d\n", w, h);
-	set_size_cif(w, h);
-	allocref();
-}
-
 void VfwGrabber::fps(int f)
 {
 	if (f <= 0)
@@ -581,10 +614,6 @@ void VfwGrabber::fps(int f)
 		start();
 	}
 #endif
-}
-
-extern "C" {
-extern char **__argv;
 }
 
 void VfwGrabber::start()
@@ -616,9 +645,9 @@ void VfwGrabber::start()
 		}
 	}
 
-    /* lock out VideoHandler until everything is set up - cmg */
-    cb_mutex_ = CreateMutex(NULL,FALSE,NULL);
-    WaitForSingleObject(cb_mutex_,INFINITE);
+	/* lock out VideoHandler until everything is set up - cmg */
+	cb_mutex_ = CreateMutex(NULL,FALSE,NULL);
+	WaitForSingleObject(cb_mutex_,INFINITE);
 
 	if ((capwin_ = capCreateCaptureWindow((LPSTR)"Capture Window", WS_POPUP | WS_CAPTION,
 		CW_USEDEFAULT, CW_USEDEFAULT, (basewidth_ / decimate_ + GetSystemMetrics(SM_CXFIXEDFRAME)), 
@@ -683,15 +712,15 @@ void VfwGrabber::start()
 	case Miro_dc20_95:
 	case Miro_dc20_NT:
 	case AV_Master:
-    case Generic:
-  		if (useconfig_) {
+	case Generic:
+		if (useconfig_) {
 			if (caps_.fHasDlgVideoFormat) capDlgVideoFormat(capwin_);
 			if (caps_.fHasDlgVideoSource) capDlgVideoSource(capwin_);
 		}
 		delete [] fmt_;
 		fmtsize_ = capGetVideoFormatSize(capwin_);
 		fmt_ = (LPBITMAPINFOHEADER) new u_char [fmtsize_];
-	    capGetVideoFormat(capwin_, fmt_, fmtsize_);
+		capGetVideoFormat(capwin_, fmt_, fmtsize_);
 		break;
 	case Intel_SVR3:
 		/* the driver does not like to generic query much
@@ -885,9 +914,29 @@ void Vfw422Grabber::start()
 		converter(new IC_Converter_422(fmt_->biCompression, fmt_->biBitCount, fmt_->biWidth, fmt_->biHeight));
 		break;
 	}
-    /* allow video handler callback to progress */
-    ReleaseMutex(cb_mutex_);
-    Grabber::timeout();
+	/* allow video handler callback to progress */
+	ReleaseMutex(cb_mutex_);
+	Grabber::timeout();
+}
+
+
+void Vfw420Grabber::start()
+{
+	VfwGrabber::start();
+	switch (fmt_->biCompression) {
+	case BI_RGB:
+		converter(new RGB_Converter_420(fmt_->biBitCount, (u_int8_t *)(fmt_ + 1), fmt_->biClrUsed));
+		break;
+	case mmioFOURCC('Y','U','Y','V'):
+		converter(new YUYV_Converter_420());
+		break;
+	default:
+		converter(new IC_Converter_420(fmt_->biCompression, fmt_->biBitCount, fmt_->biWidth, fmt_->biHeight));
+		break;
+	}
+	/* allow video handler callback to progress */
+	ReleaseMutex(cb_mutex_);
+	Grabber::timeout();
 }
 
 void VfwCIFGrabber::start()
@@ -896,41 +945,41 @@ void VfwCIFGrabber::start()
 	if (fmt_!=NULL) {
 	    switch (fmt_->biCompression) {
 		case BI_RGB:
-		    converter(new RGB_Converter_411(fmt_->biBitCount, (u_int8_t *)(fmt_ + 1), fmt_->biClrUsed));
+		    converter(new RGB_Converter_420(fmt_->biBitCount, (u_int8_t *)(fmt_ + 1), fmt_->biClrUsed));
 		    break;
 		case mmioFOURCC('Y','U','Y','V'):
-		    converter(new YUYV_Converter_411());
+		    converter(new YUYV_Converter_420());
 		    break;
 		default:
-		    converter(new IC_Converter_411(fmt_->biCompression, fmt_->biBitCount, fmt_->biWidth, fmt_->biHeight));
+		    converter(new IC_Converter_420(fmt_->biCompression, fmt_->biBitCount, fmt_->biWidth, fmt_->biHeight));
 		    break;
 	    }
 	}
-    /* allow video handler callback to progress */
-    ReleaseMutex(cb_mutex_);
-    Grabber::timeout();
+	/* allow video handler callback to progress */
+	ReleaseMutex(cb_mutex_);
+	Grabber::timeout();
 }
 
 void VfwGrabber::stop()
 {
-    debug_msg("VfwWindow::stop() thread=%x\n", GetCurrentThreadId());
+	debug_msg("VfwWindow::stop() thread=%x\n", GetCurrentThreadId());
 
-    if (cb_mutex_!=NULL) {
-	CloseHandle(cb_mutex_);
-	cb_mutex_=0;
-    } else 
-	return;
+	if (cb_mutex_!=NULL) {
+		CloseHandle(cb_mutex_);
+		cb_mutex_=0;
+	} else 
+		return;
 
-    if (capturing_)
-	capCaptureStop(capwin_);
-    /* ensure this won't be called */
-    capSetCallbackOnVideoStream(capwin_, NULL);
-    capturing_ = 0;
-    capture_=0;
-    if (frame_sem_!=0 ) {
-	ReleaseSemaphore(frame_sem_, 1, NULL);
-	CloseHandle(frame_sem_);
-    }
+	if (capturing_)
+		capCaptureStop(capwin_);
+	/* ensure this won't be called */
+	capSetCallbackOnVideoStream(capwin_, NULL);
+	capturing_ = 0;
+	capture_=0;
+	if (frame_sem_!=0 ) {
+		ReleaseSemaphore(frame_sem_, 1, NULL);
+		CloseHandle(frame_sem_);
+	}
 #ifdef NDEF
 	if (caps_.fHasOverlay)
 		capOverlay(capwin_, FALSE);
@@ -991,6 +1040,15 @@ int VfwGrabber::command(int argc, const char*const* argv)
 		} else if (strcmp(argv[1], "useconfig") ==0) {
 			if (strcmp(argv[2], "1") == 0) useconfig_=1;
 			if (strcmp(argv[2], "0") == 0) useconfig_=0;
+		} else if (strcmp(argv[1], "type") == 0) {
+			if (strcmp(argv[2], "auto") == 0) {
+			} else if (strcmp(argv[2], "pal") == 0) {
+				basewidth_  = CIF_BASE_WIDTH;
+				baseheight_ = CIF_BASE_HEIGHT;
+			} else if (strcmp(argv[2], "ntsc") == 0) {
+				basewidth_  = NTSC_BASE_WIDTH;
+				baseheight_ = NTSC_BASE_HEIGHT;
+			}
 		}
 	}
 	return (Grabber::command(argc, argv));
@@ -1016,11 +1074,11 @@ VfwGrabber::VideoHandler(HWND hwnd, LPVIDEOHDR vh)
 	static int not_done = 0;
 
 	VfwGrabber *gp = (VfwGrabber*)capGetUserData(hwnd);
-    /* in case we are not fast enough */
-    if (gp==NULL) return ((LRESULT)TRUE);
+	/* in case we are not fast enough */
+	if (gp==NULL) return ((LRESULT)TRUE);
 
-    /* Block grab code until frame has been copied into last_frame_ (in capture function) */
-    WaitForSingleObject(gp->cb_mutex_,INFINITE);
+	/* Block grab code until frame has been copied into last_frame_ (in capture function) */
+	WaitForSingleObject(gp->cb_mutex_,INFINITE);
 
 #ifdef DEBUG__	
 	debug_msg("VfwGrabber::VideoHandler: thread=%x data=%x flags=%x len=%d time=%d\n",
@@ -1028,13 +1086,14 @@ VfwGrabber::VideoHandler(HWND hwnd, LPVIDEOHDR vh)
 		vh->lpData, vh->dwFlags, vh->dwBytesUsed, vh->dwTimeCaptured);
 #endif
 
-	if (vh->dwFlags & VHDR_DONE)
+//	if (vh->dwFlags & VHDR_DONE)
+	if (vh->dwFlags & 0x00000001)
 		(gp->capture)(gp, vh->lpData);
 	else if (not_done++ % 10 == 0)
 		debug_msg("Frames not ready! %d\n", not_done);
 
-    /* Release to process frame in grab */
-    ReleaseMutex(gp->cb_mutex_);
+	/* Release to process frame in grab */
+	ReleaseMutex(gp->cb_mutex_);
 	return ((LRESULT)TRUE);
 }
 
@@ -1058,13 +1117,13 @@ VfwGrabber::grab()
 		inw_, inh_, outw_, outh_);
 #endif
 
-    /* block the VideoHandler callback code until we've processed frame */
-    WaitForSingleObject(cb_mutex_,INFINITE);
+	/* block the VideoHandler callback code until we've processed frame */
+	WaitForSingleObject(cb_mutex_,INFINITE);
 
-    if (last_frame_ == NULL || capturing_ == 0) {
-        ReleaseMutex(cb_mutex_);
+	if (last_frame_ == NULL || capturing_ == 0) {
+		ReleaseMutex(cb_mutex_);
 		return (FALSE);
-    }
+	}
 
 	converter_->convert((u_int8_t*)last_frame_, basewidth_ / decimate_, baseheight_ / decimate_, frame_, outw_, outh_, TRUE);
 	last_frame_ = NULL;
@@ -1073,7 +1132,7 @@ VfwGrabber::grab()
 	YuvFrame f(media_ts(), frame_, crvec_, outw_, outh_);
 	int rval = (target_->consume(&f));
 
-    /* release block so that VideoHandler can get new frame */
-    ReleaseMutex(cb_mutex_);
-    return rval;
+	/* release block so that VideoHandler can get new frame */
+	ReleaseMutex(cb_mutex_);
+	return rval;
 }

@@ -1,0 +1,868 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug (GPL)|Win32">
+      <Configuration>Debug (GPL)</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug (nonGPL)|Win32">
+      <Configuration>Debug (nonGPL)</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release (GPL)|Win32">
+      <Configuration>Release (GPL)</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release (nonGPL)|Win32">
+      <Configuration>Release (nonGPL)</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <YASM Include="cpu\cpuid_win.asm">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">true</ExcludedFromBuild>
+      <FileType>Document</FileType>
+      <Defines Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">PREFIX</Defines>
+      <Defines Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">PREFIX</Defines>
+    </YASM>
+    <None Include="LICENSE.txt" />
+    <CustomBuild Include="tcl\accessgrid.tcl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ag-pixrate.tcl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="tcl\autoplace_ui.tcl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="tcl\cf-confbus.tcl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="tcl\cf-main.tcl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="tcl\cf-network.tcl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="tcl\cf-tm.tcl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="tcl\cf-util.tcl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="tcl\entry.tcl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-ctrlmenu.tcl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-entry.tcl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-extout.tcl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-grabber.tcl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-help.tcl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-main.tcl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-relate.tcl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-resource.tcl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-srclist.tcl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-stats.tcl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-switcher.tcl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-titlemaker.tcl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-util.tcl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-win32.tcl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="tcl\ui-windows.tcl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">"$(OutDir)tcl2cpp" 2 "%(Identity)" &gt; "$(OutDir)%(Filename).cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">Generating "$(OutDir)%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">$(OutDir)%(Filename).cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="VERSION">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">for /F %%v in (VERSION) do @echo const char version[] = "%%v (GPL)"; &gt; "$(OutDir)\version.c"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">Generating "version.c".</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">$(OutDir)version.c</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">vic.sln</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">for /F %%v in (VERSION) do @echo const char version[] = "%%v (nonGPL)"; &gt; "$(OutDir)\version.c"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">Generating "version.c".</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">$(OutDir)version.c</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">vic.sln</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">for /F %%v in (VERSION) do @echo const char version[] = "%%v (Debug GPL)"; &gt; "$(OutDir)\version.c"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">Generating "version.c".</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">$(OutDir)version.c</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">vic.sln</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">for /F %%v in (VERSION) do @echo const char version[] = "%%v (Debug nonGPL)"; &gt; "$(OutDir)\version.c"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">Generating "version.c".</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">$(OutDir)version.c</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">vic.2008.sln</AdditionalInputs>
+    </CustomBuild>
+    <None Include="win32\build_install.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="codec\cellb_tables.c" />
+    <ClCompile Include="codec\compositor.cpp" />
+    <ClCompile Include="codec\databuffer.cpp" />
+    <ClCompile Include="codec\dct.cpp" />
+    <ClCompile Include="codec\decoder-bvc.cpp" />
+    <ClCompile Include="codec\decoder-cellb.cpp" />
+    <ClCompile Include="codec\decoder-dv.cpp" />
+    <ClCompile Include="codec\decoder-h261.cpp" />
+    <ClCompile Include="codec\decoder-h261as.cpp" />
+    <ClCompile Include="codec\decoder-h261v1.cpp" />
+    <ClCompile Include="codec\decoder-h264.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="codec\decoder-jpeg.cpp" />
+    <ClCompile Include="codec\decoder-mpeg4.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="codec\decoder-nv.cpp" />
+    <ClCompile Include="codec\decoder-pvh.cpp" />
+    <ClCompile Include="codec\decoder-raw.cpp" />
+    <ClCompile Include="codec\decoder.cpp" />
+    <ClCompile Include="codec\encoder-bvc.cpp" />
+    <ClCompile Include="codec\encoder-cellb.cpp" />
+    <ClCompile Include="codec\encoder-h261.cpp" />
+    <ClCompile Include="codec\encoder-h261as.cpp" />
+    <ClCompile Include="codec\encoder-h264.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="codec\encoder-jpeg.cpp" />
+    <ClCompile Include="codec\encoder-mpeg4.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="codec\encoder-nv.cpp" />
+    <ClCompile Include="codec\encoder-pvh.cpp" />
+    <ClCompile Include="codec\encoder-raw.cpp" />
+    <ClCompile Include="codec\ffmpeg_codec.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="codec\framer-jpeg.cpp" />
+    <ClCompile Include="codec\huffcode.c" />
+    <ClCompile Include="codec\jpeg\jpeg.cpp" />
+    <ClCompile Include="codec\p64\p64.cpp" />
+    <ClCompile Include="codec\p64\p64as.cpp" />
+    <ClCompile Include="codec\packetbuffer.cpp" />
+    <ClCompile Include="codec\pvh-huff.c" />
+    <ClCompile Include="codec\rtp_h264_depayloader.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="codec\x264encoder.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="cpu\cpuid.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)accessgrid.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ag-pixrate.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)autoplace_ui.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)cf-confbus.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)cf-main.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)cf-network.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)cf-tm.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)cf-util.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)entry.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-ctrlmenu.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-entry.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-extout.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-grabber.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-help.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-main.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-relate.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-resource.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-srclist.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-stats.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-switcher.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-titlemaker.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-util.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-win32.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)ui-windows.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)version.c" />
+    <ClCompile Include="$(OutDir)bv.c" />
+    <ClCompile Include="getopt.c" />
+    <ClCompile Include="idlecallback.cpp" />
+    <ClCompile Include="iohandler.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="md5c.c" />
+    <ClCompile Include="media-timer.cpp" />
+    <ClCompile Include="module.cpp" />
+    <ClCompile Include="net\communicator.cpp" />
+    <ClCompile Include="net\confbus.cpp" />
+    <ClCompile Include="net\crypt-des.cpp" />
+    <ClCompile Include="net\crypt-dull.cpp" />
+    <ClCompile Include="net\crypt-rijndael.cpp" />
+    <ClCompile Include="net\crypt.cpp" />
+    <ClCompile Include="net\group-ipc.cpp" />
+    <ClCompile Include="net\inet.c" />
+    <ClCompile Include="net\inet6.c" />
+    <ClCompile Include="net\mbus_engine.cpp" />
+    <ClCompile Include="net\mbus_handler.cpp" />
+    <ClCompile Include="net\net-addr.cpp" />
+    <ClCompile Include="net\net-ip.cpp" />
+    <ClCompile Include="net\net-ipv6.cpp" />
+    <ClCompile Include="net\net.cpp" />
+    <ClCompile Include="net\pktbuf.cpp" />
+    <ClCompile Include="net\pkttbl.cpp" />
+    <ClCompile Include="random.c" />
+    <ClCompile Include="rate-variable.cpp" />
+    <ClCompile Include="render\color-hi.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="render\color-swscale.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="render\color-true.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="render\color.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="render\renderer-window.cpp" />
+    <ClCompile Include="render\renderer.cpp" />
+    <ClCompile Include="render\rgb-converter.cpp" />
+    <ClCompile Include="render\vw.cpp" />
+    <ClCompile Include="rtp\pktbuf-rtp.cpp" />
+    <ClCompile Include="rtp\session.cpp" />
+    <ClCompile Include="rtp\source.cpp" />
+    <ClCompile Include="rtp\transmitter.cpp" />
+    <ClCompile Include="Tcl.cpp" />
+    <ClCompile Include="Tcl2.cpp" />
+    <ClCompile Include="timer.cpp" />
+    <ClCompile Include="tkStripchart.c" />
+    <ClCompile Include="tkWinColor.c" />
+    <ClCompile Include="video\assistor-list.cpp" />
+    <ClCompile Include="video\crossbar.cpp" />
+    <ClCompile Include="video\DeckLinkAPI_i.cpp" />
+    <ClCompile Include="video\deinterlace.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="video\device.cpp" />
+    <ClCompile Include="video\grabber-decklink.cpp" />
+    <ClCompile Include="video\grabber-file.cpp" />
+    <ClCompile Include="video\grabber-win32.cpp" />
+    <ClCompile Include="video\grabber-win32DS.cpp" />
+    <ClCompile Include="video\grabber.cpp" />
+    <ClCompile Include="video\yuv_convert.cpp" />
+    <ClCompile Include="win32\win32.c" />
+    <ClCompile Include="win32\win32X.c" />
+    <ClCompile Include="zvfs.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="codec\databuffer.h" />
+    <ClInclude Include="codec\dct.h" />
+    <ClInclude Include="codec\decoder-jpeg.h" />
+    <ClInclude Include="codec\decoder.h" />
+    <ClInclude Include="codec\encoder-h263.h" />
+    <ClInclude Include="codec\ffmpeg_codec.h" />
+    <ClInclude Include="codec\framer-h261.h" />
+    <ClInclude Include="codec\jpeg\jpeg.h" />
+    <ClInclude Include="codec\p64\p64-huff.h" />
+    <ClInclude Include="codec\p64\p64.h" />
+    <ClInclude Include="codec\p64\p64as.h" />
+    <ClInclude Include="codec\packetbuffer.h" />
+    <ClInclude Include="codec\pvh-huff.h" />
+    <ClInclude Include="codec\pvh.h" />
+    <ClInclude Include="codec\rtp_h264_depayloader.h" />
+    <ClInclude Include="codec\tmndec\getvlc.h" />
+    <ClInclude Include="codec\x264encoder.h" />
+    <ClInclude Include="config.h" />
+    <ClInclude Include="cpu\cpudetect.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="cpu\cputable.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="net\crypt.h" />
+    <ClInclude Include="net\group-ipc.h" />
+    <ClInclude Include="net\inet.h" />
+    <ClInclude Include="net\inet6.h" />
+    <ClInclude Include="net\mbus_engine.h" />
+    <ClInclude Include="net\mbus_handler.h" />
+    <ClInclude Include="net\net-addr.h" />
+    <ClInclude Include="net\net.h" />
+    <ClInclude Include="net\pktbuf.h" />
+    <ClInclude Include="net\pkttbl.h" />
+    <ClInclude Include="net\rt.h" />
+    <ClInclude Include="render\color.h" />
+    <ClInclude Include="render\renderer-window.h" />
+    <ClInclude Include="render\renderer.h" />
+    <ClInclude Include="render\rgb-converter.h" />
+    <ClInclude Include="render\vw.h" />
+    <ClInclude Include="rtp\ntp-time.h" />
+    <ClInclude Include="rtp\pktbuf-rtp.h" />
+    <ClInclude Include="rtp\rtp.h" />
+    <ClInclude Include="rtp\session.h" />
+    <ClInclude Include="rtp\source.h" />
+    <ClInclude Include="rtp\transmitter.h" />
+    <ClInclude Include="video\assistor-list.h" />
+    <ClInclude Include="video\crossbar.h" />
+    <ClInclude Include="video\DeckLinkAPI_h.h" />
+    <ClInclude Include="video\deinterlace.h" />
+    <ClInclude Include="video\grabber-win32DS.h" />
+    <ClInclude Include="video\grabber.h" />
+    <ClInclude Include="video\yuv_convert.h" />
+    <ClInclude Include="zvfs.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="video\DeckLinkAPI.idl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">true</ExcludedFromBuild>
+      <OutputDirectory Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">video</OutputDirectory>
+      <OutputDirectory Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">video</OutputDirectory>
+      <GenerateTypeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">false</GenerateTypeLibrary>
+      <OutputDirectory Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">video</OutputDirectory>
+      <GenerateTypeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">false</GenerateTypeLibrary>
+      <OutputDirectory Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">video</OutputDirectory>
+      <GenerateTypeLibrary Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">false</GenerateTypeLibrary>
+      <GenerateTypeLibrary Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">false</GenerateTypeLibrary>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">true</ExcludedFromBuild>
+    </Midl>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{C4283F3F-6329-47C4-83DD-C5CE4EF7C8D0}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>vic</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="win32\vc10\yasm.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)Debug\</OutDir>
+    <IntDir>Debug\NON_GPL\</IntDir>
+    <ExtensionsToDeleteOnClean>$(OutDir)\*.c;$(OutDir)\*.cpp;$(ExtensionsToDeleteOnClean)</ExtensionsToDeleteOnClean>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)Debug\</OutDir>
+    <IntDir>Debug\GPL\</IntDir>
+    <ExtensionsToDeleteOnClean>$(OutDir)\*.c;$(OutDir)\*.cpp;$(ExtensionsToDeleteOnClean)</ExtensionsToDeleteOnClean>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)Release\</OutDir>
+    <IntDir>Release\NON_GPL\</IntDir>
+    <ExtensionsToDeleteOnClean>$(OutDir)\*.c;$(OutDir)\*.cpp;$(ExtensionsToDeleteOnClean)</ExtensionsToDeleteOnClean>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)Release\</OutDir>
+    <IntDir>Release\GPL\</IntDir>
+    <ExtensionsToDeleteOnClean>$(OutDir)\*.c;$(OutDir)\*.cpp;$(ExtensionsToDeleteOnClean)</ExtensionsToDeleteOnClean>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug (nonGPL)|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;HAVE_IPv6;USE_DDRAW;ED_YBITS=4;SIGRET=void;SIGARGS=int;NLAYER=8;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WIN32_WINNT=_WIN32_WINNT_WINXP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>
+      </PrecompiledHeaderOutputFile>
+      <AdditionalIncludeDirectories>.\;codec;render;rtp;net;win32;video;..\common\src;codec\tmndec;codec\tmn-x;codec\jpeg;codec\p64;C:\Tcl\include\tcl8.5;$(DXSDK_DIR)\include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>tcl85.lib;tk85.lib;uclmm.lib;ws2_32.lib;comsuppwd.lib;iphlpapi.lib;vfw32.lib;ddraw.lib;dxguid.lib;strmiids.lib;quartz.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Tcl\lib;"$(DXSDK_DIR)\Lib\x86";"$(SolutionDir)Debug"</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug (GPL)|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;PTW32_STATIC_LIB;HAVE_IPv6;USE_ZVFS;USE_DDRAW;HAVE_SWSCALE;HAVE_STDLIB_H;SASR;ED_YBITS=4;SIGRET=void;SIGARGS=int;NLAYER=8;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WIN32_WINNT=_WIN32_WINNT_WINXP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>
+      </PrecompiledHeaderOutputFile>
+      <AdditionalIncludeDirectories>.\;codec;render;rtp;net;win32;video;..\common\src;codec\tmndec;codec\tmn-x;codec\jpeg;codec\p64;x264\include;ffmpeg\include;C:\Tcl\include\tcl8.5;C:\msys\1.0\local\include;C:\msys\local\include;c:\mingw\local\include;$(DXSDK_DIR)\include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>tcl85.lib;tk85.lib;uclmm.lib;ws2_32.lib;comsuppwd.lib;iphlpapi.lib;vfw32.lib;ddraw.lib;dxguid.lib;strmiids.lib;quartz.lib;libgcc.a;libmingwex.lib;libavcodec.a;libavutil.a;libpostproc.a;libswscale.a;libx264.a;libpthreadGC2.a;libz.a;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Tcl\lib;ffmpeg\lib;x264\lib;"$(DXSDK_DIR)\Lib\x86";C:\msys\1.0\lib;"C:\mingw\lib\gcc\mingw32\4.2.1-sjlj";c:\mingw\local\lib;c:\mingw\local\bin;c:\mingw\lib;C:\msys\lib;"$(SolutionDir)Debug";C:\msys\1.0\local\lib;C:\msys\local\lib;C:\msys\1.0\lib\gcc\mingw32\4.4.0;C:\msys\1.0\lib\gcc\mingw32\4.2.0;C:\msys\lib\gcc\mingw32\4.4.0;C:\msys\lib\gcc\mingw32\4.2.0</AdditionalLibraryDirectories>
+    </Link>
+    <PostBuildEvent>
+      <Command>if exist $(IntDir)vic.exe del $(IntDir)\vic.exe
+
+@echo on
+move $(OutDir)vic.exe $(IntDir)
+copy /B $(IntDir)vic.exe + $(IntDir)vic-zvfs.zip $(OutDir)vic.exe
+zip.exe -A  $(OutDir)vic.exe
+@echo off
+
+del $(IntDir)vic.exe</Command>
+      <Message>Appending zip file to vic.exe and adjusting zip offset</Message>
+    </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>cd $(IntDir)
+
+if exist vic-zvfs.zip del /Q vic-zvfs.zip
+if exist vic-zvfs rmdir /S /Q vic-zvfs
+
+mkdir vic-zvfs\tcl
+mkdir vic-zvfs\tk
+mkdir vic-zvfs\vic
+
+@echo on
+
+copy C:\Tcl\lib\tcl8.5\init.tcl vic-zvfs\tcl\
+copy C:\Tcl\lib\tcl8.5\auto.tcl vic-zvfs\tcl\
+xcopy C:\Tcl\lib\tcl8.5\encoding\*.enc vic-zvfs\tcl\encoding\ /Q
+xcopy C:\Tcl\lib\tk8.5\*.tcl vic-zvfs\tk\ /Q
+xcopy C:\Tcl\lib\tk8.5\ttk\*.tcl vic-zvfs\tk\ttk\ /Q
+xcopy C:\Tcl\lib\tk8.5\msgs\*.msg vic-zvfs\tk\msgs\ /Q
+xcopy $(ProjectDir)tcl\*.tcl vic-zvfs\vic\  /Q
+
+del vic-zvfs\vic\tkerror.tcl
+del vic-zvfs\vic\ui-entry.tcl
+del vic-zvfs\vic\ui-h261_play.tcl
+del vic-zvfs\vic\ui-unix.tcl
+del vic-zvfs\vic\ui-vdd.tcl
+
+cd vic-zvfs\tcl
+echo auto_mkindex . | C:\Tcl\bin\tclsh85.exe
+
+cd ..\tk
+echo auto_mkindex . | C:\Tcl\bin\tclsh85.exe
+
+cd ..\vic
+echo auto_mkindex . | C:\Tcl\bin\tclsh85.exe
+
+cd ..
+zip.exe -q -r ..\vic-zvfs.zip  tcl  tk  vic
+
+@echo of
+
+cd ..
+rmdir /S /Q vic-zvfs
+</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>Performing Zip File Build Step</Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>$(IntDir)\vic-zvfs.zip</Outputs>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Inputs>tcl\accessgrid.tcl;tcl\ag-pixrate.tcl;tcl\autoplace_ui.tcl;tcl\cf-confbus.tcl;tcl\cf-main.tcl;tcl\cf-network.tcl;tcl\cf-tm.tcl;tcl\cf-util.tcl;tcl\entry.tcl;tcl\ui-ctrlmenu.tcl;tcl\ui-extout.tcl;tcl\ui-grabber.tcl;tcl\ui-help.tcl;tcl\ui-main.tcl;tcl\ui-relate.tcl;tcl\ui-resource.tcl;tcl\ui-srclist.tcl;tcl\ui-stats.tcl;tcl\ui-switcher.tcl;tcl\ui-titlemaker.tcl;tcl\ui-util.tcl;tcl\ui-win32.tcl;tcl\ui-windows.tcl;%(Inputs)</Inputs>
+    </CustomBuildStep>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release (nonGPL)|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;HAVE_IPv6;USE_DDRAW;ED_YBITS=4;SIGRET=void;SIGARGS=int;NLAYER=8;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WIN32_WINNT=_WIN32_WINNT_WINXP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>
+      </PrecompiledHeaderOutputFile>
+      <AdditionalIncludeDirectories>.\;codec;render;rtp;net;win32;video;..\common\src;codec\tmndec;codec\tmn-x;codec\jpeg;codec\p64;C:\Tcl\include\tcl8.5;$(DXSDK_DIR)\include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>tcl85.lib;tk85.lib;uclmm.lib;ws2_32.lib;comsuppwd.lib;iphlpapi.lib;vfw32.lib;ddraw.lib;dxguid.lib;strmiids.lib;quartz.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Tcl\lib;"$(DXSDK_DIR)\Lib\x86";"$(SolutionDir)Release"</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release (GPL)|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;PTW32_STATIC_LIB;HAVE_IPv6;USE_ZVFS;USE_DDRAW;HAVE_SWSCALE;HAVE_STDLIB_H;SASR;ED_YBITS=4;SIGRET=void;SIGARGS=int;NLAYER=8;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WIN32_WINNT=_WIN32_WINNT_WINXP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>
+      </PrecompiledHeaderOutputFile>
+      <AdditionalIncludeDirectories>.\;codec;render;rtp;net;win32;video;..\common\src;codec\tmndec;"codec\tmn-x";codec\jpeg;codec\p64;x264\include;ffmpeg\include;C:\Tcl\include\tcl8.5;C:\msys\1.0\local\include;C:\msys\local\include;"$(DXSDK_DIR)\include"</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>tcl85.lib;tk85.lib;uclmm.lib;ws2_32.lib;comsuppwd.lib;iphlpapi.lib;vfw32.lib;ddraw.lib;dxguid.lib;strmiids.lib;quartz.lib;libgcc.a;libmingwex.lib;libavcodec.a;libavutil.a;libpostproc.a;libswscale.a;libx264.a;libpthreadGC2.a;libz.a;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Tcl\lib;x264\lib;ffmpeg\lib;"$(DXSDK_DIR)\Lib\x86";C:\msys\1.0\lib;"C:\mingw\lib\gcc\mingw32\4.2.1-sjlj";c:\mingw\local\lib;c:\mingw\local\bin;c:\mingw\lib;C:\msys\lib;"$(SolutionDir)Release";C:\msys\1.0\local\lib;C:\msys\local\lib;C:\msys\1.0\lib\gcc\mingw32\4.4.0;C:\msys\1.0\lib\gcc\mingw32\4.2.0;C:\msys\lib\gcc\mingw32\4.4.0;C:\msys\lib\gcc\mingw32\4.2.0</AdditionalLibraryDirectories>
+    </Link>
+    <PostBuildEvent>
+      <Command>if exist $(IntDir)vic.exe del $(IntDir)\vic.exe
+
+@echo on
+move $(OutDir)vic.exe $(IntDir)
+copy /B $(IntDir)vic.exe + $(IntDir)vic-zvfs.zip $(OutDir)vic.exe
+zip.exe -A  $(OutDir)vic.exe
+@echo off
+
+del $(IntDir)vic.exe</Command>
+      <Message>Appending zip file to vic.exe and adjusting zip offset</Message>
+    </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>cd $(IntDir)
+
+if exist vic-zvfs.zip del /Q vic-zvfs.zip
+if exist vic-zvfs rmdir /S /Q vic-zvfs
+
+mkdir vic-zvfs\tcl
+mkdir vic-zvfs\tk
+mkdir vic-zvfs\vic
+
+@echo on
+
+copy C:\Tcl\lib\tcl8.5\init.tcl vic-zvfs\tcl\
+copy C:\Tcl\lib\tcl8.5\auto.tcl vic-zvfs\tcl\
+xcopy C:\Tcl\lib\tcl8.5\encoding\*.enc vic-zvfs\tcl\encoding\ /Q
+xcopy C:\Tcl\lib\tk8.5\*.tcl vic-zvfs\tk\ /Q
+xcopy C:\Tcl\lib\tk8.5\ttk\*.tcl vic-zvfs\tk\ttk\ /Q
+xcopy C:\Tcl\lib\tk8.5\msgs\*.msg vic-zvfs\tk\msgs\ /Q
+xcopy $(ProjectDir)tcl\*.tcl vic-zvfs\vic\  /Q
+
+del vic-zvfs\vic\tkerror.tcl
+del vic-zvfs\vic\ui-entry.tcl
+del vic-zvfs\vic\ui-h261_play.tcl
+del vic-zvfs\vic\ui-unix.tcl
+del vic-zvfs\vic\ui-vdd.tcl
+
+cd vic-zvfs\tcl
+echo auto_mkindex . | C:\Tcl\bin\tclsh85.exe
+
+cd ..\tk
+echo auto_mkindex . | C:\Tcl\bin\tclsh85.exe
+
+cd ..\vic
+echo auto_mkindex . | C:\Tcl\bin\tclsh85.exe
+
+cd ..
+zip.exe -q -r ..\vic-zvfs.zip  tcl  tk  vic
+
+@echo of
+
+cd ..
+rmdir /S /Q vic-zvfs
+</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>Performing Zip File Build Step</Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>$(IntDir)\vic-zvfs.zip</Outputs>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Inputs>tcl\accessgrid.tcl;tcl\ag-pixrate.tcl;tcl\autoplace_ui.tcl;tcl\cf-confbus.tcl;tcl\cf-main.tcl;tcl\cf-network.tcl;tcl\cf-tm.tcl;tcl\cf-util.tcl;tcl\entry.tcl;tcl\ui-ctrlmenu.tcl;tcl\ui-extout.tcl;tcl\ui-grabber.tcl;tcl\ui-help.tcl;tcl\ui-main.tcl;tcl\ui-relate.tcl;tcl\ui-resource.tcl;tcl\ui-srclist.tcl;tcl\ui-stats.tcl;tcl\ui-switcher.tcl;tcl\ui-titlemaker.tcl;tcl\ui-util.tcl;tcl\ui-win32.tcl;tcl\ui-windows.tcl;%(Inputs)</Inputs>
+    </CustomBuildStep>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="win32\vc10\yasm.targets" />
+  </ImportGroup>
+</Project>

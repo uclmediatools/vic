@@ -10,27 +10,21 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- * 	This product includes software developed by the Network Research
- * 	Group at Lawrence Berkeley National Laboratory.
- * 4. Neither the name of the University nor of the Laboratory may be used
- *    to endorse or promote products derived from this software without
- *    specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * 3. Neither the names of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
  *
- * @(#) $Header$ (LBL)
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+ * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef vic_config_h
@@ -40,13 +34,15 @@
 #include "uclconf.h"
 #endif
 
-#if defined(sgi) || defined(__bsdi__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__)
+#if defined(sgi) || defined(__bsdi__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__)
 #include <sys/types.h>
+
 #ifndef uint16_t
 typedef unsigned char  uint8_t;
 typedef unsigned short uint16_t;
 typedef unsigned int   uint32_t;
 #endif
+
 #elif defined(sun)
 
 #include <sys/types.h>
@@ -60,18 +56,27 @@ typedef unsigned int   u_int32_t;
 #elif defined(linux)
 
 #include <sys/bitypes.h>
-#else
+
+#else /* ie non of the above - e.g. WIN32 */
+
 #ifdef ultrix
 #include <sys/types.h>
 #endif
-typedef char int8_t;
-typedef short int16_t;
-typedef int   int32_t;
+
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#else
+typedef char 		int8_t;
+typedef short 		int16_t;
+typedef unsigned short	uint16_t;
+typedef int   		int32_t;
+#endif 
+//<sys/types.h>
 typedef unsigned char	u_int8_t;
 typedef unsigned short	u_int16_t;
-typedef unsigned short	uint16_t;
 typedef unsigned int	u_int32_t;
-#endif /*linux*/
+
+#endif /* end of checks for stdint */
 
 #if defined(sun) || defined(_AIX)
 #if defined(__cplusplus)
@@ -138,7 +143,7 @@ extern "C" {
 #include <netinet/in.h>
 #include <arpa/inet.h>
 clock_t clock(void);
-#if !defined(sco) && !defined(sgi) && !defined(__bsdi__) && !defined(__FreeBSD__) && !defined(__NetBSD__) && !defined(sun) && !defined(__linux__) && !defined(__APPLE__)
+#if !defined(sco) && !defined(sgi) && !defined(__bsdi__) && !defined(__FreeBSD__) && !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(sun) && !defined(__linux__) && !defined(__APPLE__)
 int		gethostid(void);
 #endif
 time_t	time(time_t *);
@@ -158,6 +163,7 @@ char   *ctime(const time_t *);
 #include <stdio.h>
 #include <memory.h>
 #include <errno.h>
+#include <process.h>
 #include <math.h>
 #include <stdlib.h>   /* abs() */
 #include <string.h>
@@ -307,7 +313,7 @@ int gettimeofday(struct timeval *p, struct timezone *z);
 int gethostid(void);
 int getuid(void);
 int getgid(void);
-int getpid(void);
+#define getpid _getpid
 int nice(int);
 int sendmsg(int, struct msghdr*, int);
 time_t time(time_t *);
@@ -316,9 +322,24 @@ time_t time(time_t *);
 }
 #endif
 
+#ifdef ECONNREFUSED
+#undef ECONNREFUSED
+#endif
 #define ECONNREFUSED	WSAECONNREFUSED
+
+#ifdef ENETUNREACH
+#undef ENETUNREACH
+#endif
 #define ENETUNREACH		WSAENETUNREACH
+
+#ifdef EHOSTUNREACH
+#undef EHOSTUNREACH
+#endif
 #define EHOSTUNREACH	WSAEHOSTUNREACH
+
+#ifdef EWOULDBLOCK
+#undef EWOULDBLOCK
+#endif
 #define EWOULDBLOCK		WSAEWOULDBLOCK
 
 #define M_PI		3.14159265358979323846

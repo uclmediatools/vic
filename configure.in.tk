@@ -1,6 +1,18 @@
 SC_PATH_TCLCONFIG
 SC_LOAD_TCLCONFIG
 
+V_ZVFS="" 
+V_ZVFS_OBJS="" 
+V_ZVFS_ZIP="" 
+V_TCL2CPP_OBJS="" 
+V_TCL2CPP_VDD_OBJS="" 
+V_TCL2CPP_H261_PLAY_OBJS="" 
+V_TCL2CPP_JPEG_PLAY_OBJS=""
+V_TCL_PLATFORM=""
+V_TKBASE_RC=""
+RC_PROG=""
+zvfs="no"
+
 AC_MSG_CHECKING([for a compatible version of Tcl])
 if test "${TCL_MAJOR_VERSION}" -gt 8  \
   -o \( "${TCL_MAJOR_VERSION}" -eq 8 -a "${TCL_MINOR_VERSION}" -ge 4 \); then
@@ -10,17 +22,37 @@ if test "${TCL_MAJOR_VERSION}" -gt 8  \
         echo "Using AquaTCL"
         V_DEFINE="$V_DEFINE -DMAC_OSX_TCL"
     fi
-
+	
+	AC_ARG_ENABLE(zvfs,	--enable-zvfs	Enable or disable attachment of tcl to binary, zvfs="yes", zvfs="no")
+	if test "$zvfs" = "yes" ; then
+		echo "Using ZVFS"
+		AC_ARG_WITH(zipprog, --with-zip=zip     specify the zip program to use, zipprog=$withval, zipprog=zip)
+		AC_CHECK_PROG(ZIP_PROG, "$zipprog", $zipprog, "") 
+		AS_IF([test "${ZIP_PROG}" = ""], [ 
+		  AC_MSG_ERROR([Required zip tool '$zipprog' not found on PATH.]) 
+		]) 
+		AC_SUBST(ZIP_PROG) 
+		V_ZVFS="-DUSE_ZVFS" 
+		V_ZVFS_OBJS=zvfs.o 
+		V_ZVFS_ZIP=vic-zvfs.zip 
+		SC_PROG_TCLSH
+	fi
 elif test "${TCL_VERSION}" = "8.0" ; then
     if test -f "${TCL_SRC_DIR}/generic/tcl2c.c" ; then
         AC_MSG_RESULT([UCL Tcl ${TCL_VERSION}${TCL_PATCH_LEVEL}])
     else
         AC_MSG_ERROR([Found Tcl 8.0 which is not UCL Tcl 8.0])
     fi
-
 else
     AC_MSG_ERROR([Tcl $TCL_VERSION, compatible Tcl for VIC not found
 Use --with-tcl= option to indicate location of tclConfig.sh file for Tcl.])
+fi
+
+if test "$zvfs" == "no" ; then
+	V_TCL2CPP_OBJS="\$(TCL_VIC:.tcl=.o)" 
+	V_TCL2CPP_VDD_OBJS="ui-vdd.o" 
+	V_TCL2CPP_H261_PLAY_OBJS="ui-h261_play.o" 
+	V_TCL2CPP_JPEG_PLAY_OBJS="ui-jpeg_play.o" 
 fi
 
 SC_PATH_TKCONFIG
@@ -48,6 +80,22 @@ if test -f "${TCL_BIN_DIR}/Makefile" ; then
     V_INCLUDE_TCL="-I${TCL_SRC_DIR}/generic"
     V_LIBRARY_TCL="${TCL_SRC_DIR}/library"
     V_LIB_TCL="-L${TCL_SRC_DIR}/unix ${TCL_LIB_FLAG}"
+	case "$target" in
+    *-*-mingw*)
+	        V_LIB_TCL="-L${TCL_SRC_DIR}/win ${TCL_LIB_FLAG}"
+			if test -f "${TK_SRC_DIR}/win/rc/tk_base.rc" ; then
+			    AC_ARG_WITH(rcprog, --with-rc=rc     specify the rc program to use, rcprog=$withval, rcprog=windres)
+				AC_CHECK_PROG(RC_PROG, "$rcprog", $rcprog, "") 
+				AS_IF([test "${RC_PROG}" = ""], [AC_MSG_ERROR([Required rc tool '$rcprog' not found on PATH.])]) 
+			    echo "Linking in TK Windows Resources"
+			    V_TCL2CPP_OBJS="$V_TCL2CPP_OBJS tk_base.o"
+				V_TKBASE_RC="${TK_SRC_DIR}/win/rc/tk_base.rc"
+			fi
+            ;;
+	*)
+	        V_LIB_TCL="-L${TCL_SRC_DIR}/unix ${TCL_LIB_FLAG}"
+			;;
+	esac
 
 else
     # dealing with Tcl system install
@@ -68,6 +116,9 @@ else
             elif test -r "${dir}/tcl${TCL_VERSION}/init.tcl" ; then
                 V_LIBRARY_TCL="${dir}/tcl${TCL_VERSION}"
                 break
+            elif test -r "${dir}/tcl/tcl${TCL_VERSION}/init.tcl" ; then
+                V_LIBRARY_TCL="${dir}/tcl/tcl${TCL_VERSION}"
+                break
             fi
         done
         if test $V_LIBRARY_TCL = FAIL ; then
@@ -78,16 +129,34 @@ else
     V_LIB_TCL=`echo $TCL_LIB_SPEC | sed 's#-L/usr/lib[0-9]* ##'`
 fi
 
+case "$target" in
+*-*-mingw*)
+	    V_TCL_PLATFORM="ui-win32.tcl"
+        ;;
+*)
+	    V_TCL_PLATFORM="ui-unix.tcl"
+	    ;;
+esac
+
 AC_SUBST(V_INCLUDE_TCL)
 AC_SUBST(V_LIBRARY_TCL)
 AC_SUBST(V_LIB_TCL)
+AC_SUBST(V_TCL_PLATFORM)
 
 
 if test -f "${TK_BIN_DIR}/Makefile" ; then
     # dealing with Tk source tree
-    V_INCLUDE_TK="-I${TK_SRC_DIR}/generic"
-    V_LIBRARY_TK="${TK_SRC_DIR}/library"
-    V_LIB_TK="-L${TK_SRC_DIR}/unix ${TK_LIB_FLAG}"
+	V_LIBRARY_TK="${TK_SRC_DIR}/library"
+	case "$target" in
+    *-*-mingw*)
+	        V_INCLUDE_TK="-I${TK_SRC_DIR}/generic -I${TK_SRC_DIR}/xlib"
+            V_LIB_TK="-L${TK_SRC_DIR}/win ${TK_LIB_FLAG}"
+            ;;
+	*)
+	        V_INCLUDE_TK="-I${TK_SRC_DIR}/generic"
+            V_LIB_TK="-L${TK_SRC_DIR}/unix ${TK_LIB_FLAG}"
+			;;
+	esac
 
 else
     # dealing with Tk system install
@@ -117,6 +186,9 @@ which comes with the PrivateHeaders folder.])
             elif test -r "${dir}/tk${TK_VERSION}/tk.tcl" ; then
                 V_LIBRARY_TK="${dir}/tk${TK_VERSION}"
                 break
+            elif test -r "${dir}/tcl/tk${TK_VERSION}/tk.tcl" ; then
+                V_LIBRARY_TK="${dir}/tcl/tk${TK_VERSION}"
+                break
             fi
         done
     fi
@@ -145,3 +217,13 @@ AC_SUBST(V_LIB_TK)
 
 AC_SUBST(V_INCLUDE_X11)
 AC_SUBST(V_LIB_X11)
+
+AC_SUBST(V_ZVFS_OBJS) 
+AC_SUBST(V_ZVFS_ZIP) 
+
+AC_SUBST(V_TKBASE_RC)
+
+AC_SUBST(V_TCL2CPP_OBJS) 
+AC_SUBST(V_TCL2CPP_VDD_OBJS) 
+AC_SUBST(V_TCL2CPP_H261_PLAY_OBJS) 
+AC_SUBST(V_TCL2CPP_JPEG_PLAY_OBJS) 

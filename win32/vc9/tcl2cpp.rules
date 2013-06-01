@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VisualStudioToolFile
+	Name="Tcl to C++ Tool"
+	Version="8.00"
+	>
+	<Rules>
+		<CustomBuildRule
+			Name="tcl2cpp"
+			DisplayName="Tcl to C++ Tool"
+			CommandLine="&quot;$(OutDir)\tcl2cpp&quot; [Pass]  [Inputs] &gt; [OutputFileName]"
+			Outputs="$(OutDir)\$(InputName)-$(SafeParentName).cpp"
+			FileExtensions="*.tcl"
+			ExecutionDescription="tcl2cpp generating &quot;$(InputName)-$(SafeParentName).cpp&quot;."
+			>
+			<Properties>
+				<IntegerProperty
+					Name="Pass"
+					DisplayName="Pass"
+					Description="Select the pass level"
+					Switch="[value]"
+					DefaultValue="2"
+				/>
+				<StringProperty
+					Name="OutputFileName"
+					DisplayName="Output File Name"
+					Category="Output"
+					Description="Select the output file name"
+					Switch="[value]"
+					DefaultValue="&quot;$(OutDir)\$(InputName)-$(SafeParentName).cpp&quot;"
+				/>
+			</Properties>
+		</CustomBuildRule>
+	</Rules>
+</VisualStudioToolFile>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1995 Regents of the University of California.
+ * Copyright (c) 1995 The Regents of the University of California.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -10,25 +10,21 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the Computer Systems
- *	Engineering Group at Lawrence Berkeley Laboratory.
- * 4. Neither the name of the University nor of the Laboratory may be used
- *    to endorse or promote products derived from this software without
- *    specific prior written permission.
+ * 3. Neither the names of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
+ * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef lint
@@ -222,7 +218,7 @@ XILWindowAssistor::XILWindowAssistor(int type)
 		cisname = "Jpeg";
 		memcpy(jfif_header1,jfif_header1_,sizeof(jfif_header1_));
 		memcpy(jfif_header2,jfif_header2_,sizeof(jfif_header2_));
-		decimation_ = 411;
+		decimation_ = 420;
 		lastjpegtype_ = 0xff; // invalid, so we reset first..
 		break;
 	case FT_CELLB:
@@ -364,8 +360,8 @@ void XILWindowAssistor::reset(int type,int q, int w, int h)
 	sentfirstheader=0;
 	lastjpegtype_ = type;
 	switch (type) {
-	case 1: /* 411 */
-		decimation_ = 411;
+	case 1: /* 420 */
+		decimation_ = 420;
 		break;
 	default:
 		decimation_ = 422;
@@ -403,7 +399,7 @@ void XILWindowAssistor::reset(int type,int q, int w, int h)
 			jfif_header1[i++] = w&0xff;
 			i++; 	/* components (3) */
 				i++;	/* comp id 0 */
-				if (decimation_ == 411)
+				if (decimation_ == 420)
 					jfif_header1[i++] = 0x22;/* 0x22 for 2 hor/2 vert */
 				else
 					jfif_header1[i++] = 0x21;/* 0x21 for 2 hor/1 vert */
@@ -436,7 +432,7 @@ void XILWindowAssistor::reset(int type,int q, int w, int h)
 			jfif_header2[i++] = w&0xff;
 			i++; 	/* components (3) */
 				i++;	/* comp id 0 */
-				if (decimation_ == 411)
+				if (decimation_ == 420)
 					jfif_header2[i++] = 0x22;/* 0x22 for 2 hor/2 vert */
 				else
 					jfif_header2[i++] = 0x21;/* 0x21 for 2 hor/1 vert */
@@ -854,7 +850,7 @@ int XILOutputDevice::command(int argc, const char*const* argv) {
 				return (TCL_OK);
 			}
 			/*
-			if (!strcmp(argv[2],"jpeg/411") || !strcmp(argv[2],"jpeg/422")) {
+			if (!strcmp(argv[2],"jpeg/420") || !strcmp(argv[2],"jpeg/422")) {
 				XILOutputAssistor* p = new XILOutputAssistor(FT_JPEG|FT_HW,filename_,&deviceattributes_);
 				tcl.result(p->name());
 				return (TCL_OK);

@@ -6,7 +6,7 @@
  * Imported from OpenMash vic. Updated to use SGGetChannelDeviceList to list
  * all of the available SequenceGrabber video capture devices and corresponding
  * inputs, instead of using just the default capture device and input.
- * - Douglas Kosovic <douglask@itee.uq.edu.au>
+ * - Douglas Kosovic <doug@uq.edu.au>
  *
  * Updated to work with the iSight camera (and others) using the
  * SequenceGrabber API - Bruce Williams <netmaster_bruce@mac.com>
@@ -20,15 +20,14 @@
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
- * A. Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- * B. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- * C. Neither the names of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from this
- *    software without specific prior written permission.
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the names of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
  * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -59,6 +58,7 @@
 #include "device-input.h"
 #include "module.h"
 #include "bsd-endian.h"
+#include "yuv_convert.h"
 
 /***************************************************************************/
 // FIXME: This is definitely *not* the place to define video sizes
@@ -85,9 +85,9 @@
 #define SPSIF_PAL_HEIGHT   288
 
 // Color subsampling options.
-#define CF_422 422
-#define CF_411 411
-#define CF_CIF 4112
+#define CF_422 0
+#define CF_420 1
+#define CF_CIF 2
 
 typedef struct  {
 	GWorldPtr gWorld;
@@ -102,15 +102,15 @@ class MacOSXGrabber : public Grabber {
 public:
     // Constructor.
     MacOSXGrabber(const char* format, const char* dev);
-	
+
     // Destructor.
     virtual ~MacOSXGrabber();
-	
+
     // Minimum necessary functions.
     virtual void start();
     virtual void stop();
     virtual int grab();
-	
+
     // Overridden functions.
     virtual int command(int argc, const char*const* argv);
 
@@ -123,33 +123,29 @@ protected:
     int setport(const char *port);
     int capture();
     int setupDecom(void);
-	
-    // YUV conversion functions.
-    void packedYUYV422_to_planarYUYV422(char *dest, char *src);
-    void packedYUYV422_to_planarYUYV411(char *dest, char *src);
-	
+
     // The frame information.
     int decimate_;
     int width_, height_;
-	
+
     int imageSize;
-    
+
     // True if sequence grabbing is possible.
     Boolean quicktime_;
-    
+
     // sequence grabber
     SeqGrabComponent	seqGrab;
     SGChannel		sgchanVideo;
-	
+
     /*
      * A graphics world would be a nicer way to convert and resample the image.
      */
     ImageDescriptionHandle desc_;
     GWorldPtr gWorld_;
     Rect frameRect_;
-	
+
     SGDataProcRefCon *sgDataProcRefCon;
-	
+
     // The capture format.
     int format_;
 
@@ -161,17 +157,17 @@ protected:
 
     // Video input standard - ntscIn, palIn or secamIn
     short input_standard_;
-	
+
     // Use SequenceGrabber config dialog box
     bool useconfig_;
-	
+
     // A simple exception handler class.
     class Exception {
 	public:
         Exception(char* s) {
             string = s;
         }
-		
+
         char* string;
     };
 };
@@ -195,11 +191,11 @@ MacOSXGrabber::MacOSXGrabber(const char* format, const char* dev) {
 
     InitCursor();
     EnterMovies();
-	
+
     try {
 		// Remember the format.
 		if (strcmp(format, "422") == 0) format_ = CF_422;
-		else if (strcmp(format, "411") == 0) format_ = CF_411;
+		else if (strcmp(format, "420") == 0) format_ = CF_420;
 		else if (strcmp(format, "cif") == 0) format_ = CF_CIF;
 		else throw Exception("Unrecognized format");
     } catch (Exception e) {
@@ -214,7 +210,7 @@ MacOSXGrabber::~MacOSXGrabber() {
      */
     // Dipose of the GWorld.
     if (gWorld_ != NULL) DisposeGWorld(gWorld_);
-	
+
     // Close the video digitizer component.
     CloseComponent(seqGrab);
 
@@ -224,7 +220,7 @@ MacOSXGrabber::~MacOSXGrabber() {
 
 void MacOSXGrabber::start() {
     OSErr	err = noErr;
-	
+
     // Don't do anything if QuickTime failed.
     if (!quicktime_) return;
 
@@ -235,7 +231,7 @@ void MacOSXGrabber::start() {
 	
     // start the sequencer
     err = SGStartRecord(seqGrab);
-	
+
     // Start capturing.
     Grabber::start();
 }
@@ -243,10 +239,10 @@ void MacOSXGrabber::start() {
 void MacOSXGrabber::stop() {
     // Don't do anything if QuickTime failed.
     if (!quicktime_) return;
-	
+
     // stop the sequencer
     SGStop(seqGrab);
-	
+
     // Stop capturing.
     Grabber::stop();
 }
@@ -305,7 +301,7 @@ int MacOSXGrabber::capture() {
 
         // Restore the graphics port.
         SetGWorld(currentGWorld, currentGDevice);
-        
+
         // Copy the frame.
 		/*
 		 * i'd like to be able to use Quicktime to do the colour space
@@ -313,11 +309,11 @@ int MacOSXGrabber::capture() {
 		 */
         switch (format_) {
             case CF_422:
-                packedYUYV422_to_planarYUYV422((char*)frame_, theData);
+                packedYUYV422_to_planarYUYV422((char *)frame_, outw_, outh_, theData, inw_, inh_);
                 break;
-            case CF_411:
+            case CF_420:
             case CF_CIF:
-                packedYUYV422_to_planarYUYV411((char*)frame_, theData);
+                packedYUYV422_to_planarYUYV420((char *)frame_, outw_, outh_, theData, inw_, inh_);
                 break;
         }
 
@@ -332,7 +328,7 @@ int MacOSXGrabber::capture() {
 
 void MacOSXGrabber::format() {
     OSErr err = noErr;
-    
+
     // Set the image size.
     switch (decimate_) {
 		case 1: // full-sized
@@ -352,14 +348,14 @@ void MacOSXGrabber::format() {
 		case CF_422:
 			set_size_422(width_, height_);
 			break;
-		case CF_411:
-			set_size_411(width_, height_);
+		case CF_420:
+			set_size_420(width_, height_);
 			break;
 		case CF_CIF:
 			set_size_cif(width_, height_);
 			break;
     }
-	
+
     try {
         // Set the frame rect.
         SetRect(&frameRect_, 0, 0, width_, height_);
@@ -370,11 +366,11 @@ void MacOSXGrabber::format() {
             if (err != noErr) throw Exception("QTNewGWorld");
 			sgDataProcRefCon->gWorld = gWorld_;
             if (!LockPixels(GetGWorldPixMap(gWorld_))) throw Exception("LockPixels");
-			
+
             /*
              * ref: MakeSequenceGrabber()
 			 * need better error checking here
-			 */ 
+			 */
 			seqGrab = OpenDefaultComponent(SeqGrabComponentType, 0);
 			if (seqGrab != NULL)
 				err = SGInitialize(seqGrab);
@@ -382,7 +378,7 @@ void MacOSXGrabber::format() {
 				err = SGSetGWorld(seqGrab, NULL, NULL);
 			if (err == noErr)
 				err = SGSetDataRef(seqGrab, 0, 0, seqGrabDontMakeMovie);
-			
+
 			/* ref: MakeSequenceGrabChannel */
 			err = SGNewChannel(seqGrab, VideoMediaType, &sgchanVideo);
 			if (err == noErr) {
@@ -403,14 +399,14 @@ void MacOSXGrabber::format() {
 						err = VDSetInputStandard(vdigComponent, palIn);
 					} else if ((digitizerInfo.inputCapabilityFlags & digiInDoesSECAM) && (input_standard_ == secamIn)) {
 						err = VDSetInputStandard(vdigComponent, secamIn);
-					} 
+					}
 				}
 
                 /* set sg to gworld */
                 err = SGSetGWorld(seqGrab, gWorld_, GetMainDevice());
-				
+
 				err = SGSetChannelBounds(sgchanVideo, (const Rect *)&frameRect_);
-				
+
 				if (err == noErr)
 					err = SGSetChannelUsage(sgchanVideo, seqGrabRecord);
 				if (err != noErr) {
@@ -420,7 +416,7 @@ void MacOSXGrabber::format() {
 			}
 			err = SGSetDataProc(seqGrab, NewSGDataUPP(&seqGrabberDataProc), (long)sgDataProcRefCon);
 			err = SGPrepare(seqGrab, false, true);
-			
+
         } else {
 			fprintf(stderr, "      format() - reformat not implemented!\n");
 			UnlockPixels(GetGWorldPixMap(gWorld_));
@@ -437,7 +433,7 @@ void MacOSXGrabber::format() {
 int MacOSXGrabber::setport(const char *port) {
 	OSErr err = noErr;
 	int inputNumber = 0;
-	
+
 	if (strcmp(port_, port) == 0) {
 		return 0;
 	}
@@ -561,14 +557,14 @@ int MacOSXGrabber::setupDecom(void) {
 	Rect sourceRect = { 0, 0 };
 	MatrixRecord scaleMatrix;
 	ImageDescriptionHandle imageDesc = (ImageDescriptionHandle)NewHandle(0);
-	
+
 	err = SGGetChannelSampleDescription(sgchanVideo, (Handle)imageDesc);
 	BailErr(err);
-	
+
 	sourceRect.right = (**imageDesc).width;
 	sourceRect.bottom = (**imageDesc).height;
 	RectMatrix(&scaleMatrix, &sourceRect, &frameRect_);
-	
+
 	err = DecompressSequenceBegin(&(sgDataProcRefCon->decomSeq),
 								  imageDesc,
 								  sgDataProcRefCon->gWorld,
@@ -581,15 +577,15 @@ int MacOSXGrabber::setupDecom(void) {
 								  codecNormalQuality,
 								  bestSpeedCodec);
 	BailErr(err);
-	
+
 	imageSize = ((*imageDesc)->width * (*imageDesc)->height);
-	
+
 	DisposeHandle ((Handle)imageDesc);
 	imageDesc = NULL;
-	
+
 bail:
 		if (imageDesc)
-			DisposeHandle((Handle)imageDesc); 
+			DisposeHandle((Handle)imageDesc);
 	return(err);
 }
 
@@ -597,9 +593,9 @@ bail:
  * video sequence data proc
  */
 OSErr MacOSXGrabber::seqGrabberDataProc(SGChannel c, Ptr p, long len, long *offset, long chRefCon, TimeValue time, short writeType, long refCon) {
-	
+
 #pragma unused (c, offset, chRefCon, time, writeType)
-	
+
 	ComponentResult	err = noErr;
 	CodecFlags ignore;
 
@@ -660,10 +656,10 @@ MacOSXScanner::MacOSXScanner()
 	SGChannel sgchanVideo;
 	SGDeviceList sgdeviceList;
 	OSErr err = noErr;
-	
+
 	char *myDev = getenv("VIC_DEVICE");
 	if (myDev != 0) {
-		
+
 	}
 	seqGrab = OpenDefaultComponent(SeqGrabComponentType, 0);
 	if (seqGrab != NULL)
@@ -687,7 +683,7 @@ MacOSXScanner::MacOSXScanner()
 			p2cstrcpy(dev_str, (*sgdeviceList)->entry[i].name);
 			if ((sgDeviceNameFlagDeviceUnavailable & (*sgdeviceList)->entry[i].flags) == 0) {
 				attr = new char[512];
-				strcpy(attr, "size {large small cif} format {411 422 cif} type {ntsc pal secam} port {");
+				strcpy(attr, "size {large small cif} format {420 422 cif} type {ntsc pal secam} port {");
 				if ((*sgdeviceList)->entry[i].inputs != NULL) {
 					fprintf(stderr,"OSX Capture: \"%s\" has %i input(s)\n", dev_str, (*(((*sgdeviceList)->entry[i]).inputs))->count);
 					for (int j = 0; j < (*(((*sgdeviceList)->entry[i]).inputs))->count; j++) {
@@ -705,7 +701,7 @@ MacOSXScanner::MacOSXScanner()
 					fprintf(stderr,"OSX Capture: \"%s\" has no inputs\n", dev_str);
 				}
 				strcat(attr, "}");
-				
+
 				char *device = new char[strlen(dev_str) + 1];
 				strcpy(device, dev_str);
 				new MacOSXDevice(device, attr);
@@ -715,92 +711,16 @@ MacOSXScanner::MacOSXScanner()
 				fprintf(stderr,"OSX Capture: \"%s\" unavailable, ignoring\n", dev_str);
 			}
 		}
-		
+
 	}
-	
+
 	SGDisposeDeviceList(seqGrab, sgdeviceList);
 	SGDisposeChannel(seqGrab, sgchanVideo);
 	CloseComponent(seqGrab);
 }
 
 
-void MacOSXGrabber::packedYUYV422_to_planarYUYV422(char *dest, char *src)
-{
-    int i;
-    char *s, *y,*u,*v;
-    unsigned int a, *srca;
-	
-    srca = (unsigned int *)src;
-	
-    i = (width_ * height_)/2;
-    s = src;
-    y = dest;
-    u = y + width_ * height_;
-    v = u + width_ * height_ / 2;
-	
-    while (--i) {
-       	a = *(srca++);
-#if BYTE_ORDER == LITTLE_ENDIAN 
-       	*(y++) = a & 0xff;
-       	a >>= 8;
-       	*(u++) = a & 0xff;
-       	a >>= 8;
-       	*(y++) = a & 0xff;
-       	a >>= 8;
-       	*(v++) = a & 0xff;
-#else
-       	*(v++) = a & 0xff;
-       	a >>= 8;
-       	*(y++) = a & 0xff;
-       	a >>= 8;
-       	*(u++) = a & 0xff;
-       	a >>= 8;
-       	*(y++) = a & 0xff;
-#endif
-    }
-}
-
-void MacOSXGrabber::packedYUYV422_to_planarYUYV411(char *dest, char *src)
-{
-    int  a1,b;
-    char *s, *y,*u,*v;
-    unsigned int a, *srca;
-	
-    srca = (unsigned int *)src;
-	
-    s = src;
-    y = dest;
-    u = y + width_ * height_;
-    v = u + width_ * height_ / 4;
-	
-    for (a1 = height_; a1 > 0; a1 -= 2) {
-       	for (b = width_; b > 0; b -= 2) {
-			a = *(srca++);
-#if BYTE_ORDER == LITTLE_ENDIAN 
-            *(y++) = a & 0xff; a >>= 8;
-            *(u++) = a & 0xff; a >>= 8;
-            *(y++) = a & 0xff; a >>= 8;
-            *(v++) = a & 0xff;
-#else
-            *(v++) = a & 0xff; a >>= 8;
-            *(y+1) = a & 0xff; a >>= 8;
-            *(u++) = a & 0xff; a >>= 8;
-            *(y) = a;  y += 2;
-#endif
-       	}
-       	for (b = width_; b > 0; b -= 2) {
-			a = *(srca++); 
-#if BYTE_ORDER == LITTLE_ENDIAN 
-            *(y++) = a & 0xff; a >>= 16;
-            *(y++) = a & 0xff;
-#else
-            a >>= 8;
-            *(y+1) = a & 0xff; a >>= 16;
-            *(y) = a; y += 2;
-#endif
-       	}
-    }
-}
+#endif // !__LP64__
 
 #endif // !__LP64__
 
